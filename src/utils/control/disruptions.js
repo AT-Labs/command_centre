@@ -8,7 +8,7 @@ export const isStartTimeValid = (startDate, startTime, openingTime) => startTime
         && moment(startTime, TIME_FORMAT, true).isValid()
         && moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`).isSameOrAfter(openingTime, 'minute');
 
-export const isEndTimeValid = (endDate, endTime, startDate, startTime) => {
+export const isEndTimeValid = (endDate, endTime, nowAsMoment, startDate, startTime) => {
     if (_.isEmpty(endTime) && _.isEmpty(endDate)) {
         return true;
     }
@@ -16,8 +16,10 @@ export const isEndTimeValid = (endDate, endTime, startDate, startTime) => {
         return false;
     }
 
+    const endTimeMoment = moment(`${endDate}T${endTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`);
     return moment(endTime, TIME_FORMAT, true).isValid()
-        && moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`).isBefore(moment(`${endDate}T${endTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`), 'minute');
+        && moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`).isBefore(endTimeMoment, 'minute')
+        && nowAsMoment.isSameOrBefore(endTimeMoment, 'minute');
 };
 
 export const isEndDateValid = (endDate, startDate) => {

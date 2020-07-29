@@ -1,5 +1,7 @@
 import { expect } from 'chai';
+import moment from 'moment';
 import { isEndDateValid, isEndTimeValid } from './disruptions';
+import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 
 describe('isEndDateValid', () => {
     it('endDate is optional', () => {
@@ -20,19 +22,34 @@ describe('isEndDateValid', () => {
 });
 
 describe('isEndTimeValid', () => {
+    const now = moment();
     it('endTime and endDate are not set is valid', () => {
-        expect(isEndTimeValid('', '', '20/07/2020', '18:00')).to.equal(true);
+        expect(isEndTimeValid('', '', now, '20/07/2020', '18:00')).to.equal(true);
     });
 
     it('endDate is set then endTime needs to be set as well', () => {
-        expect(isEndTimeValid('20/07/2020', '', '20/07/2020', '18:00')).to.equal(false);
+        expect(isEndTimeValid('20/07/2020', '', now, '20/07/2020', '18:00')).to.equal(false);
     });
 
     it('endDate is set then endTime needs to be in the right format', () => {
-        expect(isEndTimeValid('20/08/2020', '1243', '20/07/2020', '18:00')).to.equal(false);
+        expect(isEndTimeValid('20/08/2020', '1243', now, '20/07/2020', '18:00')).to.equal(false);
     });
 
-    it('endTime after to startTime should be valid', () => {
-        expect(isEndTimeValid('21/07/2020', '12:01', '21/07/2020', '12:00')).to.equal(true);
+    it('endTime after startTime and after now should be valid', () => {
+        const endDate = now.format(DATE_FORMAT);
+        const endTime = now.clone().add(2, 'minutes').format(TIME_FORMAT);
+        expect(isEndTimeValid(endDate, endTime, now, '21/07/2020', '12:00')).to.equal(true);
+    });
+
+    it('endTime after startTime and equal to now should be valid', () => {
+        const endDate = now.format(DATE_FORMAT);
+        const endTime = now.format(TIME_FORMAT);
+        expect(isEndTimeValid(endDate, endTime, now, '21/07/2020', '12:00')).to.equal(true);
+    });
+
+    it('endTime after startTime and before now should not be valid', () => {
+        const endDate = now.format(DATE_FORMAT);
+        const endTime = now.clone().subtract(2, 'minutes').format(TIME_FORMAT);
+        expect(isEndTimeValid(endDate, endTime, now, '21/07/2020', '12:00')).to.equal(false);
     });
 });

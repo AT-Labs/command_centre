@@ -36,6 +36,7 @@ import './styles.scss';
 
 const InProgress = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, updateCopyDisruptionState } = props;
+    const [now] = useState(moment().second(0).millisecond(0));
     const [cause, setCause] = useState(disruption.cause);
     const [impact, setImpact] = useState(disruption.impact);
     const [status, setStatus] = useState(disruption.status);
@@ -123,7 +124,7 @@ const InProgress = (props) => {
         if (isEndDateTimeDisabled()) {
             return true;
         }
-        return isEndTimeValid(endDate, endTime, startDate, startTime);
+        return isEndTimeValid(endDate, endTime, now, startDate, startTime);
     };
 
     const endDateValid = () => {

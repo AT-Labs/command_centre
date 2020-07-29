@@ -34,7 +34,7 @@ const SelectDetails = (props) => {
 
     const startDateValid = () => isStartDateValid(startDate, modalOpenedTime);
 
-    const endTimeValid = () => isEndTimeValid(endDate, endTime, startDate, startTime);
+    const endTimeValid = () => isEndTimeValid(endDate, endTime, modalOpenedTime, startDate, startTime);
 
     const endDateValid = () => isEndDateValid(endDate, startDate);
 
