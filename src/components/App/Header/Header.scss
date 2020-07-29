@@ -1,0 +1,40 @@
+@import '../../../assets/styles/variables';
+
+.header {
+    height: $header-height;
+
+    .header__logo {
+        max-width: 50px;
+    }
+
+    .header__btn {
+        height: $header-height;
+
+        &:hover,
+        &.active {
+            background-color: tint($at-ocean, 90%) !important;
+        }
+    }
+
+    .header__toolbar {
+        .header__notifications-badge {
+            top: 15px;
+            right: 18px;
+            width: 12px;
+            height: 12px;
+        }
+
+        svg {
+            color: $secondary;
+        }
+    }
+
+    .header__environment_indicator {
+        background-color: $at-red !important;
+        display: inline-flex;
+        align-items: center;
+        height: 100%;
+        padding-left: .2em;
+        padding-right: .2em;
+    }
+}

@@ -1,0 +1,34 @@
+@import '../../assets/styles/variables';
+
+.omni-search {
+    .search {
+        &__input {
+            outline: none;
+        }
+
+        &__clear {
+            top: 15px;
+            right: 10px;
+            &:hover {
+                cursor: pointer;
+                opacity: .7;
+            }
+        }
+
+        &__icon {
+            top: 15px;
+            left: 10px;
+            > svg {
+                fill: map-get($theme-colors, "secondary");
+            }
+        }
+
+        &__loader {
+            position: absolute;
+            top: 15px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+        }
+    }
+}

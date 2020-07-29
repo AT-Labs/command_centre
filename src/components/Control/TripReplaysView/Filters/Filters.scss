@@ -1,0 +1,42 @@
+@import './../../../../assets/styles/variables';
+
+.filters {
+    .omni-search {
+        margin: 0;
+
+        .search__clear {
+            top: 7px;
+            right: $trip-replay-side-panel-search-spacing + 10;
+        }
+
+        .search__loader {
+            top: 12px;
+            right: $trip-replay-side-panel-search-spacing + 10;
+        }
+
+        .search__autosuggest {
+            padding: 0 $trip-replay-side-panel-search-spacing;
+        }
+
+        .search__input {
+            height: $trip-replay-side-panel-search-height;
+            line-height: $trip-replay-side-panel-search-height;
+            box-shadow: none;
+        }
+
+        .search__dropdown {
+            margin-top: $trip-replay-side-panel-search-spacing;
+            margin-bottom: 0;
+            margin-left: -$trip-replay-side-panel-search-spacing;
+            margin-right: -$trip-replay-side-panel-search-spacing;
+            max-height: $trip-replay-side-panel-search-panel-height;
+        }
+
+        .search__input--open + .search__dropdown,
+        .search--loading .search__dropdown {
+            min-height: $trip-replay-side-panel-search-panel-height;
+            margin-top: 0;
+            padding-top: $trip-replay-side-panel-search-spacing;
+        }
+    }
+}

@@ -1,0 +1,156 @@
+@import "../../../../assets/styles/variables";
+
+$body-height: 40px;
+
+.stop-control {
+    $self: &;
+    flex-basis: 0;
+
+    &__footer {
+        $footer-height: 55px;
+        height: $footer-height;
+
+        .badge {
+            font-size: 100%;
+            font-weight: normal;
+        }
+    }
+
+    &__body {
+        position: relative;
+        height: $body-height;
+
+        &__line {
+            background: map-get($theme-colors, "primary");
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: $body-height/2 - 2px;
+            width: 100%;
+            height: 5px;
+            line-height: .5;
+        }
+
+        $circle-size: 16px;
+        $action-container-size: 26px;
+
+        &__actions {
+            $actions-self: &;
+            width: $action-container-size;
+            height: $action-container-size;
+            position: absolute;
+            left: 50%;
+            bottom: $body-height/2 - 11px;
+            margin: 0 0 0 (-$action-container-size/2);
+
+            &__circle {
+                color: $white;
+                background: map-get($theme-colors, "primary");
+                border: 3px solid map-get($theme-colors, "primary");
+                border-radius: 50%;
+                position: absolute;
+                left: 50%;
+                top: 6px;
+                width: $circle-size;
+                height: $circle-size;
+                margin: 0 0 0 (-$circle-size/2);
+                padding: 0;
+                line-height: 0;
+                cursor: pointer;
+
+                &:focus {
+                    border-color: map-get($theme-colors, "info");
+                }
+            }
+
+            &__action {
+                color: $white;
+                background: map-get($theme-colors, "info");
+                width: $action-container-size;
+                height: $action-container-size;
+                border: none;
+                position: absolute;
+                left: 0;
+                top: 0;
+                border-radius: 50%;
+                padding: 0;
+                line-height: 0;
+                cursor: pointer;
+                display: none;
+                z-index: 10; // fixes pointer blinking onmouseenter and line over button.
+
+                &--revert {
+                    background: map-get($theme-colors, "success");
+                }
+
+                &--visible {
+                    display: block;
+                }
+
+                &--disabled {
+                    display: none;
+                }
+            }
+
+            &:hover {
+                #{$actions-self}__action:not(#{$actions-self}__action--selected) {
+                    top: 6px;
+                    left: 5px;
+                    display: block;
+                    width: $circle-size;
+                    height: $circle-size;
+                    background-color: tint($at-shore, 50%);
+
+                    &--disabled {
+                        display: none;
+                    }
+                }
+            }
+        }
+    }
+
+    &:first-child {
+        #{$self}__body__line {
+            width: 50%;
+            left: auto;
+        }
+        #{$self}__body__actions__circle {
+            background: $white;
+        }
+    }
+
+    &:last-child {
+        #{$self}__body__line {
+            width: 50%;
+            right: auto;
+        }
+        #{$self}__body__actions__circle {
+            background: $white;
+        }
+    }
+
+    &--skipped,
+    &--skipped:first-child,
+    &--skipped:last-child {
+        #{$self}__body__actions__circle {
+            background: map-get($theme-colors, "danger");
+            border-color: map-get($theme-colors, "danger");
+        }
+    }
+
+    &--current,
+    &--current:first-child,
+    &--current:last-child {
+        #{$self}__body__actions__circle {
+            background: map-get($theme-colors, "warning");
+        }
+    }
+
+    &--disabled,
+    &--disabled:first-child,
+    &--disabled:last-child {
+        #{$self}__body__actions__circle {
+            cursor: default;
+        }
+    }
+}

@@ -1,0 +1,9 @@
+@import "../../../assets/styles/variables";
+
+.cluster {
+    background-color: #F5F5F5;
+
+    &:first-of-type {
+        margin-top: .5rem;
+    }
+}

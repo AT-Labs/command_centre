@@ -1,0 +1,20 @@
+// Mixes a color with white.
+@function tint($color, $percent) {
+    @return mix($color, #ffffff, $percent);
+}
+
+/// Mixes a color with black.
+@function shade($color, $percent) {
+    @return mix($color, #000000, $percent);
+}
+
+// AT Colors
+// use tint($color, $percent) with 10% increment to lighten
+// use shade($color, $percent) with 10% increment to darken
+$at-shore:    #399CDB;
+$at-ocean:    #152239;
+$at-green:    #88CB40;
+$at-red:      #EE2E27;
+$at-yellow:   #FFDD00;
+$at-orange:   #F6921E;
+$at-magenta:  #E30084;

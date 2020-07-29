@@ -1,0 +1,47 @@
+@import '../../../../../assets/styles/variables';
+
+.trip-progress {
+    &__current-stop-indicator {
+        display: block;
+        position: relative;
+        width: 100%;
+        height: 3px;
+        background: $at-ocean;
+
+        > span {
+            display: block;
+            position: absolute;
+            background: $at-ocean;
+            font-size: 12px;
+            left: 50%;
+            top: -1em;
+            padding: 3px 6px 3px 20px;
+            border-radius: 3px;
+            transform: translateX(-50%);
+
+            &:before {
+                position: absolute;
+                left: 5px;
+                top: 6px;
+                content: '';
+                display: block;
+                width: 10px;
+                height: 10px;
+                border-radius: 100%;
+                background: $at-yellow;
+            }
+        }
+    }
+
+    &__fixed-table-cell--stop {
+        width: 60px;
+    }
+
+    &__fixed-table-cell--scheduled-time {
+        width: 60px;
+    }
+
+    &__fixed-table-cell--time {
+        width: 120px;
+    }
+}

@@ -1,0 +1,22 @@
+@import '../../../assets/styles/variables';
+
+.back-header {
+    margin: 15px 0;
+
+    &__header {
+        display: inline-block;
+        background: none;
+        border: none;
+    }
+
+    &__btn-icon {
+        svg {
+            fill: $at-shore;
+        }
+    }
+
+    &__title {
+        position: relative;
+        top: 2px;
+    }
+}

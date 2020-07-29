@@ -1,0 +1,12 @@
+@import '../../../assets/styles/variables';
+
+.control-trip-replays-view {
+    width: 100%;
+    height: calc(100vh - 60px);
+    right: 0;
+}
+
+.trip-replay-primary-panel {
+    overflow-y: auto;
+    position: relative;
+}

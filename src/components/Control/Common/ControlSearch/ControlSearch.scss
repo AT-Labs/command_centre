@@ -1,0 +1,29 @@
+@import '../../../../assets/styles/variables';
+
+.control-search {
+    margin-bottom: 15px;
+
+    .control-search__icon {
+        top: 10px;
+        right: 5px;
+        padding-left: 0 !important;
+        position: absolute;
+
+        &:hover {
+            cursor: pointer;
+        }
+
+        &--down {
+            right: 5px;
+        }
+    }
+
+    .search__dropdown {
+        max-height: 500px;
+    }
+
+    .search__input {
+        padding-left: 1rem;
+        padding-right: 50px;
+    }
+}

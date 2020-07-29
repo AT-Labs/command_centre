@@ -1,0 +1,16 @@
+@import "../../assets/styles/variables";
+
+body,
+html,
+#root {
+    height: 100%;
+    background: $white;
+}
+
+ul {
+    list-style-type: none;
+}
+
+button {
+    box-shadow: none !important; // overwrites Bootstrap outline
+}

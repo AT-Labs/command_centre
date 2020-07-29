@@ -1,0 +1,21 @@
+@import '../../../../assets/styles/variables';
+
+.trip-replay-progress {
+    &__fixed-table-cell--stop {
+        width: 70px;
+    }
+
+    &__fixed-table-cell--scheduled-time {
+        width: 90px;
+    }
+
+    &__fixed-table-cell--time {
+        width: 90px;
+    }
+    .trip-replay-trip-canceled > &__fixed-table-cell--stop {
+        color: $danger;
+    }
+    .trip-replay-trip-reinstated > &__fixed-table-cell--stop {
+        color: $success;
+    }
+}

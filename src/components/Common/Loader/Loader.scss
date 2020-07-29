@@ -1,0 +1,30 @@
+@import '../../../assets/styles/variables';
+
+.loader {
+    width: 100%;
+    height: 100%;
+    max-width: 120px;
+    max-height: 120px;
+    border: 2px solid white;
+    border-radius: 50%;
+    border-top: 3px solid gray;
+    animation: spinning .5s linear infinite;
+}
+
+.mask-loader {
+    z-index: $zindex-fixed;
+
+    .mask-loader__loader-container {
+        width: 120px;
+        height: 120px;
+    }
+}
+
+@keyframes spinning {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

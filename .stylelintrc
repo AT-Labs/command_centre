@@ -1,0 +1,17 @@
+{
+  "extends": "stylelint-config-standard",
+  "defaultSeverity": "error",
+  "rules": {
+    "indentation": 4,
+    "number-leading-zero": "never",
+    "color-hex-case": "upper",
+    "selector-pseudo-element-colon-notation": "single",
+
+    "at-rule-no-unknown": null,
+    "declaration-empty-line-before": null,
+    "at-rule-empty-line-before": null,
+    "rule-empty-line-before": null,
+    "color-hex-length": null,
+    "no-descending-specificity": null
+  }
+}

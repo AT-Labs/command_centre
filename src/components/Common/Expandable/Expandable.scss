@@ -1,0 +1,88 @@
+@import '../../../assets/styles/variables';
+
+$active-bg: map_get($theme-colors, "at-ocean-tint-5");
+$border-color: map_get($theme-colors, "at-ocean-tint-20");
+
+.expandable {
+    $self: &;
+    background: $white;
+    border-style: solid;
+    border-color: $border-color;
+    border-width: 0 1px;
+    font-size: 14px;
+
+    li:first-child > & {
+        border-top-width: 1px;
+    }
+
+    &__header {
+        &__expand {
+            border-bottom: 1px solid $border-color;
+            padding: $grid-gutter-width/2;
+            position: relative;
+        }
+        &__expand-button {
+            border: 0;
+            padding: $grid-gutter-width/2;
+            cursor: pointer;
+            background: transparent;
+            display: block;
+            position: absolute;
+            top: 0;
+            right: 0;
+            text-align: left;
+        }
+    }
+
+    &__body {
+        background: $active-bg;
+        border-bottom: 1px solid $border-color;
+        padding: 0;
+    }
+
+    // Active state
+    &--is-active {
+        background: $white;
+    }
+
+    // Level 1 specific styling
+    &--level-1 {
+        &#{$self}--is-active {
+            background: $active-bg;
+
+            & > #{$self}__header #{$self}__header__expand {
+                border-bottom: none;
+            }
+        }
+
+        &#{$self}--is-active + &#{$self} {
+            & > #{$self}__header #{$self}__header__expand {
+                border-bottom: none;
+            }
+        }
+
+        & > #{$self}__body {
+            padding: 0 $grid-gutter-width/2 $grid-gutter-width/2;
+        }
+    }
+
+    // Level 3 specific styling
+    &--level-3 {
+        border-left-width: 0;
+        border-right-width: 0;
+
+        #{$self}__header {
+            &__expand,
+            &__expand-button {
+                padding-top: 9px;
+                padding-bottom: 9px;
+            }
+        }
+
+        #{$self}__body {
+            background: map_get($theme-colors, "at-ocean-tint-10");
+            box-shadow: inset 0 0 4px map_get($theme-colors, "at-ocean-tint-30");
+            border-bottom-width: 1px;
+        }
+    }
+}

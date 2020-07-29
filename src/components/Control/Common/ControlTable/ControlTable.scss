@@ -1,0 +1,16 @@
+@import '../../../../assets/styles/variables';
+
+$border-color: map_get($theme-colors, "secondary");
+$border:  1px solid $border-color;
+
+.standard-row {
+    padding: $grid-gutter-width/2;
+    position: relative;
+    border-right: $border;
+    border-left: $border;
+    border-top: 1px solid $border-color;
+
+    li:last-child & {
+        border-bottom: $border;
+    }
+}

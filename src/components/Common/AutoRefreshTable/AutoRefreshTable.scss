@@ -1,0 +1,37 @@
+@import '../../../assets/styles/variables';
+
+.auto-refresh-table {
+
+    .loader {
+        width: 30px;
+        height: 30px;
+    }
+
+    table.table--clickable tbody tr {
+        cursor: pointer;
+    }
+
+    .table-hover tbody tr:hover td,
+    .table-hover tbody tr:hover th {
+        background-color: tint($at-shore, 10%);
+    }
+
+    .table--alternatively-striped {
+        @if $table-striped-order == 'odd' {
+            tbody tr:nth-of-type(odd) {
+                background-color: $white !important;
+            }
+            tbody tr:nth-of-type(even) {
+                background-color: $table-accent-bg !important;
+            }
+        }
+        @else {
+            tbody tr:nth-of-type(odd) {
+                background-color: $table-accent-bg !important;
+            }
+            tbody tr:nth-of-type(even) {
+                background-color: $white !important;
+            }
+        }
+    }
+}

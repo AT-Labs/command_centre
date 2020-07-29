@@ -1,0 +1,14 @@
+.vehicle-details__list {
+    display: flex;
+    flex-wrap: wrap;
+
+    dt {
+        flex-basis: 40%;
+        max-width: 60%;
+    }
+
+    dd {
+        flex-basis: 60%;
+        max-width: 60%;
+    }
+}

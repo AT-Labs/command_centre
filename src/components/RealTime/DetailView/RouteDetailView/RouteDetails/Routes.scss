@@ -1,0 +1,14 @@
+@import '../../../../../assets/styles/variables';
+
+.route-detail-view__routes {
+
+    .route-detail-view__routes-tr > .row,
+    .route-detail-view__vehicles-tr {
+        outline: 0;
+        cursor: pointer;
+
+        &:hover {
+            background-color: $table-hover-bg !important; // Overwrites Bootstraps bg-light (wihch has !important)
+        }
+    }
+}

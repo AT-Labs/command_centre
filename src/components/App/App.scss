@@ -1,0 +1,11 @@
+@import "../../assets/styles/variables";
+
+.app {
+    .activity-loader {
+        bottom: 100px;
+        right: 16px;
+        width: 24px;
+        height: 24px;
+        z-index: $zindex-fixed;
+    }
+}

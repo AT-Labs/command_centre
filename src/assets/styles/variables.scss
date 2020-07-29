@@ -1,0 +1,74 @@
+@import '../../../node_modules/bootstrap/scss/functions';
+@import '../../../node_modules/bootstrap/scss/variables';
+@import '../../../node_modules/bootstrap/scss/mixins';
+
+@import './colors';
+
+$font-family-base: 'Roboto', sans-serif;
+$theme-colors: (
+    // Bootstrap original colours
+    'primary':              $at-ocean,
+    'secondary':            tint($at-ocean, 20%),
+    'success':              $at-green,
+    'info':                 $at-shore,
+    'warning':              $at-yellow,
+    'danger':               $at-red,
+    'light':                tint($at-ocean, 10%),
+    'dark':                 $at-ocean,
+    'white':                $white,
+    // AT colour scheme based colours
+    'at-ocean':             $at-ocean, // navy blue
+    'at-ocean-tint-30':     tint($at-ocean, 30%),
+    'at-ocean-tint-20':     tint($at-ocean, 20%),
+    'at-ocean-tint-10':     tint($at-ocean, 10%),
+    'at-ocean-tint-5':      tint($at-ocean, 5%),
+    'at-shore':             $at-shore, // light blue
+    'at-shore-shade-80':    shade($at-shore, 80%),
+    'at-shore-tint-80':     tint($at-shore, 80%),
+    'at-shore-tint-50':     tint($at-shore, 50%),
+    'at-shore-tint-30':     tint($at-shore, 30%),
+    'at-green':             $at-green,
+    'at-dark-green':        shade($at-green, 70%),
+    'at-red':               $at-red,
+    'at-red-tint-80':       tint($at-red, 80%),
+    'at-yellow':            $at-yellow,
+    'at-yellow-tint-20':    tint($at-yellow, 20%),
+    'at-orange':            $at-orange,
+    'at-magenta':           $at-magenta,
+    'at-magenta-tint-5':    tint($at-magenta, 5%),
+);
+
+$sizes: () !default;
+$sizes: map-merge(
+    (
+        15: 15%,
+        20: 20%,
+        25: 25%,
+        50: 50%,
+        75: 75%,
+        100: 100%,
+        auto: auto
+    ),
+    $sizes
+);
+
+$header-height: 60px;
+$grid-gutter-width:  30px;
+$table-cell-padding: $grid-gutter-width/2;
+
+$pagination-color:                  $at-shore;
+$pagination-hover-color:            $at-shore;
+$pagination-active-bg:              $at-shore;
+$pagination-active-border-color:    $at-shore;
+
+$side-panel-width: 440px;
+$side-panel-width-small: 340px;
+$real-time-side-panel-search-height: 44px;
+$real-time-side-panel-search-spacing: 27px;
+$real-time-side-panel-toggle-button-width: 40px;
+$real-time-side-panel-search-panel-height: calc(100vh - #{$header-height + $real-time-side-panel-search-height + $real-time-side-panel-search-spacing * 2});
+
+$trip-replay-side-panel-search-height: 44px;
+$trip-replay-side-panel-search-spacing: 27px;
+$trip-replay-side-panel-toggle-button-width: 40px;
+$trip-replay-side-panel-search-panel-height: calc(100vh - #{$header-height + $trip-replay-side-panel-search-height + $trip-replay-side-panel-search-spacing * 2});

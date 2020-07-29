@@ -1,0 +1,25 @@
+@import '../../../../assets/styles/variables';
+
+.disruption-creation__wizard-select-address__search {
+    z-index: 1030;
+    .omni-search {
+        .search__icon,
+        .search__clear {
+            top: 5px;
+        }
+
+        .search__section-title:empty {
+            border: none;
+        }
+    }
+}
+
+.disruption-creation__wizard-select-address__map {
+    height: 330px;
+}
+
+.disruption-creation__wizard-select-address {
+    .cc__picklist-pane-right {
+        background: tint($at-ocean, 10%);
+    }
+}

@@ -1,0 +1,11 @@
+.vehicle-filter-by-operator {
+
+    > label {
+        color: #FFF;
+        font-size: 14px;
+    }
+
+    .search__dropdown {
+        max-height: calc(100vh - 300px) !important;
+    }
+}

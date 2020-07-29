@@ -1,0 +1,8 @@
+src/**/*.test.js
+src/**/*.test.jsx
+--file config/mocha/setup-auth-mock.js
+--require esm
+--require babel-register
+--require config/mocha/setup.js
+--reporter mocha-multi-reporters
+--reporter-options configFile=config/mocha/reporters.json

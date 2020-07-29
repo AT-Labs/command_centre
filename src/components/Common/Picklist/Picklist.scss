@@ -1,0 +1,10 @@
+.picklist-pane {
+    .picklist-pane__inner {
+        overflow: hidden;
+    }
+
+    .picklist__list {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+}

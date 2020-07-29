@@ -1,0 +1,14 @@
+@import "../../../assets/styles/variables";
+
+.feedback-btn {
+    right: -50px;
+    bottom: 240px;
+    z-index: 1000;
+    color: map-get($theme-colors, "white");
+    transform: rotate(-90deg);
+
+    &:hover {
+        text-decoration: none;
+        color: map-get($theme-colors, "white");
+    }
+}

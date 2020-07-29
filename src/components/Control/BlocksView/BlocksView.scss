@@ -1,0 +1,22 @@
+@import '../../../assets/styles/variables';
+
+.control-block-view {
+    .omni-search {
+        .search__icon,
+        .search__clear {
+            top: 5px;
+        }
+
+        .search__section-title:empty {
+            border: none;
+        }
+    }
+
+    .sort-btn {
+        margin-left: -5px;
+    }
+}
+
+.add-trips-modal {
+    max-width: 750px !important;
+}

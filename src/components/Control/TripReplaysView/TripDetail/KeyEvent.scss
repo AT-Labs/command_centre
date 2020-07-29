@@ -1,0 +1,17 @@
+@import '../../../../assets/styles/variables';
+
+.key-event {
+    width: 100%;
+    font-size: 12px;
+
+    @at-root #{&}__more-info {
+        color: map_get($theme-colors, 'at-shore-shade-80');
+        font-weight: bold;
+        border: 0;
+        background-color: transparent;
+    }
+
+    &:hover {
+        background-color: $table-hover-bg !important; // Overwrites Bootstraps bg-light (wihch has !important)
+    }
+}

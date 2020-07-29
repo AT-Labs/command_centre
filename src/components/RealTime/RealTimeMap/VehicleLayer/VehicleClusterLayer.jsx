@@ -1,0 +1,129 @@
+import L from 'leaflet';
+import _ from 'lodash-es';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { LeafletConsumer } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-markercluster';
+import { disableClustering, enableClustering } from 'leaflet.markercluster.freezable'; // eslint-disable-line
+import 'react-leaflet-markercluster/dist/styles.min.css';
+import { connect } from 'react-redux';
+import { updateVehicleSelected, vehicleSelected } from '../../../../redux/actions/realtime/detail/vehicle';
+import { getVehicleDetail } from '../../../../redux/selectors/realtime/detail';
+import {
+    getJoinedVehicleLabel, getVehicleLatLng, getVehiclePositionCoordinates, getVehicleRouteName,
+} from '../../../../redux/selectors/realtime/vehicles';
+import { FOCUS_ZOOM } from '../constants';
+import { getClusterIcon } from './vehicleClusterIcon';
+import { getVehicleIcon } from './vehicleIcon';
+import './VehicleLayer.scss';
+
+
+class VehicleClusterLayer extends React.Component {
+    static propTypes = {
+        vehicles: PropTypes.array.isRequired,
+        vehicleAllocations: PropTypes.object.isRequired,
+        vehicleType: PropTypes.string.isRequired,
+        vehicleSelected: PropTypes.func.isRequired,
+        highlightedVehicle: PropTypes.object.isRequired,
+        leafletMap: PropTypes.object.isRequired,
+        updateVehicleSelected: PropTypes.func.isRequired,
+    };
+
+    constructor(props) {
+        super(props);
+
+        this.clusterLayerRef = React.createRef();
+    }
+
+    componentDidMount = () => this.refreshMarkers();
+
+    componentDidUpdate = () => this.refreshMarkers();
+
+    modifyOverlappedMarkersPosition = (markers) => {
+        let latitudeOffset = 0;
+        let longitudeOffset = 0;
+
+        const groupedMarkersByPosition = _.groupBy(markers, ({ options: { vehicle } }) => getVehiclePositionCoordinates(vehicle));
+        const groupsWithMultipleMarkers = _.filter(groupedMarkersByPosition, group => group.length > 1);
+
+        groupsWithMultipleMarkers.forEach((group) => {
+            group.forEach((marker) => {
+                marker.setLatLng(
+                    new L.LatLng(
+                        marker.getLatLng().lat - latitudeOffset,
+                        marker.getLatLng().lng - longitudeOffset,
+                    ),
+                );
+                latitudeOffset += 0.00004;
+                longitudeOffset += 0.00002;
+            });
+        });
+    }
+
+    refreshMarkers = () => {
+        const { vehicles, highlightedVehicle, vehicleAllocations } = this.props;
+        const bounds = this.props.leafletMap.getBounds();
+        const markersInBoundary = _.filter(vehicles, vehicle => bounds.contains(getVehicleLatLng(vehicle)));
+        const markers = _.map(markersInBoundary, vehicle => L.marker(getVehicleLatLng(vehicle), { icon: getVehicleIcon(vehicle), vehicle }));
+        const tooltipContent = (route, vehicleLabel) => (
+            `<dl class="m-0">
+                <dt>Route</dt>
+                <dd>${route}</dd>
+                <dt>Vehicle</dt>
+                <dd class="m-0">${vehicleLabel}</dd>
+            </dl>`
+        );
+
+        this.clusterLayerRef.current.leafletElement.unbindTooltip();
+        this.clusterLayerRef.current.leafletElement.clearLayers();
+
+        this.clusterLayerRef.current.leafletElement.addLayers(markers);
+        this.modifyOverlappedMarkersPosition(markers);
+        this.clusterLayerRef.current.leafletElement.bindTooltip(({ options }) => tooltipContent(
+            getVehicleRouteName(options.vehicle) || 'NIS',
+            getJoinedVehicleLabel(options.vehicle, vehicleAllocations),
+        ),
+        { direction: 'top', className: 'vehicle-tooltip' });
+        if (!_.isEmpty(highlightedVehicle)) {
+            const vehicleId = _.result(highlightedVehicle, 'vehicle.vehicle.id');
+            const matchingVehicle = _.find(vehicles, _.matchesProperty('vehicle.vehicle.id', vehicleId));
+            if (matchingVehicle) this.props.updateVehicleSelected(matchingVehicle);
+        }
+
+        if (_.isEmpty(highlightedVehicle)) this.clusterLayerRef.current.leafletElement.enableClustering();
+        else this.clusterLayerRef.current.leafletElement.disableClustering();
+    }
+
+    handleClick = ({ layer, type }) => {
+        if (type === 'clusterclick') return;
+
+        const { highlightedVehicle } = this.props;
+        const { options: { vehicle } } = layer;
+
+        if (highlightedVehicle && highlightedVehicle.id !== vehicle.id) this.props.vehicleSelected(vehicle);
+    }
+
+    render() {
+        return (
+            <MarkerClusterGroup
+                ref={ this.clusterLayerRef }
+                zoomToBoundsOnClick
+                chunkedLoading
+                spiderfyOnMaxZoom={ false }
+                showCoverageOnHover={ false }
+                disableClusteringAtZoom={ FOCUS_ZOOM }
+                removeOutsideVisibleBounds
+                iconCreateFunction={ cluster => getClusterIcon(cluster, this.props.vehicleType) }
+                onClick={ this.handleClick } />
+        );
+    }
+}
+
+export default connect(state => ({
+    highlightedVehicle: getVehicleDetail(state),
+}),
+{ vehicleSelected, updateVehicleSelected })(props => (
+    <LeafletConsumer>
+        {({ map }) => <VehicleClusterLayer { ...props } leafletMap={ map } />}
+    </LeafletConsumer>
+));

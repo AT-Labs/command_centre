@@ -1,0 +1,18 @@
+$design-update-temp-colors: (
+    'placeholder': #5B6474, // Color taken from Zeppelin
+);
+
+// Placeholder classes
+// Dark is applied to RT OmniSearch
+// Light is applied to all search filed in blocks
+.design-update-temp-placeholder--light {
+    &::placeholder {
+        color: map-get($design-update-temp-colors, "placeholder");
+    }
+}
+
+.design-update-temp-placeholder--dark {
+    &::placeholder {
+        color: map-get($theme-colors, "secondary");
+    }
+}

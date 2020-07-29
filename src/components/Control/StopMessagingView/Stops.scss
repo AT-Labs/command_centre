@@ -1,0 +1,14 @@
+@import '../../../assets/styles/variables';
+
+.control-messaging-view__collapse-btn {
+    line-height: 12px;
+    box-sizing: border-box;
+    padding: 0;
+    width: 14px;
+    font-size: 12px;
+    border: 1px solid $at-ocean;
+    margin-left: 5px;
+    align-items: center;
+    align-content: center;
+    border-radius: .25rem;
+}

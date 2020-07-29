@@ -1,0 +1,257 @@
+@import './variables';
+
+.overflow-y-auto {
+    overflow-y: auto;
+}
+
+.overflow-x-auto {
+    overflow-x: auto;
+}
+
+.top-0 {
+    top: 0;
+}
+
+.table-layout-fixed {
+    table-layout: fixed;
+}
+
+.custom-table--hover {
+    outline: 0;
+    cursor: pointer;
+
+    &:hover {
+        background-color: rgba(#000000, .075) !important; // Overwrites Bootstraps bg-light (which has !important). color = $table-hover-bg
+    }
+}
+
+// bootstrap fixed-top class fix
+.fixed-top {
+    position: fixed !important;  // Bootstrap navbar class overwrites its own fixed-top class position.
+}
+
+.font-size-sm {
+    font-size: 14px;
+}
+
+.font-size-md {
+    font-size: $font-size-base;
+}
+
+.white-space-normal {
+    white-space: normal;
+}
+
+.white-space-nowrap {
+    white-space: nowrap;
+}
+
+.textarea-no-resize {
+    resize: none;
+}
+
+.search__dropdown { // used by OmniSearch and ControlSearch
+    z-index: $zindex-dropdown;
+    max-height: calc(100vh - 56px);
+    width: 100%;
+    overflow-y: auto;
+
+    .search__dropdown-menu {
+        list-style: none;
+    }
+
+    .search__dropdown-item {
+        padding: 0 10px;
+        cursor: pointer;
+    }
+
+    .suggestion__text {
+        color: rgba(0, 0, 0, .7);
+    }
+
+    .search__dropdown-item__icon > svg {
+        height: 16px;
+        width: 16px;
+    }
+
+    &:empty {
+        border: none !important;
+    }
+}
+
+// Custom Buttons' classes
+.cc-btn-secondary-base {
+    @extend .btn;
+    @extend .btn-white;
+    @extend .border-info;
+    @extend .text-primary;
+    border: 2px solid  map_get($theme-colors, "info") !important; // Overwrites Bootstraps btn class
+
+    .cc-btn-secondary__icon {
+        @extend .mr-2;
+        @extend .text-info;
+        width: 17px;
+        height: 17px;
+        display: inline-block;
+    }
+}
+
+.cc-btn-primary {
+    @extend .border-0;
+    @extend .bg-info;
+    @extend .text-primary;
+    @extend .font-weight-bold;
+}
+
+.cc-btn-secondary {
+    @extend .cc-btn-secondary-base;
+
+    &:not([disabled]):hover {
+        background-color: map_get($theme-colors, "info") !important; // Overwrites Bootstraps btn class
+
+        svg {
+            fill: map_get($theme-colors, "primary");
+            stroke: map_get($theme-colors, "primary");
+        }
+    }
+}
+
+.cc-btn-inner-nav {
+    @extend .cc-btn-secondary-base;
+    @extend .border-0;
+    @extend .px-0;
+    @extend .rounded-0;
+
+    &:not([disabled]):hover {
+        background-color: transparent !important;
+    }
+}
+
+.cc-btn-remove {
+    line-height: .5 !important;
+    font-size: 14px !important;
+
+    &.cc-btn-remove--lg {
+        height: 20px;
+        width: 20px;
+    }
+
+    &.cc-btn-remove--sm {
+        height: 15px;
+        width: 15px;
+    }
+}
+
+.cc-btn-link { // Overwrites Bootstraps cc-btn-link class
+    @extend .text-at-shore-shade-80;
+    @extend .font-weight-light;
+    @extend .pb-0;
+    @extend .border-0;
+    background: none !important;
+
+    &:active {
+        background-color: transparent !important;
+    }
+
+    &.text-white {
+        color: #FFF !important;
+    }
+}
+
+// Custom input styles
+.cc-form-control {
+    @extend .border;
+    @extend .border-primary;
+    @extend .rounded;
+    @extend .font-weight-light;
+    @extend .bg-white;
+    @extend .design-update-temp-placeholder--light;
+
+    &:disabled {
+        background-color: $input-disabled-bg !important; // must be done because .bg-white from bootstrap has !important as well.
+    }
+}
+
+// Custom picklist styles
+.cc__picklist-pane-left {
+    background: tint($at-ocean, 10%);
+    @extend .flex-fill;
+    @extend .mr-2;
+    @extend .p-3;
+
+    .picklist__list-btn {
+        background: tint($at-ocean, 10%);
+    }
+}
+
+.cc__picklist-pane-right {
+    @extend .flex-fill;
+    @extend .ml-3;
+    @extend .p-3;
+}
+
+// Custom modal styles
+.cc-modal-standard-width {
+    @media (min-width: 576px) {
+        &.modal-dialog {
+            max-width: 800px;
+        }
+    }
+}
+
+.cc-modal-field-alert {
+    > span {
+        line-height: normal;
+    }
+}
+
+.cc-table-actions-col {
+    @extend .d-flex;
+    @extend .flex-nowrap;
+    @extend .justify-content-end;
+
+    > button {
+        padding: 0;
+        background-color: transparent;
+        @extend .border-0;
+        @extend .text-secondary;
+
+        &:hover {
+            background-color: transparent;
+            cursor: pointer;
+
+            > svg {
+                color: map_get($theme-colors, "dark");
+            }
+        }
+
+        &:focus {
+            outline: 0;
+        }
+    }
+}
+
+// Map red address marker
+.cc-address-marker {
+
+    svg {
+        width: 100%;
+        height: 100%;
+
+        path {
+            fill: map-get($theme-colors, "danger");
+        }
+    }
+}
+
+// loader wrapper
+.cc-standard-loader-wrapper {
+    display: inline-block;
+
+    .loader {
+        width: 25px;
+        height: 25px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+}

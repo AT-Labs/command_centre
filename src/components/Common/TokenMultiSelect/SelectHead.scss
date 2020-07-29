@@ -1,0 +1,21 @@
+@import '../../../assets/styles/variables';
+
+.select-head-wrap.disabled,
+.select-head-input:disabled {
+    background-color: $input-disabled-bg !important;
+}
+
+.select-head-input:focus {
+    outline: 0;
+}
+
+.select-head-wrap:focus-within {
+    color: $input-focus-color;
+    background-color: $input-focus-bg;
+    border-color: $input-focus-border-color;
+    outline: 0;
+    box-shadow: $input-focus-box-shadow;
+    @if $enable-shadows {
+        box-shadow: $input-box-shadow, $input-focus-box-shadow;
+    }
+}

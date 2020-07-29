@@ -1,0 +1,14 @@
+@import '../../../../assets/styles/variables';
+
+.disruption-detail__effected-routes__button-icon {
+    width: 2em;
+}
+
+.disruption-detail__effected-routes__button-span {
+    width: calc(100% - 2em);
+    text-align: left;
+}
+
+.disruption-detail__effected-routes__button {
+    height: auto !important;
+}

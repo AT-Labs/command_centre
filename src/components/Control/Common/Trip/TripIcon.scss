@@ -1,0 +1,31 @@
+@import '../../../../assets/styles/variables';
+
+$icon-size: 20px;
+
+.trip-icon {
+    display: inline-block;
+    min-width: 35px;
+
+    &__main {
+        display: inline-block;
+
+        svg {
+            width: $icon-size;
+            height: $icon-size;
+            fill: tint($at-ocean, 40%);
+        }
+
+        &.text-success {
+            svg { fill: map-get($theme-colors, "success"); }
+        }
+        &.text-danger {
+            svg { fill: map-get($theme-colors, "danger"); }
+        }
+        &.text-at-orange {
+            svg { fill: map-get($theme-colors, "at-orange"); }
+        }
+        &.text-at-magenta {
+            svg { fill: map-get($theme-colors, "at-magenta"); }
+        }
+    }
+}

@@ -1,0 +1,13 @@
+.update-trip-status-modal {
+
+    .update-trip-status-modal__table-wrapper {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .cc-btn-remove {
+        &:hover {
+            opacity: .7;
+        }
+    }
+}

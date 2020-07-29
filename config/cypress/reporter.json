@@ -1,0 +1,15 @@
+{
+"reporterEnabled": "mochawesome, mocha-junit-reporter",
+    "mochawesomeReporterOptions": {
+      "reportDir": "./test-reports/e2e-tests/mochawesome/",
+      "reportFilename": "test-result",
+      "reportName": "Command Centre",
+      "reportTitle": "Command Centre End To End Tests",
+      "overwrite": false,
+      "timestamp": "isoDateTime"
+    },
+    "mochaJunitReporterReporterOptions": {
+      "testCaseSwitchClassnameAndName": false,
+      "mochaFile": "./test-reports/e2e-tests/junit/test-result-[hash].xml"
+    }
+}

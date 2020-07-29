@@ -1,0 +1,22 @@
+@import "../../../assets/styles/variables";
+
+.dashboard-timeline {
+    border-width: 1px;
+    border-style: solid;
+    border-bottom-width: 0;
+    background-color: white;
+
+    &:last-child {
+        border-bottom-width: 1px;
+    }
+
+    &__tooltip {
+        .tooltip-inner {
+            color: map_get($theme-colors, "at-red-tint-80");
+            background: $white;
+            font-size: $font-size-sm;
+            padding-bottom: 2px;
+            padding-top: 2px;
+        }
+    }
+}

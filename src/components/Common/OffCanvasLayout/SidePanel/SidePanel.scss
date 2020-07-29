@@ -1,0 +1,67 @@
+@import '../../../../assets/styles/variables';
+
+.side-panel {
+    z-index: $zindex-fixed;
+    position: fixed;
+    @include transition(all .3s ease);
+
+    &.side-panel--left {
+        width: $side-panel-width;
+        left: -$side-panel-width;
+
+        &.side-panel--open {
+            left: 0;
+        }
+    }
+
+    &.side-panel--right {
+        width: $side-panel-width-small;
+        right: -$side-panel-width-small;
+
+        &.side-panel--open {
+            right: 0;
+        }
+    }
+
+    &.side-panel--active {
+        height: calc(100vh - #{$header-height});
+        background: $white;
+
+        .side-panel__inner {
+            box-shadow: $box-shadow-sm;
+        }
+    }
+
+    .side-panel__toggle-btn {
+        position: absolute;
+        padding: 0;
+        height: $real-time-side-panel-search-height;
+        width: $real-time-side-panel-toggle-button-width;
+        right: -$real-time-side-panel-toggle-button-width;
+        top: $real-time-side-panel-search-spacing;
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+
+        &-icon {
+            svg {
+                fill: $white;
+            }
+        }
+    }
+
+    &.secondary-side-panel {
+        .side-panel__inner {
+            padding: 15px;
+        }
+
+        .secondary-side-panel__close {
+            width: 20px;
+            justify-self: end;
+        }
+    }
+
+    .filter-components {
+        margin-left: 27px;
+        margin-right: 10px;
+    }
+}

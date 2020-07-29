@@ -1,0 +1,27 @@
+import { handleActions } from 'redux-actions';
+import moment from 'moment';
+
+import ACTION_TYPE from '../../../action-types';
+
+import { DEFAULT_ROUTE_TYPE } from '../../../../components/Control/Common/Filters/FilterByMode';
+import { getStartTimeFromFilterInitialTime } from '../../../../utils/control/routes';
+
+export const INIT_STATE = {
+    agencyId: '',
+    depotIds: [],
+    routeType: DEFAULT_ROUTE_TYPE,
+    isGroupedByRoute: false,
+    isGroupedByRouteVariant: false,
+    startTimeFrom: getStartTimeFromFilterInitialTime(moment()),
+    startTimeTo: '',
+    tripStatus: '',
+    routeShortName: '',
+    routeVariantId: '',
+    trackingStatuses: [],
+};
+
+const handleRouteFiltersMerge = (state, { payload: { filters } }) => ({ ...state, ...filters });
+
+export default handleActions({
+    [ACTION_TYPE.MERGE_CONTROL_ROUTES_FILTERS]: handleRouteFiltersMerge,
+}, INIT_STATE);

@@ -1,0 +1,25 @@
+@import '../../../../assets/styles/variables';
+
+.sort-btn {
+
+    .sort-btn__inner-btn {
+        opacity: .4;
+
+        &:hover,
+        &:focus,
+        &.active {
+            background: map_get($theme-colors, "white") !important; // overwrites bootstraps button's class
+            opacity: 1;
+        }
+
+        > svg {
+            &:first-child {
+                margin-bottom: -5px;
+            }
+
+            &:last-child {
+                margin-top: -5px;
+            }
+        }
+    }
+}

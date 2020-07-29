@@ -1,0 +1,110 @@
+@import '../../../../assets/styles/variables';
+
+$bus-color:   #3F9DB5;
+$train-color: #3F51B5;
+$ferry-color:  map-get($theme-colors, "at-dark-green");
+
+@mixin vehicle-marker-color($element) {
+    @if $element == circle {
+        #{$element} {
+            stroke: $white;
+        }
+    }
+
+    @else if $element == svg {
+        #{$element} {
+            background: $white;
+            border: 3px solid $white;
+            border-radius: 50%;
+        }
+    }
+
+    &.vehicle-type-bus {
+        #{$element} {
+            fill: $bus-color;
+        }
+    }
+
+    &.vehicle-type-train {
+        #{$element} {
+            fill: $train-color;
+        }
+    }
+
+    &.vehicle-type-ferry {
+        #{$element} {
+            fill: $ferry-color;
+        }
+    }
+
+    &.vehicle-occupancy-highlight {
+        #{$element} {
+            box-shadow: 0 0 0 2px rgba(255, 0, 0, .5);
+        }
+    }
+}
+
+.vehicle-marker {
+    @include vehicle-marker-color(circle);
+}
+
+.vehicle-marker-arrow {
+    @include vehicle-marker-color(svg);
+}
+
+.vehicle-tooltip {
+    top: -15px;
+}
+
+.marker-cluster {
+
+    > div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+
+        span {
+            color: $white;
+        }
+    }
+
+    &.marker-cluster-bus {
+        > div {
+            background-color: rgba($bus-color, .8);
+        }
+    }
+
+    &.marker-cluster-train {
+        > div {
+            background-color: rgba($train-color, .8);
+        }
+    }
+
+    &.marker-cluster-ferry {
+        > div {
+            background-color: rgba($ferry-color, .8);
+        }
+    }
+
+    &.marker-cluster-sm {
+        > div {
+            width: 30px;
+            height: 30px;
+        }
+    }
+
+    &.marker-cluster-md {
+        > div {
+            width: 60px;
+            height: 60px;
+        }
+    }
+
+    &.marker-cluster-lg {
+        > div {
+            width: 90px;
+            height: 90px;
+        }
+    }
+}

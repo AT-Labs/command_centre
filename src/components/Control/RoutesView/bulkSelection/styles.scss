@@ -1,0 +1,21 @@
+@import "../../../../assets/styles/variables";
+
+.selection-tools-footer {
+    .selection-tools-footer__btn-deselect {
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .selection-tools-footer__btn-cancel {
+        > svg {
+            color: $danger;
+        }
+    }
+
+    .selection-tools-footer__btn-reinstate {
+        > svg {
+            color: $success;
+        }
+    }
+}

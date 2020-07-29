@@ -1,0 +1,50 @@
+@import "../../../../assets/styles/variables";
+
+@mixin lineStyles($applyTo, $left, $width) {
+    #{$applyTo} {
+        .stop-control__body__line {
+            @if $left != null {
+                left: $left;
+            }
+            @if $width != null {
+                width: $width;
+            }
+            z-index: 0;
+        }
+    }
+}
+
+.stop-control__body__actions {
+    z-index: 1;
+}
+
+.stop-control--in-range {
+    .stop-control__body__actions__circle {
+        background-color: tint($at-shore, 50%);
+        border-color: tint($at-shore, 50%);
+    }
+
+    .stop-control__body:not(.stop-control--hovered-selected-stop) {
+        .stop-control__body__line {
+            background: tint($at-shore, 50%);
+        }
+    }
+}
+
+.stop-control--hover-direction-next {
+    @include lineStyles('.stop-control--last-stop', -50%, 100%);
+    @include lineStyles('.stop-control--selected-stop', auto, 50%);
+    @include lineStyles('.stop-control--hovered-stop', -50%, null);
+    @include lineStyles('.stop-control--prev-of-selected-stop', null, 150%);
+    @include lineStyles('.stop-control--prev-of-selected-stop.stop-control--first-stop', 50%, 100%);
+    @include lineStyles('.stop-control--next-of-selected-stop:not(.stop-control--last-stop)', -50%, 150%);
+}
+
+.stop-control--hover-direction-prev {
+    @include lineStyles('.stop-control--first-stop', 50%, 100%);
+    @include lineStyles('.stop-control--hovered-stop', 50%, null);
+    @include lineStyles('.stop-control--selected-stop', -50%, 100%);
+    @include lineStyles('.stop-control--next-of-selected-stop', -50%, 150%);
+    @include lineStyles('.stop-control--next-of-selected-stop.stop-control--last-stop', -50%, 100%);
+    @include lineStyles('.stop-control--prev-of-hovered-stop:not(.stop-control--first-stop)', null, 150%);
+}

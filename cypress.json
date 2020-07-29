@@ -1,0 +1,15 @@
+{
+    "baseUrl": "http://localhost:3000/",
+    "reporter": "mocha-multi-reporters",
+    "video": false,
+    "trashAssetsBeforeRuns": false,
+    "viewportWidth": 1170,
+    "viewportHeight": 1170,
+    "reporterOptions": {
+        "toConsole": true,
+        "configFile": "config/cypress/reporter.json"
+    },
+    "chromeWebSecurity": false,
+    "requestTimeout": 10000,
+    "responseTimeout": 60000
+}
