@@ -41,6 +41,7 @@ export class StopGroupsView extends React.Component {
             activeStopGroup: null,
             stopGroupsList: [],
             searchValue: '',
+            selectedData: {},
         };
 
         this.MODALS = {
@@ -102,6 +103,19 @@ export class StopGroupsView extends React.Component {
         this.resetStopGroupsList();
     }
 
+    componentDidUpdate = (prevProps) => {
+        if (this.props.stopGroups && this.props.stopGroups !== prevProps.stopGroups) {
+            const { selectedData } = this.state;
+            if (selectedData.label) {
+                this.stopInGroupSelected(selectedData);
+            } else if (selectedData.title) {
+                this.stopGroupSelected(selectedData);
+            } else {
+                this.resetStopGroupsList();
+            }
+        }
+    }
+
     toggleModals = (type, stopGroup) => this.setState(prevState => ({
         modalType: type,
         isModalOpen: !prevState.isModalOpen,
@@ -118,6 +132,8 @@ export class StopGroupsView extends React.Component {
 
     resetStopGroupsList = () => {
         this.setState({
+            searchValue: '',
+            selectedData: {},
             stopGroupsList: this.props.stopGroups,
         });
     }
@@ -125,6 +141,7 @@ export class StopGroupsView extends React.Component {
     stopInGroupSelected = (stop) => {
         this.setState({
             searchValue: stop.label,
+            selectedData: stop,
             stopGroupsList: this.props.stopGroups.filter(group => some(group.stops, s => s.value === stop.value)),
         });
     }
@@ -132,6 +149,7 @@ export class StopGroupsView extends React.Component {
     stopGroupSelected = (stopGroup) => {
         this.setState({
             searchValue: stopGroup.title,
+            selectedData: stopGroup,
             stopGroupsList: this.props.stopGroups.filter(group => group.id === stopGroup.id),
         });
     }
