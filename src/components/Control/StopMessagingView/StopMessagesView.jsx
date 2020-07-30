@@ -49,6 +49,7 @@ export class StopMessagesView extends React.Component {
             activeStopMessage: null,
             messagesList: [],
             searchValue: '',
+            selectedData: {},
         };
 
         this.MODALS = {
@@ -117,7 +118,16 @@ export class StopMessagesView extends React.Component {
 
     componentDidUpdate = (prevProps) => {
         if (this.props.stopMessages && this.props.stopMessages !== prevProps.stopMessages) {
-            this.resetStopMessagesList();
+            const { selectedData } = this.state;
+            if (selectedData.message) {
+                this.stopMessageSelected(selectedData);
+            } else if (selectedData.stop_code) {
+                this.stopSelected(selectedData);
+            } else if (selectedData.title) {
+                this.stopGroupSelected(selectedData);
+            } else {
+                this.resetStopMessagesList();
+            }
         }
     }
 
@@ -166,6 +176,8 @@ export class StopMessagesView extends React.Component {
 
     resetStopMessagesList = () => {
         this.setState({
+            searchValue: '',
+            selectedData: {},
             messagesList: this.mergeStopsAndGroupsInMessagesList(),
         });
     }
@@ -173,6 +185,7 @@ export class StopMessagesView extends React.Component {
     stopSelected = (stop) => {
         this.setState({
             searchValue: `${stop.stop_code} - ${stop.stop_name}`,
+            selectedData: stop,
             messagesList: this.mergeStopsAndGroupsInMessagesList().filter(message => some(message.stops, s => s.value === stop.stop_code)
             || some(message.stopGroups, stopGroup => some(stopGroup.stops, s => s.value === stop.stop_code))),
         });
@@ -181,6 +194,7 @@ export class StopMessagesView extends React.Component {
     stopGroupSelected = (stopGroup) => {
         this.setState({
             searchValue: stopGroup.title,
+            selectedData: stopGroup,
             messagesList: this.mergeStopsAndGroupsInMessagesList().filter(message => some(message.stopGroups, g => g.id === stopGroup.id)),
         });
     }
@@ -188,13 +202,14 @@ export class StopMessagesView extends React.Component {
     stopMessageSelected = (stopMessage) => {
         this.setState({
             searchValue: stopMessage.message,
+            selectedData: stopMessage,
             messagesList: this.mergeStopsAndGroupsInMessagesList().filter(message => message.id === stopMessage.id),
         });
     }
 
     render() {
         const { modalType, isModalOpen, activeStopMessage, messagesList, searchValue } = this.state;
-        const { STOP, STOP_GROUP, STOP_MESSAGE } = SEARCH_RESULT_TYPE;
+        const { STOP, STOP_GROUP_MERGED, STOP_MESSAGE } = SEARCH_RESULT_TYPE;
         const { create, edit, cancel } = this.MODALS;
         const isGlobalEditMessagesPermitted = IS_LOGIN_NOT_REQUIRED || isGlobalEditStopMessagesPermitted(this.props.stopMessagesPermissions);
 
@@ -206,15 +221,15 @@ export class StopMessagesView extends React.Component {
                         <SearchFilter
                             value={ searchValue }
                             placeholder="Search for a stop or message"
-                            searchInCategory={ [STOP.type, STOP_GROUP.type, STOP_MESSAGE.type] }
+                            searchInCategory={ [STOP.type, STOP_GROUP_MERGED.type, STOP_MESSAGE.type] }
                             selectionHandlers={ {
                                 [STOP.type]: ({ data }) => this.stopSelected(data),
-                                [STOP_GROUP.type]: ({ data }) => this.stopGroupSelected(data),
+                                [STOP_GROUP_MERGED.type]: ({ data }) => this.stopGroupSelected(data),
                                 [STOP_MESSAGE.type]: ({ data }) => this.stopMessageSelected(data),
                             } }
                             clearHandlers={ {
                                 [STOP.type]: noop,
-                                [STOP_GROUP.type]: noop,
+                                [STOP_GROUP_MERGED.type]: noop,
                                 [STOP_MESSAGE.type]: noop,
                             } }
                             onClearCallBack={ this.resetStopMessagesList }

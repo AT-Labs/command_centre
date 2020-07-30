@@ -13,10 +13,9 @@ import { getAllFleetBuses, getAllFleetTrains, getAllFleetFerries } from '../sele
 import { getRouteVariantsForSearch as getControlRouteVariants } from '../selectors/control/routes/routeVariants';
 import { getAllNotifications } from '../selectors/control/notifications';
 import { getSearchTerms } from '../selectors/search';
-import { getAllStopGroups } from '../selectors/control/stopMessaging/stopGroups';
+import { getAllStopGroups, getAllSystemStopGroups } from '../selectors/control/stopMessaging/stopGroups';
 import { getAllStopMessages } from '../selectors/control/stopMessaging/stopMessages';
 import { reportError } from './activity';
-
 
 export const updateSearchTerms = searchTerms => ({
     type: ACTION_TYPE.UPDATE_SEARCH_TERMS,
@@ -223,13 +222,32 @@ export const formatStopGroupSearchResults = stopGroups => stopGroups.map(group =
 }));
 
 export const searchStopGroups = searchTerms => (dispatch, getState) => {
-    const allStopGroups = getAllStopGroups(getState());
-    const stopGroups = _.filter(allStopGroups, group => _.includes(group.title.toLowerCase(), searchTerms.toLowerCase())
+    const stopGroups = _.filter(getAllStopGroups(getState()), group => _.includes(group.title.toLowerCase(), searchTerms.toLowerCase())
     || _.some(group.stops, stop => _.includes(stop.label.toLowerCase(), searchTerms.toLowerCase())));
 
     dispatch({
         type: ACTION_TYPE.UPDATE_STOP_GROUP_SEARCH_RESULTS,
         payload: { [SEARCH_RESULT_TYPE.STOP_GROUP.type]: formatStopGroupSearchResults(stopGroups) },
+    });
+};
+
+export const formatMergedStopGroupSearchResults = stopGroups => stopGroups.map(group => ({
+    text: group.title,
+    data: group,
+    category: SEARCH_RESULT_TYPE.STOP_GROUP_MERGED,
+    icon: '',
+}));
+
+export const searchMergedStopGroups = searchTerms => (dispatch, getState) => {
+    const allStopGroups = getAllStopGroups(getState());
+    const mergedStopGroups = [...getAllSystemStopGroups(getState()), ...allStopGroups];
+
+    const stopGroups = _.filter(mergedStopGroups, group => _.includes(group.title.toLowerCase(), searchTerms.toLowerCase())
+    || _.some(group.stops, stop => _.includes(stop.label.toLowerCase(), searchTerms.toLowerCase())));
+
+    dispatch({
+        type: ACTION_TYPE.UPDATE_STOP_GROUP_MERGED_SEARCH_RESULTS,
+        payload: { [SEARCH_RESULT_TYPE.STOP_GROUP_MERGED.type]: formatMergedStopGroupSearchResults(stopGroups) },
     });
 };
 
@@ -281,6 +299,7 @@ export const search = (searchTerms, searchInCategory) => (dispatch) => {
         [SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type, () => dispatch(searchControlRouteVariants(searchTerms))],
         [SEARCH_RESULT_TYPE.CONTROL_NOTIFICATIONS_ROUTES.type, () => dispatch(searchControlNotificationsRoutes(searchTerms))],
         [SEARCH_RESULT_TYPE.STOP_GROUP.type, () => dispatch(searchStopGroups(searchTerms))],
+        [SEARCH_RESULT_TYPE.STOP_GROUP_MERGED.type, () => dispatch(searchMergedStopGroups(searchTerms))],
         [SEARCH_RESULT_TYPE.STOP_MESSAGE.type, () => dispatch(searchStopMessages(searchTerms))],
         [SEARCH_RESULT_TYPE.STOP_IN_GROUP.type, () => dispatch(searchStopInGroups(searchTerms))],
     ]);

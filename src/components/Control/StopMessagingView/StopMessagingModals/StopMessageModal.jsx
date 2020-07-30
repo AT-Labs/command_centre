@@ -16,7 +16,7 @@ import { getAllStops } from '../../../../redux/selectors/control/stopMessaging/s
 import { dismissError } from '../../../../redux/actions/activity';
 import { getError } from '../../../../redux/selectors/activity';
 import ModalAlert from '../../BlocksView/BlockModals/ModalAlert';
-import { getAllStopGroups } from '../../../../redux/selectors/control/stopMessaging/stopGroups';
+import { getAllStopGroups, allSystemStopGroups } from '../../../../redux/selectors/control/stopMessaging/stopGroups';
 import StandardFilter from '../../Common/Filters/StandardFilter';
 import '../../../../../node_modules/flatpickr/dist/flatpickr.css';
 
@@ -158,11 +158,7 @@ export class StopMessageModal extends React.Component {
 
         const isStartDatetimeEditAllowed = modalType === EDIT && moment(activeMessage.endTime).isAfter(moment());
         const groups = formatGroupsForPresentation(stopsGroups);
-        const allSystemStopsGroup = [
-            { value: 0, label: '__ All Stops __', stopGroup: { id: 0, title: '__ All Stops __' } },
-            { value: -1, label: '__ 1000 to 8999 __', stopGroup: { id: -1, title: '__ 1000 to 8999 __' } },
-        ];
-        const allStopsAndGroups = [...allSystemStopsGroup, ...allStops, ...groups];
+        const allStopsAndGroups = [...allSystemStopGroups, ...allStops, ...groups];
         const startDatetime = this.parseSelectedDate(startDate, startTime);
         const endDatetime = this.parseSelectedDate(endDate, endTime);
         const inputLabelAndPlaceholder = 'Search to select a stop';

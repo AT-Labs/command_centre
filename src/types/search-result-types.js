@@ -54,6 +54,11 @@ export default {
         icon: '',
         label: 'Stop groups',
     },
+    STOP_GROUP_MERGED: {
+        type: 'stop-group-merged',
+        icon: '',
+        label: 'Stop groups',
+    },
     STOP_MESSAGE: {
         type: 'stop-message',
         icon: '',

@@ -22,6 +22,7 @@ export default {
     UPDATE_STOP_SEARCH_RESULTS: 'update-stop-search-results',
     UPDATE_ROUTE_SEARCH_RESULTS: 'update-route-search-results',
     UPDATE_STOP_GROUP_SEARCH_RESULTS: 'update-stop-group-search-results',
+    UPDATE_STOP_GROUP_MERGED_SEARCH_RESULTS: 'update-stop-group-merged-search-results',
     UPDATE_STOP_MESSAGE_SEARCH_RESULTS: 'update-stop-message-search-results',
     UPDATE_STOP_IN_GROUP_SEARCH_RESULTS: 'update-stop-in-group-search-results',
     CLEAR_SEARCH_RESULTS: 'clear-search-results',
