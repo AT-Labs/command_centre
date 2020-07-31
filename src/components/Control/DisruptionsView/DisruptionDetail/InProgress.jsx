@@ -314,11 +314,11 @@ const InProgress = (props) => {
                             disabled={ isUpdating || isSaveDisabled || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() }>
                             Save Update
                         </Button>
-                        <Button
-                            className="control-messaging-view__stop-groups-btn cc-btn-secondary ml-3"
-                            onClick={ handleCopyDisruption }>
-                            Copy to clipboard
-                        </Button>
+                        {/* <Button */}
+                        {/*    className="control-messaging-view__stop-groups-btn cc-btn-secondary ml-3" */}
+                        {/*    onClick={ handleCopyDisruption }> */}
+                        {/*    Copy to clipboard */}
+                        {/* </Button> */}
                         {isUpdating && <DetailLoader />}
                     </FormGroup>
                 </div>
