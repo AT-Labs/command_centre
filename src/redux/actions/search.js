@@ -13,7 +13,7 @@ import { getAllFleetBuses, getAllFleetTrains, getAllFleetFerries } from '../sele
 import { getRouteVariantsForSearch as getControlRouteVariants } from '../selectors/control/routes/routeVariants';
 import { getAllNotifications } from '../selectors/control/notifications';
 import { getSearchTerms } from '../selectors/search';
-import { getAllStopGroups, getAllSystemStopGroups } from '../selectors/control/stopMessaging/stopGroups';
+import { allStopGroupsWithTokens, mergedAllStopGroupsWithTokens } from '../selectors/control/stopMessaging/stopGroups';
 import { getAllStopMessages } from '../selectors/control/stopMessaging/stopMessages';
 import { reportError } from './activity';
 
@@ -221,15 +221,13 @@ export const formatStopGroupSearchResults = stopGroups => stopGroups.map(group =
     icon: '',
 }));
 
-export const searchStopGroups = searchTerms => (dispatch, getState) => {
-    const stopGroups = _.filter(getAllStopGroups(getState()), group => _.includes(group.title.toLowerCase(), searchTerms.toLowerCase())
-    || _.some(group.stops, stop => _.includes(stop.label.toLowerCase(), searchTerms.toLowerCase())));
-
-    dispatch({
-        type: ACTION_TYPE.UPDATE_STOP_GROUP_SEARCH_RESULTS,
-        payload: { [SEARCH_RESULT_TYPE.STOP_GROUP.type]: formatStopGroupSearchResults(stopGroups) },
+export const searchStopGroups = searchTerms => (dispatch, getState) => performTokenSearch(searchTerms, allStopGroupsWithTokens(getState()), 'id')
+    .then((stopGroups) => {
+        dispatch({
+            type: ACTION_TYPE.UPDATE_STOP_GROUP_SEARCH_RESULTS,
+            payload: { [SEARCH_RESULT_TYPE.STOP_GROUP.type]: formatStopGroupSearchResults(stopGroups) },
+        });
     });
-};
 
 export const formatMergedStopGroupSearchResults = stopGroups => stopGroups.map(group => ({
     text: group.title,
@@ -238,18 +236,13 @@ export const formatMergedStopGroupSearchResults = stopGroups => stopGroups.map(g
     icon: '',
 }));
 
-export const searchMergedStopGroups = searchTerms => (dispatch, getState) => {
-    const allStopGroups = getAllStopGroups(getState());
-    const mergedStopGroups = [...getAllSystemStopGroups(getState()), ...allStopGroups];
-
-    const stopGroups = _.filter(mergedStopGroups, group => _.includes(group.title.toLowerCase(), searchTerms.toLowerCase())
-    || _.some(group.stops, stop => _.includes(stop.label.toLowerCase(), searchTerms.toLowerCase())));
-
-    dispatch({
-        type: ACTION_TYPE.UPDATE_STOP_GROUP_MERGED_SEARCH_RESULTS,
-        payload: { [SEARCH_RESULT_TYPE.STOP_GROUP_MERGED.type]: formatMergedStopGroupSearchResults(stopGroups) },
+export const searchMergedStopGroups = searchTerms => (dispatch, getState) => performTokenSearch(searchTerms, mergedAllStopGroupsWithTokens(getState()), 'id')
+    .then((stopGroups) => {
+        dispatch({
+            type: ACTION_TYPE.UPDATE_STOP_GROUP_MERGED_SEARCH_RESULTS,
+            payload: { [SEARCH_RESULT_TYPE.STOP_GROUP_MERGED.type]: formatMergedStopGroupSearchResults(stopGroups) },
+        });
     });
-};
 
 export const formatStopMessageSearchResults = stopMessages => stopMessages.map(stopMessage => ({
     text: stopMessage.message,
@@ -276,13 +269,23 @@ export const formatStopInGroupsSearchResults = stops => stops.map(stop => ({
 }));
 
 export const searchStopInGroups = searchTerms => (dispatch, getState) => {
-    const allStopGroups = getAllStopGroups(getState());
+    const allStopGroups = allStopGroupsWithTokens(getState());
     const stopInGroups = _.uniqBy(_.flatten(_.map(allStopGroups, stopInGroup => stopInGroup.stops)), 'value');
-    const stops = _.filter(stopInGroups, stop => _.includes(stop.label.toLowerCase(), searchTerms.toLowerCase()));
+    const filteredStops = _.filter(stopInGroups, stop => _.includes(stop.label.toLowerCase(), searchTerms.toLowerCase()));
+    const tokenizedStops = _.map(filteredStops, stop => ({
+        ...stop,
+        tokens: stop.label.toLowerCase().split(' '),
+    }));
 
-    dispatch({
-        type: ACTION_TYPE.UPDATE_STOP_IN_GROUP_SEARCH_RESULTS,
-        payload: { [SEARCH_RESULT_TYPE.STOP_IN_GROUP.type]: formatStopInGroupsSearchResults(stops) },
+    performTokenSearch(
+        searchTerms,
+        tokenizedStops,
+        'value',
+    ).then((stops) => {
+        dispatch({
+            type: ACTION_TYPE.UPDATE_STOP_IN_GROUP_SEARCH_RESULTS,
+            payload: { [SEARCH_RESULT_TYPE.STOP_IN_GROUP.type]: formatStopInGroupsSearchResults(stops) },
+        });
     });
 };
 

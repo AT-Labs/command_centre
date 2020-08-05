@@ -11,10 +11,20 @@ export const allSystemStopGroups = [
     { value: -1, label: '__ 1000 to 8999 __', stopGroup: { id: -1, title: '__ 1000 to 8999 __' } },
 ];
 
-export const getAllSystemStopGroups = state => _.map(allSystemStopGroups, (g) => {
+const tokenizeStopGroups = stopGroups => _.map(stopGroups, g => ({
+    ...g,
+    tokens: _.uniq(_.flatten(_.map(g.stops, s => s.label.toLowerCase().split(' ')))).concat(g.title.toLowerCase().split(' ')),
+}));
+
+const getAllSystemStopGroups = state => _.map(allSystemStopGroups, (g) => {
     const allStops = getAllStops(state);
     if (g.stopGroup.id === 0) {
         return { ...g.stopGroup, stops: allStops };
     }
     return { ...g.stopGroup, stops: _.filter(allStops, s => Number(s.value) >= 1000 && Number(s.value) <= 8999) };
 });
+
+const mergedAllStopGroups = state => [...getAllStopGroups(state), ...getAllSystemStopGroups(state)];
+
+export const allStopGroupsWithTokens = state => tokenizeStopGroups(getAllStopGroups(state));
+export const mergedAllStopGroupsWithTokens = state => tokenizeStopGroups(mergedAllStopGroups(state));
