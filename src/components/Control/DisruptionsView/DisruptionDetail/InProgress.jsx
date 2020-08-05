@@ -1,41 +1,53 @@
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
-import { Button, Form, FormGroup, Label, Input, FormFeedback } from 'reactstrap';
+import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap';
 import _ from 'lodash-es';
 import { MdModeEdit } from 'react-icons/md';
 import Flatpickr from 'react-flatpickr';
 import { CAUSES, IMPACTS, STATUSES } from '../../../../types/disruptions-types';
 import {
+    DATE_FORMAT,
     DESCRIPTION_MAX_LENGTH,
     HEADER_MAX_LENGTH,
     LABEL_AFFECTED_ROUTES,
-    LABEL_CAUSE, LABEL_CREATED_BY,
+    LABEL_CAUSE,
+    LABEL_CREATED_BY,
     LABEL_CUSTOMER_IMPACT,
     LABEL_DESCRIPTION,
-    LABEL_HEADER, LABEL_LAST_UPDATED_BY, LABEL_MODE, LABEL_START_TIME,
-    LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_START_DATE,
-    URL_MAX_LENGTH, DATE_FORMAT, LABEL_END_DATE, LABEL_END_TIME,
-    LABEL_CREATED_AT, LABEL_LAST_UPDATED_AT,
+    LABEL_END_DATE,
+    LABEL_END_TIME,
+    LABEL_HEADER,
+    LABEL_LAST_UPDATED_BY,
+    LABEL_MODE,
+    LABEL_START_DATE,
+    LABEL_START_TIME,
+    LABEL_STATUS,
+    LABEL_URL,
+    TIME_FORMAT,
+    URL_MAX_LENGTH,
 } from '../../../../constants/disruptions';
 import DetailLoader from '../../../Common/Loader/DetailLoader';
 import { DisruptionDetailSelect } from './DisruptionDetailSelect';
 import DisruptionLabelAndText from './DisruptionLabelAndText';
 import { isUrlValid } from '../../../../utils/helpers';
 import {
-    isStartTimeValid,
-    isStartDateValid,
-    momentFromDateTime,
+    formatCreatedUpdatedTime,
     getDatePickerOptions,
-    formatCreatedUpdatedTime, isEndTimeValid, isEndDateValid,
+    isEndDateValid,
+    isEndTimeValid,
+    isStartDateValid,
+    isStartTimeValid,
+    momentFromDateTime,
 } from '../../../../utils/control/disruptions';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import SelectRoutesPicklist from '../SelectRoutesPicklist';
 import VEHICLE_TYPES from '../../../../types/vehicle-types';
 import './styles.scss';
+import DisruptionSummaryModal from './DisruptionSummaryModal';
 
 const InProgress = (props) => {
-    const { disruption, updateDisruption, isRequesting, resultDisruptionId, updateCopyDisruptionState } = props;
+    const { disruption, updateDisruption, isRequesting, resultDisruptionId } = props;
     const [now] = useState(moment().second(0).millisecond(0));
     const [cause, setCause] = useState(disruption.cause);
     const [impact, setImpact] = useState(disruption.impact);
@@ -46,11 +58,13 @@ const InProgress = (props) => {
     const [affectedRoutes, setAffectedRoutes] = useState(disruption.affectedRoutes);
     const [mode, setMode] = useState(disruption.mode);
     const [routesModalOpen, setRoutesModalOpen] = useState(false);
+    const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
     const [startTime, setStartTime] = useState(moment(disruption.startTime).format(TIME_FORMAT));
     const [startDate, setStartDate] = useState(moment(disruption.startTime).format(DATE_FORMAT));
     const [endTime, setEndTime] = useState(disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : '');
     const [endDate, setEndDate] = useState(disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '');
     const [disruptionOpenedTime] = useState(moment().second(0).millisecond(0));
+
 
     const handleUpdateDisruption = () => {
         const updatedDisruption = {
@@ -68,31 +82,6 @@ const InProgress = (props) => {
         };
 
         updateDisruption(updatedDisruption);
-    };
-
-    const handleCopyDisruption = () => {
-        const affectedRoutesString = `${LABEL_AFFECTED_ROUTES}: ${affectedRoutes.map(route => route.routeShortName).join()}\n`;
-        const startDateString = `${LABEL_START_DATE}: ${startDate}\n`;
-        const startTimeString = `${LABEL_START_TIME}: ${startTime}\n`;
-        const endDateString = `${LABEL_END_DATE}: ${endDate}\n`;
-        const endTimeString = `${LABEL_END_TIME}: ${endTime}\n`;
-        const causeString = `${LABEL_CAUSE}: ${_.find(IMPACTS, { value: impact }).label}\n`;
-        const effectString = `${LABEL_CUSTOMER_IMPACT}: ${_.find(CAUSES, { value: cause }).label}\n`;
-        const titleString = `${LABEL_HEADER}: ${header}\n`;
-        const descriptionString = `${LABEL_DESCRIPTION}: ${description}\n`;
-        const urlString = `${LABEL_URL}: ${url}\n`;
-        const statusString = `${LABEL_STATUS}: ${status}\n`;
-        const modeString = `${LABEL_MODE}: ${mode}\n`;
-        const createdTimeString = `${LABEL_CREATED_AT}: ${formatCreatedUpdatedTime(disruption.createdTime)}\n`;
-        const lastUpdatedTimeString = `${LABEL_LAST_UPDATED_AT}: ${formatCreatedUpdatedTime(disruption.lastUpdatedTime)}`;
-
-        const wholeText = affectedRoutesString + causeString + startDateString + startTimeString + statusString
-            + modeString + effectString + endDateString + endTimeString
-            + titleString + descriptionString + urlString + createdTimeString + lastUpdatedTimeString;
-
-        navigator.clipboard.writeText(wholeText);
-        updateCopyDisruptionState(true);
-        _.delay(() => updateCopyDisruptionState(false), 3150);
     };
 
     const setDisruptionStatus = (selectedStatus) => {
@@ -314,11 +303,15 @@ const InProgress = (props) => {
                             disabled={ isUpdating || isSaveDisabled || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() }>
                             Save Update
                         </Button>
-                        {/* <Button */}
-                        {/*    className="control-messaging-view__stop-groups-btn cc-btn-secondary ml-3" */}
-                        {/*    onClick={ handleCopyDisruption }> */}
-                        {/*    Copy to clipboard */}
-                        {/* </Button> */}
+                        <Button
+                            className="control-messaging-view__stop-groups-btn cc-btn-secondary ml-3"
+                            onClick={ () => setDisruptionsDetailsModalOpen(true) }>
+                            Show Summary
+                        </Button>
+                        <DisruptionSummaryModal
+                            disruption={ disruption }
+                            isModalOpen={ disruptionsDetailsModalOpen }
+                            onClose={ () => setDisruptionsDetailsModalOpen(false) } />
                         {isUpdating && <DetailLoader />}
                     </FormGroup>
                 </div>
@@ -332,7 +325,6 @@ InProgress.propTypes = {
     updateDisruption: PropTypes.func.isRequired,
     isRequesting: PropTypes.bool.isRequired,
     resultDisruptionId: PropTypes.number,
-    updateCopyDisruptionState: PropTypes.func.isRequired,
 };
 
 InProgress.defaultProps = {

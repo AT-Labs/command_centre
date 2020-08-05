@@ -1,14 +1,12 @@
-# Auckland Transport Command Centre
+# Command Centre
 
-Help  Auckland Transport (AT) customer support team efficiently find useful information as per public transport users request on the phones.
+Help customer support team efficiently find useful information as per public transport users request on the phones.
 
 ## Development - Manual setup
 
 Before you can build this project, you need the following dependencies:
 
 * [NodeJs](https://nodejs.org/en/) (v v10.11.0) The installation depends on the system you have.
-
-If you are at the AT offices you should clone the repository via HTTPS.
 
 * npm install
 * npm start

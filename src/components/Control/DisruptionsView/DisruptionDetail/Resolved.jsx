@@ -17,12 +17,14 @@ import { formatCreatedUpdatedTime } from '../../../../utils/control/disruptions'
 import DetailLoader from '../../../Common/Loader/DetailLoader';
 import { DisruptionDetailSelect } from './DisruptionDetailSelect';
 import DisruptionLabelAndText from './DisruptionLabelAndText';
+import DisruptionSummaryModal from './DisruptionSummaryModal';
 
 const Resolved = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId } = props;
 
     const [status, setStatus] = useState(disruption.status);
     const [endTime, setEndTime] = useState(disruption.endTime);
+    const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
 
     const handleUpdateDisruption = () => {
         const updatedDisruption = {
@@ -128,6 +130,15 @@ const Resolved = (props) => {
                     <DisruptionLabelAndText id="disruption-detail__last-updated" label={ LABEL_LAST_UPDATED_BY } text={ `${disruption.lastUpdatedBy}, ${formatCreatedUpdatedTime(disruption.lastUpdatedTime)}` } />
                     <FormGroup className="pl-0 d-flex align-items-center">
                         <Button className="cc-btn-primary mr-3" onClick={ handleUpdateDisruption } disabled={ isUpdating }>Save Update</Button>
+                        <Button
+                            className="control-messaging-view__stop-groups-btn cc-btn-secondary ml-3"
+                            onClick={ () => setDisruptionsDetailsModalOpen(true) }>
+                            Show Summary
+                        </Button>
+                        <DisruptionSummaryModal
+                            disruption={ disruption }
+                            isModalOpen={ disruptionsDetailsModalOpen }
+                            onClose={ () => setDisruptionsDetailsModalOpen(false) } />
                         {isUpdating && <DetailLoader />}
                     </FormGroup>
                 </div>
