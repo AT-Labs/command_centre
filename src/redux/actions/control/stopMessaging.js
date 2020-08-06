@@ -115,3 +115,10 @@ export const updateStopGroup = (payload, stopGroupId) => (dispatch) => {
             return Promise.reject();
         });
 };
+
+export const updateStopMessagesSortingParams = sortingParams => ({
+    type: ACTION_TYPE.UPDATE_STOP_MESSAGES_SORTING_PARAMS,
+    payload: {
+        sortingParams,
+    },
+});

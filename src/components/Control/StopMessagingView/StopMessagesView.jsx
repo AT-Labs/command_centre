@@ -13,13 +13,22 @@ import StopMessagesModal from './StopMessagingModals/StopMessageModal';
 import { formatGroupsForPresentation } from '../../../utils/helpers';
 import ControlTable from '../Common/ControlTable/ControlTable';
 import ConfirmationModal from '../Common/ConfirmationModal/ConfirmationModal';
-import { getStopMessagesAndPermissions, updateStopMessage, getStopGroups } from '../../../redux/actions/control/stopMessaging';
-import { getAllStopMessages, getStopMessagesPermissions, getStopMessagesLoadingState } from '../../../redux/selectors/control/stopMessaging/stopMessages';
+import { getStopMessagesAndPermissions,
+    updateStopMessage,
+    getStopGroups,
+    updateStopMessagesSortingParams,
+} from '../../../redux/actions/control/stopMessaging';
+import { getSortedStopMesssages,
+    getStopMessagesPermissions,
+    getStopMessagesLoadingState,
+    getStopMessagesSortingParams,
+} from '../../../redux/selectors/control/stopMessaging/stopMessages';
 import { updateControlDetailView, updateMainView } from '../../../redux/actions/navigation';
 import { isIndividualEditStopMessagesPermitted, isGlobalEditStopMessagesPermitted } from '../../../utils/user-permissions';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
 import SearchFilter from '../Common/Filters/SearchFilter/SearchFilter';
 import SEARCH_RESULT_TYPE from '../../../types/search-result-types';
+import SortButton from '../Common/SortButton/SortButton';
 
 const dateFormat = 'DD/MM/YY HH:mm';
 
@@ -33,6 +42,8 @@ export class StopMessagesView extends React.Component {
         updateControlDetailView: PropTypes.func.isRequired,
         isStopMessagesLoading: PropTypes.bool,
         getStopGroups: PropTypes.func.isRequired,
+        updateStopMessagesSortingParams: PropTypes.func.isRequired,
+        stopMessagesSortingParams: PropTypes.object.isRequired,
     }
 
     static defaultProps = {
@@ -68,15 +79,42 @@ export class StopMessagesView extends React.Component {
             },
         };
 
+        const activeOrder = (key) => {
+            const { stopMessagesSortingParams } = this.props;
+            return stopMessagesSortingParams && stopMessagesSortingParams.sortBy === key ? stopMessagesSortingParams.order : null;
+        };
+
         this.MESSAGING_COLUMNS = [
             {
-                label: 'start',
+                label: () => (
+                    <div className="d-flex align-content-center">
+                        <SortButton
+                            className="mr-1"
+                            active={ activeOrder('startTime') }
+                            onClick={ order => this.props.updateStopMessagesSortingParams({
+                                sortBy: 'startTime',
+                                order,
+                            }) } />
+                        <div>start</div>
+                    </div>
+                ),
                 key: 'startTime',
                 cols: 'col-2',
                 getContent: (stopMessage, key) => moment(stopMessage[key]).format(dateFormat),
             },
             {
-                label: 'end',
+                label: () => (
+                    <div className="d-flex align-content-center">
+                        <SortButton
+                            className="mr-1"
+                            active={ activeOrder('endTime') }
+                            onClick={ order => this.props.updateStopMessagesSortingParams({
+                                sortBy: 'endTime',
+                                order,
+                            }) } />
+                        <div>end</div>
+                    </div>
+                ),
                 key: 'endTime',
                 cols: 'col-2',
                 getContent: (stopMessage, key) => moment(stopMessage[key]).format(dateFormat),
@@ -280,8 +318,9 @@ export class StopMessagesView extends React.Component {
 }
 
 export default connect(state => ({
-    stopMessages: getAllStopMessages(state),
+    stopMessages: getSortedStopMesssages(state),
     isStopMessagesLoading: getStopMessagesLoadingState(state),
     stopMessagesPermissions: getStopMessagesPermissions(state),
+    stopMessagesSortingParams: getStopMessagesSortingParams(state),
 }),
-{ getStopMessagesAndPermissions, updateStopMessage, updateMainView, updateControlDetailView, getStopGroups })(StopMessagesView);
+{ getStopMessagesAndPermissions, updateStopMessage, updateMainView, updateControlDetailView, getStopGroups, updateStopMessagesSortingParams })(StopMessagesView);

@@ -25,6 +25,7 @@ export default {
     UPDATE_STOP_GROUP_MERGED_SEARCH_RESULTS: 'update-stop-group-merged-search-results',
     UPDATE_STOP_MESSAGE_SEARCH_RESULTS: 'update-stop-message-search-results',
     UPDATE_STOP_IN_GROUP_SEARCH_RESULTS: 'update-stop-in-group-search-results',
+    UPDATE_STOP_MESSAGES_SORTING_PARAMS: 'update-stop-messages-sorting-params',
     CLEAR_SEARCH_RESULTS: 'clear-search-results',
     // Detail
     CLEAR_DETAIL: 'clear-detail',

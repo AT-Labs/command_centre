@@ -9,3 +9,13 @@ export const getStopMessagesPermissions = createSelector(getStopMessagesState, s
 export const getStopMessagesLoadingState = createSelector(getStopMessagesState, stopMessagesState => _.result(
     stopMessagesState, 'isStopMessagesLoading',
 ));
+export const getStopMessagesSortingParams = createSelector(getStopMessagesState, stopMessagesState => _.result(
+    stopMessagesState, 'sortingParams',
+));
+export const getSortedStopMesssages = createSelector(
+    getAllStopMessages,
+    getStopMessagesSortingParams,
+    (allStopMessages, stopMessagesSortingParams) => (!_.isEmpty(stopMessagesSortingParams)
+        ? _.orderBy(allStopMessages, stopMessagesSortingParams.sortBy, stopMessagesSortingParams.order)
+        : allStopMessages),
+);
