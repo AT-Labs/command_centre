@@ -53,6 +53,8 @@ export default {
     FETCH_VEHICLE_UPCOMING_STOPS: 'fetch-vehicle-upcoming-stops',
     FETCH_VEHICLE_PAST_STOPS: 'fetch-vehicle-past-stops',
     FETCH_TRIP: 'fetch-trip',
+    // Vehicle quick view
+    FETCH_TRIP_UPDATE_SNAPSHOT: 'fetch-trip-update-snapshot',
     // Map
     RECENTER_MAP: 'recenter-map',
     // navigation

@@ -9,12 +9,16 @@ import 'react-leaflet-markercluster/dist/styles.min.css';
 import { connect } from 'react-redux';
 import { updateVehicleSelected, vehicleSelected } from '../../../../redux/actions/realtime/detail/vehicle';
 import { getVehicleDetail } from '../../../../redux/selectors/realtime/detail';
+import { getTripUpdateSnapshot } from '../../../../redux/actions/realtime/detail/quickview';
+import { getTripUpdateDelay } from '../../../../redux/selectors/realtime/quickview';
+import { formatTripDelay } from '../../../../utils/control/routes';
 import {
-    getJoinedVehicleLabel, getVehicleLatLng, getVehiclePositionCoordinates, getVehicleRouteName,
+    getJoinedVehicleLabel, getVehicleLatLng, getVehiclePositionCoordinates, getVehicleRouteName, getVehicleRouteType,
 } from '../../../../redux/selectors/realtime/vehicles';
 import { FOCUS_ZOOM } from '../constants';
 import { getClusterIcon } from './vehicleClusterIcon';
 import { getVehicleIcon } from './vehicleIcon';
+import { tooltipContent } from './vehicleTooltip';
 import './VehicleLayer.scss';
 
 
@@ -27,6 +31,12 @@ class VehicleClusterLayer extends React.Component {
         highlightedVehicle: PropTypes.object.isRequired,
         leafletMap: PropTypes.object.isRequired,
         updateVehicleSelected: PropTypes.func.isRequired,
+        hoveredVehicleDelay: PropTypes.number,
+        getTripUpdateSnapshot: PropTypes.func.isRequired,
+    };
+
+    static defaultProps = {
+        hoveredVehicleDelay: 0,
     };
 
     constructor(props) {
@@ -60,30 +70,40 @@ class VehicleClusterLayer extends React.Component {
         });
     }
 
+    getTooltipContent = (hoveredVehicleDelay, vehicleAllocations) => ({ options }) => {
+        const tripDelay = options.vehicle.vehicle.trip ? formatTripDelay(hoveredVehicleDelay) : null;
+        const occupancyStatus = options.vehicle.vehicle.trip ? options.vehicle.vehicle.occupancyStatus : null;
+
+        if (options.vehicle.vehicle.trip) {
+            this.props.getTripUpdateSnapshot(options.vehicle.vehicle.trip.tripId);
+        }
+
+        return tooltipContent(
+            getVehicleRouteName(options.vehicle) || 'NIS',
+            getJoinedVehicleLabel(options.vehicle, vehicleAllocations),
+            getVehicleRouteType(options.vehicle),
+            tripDelay,
+            occupancyStatus,
+        );
+    }
+
     refreshMarkers = () => {
-        const { vehicles, highlightedVehicle, vehicleAllocations } = this.props;
+        const { vehicles, highlightedVehicle, vehicleAllocations, hoveredVehicleDelay } = this.props;
         const bounds = this.props.leafletMap.getBounds();
         const markersInBoundary = _.filter(vehicles, vehicle => bounds.contains(getVehicleLatLng(vehicle)));
         const markers = _.map(markersInBoundary, vehicle => L.marker(getVehicleLatLng(vehicle), { icon: getVehicleIcon(vehicle), vehicle }));
-        const tooltipContent = (route, vehicleLabel) => (
-            `<dl class="m-0">
-                <dt>Route</dt>
-                <dd>${route}</dd>
-                <dt>Vehicle</dt>
-                <dd class="m-0">${vehicleLabel}</dd>
-            </dl>`
-        );
 
         this.clusterLayerRef.current.leafletElement.unbindTooltip();
         this.clusterLayerRef.current.leafletElement.clearLayers();
 
         this.clusterLayerRef.current.leafletElement.addLayers(markers);
         this.modifyOverlappedMarkersPosition(markers);
-        this.clusterLayerRef.current.leafletElement.bindTooltip(({ options }) => tooltipContent(
-            getVehicleRouteName(options.vehicle) || 'NIS',
-            getJoinedVehicleLabel(options.vehicle, vehicleAllocations),
-        ),
-        { direction: 'top', className: 'vehicle-tooltip' });
+
+        this.clusterLayerRef.current.leafletElement.bindTooltip(
+            this.getTooltipContent(hoveredVehicleDelay, vehicleAllocations),
+            { direction: 'top', className: 'vehicle-tooltip' },
+        );
+
         if (!_.isEmpty(highlightedVehicle)) {
             const vehicleId = _.result(highlightedVehicle, 'vehicle.vehicle.id');
             const matchingVehicle = _.find(vehicles, _.matchesProperty('vehicle.vehicle.id', vehicleId));
@@ -121,8 +141,9 @@ class VehicleClusterLayer extends React.Component {
 
 export default connect(state => ({
     highlightedVehicle: getVehicleDetail(state),
+    hoveredVehicleDelay: getTripUpdateDelay(state),
 }),
-{ vehicleSelected, updateVehicleSelected })(props => (
+{ vehicleSelected, updateVehicleSelected, getTripUpdateSnapshot })(props => (
     <LeafletConsumer>
         {({ map }) => <VehicleClusterLayer { ...props } leafletMap={ map } />}
     </LeafletConsumer>

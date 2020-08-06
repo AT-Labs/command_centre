@@ -59,3 +59,24 @@ export const getRealTimeSnapshot = () => {
         return [];
     });
 };
+
+export const getTripUpdateRealTimeSnapshot = (tripdId) => {
+    const controller = new AbortController();
+    return fetch(`${GTFS_REALTIME_SNAPSHOT_QUERY_URL}/tripupdates/${tripdId}`, {
+        headers: {
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
+        },
+        signal: controller.signal,
+    }).then(async (response) => {
+        if (response.ok) {
+            if (response.status === 204) {
+                return response;
+            }
+            const res = await response.json();
+            controller.abort();
+            return res;
+        }
+        return [];
+    });
+};

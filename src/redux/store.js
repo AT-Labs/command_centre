@@ -16,6 +16,7 @@ import stopMessaging from './reducers/control/stopMessaging';
 import disruptions from './reducers/control/disruptions';
 import navigation from './reducers/navigation';
 import detail from './reducers/realtime/detail';
+import quickview from './reducers/realtime/quickview';
 import map from './reducers/realtime/map';
 import vehicles from './reducers/realtime/vehicles';
 import search from './reducers/search';
@@ -50,6 +51,7 @@ export default createStore(
             vehicles,
             detail,
             map,
+            quickview,
         }),
         control: combineReducers({
             agencies: agenciesWithDepots,
