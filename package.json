@@ -47,7 +47,7 @@
     "react-autosuggest": "^9.3.4",
     "react-dev-utils": "^5.0.2",
     "react-dom": "^16.8.6",
-    "react-flatpickr": "^3.7.1",
+    "react-flatpickr": "bitbucket:Propellerhead/react-flatpicker-forked#release/1.0.0",
     "react-icons": "3.3.0",
     "react-leaflet": "^2.0.0",
     "react-leaflet-markercluster": "^2.0.0-rc3",

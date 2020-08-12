@@ -17,8 +17,9 @@ export const isEndTimeValid = (endDate, endTime, nowAsMoment, startDate, startTi
     }
 
     const endTimeMoment = moment(`${endDate}T${endTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`);
+
     return moment(endTime, TIME_FORMAT, true).isValid()
-        && moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`).isBefore(endTimeMoment, 'minute')
+        && moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`).isSameOrBefore(endTimeMoment, 'minute')
         && nowAsMoment.isSameOrBefore(endTimeMoment, 'minute');
 };
 

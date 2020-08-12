@@ -86,12 +86,20 @@ const InProgress = (props) => {
 
     const setDisruptionStatus = (selectedStatus) => {
         setStatus(selectedStatus);
-        if (disruption.status === STATUSES.NOT_STARTED && selectedStatus !== STATUSES.NOT_STARTED) {
+
+        if (disruption.status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.RESOLVED) {
+            setStartDate(moment().format(DATE_FORMAT));
+            setStartTime(moment().format(TIME_FORMAT));
+            setEndDate(moment().format(DATE_FORMAT));
+            setEndTime(moment().format(TIME_FORMAT));
+        } else if (disruption.status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.IN_PROGRESS) {
             setStartDate(moment().format(DATE_FORMAT));
             setStartTime(moment().format(TIME_FORMAT));
         } else if (disruption.status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.NOT_STARTED) {
             setStartDate(moment(disruption.startTime).format(DATE_FORMAT));
             setStartTime(moment(disruption.startTime).format(TIME_FORMAT));
+            setEndDate('');
+            setEndTime('');
         } else if (disruption.status === STATUSES.IN_PROGRESS && selectedStatus === STATUSES.RESOLVED) {
             setEndDate(moment().format(DATE_FORMAT));
             setEndTime(moment().format(TIME_FORMAT));
