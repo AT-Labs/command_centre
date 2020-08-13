@@ -12,3 +12,14 @@
 .disruption-detail__effected-routes__button {
     height: auto !important;
 }
+
+.disruption-summary {
+
+    td:first-child {
+        white-space: nowrap;
+    }
+
+    td:last-of-type {
+        white-space: pre-line;
+    }
+}

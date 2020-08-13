@@ -9,7 +9,7 @@ import {
     LABEL_CAUSE, LABEL_CREATED_AT, LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_END_DATE, LABEL_END_TIME,
     LABEL_HEADER, LABEL_LAST_UPDATED_AT,
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME,
-    LABEL_STATUS, LABEL_URL, TIME_FORMAT,
+    LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_CREATED_BY, LABEL_LAST_UPDATED_BY,
 } from '../../../../constants/disruptions';
 import { CAUSES, IMPACTS } from '../../../../types/disruptions-types';
 import { formatCreatedUpdatedTime } from '../../../../utils/control/disruptions';
@@ -27,7 +27,7 @@ const DisruptionSummaryModal = (props) => {
     const endDateTimeMoment = moment(props.disruption.endTime);
     return (
         <CustomModal
-            className="cc-modal-standard-width"
+            className="cc-modal-standard-width disruption-summary"
             title={ `Summary for Disruption #${props.disruption.incidentNo}` }
             isModalOpen={ props.isModalOpen }
             onClose={ () => props.onClose() }
@@ -50,7 +50,9 @@ const DisruptionSummaryModal = (props) => {
                     {createLine(LABEL_END_TIME, endDateTimeMoment.isValid() ? endDateTimeMoment.format(TIME_FORMAT) : null)}
                     {createLine(LABEL_URL, props.disruption.url)}
                     {createLine(LABEL_CREATED_AT, formatCreatedUpdatedTime(props.disruption.createdTime))}
+                    {createLine(LABEL_CREATED_BY, props.disruption.createdBy)}
                     {createLine(LABEL_LAST_UPDATED_AT, formatCreatedUpdatedTime(props.disruption.lastUpdatedTime))}
+                    {createLine(LABEL_LAST_UPDATED_BY, props.disruption.lastUpdatedBy)}
                 </tbody>
             </Table>
         </CustomModal>
