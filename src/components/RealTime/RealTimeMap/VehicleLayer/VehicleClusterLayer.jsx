@@ -10,12 +10,13 @@ import { connect } from 'react-redux';
 import { updateVehicleSelected, vehicleSelected } from '../../../../redux/actions/realtime/detail/vehicle';
 import { getVehicleDetail } from '../../../../redux/selectors/realtime/detail';
 import { getTripUpdateSnapshot } from '../../../../redux/actions/realtime/detail/quickview';
-import { getTripUpdateDelay } from '../../../../redux/selectors/realtime/quickview';
+import { getTripUpdateState } from '../../../../redux/selectors/realtime/quickview';
 import { formatTripDelay } from '../../../../utils/control/routes';
 import {
     getJoinedVehicleLabel, getVehicleLatLng, getVehiclePositionCoordinates, getVehicleRouteName, getVehicleRouteType,
 } from '../../../../redux/selectors/realtime/vehicles';
 import { FOCUS_ZOOM } from '../constants';
+import { FERRY_TYPE_ID } from '../../../../types/vehicle-types';
 import { getClusterIcon } from './vehicleClusterIcon';
 import { getVehicleIcon } from './vehicleIcon';
 import { tooltipContent } from './vehicleTooltip';
@@ -31,12 +32,12 @@ class VehicleClusterLayer extends React.Component {
         highlightedVehicle: PropTypes.object.isRequired,
         leafletMap: PropTypes.object.isRequired,
         updateVehicleSelected: PropTypes.func.isRequired,
-        hoveredVehicleDelay: PropTypes.number,
+        hoveredVehicleState: PropTypes.object,
         getTripUpdateSnapshot: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
-        hoveredVehicleDelay: 0,
+        hoveredVehicleState: { delay: 0, trip: { tripId: null } },
     };
 
     constructor(props) {
@@ -44,6 +45,8 @@ class VehicleClusterLayer extends React.Component {
 
         this.clusterLayerRef = React.createRef();
     }
+
+    getTripUpdateSnapshotThrottle = _.throttle(tripId => this.props.getTripUpdateSnapshot(tripId), 500);
 
     componentDidMount = () => this.refreshMarkers();
 
@@ -70,25 +73,37 @@ class VehicleClusterLayer extends React.Component {
         });
     }
 
-    getTooltipContent = (hoveredVehicleDelay, vehicleAllocations) => ({ options }) => {
-        const tripDelay = options.vehicle.vehicle.trip ? formatTripDelay(hoveredVehicleDelay) : null;
+    getTooltipContent = ({ options }) => {
+        const { vehicleAllocations, hoveredVehicleState } = this.props;
         const occupancyStatus = options.vehicle.vehicle.trip ? options.vehicle.vehicle.occupancyStatus : null;
+        const routeType = getVehicleRouteType(options.vehicle);
+        const tripDelay = options.vehicle.vehicle.trip && hoveredVehicleState
+            ? formatTripDelay(hoveredVehicleState.delay) : null;
 
-        if (options.vehicle.vehicle.trip) {
-            this.props.getTripUpdateSnapshot(options.vehicle.vehicle.trip.tripId);
+        // Because tooltip is an html string and not a react dom
+        // when getTripUpdateSnapshotThrottle is called there is some chance
+        // that the binded html tooltip is not for the current marker.
+        const markerTripId = options.vehicle.vehicle.trip ? options.vehicle.vehicle.trip.tripId : null;
+        const hoveredVehicleTripId = hoveredVehicleState && hoveredVehicleState.trip ? hoveredVehicleState.trip.tripId : null;
+        const isLoading = hoveredVehicleTripId !== markerTripId;
+
+        if (options.vehicle.vehicle.trip && routeType && routeType !== FERRY_TYPE_ID) {
+            // The call is throttle as the map marker refreshes automatically retriggering the tooltip unncessarily
+            this.getTripUpdateSnapshotThrottle(options.vehicle.vehicle.trip.tripId);
         }
 
         return tooltipContent(
             getVehicleRouteName(options.vehicle) || 'NIS',
             getJoinedVehicleLabel(options.vehicle, vehicleAllocations),
-            getVehicleRouteType(options.vehicle),
+            routeType,
             tripDelay,
             occupancyStatus,
+            isLoading,
         );
     }
 
     refreshMarkers = () => {
-        const { vehicles, highlightedVehicle, vehicleAllocations, hoveredVehicleDelay } = this.props;
+        const { vehicles, highlightedVehicle } = this.props;
         const bounds = this.props.leafletMap.getBounds();
         const markersInBoundary = _.filter(vehicles, vehicle => bounds.contains(getVehicleLatLng(vehicle)));
         const markers = _.map(markersInBoundary, vehicle => L.marker(getVehicleLatLng(vehicle), { icon: getVehicleIcon(vehicle), vehicle }));
@@ -100,7 +115,7 @@ class VehicleClusterLayer extends React.Component {
         this.modifyOverlappedMarkersPosition(markers);
 
         this.clusterLayerRef.current.leafletElement.bindTooltip(
-            this.getTooltipContent(hoveredVehicleDelay, vehicleAllocations),
+            this.getTooltipContent,
             { direction: 'top', className: 'vehicle-tooltip' },
         );
 
@@ -141,7 +156,7 @@ class VehicleClusterLayer extends React.Component {
 
 export default connect(state => ({
     highlightedVehicle: getVehicleDetail(state),
-    hoveredVehicleDelay: getTripUpdateDelay(state),
+    hoveredVehicleState: getTripUpdateState(state),
 }),
 { vehicleSelected, updateVehicleSelected, getTripUpdateSnapshot })(props => (
     <LeafletConsumer>

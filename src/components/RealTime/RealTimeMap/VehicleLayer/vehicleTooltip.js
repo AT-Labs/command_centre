@@ -2,7 +2,11 @@
 import { FERRY_TYPE_ID } from '../../../../types/vehicle-types';
 import VEHICLE_OCCUPANCY_STATUS_TYPE from '../../../../types/vehicle-occupancy-status-types';
 
-const status = (tripDelay) => {
+const status = (isTripUpdateLoading, tripDelay) => {
+    if (isTripUpdateLoading) {
+        return '-- -- min';
+    }
+
     const isLateOrEarly = tripDelay > 0 ? 'Late' : 'Early';
     const adjective = tripDelay === 0 ? 'On time' : isLateOrEarly;
     const delayMins = tripDelay === 0 ? '' : `${Math.abs(tripDelay)} min`;
@@ -32,24 +36,19 @@ const occupancyIcon = (occupancyLevel) => {
     return icon ? `<i>${require(`!raw-loader!../../../../assets/img/${icon}.svg`)}</i>` : null;
 };
 
-const statusAndOccupancy = (tripDelay, occupancyStatus) => {
+const statusAndOccupancy = (tripDelay, occupancyStatus, isTripUpdateLoading) => {
     const occupancyIconSvg = occupancyIcon(occupancyStatus);
 
-    return (tripDelay != null
-        ? `<dt>Status</dt>
-           <dd>${status(tripDelay)}</dd>` : '')
+    return (tripDelay != null || isTripUpdateLoading
+        ? `<div><small>${status(isTripUpdateLoading, tripDelay)}</small></div>` : '')
           + (occupancyIconSvg
-              ? `<dt>Occupancy</dt>
-                 <dd>${occupancyIconSvg}</dd>` : '');
+              ? `<div class="pt-1">${occupancyIconSvg}</div>` : '');
 };
 
-export const tooltipContent = (route, vehicleLabel, routeType, tripDelay = null, occupancyStatus = null) => (
-    `<dl class="m-0">
-     <dt>Route</dt>
-     <dd>${route}</dd>
-     <dt>Vehicle</dt>
-     <dd>${vehicleLabel}</dd>
-     ${(routeType && routeType !== FERRY_TYPE_ID
-        ? statusAndOccupancy(tripDelay, occupancyStatus) : '')}
-     </dl>`
+export const tooltipContent = (route, vehicleLabel, routeType, tripDelay = null, occupancyStatus = null, isTripUpdateLoading = null) => (
+    `<div>
+        <div><strong>${route}</strong> - ${vehicleLabel}</div>
+        ${(routeType && routeType !== FERRY_TYPE_ID
+        ? statusAndOccupancy(tripDelay, occupancyStatus, isTripUpdateLoading) : '')}
+     </div>`
 );
