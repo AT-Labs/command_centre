@@ -2,13 +2,17 @@ import _ from 'lodash-es';
 import { createSelector } from 'reselect';
 import { getAllStops } from './stops';
 
+export const SYSTEM_STOP_GROUP_ID = -1;
+export const SYSTEM_STOP_GROUP_STOP_START = 1000;
+export const SYSTEM_STOP_GROUP_STOP_END = 8999;
+
 export const getStopMessagingState = state => _.result(state, 'control.stopMessaging');
 export const getAllStopGroups = createSelector(getStopMessagingState, stopGroupsState => _.result(stopGroupsState, 'stopGroups'));
 export const getStopGroupsLoadingState = createSelector(getStopMessagingState, stopGroupsState => _.result(stopGroupsState, 'isStopGroupsLoading'));
 
 export const allSystemStopGroups = [
     { value: 0, label: '__ All Stops __', stopGroup: { id: 0, title: '__ All Stops __' } },
-    { value: -1, label: '__ 1000 to 8999 __', stopGroup: { id: -1, title: '__ 1000 to 8999 __' } },
+    { value: -1, label: `__ ${SYSTEM_STOP_GROUP_STOP_START} to ${SYSTEM_STOP_GROUP_STOP_END} __`, stopGroup: { id: -1, title: `__ ${SYSTEM_STOP_GROUP_STOP_START} to ${SYSTEM_STOP_GROUP_STOP_END} __` } },
 ];
 
 const tokenizeStopGroups = stopGroups => _.map(stopGroups, g => ({
@@ -21,7 +25,7 @@ const getAllSystemStopGroups = state => _.map(allSystemStopGroups, (g) => {
     if (g.stopGroup.id === 0) {
         return { ...g.stopGroup, stops: allStops };
     }
-    return { ...g.stopGroup, stops: _.filter(allStops, s => Number(s.value) >= 1000 && Number(s.value) <= 8999) };
+    return { ...g.stopGroup, stops: _.filter(allStops, s => +s.value >= SYSTEM_STOP_GROUP_STOP_START && +s.value <= SYSTEM_STOP_GROUP_STOP_END) };
 });
 
 const mergedAllStopGroups = state => [...getAllStopGroups(state), ...getAllSystemStopGroups(state)];

@@ -23,12 +23,14 @@ import { getSortedStopMesssages,
     getStopMessagesLoadingState,
     getStopMessagesSortingParams,
 } from '../../../redux/selectors/control/stopMessaging/stopMessages';
+import { SYSTEM_STOP_GROUP_ID, SYSTEM_STOP_GROUP_STOP_START, SYSTEM_STOP_GROUP_STOP_END } from '../../../redux/selectors/control/stopMessaging/stopGroups';
 import { updateControlDetailView, updateMainView } from '../../../redux/actions/navigation';
 import { isIndividualEditStopMessagesPermitted, isGlobalEditStopMessagesPermitted } from '../../../utils/user-permissions';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
 import SearchFilter from '../Common/Filters/SearchFilter/SearchFilter';
 import SEARCH_RESULT_TYPE from '../../../types/search-result-types';
 import SortButton from '../Common/SortButton/SortButton';
+
 
 const dateFormat = 'DD/MM/YY HH:mm';
 
@@ -224,8 +226,20 @@ export class StopMessagesView extends React.Component {
         this.setState({
             searchValue: `${stop.stop_code} - ${stop.stop_name}`,
             selectedData: stop,
-            messagesList: this.mergeStopsAndGroupsInMessagesList().filter(message => some(message.stops, s => s.value === stop.stop_code)
-            || some(message.stopGroups, stopGroup => some(stopGroup.stops, s => s.value === stop.stop_code))),
+            messagesList: this.mergeStopsAndGroupsInMessagesList().filter((message) => {
+                if (message.stopGroups.length) {
+                    return some(message.stopGroups, (stopGroup) => {
+                        if (stopGroup.id === 0) {
+                            return true;
+                        }
+                        if (stopGroup.id === SYSTEM_STOP_GROUP_ID) {
+                            return +stop.stop_code >= SYSTEM_STOP_GROUP_STOP_START && +stop.stop_code <= SYSTEM_STOP_GROUP_STOP_END;
+                        }
+                        return some(stopGroup.stops, s => s.value === stop.stop_code);
+                    });
+                }
+                return some(message.stops, s => s.value === stop.stop_code);
+            }),
         });
     }
 
