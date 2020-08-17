@@ -123,6 +123,12 @@ export class StopMessageModal extends React.Component {
         }, () => this.dismissErrorHandler());
     }
 
+    onDateUpdate = (key, value) => {
+        if (!moment(value).isSame(this.state[key])) {
+            this.onFormFieldsChange(key, value);
+        }
+    }
+
     updateStopMessage = () => {
         if (_.isNull(this.props.error.createStopMessage)) {
             const {
@@ -262,7 +268,7 @@ export class StopMessageModal extends React.Component {
                                                             to: moment().add(-1, 'day').format('D MMMM YYYY'),
                                                         }],
                                                     } }
-                                                    onChange={ date => this.setState({ startDate: date[0] }, () => this.dismissErrorHandler()) } />
+                                                    onChange={ date => this.onDateUpdate('startDate', date[0]) } />
                                             </div>
                                         </React.Fragment>
                                     )
@@ -291,7 +297,7 @@ export class StopMessageModal extends React.Component {
                                     value={ endDate }
                                     options={ this.datePickerOptions }
                                     placeholder="Select date"
-                                    onChange={ date => this.setState({ endDate: date[0] }, () => this.dismissErrorHandler()) } />
+                                    onChange={ date => this.onDateUpdate('endDate', date[0]) } />
                             </div>
                         </FormGroup>
                     </FormGroup>

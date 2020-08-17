@@ -69,7 +69,7 @@ class ControlSearch extends React.Component {
     componentWillReceiveProps(nextProps) {
         if (this.props.updateOnPropsValueChange && nextProps.value === '') {
             this.setState({ value: '', selectedSuggestion: null });
-        } else if (!_.isEmpty(nextProps.value)) {
+        } else if (!_.isEmpty(nextProps.value) && this.props.value !== nextProps.value) {
             this.setState({ value: nextProps.value });
         }
     }
