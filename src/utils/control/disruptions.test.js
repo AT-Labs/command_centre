@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import moment from 'moment';
-import { isEndDateValid, isEndTimeValid } from './disruptions';
+import { isEndDateValid, isEndTimeValid, getDatePickerOptions } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 
 describe('isEndDateValid', () => {
@@ -51,5 +51,15 @@ describe('isEndTimeValid', () => {
         const endDate = now.format(DATE_FORMAT);
         const endTime = now.clone().subtract(2, 'minutes').format(TIME_FORMAT);
         expect(isEndTimeValid(endDate, endTime, now, '21/07/2020', '12:00')).to.equal(false);
+    });
+});
+
+describe('getDatePickerOptions', () => {
+    it('will always return the same option object when input the same date', () => {
+        const options1 = getDatePickerOptions('21/07/2020');
+        const options2 = getDatePickerOptions('21/07/2020');
+        expect(options1.dateFormat).to.equal(options2.dateFormat);
+        expect(options1.minDate).to.equal(options2.minDate);
+        expect(options1.enableTime).to.equal(options2.enableTime);
     });
 });

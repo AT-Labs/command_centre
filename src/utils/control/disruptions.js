@@ -44,8 +44,7 @@ export const momentFromDateTime = (date, time) => {
 export const getDatePickerOptions = (minimumDate) => {
     let minDate = minimumDate;
     if (minimumDate && minimumDate !== 'today') {
-        const split = minimumDate.split('/');
-        minDate = new Date(split[2], split[1] - 1, split[0]);
+        minDate = moment(minimumDate, DATE_FORMAT).valueOf();
     }
     return {
         enableTime: false,
