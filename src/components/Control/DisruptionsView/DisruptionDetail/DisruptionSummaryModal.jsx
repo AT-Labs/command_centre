@@ -17,9 +17,9 @@ import CustomModal from '../../../Common/CustomModal/CustomModal';
 
 
 const createLine = (label, value) => (value && (
-    <tr>
-        <td>{label}</td>
-        <td>{value}</td>
+    <tr className="row">
+        <td className="col-4">{label}</td>
+        <td className="col text-break">{value}</td>
     </tr>
 ));
 
@@ -35,7 +35,7 @@ const DisruptionSummaryModal = (props) => {
                 onClick: () => props.onClose(),
                 label: 'Close',
             } }>
-            <Table>
+            <Table className="table-layout-fixed">
                 <tbody>
                     {createLine(LABEL_HEADER, props.disruption.header)}
                     {createLine(LABEL_STATUS, props.disruption.status)}
