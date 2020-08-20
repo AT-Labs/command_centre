@@ -46,7 +46,7 @@ class VehicleClusterLayer extends React.Component {
         this.clusterLayerRef = React.createRef();
     }
 
-    getTripUpdateSnapshotThrottle = _.throttle(tripId => this.props.getTripUpdateSnapshot(tripId), 500);
+    getTripUpdateSnapshotDebounced = _.debounce(tripId => this.props.getTripUpdateSnapshot(tripId), 1000);
 
     componentDidMount = () => this.refreshMarkers();
 
@@ -75,21 +75,27 @@ class VehicleClusterLayer extends React.Component {
 
     getTooltipContent = ({ options }) => {
         const { vehicleAllocations, hoveredVehicleState } = this.props;
-        const occupancyStatus = options.vehicle.vehicle.trip ? options.vehicle.vehicle.occupancyStatus : null;
+        const markerTripId = options.vehicle.vehicle.trip ? options.vehicle.vehicle.trip.tripId : null;
+        const hoveredVehicleTripId = hoveredVehicleState && hoveredVehicleState.trip ? hoveredVehicleState.trip.tripId : null;
+        const occupancyStatus = markerTripId ? options.vehicle.vehicle.occupancyStatus : null;
         const routeType = getVehicleRouteType(options.vehicle);
-        const tripDelay = options.vehicle.vehicle.trip && hoveredVehicleState
+        const tripDelay = markerTripId && hoveredVehicleState
             ? formatTripDelay(hoveredVehicleState.delay) : null;
 
         // Because tooltip is an html string and not a react dom
         // when getTripUpdateSnapshotThrottle is called there is some chance
         // that the binded html tooltip is not for the current marker.
-        const markerTripId = options.vehicle.vehicle.trip ? options.vehicle.vehicle.trip.tripId : null;
-        const hoveredVehicleTripId = hoveredVehicleState && hoveredVehicleState.trip ? hoveredVehicleState.trip.tripId : null;
         const isLoading = hoveredVehicleTripId !== markerTripId;
 
-        if (options.vehicle.vehicle.trip && routeType && routeType !== FERRY_TYPE_ID) {
-            // The call is throttle as the map marker refreshes automatically retriggering the tooltip unncessarily
-            this.getTripUpdateSnapshotThrottle(options.vehicle.vehicle.trip.tripId);
+        if (markerTripId && routeType && routeType !== FERRY_TYPE_ID) {
+            if (isLoading) {
+                this.props.getTripUpdateSnapshot(markerTripId)
+            }
+            else {
+                // The call is debounced as the map marker refreshes automatically retriggering the tooltip unncessarily
+                // and updating the state (this call) also refresh it
+                this.getTripUpdateSnapshotDebounced(markerTripId);
+            }
         }
 
         return tooltipContent(
