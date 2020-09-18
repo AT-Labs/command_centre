@@ -51,6 +51,11 @@ export const getVehicleAllocationByTrip = (trip, allocations) => {
     const key = getVehicleAllocationKey(tripId, startDate || serviceDate, startTime);
     return allocations[key];
 };
+export const getNumberOfCarsByTripId = (tripId, allocations) => {
+    const allocationKey = Object.keys(allocations).find(key => key.includes(tripId));
+    const isAdlTrain = allocations[allocationKey] && allocations[allocationKey].some(v => v.vehicleLabel.toUpperCase().includes('ADL'));
+    return allocations[allocationKey] && allocations[allocationKey].length * (isAdlTrain ? 2 : 3);
+};
 export const getVehicleAllocationLabel = allocation => _.map(allocation, 'vehicleLabel').join(', ');
 export const getVehicleAllocationLabelByTrip = (trip, allocations) => {
     const matchingAllocation = trip && getVehicleAllocationByTrip(trip, allocations);

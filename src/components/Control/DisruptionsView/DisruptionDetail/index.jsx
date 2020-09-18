@@ -3,11 +3,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { clearDisruptionActionResult, updateDisruption, updateCopyDisruptionState } from '../../../../redux/actions/control/disruptions';
 import { getDisruptionAction, isDisruptionUpdateAllowed } from '../../../../redux/selectors/control/disruptions';
-import { STATUSES } from '../../../../types/disruptions-types';
+
 import Message from '../../Common/Message/Message';
-import InProgress from './InProgress';
+import DisruptionDetailView from './DisruptionDetailView';
 import Readonly from './Readonly';
-import Resolved from './Resolved';
 
 const DisruptionExpandedDetail = (props) => {
     const { disruption, resultStatus, resultMessage, resultDisruptionId, isCopied } = props;
@@ -35,7 +34,7 @@ const DisruptionExpandedDetail = (props) => {
                         onClose={ () => props.clearDisruptionActionResult() }
                     />
                 )}
-                {(props.disruption.status === STATUSES.RESOLVED && <Resolved { ...props } />) || (<InProgress { ...props } />)}
+                <DisruptionDetailView { ...props } />
             </React.Fragment>
         );
     }

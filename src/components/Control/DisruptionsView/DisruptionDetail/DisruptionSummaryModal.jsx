@@ -62,12 +62,6 @@ const DisruptionSummaryModal = (props) => {
 DisruptionSummaryModal.propTypes = {
     isModalOpen: PropTypes.bool.isRequired,
     disruption: PropTypes.object.isRequired,
-    okButton: PropTypes.shape({
-        label: PropTypes.oneOfType([PropTypes.element, PropTypes.string]).isRequired,
-        onClick: PropTypes.func.isRequired,
-        isDisabled: PropTypes.bool,
-        className: PropTypes.string,
-    }).isRequired,
     onClose: PropTypes.func,
 };
 

@@ -18,6 +18,7 @@ $theme-colors: (
     'white':                $white,
     // AT colour scheme based colours
     'at-ocean':             $at-ocean, // navy blue
+    'at-ocean-tint-90':     tint($at-ocean, 90%),
     'at-ocean-tint-30':     tint($at-ocean, 30%),
     'at-ocean-tint-20':     tint($at-ocean, 20%),
     'at-ocean-tint-10':     tint($at-ocean, 10%),
@@ -61,10 +62,10 @@ $pagination-hover-color:            $at-shore;
 $pagination-active-bg:              $at-shore;
 $pagination-active-border-color:    $at-shore;
 
-$side-panel-width: 440px;
+$side-panel-width: 490px;
 $side-panel-width-small: 340px;
 $real-time-side-panel-search-height: 44px;
-$real-time-side-panel-search-spacing: 27px;
+$real-time-side-panel-search-spacing: 15px;
 $real-time-side-panel-toggle-button-width: 40px;
 $real-time-side-panel-search-panel-height: calc(100vh - #{$header-height + $real-time-side-panel-search-height + $real-time-side-panel-search-spacing * 2});
 
@@ -72,3 +73,5 @@ $trip-replay-side-panel-search-height: 44px;
 $trip-replay-side-panel-search-spacing: 27px;
 $trip-replay-side-panel-toggle-button-width: 40px;
 $trip-replay-side-panel-search-panel-height: calc(100vh - #{$header-height + $trip-replay-side-panel-search-height + $trip-replay-side-panel-search-spacing * 2});
+
+$icon-width: 30px;

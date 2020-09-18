@@ -10,6 +10,7 @@ import { isTripCancelPermitted } from '../../../utils/user-permissions';
 import { getControlDetailRoutesViewType, getRouteFilters } from '../../../redux/selectors/control/routes/filters';
 import { getActiveRoute } from '../../../redux/selectors/control/routes/routes';
 import { getActiveRouteVariant, getFilteredRouteVariants } from '../../../redux/selectors/control/routes/routeVariants';
+import { mergeRouteFilters } from '../../../redux/actions/control/routes/filters';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import VIEW_TYPE from '../../../types/view-types';
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
@@ -18,6 +19,7 @@ import { formatTripDelay, SERVICE_DATE_FORMAT, TRIPS_POLLING_INTERVAL } from '..
 import { getTripInstanceId, getTripTimeDisplay, checkIfAllTripsAreSelected } from '../../../utils/helpers';
 import ControlTable from '../Common/ControlTable/ControlTable';
 import TripIcon from '../Common/Trip/TripIcon';
+import SortButton from '../Common/SortButton/SortButton';
 import {
     fetchTripInstances, updateActiveTripInstanceId, selectSingleTrip, selectAllTrips,
 } from '../../../redux/actions/control/routes/trip-instances';
@@ -59,6 +61,7 @@ export class TripsView extends React.Component {
         selectedTrips: PropTypes.array.isRequired,
         selectAllTrips: PropTypes.func.isRequired,
         notCompletedTrips: PropTypes.object.isRequired,
+        mergeRouteFilters: PropTypes.func.isRequired,
     }
 
     static defaultProps = {
@@ -102,6 +105,13 @@ export class TripsView extends React.Component {
 
     isTrainMode = () => _.get(this.props.filters, 'routeType') === TRAIN_TYPE_ID
 
+    getSorting = () => _.get(this.props.filters, 'sorting')
+
+    isSortByDelayVisible = () => {
+        const tripStatusFilter = _.get(this.props.filters, 'tripStatus');
+        return tripStatusFilter === TRIP_STATUS_TYPES.inProgress || tripStatusFilter === TRIP_STATUS_TYPES.completed;
+    }
+
     retrieveTripInstances = (isUpdate) => {
         const variables = {
             serviceDate: moment(this.props.serviceDate).format(SERVICE_DATE_FORMAT),
@@ -138,7 +148,20 @@ export class TripsView extends React.Component {
         const startTimeCol = { label: 'start', key: 'startTime', cols: 'col-1' };
         const endTimeCol = { label: 'end', key: 'endTime', cols: 'col-1' };
         const statusCol = {
-            label: 'status',
+            label: this.isSortByDelayVisible() ? () => (
+                <div className="d-flex align-content-center">
+                    <SortButton
+                        className="mr-1"
+                        active={ this.getSorting() && this.getSorting().sortBy === 'delay' ? this.getSorting().order : null }
+                        onClick={ order => this.props.mergeRouteFilters({
+                            sorting: {
+                                sortBy: 'delay',
+                                order,
+                            },
+                        }) } />
+                    <div>status</div>
+                </div>
+            ) : 'status',
             key: 'status',
             cols: 'col-3',
             getContent: row => formatStatusColumn(row),
@@ -295,4 +318,4 @@ export default connect(state => ({
     serviceDate: getServiceDate(state),
     selectedTrips: getSelectedTripsKeys(state),
     notCompletedTrips: getAllNotCompletedTrips(state.control.routes.tripInstances.all),
-}), { fetchTripInstances, updateActiveTripInstanceId, selectSingleTrip, selectAllTrips })(TripsView);
+}), { fetchTripInstances, updateActiveTripInstanceId, selectSingleTrip, selectAllTrips, mergeRouteFilters })(TripsView);

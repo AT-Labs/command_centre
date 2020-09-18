@@ -81,7 +81,7 @@ export class StopMessagesView extends React.Component {
             },
         };
 
-        const activeOrder = (key) => {
+        const activeSort = (key) => {
             const { stopMessagesSortingParams } = this.props;
             return stopMessagesSortingParams && stopMessagesSortingParams.sortBy === key ? stopMessagesSortingParams.order : null;
         };
@@ -92,7 +92,7 @@ export class StopMessagesView extends React.Component {
                     <div className="d-flex align-content-center">
                         <SortButton
                             className="mr-1"
-                            active={ activeOrder('startTime') }
+                            active={ activeSort('startTime') }
                             onClick={ order => this.props.updateStopMessagesSortingParams({
                                 sortBy: 'startTime',
                                 order,
@@ -109,7 +109,7 @@ export class StopMessagesView extends React.Component {
                     <div className="d-flex align-content-center">
                         <SortButton
                             className="mr-1"
-                            active={ activeOrder('endTime') }
+                            active={ activeSort('endTime') }
                             onClick={ order => this.props.updateStopMessagesSortingParams({
                                 sortBy: 'endTime',
                                 order,

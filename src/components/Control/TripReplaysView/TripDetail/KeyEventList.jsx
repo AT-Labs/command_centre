@@ -11,17 +11,9 @@ const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMo
     const currentStops = spreadStateIntoStops(stops, status);
 
     return _.map(currentStops, (stop, index) => {
-        const isRealStop = !!parseInt(stop.stopCode, 10);
         let type = EVENT_TYPES.STOP;
-        if (isRealStop) {
-            if (!_.has(stop, 'stopLat')) return null;
-            if (index === 0) {
-                type = EVENT_TYPES.FIRST_STOP;
-            }
-            if (index === (currentStops.length - 1)) {
-                type = EVENT_TYPES.TRIP_END;
-            }
-        } else {
+
+        if (stop.stopCode === 'CANCELED' || stop.stopCode === 'REINSTATED') {
             if (stop.stopCode === 'CANCELED') {
                 type = EVENT_TYPES.CANCELED;
             } else if (stop.stopCode === 'REINSTATED') {
@@ -40,6 +32,13 @@ const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMo
             );
         }
 
+        if (!_.has(stop, 'stopLat')) return null;
+        if (index === 0) {
+            type = EVENT_TYPES.FIRST_STOP;
+        }
+        if (index === (currentStops.length - 1)) {
+            type = EVENT_TYPES.TRIP_END;
+        }
 
         const { scheduledTime, time } = getTimesFromStop(stop);
 
@@ -48,6 +47,7 @@ const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMo
             latlon: [stop.stopLat, stop.stopLon],
             title: `Stop ${stop.stopCode} - ${stop.stopName}`,
             type,
+            occupancyStatus: stop.occupancyStatus,
         };
 
         return (

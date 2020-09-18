@@ -3,6 +3,7 @@ export default {
     critical: 'Schedule data unavailable - application is not operational.',
     fetchPastStops: 'Past stops data unavailable, please try again.',
     fetchPastVehicles: 'Past vehicles data unavailable, please try again.',
+    fetchPidInformation: 'PID information data unavailable, please try again.',
     geocode: 'Address search unavailable, please try again.',
     geocodeEnabled: false,
     realtime: 'Live vehicle tracking is unavailable at the moment, attempting to reconnect.',

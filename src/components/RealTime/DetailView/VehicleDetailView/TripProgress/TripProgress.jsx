@@ -7,7 +7,7 @@ import './TripProgress.scss';
 import { getAllRoutes } from '../../../../../redux/selectors/static/routes';
 import { fetchUpcomingStops, fetchPastStops } from '../../../../../redux/actions/realtime/detail/vehicle';
 import { getVehicleUpcomingStops, getVehiclePastStops, getVehicleDetail } from '../../../../../redux/selectors/realtime/detail';
-import messageType from '../../../../../types/detail-message-type';
+import MESSAGE_TYPES from '../../../../../types/detail-message-types';
 import AutoRefreshTable from '../../../../Common/AutoRefreshTable/AutoRefreshTable';
 import { getColumns } from './columns';
 
@@ -37,7 +37,7 @@ class TripProgress extends PureComponent {
                     fetchRows={ () => this.props.fetchPastStops(vehicleId) }
                     columns={ getColumns() }
                     className="trip-progress__past-stops-table pb-0 pt-3"
-                    emptyMessage={ messageType.pastStopNotInfo } />
+                    emptyMessage={ MESSAGE_TYPES.pastStopNotInfo } />
                 <div className="trip-progress__current-stop-indicator">
                     <span className="text-uppercase text-white font-weight-bold">Current location</span>
                 </div>
@@ -47,8 +47,8 @@ class TripProgress extends PureComponent {
                     fetchRows={ () => this.props.fetchUpcomingStops(vehicleId) }
                     columns={ getColumns() }
                     className="trip-progress__upcoming-stops-table pt-0 pb-3"
-                    emptyMessage={ messageType.upcomingStopNoInfo }
-                    noteMessage={ hasStopActualTime ? null : messageType.upcomingStopNoPrediction }
+                    emptyMessage={ MESSAGE_TYPES.upcomingStopNoInfo }
+                    noteMessage={ hasStopActualTime ? null : MESSAGE_TYPES.upcomingStopNoPrediction }
                     shouldShowHeader={ false } />
             </section>
         );

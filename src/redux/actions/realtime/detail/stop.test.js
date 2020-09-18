@@ -5,6 +5,7 @@ import thunk from 'redux-thunk';
 import sinon from 'sinon';
 import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
+import * as gtfsRealtime from '../../../../utils/transmitters/gtfs-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import ACTION_TYPE from '../../../action-types';
 import * as stopDetailActions from './stop';
@@ -58,13 +59,17 @@ describe('Stop detail actions', () => {
                 },
                 {
                     type: ACTION_TYPE.MERGE_VEHICLE_FILTERS,
-                    payload: () => {},
+                    payload: () => { },
                 },
                 {
                     type: ACTION_TYPE.FETCH_STOP_ROUTES,
                     payload: {
                         routes: [{
                             route_id: '10601-20180910114240_v70.21',
+                            shape_wkt: 'shape_wkt',
+                        },
+                        {
+                            route_id: '10601-20180921103729_v70.37',
                             shape_wkt: 'shape_wkt',
                         }],
                     },
@@ -92,7 +97,7 @@ describe('Stop detail actions', () => {
                         if (i !== 1) {
                             expect(actions[i]).to.eql(expectedActions[i]);
                         } else {
-                            assert.isFunction(actions[1].payload.predicate);
+                            assert.isFunction(actions[1].payload.filters.predicate);
                         }
                     }
                     sandbox.assert.calledOnce(getRoutesByStop);
@@ -221,11 +226,11 @@ describe('Stop detail actions', () => {
                     passed: true,
                 },
                 vehicle:
-                    {
-                        id: '59580',
-                        label: 'AMP        580',
-                        licensePlate: 'AMP        580',
-                    },
+                {
+                    id: '59580',
+                    label: 'AMP        580',
+                    licensePlate: 'AMP        580',
+                },
                 route: undefined,
                 scheduledTime: withinPastHalfHourMockTime,
                 trip: {
@@ -286,6 +291,81 @@ describe('Stop detail actions', () => {
             await store.dispatch(stopDetailActions.fetchPastVehicles('stopId'));
             sandbox.assert.calledOnce(getHistoryByStopId);
             sandbox.assert.calledWith(getHistoryByStopId, 'stopId');
+            expect(store.getActions()).to.eql(expectedActions);
+        });
+    });
+
+    context('fetchPidInformation', () => {
+        const departures = {
+            response: {
+                extensions: [
+                    {
+                        priority: 'normal',
+                        text: 'test message',
+                    },
+                ],
+                movements: [
+                    {
+                        route_short_name: '120',
+                        destinationDisplay: 'britomart',
+                        arrivalPlatformName: '1',
+                        scheduledDepartureTime: '2020-09-08T08:22:00.000Z',
+                        expectedDepartureTime: '2020-09-08T08:25:40.000Z',
+                        trip_id: 'tripId',
+                    },
+                ],
+            },
+        };
+        const newTrip = {
+            trips: [
+                {
+                    tripId: 'tripId',
+                    newId: 'newTripId',
+                },
+            ],
+        };
+        const pidInformation = [{
+            route: '120',
+            destinationDisplay: 'britomart',
+            platform: '1',
+            scheduledTime: '2020-09-08T08:22:00.000Z',
+            dueTime: '2020-09-08T08:25:40.000Z',
+            tripId: 'newTripId',
+            arrivalStatus: undefined,
+            numberOfCars: undefined,
+            occupancyStatus: null,
+        }];
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.DATA_LOADING,
+                payload: { isLoading: true },
+            },
+            {
+                type: ACTION_TYPE.FETCH_STOP_PID_MESSAGES,
+                payload: { pidMessages: departures.response.extensions },
+            },
+            {
+                type: ACTION_TYPE.FETCH_STOP_PID_INFORMATION,
+                payload: { pidInformation },
+            },
+            {
+                type: ACTION_TYPE.DATA_LOADING,
+                payload: { isLoading: false },
+            },
+        ];
+
+        it('Should make an API call and dispatch 4 actions', async () => {
+            const fakeGetDeparturesByStopCode = sandbox.fake.resolves(departures);
+            const getDeparturesByStopCode = sandbox.stub(ccRealtime, 'getDeparturesByStopCode').callsFake(fakeGetDeparturesByStopCode);
+
+            const fakeGetNewTripId = sandbox.fake.resolves(newTrip);
+            const getNewTripId = sandbox.stub(gtfsRealtime, 'getNewTripId').callsFake(fakeGetNewTripId);
+
+            await store.dispatch(stopDetailActions.fetchPidInformation('stopCode'));
+            sandbox.assert.calledOnce(getDeparturesByStopCode);
+            sandbox.assert.calledWith(getDeparturesByStopCode, 'stopCode');
+            sandbox.assert.calledOnce(getNewTripId);
+            sandbox.assert.calledWith(getNewTripId, departures.response.movements[0].trip_id);
             expect(store.getActions()).to.eql(expectedActions);
         });
     });

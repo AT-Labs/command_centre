@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash-es';
+import moment from 'moment';
+import { occupancyStatusToMessage } from '../../../../../types/vehicle-occupancy-status-types';
 
 const formatTimeLabel = (times, prefix) => {
     if (_.has(times, 'signedOn')) {
@@ -40,6 +42,10 @@ const formatArrivalDeparture = (times) => {
 };
 
 function PopupContent({ selectedKeyEvent, currentTrip, coordinates, scheduledTime, time, markerId }) {
+    const tripDate = moment(currentTrip.tripSignOn).format('YYYY-MM-DD');
+    const tripDateAndTime = moment(`${tripDate} ${time.arrival}`).unix().toString();
+    const vehicleEvent = currentTrip.vehicleEvents.find(e => e.timestamp === tripDateAndTime);
+
     return (
         <div>
             { selectedKeyEvent && selectedKeyEvent.id === markerId
@@ -74,6 +80,11 @@ function PopupContent({ selectedKeyEvent, currentTrip, coordinates, scheduledTim
             <div className="row">
                 <div className="col pb-2"><b>Vehicle label:</b> { currentTrip.vehicleLabel }</div>
             </div>
+            {vehicleEvent && vehicleEvent.occupancyStatus && (
+                <div className="row">
+                    <div className="col pb-2"><b>Occupancy:</b> { occupancyStatusToMessage(vehicleEvent.occupancyStatus) }</div>
+                </div>
+            )}
         </div>
     );
 }

@@ -62,6 +62,22 @@ const handlePastVehiclesOfSelectedStop = (state, { payload: { pastVehicles } }) 
     },
 });
 
+const handlePidMessagesOfSelectedStop = (state, { payload: { pidMessages } }) => ({
+    ...state,
+    stop: {
+        ...state.stop,
+        pidMessages,
+    },
+});
+
+const handlePidInformationOfSelectedStop = (state, { payload: { pidInformation } }) => ({
+    ...state,
+    stop: {
+        ...state.stop,
+        pidInformation,
+    },
+});
+
 export const handleUpcomingStopsOfSelectedVehicle = (state, { payload: { upcomingStops } }) => ({
     ...state,
     vehicle: {
@@ -99,6 +115,8 @@ export default handleActions({
     [ACTION_TYPE.FETCH_STOP_ROUTES]: handleRouteByStop,
     [ACTION_TYPE.FETCH_STOP_UPCOMING_VEHICLES]: handleUpcomingVehiclesOfSelectedStop,
     [ACTION_TYPE.FETCH_STOP_PAST_VEHICLES]: handlePastVehiclesOfSelectedStop,
+    [ACTION_TYPE.FETCH_STOP_PID_MESSAGES]: handlePidMessagesOfSelectedStop,
+    [ACTION_TYPE.FETCH_STOP_PID_INFORMATION]: handlePidInformationOfSelectedStop,
     [ACTION_TYPE.UPDATE_SELECTED_ROUTE]: handleSelectedRoute,
     [ACTION_TYPE.FETCH_ROUTE_TRIPS]: handleRoutesByShortName,
 }, INIT_STATE);

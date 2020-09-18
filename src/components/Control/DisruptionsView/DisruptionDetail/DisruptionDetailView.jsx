@@ -46,7 +46,7 @@ import VEHICLE_TYPES from '../../../../types/vehicle-types';
 import './styles.scss';
 import DisruptionSummaryModal from './DisruptionSummaryModal';
 
-const InProgress = (props) => {
+const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId } = props;
     const [now] = useState(moment().second(0).millisecond(0));
     const [cause, setCause] = useState(disruption.cause);
@@ -64,7 +64,6 @@ const InProgress = (props) => {
     const [endTime, setEndTime] = useState(disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : '');
     const [endDate, setEndDate] = useState(disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '');
     const [disruptionOpenedTime] = useState(moment().second(0).millisecond(0));
-
 
     const handleUpdateDisruption = () => {
         const updatedDisruption = {
@@ -106,9 +105,9 @@ const InProgress = (props) => {
         }
     };
 
-    const isStartDateTimeDisabled = () => status !== STATUSES.NOT_STARTED;
-
+    const isResolved = () => status === STATUSES.RESOLVED;
     const isEndDateTimeDisabled = () => status === STATUSES.RESOLVED;
+    const isStartDateTimeDisabled = () => status !== STATUSES.NOT_STARTED;
 
     const startTimeValid = () => {
         if (isStartDateTimeDisabled()) {
@@ -157,8 +156,9 @@ const InProgress = (props) => {
         setMode(disruption.mode);
     };
 
+    const minEndDate = now.isAfter(disruption.startTime, 'day') ? now.format(DATE_FORMAT) : startDate;
     const datePickerOptionsStartDate = getDatePickerOptions(isStartDateTimeDisabled() ? undefined : 'today');
-    const datePickerOptionsEndDate = getDatePickerOptions(isEndDateTimeDisabled() ? undefined : startDate);
+    const datePickerOptionsEndDate = getDatePickerOptions(isEndDateTimeDisabled() ? undefined : minEndDate);
 
     return (
         <Form>
@@ -169,6 +169,7 @@ const InProgress = (props) => {
                             <span className="font-size-md font-weight-bold">{ LABEL_AFFECTED_ROUTES }</span>
                         </Label>
                         <Button
+                            disabled={ isResolved() }
                             className="w-100 border border-dark d-flex align-items-center form-control disruption-detail__effected-routes__button"
                             onClick={ () => setRoutesModalOpen(true) }>
                             <MdModeEdit
@@ -193,8 +194,20 @@ const InProgress = (props) => {
                     <DisruptionLabelAndText id="disruption-detail__mode" label={ LABEL_MODE } text={ mode } />
                 </section>
                 <section className="col-3">
-                    <DisruptionDetailSelect id="disruption-detail__cause" value={ cause } options={ CAUSES } label={ LABEL_CAUSE } onChange={ setCause } />
-                    <DisruptionDetailSelect id="disruption-detail__impact" value={ impact } options={ IMPACTS } label={ LABEL_CUSTOMER_IMPACT } onChange={ setImpact } />
+                    <DisruptionDetailSelect
+                        id="disruption-detail__cause"
+                        value={ cause }
+                        options={ CAUSES }
+                        disabled={ isResolved() }
+                        label={ LABEL_CAUSE }
+                        onChange={ setCause } />
+                    <DisruptionDetailSelect
+                        id="disruption-detail__impact"
+                        value={ impact }
+                        options={ IMPACTS }
+                        disabled={ isResolved() }
+                        label={ LABEL_CUSTOMER_IMPACT }
+                        onChange={ setImpact } />
                 </section>
                 <section className="col-3 row">
                     <FormGroup className="mt-2 col-6">
@@ -233,6 +246,7 @@ const InProgress = (props) => {
                             value={ endDate }
                             disabled={ isEndDateTimeDisabled() }
                             options={ datePickerOptionsEndDate }
+                            key={ datePickerOptionsEndDate.minDate }
                             onChange={ (date) => {
                                 setEndDate(date.length ? moment(date[0]).format(DATE_FORMAT) : '');
                                 if (date.length === 0) {
@@ -271,6 +285,7 @@ const InProgress = (props) => {
                         <Input id="disruption-detail__header"
                             className="border border-dark"
                             defaultValue={ header }
+                            disabled={ isResolved() }
                             onChange={ e => setHeader(e.currentTarget.value) }
                             maxLength={ HEADER_MAX_LENGTH } />
                     </FormGroup>
@@ -281,6 +296,7 @@ const InProgress = (props) => {
                         <Input id="disruption-detail__description"
                             className="textarea-no-resize border border-dark"
                             type="textarea"
+                            disabled={ isResolved() }
                             defaultValue={ description }
                             onChange={ e => setDescription(e.currentTarget.value) }
                             maxLength={ DESCRIPTION_MAX_LENGTH }
@@ -293,6 +309,7 @@ const InProgress = (props) => {
                         <Input id="disruption-detail__url"
                             className="border border-dark"
                             defaultValue={ url }
+                            disabled={ isResolved() }
                             onChange={ e => setUrl(e.currentTarget.value) }
                             placeholder="e.g. https://at.govt.nz"
                             maxLength={ URL_MAX_LENGTH }
@@ -328,15 +345,15 @@ const InProgress = (props) => {
     );
 };
 
-InProgress.propTypes = {
+DisruptionDetailView.propTypes = {
     disruption: PropTypes.object.isRequired,
     updateDisruption: PropTypes.func.isRequired,
     isRequesting: PropTypes.bool.isRequired,
     resultDisruptionId: PropTypes.number,
 };
 
-InProgress.defaultProps = {
+DisruptionDetailView.defaultProps = {
     resultDisruptionId: null,
 };
 
-export default InProgress;
+export default DisruptionDetailView;

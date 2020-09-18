@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import { fetchPastVehicles } from '../../../../../redux/actions/realtime/detail/stop';
 import { getPastVehicles } from '../../../../../redux/selectors/realtime/detail';
-import messageType from '../../../../../types/detail-message-type';
+import MESSAGE_TYPES from '../../../../../types/detail-message-types';
 import AutoRefreshTable from '../../../../Common/AutoRefreshTable/AutoRefreshTable';
 import { getColumns } from './columns';
 
@@ -29,7 +29,7 @@ class PastVehicles extends PureComponent {
                 columns={ getColumns({ isHistorical: true }) }
                 className="past-vehicles"
                 title="Past Vehicles"
-                emptyMessage={ messageType.pastVehicleNotInfo }
+                emptyMessage={ MESSAGE_TYPES.pastVehicleNotInfo }
             />
         );
     }

@@ -1,0 +1,57 @@
+@import '../../../../../assets/styles/variables';
+
+$thead-bg-color: map-get($theme-colors, "at-ocean-tint-90");
+$tbody-bg-color: map-get($theme-colors, "at-ocean");
+$alert-bg-color: map-get($theme-colors, "at-yellow-tint-20");
+$alert-border-color: map-get($theme-colors, "at-yellow");
+
+.pid-information {
+    .table {
+        color: white;
+        thead {
+            background-color: $thead-bg-color;
+            font-size: 12px;
+            line-height: 12px;
+        }
+        tbody {
+            background-color: $tbody-bg-color;
+            font-size: 14px;
+            line-height: 18px;
+
+            tr {
+                border-top: 1px solid $thead-bg-color;
+            }
+        }
+        td {
+            padding: 10px 15px;
+        }
+        svg {
+            width: $icon-width;
+        }
+    }
+}
+
+.pid-alert {
+    background-color: $alert-bg-color;
+    border: 1px solid $alert-border-color;
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: map-get($theme-colors, "primary");
+    margin: 15px;
+    border-radius: 3px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    .alert-message {
+        margin-left: 15px;
+        ul {
+            margin: 0;
+            padding: 0 0 0 15px;
+            list-style: disc;
+            li {
+                padding: 5px 0;
+            }
+        }
+    }
+}

@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import { fetchUpcomingVehicles } from '../../../../../redux/actions/realtime/detail/stop';
 import { getUpcomingVehicles } from '../../../../../redux/selectors/realtime/detail';
-import messageType from '../../../../../types/detail-message-type';
+import MESSAGE_TYPES from '../../../../../types/detail-message-types';
 import AutoRefreshTable from '../../../../Common/AutoRefreshTable/AutoRefreshTable';
 import { getColumns } from './columns';
 
@@ -29,7 +29,7 @@ export class UpcomingVehicles extends PureComponent {
                 columns={ getColumns({ isHistorical: false }) }
                 className="upcoming-vehicles"
                 title="Upcoming Vehicles"
-                emptyMessage={ messageType.upcomingVehicleNoInfo } />
+                emptyMessage={ MESSAGE_TYPES.upcomingVehicleNoInfo } />
         );
     }
 }

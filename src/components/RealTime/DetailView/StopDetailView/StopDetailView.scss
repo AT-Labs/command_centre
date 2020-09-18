@@ -1,0 +1,23 @@
+@import '../../../../assets/styles/variables';
+
+$link-color:  map-get($theme-colors, "at-shore");
+
+.nav-tabs.cc-tabs {
+    border: none;
+    padding: 0 15px;
+
+    .nav-link.cc-nav-link {
+        border: 1px solid $link-color;
+        border-radius: 0;
+        box-sizing: border-box;
+        height: 40px;
+        padding: 0 20px;
+        line-height: 38px;
+        cursor: pointer;
+
+        &.active {
+            border-color: $link-color;
+            border-bottom-width: 5px;
+        }
+    }
+}

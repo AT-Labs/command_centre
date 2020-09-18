@@ -6,6 +6,7 @@ import { Input, Label } from 'reactstrap';
 import { TripInstanceType } from '../Types';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import { getTripTimeDisplay } from '../../../../utils/helpers';
+import { TRAIN_TYPE_ID } from '../../../../types/vehicle-types';
 
 class CopyTripModal extends React.Component {
     static propTypes = {
@@ -76,11 +77,13 @@ class CopyTripModal extends React.Component {
         return `${endTimeHours.padStart(2, '0')}:${endTimeMin.padStart(2, '0')}`;
     }
 
-    isMainActionEnabled = (newStartTime, referenceId) => this.isReferenceIdValid(referenceId) && this.isStartTimeValid(newStartTime)
+    isMainActionEnabled = (newStartTime, referenceId) => (!this.isReferenceIdRequired() || this.isReferenceIdValid(referenceId)) && this.isStartTimeValid(newStartTime)
 
     isStartTimeValid = startTime => startTime.match('^(([0-3][0-9])|40):[0-5][0-9]$') && `${startTime}:00` !== this.props.tripInstance.startTime;
 
     isReferenceIdValid = referenceId => !!referenceId.trim()
+
+    isReferenceIdRequired = () => this.props.tripInstance.routeType === TRAIN_TYPE_ID
 
     handleReferenceIdChange = (event) => {
         const { value } = event.target;
@@ -110,7 +113,7 @@ class CopyTripModal extends React.Component {
                     <div className="col">Duplicating trip: {routeShortName} {routeLongName}</div>
                 </div>
                 <div className="row">
-                    <div className="col-4">
+                    <div className={ this.isReferenceIdRequired() ? 'col-4' : 'col-6' }>
                         <Label for="start-time" className="font-weight-bold">Start time</Label>
                         <Input
                             type="text"
@@ -122,20 +125,22 @@ class CopyTripModal extends React.Component {
                             invalid={ this.state.isStartTimeInvalid }
                         />
                     </div>
-                    <div className="col-3">
+                    <div className={ this.isReferenceIdRequired() ? 'col-3' : 'col-6' }>
                         <Label className="font-weight-bold">End time:</Label>
                         <Input plaintext>{this.state.endTime}</Input>
                     </div>
-                    <div className="col-5">
-                        <Label for="reference-id" className="font-weight-bold">Reference ID:</Label>
-                        <Input
-                            type="text"
-                            name="reference-id"
-                            id="reference-id"
-                            value={ this.state.referenceId }
-                            onChange={ this.handleReferenceIdChange }
-                        />
-                    </div>
+                    {this.isReferenceIdRequired() && (
+                        <div className="col-5">
+                            <Label for="reference-id" className="font-weight-bold">Reference ID:</Label>
+                            <Input
+                                type="text"
+                                name="reference-id"
+                                id="reference-id"
+                                value={ this.state.referenceId }
+                                onChange={ this.handleReferenceIdChange }
+                            />
+                        </div>
+                    )}
                 </div>
             </CustomModal>
         );

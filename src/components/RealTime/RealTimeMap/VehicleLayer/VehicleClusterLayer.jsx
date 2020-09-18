@@ -89,9 +89,8 @@ class VehicleClusterLayer extends React.Component {
 
         if (markerTripId && routeType && routeType !== FERRY_TYPE_ID) {
             if (isLoading) {
-                this.props.getTripUpdateSnapshot(markerTripId)
-            }
-            else {
+                this.props.getTripUpdateSnapshot(markerTripId);
+            } else {
                 // The call is debounced as the map marker refreshes automatically retriggering the tooltip unncessarily
                 // and updating the state (this call) also refresh it
                 this.getTripUpdateSnapshotDebounced(markerTripId);

@@ -17,5 +17,6 @@ global.window = document.defaultView;
 global.navigator = window.navigator;
 global.fetch = fetch;
 global.Logging = noop;
+global.addEventListener = noop;
 
 require.extensions['.svg', '.css', '.scss'] = noop; // eslint-disable-line

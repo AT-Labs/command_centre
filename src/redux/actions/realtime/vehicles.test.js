@@ -9,15 +9,9 @@ import VIEW_TYPE from '../../../types/view-types';
 
 chai.use(sinonChai);
 
-const mockStore = configureMockStore([thunk]);
-const store = mockStore({
-    navigation: { activeMainView: VIEW_TYPE.MAIN.REAL_TIME },
-    static: {
-        fleet: {
-            26186: {},
-        },
-    },
-});
+const sleep = time => new Promise(resolve => setTimeout(resolve, time));
+let store;
+
 const vehicleMockDefault = {
     id: '26186',
     vehicle: {
@@ -49,8 +43,16 @@ const expectedActions = [
 ];
 
 describe('vehicles actions', () => {
-    afterEach(() => {
-        store.clearActions();
+    beforeEach(() => {
+        const mockStore = configureMockStore([thunk]);
+        store = mockStore({
+            navigation: { activeMainView: VIEW_TYPE.MAIN.REAL_TIME },
+            static: {
+                fleet: {
+                    26186: {},
+                },
+            },
+        });
     });
 
     it('should update vehicles in store if vehicle update is valid', async () => {
@@ -58,40 +60,27 @@ describe('vehicles actions', () => {
         expect(store.getActions()).to.eql(expectedActions);
     });
 
-    it('shouldn\'t update vehicles in store if vehicle update is not valid', async () => {
-        const vehicleMockNoTrip = vehicleMockDefault;
-        vehicleMockNoTrip.vehicle.trip = {};
+    it('shouldn\'t update vehicles in store if vehicle\'s timestamp is < than the existing in cache', async () => {
+        await sleep(1000);
+        store.dispatch(handleRealTimeUpdate(vehicleMockDefault)); // this action will cache the vehicle
+        expect(store.getActions()).to.eql(expectedActions);
 
-        store.dispatch(handleRealTimeUpdate(vehicleMockNoTrip));
+        store.clearActions();
+        const vehicleMockLowerTimestamp = JSON.parse(JSON.stringify(vehicleMockDefault));
+        vehicleMockLowerTimestamp.vehicle.timestamp = '1536011901';
+
+        store.dispatch(handleRealTimeUpdate(vehicleMockLowerTimestamp)); // this action won't cache since the timestamp is lower
         expect(store.getActions()).to.eql([]);
     });
 
     it('shouldn\'t update vehicles in store if vehicle has already been cached', async () => {
-        setTimeout(() => {
-            store.dispatch(handleRealTimeUpdate(vehicleMockDefault)); // this action will cache the vehicle
-            expect(store.getActions()).to.eql(expectedActions);
+        await sleep(1000);
+        store.dispatch(handleRealTimeUpdate(vehicleMockDefault)); // this action will cache the vehicle
+        expect(store.getActions()).to.eql(expectedActions);
 
-            store.clearActions();
+        store.clearActions();
 
-            store.dispatch(handleRealTimeUpdate(vehicleMockDefault)); // this action won't cache since the vehicle already exists
-            expect(store.getActions()).to.eql([]);
-        },
-        1000);
-    });
-
-    it('shouldn\'t update vehicles in store if vehicle\'s timestamp is < than the existing in cache', async () => {
-        const vehicleMockLowerTimestamp = vehicleMockDefault;
-        vehicleMockLowerTimestamp.vehicle.timestamp = '1536011901';
-
-        setTimeout(() => {
-            store.dispatch(handleRealTimeUpdate(vehicleMockDefault)); // this action will cache the vehicle
-            expect(store.getActions()).to.eql(expectedActions);
-
-            store.clearActions();
-
-            store.dispatch(handleRealTimeUpdate(vehicleMockLowerTimestamp)); // this action won't cache since the timestamp is lower
-            expect(store.getActions()).to.eql([]);
-        },
-        1000);
+        store.dispatch(handleRealTimeUpdate(vehicleMockDefault)); // this action won't cache since the vehicle already exists
+        expect(store.getActions()).to.eql([]);
     });
 });

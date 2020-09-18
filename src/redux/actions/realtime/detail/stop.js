@@ -3,7 +3,9 @@ import _ from 'lodash-es';
 import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
+import { getNewTripId } from '../../../../utils/transmitters/gtfs-realtime';
 import ACTION_TYPE from '../../../action-types';
+import { getAllVehicles } from '../../../selectors/realtime/vehicles';
 import { getAllRoutes } from '../../../selectors/static/routes';
 import { reportError, updateDataLoading } from '../../activity';
 import { updateVisibleStops } from '../../static/stops';
@@ -14,7 +16,7 @@ import {
 } from './common';
 import { updateSearchTerms } from '../../search';
 import { getStopSearchTerms } from '../../../selectors/static/stops';
-import { getAllocations, getVehicleAllocationByTrip } from '../../../selectors/control/blocks';
+import { getAllocations, getVehicleAllocationByTrip, getNumberOfCarsByTripId } from '../../../selectors/control/blocks';
 
 export const getRoutesByStop = stopCode => (dispatch) => {
     dispatch(updateDataLoading(true));
@@ -108,6 +110,65 @@ export const fetchPastVehicles = stopId => (dispatch, getState) => {
                 type: ACTION_TYPE.FETCH_STOP_PAST_VEHICLES,
                 payload: {
                     pastVehicles,
+                },
+            });
+        })
+        .finally(() => {
+            dispatch(updateDataLoading(false));
+        });
+};
+
+const mapPidInformation = (movements, allVehicles, vehicleAllocations) => movements.map(async ({
+    route_short_name,
+    destinationDisplay,
+    arrivalStatus,
+    arrivalPlatformName,
+    scheduledDepartureTime,
+    expectedDepartureTime,
+    trip_id,
+}) => {
+    const newTripId = await getNewTripId(trip_id).then(newTrip => newTrip.trips[0] && newTrip.trips[0].newId);
+    const currentVehicle = allVehicles && Object.values(allVehicles).find(v => (v.vehicle.trip ? v.vehicle.trip.tripId === newTripId : null));
+    const occupancyStatus = currentVehicle ? currentVehicle.vehicle.occupancyStatus : null;
+
+    return {
+        route: route_short_name,
+        destinationDisplay,
+        arrivalStatus,
+        platform: arrivalPlatformName,
+        scheduledTime: scheduledDepartureTime,
+        dueTime: expectedDepartureTime,
+        tripId: newTripId,
+        numberOfCars: getNumberOfCarsByTripId(newTripId, vehicleAllocations),
+        occupancyStatus,
+    };
+});
+
+export const fetchPidInformation = stopCode => (dispatch, getState) => {
+    dispatch(updateDataLoading(true));
+    const state = getState();
+    const allVehicles = getAllVehicles(state);
+    const vehicleAllocations = getAllocations(state);
+    return ccRealtime.getDeparturesByStopCode(stopCode)
+        .then((departures) => {
+            dispatch({
+                type: ACTION_TYPE.FETCH_STOP_PID_MESSAGES,
+                payload: {
+                    pidMessages: departures.response.extensions.length > 0 ? departures.response.extensions : null,
+                },
+            });
+            const validPidMovements = departures.response.movements.filter((m) => {
+                const isDropOffOnly = m.departureBoardingActivity === 'noBoarding' && m.arrivalBoardingActivity === 'alighting';
+                return !isDropOffOnly;
+            });
+            return Promise.all(mapPidInformation(validPidMovements, allVehicles, vehicleAllocations));
+        })
+        .then(pidInformation => _.orderBy(pidInformation, 'scheduledTime'))
+        .then((pidInformation) => {
+            dispatch({
+                type: ACTION_TYPE.FETCH_STOP_PID_INFORMATION,
+                payload: {
+                    pidInformation,
                 },
             });
         })

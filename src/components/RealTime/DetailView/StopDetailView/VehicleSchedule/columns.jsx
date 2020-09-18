@@ -2,7 +2,10 @@ import React from 'react';
 import moment from 'moment';
 import _ from 'lodash-es';
 import ActualTimeVariance from '../../ActualTimeVariance';
+import Icon from '../../../../Common/Icon/Icon';
 import { getVehicleAllocationLabel } from '../../../../../redux/selectors/control/blocks';
+import { occupancyStatusToIconSvg } from '../../../../../types/vehicle-occupancy-status-types';
+import STOP_TYPES from '../../../../../types/stop-types';
 
 export const getColumns = ({ isHistorical }) => [{
     header: 'Vehicle',
@@ -23,4 +26,75 @@ export const getColumns = ({ isHistorical }) => [{
     formatter: vehicle => (
         <ActualTimeVariance { ...vehicle } />
     ),
+}];
+
+export const formatDestination = (isTrainStop, destinationDisplay) => {
+    if (isTrainStop) {
+        const stopValue = STOP_TYPES.VALUES.find(d => destinationDisplay.includes(d.value));
+        const destination = stopValue ? {
+            name: destinationDisplay.replace(stopValue.value, ''),
+            via: stopValue.replacement,
+        } : destinationDisplay;
+        return stopValue ? <div><strong>{destination.name}</strong><small>{destination.via}</small></div> : <strong>{destination}</strong>;
+    }
+
+    return destinationDisplay;
+};
+
+export const calculateDue = (arrivalStatus, scheduledTime, dueTime) => {
+    const { CANCELLED, DUE, EMPTY } = STOP_TYPES.STATUS;
+    const formattedScheduledTime = moment(scheduledTime);
+    const formattedDueTime = moment(dueTime);
+
+    if (dueTime && formattedScheduledTime) {
+        const dueValue = formattedDueTime.diff(formattedScheduledTime, 'minutes');
+        return dueValue < DUE.TIME_THRESHOLD ? DUE.SYMBOL : dueValue;
+    }
+    if (arrivalStatus === CANCELLED.LEGEND) {
+        return CANCELLED.SYMBOL;
+    }
+    return EMPTY.SYMBOL;
+};
+
+export const getPidColumns = ({ isTrainStop, isFerryStop, isParentBusStop }) => [{
+    header: 'Route',
+    headerClassName: 'w-15',
+    formatter: (pidInfo) => {
+        const { route, numberOfCars } = pidInfo;
+        return (
+            <div>
+                {isTrainStop ? <div><strong>{route}</strong></div> : route}
+                {isTrainStop && numberOfCars && <small>{numberOfCars}-car</small>}
+            </div>
+        );
+    },
+}, {
+    header: 'Destination',
+    headerClassName: 'w-35',
+    formatter: ({ destinationDisplay }) => formatDestination(isTrainStop, destinationDisplay),
+},
+...(
+    isTrainStop || isParentBusStop ? [{
+        header: 'Pl.',
+        formatter: ({ platform }) => platform,
+    }] : []
+),
+...(
+    isFerryStop ? [{
+        header: 'Pi.',
+        formatter: ({ platform }) => platform,
+    }] : []
+), {
+    header: 'Occup.',
+    headerClassName: 'w-15',
+    formatter: pidInfo => (pidInfo.occupancyStatus ? <Icon className="icon d-inline-block" icon={ occupancyStatusToIconSvg(pidInfo.occupancyStatus, true) } /> : null),
+}, {
+    header: 'Sched.',
+    headerClassName: 'w-15',
+    formatter: ({ scheduledTime }) => (scheduledTime && moment(scheduledTime).format('HH:mm')) || '',
+}, {
+    header: 'Due',
+    headerClassName: 'w-15 text-right',
+    cellClassName: 'text-right',
+    formatter: ({ arrivalStatus, scheduledTime, dueTime }) => calculateDue(arrivalStatus, scheduledTime, dueTime),
 }];

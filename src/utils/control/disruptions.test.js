@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import moment from 'moment';
+import MockDate from 'mockdate';
 import { isEndDateValid, isEndTimeValid, getDatePickerOptions } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 
@@ -13,11 +14,21 @@ describe('isEndDateValid', () => {
     });
 
     it('endDate equal to startDate should be valid', () => {
+        MockDate.set(moment('07/20/2020').toDate());
         expect(isEndDateValid('20/07/2020', '20/07/2020')).to.equal(true);
+        MockDate.reset();
     });
 
-    it('endDate after to startDate should be valid', () => {
-        expect(isEndDateValid('20/07/2020', '20/07/2020')).to.equal(true);
+    it('endDate after the startDate should be valid', () => {
+        MockDate.set(moment('07/20/2020').toDate());
+        expect(isEndDateValid('21/07/2020', '20/07/2020')).to.equal(true);
+        MockDate.reset();
+    });
+
+    it('endDate after the startDate but before now should be invalid', () => {
+        MockDate.set(moment('07/22/2020').toDate());
+        expect(isEndDateValid('21/07/2020', '20/07/2020')).to.equal(false);
+        MockDate.reset();
     });
 });
 

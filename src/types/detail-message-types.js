@@ -4,4 +4,5 @@ export default {
     pastStopNotInfo: 'No past stop information available',
     pastVehicleNotInfo: 'No past vehicle information available',
     upcomingVehicleNoInfo: 'No upcoming vehicle information available',
+    pidInformationNoInfo: 'No Services Due ',
 };

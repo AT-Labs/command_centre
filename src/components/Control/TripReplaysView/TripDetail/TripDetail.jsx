@@ -33,7 +33,6 @@ const renderStartAndEndTime = (startTime, endTime) => {
     return null;
 };
 
-
 function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, vehiclePositions }) {
     const { route: routeInfo, tripSignOn } = summary;
 
@@ -42,6 +41,13 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
         : null;
 
     const tripSignOnPosition = _.find(vehiclePositions, { timestamp: moment(tripSignOn).unix().toString() });
+
+    const vehiclePosition = stop => (stop.arrival ? _.find(vehiclePositions, { timestamp: stop.arrival.time }) : null);
+
+    const stopsWithOccupancyStatus = _.map(stops, stop => ({
+        ...stop,
+        occupancyStatus: vehiclePosition(stop) ? vehiclePosition(stop).occupancyStatus : null,
+    }));
 
     return (
         <section className="flex-grow-1 overflow-y-auto">
@@ -56,7 +62,7 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
                 tripId={ summary.tripId }
                 tripSignOn={ tripSignOn }
                 tripSignOnPosition={ tripSignOnPosition }
-                stops={ stops }
+                stops={ stopsWithOccupancyStatus }
                 status={ status }
                 handleMouseEnter={ handleMouseEnter }
                 handleMouseLeave={ handleMouseLeave }

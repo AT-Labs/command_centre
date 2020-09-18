@@ -3,22 +3,19 @@
 .sort-btn {
 
     .sort-btn__inner-btn {
-        opacity: .4;
+        opacity: .3;
 
-        &:hover,
-        &:focus,
         &.active {
-            background: map_get($theme-colors, "white") !important; // overwrites bootstraps button's class
             opacity: 1;
         }
 
         > svg {
             &:first-child {
-                margin-bottom: -5px;
+                margin-bottom: -6px;
             }
 
             &:last-child {
-                margin-top: -5px;
+                margin-top: -6px;
             }
         }
     }

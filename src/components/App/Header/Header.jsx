@@ -62,8 +62,8 @@ class Header extends React.Component {
         const isControlNotificationsViewPermitted = IS_LOGIN_NOT_REQUIRED || _.get(userPermissions, 'controlNotificationsView', false);
 
         return (
-            <Navbar className="header bg-primary py-0 fixed-top" expand="md" dark>
-                <NavbarBrand>
+            <Navbar className="header bg-primary p-0 fixed-top" expand="md" dark>
+                <NavbarBrand className="m-0">
                     <CustomButton
                         className=""
                         tabIndex="0"

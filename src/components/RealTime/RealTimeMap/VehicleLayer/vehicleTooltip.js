@@ -1,6 +1,6 @@
 /* eslint-disable global-require */
 import { FERRY_TYPE_ID } from '../../../../types/vehicle-types';
-import VEHICLE_OCCUPANCY_STATUS_TYPE from '../../../../types/vehicle-occupancy-status-types';
+import { occupancyStatusToIconSvg } from '../../../../types/vehicle-occupancy-status-types';
 
 const status = (isTripUpdateLoading, tripDelay) => {
     if (isTripUpdateLoading) {
@@ -14,26 +14,9 @@ const status = (isTripUpdateLoading, tripDelay) => {
     return ` ${adjective} ${delayMins}`;
 };
 
-const occupancyStatusToIconSvg = (occupancyLevel) => {
-    switch (occupancyLevel) {
-    case VEHICLE_OCCUPANCY_STATUS_TYPE.empty:
-        return 'occupancy-empty';
-    case VEHICLE_OCCUPANCY_STATUS_TYPE.fewSeatsAvailable:
-        return 'occupancy-few';
-    case VEHICLE_OCCUPANCY_STATUS_TYPE.manySeatsAvailable:
-        return 'occupancy-many';
-    case VEHICLE_OCCUPANCY_STATUS_TYPE.standingRoomOnly:
-        return 'occupany-almost-full';
-    case VEHICLE_OCCUPANCY_STATUS_TYPE.full:
-        return 'occupancy-full';
-    default:
-        return null;
-    }
-};
-
 const occupancyIcon = (occupancyLevel) => {
     const icon = occupancyStatusToIconSvg(occupancyLevel);
-    return icon ? `<i>${require(`!raw-loader!../../../../assets/img/${icon}.svg`)}</i>` : null;
+    return icon ? `<i class="icon d-inline-block">${require(`!raw-loader!../../../../assets/img/${icon}.svg`)}</i>` : null;
 };
 
 const statusAndOccupancy = (tripDelay, occupancyStatus, isTripUpdateLoading) => {

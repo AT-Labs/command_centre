@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import _ from 'lodash-es';
 import { FaCaretRight } from 'react-icons/fa';
 import KeyEventType, { EVENT_TYPES } from './KeyEventType';
+import Icon from '../../../Common/Icon/Icon';
+import { occupancyStatusToIconSvg } from '../../../../types/vehicle-occupancy-status-types';
 import './KeyEvent.scss';
-
 
 function KeyEvent(props) {
     const showMoreInfo = () => {};
@@ -34,7 +35,10 @@ function KeyEvent(props) {
             <div className="row">
                 <div className="col-8">
                     <div className="key-event__header row mb-2">
-                        <div className="col-8"><KeyEventType type={ type } /></div>
+                        <div className="col-8">
+                            <KeyEventType type={ type } />
+                            {keyEventDetail.occupancyStatus && <Icon className="icon d-inline-block ml-2" icon={ occupancyStatusToIconSvg(keyEventDetail.occupancyStatus) } />}
+                        </div>
                     </div>
                     <div className="font-weight-bold mb-1">{keyEventDetail.title}</div>
                     {detail && <div className="text-muted">{detail}</div>}
@@ -94,7 +98,10 @@ function KeyEvent(props) {
 KeyEvent.propTypes = {
     type: PropTypes.string.isRequired,
     scheduledTime: PropTypes.object,
-    time: PropTypes.object.isRequired,
+    time: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.object,
+    ]).isRequired,
     detail: PropTypes.string,
     handleMouseEnter: PropTypes.func,
     handleMouseLeave: PropTypes.func,

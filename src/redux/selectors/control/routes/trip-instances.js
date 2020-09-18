@@ -9,7 +9,7 @@ import { ERROR_MESSAGE_TYPE, CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES } f
 export const getTripsState = state => _.result(state, 'control.routes.tripInstances');
 export const getAllTripInstances = createSelector(getTripsState, tripInstancesState => _.result(tripInstancesState, 'all'));
 export const getAllTripIds = createSelector(getAllTripInstances, tripInstances => _.values(tripInstances).map(tripInstance => tripInstance.tripId));
-export const getAllTripInstancesList = createSelector(getAllTripInstances, tripInstances => _.sortBy(_.values(tripInstances), 'startTime'));
+export const getAllTripInstancesList = createSelector(getAllTripInstances, tripInstances => _.values(tripInstances));
 export const getAllTripInstancesTotal = createSelector(getTripsState, tripInstancesState => _.result(tripInstancesState, 'total'));
 export const getTripInstancesLoadingState = createSelector(getTripsState, tripInstancesState => _.result(tripInstancesState, 'isLoading'));
 export const getTripInstancesUpdatingState = createSelector(getTripsState, tripInstancesState => _.result(tripInstancesState, 'isUpdating'));

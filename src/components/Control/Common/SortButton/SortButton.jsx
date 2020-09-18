@@ -9,14 +9,14 @@ const SortButton = props => (
         className={ `sort-btn d-flex flex-column ${props.className}` }
         vertical>
         <Button
-            className={ `sort-btn__inner-btn bg-white border-0 rounded-0 p-0 d-flex ${props.active === 'asc' ? 'active' : ''}` }
-            onClick={ () => props.onClick('asc') }>
-            <IoMdArrowDropup size={ 20 } />
-        </Button>
-        <Button
-            className={ `sort-btn__inner-btn bg-white border-0 rounded-0 p-0 d-flex ${props.active === 'desc' ? 'active' : ''}` }
-            onClick={ () => props.onClick('desc') }>
-            <IoMdArrowDropdown size={ 20 } />
+            className="border-0 rounded-0 p-0 bg-white"
+            onClick={ () => props.onClick(props.active === 'asc' ? 'desc' : 'asc') }>
+            <div className={ `sort-btn__inner-btn d-flex ${props.active === 'asc' ? 'active' : ''}` }>
+                <IoMdArrowDropup size={ 20 } />
+            </div>
+            <div className={ `sort-btn__inner-btn d-flex ${props.active === 'desc' ? 'active' : ''}` }>
+                <IoMdArrowDropdown size={ 20 } />
+            </div>
         </Button>
     </ButtonGroup>
 );

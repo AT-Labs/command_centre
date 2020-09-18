@@ -39,6 +39,8 @@ export default {
     FETCH_STOP_UPCOMING_VEHICLES: 'fetch-stop-upcoming-vehicles',
     FETCH_STOP_PAST_VEHICLES: 'fetch-stop-past-vehicles',
     FETCH_STOP_ROUTES: 'fetch-stop-routes',
+    FETCH_STOP_PID_MESSAGES: 'fetch-stop-pid-messages',
+    FETCH_STOP_PID_INFORMATION: 'fetch-stop-pid-information',
     UPDATE_VISIBLE_STOPS: 'update-visible-stops',
     // Route detail
     FETCH_ROUTE_INFO: 'fetch-route-info',

@@ -11,6 +11,7 @@ import {
     getVehicleInfo,
 } from '../../../../../redux/selectors/control/tripReplays/currentTrip';
 import { formatUnixDatetime } from '../../../../../utils/helpers';
+import { occupancyStatusToMessage } from '../../../../../types/vehicle-occupancy-status-types';
 
 const getDatetime = (vehiclePosition) => {
     const { timestamp } = vehiclePosition;
@@ -60,6 +61,7 @@ function VehiclePositionTooltip({ position, routeInfo, tripInfo, vehicleInfo, op
                     Vehicle label: { vehicleInfo.vehicleLabel }
                 </React.Fragment>
             )}
+            {!position.nis && position.occupancyStatus && <React.Fragment><br />Occupancy: { occupancyStatusToMessage(position.occupancyStatus) }</React.Fragment>}
         </Tooltip>
     );
 }

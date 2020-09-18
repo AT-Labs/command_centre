@@ -8,6 +8,7 @@ export const INIT_STATE = {
         critical: null,
         fetchPastStops: null,
         fetchPastVehicles: null,
+        fetchPidInformation: null,
         geocode: null,
         realtime: null,
         routesByStop: null,

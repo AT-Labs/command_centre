@@ -27,8 +27,10 @@ export const isEndDateValid = (endDate, startDate) => {
     if (_.isEmpty(endDate)) {
         return true;
     }
+
     return moment(endDate, DATE_FORMAT, true).isValid()
-    && moment(endDate, DATE_FORMAT).isSameOrAfter(moment(startDate, DATE_FORMAT), 'day');
+    && moment(endDate, DATE_FORMAT).isSameOrAfter(moment(startDate, DATE_FORMAT), 'day')
+    && moment(endDate, DATE_FORMAT).isSameOrAfter(moment(), 'day');
 };
 
 export const isStartDateValid = (startDate, openingTime) => moment(startDate, DATE_FORMAT, true).isValid()

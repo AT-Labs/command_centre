@@ -56,6 +56,8 @@ export const getStopId = createSelector(getStopDetail, stopDetail => _.result(st
 export const getPastVehicles = createSelector(getStopDetail, stopDetail => _.result(stopDetail, 'pastVehicles'));
 export const getUpcomingVehicles = createSelector(getStopDetail, stopDetail => _.result(stopDetail, 'upcomingVehicles'));
 
+export const getPidInformation = createSelector(getStopDetail, stopDetail => _.result(stopDetail, 'pidInformation'));
+export const getPidMessages = createSelector(getStopDetail, stopDetail => _.result(stopDetail, 'pidMessages'));
 export const getTripStops = createSelector(getDetailState, detailState => _.uniqBy(_.map(_.result(detailState, 'trip.stopTimes', []), 'stop')));
 export const getAddressDetail = createSelector(getDetailState, detailState => _.result(detailState, 'address'));
 export const getRouteDetail = createSelector(getDetailState, detailState => _.result(detailState, 'route'));
