@@ -105,6 +105,8 @@ export class TripsView extends React.Component {
 
     isTrainMode = () => _.get(this.props.filters, 'routeType') === TRAIN_TYPE_ID
 
+    isSortingEnable = () => this.isTripsOnlyView()
+
     getSorting = () => _.get(this.props.filters, 'sorting')
 
     isSortByDelayVisible = () => {
@@ -127,6 +129,21 @@ export class TripsView extends React.Component {
         this.props.fetchTripInstances(variables, { isUpdate });
     }
 
+    renderSortableColumnLabel = (columnName, label) => (
+        <div className="d-flex align-content-center">
+            <SortButton
+                className="mr-1"
+                active={ this.getSorting() && this.getSorting().sortBy === columnName ? this.getSorting().order : null }
+                onClick={ order => this.props.mergeRouteFilters({
+                    sorting: {
+                        sortBy: columnName,
+                        order,
+                    },
+                }) } />
+            <div>{ label }</div>
+        </div>
+    )
+
     getRowColumnsConfig = () => {
         const iconCol = {
             label: () => (
@@ -145,23 +162,14 @@ export class TripsView extends React.Component {
             getContent: row => this.renderIconColumnContent(row),
         };
         const routeVariantIdCol = { label: 'route #', key: 'routeVariantId', cols: 'col-1' };
-        const startTimeCol = { label: 'start', key: 'startTime', cols: 'col-1' };
+        const startTimeCol = {
+            label: this.isSortingEnable() ? () => this.renderSortableColumnLabel('startTime', 'start') : 'start',
+            key: 'startTime',
+            cols: 'col-1',
+        };
         const endTimeCol = { label: 'end', key: 'endTime', cols: 'col-1' };
         const statusCol = {
-            label: this.isSortByDelayVisible() ? () => (
-                <div className="d-flex align-content-center">
-                    <SortButton
-                        className="mr-1"
-                        active={ this.getSorting() && this.getSorting().sortBy === 'delay' ? this.getSorting().order : null }
-                        onClick={ order => this.props.mergeRouteFilters({
-                            sorting: {
-                                sortBy: 'delay',
-                                order,
-                            },
-                        }) } />
-                    <div>status</div>
-                </div>
-            ) : 'status',
+            label: this.isSortingEnable() && this.isSortByDelayVisible() ? () => this.renderSortableColumnLabel('delay', 'status') : 'status',
             key: 'status',
             cols: 'col-3',
             getContent: row => formatStatusColumn(row),

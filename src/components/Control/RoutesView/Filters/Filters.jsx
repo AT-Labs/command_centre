@@ -13,9 +13,9 @@ import StandardFilter from '../../Common/Filters/StandardFilter';
 import SearchFilter from '../../Common/Filters/SearchFilter/SearchFilter';
 import {
     getTripStatusFilter, getAgencyIdRouteFilter, getModeRouteFilter,
-    getRouteShortNameFilter, getRouteVariantIdFilter, getDepotIdsRouteFilter,
+    getRouteShortNameFilter, getRouteVariantIdFilter, getDepotIdsRouteFilter, getSorting,
 } from '../../../../redux/selectors/control/routes/filters';
-import { mergeRouteFilters } from '../../../../redux/actions/control/routes/filters';
+import { mergeRouteFilters, resetSorting } from '../../../../redux/actions/control/routes/filters';
 import { clearSelectedStops } from '../../../../redux/actions/control/routes/trip-instances';
 import FilterByDepot from '../../Common/Filters/FilterByDepot';
 import FilterByTrackingStatus from './FilterByTrackingStatus';
@@ -33,6 +33,11 @@ const Filters = (props) => {
         routeShortName: '',
         routeVariantId: '',
     };
+
+    const inProgressAndCompletedStatuses = [
+        TRIP_STATUS_TYPES.inProgress,
+        TRIP_STATUS_TYPES.completed,
+    ];
 
     const actionHandlers = {
         selection: {
@@ -53,6 +58,11 @@ const Filters = (props) => {
 
     const onStatusFilterChange = (status) => {
         props.clearSelectedStops();
+        if (inProgressAndCompletedStatuses.includes(props.status)
+            && !inProgressAndCompletedStatuses.includes(status.tripStatus)
+            && props.sorting.sortBy === 'delay') {
+            props.resetSorting();
+        }
         props.mergeRouteFilters(status);
     };
 
@@ -122,6 +132,8 @@ Filters.propTypes = {
     routeShortName: PropTypes.string.isRequired,
     routeVariantId: PropTypes.string.isRequired,
     clearSelectedStops: PropTypes.func.isRequired,
+    sorting: PropTypes.object.isRequired,
+    resetSorting: PropTypes.func.isRequired,
 };
 
 Filters.defaultProps = {
@@ -135,5 +147,6 @@ export default connect(state => ({
     routeType: getModeRouteFilter(state),
     routeShortName: getRouteShortNameFilter(state),
     routeVariantId: getRouteVariantIdFilter(state),
+    sorting: getSorting(state),
 }),
-{ mergeRouteFilters, clearSelectedStops })(Filters);
+{ mergeRouteFilters, clearSelectedStops, resetSorting })(Filters);

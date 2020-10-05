@@ -137,7 +137,7 @@
     "stylelint": "stylelint \"**/*.scss\"",
     "test": "cross-env NODE_ENV=test mocha --opts ./config/mocha/mocha.opts --exit",
     "test:watch": "cross-env NODE_ENV=test mocha --watch --opts ./config/mocha/mocha.opts",
-    "test:coverage": "cross-env NODE_ENV=test nyc mocha --opts ./config/mocha/mocha.opts",
+    "test:coverage": "cross-env NODE_ENV=test nyc mocha --opts ./config/mocha/mocha.opts --exit",
     "e2e": "start-server-and-test start:e2e http-get://localhost:3000 e2e:run",
     "e2e:run": "cypress run",
     "e2e:spec": "cypress run --spec 'cypress/integration/vehicles.spec.js'",

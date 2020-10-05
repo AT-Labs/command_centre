@@ -9,6 +9,7 @@ import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
 import { SERVICE_DATE_FORMAT } from '../../../utils/control/routes';
 import { TripsView } from './TripsView';
 import SortButton from '../Common/SortButton/SortButton';
+import { INIT_STATE } from '../../../redux/reducers/control/routes/filters';
 
 const tripInstances = [{
     tripId: 'test1',
@@ -72,6 +73,37 @@ describe('<TripsView />', () => {
         wrapper.detach();
     });
 
+    context('Sorting', () => {
+        it('Will disable sorting when it\'s not trips only view', () => {
+            setup({ filters: INIT_STATE, viewType: VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_TRIPS });
+            const sortControlButtons = wrapper.find(SortButton);
+            expect(sortControlButtons.length).to.eql(0);
+        });
+
+        it('Will enable sorting when it\'s trips only view', () => {
+            setup({ filters: INIT_STATE, viewType: VIEW_TYPE.CONTROL_DETAIL_ROUTES.TRIPS });
+            const sortControlButtons = wrapper.find(SortButton);
+            expect(sortControlButtons.length).to.eql(1);
+        });
+    });
+
+    context('Sort by startTime', () => {
+        it('Should sort by startTime ASC by default', () => {
+            setup({ filters: INIT_STATE });
+            const sortControlButtons = wrapper.find(SortButton);
+            expect(sortControlButtons.parents().at(0).text()).to.contain('start');
+            expect(sortControlButtons.find('button').find('div').at(0).html()).to.contain('active');
+        });
+
+        it('Should update filter to startTime DESC when sort button clicked', () => {
+            setup({ filters: INIT_STATE });
+            const sortControlButtons = wrapper.find(SortButton).at(0).find('button');
+            sortControlButtons.at(0).simulate('click');
+            expect(mergedFilter.sorting.sortBy).to.equal('startTime');
+            expect(mergedFilter.sorting.order).to.equal('desc');
+        });
+    });
+
     context('Sort by delay', () => {
         const getStatusColumn = () => {
             const columns = wrapper.instance().getRowColumnsConfig();
@@ -80,7 +112,7 @@ describe('<TripsView />', () => {
         };
 
         it('Should not visible by default', () => {
-            setup({ tripStatus: '' });
+            setup({ filters: INIT_STATE });
             expect(getStatusColumn().label).to.equal('status');
         });
 
@@ -93,13 +125,13 @@ describe('<TripsView />', () => {
         it('Should visible when filter status is in-progress', () => {
             const filters = { tripStatus: TRIP_STATUS_TYPES.inProgress };
             setup({ filters });
-            expect(getStatusColumn().label.toString()).to.contain('SortButton');
+            expect(getStatusColumn().label.toString()).to.contain('Sortable');
         });
 
         it('Should visible when filter status is completed', () => {
             const filters = { tripStatus: TRIP_STATUS_TYPES.completed };
             setup({ filters });
-            expect(getStatusColumn().label.toString()).to.contain('SortButton');
+            expect(getStatusColumn().label.toString()).to.contain('Sortable');
         });
 
         it('Should not set active when sortBy is not delay', () => {
@@ -117,7 +149,7 @@ describe('<TripsView />', () => {
                 sorting: { sortBy: 'delay', order: 'asc' },
             };
             setup({ filters });
-            const sortControlButtons = wrapper.find(SortButton).find('button').find('div');
+            const sortControlButtons = wrapper.find(SortButton).at(1).find('button').find('div');
             expect(sortControlButtons.at(0).html()).to.contain('active');
             expect(sortControlButtons.at(1).html()).not.to.contain('active');
         });
@@ -125,7 +157,7 @@ describe('<TripsView />', () => {
         it('Should update filter when sort button clicked', () => {
             const filters = { tripStatus: TRIP_STATUS_TYPES.inProgress };
             setup({ filters });
-            const sortControlButtons = wrapper.find(SortButton).find('button');
+            const sortControlButtons = wrapper.find(SortButton).at(1).find('button');
             sortControlButtons.at(0).simulate('click');
             expect(mergedFilter.sorting.sortBy).to.equal('delay');
             expect(mergedFilter.sorting.order).to.equal('asc');

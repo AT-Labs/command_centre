@@ -77,3 +77,8 @@ export const moveOperationalTrips = (payload) => {
 export const getAllocationSnapshot = () => fetchWithAuthHeader(`${REACT_APP_BLOCK_MGT_CLIENT_QUERY_URL}/allocations/`, { method: 'GET' })
     .then(response => jsonResponseHandling(response))
     .then(data => result(data, 'all', []));
+
+// export const getAllocationsByTripId = tripId => fetchWithAuthHeader(`${REACT_APP_BLOCK_MGT_CLIENT_QUERY_URL}/allocations/trips/${tripId}?closestTrip=true`, { method: 'GET' })
+//     .then(response => jsonResponseHandling(response))
+//     .then(data => result(data, 'all', []));
+export const getAllocationsByTripId = () => Promise.resolve([]);

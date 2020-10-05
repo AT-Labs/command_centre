@@ -22,3 +22,7 @@ export const mergeRouteFilters = (filters, isCleanUpActiveNeeded) => (dispatch) 
         dispatch(mergeRouteFiltersAction(filters));
     }
 };
+
+export const resetSorting = () => ({
+    type: ACTION_TYPE.RESET_CONTROL_ROUTES_SORTING,
+});

@@ -41,17 +41,15 @@ export const formatDestination = (isTrainStop, destinationDisplay) => {
     return destinationDisplay;
 };
 
-export const calculateDue = (arrivalStatus, scheduledTime, dueTime) => {
+export const calculateDue = (arrivalStatus, dueTime) => {
     const { CANCELLED, DUE, EMPTY } = STOP_TYPES.STATUS;
-    const formattedScheduledTime = moment(scheduledTime);
-    const formattedDueTime = moment(dueTime);
 
-    if (dueTime && formattedScheduledTime) {
-        const dueValue = formattedDueTime.diff(formattedScheduledTime, 'minutes');
-        return dueValue < DUE.TIME_THRESHOLD ? DUE.SYMBOL : dueValue;
-    }
     if (arrivalStatus === CANCELLED.LEGEND) {
         return CANCELLED.SYMBOL;
+    }
+    if (dueTime) {
+        const dueValue = moment(dueTime).diff(moment(), 'minutes');
+        return dueValue < DUE.TIME_THRESHOLD ? DUE.SYMBOL : dueValue;
     }
     return EMPTY.SYMBOL;
 };
@@ -96,5 +94,5 @@ export const getPidColumns = ({ isTrainStop, isFerryStop, isParentBusStop }) => 
     header: 'Due',
     headerClassName: 'w-15 text-right',
     cellClassName: 'text-right',
-    formatter: ({ arrivalStatus, scheduledTime, dueTime }) => calculateDue(arrivalStatus, scheduledTime, dueTime),
+    formatter: ({ arrivalStatus, dueTime }) => calculateDue(arrivalStatus, dueTime),
 }];

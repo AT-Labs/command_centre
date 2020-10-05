@@ -7,6 +7,7 @@ import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as gtfsRealtime from '../../../../utils/transmitters/gtfs-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
+import * as blockMgtApi from '../../../../utils/transmitters/block-mgt-api';
 import ACTION_TYPE from '../../../action-types';
 import * as stopDetailActions from './stop';
 
@@ -332,7 +333,7 @@ describe('Stop detail actions', () => {
             dueTime: '2020-09-08T08:25:40.000Z',
             tripId: 'newTripId',
             arrivalStatus: undefined,
-            numberOfCars: undefined,
+            numberOfCars: 6,
             occupancyStatus: null,
         }];
         const expectedActions = [
@@ -354,6 +355,16 @@ describe('Stop detail actions', () => {
             },
         ];
 
+        const allocations = [{
+            vehicleLabel: 'AMP        471',
+            vehicleId: '59471',
+            tripId: '247-810102-45120-2-9W02441-4a826f9e',
+        }, {
+            vehicleLabel: 'AMP        823',
+            vehicleId: '59823',
+            tripId: '247-810102-45120-2-9W02441-4a826f9e',
+        }];
+
         it('Should make an API call and dispatch 4 actions', async () => {
             const fakeGetDeparturesByStopCode = sandbox.fake.resolves(departures);
             const getDeparturesByStopCode = sandbox.stub(ccRealtime, 'getDeparturesByStopCode').callsFake(fakeGetDeparturesByStopCode);
@@ -361,11 +372,16 @@ describe('Stop detail actions', () => {
             const fakeGetNewTripId = sandbox.fake.resolves(newTrip);
             const getNewTripId = sandbox.stub(gtfsRealtime, 'getNewTripId').callsFake(fakeGetNewTripId);
 
+            const fakeGetAllocationsByTripId = sandbox.fake.resolves(allocations);
+            const getAllocationsByTripId = sandbox.stub(blockMgtApi, 'getAllocationsByTripId').callsFake(fakeGetAllocationsByTripId);
+
             await store.dispatch(stopDetailActions.fetchPidInformation('stopCode'));
             sandbox.assert.calledOnce(getDeparturesByStopCode);
             sandbox.assert.calledWith(getDeparturesByStopCode, 'stopCode');
             sandbox.assert.calledOnce(getNewTripId);
             sandbox.assert.calledWith(getNewTripId, departures.response.movements[0].trip_id);
+            sandbox.assert.calledOnce(getAllocationsByTripId);
+            sandbox.assert.calledWith(getAllocationsByTripId, newTrip.trips[0].newId);
             expect(store.getActions()).to.eql(expectedActions);
         });
     });

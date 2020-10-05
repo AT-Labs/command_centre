@@ -35,7 +35,7 @@ export class PidInformation extends PureComponent {
         const selectedStop = Object.values(stops).find(stop => stop.stop_code === stopCode);
         const isTrainStop = selectedStop.route_type ? VEHICLE_TYPES[selectedStop.route_type].type === 'Train' : false;
         const isFerryStop = selectedStop.route_type ? VEHICLE_TYPES[selectedStop.route_type].type === 'Ferry' : false;
-        const isParentBusStop = !childStops[stopCode];
+        const isParentBusStop = selectedStop.route_type ? VEHICLE_TYPES[selectedStop.route_type].type === 'Bus' && !childStops[stopCode] : false;
         return (
             <div>
                 {pidMessages && (

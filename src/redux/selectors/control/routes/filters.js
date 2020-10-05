@@ -14,6 +14,7 @@ export const getTripStatusFilter = createSelector(getRouteFilters, routeFilters 
 export const getRouteShortNameFilter = createSelector(getRouteFilters, routeFilters => _.result(routeFilters, 'routeShortName'));
 export const getRouteVariantIdFilter = createSelector(getRouteFilters, routeFilters => _.result(routeFilters, 'routeVariantId'));
 export const getTrackingStatusesFilter = createSelector(getRouteFilters, routeFilters => _.result(routeFilters, 'trackingStatuses'));
+export const getSorting = createSelector(getRouteFilters, routeFilters => _.result(routeFilters, 'sorting'));
 
 export const getControlDetailRoutesViewType = createSelector(getRouteFilters, (routeFilters) => {
     const { isGroupedByRoute, isGroupedByRouteVariant } = routeFilters;

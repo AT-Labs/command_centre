@@ -103,6 +103,7 @@ export default {
     UPDATE_CONTROL_ROUTE_VARIANTS_SEARCH_RESULTS: 'update-control-route-variants-search-results',
     // Control: filters
     MERGE_CONTROL_ROUTES_FILTERS: 'merge-control-routes-filters',
+    RESET_CONTROL_ROUTES_SORTING: 'reset-control-routes-sorting',
     // Control: tripInstances
     FETCH_CONTROL_TRIP_INSTANCES: 'fetch-control-trip-instances',
     CLEAR_CONTROL_TRIP_INSTANCES: 'clear-control-trip-instances',

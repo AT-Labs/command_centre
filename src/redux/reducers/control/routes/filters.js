@@ -18,10 +18,14 @@ export const INIT_STATE = {
     routeShortName: '',
     routeVariantId: '',
     trackingStatuses: [],
+    sorting: { sortBy: 'startTime', order: 'asc' },
 };
 
 const handleRouteFiltersMerge = (state, { payload: { filters } }) => ({ ...state, ...filters });
 
+const handleResetSorting = state => ({ ...state, ...{ sorting: INIT_STATE.sorting } });
+
 export default handleActions({
     [ACTION_TYPE.MERGE_CONTROL_ROUTES_FILTERS]: handleRouteFiltersMerge,
+    [ACTION_TYPE.RESET_CONTROL_ROUTES_SORTING]: handleResetSorting,
 }, INIT_STATE);

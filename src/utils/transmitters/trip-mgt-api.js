@@ -36,6 +36,8 @@ export const getTrips = ({
     tripStatus, depotIds,
     trackingStatuses,
     sorting,
+    isGroupedByRoute,
+    isGroupedByRouteVariant,
 }) => {
     const variables = { serviceDate };
     if (agencyId) { variables.agencyId = agencyId; }
@@ -49,7 +51,7 @@ export const getTrips = ({
     if (tripIds) { variables.tripIds = tripIds; }
     if (tripStatus) { variables.tripStatus = tripStatus; }
     if (TRIP_STATUS_TYPES.inProgress === tripStatus && trackingStatuses) { variables.trackingStatuses = trackingStatuses; }
-    if ((TRIP_STATUS_TYPES.inProgress === tripStatus || TRIP_STATUS_TYPES.completed === tripStatus) && sorting) { variables.sorting = sorting; }
+    if (sorting && !isGroupedByRoute && !isGroupedByRouteVariant) { variables.sorting = sorting; }
 
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;

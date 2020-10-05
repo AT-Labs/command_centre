@@ -4,6 +4,7 @@ import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import { getNewTripId } from '../../../../utils/transmitters/gtfs-realtime';
+import { getAllocationsByTripId } from '../../../../utils/transmitters/block-mgt-api';
 import ACTION_TYPE from '../../../action-types';
 import { getAllVehicles } from '../../../selectors/realtime/vehicles';
 import { getAllRoutes } from '../../../selectors/static/routes';
@@ -16,7 +17,7 @@ import {
 } from './common';
 import { updateSearchTerms } from '../../search';
 import { getStopSearchTerms } from '../../../selectors/static/stops';
-import { getAllocations, getVehicleAllocationByTrip, getNumberOfCarsByTripId } from '../../../selectors/control/blocks';
+import { getAllocations, getVehicleAllocationByTrip, getNumberOfCarsByAllocations } from '../../../selectors/control/blocks';
 
 export const getRoutesByStop = stopCode => (dispatch) => {
     dispatch(updateDataLoading(true));
@@ -118,7 +119,7 @@ export const fetchPastVehicles = stopId => (dispatch, getState) => {
         });
 };
 
-const mapPidInformation = (movements, allVehicles, vehicleAllocations) => movements.map(async ({
+const mapPidInformation = (movements, allVehicles) => movements.map(async ({
     route_short_name,
     destinationDisplay,
     arrivalStatus,
@@ -128,6 +129,7 @@ const mapPidInformation = (movements, allVehicles, vehicleAllocations) => moveme
     trip_id,
 }) => {
     const newTripId = await getNewTripId(trip_id).then(newTrip => newTrip.trips[0] && newTrip.trips[0].newId);
+    const allocations = await getAllocationsByTripId(newTripId);
     const currentVehicle = allVehicles && Object.values(allVehicles).find(v => (v.vehicle.trip ? v.vehicle.trip.tripId === newTripId : null));
     const occupancyStatus = currentVehicle ? currentVehicle.vehicle.occupancyStatus : null;
 
@@ -139,7 +141,7 @@ const mapPidInformation = (movements, allVehicles, vehicleAllocations) => moveme
         scheduledTime: scheduledDepartureTime,
         dueTime: expectedDepartureTime,
         tripId: newTripId,
-        numberOfCars: getNumberOfCarsByTripId(newTripId, vehicleAllocations),
+        numberOfCars: allocations ? getNumberOfCarsByAllocations(allocations) : null,
         occupancyStatus,
     };
 });
@@ -148,7 +150,7 @@ export const fetchPidInformation = stopCode => (dispatch, getState) => {
     dispatch(updateDataLoading(true));
     const state = getState();
     const allVehicles = getAllVehicles(state);
-    const vehicleAllocations = getAllocations(state);
+
     return ccRealtime.getDeparturesByStopCode(stopCode)
         .then((departures) => {
             dispatch({
@@ -161,7 +163,7 @@ export const fetchPidInformation = stopCode => (dispatch, getState) => {
                 const isDropOffOnly = m.departureBoardingActivity === 'noBoarding' && m.arrivalBoardingActivity === 'alighting';
                 return !isDropOffOnly;
             });
-            return Promise.all(mapPidInformation(validPidMovements, allVehicles, vehicleAllocations));
+            return Promise.all(mapPidInformation(validPidMovements, allVehicles));
         })
         .then(pidInformation => _.orderBy(pidInformation, 'scheduledTime'))
         .then((pidInformation) => {
