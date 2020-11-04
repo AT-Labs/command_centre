@@ -140,3 +140,5 @@ export const spreadStateIntoStops = (stops, status) => {
     }
     return _.isEmpty(newStops) ? [] : newStops;
 };
+
+export const getExpiredMessageRowClassName = ({ isCurrent }) => (isCurrent ? '' : 'bg-at-ocean-tint-10 text-muted');

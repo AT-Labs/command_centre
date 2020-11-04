@@ -7,7 +7,6 @@ import Flatpickr from 'react-flatpickr';
 import { IoIosWarning } from 'react-icons/io';
 import { FormGroup, Input, Label } from 'reactstrap';
 
-import MESSAGING_MODAL_TYPE from '../../../../types/messaging-modal-types';
 import { getTimePickerOptions, formatGroupsForPresentation } from '../../../../utils/helpers';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import Picklist from '../../../Common/Picklist/Picklist';
@@ -45,7 +44,6 @@ const INIT_STATE = {
 export class StopMessageModal extends React.Component {
     static propTypes = {
         isModalOpen: PropTypes.bool.isRequired,
-        modalType: PropTypes.string,
         onClose: PropTypes.func.isRequired,
         title: PropTypes.string.isRequired,
         dismissError: PropTypes.func.isRequired,
@@ -58,7 +56,6 @@ export class StopMessageModal extends React.Component {
 
     static defaultProps = {
         error: {},
-        modalType: null,
         stopsGroups: [],
         activeMessage: null,
     }
@@ -77,7 +74,7 @@ export class StopMessageModal extends React.Component {
 
     static getDerivedStateFromProps(props, state) {
         if (props.activeMessage && state.hasModalBeenOpen) {
-            const { activeMessage: { stopsAndGroups, message, priority, startTime, endTime } } = props;
+            const { activeMessage: { stopsAndGroups, message, priority, startTime, endTime, isCurrent } } = props;
 
             return {
                 stopsAndGroups,
@@ -85,8 +82,8 @@ export class StopMessageModal extends React.Component {
                 priority,
                 startDate: moment(startTime).toDate(),
                 startTime: moment(startTime).format('HH:mm'),
-                endDate: moment(endTime).toDate(),
-                endTime: moment(endTime).format('HH:mm'),
+                endDate: isCurrent ? moment(endTime).toDate() : null,
+                endTime: isCurrent ? moment(endTime).format('HH:mm') : '',
                 hasModalBeenOpen: false,
             };
         }
@@ -156,13 +153,11 @@ export class StopMessageModal extends React.Component {
     }
 
     render() {
-        const { CREATE, EDIT } = MESSAGING_MODAL_TYPE;
-        const { error, isModalOpen, title, allStops, modalType, stopsGroups, activeMessage } = this.props;
+        const { error, isModalOpen, title, allStops, stopsGroups, activeMessage } = this.props;
         const {
             stopsAndGroups, message, startTime, startDate, endTime, endDate, priority, hasSubmitButtonBeenClicked,
         } = this.state;
 
-        const isStartDatetimeEditAllowed = modalType === EDIT && moment(activeMessage.endTime).isAfter(moment());
         const groups = formatGroupsForPresentation(stopsGroups);
         const allStopsAndGroups = [...allSystemStopGroups, ...allStops, ...groups];
         const startDatetime = this.parseSelectedDate(startDate, startTime);
@@ -240,40 +235,34 @@ export class StopMessageModal extends React.Component {
                     <FormGroup tag="fieldset" className="col-6 mb-0">
                         <Label>Start:</Label>
                         <FormGroup className="row no-gutters mb-0">
-                            {
-                                isStartDatetimeEditAllowed || modalType === CREATE
-                                    ? (
-                                        <React.Fragment>
-                                            <div className="col-5 pr-2">
-                                                <ControlSearch
-                                                    id="messaging-start-time"
-                                                    className="message-modal__start-time"
-                                                    data={ OPTIONS }
-                                                    pathToProperty="label"
-                                                    placeholder="Select time"
-                                                    onInputValueChange={ value => this.onFormFieldsChange('startTime', value) }
-                                                    onSelection={ selectedOption => this.onFormFieldsChange('startTime', selectedOption.value) }
-                                                    value={ startTime } />
+                            <React.Fragment>
+                                <div className="col-5 pr-2">
+                                    <ControlSearch
+                                        id="messaging-start-time"
+                                        className="message-modal__start-time"
+                                        data={ OPTIONS }
+                                        pathToProperty="label"
+                                        placeholder="Select time"
+                                        onInputValueChange={ value => this.onFormFieldsChange('startTime', value) }
+                                        onSelection={ selectedOption => this.onFormFieldsChange('startTime', selectedOption.value) }
+                                        value={ startTime } />
 
-                                            </div>
-                                            <div className="col-7 message-modal__start-date">
-                                                <Flatpickr
-                                                    className="form-control cc-form-control"
-                                                    value={ startDate }
-                                                    options={ {
-                                                        ...this.datePickerOptions,
-                                                        minDate: moment(_.get(activeMessage, 'startTime', new Date())).format('YYYY-MM-DD'),
-                                                        disable: [activeMessage && {
-                                                            from: moment(_.get(activeMessage, 'startTime', new Date())).add(1, 'day').format('D MMMM YYYY'),
-                                                            to: moment().add(-1, 'day').format('D MMMM YYYY'),
-                                                        }],
-                                                    } }
-                                                    onChange={ date => this.onDateUpdate('startDate', date[0]) } />
-                                            </div>
-                                        </React.Fragment>
-                                    )
-                                    : <Input type="text" value={ startDatetime.format('DD/MM/YYYY HH:mm') } disabled />
-                            }
+                                </div>
+                                <div className="col-7 message-modal__start-date">
+                                    <Flatpickr
+                                        className="form-control cc-form-control"
+                                        value={ startDate }
+                                        options={ {
+                                            ...this.datePickerOptions,
+                                            minDate: moment(_.get(activeMessage, 'startTime', new Date())).format('YYYY-MM-DD'),
+                                            disable: [activeMessage && {
+                                                from: moment(_.get(activeMessage, 'startTime', new Date())).add(1, 'day').format('D MMMM YYYY'),
+                                                to: moment().add(-1, 'day').format('D MMMM YYYY'),
+                                            }],
+                                        } }
+                                        onChange={ date => this.onDateUpdate('startDate', date[0]) } />
+                                </div>
+                            </React.Fragment>
                         </FormGroup>
 
                     </FormGroup>

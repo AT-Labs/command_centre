@@ -154,3 +154,18 @@ $body-height: 40px;
         }
     }
 }
+
+.stop-times-label {
+
+    &__scrollbar {
+        margin-bottom: 1.75rem;
+    }
+
+    &__no-scrollbar {
+        margin-bottom: .75rem;
+    }
+}
+
+.text-prediction {
+    color: map-get($theme-colors, "at-orange");
+}

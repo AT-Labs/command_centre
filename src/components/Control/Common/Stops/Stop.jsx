@@ -3,14 +3,14 @@ import React from 'react';
 import moment from 'moment';
 import _ from 'lodash-es';
 import { connect } from 'react-redux';
-import { FaRegClock, FaCheck } from 'react-icons/fa';
-import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { FaCheck } from 'react-icons/fa';
+import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
 import { selectStops, updateTripInstanceStopPlatform } from '../../../../redux/actions/control/routes/trip-instances';
 import { getServiceDate } from '../../../../redux/selectors/control/serviceDate';
 import { getSelectedStopsByTripKey } from '../../../../redux/selectors/control/routes/trip-instances';
 import { getPlatforms } from '../../../../redux/selectors/control/platforms';
-import { formatTripDelay, transformStopName } from '../../../../utils/control/routes';
+import { transformStopName } from '../../../../utils/control/routes';
 import { getTripTimeDisplay, getStopKey } from '../../../../utils/helpers';
 import ConfirmationModal from '../ConfirmationModal/ConfirmationModal';
 import { StopStatus, StopType, TripInstanceType } from '../../RoutesView/Types';
@@ -49,8 +49,6 @@ export class Stop extends React.Component {
     isSkipped = () => this.props.stop.status === StopStatus.skipped;
 
     isNonStoppingStop = () => this.props.stop.status === StopStatus.nonStopping;
-
-    isPassed = () => this.props.stop.status === StopStatus.passed;
 
     isNotStartedTrip = () => this.props.tripInstance.status === TRIP_STATUS_TYPES.notStarted;
 
@@ -93,25 +91,6 @@ export class Stop extends React.Component {
         this.hideChangePlatformModal();
     };
 
-    getDelayBadge = () => {
-        const { delay, status } = this.props.tripInstance;
-        const isCancelledTrip = status === TRIP_STATUS_TYPES.cancelled;
-        const formattedDelay = formatTripDelay(delay);
-
-        if (isCancelledTrip || this.isSkipped() || this.isNonStoppingStop() || this.isPassed() || !formattedDelay) {
-            return null;
-        }
-
-        return (
-            <div>
-                <Badge color={ `${formattedDelay > 0 ? 'at-orange' : 'at-ocean-tint-20'}` } data-test="stop-delay">
-                    <FaRegClock className="text-white d-inline-block" size={ 14 } />
-                    <span className="text-white d-inline-block ml-2">{formattedDelay}</span>
-                </Badge>
-            </div>
-        );
-    };
-
     getStopControlClassNames = () => {
         let stopControlClassNames = 'stop-control';
         if (this.isSkipped() || this.isNonStoppingStop()) { stopControlClassNames += ' stop-control--skipped'; }
@@ -133,6 +112,12 @@ export class Stop extends React.Component {
         const actionButtonId = `stop-control-body-action-${stop.stopSequence}`;
         const stopFullName = `${stop.stopCode} - ${transformStopName(stop.stopName)}`;
         const platforms = this.getAvailablePlatforms();
+
+        const isStopNotPassed = stop.status === StopStatus.notPassed;
+        let actualOrPredictedStopTime = isStopNotPassed
+            ? getTripTimeDisplay(stop.predictedDepartureTime || stop.predictedArrivalTime)
+            : getTripTimeDisplay(stop.actualDepartureTime || stop.actualArrivalTime);
+        actualOrPredictedStopTime = (this.isSkipped() || this.isNonStoppingStop()) ? '—' : actualOrPredictedStopTime;
 
         let stopControlActionClassName = 'stop-control__body__actions__action';
         if (isStopSelected) {
@@ -212,8 +197,10 @@ export class Stop extends React.Component {
                         onAction={ this.handleChangePlatform } />
                 </div>
                 <div className="stop-control__footer text-center">
-                    <div>{getTripTimeDisplay(stop.departureTime || stop.arrivalTime)}</div>
-                    { this.getDelayBadge() }
+                    <div>{getTripTimeDisplay(stop.scheduledDepartureTime || stop.departureTime || stop.scheduledArrivalTime || stop.arrivalTime)}</div>
+                    <div className={ isStopNotPassed ? 'text-prediction' : 'text-muted' }>
+                        { (this.props.tripInstance.status !== TRIP_STATUS_TYPES.cancelled) && actualOrPredictedStopTime }
+                    </div>
                 </div>
             </div>
         );

@@ -8,7 +8,7 @@ import Loader from '../Loader/Loader';
 
 import './AutoRefreshTable.scss';
 
-const POLLING_PERIOD_MILLISECONDS = 10000;
+const { REACT_APP_DEFAULT_POLLING_PERIOD_MILLISECONDS } = process.env;
 
 export default class AutoRefreshTable extends Component {
     static propTypes = {
@@ -32,6 +32,7 @@ export default class AutoRefreshTable extends Component {
         hover: PropTypes.bool,
         clickable: PropTypes.bool,
         refresh: PropTypes.bool,
+        pollingInternval: PropTypes.number,
     }
 
     static defaultProps = {
@@ -44,13 +45,14 @@ export default class AutoRefreshTable extends Component {
         hover: false,
         clickable: false,
         refresh: true,
+        pollingInternval: null,
     }
 
     componentDidMount = () => {
         const { refresh } = this.props;
         this.props.fetchRows();
         if (refresh) {
-            this.intervalHandler = setInterval(() => this.props.fetchRows(), POLLING_PERIOD_MILLISECONDS);
+            this.intervalHandler = setInterval(() => this.props.fetchRows(), this.props.pollingInternval || REACT_APP_DEFAULT_POLLING_PERIOD_MILLISECONDS);
         }
     }
 

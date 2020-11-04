@@ -27,6 +27,12 @@ it('formatTripDelay', () => {
     expect(formatTripDelay(90)).to.equal(1);
     expect(formatTripDelay(119)).to.equal(1);
     expect(formatTripDelay(121)).to.equal(2);
+    expect(formatTripDelay(-60)).to.equal(-1);
+    expect(formatTripDelay(-90)).to.equal(-1);
+    expect(formatTripDelay(-119)).to.equal(-1);
+    expect(formatTripDelay(-121)).to.equal(-2);
+    expect(Object.is(formatTripDelay(0.123), 0)).to.equal(true);
+    expect(Object.is(formatTripDelay(-0.123), 0)).to.equal(true);
 });
 
 it('transformStopName', () => {

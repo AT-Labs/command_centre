@@ -29,6 +29,7 @@ export class Stops extends React.Component {
 
         this.state = {
             hoveredStop: null,
+            hasScrollbar: false,
         };
 
         this.containerRef = React.createRef();
@@ -47,6 +48,10 @@ export class Stops extends React.Component {
                     container.scrollTo(scrollPosition, 0);
                 }
             }
+
+            this.setState({
+                hasScrollbar: container.clientWidth < container.scrollWidth,
+            });
         }, 0);
     }
 
@@ -105,21 +110,29 @@ export class Stops extends React.Component {
 
         return (
             <section className={ `pt-3 ${StopLinesHelper.getHoverDirectionClass()}` }>
-                <div className="overflow-x-auto" ref={ this.containerRef }>
-                    <div className="stop-control-container d-flex" style={ { width: `${stopContainerWidth}px` } }>
-                        { stops.map((stop) => {
-                            const { selectedEventClasses, hoverEventClasses } = StopLinesHelper.getLineInteractionClasses(stop);
-                            return (
-                                <Stop
-                                    stop={ stop }
-                                    key={ getStopKey(stop) }
-                                    tripInstance={ this.props.tripInstance }
-                                    onHover={ hoveredStop => this.setState({ hoveredStop }) }
-                                    isStopInSelectionRange={ this.isStopInSelectionRange(stop) }
-                                    isCurrent={ stop.stopSequence === _.get(currentStop, 'stopSequence') }
-                                    lineInteractionClasses={ `${selectedEventClasses} ${hoverEventClasses}` } />
-                            );
-                        })}
+                <div className="d-flex">
+                    <div className={ `align-self-end ml-3 mr-2 text-right ${this.state.hasScrollbar ? 'stop-times-label__scrollbar' : 'stop-times-label__no-scrollbar'}` }>
+                        <div>Scheduled</div>
+                        <div>
+                            <span className="text-muted">Actual</span>/<span className="text-prediction">Prediction</span>
+                        </div>
+                    </div>
+                    <div className="overflow-x-auto" ref={ this.containerRef }>
+                        <div className="stop-control-container d-flex" style={ { width: `${stopContainerWidth}px` } }>
+                            { stops.map((stop) => {
+                                const { selectedEventClasses, hoverEventClasses } = StopLinesHelper.getLineInteractionClasses(stop);
+                                return (
+                                    <Stop
+                                        stop={ stop }
+                                        key={ getStopKey(stop) }
+                                        tripInstance={ this.props.tripInstance }
+                                        onHover={ hoveredStop => this.setState({ hoveredStop }) }
+                                        isStopInSelectionRange={ this.isStopInSelectionRange(stop) }
+                                        isCurrent={ stop.stopSequence === _.get(currentStop, 'stopSequence') }
+                                        lineInteractionClasses={ `${selectedEventClasses} ${hoverEventClasses}` } />
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
                 { shouldStopSelectionFooterBeShown && <StopSelectionFooter tripInstance={ this.props.tripInstance } /> }

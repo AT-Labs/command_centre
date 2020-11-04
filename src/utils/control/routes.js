@@ -28,7 +28,11 @@ export const getStartTimeFromFilterInitialTime = (time) => {
     return timeMoment.format(TIME_FORMAT);
 };
 
-export const formatTripDelay = delay => delay && Math.floor(delay / 60);
+export const formatTripDelay = (delay) => {
+    let res = delay && Math.trunc(delay / 60);
+    res = Object.is(res, -0) ? 0 : res;
+    return res;
+};
 
 export const unformatTripDelay = formattedDelay => formattedDelay * 60;
 

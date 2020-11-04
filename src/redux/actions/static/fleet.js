@@ -32,7 +32,7 @@ const tokenizeBuses = buses => buses.map(bus => ({
 
 const tokenizeTrains = trains => trains.map(train => ({
     ...train,
-    tokens: train.label.toLowerCase().split(/  +/g).concat([train.id]),
+    tokens: train.label.toLowerCase().split(/  +/g),
 }));
 
 const tokenizeFerries = ferries => ferries.map(ferry => ({

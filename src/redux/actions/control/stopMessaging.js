@@ -1,9 +1,7 @@
 import _ from 'lodash-es';
-import moment from 'moment';
-
 import ACTION_TYPE from '../../action-types';
 import ERROR_TYPE from '../../../types/error-types';
-import STOP_MESSAGE_STATUS from '../../../types/stop-messages-status-types';
+import STOP_MESSAGE_TYPE from '../../../types/stop-messages-types';
 import * as stopMessagingApi from '../../../utils/transmitters/stop-messaging-api';
 import { setBannerError, reportError } from '../activity';
 
@@ -49,10 +47,7 @@ export const getStopMessagesAndPermissions = () => (dispatch) => {
             const stopMessages = messagesAndPermissions.messages;
             const { permissions } = messagesAndPermissions._links; // eslint-disable-line
 
-            const filteredStopMessages = stopMessages.filter(
-                stopMessage => stopMessage.workflowState !== STOP_MESSAGE_STATUS.DELETED
-                && moment().isBefore(stopMessage.endTime),
-            );
+            const filteredStopMessages = stopMessages.filter(stopMessage => stopMessage.workflowState !== STOP_MESSAGE_TYPE.STATUS.DELETED);
             const activeStopMessages = _.sortBy(filteredStopMessages, 'startTime');
             dispatch(updateStopMessagesPermissions(permissions));
             dispatch(loadStopMessages(activeStopMessages));
@@ -87,7 +82,7 @@ export const getStopGroups = () => (dispatch) => {
     return stopMessagingApi.getStopGroups()
         .then((stopGroups) => {
             const filteredStopGroups = stopGroups.filter(
-                stopGroup => stopGroup.workflowState !== STOP_MESSAGE_STATUS.DELETED,
+                stopGroup => stopGroup.workflowState !== STOP_MESSAGE_TYPE.STATUS.DELETED,
             );
             dispatch(loadStopGroups(filteredStopGroups));
             dispatch(updateLoadingStopGroupsState(false));

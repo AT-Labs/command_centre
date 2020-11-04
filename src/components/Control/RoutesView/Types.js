@@ -31,8 +31,14 @@ export const StopType = PropTypes.shape({
     stopSequence: PropTypes.number,
     stopCode: PropTypes.string,
     stopName: PropTypes.string,
-    arrivalTime: PropTypes.string,
-    departureTime: PropTypes.string,
+    arrivalTime: PropTypes.string, // TODO: Deprected. Delete once ATR-2032 was deployed to Prod
+    departureTime: PropTypes.string, // TODO: Deprected. Delete once ATR-2032 was deployed to Prod
+    scheduledArrivalTime: PropTypes.string,
+    scheduledDepartureTime: PropTypes.string,
+    actualArrivalTime: PropTypes.string,
+    actualDepartureTime: PropTypes.string,
+    predictedArrivalTime: PropTypes.string,
+    predictedDepartureTime: PropTypes.string,
     status: PropTypes.string,
     parent: PropTypes.string,
 });

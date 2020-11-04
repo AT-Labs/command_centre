@@ -22,6 +22,8 @@ const stop = {
     stopName: 'test8',
     arrivalTime: '00:00:00',
     departureTime: '11:11:11',
+    scheduledArrivalTime: '00:00:00',
+    scheduledDepartureTime: '11:11:11',
     status: 'NOT_PASSED',
     parent: 'test9',
 };

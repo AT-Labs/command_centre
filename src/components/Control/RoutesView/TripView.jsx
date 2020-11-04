@@ -74,6 +74,8 @@ export class TripView extends React.Component {
         const vehicleAllocationLabel = getVehicleAllocationLabelByTrip(tripInstance, this.props.vehicleAllocations);
         const agency = _.find(this.props.agencies, { agencyId: tripInstance.agencyId });
         const depot = agency ? _.find(agency.depots, { depotId: tripInstance.depotId }) : undefined;
+        const tripDelay = ([TRIP_STATUS_TYPES.cancelled, TRIP_STATUS_TYPES.missed, TRIP_STATUS_TYPES.notStarted].includes(this.props.tripInstance.status)) ? '—' : `${formatTripDelay(tripInstance.delay)} min` || '—';
+
         const details = [
             [
                 { name: 'Service ID', value: tripInstance.serviceId || '—' },
@@ -89,6 +91,7 @@ export class TripView extends React.Component {
                 { name: 'Start time', value: getTripTimeDisplay(tripInstance.startTime) || '—' },
                 { name: 'End time', value: getTripTimeDisplay(tripInstance.endTime) || '—' },
                 { name: 'Service type', value: '—' },
+                { name: 'Delay', value: tripDelay },
             ],
         ];
 

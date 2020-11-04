@@ -17,3 +17,6 @@ export const getUpcomingByVehicleId = vehicleId => fetch(`${CC_REALTIME_QUERY_UR
 
 export const getDeparturesByStopCode = stopCode => fetch(`${CC_REALTIME_SERVICE_INFO_API}/service-info/departures?stop_code=${stopCode}&scope=tripsData`, { method: 'GET' })
     .then(response => jsonResponseHandling(response));
+
+export const getVehiclesByTripId = tripId => fetch(`${CC_REALTIME_SERVICE_INFO_API}/service-info/vehicles/byTripId/${tripId}`, { method: 'GET' })
+    .then(response => jsonResponseHandling(response));

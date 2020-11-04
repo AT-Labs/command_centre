@@ -34,7 +34,7 @@ const updateStopMessagingApi = (endpoint, id, payload) => {
  */
 export const getStopMessagingViewPermission = () => getViewPermission(`${REACT_APP_STOP_MESSAGING_API}/view`);
 
-export const getStopMessages = () => fetchStopMessagingApi(stopMessagesEndpoint);
+export const getStopMessages = () => fetchStopMessagingApi(`${stopMessagesEndpoint}?include_expired=true`);
 
 export const updateStopMessage = (payload, stopMessageId) => updateStopMessagingApi(stopMessagesEndpoint, stopMessageId, payload);
 

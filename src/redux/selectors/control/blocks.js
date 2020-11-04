@@ -52,7 +52,7 @@ export const getVehicleAllocationByTrip = (trip, allocations) => {
     return allocations[key];
 };
 export const getNumberOfCarsByAllocations = (allocations) => {
-    const isAdlTrain = allocations.some(v => v.vehicleLabel.toUpperCase().includes('ADL'));
+    const isAdlTrain = allocations.some(v => v.toUpperCase().includes('ADL'));
     return allocations.length > 0 && allocations.length * (isAdlTrain ? 2 : 3);
 };
 export const getVehicleAllocationLabel = allocation => _.map(allocation, 'vehicleLabel').join(', ');

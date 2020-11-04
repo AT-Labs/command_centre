@@ -13,6 +13,8 @@ import { getPidColumns } from './columns';
 import PidMessages from './PidMessages';
 import './PidInformation.scss';
 
+const { REACT_APP_VPID_POLLING_PERIOD_MILLISECONDS } = process.env;
+
 export class PidInformation extends PureComponent {
     static propTypes = {
         stopCode: PropTypes.string.isRequired,
@@ -48,10 +50,11 @@ export class PidInformation extends PureComponent {
                 )}
                 <AutoRefreshTable
                     rows={ pidInformation }
-                    fetchRows={ () => this.props.fetchPidInformation(stopCode) }
+                    fetchRows={ () => this.props.fetchPidInformation(stopCode, isTrainStop) }
                     columns={ getPidColumns({ isTrainStop, isFerryStop, isParentBusStop }) }
                     className="pid-information"
-                    emptyMessage={ MESSAGE_TYPES.pidInformationNoInfo } />
+                    emptyMessage={ MESSAGE_TYPES.pidInformationNoInfo }
+                    pollingInternval={ +REACT_APP_VPID_POLLING_PERIOD_MILLISECONDS } />
             </div>
         );
     }

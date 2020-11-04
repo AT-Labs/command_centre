@@ -85,6 +85,24 @@ const mockFleetVehicles = {
             type: 'Train',
         },
         tokens: ['amp', '661'],
+    }, {
+        id: '80596',
+        label: 'AMP        596',
+        agency: {
+            agencyId: 'VT',
+            agencyName: 'AT Metro',
+            depot: {
+                name: '21',
+            },
+        },
+        attributes: {
+            loweringFloor: true,
+        },
+        capacity: {},
+        type: {
+            type: 'Train',
+        },
+        tokens: ['amp', '596'],
     }],
 };
 
@@ -416,6 +434,13 @@ describe('Search actions', () => {
         it('should return a train and handle spaces spaces', async () => checkTrainsResponse('AMP    661'));
         it('should return a ferry if the value is a ferry id', async () => checkFerriesResponse('CLIPPER'));
         it('should return a bus if the value is a license plate', async () => checkBusesResponse('NB1401'));
+        it('should not search trains by id', async () => {
+            const searchTerm = '596';
+            const getAllFleet = sandbox.stub(fleet, 'getAllFleetTrains').returns(mockFleetVehicles[SEARCH_RESULT_TYPE.TRAIN.type]);
+            await store.dispatch(search.searchVehicles(searchTerm, getAllFleet, SEARCH_RESULT_TYPE.TRAIN));
+
+            expect(store.getActions().payload).not.to.eql([vehiclesExpectedActions.train]);
+        });
     });
 
     context('performTokenSearch()', () => {
