@@ -180,6 +180,8 @@ const moveOperationalTrips = data => (dispatch) => {
 
 const isTripStatusCompleted = trip => trip.status === TRIP_STATUS_TYPES.completed;
 
+const isTripStatusInProgress = trip => trip.status === TRIP_STATUS_TYPES.inProgress;
+
 export const allocateVehicles = (operationalBlockRun, vehicles, selectedTrips) => (dispatch) => {
     const { operationalBlockRunId, operationalTrips, version } = operationalBlockRun;
 
@@ -200,9 +202,12 @@ export const allocateVehicles = (operationalBlockRun, vehicles, selectedTrips) =
         };
     });
 
+    const vehiclesIds = vehicles.map(vehicle => vehicle.id);
+
     const data = {
         version,
         operationalTrips: finalUpdatedOperationalTrips,
+        vehiclesIds: selectedTrips.length > 0 ? vehiclesIds : undefined,
     };
 
     dispatch(updateOperationalBlockRun(operationalBlockRunId, data));
@@ -219,7 +224,6 @@ export const moveTrips = (operationalBlockRunFrom, operationalBlockRunTo, select
     dispatch(moveOperationalTrips(data));
 };
 
-
 export const substituteVehicles = (operationalBlockRun, vehicles, operationalTripExternalRef) => (dispatch) => {
     let startSubstituting = false;
     const { operationalBlockRunId, operationalTrips, version } = operationalBlockRun;
@@ -231,7 +235,7 @@ export const substituteVehicles = (operationalBlockRun, vehicles, operationalTri
 
             return {
                 ...trip,
-                vehicles: startSubstituting && !isTripStatusCompleted(trip) ? vehicles : trip.vehicles,
+                vehicles: (startSubstituting && !isTripStatusCompleted(trip) && !isTripStatusInProgress(trip)) ? vehicles : trip.vehicles,
             };
         });
 
@@ -332,7 +336,7 @@ export const startTrackingVehicleAllocations = () => dispatch => dispatch(getAll
             onData: (allocations) => {
                 const formattedAllocations = {};
                 allocations.vehicleAllocations.forEach(({ trip: { tripId, serviceDate, startTime }, vehicles }) => {
-                    const formattedServiceDate = serviceDate && serviceDate.replace(/-/g, '');
+                    const formattedServiceDate = serviceDate && moment.tz(serviceDate, 'Pacific/Auckland').format('YYYYMMDD');
                     const key = getVehicleAllocationKey(tripId, formattedServiceDate, startTime);
                     formattedAllocations[key] = vehicles.map(({ id, label }) => ({ vehicleId: id, vehicleLabel: label, tripId, serviceDate: formattedServiceDate, startTime }));
                 });

@@ -188,7 +188,8 @@ export class BlocksView extends React.Component {
 
     getRowClassName = (block) => {
         const { cancelled, completed } = TRIP_STATUS_TYPES;
-        const tripsWithoutVehicles = block.operationalTrips.filter(trip => !trip.vehicles && trip.status !== cancelled && trip.status !== completed);
+        const tripsWithoutVehicles = block.operationalTrips.filter(trip => (!trip.vehicles || trip.vehicles.length === 0)
+                                                                            && trip.status !== cancelled && trip.status !== completed);
 
         return (
             tripsWithoutVehicles.length !== 0

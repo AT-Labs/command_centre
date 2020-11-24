@@ -6,14 +6,13 @@ import { Button, FormGroup, Input, Label } from 'reactstrap';
 import { deallocateVehiclesFromAllTripsInBlock, deallocateVehiclesFromTripSelectedOnwards, substituteVehicles }
     from '../../../../redux/actions/control/blocks';
 import { getAllBlocks, getAllTrainsWithAssignedBlocks } from '../../../../redux/selectors/control/blocks';
-import { getOverlappingTrips, getVehiclesFromBlockTrips } from '../../../../utils/control/blocks';
+import { getVehiclesFromBlockTrips } from '../../../../utils/control/blocks';
 import { styleAssignedTrains } from '../../../../utils/control/trains';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import ConfirmationModalBody from '../../Common/ConfirmationModal/ConfirmationModalBody';
 import ControlSearch from '../../Common/ControlSearch/ControlSearch';
 import SearchCombo from '../../Common/SearchCombo/SearchCombo';
 import { BlockType } from '../types';
-import OverlappingTripsAlert from './OverlappingTripsAlert';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
 
 class EditVehiclesModal extends React.Component {
@@ -23,7 +22,6 @@ class EditVehiclesModal extends React.Component {
         deallocateVehiclesFromTripSelectedOnwards: PropTypes.func.isRequired,
         deallocateVehiclesFromAllTripsInBlock: PropTypes.func.isRequired,
         assignedTrains: PropTypes.array.isRequired,
-        blocks: PropTypes.array.isRequired,
         setModalState: PropTypes.func,
     }
 
@@ -37,7 +35,6 @@ class EditVehiclesModal extends React.Component {
         this.state = {
             vehicles: null,
             tripSelected: null,
-            overlappingTrips: {},
             isPopulated: false,
             isModalOpen: false,
             isSubstitute: true,
@@ -61,31 +58,17 @@ class EditVehiclesModal extends React.Component {
     onVehicleSelection = (isPopulated, vehicles) => this.setState({
         vehicles,
         isPopulated,
-        overlappingTrips: {},
-    }, () => this.getOverlappingTrips())
+    })
 
     onTripSelection = (tripSelected) => {
         this.setState({
             tripSelected,
-            overlappingTrips: {},
-        }, () => this.getOverlappingTrips());
+        });
     }
 
     onTripInputValueChange = () => this.setState({
         tripSelected: null,
-        overlappingTrips: {},
-    }, () => this.getOverlappingTrips())
-
-    getOverlappingTrips = () => {
-        const { vehicles, tripSelected } = this.state;
-        if (vehicles && !_.isEmpty(tripSelected)) {
-            const { blocks, block } = this.props;
-            const selectedVehicles = Array.from(vehicles.values());
-            const allRemainingTrips = block.operationalTrips.slice(_.findIndex(block.operationalTrips, { externalRef: tripSelected.externalRef }));
-            const overlappingTrips = getOverlappingTrips(blocks, block, selectedVehicles, allRemainingTrips);
-            if (!_.isEmpty(overlappingTrips)) this.setState({ overlappingTrips });
-        }
-    }
+    })
 
     getSubtitle = () => {
         const { block: { operationalBlockId } } = this.props;
@@ -119,7 +102,6 @@ class EditVehiclesModal extends React.Component {
             isModalOpen: !prevState.isModalOpen,
             vehicles: null,
             tripSelected: null,
-            overlappingTrips: {},
             isSubstitute,
         }),
         () => this.props.setModalState(this.state.isModalOpen));
@@ -135,7 +117,7 @@ class EditVehiclesModal extends React.Component {
             _.flatten(
                 this.props.block.operationalTrips
                     .map(trip => (
-                        trip.status !== TRIP_STATUS_TYPES.completed
+                        trip.status !== TRIP_STATUS_TYPES.completed && trip.status !== TRIP_STATUS_TYPES.inProgress
                             ? trip.vehicles
                             : null)),
             ),
@@ -153,7 +135,6 @@ class EditVehiclesModal extends React.Component {
                 <div key={ buttonLabel } className="mr-4">
                     <Button
                         className="edit-vehicles-modal__toggle cc-btn-link ml-1"
-                        disabled={ isNotCompletedTripsVehiclesEmpty }
                         onClick={ () => this.toggleModal(true) }>
                         { buttonLabel }
                     </Button>
@@ -182,9 +163,8 @@ class EditVehiclesModal extends React.Component {
         );
     }
 
-    renderSubstituteView = overlappingTrips => (
+    renderSubstituteView = () => (
         <React.Fragment>
-            { !_.isEmpty(overlappingTrips) && <OverlappingTripsAlert overlappingTrips={ overlappingTrips } /> }
             <FormGroup check className="pt-1 pb-4">
                 <Label for="deallocate-from-trip-checkbox" check>
                     <Input
@@ -228,11 +208,11 @@ class EditVehiclesModal extends React.Component {
     renderDeallocateView = () => <ConfirmationModalBody message={ this.MODALS_INFO.DEALLOCATE.message() } />
 
     render() {
-        const { vehicles, isPopulated, overlappingTrips, tripSelected, isModalOpen, isSubstitute, isDeallocateCheckboxActive } = this.state;
+        const { vehicles, isPopulated, tripSelected, isModalOpen, isSubstitute, isDeallocateCheckboxActive } = this.state;
         const okButtonWhensSubstitute = isDeallocateCheckboxActive ? this.deallocateVehicles : this.allocateVehicles;
         const shouldOkButtonBeDisableWhenSubstitute = isDeallocateCheckboxActive
             ? _.isEmpty(tripSelected)
-            : (_.isNull(vehicles) || !isPopulated) || _.isEmpty(tripSelected) || !_.isEmpty(overlappingTrips);
+            : (_.isNull(vehicles) || !isPopulated) || _.isEmpty(tripSelected);
 
         return (
             <CustomModal
@@ -248,7 +228,7 @@ class EditVehiclesModal extends React.Component {
                     className: 'edit-vehicles-modal__save-btn',
                 } }>
                 { isSubstitute && this.getSubtitle() }
-                { isSubstitute ? this.renderSubstituteView(overlappingTrips) : this.renderDeallocateView() }
+                { isSubstitute ? this.renderSubstituteView() : this.renderDeallocateView() }
             </CustomModal>
         );
     }

@@ -683,7 +683,5 @@ describe('blocks actions', () => {
                     .to.be.equal(mockBlocks.blocks[0].operationalTrips[0].vehicles);
             });
         });
-
-        // PENDING: deallocateVehiclesFromAllTripsInBlock
     });
 });

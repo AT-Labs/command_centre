@@ -4,21 +4,21 @@ import _ from 'lodash-es';
 import ModalAlert from './ModalAlert';
 
 const OverlappingTripsAlert = ({
-    overlappingTrips,
+    overlappingBlocks,
 }) => {
     const renderOverlappingTripsContent = () => {
-        const blockIds = _.keys(overlappingTrips);
-        return blockIds.map(blockId => <div key={ blockId }>{blockId} - {overlappingTrips[blockId].map(trip => trip.externalRef).join(', ')}</div>);
+        const blockIds = _.keys(overlappingBlocks);
+        return blockIds.map(blockId => <div key={ blockId }>{blockId} - {overlappingBlocks[blockId].map(trip => trip.externalRef).join(', ')}</div>);
     };
 
     return (
         <ModalAlert
-            color="danger"
+            color="warning"
             isOpen
             content={ (
                 <div>
                     <h4>Overlapping trips​</h4>
-                    <div>Please deallocate the vehicle from overlapping trips in order to proceed​</div>
+                    <div>Allocating this vehicle will automatically deallocate it from the following trips.</div>
                     { renderOverlappingTripsContent() }
                 </div>
             ) }
@@ -27,7 +27,7 @@ const OverlappingTripsAlert = ({
 };
 
 OverlappingTripsAlert.propTypes = {
-    overlappingTrips: PropTypes.object.isRequired,
+    overlappingBlocks: PropTypes.object.isRequired,
 };
 
 

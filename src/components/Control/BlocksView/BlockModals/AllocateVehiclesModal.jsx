@@ -5,19 +5,16 @@ import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 import { allocateVehicles } from '../../../../redux/actions/control/blocks';
 import { getAllBlocks, getAllTrainsWithAssignedBlocks } from '../../../../redux/selectors/control/blocks';
-import { getOverlappingTrips } from '../../../../utils/control/blocks';
 import { styleAssignedTrains } from '../../../../utils/control/trains';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import SearchCombo from '../../Common/SearchCombo/SearchCombo';
 import { BlockType, TripType } from '../types';
-import OverlappingTripsAlert from './OverlappingTripsAlert';
 
 export class AllocateVehiclesModal extends React.Component {
     static propTypes = {
         allocateVehicles: PropTypes.func.isRequired,
         assignedTrains: PropTypes.array.isRequired,
         block: BlockType.isRequired,
-        blocks: PropTypes.arrayOf(BlockType).isRequired,
         buttonLabel: PropTypes.string,
         openModalButtonClass: PropTypes.string,
         selectedTrips: PropTypes.arrayOf(TripType),
@@ -39,7 +36,6 @@ export class AllocateVehiclesModal extends React.Component {
         this.state = {
             vehicles: null,
             isPopulated: false,
-            overlappingTrips: {},
             isModalOpen: false,
         };
     }
@@ -47,19 +43,14 @@ export class AllocateVehiclesModal extends React.Component {
     onSelection = (isPopulated, vehicles) => this.setState({
         vehicles,
         isPopulated,
-        overlappingTrips: {},
-    }, () => this.state.vehicles && this.getOverlappingTrips())
-
-    getOverlappingTrips = () => {
-        const { blocks, block, selectedTrips } = this.props;
-        const selectedVehicles = Array.from(this.state.vehicles.values());
-        const overlappingTrips = getOverlappingTrips(blocks, block, selectedVehicles, selectedTrips);
-        if (!_.isEmpty(overlappingTrips)) this.setState({ overlappingTrips });
-    }
+    }, () => this.state.vehicles)
 
     allocateVehicles = () => {
-        const selectedVehicles = Array.from(this.state.vehicles.values());
-        this.props.allocateVehicles(this.props.block, selectedVehicles, this.props.selectedTrips);
+        const { vehicles } = this.state;
+        const selectedVehicles = Array.from(vehicles.values());
+        const { block, selectedTrips } = this.props;
+        this.props.allocateVehicles(block, selectedVehicles, selectedTrips);
+
         this.toggleModal();
     }
 
@@ -67,7 +58,6 @@ export class AllocateVehiclesModal extends React.Component {
         this.setState(prevState => ({
             isModalOpen: !prevState.isModalOpen,
             vehicles: null,
-            overlappingTrips: {},
         }),
         () => this.props.setModalState(this.state.isModalOpen));
     }
@@ -87,9 +77,7 @@ export class AllocateVehiclesModal extends React.Component {
     )
 
     render() {
-        const {
-            vehicles, isPopulated, overlappingTrips, isModalOpen,
-        } = this.state;
+        const { vehicles, isPopulated, isModalOpen } = this.state;
 
         return (
             <CustomModal
@@ -101,10 +89,9 @@ export class AllocateVehiclesModal extends React.Component {
                 okButton={ {
                     label: 'Allocate',
                     onClick: this.allocateVehicles,
-                    isDisabled: _.isNull(vehicles) || !isPopulated || !_.isEmpty(overlappingTrips),
+                    isDisabled: _.isNull(vehicles) || !isPopulated,
                     className: 'allocate-vehicles-modal__save-btn',
                 } }>
-                { !_.isEmpty(overlappingTrips) && <OverlappingTripsAlert overlappingTrips={ overlappingTrips } /> }
                 <dl className="row">
                     <dt className="col-6">Block number:</dt>
                     <dd className="col-6">{ this.props.block.operationalBlockId }</dd>
