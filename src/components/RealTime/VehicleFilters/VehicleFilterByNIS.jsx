@@ -26,7 +26,7 @@ class VehicleFilterByNIS extends React.Component {
                             onChange={ this.handleShowingNISChange }
                             className="vehicle-filter-by-direction__checkbox"
                         />
-                        <span className="font-weight-light text-white">Not In Service</span>
+                        <span className="font-weight-light">Not In Service</span>
                     </Label>
                 </FormGroup>
             </React.Fragment>

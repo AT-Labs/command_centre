@@ -80,6 +80,7 @@ export default {
     FETCH_CONTROL_STOP_GROUPS: 'fetch-control-stop-groups',
     UPDATE_CONTROL_STOP_GROUPS_LOADING: 'update-control-stop-groups-loading',
     UPDATE_STOP_MESSAGES_PERMISSIONS: 'update-stop-messages-permissions',
+    TOGGLE_STOP_MESSAGES_MODAL: 'toggle-stop-messages-modal',
     // VEHICLE_ALLOCATION
     UPDATE_VEHICLE_SEARCH_RESULTS: 'update-search-vehicle-results',
     UPDATE_SEARCH_VEHICLE_SELECTED: 'update-search-vehicle-selected',

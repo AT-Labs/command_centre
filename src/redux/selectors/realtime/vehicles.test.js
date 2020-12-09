@@ -253,6 +253,8 @@ describe('Vehicles selectors', () => {
                 null,
                 true,
                 true,
+                null,
+                [],
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -272,6 +274,8 @@ describe('Vehicles selectors', () => {
                 null,
                 true,
                 true,
+                null,
+                [],
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -289,6 +293,8 @@ describe('Vehicles selectors', () => {
                 ['RIT'],
                 true,
                 true,
+                null,
+                [],
             );
             expect(visibleVehicles).to.eql({
                 [busRitchiesTransport.id]: busRitchiesTransport,
@@ -305,6 +311,8 @@ describe('Vehicles selectors', () => {
                 ['RIT', 'NZB'],
                 true,
                 true,
+                null,
+                [],
             );
             expect(visibleVehicles).to.eql({
                 [busRitchiesTransport.id]: busRitchiesTransport,
@@ -322,6 +330,8 @@ describe('Vehicles selectors', () => {
                 ['RIT'],
                 true,
                 true,
+                null,
+                [],
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -341,6 +351,8 @@ describe('Vehicles selectors', () => {
                 null,
                 false,
                 true,
+                null,
+                [],
             );
             expect(visibleVehicles).to.eql({
                 [busRitchiesTransport.id]: busRitchiesTransport,
@@ -357,6 +369,8 @@ describe('Vehicles selectors', () => {
                 null,
                 false,
                 true,
+                null,
+                [],
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -374,6 +388,10 @@ describe('Vehicles selectors', () => {
                 v => v.vehicle.vehicle.id === busNewZealandBus.id,
                 null,
                 null,
+                null,
+                null,
+                null,
+                [],
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -388,6 +406,10 @@ describe('Vehicles selectors', () => {
                 { vehicle: { vehicle: { id: busNewZealandBus.id } } },
                 null,
                 null,
+                null,
+                null,
+                null,
+                [],
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -402,6 +424,10 @@ describe('Vehicles selectors', () => {
                 { vehicle: { vehicle: { id: busNewZealandBus.id } } },
                 TRAIN_TYPE_ID,
                 null,
+                null,
+                null,
+                null,
+                [],
             );
             expect(visibleVehicles).to.eql({});
         });
@@ -417,6 +443,7 @@ describe('Vehicles selectors', () => {
                 null,
                 null,
                 true,
+                [],
             )).to.eql({
                 [train.id]: train,
                 [trainNotInService.id]: trainNotInService,
@@ -433,6 +460,7 @@ describe('Vehicles selectors', () => {
                 null,
                 null,
                 false,
+                [],
             )).to.eql({
                 [train.id]: train,
             });
@@ -449,6 +477,7 @@ describe('Vehicles selectors', () => {
                 null,
                 null,
                 true,
+                [],
             )).to.eql({
                 [train.id]: train,
                 [trainNotInService.id]: trainNotInService,

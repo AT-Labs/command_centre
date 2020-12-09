@@ -1,4 +1,4 @@
-const VEHICLE_OCCUPANCY_STATUS_TYPE = {
+export const VEHICLE_OCCUPANCY_STATUS_TYPE = {
     empty: 'EMPTY',
     manySeatsAvailable: 'MANY_SEATS_AVAILABLE',
     fewSeatsAvailable: 'FEW_SEATS_AVAILABLE',

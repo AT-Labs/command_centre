@@ -18,4 +18,9 @@ export default {
         type: 'Ferry',
         className: 'vehicle-type-ferry',
     },
+    NIS: {
+        type: 'NIS',
+        className: 'vehicle-type-not-in-service',
+    },
+
 };

@@ -78,8 +78,8 @@ export class StopMessageModal extends React.Component {
 
             return {
                 stopsAndGroups,
-                message,
-                priority,
+                message: message || '',
+                priority: priority || '',
                 startDate: moment(startTime).toDate(),
                 startTime: moment(startTime).format('HH:mm'),
                 endDate: isCurrent ? moment(endTime).toDate() : null,

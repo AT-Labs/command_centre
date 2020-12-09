@@ -36,7 +36,7 @@ class VehicleFilterByDirection extends React.Component {
                             onChange={ this.handleShowingInboundChange }
                             className="vehicle-filter-by-direction__checkbox"
                         />
-                        <span className="font-weight-light text-white">Inbound</span>
+                        <span className="font-weight-light">Inbound</span>
                     </Label>
                 </FormGroup>
                 <FormGroup check>
@@ -47,7 +47,7 @@ class VehicleFilterByDirection extends React.Component {
                             onChange={ this.handleShowingOutboundChange }
                             className="vehicle-filter-by-direction__checkbox"
                         />
-                        <span className="font-weight-light text-white">Outbound</span>
+                        <span className="font-weight-light">Outbound</span>
                     </Label>
                 </FormGroup>
             </React.Fragment>

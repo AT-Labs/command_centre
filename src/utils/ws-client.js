@@ -93,7 +93,6 @@ export const subscribeRealTime = ({
                 if (data !== 'pong') {
                     onData(JSON.parse(message.data));
                 }
-
                 stopPinging();
                 debouncedPinging(onError);
             };

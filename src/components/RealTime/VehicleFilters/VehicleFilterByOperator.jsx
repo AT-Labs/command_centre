@@ -77,7 +77,7 @@ class VehicleFilterByOperator extends React.Component {
                             onSelection={ this.handleFilterByOperatorSelection } />
                     ) : (
                         <React.Fragment>
-                            <h6 className="text-white mt-3 mb-1">Operators</h6>
+                            <h6 className="mt-3 mb-1">Operators</h6>
                             {
                                 _.map(this.props.agencyOptions, (option, index) => (
                                     index > 0 && (
@@ -91,7 +91,7 @@ class VehicleFilterByOperator extends React.Component {
                                                     }
                                                     onChange={ event => this.handleCheckboxValueChange(event, option.value) }
                                                     className="vehicle-filter-by-operator__checkbox" />
-                                                <span className="font-weight-light text-white">{ option.label }</span>
+                                                <span className="font-weight-light">{ option.label }</span>
                                             </Label>
                                         </FormGroup>
                                     )

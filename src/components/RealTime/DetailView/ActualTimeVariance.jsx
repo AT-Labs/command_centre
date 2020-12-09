@@ -4,15 +4,13 @@ import moment from 'moment';
 import { capitalize } from 'lodash-es';
 
 
-const momentToMinute = time => (time && moment(time, moment.ISO_8601).startOf('minute')) || null;
-
 const calculateVariance = (scheduledTime, actualTime) => {
     if (!scheduledTime || !actualTime) {
         return '';
     }
 
-    const scheduledMoment = momentToMinute(scheduledTime);
-    const actualMoment = momentToMinute(actualTime);
+    const scheduledMoment = moment(scheduledTime, moment.ISO_8601);
+    const actualMoment = moment(actualTime, moment.ISO_8601);
     const varianceInMinutes = actualMoment.diff(scheduledMoment, 'minute');
 
     if (varianceInMinutes === 0) {

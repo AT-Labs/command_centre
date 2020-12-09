@@ -5,41 +5,70 @@ $train-color: #3F51B5;
 $ferry-color:  map-get($theme-colors, "at-dark-green");
 
 @mixin vehicle-marker-color($element) {
+    & .icon-wrapper {
+        border: 3px solid white;
+        border-radius: 50%;
+        box-shadow: 0 0 4px 3px rgba(0, 0, 0, .2);
+        height: 38px;
+        width: 38px;
+
+        .rotate {
+            display: block;
+            height: 32px;
+            margin: auto;
+            position: absolute;
+            transform-origin: center center 0;
+            width: 32px;
+            z-index: -1;
+        }
+
+        .arrow {
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: none;
+            border-bottom: 10px solid map-get($theme-colors, "dark");
+            height: 0;
+            left: 8px;
+            position: relative;
+            top: -12px;
+            width: 0;
+        }
+    }
+
+    & .vehicle-occupancy-highlight {
+        box-shadow: 0 0 0 2px rgba(255, 0, 0, .5);
+    }
+
     @if $element == circle {
         #{$element} {
             stroke: $white;
         }
-    }
-
-    @else if $element == svg {
-        #{$element} {
-            background: $white;
-            border: 3px solid $white;
-            border-radius: 50%;
+        & .vehicle-type-bus {
+            #{$element} {
+                fill: $bus-color;
+            }
+        }
+        & .vehicle-type-train {
+            #{$element} {
+                fill: $train-color;
+            }
+        }
+        & .vehicle-type-ferry {
+            #{$element} {
+                fill: $ferry-color;
+            }
         }
     }
 
-    &.vehicle-type-bus {
-        #{$element} {
-            fill: $bus-color;
+    @if $element == div {
+        & .vehicle-type-bus {
+            background-color: $bus-color;
         }
-    }
-
-    &.vehicle-type-train {
-        #{$element} {
-            fill: $train-color;
+        & .vehicle-type-train {
+            background-color: $train-color;
         }
-    }
-
-    &.vehicle-type-ferry {
-        #{$element} {
-            fill: $ferry-color;
-        }
-    }
-
-    &.vehicle-occupancy-highlight {
-        #{$element} {
-            box-shadow: 0 0 0 2px rgba(255, 0, 0, .5);
+        & .vehicle-type-ferry {
+            background-color: $ferry-color;
         }
     }
 }
@@ -49,7 +78,19 @@ $ferry-color:  map-get($theme-colors, "at-dark-green");
 }
 
 .vehicle-marker-arrow {
-    @include vehicle-marker-color(svg);
+    @include vehicle-marker-color(div);
+}
+
+.vehicle-marker-route-name {
+    color: $white;
+    font-size: 10px;
+    font-weight: normal;
+    height: 32px;
+    line-height: 32px;
+    margin: 0;
+    position: relative;
+    text-align: center;
+    width: 32px;
 }
 
 .vehicle-tooltip {

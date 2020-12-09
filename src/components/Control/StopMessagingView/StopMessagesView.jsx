@@ -15,11 +15,13 @@ import ConfirmationModal from '../Common/ConfirmationModal/ConfirmationModal';
 import { getStopMessagesAndPermissions,
     updateStopMessage,
     getStopGroups,
+    toggleModals,
 } from '../../../redux/actions/control/stopMessaging';
 import { getSortedStopMesssages,
     getStopMessagesPermissions,
     getStopMessagesLoadingState,
     getStopMessagesSortingParams,
+    getModal,
 } from '../../../redux/selectors/control/stopMessaging/stopMessages';
 import { SYSTEM_STOP_GROUP_ID, SYSTEM_STOP_GROUP_STOP_START, SYSTEM_STOP_GROUP_STOP_END } from '../../../redux/selectors/control/stopMessaging/stopGroups';
 import { updateControlDetailView, updateMainView } from '../../../redux/actions/navigation';
@@ -41,6 +43,8 @@ export class StopMessagesView extends React.Component {
         isStopMessagesLoading: PropTypes.bool,
         getStopGroups: PropTypes.func.isRequired,
         stopMessagesSortingParams: PropTypes.object.isRequired,
+        modal: PropTypes.object.isRequired,
+        toggleModals: PropTypes.func.isRequired,
     }
 
     static defaultProps = {
@@ -52,9 +56,6 @@ export class StopMessagesView extends React.Component {
         super(props);
 
         this.state = {
-            modalType: null,
-            isModalOpen: false,
-            activeStopMessage: null,
             messagesList: [],
             searchValue: '',
             selectedData: {},
@@ -95,28 +96,22 @@ export class StopMessagesView extends React.Component {
             <div className="cc-table-actions-col">
                 <Button
                     className="control-messaging-view__edit-btn"
-                    onClick={ () => this.toggleModals(this.MODALS.edit.type, stopMessage) }>
+                    onClick={ () => this.props.toggleModals(this.MODALS.edit.type, stopMessage) }>
                     <FiEdit size={ 20 } className="mr-1" />
                 </Button>
                 <Button
                     className="control-messaging-view__cancel-btn"
-                    onClick={ () => this.toggleModals(this.MODALS.cancel.type, stopMessage) }>
+                    onClick={ () => this.props.toggleModals(this.MODALS.cancel.type, stopMessage) }>
                     <FiTrash2 size={ 20 } className="mr-1" />
                 </Button>
             </div>
         ) : null;
     }
 
-    toggleModals = (type, stopMessage) => this.setState(prevState => ({
-        modalType: type,
-        isModalOpen: !prevState.isModalOpen,
-        activeStopMessage: stopMessage,
-    }))
-
     updateStopMessage = (payload) => {
         const { edit, cancel } = this.MODALS;
-        const { activeStopMessage, modalType } = this.state;
-        const stopMessageId = (modalType === edit.type || modalType === cancel.type) && activeStopMessage ? activeStopMessage.id : null;
+        const { modal } = this.props;
+        const stopMessageId = (modal.type === edit.type || modal.type === cancel.type) && modal.stopMessage ? modal.stopMessage.id : null;
         return this.props.updateStopMessage(payload, stopMessageId);
     }
 
@@ -194,7 +189,8 @@ export class StopMessagesView extends React.Component {
     }
 
     render() {
-        const { modalType, isModalOpen, activeStopMessage, messagesList, searchValue, selectedData, statusFilterValue } = this.state;
+        const { messagesList, searchValue, selectedData, statusFilterValue } = this.state;
+        const { modal } = this.props;
         const { STOP, STOP_GROUP_MERGED, STOP_MESSAGE } = SEARCH_RESULT_TYPE;
         const { create, edit, cancel } = this.MODALS;
         const isGlobalEditMessagesPermitted = IS_LOGIN_NOT_REQUIRED || isGlobalEditStopMessagesPermitted(this.props.stopMessagesPermissions);
@@ -231,7 +227,7 @@ export class StopMessagesView extends React.Component {
                             <div>
                                 <Button
                                     className="control-messaging-view__create-btn cc-btn-primary"
-                                    onClick={ () => this.toggleModals(create.type, null) }>
+                                    onClick={ () => this.props.toggleModals(create.type, null) }>
                                     { this.MODALS.create.title }
                                 </Button>
                                 <Button
@@ -245,19 +241,19 @@ export class StopMessagesView extends React.Component {
                             </div>
                         )}
                         <StopMessagesModal
-                            title={ modalType ? this.MODALS[modalType].title : '' }
-                            isModalOpen={ (modalType === create.type || modalType === edit.type) && isModalOpen }
-                            modalType={ modalType }
-                            activeMessage={ activeStopMessage }
+                            title={ modal.type ? this.MODALS[modal.type].title : '' }
+                            isModalOpen={ (modal.type === create.type || modal.type === edit.type) && modal.isOpen }
+                            modalType={ modal.type }
+                            activeMessage={ modal.stopMessage }
                             onAction={ this.updateStopMessage }
-                            onClose={ () => this.toggleModals(null, null) } />
+                            onClose={ () => this.props.toggleModals(null, null) } />
                         <ConfirmationModal
                             okButtonClassName="control-messaging-view__cancel-modal-ok-btn"
                             title={ this.MODALS.cancel.title }
                             message={ this.MODALS.cancel.message }
-                            isOpen={ modalType === cancel.type && isModalOpen }
-                            onAction={ () => this.updateStopMessage(null).then(() => this.toggleModals(null, null)).catch(() => {}) }
-                            onClose={ () => this.toggleModals(null, null) } />
+                            isOpen={ modal.type === cancel.type && modal.isOpen }
+                            onAction={ () => this.updateStopMessage(null).then(() => this.props.toggleModals(null, null)).catch(() => {}) }
+                            onClose={ () => this.props.toggleModals(null, null) } />
                     </div>
                     <CustomButtonGroup
                         buttons={ [{ type: STOP_MESSAGE_TYPE.TYPE.CURRENT }, { type: STOP_MESSAGE_TYPE.TYPE.EXPIRED }] }
@@ -285,5 +281,6 @@ export default connect(state => ({
     isStopMessagesLoading: getStopMessagesLoadingState(state),
     stopMessagesPermissions: getStopMessagesPermissions(state),
     stopMessagesSortingParams: getStopMessagesSortingParams(state),
+    modal: getModal(state),
 }),
-{ getStopMessagesAndPermissions, updateStopMessage, updateMainView, updateControlDetailView, getStopGroups })(StopMessagesView);
+{ getStopMessagesAndPermissions, updateStopMessage, updateMainView, updateControlDetailView, getStopGroups, toggleModals })(StopMessagesView);

@@ -19,3 +19,6 @@ export const getSortedStopMesssages = createSelector(
         ? _.orderBy(allStopMessages, stopMessagesSortingParams.sortBy, stopMessagesSortingParams.order)
         : allStopMessages),
 );
+export const getModal = createSelector(getStopMessagesState, stopMessagesState => _.result(
+    stopMessagesState, 'modal',
+));

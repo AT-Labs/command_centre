@@ -142,3 +142,5 @@ export const spreadStateIntoStops = (stops, status) => {
 };
 
 export const getExpiredMessageRowClassName = ({ isCurrent }) => (isCurrent ? '' : 'bg-at-ocean-tint-10 text-muted');
+
+export const formatStopLabel = stop => `${stop.stop_code} - ${stop.stop_name}`;

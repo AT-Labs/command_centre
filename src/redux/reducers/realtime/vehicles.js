@@ -15,6 +15,7 @@ export const INIT_STATE = {
         isShowingDirectionInbound: true,
         isShowingDirectionOutbound: true,
         isShowingNIS: false,
+        showingOccupancyLevels: [],
     },
 };
 

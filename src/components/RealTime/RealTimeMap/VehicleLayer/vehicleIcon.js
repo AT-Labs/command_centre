@@ -1,22 +1,26 @@
 import L from 'leaflet';
-import { getVehicleBearing, getVehicleRouteType } from '../../../../redux/selectors/realtime/vehicles';
+import { getVehicleBearing, getVehicleRouteType, getVehicleRouteName } from '../../../../redux/selectors/realtime/vehicles';
 import VEHICLE_TYPE from '../../../../types/vehicle-types';
 import VEHICLE_OCCUPANCY_STATUS_TYPE from '../../../../types/vehicle-occupancy-status-types';
 
 const getVehicleIconWithoutArrow = vehicleTypeClass => new L.DivIcon({
-    html: '<svg width="30" height="30"><circle cx="15" cy="15" r="12" stroke-width="3" /></svg>',
+    html: `<svg width="30" height="30" class="${vehicleTypeClass}"><circle cx="15" cy="15" r="12" stroke-width="3" /></svg>`,
     iconAnchor: [15, 15],
-    className: `vehicle-marker ${vehicleTypeClass}`,
+    className: 'vehicle-marker',
 });
 
-const getVehicleIconWithArrow = (bearing, vehicleTypeClass) => new L.DivIcon({
-    html: `<svg width="30" height="30" style="transform:rotate(${bearing}deg)">`
-        + '<path d="M12 24C5.373 24 0 18.627 0 12S5.373 0 12 0s12 5.373 12 12-5.373 12-12 12zm6-6.04c.634.214 '
-        + '1.238-.46.906-1.075L12.808 4.522A.889.889 0 0 0 11.993 4a.943.943 0 0 0-.815.522L5.08 16.885c-.302.614.302 '
-        + '1.289.936 1.074l5.735-2.025a.737.737 0 0 1 .514 0L18 17.96z"/></svg>',
-    iconAnchor: [15, 15],
-    className: `vehicle-marker-arrow ${vehicleTypeClass}`,
-});
+const getVehicleIconWithArrow = (bearing, vehicleTypeClass, routeName) => {
+    const showArrow = bearing > 0 ? '<div class="arrow"></div>' : '';
+    return new L.DivIcon({
+        html: `<div class="icon-wrapper ${vehicleTypeClass}">`
+        + `<div class="rotate" style="transform: rotate(${bearing}deg)">${showArrow}</div>`
+        + `<div class="vehicle-marker-route-name">${routeName}</div>`
+        + '</div>',
+        iconAnchor: [18, 18],
+        className: 'vehicle-marker-arrow',
+    });
+};
+
 
 export const getVehicleIcon = (vehicle) => {
     const { full, standingRoomOnly } = VEHICLE_OCCUPANCY_STATUS_TYPE;
@@ -26,5 +30,6 @@ export const getVehicleIcon = (vehicle) => {
     const vehicleOccupancyStatusClass = vehicle.vehicle.occupancyStatus === standingRoomOnly
         || vehicle.vehicle.occupancyStatus === full
         ? 'vehicle-occupancy-highlight' : '';
-    return newBearing ? getVehicleIconWithArrow(newBearing, `${vehicleTypeClass} ${vehicleOccupancyStatusClass}`) : getVehicleIconWithoutArrow(vehicleTypeClass);
+    const routeName = getVehicleRouteName(vehicle) || '';
+    return newBearing !== undefined && routeTypeId ? getVehicleIconWithArrow(newBearing, `${vehicleTypeClass} ${vehicleOccupancyStatusClass}`, routeName) : getVehicleIconWithoutArrow(vehicleTypeClass);
 };

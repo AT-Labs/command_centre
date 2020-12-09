@@ -117,3 +117,11 @@ export const updateStopMessagesSortingParams = sortingParams => ({
         sortingParams,
     },
 });
+
+export const toggleModals = (type, stopMessage) => ({
+    type: ACTION_TYPE.TOGGLE_STOP_MESSAGES_MODAL,
+    payload: {
+        type,
+        stopMessage,
+    },
+});

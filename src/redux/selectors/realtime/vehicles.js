@@ -64,8 +64,8 @@ export const getVehiclesFilterAgencies = createSelector(
 export const getVehiclesFilterAgencyIds = createSelector(getVehiclesFilters, filters => get(filters, 'agencyIds'));
 export const getVehiclesFilterIsShowingDirectionInbound = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingDirectionInbound'));
 export const getVehiclesFilterIsShowingDirectionOutbound = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingDirectionOutbound'));
+export const getVehiclesFilterShowingOccupancyLevels = createSelector(getVehiclesFilters, filters => get(filters, 'showingOccupancyLevels', []));
 export const getVehiclesFilterIsShowingNIS = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingNIS'));
-export const getVehiclesFilterIsActive = createSelector(getVehiclesFilterRouteType, routeTypeFilter => !isNull(routeTypeFilter));
 export const getVisibleVehicles = createSelector(
     getAllVehicles,
     getFleetState,
@@ -76,7 +76,8 @@ export const getVisibleVehicles = createSelector(
     getVehiclesFilterIsShowingDirectionInbound,
     getVehiclesFilterIsShowingDirectionOutbound,
     getVehiclesFilterIsShowingNIS,
-    (allVehicles, allFleet, allocations, predicate, routeType, agencyIds, showInbound, showOutbound, showNIS) => {
+    getVehiclesFilterShowingOccupancyLevels,
+    (allVehicles, allFleet, allocations, predicate, routeType, agencyIds, showInbound, showOutbound, showNIS, showingOccupancyLevels) => {
         const runningVehiclesWithAllocations = getVehiclesWithAllocations(allVehicles, allocations);
         const visibleVehicles = filter(allVehicles, (vehicle) => {
             const id = getVehicleId(vehicle);
@@ -109,6 +110,10 @@ export const getVisibleVehicles = createSelector(
                 if (!showOutbound && tripDirection === TRIP_DIRECTION_OUTBOUND) {
                     return false;
                 }
+            }
+
+            if (!!showingOccupancyLevels.length && !showingOccupancyLevels.includes(vehicle.vehicle.occupancyStatus)) {
+                return false;
             }
 
             if (predicate) {
