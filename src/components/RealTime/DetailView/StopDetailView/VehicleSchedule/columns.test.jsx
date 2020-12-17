@@ -34,7 +34,10 @@ describe('Vehicle schedule columns', () => {
         });
 
         it('should display due value if more or equals to 2 mins', () => {
-            const formattedDueValue = calculateDue('', moment().add(5, 'minutes'));
+            const formattedDueValue = calculateDue('', moment().add({
+                minutes: 5,
+                seconds: 1, // Execution might take a few milliseconds thus failing this test so we add 1 extra second
+            }));
             expect(formattedDueValue).is.equal(5);
         });
 

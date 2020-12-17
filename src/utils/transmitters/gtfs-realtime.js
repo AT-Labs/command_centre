@@ -27,13 +27,17 @@ const realTimeTrackingSubscription = `
         }
         occupancyStatus
     }
+    tripUpdate
 }
 `;
 
 export const subscribeRealTimeUpdate = ({ onData, onError }) => subscribeRealTime({
     queryString: realTimeTrackingSubscription,
     filters: {
-        vehicle: true,
+        $or: {
+            vehicle: true,
+            tripUpdate: true,
+        },
     },
     onData,
     onError,
@@ -64,7 +68,9 @@ export const getRealTimeSnapshot = () => {
 
 export const getTripUpdateRealTimeSnapshot = (tripId) => {
     const controller = new AbortController();
-    return fetch(`${GTFS_REALTIME_SNAPSHOT_QUERY_URL}/tripupdates/${tripId}`, {
+    const baseUrl = `${GTFS_REALTIME_SNAPSHOT_QUERY_URL}/tripupdates`;
+    const url = !tripId ? baseUrl : `${baseUrl}/${tripId}`;
+    return fetch(url, {
         headers: {
             'Cache-Control': 'no-cache',
             Pragma: 'no-cache',

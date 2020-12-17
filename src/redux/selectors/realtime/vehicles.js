@@ -6,6 +6,8 @@ import VEHICLE_TYPE, { TRIP_DIRECTION_INBOUND, TRIP_DIRECTION_OUTBOUND } from '.
 import { getAllocations, getVehicleAllocationByTrip, getVehicleAllocationLabelByTrip } from '../control/blocks';
 import { getAgencies } from '../static/agencies';
 import { getFleetState, getFleetVehicleAgencyId, getFleetVehicleType } from '../static/fleet';
+import { isDelayBetweenRange } from '../../../utils/helpers';
+import { getTripUpdates } from './quickview';
 
 /** Vehicle model selectors */
 export const getVehicleTrip = vehicle => get(vehicle, 'vehicle.trip');
@@ -64,12 +66,14 @@ export const getVehiclesFilterAgencies = createSelector(
 export const getVehiclesFilterAgencyIds = createSelector(getVehiclesFilters, filters => get(filters, 'agencyIds'));
 export const getVehiclesFilterIsShowingDirectionInbound = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingDirectionInbound'));
 export const getVehiclesFilterIsShowingDirectionOutbound = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingDirectionOutbound'));
+export const getVehiclesFilterShowingDelay = createSelector(getVehiclesFilters, filters => get(filters, 'showingDelay', {}));
 export const getVehiclesFilterShowingOccupancyLevels = createSelector(getVehiclesFilters, filters => get(filters, 'showingOccupancyLevels', []));
 export const getVehiclesFilterIsShowingNIS = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingNIS'));
 export const getVisibleVehicles = createSelector(
     getAllVehicles,
     getFleetState,
     getAllocations,
+    getTripUpdates,
     getVehiclesFilterPredicate,
     getVehiclesFilterRouteType,
     getVehiclesFilterAgencyIds,
@@ -77,15 +81,12 @@ export const getVisibleVehicles = createSelector(
     getVehiclesFilterIsShowingDirectionOutbound,
     getVehiclesFilterIsShowingNIS,
     getVehiclesFilterShowingOccupancyLevels,
-    (allVehicles, allFleet, allocations, predicate, routeType, agencyIds, showInbound, showOutbound, showNIS, showingOccupancyLevels) => {
-        const runningVehiclesWithAllocations = getVehiclesWithAllocations(allVehicles, allocations);
+    getVehiclesFilterShowingDelay,
+    (allVehicles, allFleet, allocations, tripUpdates, predicate, routeType, agencyIds, showInbound, showOutbound, showNIS, showingOccupancyLevels, showingDelay) => {
+        const runningVehiclesWithAllocations = showNIS ? getVehiclesWithAllocations(allVehicles, allocations) : [];
         const visibleVehicles = filter(allVehicles, (vehicle) => {
             const id = getVehicleId(vehicle);
-            const fleetInfo = allFleet[id];
-            const fleetVehicleType = getFleetVehicleType(fleetInfo);
-            const fleetAgencyId = getFleetVehicleAgencyId(fleetInfo);
             const tripId = getVehicleTripId(vehicle);
-            const tripDirection = getVehicleDirectionId(vehicle);
 
             if (!tripId) {
                 if (!showNIS) {
@@ -95,15 +96,32 @@ export const getVisibleVehicles = createSelector(
                 if (showNIS && runningVehiclesWithAllocations[id]) {
                     return false;
                 }
+            } else if (showingDelay.early || showingDelay.late) {
+                const tripUpdate = tripUpdates[vehicle.id];
+                const delay = get(tripUpdate, 'delay');
+                if (!delay) {
+                    return false;
+                }
+                const isInRangeEarly = showingDelay.early && delay <= 0 ? isDelayBetweenRange(delay, showingDelay.early) : false;
+                const isInRangeLate = showingDelay.late && delay >= 0 ? isDelayBetweenRange(delay, showingDelay.late) : false;
+                if (!isInRangeEarly && !isInRangeLate) {
+                    return false;
+                }
             }
 
             if (!isNull(routeType)) {
+                const fleetInfo = allFleet[id];
+                const fleetVehicleType = getFleetVehicleType(fleetInfo);
+                const fleetAgencyId = getFleetVehicleAgencyId(fleetInfo);
+
                 if (fleetVehicleType !== VEHICLE_TYPE[routeType].type) {
                     return false;
                 }
                 if (agencyIds !== null && agencyIds.indexOf(fleetAgencyId) === -1) {
                     return false;
                 }
+
+                const tripDirection = getVehicleDirectionId(vehicle);
                 if (!showInbound && tripDirection === TRIP_DIRECTION_INBOUND) {
                     return false;
                 }
@@ -117,7 +135,10 @@ export const getVisibleVehicles = createSelector(
             }
 
             if (predicate) {
-                return isFunction(predicate) ? predicate(vehicle) : isMatch(vehicle, predicate);
+                const matchesPredicate = isFunction(predicate) ? predicate(vehicle) : isMatch(vehicle, predicate);
+                if (!matchesPredicate) {
+                    return false;
+                }
             }
 
             return true;

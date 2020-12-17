@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import { updateVehicleSelected, vehicleSelected } from '../../../../redux/actions/realtime/detail/vehicle';
 import { getVehicleDetail } from '../../../../redux/selectors/realtime/detail';
 import { getTripUpdateSnapshot } from '../../../../redux/actions/realtime/detail/quickview';
-import { getTripUpdateState } from '../../../../redux/selectors/realtime/quickview';
+import { getTripUpdates } from '../../../../redux/selectors/realtime/quickview';
 import { formatTripDelay } from '../../../../utils/control/routes';
 import {
     getJoinedVehicleLabel, getVehicleLatLng, getVehiclePositionCoordinates, getVehicleRouteName, getVehicleRouteType,
@@ -32,12 +32,8 @@ class VehicleClusterLayer extends React.Component {
         highlightedVehicle: PropTypes.object.isRequired,
         leafletMap: PropTypes.object.isRequired,
         updateVehicleSelected: PropTypes.func.isRequired,
-        hoveredVehicleState: PropTypes.object,
+        tripUpdates: PropTypes.object.isRequired,
         getTripUpdateSnapshot: PropTypes.func.isRequired,
-    };
-
-    static defaultProps = {
-        hoveredVehicleState: { delay: 0, trip: { tripId: null } },
     };
 
     constructor(props) {
@@ -74,7 +70,8 @@ class VehicleClusterLayer extends React.Component {
     }
 
     getTooltipContent = ({ options }) => {
-        const { vehicleAllocations, hoveredVehicleState } = this.props;
+        const { vehicleAllocations, tripUpdates } = this.props;
+        const hoveredVehicleState = tripUpdates[options.vehicle.id] || {};
         const markerTripId = options.vehicle.vehicle.trip ? options.vehicle.vehicle.trip.tripId : null;
         const hoveredVehicleTripId = hoveredVehicleState && hoveredVehicleState.trip ? hoveredVehicleState.trip.tripId : null;
         const occupancyStatus = markerTripId ? options.vehicle.vehicle.occupancyStatus : null;
@@ -161,7 +158,7 @@ class VehicleClusterLayer extends React.Component {
 
 export default connect(state => ({
     highlightedVehicle: getVehicleDetail(state),
-    hoveredVehicleState: getTripUpdateState(state),
+    tripUpdates: getTripUpdates(state),
 }),
 { vehicleSelected, updateVehicleSelected, getTripUpdateSnapshot })(props => (
     <LeafletConsumer>

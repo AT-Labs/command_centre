@@ -144,3 +144,10 @@ export const spreadStateIntoStops = (stops, status) => {
 export const getExpiredMessageRowClassName = ({ isCurrent }) => (isCurrent ? '' : 'bg-at-ocean-tint-10 text-muted');
 
 export const formatStopLabel = stop => `${stop.stop_code} - ${stop.stop_name}`;
+
+export const isDelayBetweenRange = (delay, range) => {
+    const value = Math.abs(delay);
+    const from = range[0] * 60;
+    const until = range[1] * 60;
+    return from < value && value < until;
+};

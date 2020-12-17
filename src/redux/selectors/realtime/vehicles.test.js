@@ -234,6 +234,7 @@ const allFleet = {
     },
 };
 const allocations = {};
+const tripUpdates = {};
 const allocationsWithTrips = {
     '20181001-246-850029-52380-2-5214180-ad59969a-16:30:00': [
         { vehicleId: '14000', vehicleLabel: 'AMP 240', serviceDate: '20181001', startTime: '16:30:00', tripId: '246-850029-52380-2-5214180-ad59969a' },
@@ -248,6 +249,7 @@ describe('Vehicles selectors', () => {
                 allVehicles,
                 allFleet,
                 allocations,
+                tripUpdates,
                 null,
                 null,
                 null,
@@ -255,6 +257,7 @@ describe('Vehicles selectors', () => {
                 true,
                 null,
                 [],
+                {},
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -269,6 +272,7 @@ describe('Vehicles selectors', () => {
                 allVehicles,
                 allFleet,
                 allocations,
+                tripUpdates,
                 null,
                 BUS_TYPE_ID,
                 null,
@@ -276,6 +280,7 @@ describe('Vehicles selectors', () => {
                 true,
                 null,
                 [],
+                {},
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -288,6 +293,7 @@ describe('Vehicles selectors', () => {
                 allVehicles,
                 allFleet,
                 allocations,
+                tripUpdates,
                 null,
                 BUS_TYPE_ID,
                 ['RIT'],
@@ -295,6 +301,7 @@ describe('Vehicles selectors', () => {
                 true,
                 null,
                 [],
+                {},
             );
             expect(visibleVehicles).to.eql({
                 [busRitchiesTransport.id]: busRitchiesTransport,
@@ -306,6 +313,7 @@ describe('Vehicles selectors', () => {
                 allVehicles,
                 allFleet,
                 allocations,
+                tripUpdates,
                 null,
                 BUS_TYPE_ID,
                 ['RIT', 'NZB'],
@@ -313,6 +321,7 @@ describe('Vehicles selectors', () => {
                 true,
                 null,
                 [],
+                {},
             );
             expect(visibleVehicles).to.eql({
                 [busRitchiesTransport.id]: busRitchiesTransport,
@@ -325,6 +334,7 @@ describe('Vehicles selectors', () => {
                 allVehicles,
                 allFleet,
                 allocations,
+                tripUpdates,
                 null,
                 null,
                 ['RIT'],
@@ -332,6 +342,7 @@ describe('Vehicles selectors', () => {
                 true,
                 null,
                 [],
+                {},
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -346,6 +357,7 @@ describe('Vehicles selectors', () => {
                 allVehicles,
                 allFleet,
                 allocations,
+                tripUpdates,
                 null,
                 BUS_TYPE_ID,
                 null,
@@ -353,6 +365,7 @@ describe('Vehicles selectors', () => {
                 true,
                 null,
                 [],
+                {},
             );
             expect(visibleVehicles).to.eql({
                 [busRitchiesTransport.id]: busRitchiesTransport,
@@ -364,6 +377,7 @@ describe('Vehicles selectors', () => {
                 allVehicles,
                 allFleet,
                 allocations,
+                tripUpdates,
                 null,
                 null,
                 null,
@@ -371,6 +385,7 @@ describe('Vehicles selectors', () => {
                 true,
                 null,
                 [],
+                {},
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -385,6 +400,7 @@ describe('Vehicles selectors', () => {
                 allVehicles,
                 allFleet,
                 allocations,
+                tripUpdates,
                 v => v.vehicle.vehicle.id === busNewZealandBus.id,
                 null,
                 null,
@@ -392,6 +408,7 @@ describe('Vehicles selectors', () => {
                 null,
                 null,
                 [],
+                {},
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -403,6 +420,7 @@ describe('Vehicles selectors', () => {
                 allVehicles,
                 allFleet,
                 allocations,
+                tripUpdates,
                 { vehicle: { vehicle: { id: busNewZealandBus.id } } },
                 null,
                 null,
@@ -410,6 +428,7 @@ describe('Vehicles selectors', () => {
                 null,
                 null,
                 [],
+                {},
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -421,6 +440,7 @@ describe('Vehicles selectors', () => {
                 allVehicles,
                 allFleet,
                 allocations,
+                tripUpdates,
                 { vehicle: { vehicle: { id: busNewZealandBus.id } } },
                 TRAIN_TYPE_ID,
                 null,
@@ -428,6 +448,7 @@ describe('Vehicles selectors', () => {
                 null,
                 null,
                 [],
+                {},
             );
             expect(visibleVehicles).to.eql({});
         });
@@ -437,6 +458,7 @@ describe('Vehicles selectors', () => {
                 allVehicles,
                 allFleet,
                 allocations,
+                tripUpdates,
                 null,
                 TRAIN_TYPE_ID,
                 null,
@@ -444,6 +466,7 @@ describe('Vehicles selectors', () => {
                 null,
                 true,
                 [],
+                {},
             )).to.eql({
                 [train.id]: train,
                 [trainNotInService.id]: trainNotInService,
@@ -454,6 +477,7 @@ describe('Vehicles selectors', () => {
                 allVehicles,
                 allFleet,
                 allocations,
+                tripUpdates,
                 null,
                 TRAIN_TYPE_ID,
                 null,
@@ -461,6 +485,7 @@ describe('Vehicles selectors', () => {
                 null,
                 false,
                 [],
+                {},
             )).to.eql({
                 [train.id]: train,
             });
@@ -471,6 +496,7 @@ describe('Vehicles selectors', () => {
                 allVehicles,
                 allFleet,
                 allocationsWithTrips,
+                tripUpdates,
                 null,
                 TRAIN_TYPE_ID,
                 null,
@@ -478,6 +504,7 @@ describe('Vehicles selectors', () => {
                 null,
                 true,
                 [],
+                {},
             )).to.eql({
                 [train.id]: train,
                 [trainNotInService.id]: trainNotInService,

@@ -8,10 +8,10 @@ import { Button } from 'reactstrap';
 import { mergeVehicleFilters } from '../../../redux/actions/realtime/vehicles';
 import { getVehiclesFilterRouteType } from '../../../redux/selectors/realtime/vehicles';
 import VehicleFilterByDirection from './VehicleFilterByDirection';
-import VehicleFilterByNIS from './VehicleFilterByNIS';
 import VehicleFilterByOperator from './VehicleFilterByOperator';
 import VehicleFilterByRouteType from './VehicleFilterByRouteType';
-import VehicleFilterOccupancy from './VehicleFilterOccupancy';
+import VehicleFilterByDelay from './VehicleFilterByDelay/VehicleFilterByDelay';
+import VehicleFilterByOccupancy from './VehicleFilterByOccupancy';
 import './VehicleFilters.scss';
 
 class VehicleFilters extends React.PureComponent {
@@ -33,6 +33,7 @@ class VehicleFilters extends React.PureComponent {
     clearFilters = () => this.props.mergeVehicleFilters({
         routeType: null,
         isShowingNIS: false,
+        showingDelay: {},
         showingOccupancyLevels: [],
     });
 
@@ -54,11 +55,11 @@ class VehicleFilters extends React.PureComponent {
                             <div className="mt-3 mb-1">Settings</div>
                             <VehicleFilterByDirection />
                             <hr className="vehicle-filters__separator mt-2 mb-2" />
-                            <VehicleFilterByNIS />
-                            <hr className="vehicle-filters__separator mt-2 mb-2" />
                         </React.Fragment>
                     )}
-                    <VehicleFilterOccupancy />
+                    <VehicleFilterByDelay />
+                    <hr className="vehicle-filters__separator mt-2 mb-2" />
+                    <VehicleFilterByOccupancy />
                     <hr className="vehicle-filters__separator mt-2 mb-2" />
                     <div className="text-right">
                         <Button

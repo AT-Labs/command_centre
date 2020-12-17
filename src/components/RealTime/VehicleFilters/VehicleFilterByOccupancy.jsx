@@ -8,7 +8,7 @@ import { VEHICLE_OCCUPANCY_STATUS_TYPE, occupancyStatusToIconSvg } from '../../.
 import { mergeVehicleFilters } from '../../../redux/actions/realtime/vehicles';
 import { getVehiclesFilterShowingOccupancyLevels } from '../../../redux/selectors/realtime/vehicles';
 
-class VehicleFilterOccupancy extends React.PureComponent {
+class VehicleFilterByOccupancy extends React.PureComponent {
     static propTypes = {
         mergeVehicleFilters: PropTypes.func.isRequired,
         showingOccupancyLevels: PropTypes.arrayOf(PropTypes.string).isRequired,
@@ -50,4 +50,4 @@ class VehicleFilterOccupancy extends React.PureComponent {
 export default connect(state => ({
     showingOccupancyLevels: getVehiclesFilterShowingOccupancyLevels(state),
 }),
-{ mergeVehicleFilters })(VehicleFilterOccupancy);
+{ mergeVehicleFilters })(VehicleFilterByOccupancy);
