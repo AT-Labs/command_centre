@@ -9,6 +9,7 @@ import {
     updateTripInstanceStatus, updateTripInstanceStopStatus, updateTripInstanceStopPlatform, updateTripInstanceDelay,
 } from './trip-instances';
 import * as tripMgtApi from '../../../../utils/transmitters/trip-mgt-api';
+import * as blockMgtApi from '../../../../utils/transmitters/block-mgt-api';
 import ACTION_TYPE from '../../../action-types';
 import { CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES } from '../../../../types/message-types';
 import { getTripInstanceId } from '../../../../utils/helpers';
@@ -66,6 +67,17 @@ const mockTrip = {
     status: 'COMPLETED',
 };
 
+const mockBlocks = [
+    {
+        operationalBlockId: '101',
+        operationalTrips: [
+            {
+                tripId: '1',
+            },
+        ],
+    },
+];
+
 describe('Trip instances actions', () => {
     beforeEach(() => {
         sandbox = sinon.createSandbox();
@@ -79,6 +91,8 @@ describe('Trip instances actions', () => {
     it('gets all trips, keys by tripId and clears trips prior updating, when it is not an update request', async () => {
         const fakeGetTrips = sandbox.fake.resolves(mockTrips);
         sandbox.stub(tripMgtApi, 'getTrips').callsFake(fakeGetTrips);
+        const fakeGetBlocks = sandbox.fake.resolves(mockBlocks);
+        sandbox.stub(blockMgtApi, 'getOperationalBlockRuns').callsFake(fakeGetBlocks);
 
         const variables = {
             routeType: 3,
@@ -107,8 +121,18 @@ describe('Trip instances actions', () => {
             },
         ];
 
-        await store.dispatch(fetchTripInstances(variables, { isUpdate: false }));
-        const actualActions = store.getActions();
+        const storeWithFilter = mockStore({
+            control: {
+                routes: {
+                    filters: {
+                        routeType: 3,
+                    },
+                },
+            },
+        });
+
+        await storeWithFilter.dispatch(fetchTripInstances(variables, { isUpdate: false }));
+        const actualActions = storeWithFilter.getActions();
         expect(actualActions.length).to.eql(expectedActions.length);
         expect(actualActions[0]).to.eql(expectedActions[0]);
         expect(actualActions[1].type).to.equal(expectedActions[1].type);
@@ -141,8 +165,18 @@ describe('Trip instances actions', () => {
             },
         ];
 
-        await store.dispatch(fetchTripInstances(variables, { isUpdate: true }));
-        const actualActions = store.getActions();
+        const storeWithFilter = mockStore({
+            control: {
+                routes: {
+                    filters: {
+                        routeType: 3,
+                    },
+                },
+            },
+        });
+
+        await storeWithFilter.dispatch(fetchTripInstances(variables, { isUpdate: true }));
+        const actualActions = storeWithFilter.getActions();
         expect(actualActions.length).to.eql(expectedActions.length);
         expect(actualActions[0]).to.eql(expectedActions[0]);
         expect(actualActions[1].type).to.equal(expectedActions[1].type);
@@ -193,6 +227,11 @@ describe('Trip instances actions', () => {
                     routeType: 3,
                     startTime: '06:00:00',
                     routeShortName: '1',
+                },
+                routes: {
+                    filters: {
+                        routeType: 3,
+                    },
                 },
             },
         });

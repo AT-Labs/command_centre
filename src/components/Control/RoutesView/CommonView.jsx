@@ -109,7 +109,9 @@ export class CommonView extends React.Component {
 
         if (hasAnyFilterChanged || hasServiceDateChanged) {
             this.setState(INIT_STATE, () => {
-                if (this.isTripsOnlyView()) { this.fetchTripInstances(false); }
+                if (this.isTripsOnlyView()) {
+                    this.fetchTripInstances(false);
+                }
             });
         } else if (this.isTripsOnlyView() && hasPageSizeIncreased) {
             // start Loading more update

@@ -47,11 +47,11 @@ export class Stops extends React.Component {
                 if (_.isFunction(container.scrollTo)) { // safe check for cypress as scrollTo does not work in Electron browser
                     container.scrollTo(scrollPosition, 0);
                 }
-            }
 
-            this.setState({
-                hasScrollbar: container.clientWidth < container.scrollWidth,
-            });
+                this.setState({
+                    hasScrollbar: container.clientWidth < container.scrollWidth,
+                });
+            }
         }, 0);
     }
 

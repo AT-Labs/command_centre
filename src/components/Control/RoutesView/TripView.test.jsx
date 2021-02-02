@@ -26,7 +26,19 @@ const trainTrip = {
     agencyId: 'NZB',
     referenceId: 'test10',
     serviceId: 'test12',
+    blockId: '123',
 };
+
+const blocks = [
+    {
+        operationalBlockId: '123',
+        operationalTrips: [
+            {
+                tripId: 'test6',
+            },
+        ],
+    },
+];
 
 let wrapper;
 let sandbox;
@@ -42,6 +54,7 @@ const componentPropsMock = {
     goToBlocksView: () => {},
     serviceDate: moment().format(),
     vehicleAllocations: {},
+    blocks,
 };
 const setup = (customProps) => {
     const props = {};
@@ -54,16 +67,32 @@ describe('<TripView />', () => {
     afterEach(() => { sandbox.restore(); });
 
     describe('Trip Details Data', () => {
-        it('When trip is TRAIN, should contain External Ref ID info', () => {
-            wrapper = setup({ tripInstance: trainTrip });
-            const result = _.flatten(wrapper.instance().getTripDetailsData(trainTrip));
-            expect(_.find(result, { value: 'test10' })).to.not.be.undefined; // eslint-disable-line
+        context('When trip is TRAIN', () => {
+            it('Should contain External Ref ID info', () => {
+                wrapper = setup({ tripInstance: trainTrip });
+                const result = _.flatten(wrapper.instance().getTripDetailsData(trainTrip));
+                expect(_.find(result, { value: 'test10' })).to.not.be.undefined; // eslint-disable-line
+            });
+
+            it('Should contain Block ID', () => {
+                wrapper = setup({ tripInstance: trainTrip });
+                const result = _.flatten(wrapper.instance().getTripDetailsData(trainTrip));
+                expect(_.find(result, { value: '123' })).to.not.be.undefined; // eslint-disable-line
+            });
         });
 
-        it('When trip is NOT TRAIN, should not contain External Ref ID info', () => {
-            wrapper = setup({ tripInstance: busTrip });
-            const result = _.flatten(wrapper.instance().getTripDetailsData(busTrip));
-            expect(_.find(result, { value: 'test5' })).to.be.undefined;  // eslint-disable-line
+        context('When trip is NOT TRAIN', () => {
+            it('Should not contain External Ref ID info', () => {
+                wrapper = setup({ tripInstance: busTrip });
+                const result = _.flatten(wrapper.instance().getTripDetailsData(busTrip));
+                expect(_.find(result, { value: 'test5' })).to.be.undefined;  // eslint-disable-line
+            });
+
+            it('Should not contain Block ID', () => {
+                wrapper = setup({ tripInstance: busTrip });
+                const result = _.flatten(wrapper.instance().getTripDetailsData(busTrip));
+                expect(_.find(result, { value: '123' })).to.be.undefined;  // eslint-disable-line
+            });
         });
     });
 

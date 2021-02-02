@@ -3,14 +3,18 @@ import moment from 'moment';
 
 import ACTION_TYPE from '../../../action-types';
 import * as TRIP_MGT_API from '../../../../utils/transmitters/trip-mgt-api';
+import * as BLOCK_MGT_API from '../../../../utils/transmitters/block-mgt-api';
 import ErrorType from '../../../../types/error-types';
+import { TRAIN_TYPE_ID } from '../../../../types/vehicle-types';
 import { ERROR_MESSAGE_TYPE, CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES } from '../../../../types/message-types';
-import { getLinkStartTime } from '../../../selectors/control/link';
 import { getTripInstanceId } from '../../../../utils/helpers';
 import { setBannerError } from '../../activity';
 import { getSelectedTripInstances, getTripInstancesActionResults, getSelectedStops, getSelectedStopsByTripKey } from '../../../selectors/control/routes/trip-instances';
+import { getLinkStartTime } from '../../../selectors/control/link';
 import { getServiceDate } from '../../../selectors/control/serviceDate';
+import { getRouteFilters } from '../../../selectors/control/routes/filters';
 import { SERVICE_DATE_FORMAT } from '../../../../utils/control/routes';
+import { BLOCKS_SERVICE_DATE_FORMAT } from '../../../../utils/control/blocks';
 import { StopStatus } from '../../../../components/Control/RoutesView/Types';
 
 const loadTripInstances = (tripInstances, timestamp) => ({
@@ -53,9 +57,23 @@ const clearTripInstances = () => ({
     },
 });
 
+const assignBlockIdToTrips = async (tripInstances, serviceDate) => {
+    const { blocks } = await BLOCK_MGT_API.getOperationalBlockRuns({ serviceDate });
+    const operationalBlockIds = blocks.reduce((ac, block) => block.operationalTrips.reduce((innerAC, trip) => ({
+        ...innerAC,
+        [`${trip.tripId}-${serviceDate}-${trip.startTime}`]: block.operationalBlockId,
+    }), ac), {});
+
+    tripInstances.forEach((tripInstance) => {
+        Object.assign(tripInstance, { blockId: operationalBlockIds[`${tripInstance.tripId}-${serviceDate}-${tripInstance.startTime}`] });
+    });
+};
+
 export const fetchTripInstances = (variables, { isUpdate }) => (dispatch, getState) => {
     const state = getState();
     const linkStartTime = getLinkStartTime(state);
+    const filters = getRouteFilters(state);
+    const serviceDate = moment(getServiceDate(getState())).format(BLOCKS_SERVICE_DATE_FORMAT);
 
     if (isUpdate) {
         dispatch(updateUpdatingState(true));
@@ -67,7 +85,10 @@ export const fetchTripInstances = (variables, { isUpdate }) => (dispatch, getSta
     const timestamp = moment().valueOf();
 
     TRIP_MGT_API.getTrips(variables)
-        .then(({ tripInstances }) => {
+        .then(async ({ tripInstances }) => {
+            if (filters.routeType === TRAIN_TYPE_ID) {
+                await assignBlockIdToTrips(tripInstances, serviceDate);
+            }
             dispatch(loadTripInstances(tripInstances, timestamp));
             if (linkStartTime) {
                 const activeTrip = _.find(tripInstances, { startTime: linkStartTime });

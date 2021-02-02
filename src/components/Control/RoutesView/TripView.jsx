@@ -96,6 +96,7 @@ export class TripView extends React.Component {
         ];
 
         if (tripInstance.routeType === TRAIN_TYPE_ID) {
+            details[0].splice(2, 0, { name: 'Block ID', value: tripInstance.blockId || '—' });
             details[1].push({ name: 'External Ref ID', value: tripInstance.referenceId || '—' });
         }
 

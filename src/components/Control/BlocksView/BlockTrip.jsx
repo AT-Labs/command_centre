@@ -28,7 +28,7 @@ const BlockTrip = (props) => {
         label: 'View in Routes & Trips',
         action: () => props.goToRoutesView(trip,
             {
-                agencyId: trip.agencyId,
+                agencyId: trip.agencyId || '',
                 routeType: trip.routeType,
                 isGroupedByRoute: true,
                 isGroupedByRouteVariant: true,
