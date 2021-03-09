@@ -9,7 +9,7 @@ import {
     LABEL_CAUSE, LABEL_CREATED_AT, LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_END_DATE, LABEL_END_TIME,
     LABEL_HEADER, LABEL_LAST_UPDATED_AT,
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME,
-    LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_CREATED_BY, LABEL_LAST_UPDATED_BY,
+    LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_CREATED_BY, LABEL_LAST_UPDATED_BY, LABEL_AFFECTED_STOPS,
 } from '../../../../constants/disruptions';
 import { CAUSES, IMPACTS } from '../../../../types/disruptions-types';
 import { formatCreatedUpdatedTime } from '../../../../utils/control/disruptions';
@@ -41,6 +41,7 @@ const DisruptionSummaryModal = (props) => {
                     {createLine(LABEL_STATUS, props.disruption.status)}
                     {createLine(LABEL_MODE, props.disruption.mode)}
                     {createLine(LABEL_AFFECTED_ROUTES, props.disruption.affectedRoutes.map(route => route.routeShortName).join(', '))}
+                    {createLine(LABEL_AFFECTED_STOPS, props.disruption.affectedStops.map(stop => stop.stopCode).join(', '))}
                     {createLine(LABEL_CAUSE, _.find(IMPACTS, { value: props.disruption.impact }).label)}
                     {createLine(LABEL_CUSTOMER_IMPACT, _.find(CAUSES, { value: props.disruption.cause }).label)}
                     {createLine(LABEL_DESCRIPTION, props.disruption.description)}

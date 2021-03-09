@@ -10,9 +10,10 @@ import './TripIcon.scss';
 
 const TripIcon = ({ type, className, subIcon }) => {
     if (!type) return null;
+    const typeLabel = _.get(VEHICLE_TYPE[type], 'type');
     return (
-        <div className="trip-icon">
-            <Icon icon={ _.get(VEHICLE_TYPE[type], 'type') } className={ `trip-icon__main ${className}` } />
+        <div className="trip-icon" data-cy-icon-type={ typeLabel }>
+            <Icon icon={ typeLabel } className={ `trip-icon__main ${className}` } />
             { subIcon && subIcon === TripSubIconType.onTime && <FaCheck className="text-success" size={ 12 } /> }
             { subIcon && subIcon === TripSubIconType.delayed && <FaRegClock className="text-at-orange" size={ 12 } /> }
         </div>

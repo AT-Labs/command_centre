@@ -84,9 +84,6 @@ class App extends Component {
                 this.props.startPollingNotifications();
             }
             this.props.startPollingSiteStatus();
-            if (!window.Cypress) {
-                this.injectTracingSnippet();
-            }
         });
     }
 
@@ -103,13 +100,6 @@ class App extends Component {
                 {process.env.NODE_ENV !== 'local' && <GoogleTagManager gtmId={ process.env.REACT_APP_GOOGLE_TAG_MANAGER_ID } />}
             </div>
         );
-    }
-
-    injectTracingSnippet = () => {
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = `/nr/nr-${process.env.NODE_ENV}.js`;
-        document.head.appendChild(script);
     }
 }
 

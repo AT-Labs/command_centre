@@ -26,7 +26,7 @@ import {
 } from '../../../../../constants/disruptions';
 
 const SelectDetails = (props) => {
-    const { startDate, startTime, endDate, endTime, impact, cause, affectedRoutes, header, description, url } = props.data;
+    const { startDate, startTime, endDate, endTime, impact, cause, affectedRoutes, affectedStops, header, description, url } = props.data;
 
     const [modalOpenedTime] = useState(moment().second(0).millisecond(0));
 
@@ -49,7 +49,9 @@ const SelectDetails = (props) => {
             <div className="row">
                 <div className="col">
                     <span className="font-weight-bold d-block">What is affected?</span>
-                    { affectedRoutes.map(route => route.route_short_name).join(', ') }
+                    Routes: { affectedRoutes.map(route => route.route_short_name).join(', ') }
+                    <br />
+                    Stops: { affectedStops.map(stop => stop.stop_code).join(', ') }
                 </div>
             </div>
             <Form className="row my-3">
@@ -181,8 +183,8 @@ const SelectDetails = (props) => {
                 <div className="col-4">
                     <Button
                         className="btn cc-btn-secondary btn-block"
-                        onClick={ () => props.onStepUpdate(0) }>
-                        Go back
+                        onClick={ () => props.onStepUpdate(1) }>
+                        Back to stops
                     </Button>
                 </div>
                 <div className="col-4">
@@ -191,7 +193,7 @@ const SelectDetails = (props) => {
                         className="btn cc-btn-primary btn-block"
                         onClick={ () => {
                             props.onSubmit();
-                            props.onStepUpdate(2);
+                            props.onStepUpdate(3);
                         } }>
                         Finish logging disruption
                     </Button>

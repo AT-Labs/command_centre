@@ -48,7 +48,7 @@ describe('isEndTimeValid', () => {
 
     it('endTime after startTime and after now should be valid', () => {
         const endDate = now.format(DATE_FORMAT);
-        const endTime = now.clone().add(2, 'minutes').format(TIME_FORMAT);
+        const endTime = now.clone().add(5, 'minutes').format(TIME_FORMAT);
         expect(isEndTimeValid(endDate, endTime, now, '21/07/2020', '12:00')).to.equal(true);
     });
 

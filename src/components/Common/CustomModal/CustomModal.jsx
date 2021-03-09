@@ -41,7 +41,7 @@ const CustomModal = ({
 
 CustomModal.propTypes = {
     renderToggleButton: PropTypes.func,
-    className: PropTypes.string.isRequired,
+    className: PropTypes.string,
     title: PropTypes.string,
     okButton: PropTypes.shape({
         label: PropTypes.oneOfType([PropTypes.element, PropTypes.string]).isRequired,
@@ -59,6 +59,7 @@ CustomModal.defaultProps = {
     onClose: null,
     renderToggleButton: null,
     okButton: null,
+    className: '',
 };
 
 export default CustomModal;

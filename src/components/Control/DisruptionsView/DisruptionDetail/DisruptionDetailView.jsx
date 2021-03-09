@@ -10,7 +10,7 @@ import {
     DATE_FORMAT,
     DESCRIPTION_MAX_LENGTH,
     HEADER_MAX_LENGTH,
-    LABEL_AFFECTED_ROUTES,
+    LABEL_AFFECTED_ROUTES, LABEL_AFFECTED_STOPS,
     LABEL_CAUSE,
     LABEL_CREATED_BY,
     LABEL_CUSTOMER_IMPACT,
@@ -41,7 +41,7 @@ import {
     momentFromDateTime,
 } from '../../../../utils/control/disruptions';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
-import SelectRoutesPicklist from '../SelectRoutesPicklist';
+import SelectEntitiesPicklist from '../SelectEntitiesPicklist';
 import VEHICLE_TYPES from '../../../../types/vehicle-types';
 import './styles.scss';
 import DisruptionSummaryModal from './DisruptionSummaryModal';
@@ -56,8 +56,10 @@ const DisruptionDetailView = (props) => {
     const [header, setHeader] = useState(disruption.header);
     const [url, setUrl] = useState(disruption.url);
     const [affectedRoutes, setAffectedRoutes] = useState(disruption.affectedRoutes);
+    const [affectedStops, setAffectedStops] = useState(disruption.affectedStops);
     const [mode, setMode] = useState(disruption.mode);
     const [routesModalOpen, setRoutesModalOpen] = useState(false);
+    const [stopsModalOpen, setStopsModalOpen] = useState(false);
     const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
     const [startTime, setStartTime] = useState(moment(disruption.startTime).format(TIME_FORMAT));
     const [startDate, setStartDate] = useState(moment(disruption.startTime).format(DATE_FORMAT));
@@ -75,6 +77,7 @@ const DisruptionDetailView = (props) => {
             header,
             url,
             affectedRoutes,
+            affectedStops,
             mode,
             startTime: momentFromDateTime(startDate, startTime),
             endTime: momentFromDateTime(endDate, endTime),
@@ -150,10 +153,19 @@ const DisruptionDetailView = (props) => {
         setMode(modes);
     };
 
+    const updateStops = (selectedItems) => {
+        setAffectedStops(selectedItems.map(stop => _.mapKeys(stop, (v, k) => _.camelCase(k))));
+    };
+
     const onRouteModalClose = () => {
         setRoutesModalOpen(false);
         setAffectedRoutes(disruption.affectedRoutes);
         setMode(disruption.mode);
+    };
+
+    const onStopsModalClose = () => {
+        setStopsModalOpen(false);
+        setAffectedStops(disruption.affectedStops);
     };
 
     const minEndDate = now.isAfter(disruption.startTime, 'day') ? now.format(DATE_FORMAT) : startDate;
@@ -165,33 +177,63 @@ const DisruptionDetailView = (props) => {
             <div className="row">
                 <section className="col-3">
                     <FormGroup className="mt-2">
-                        <Label for="disruption-detail__effected-routes">
+                        <Label for="disruption-detail__affected-routes">
                             <span className="font-size-md font-weight-bold">{ LABEL_AFFECTED_ROUTES }</span>
                         </Label>
                         <Button
                             disabled={ isResolved() }
-                            className="w-100 border border-dark d-flex align-items-center form-control disruption-detail__effected-routes__button"
+                            id="disruption-detail__affected-routes"
+                            className="w-100 border border-dark d-flex align-items-center form-control disruption-detail__affected-entities__button"
                             onClick={ () => setRoutesModalOpen(true) }>
                             <MdModeEdit
-                                className="disruption-detail__effected-routes__button-icon mr-2"
+                                className="disruption-detail__affected-entities__button-icon mr-2"
                                 size={ 25 }
                                 role="button" />
-                            <span className="disruption-detail__effected-routes__button-span">{ _.map(affectedRoutes, 'routeShortName').join(', ') }</span>
+                            <span className="disruption-detail__affected-entities__button-span">{ _.map(affectedRoutes, 'routeShortName').join(', ') }</span>
                         </Button>
                         <CustomModal
                             className="cc-modal-standard-width"
                             title="Select Routes"
                             isModalOpen={ routesModalOpen }
                             onClose={ () => onRouteModalClose() }>
-                            <SelectRoutesPicklist
+                            <SelectEntitiesPicklist
                                 data={ ({ affectedRoutes: affectedRoutes.map(route => _.mapKeys(route, (value, key) => _.snakeCase(key))) }) }
                                 cancelButtonLabel="Cancel"
                                 onClose={ () => onRouteModalClose() }
+                                type="routes"
                                 onDataUpdate={ selectedItems => updateRoutesAndMode(selectedItems) }
                                 onSubmit={ () => setRoutesModalOpen(false) } />
                         </CustomModal>
                     </FormGroup>
-                    <DisruptionLabelAndText id="disruption-detail__mode" label={ LABEL_MODE } text={ mode } />
+                    <FormGroup className="mt-2">
+                        <Label for="disruption-detail__affected-stops">
+                            <span className="font-size-md font-weight-bold">{ LABEL_AFFECTED_STOPS }</span>
+                        </Label>
+                        <Button
+                            disabled={ isResolved() }
+                            id="disruption-detail__affected-stops"
+                            className="w-100 border border-dark d-flex align-items-center form-control disruption-detail__affected-entities__button"
+                            onClick={ () => setStopsModalOpen(true) }>
+                            <MdModeEdit
+                                className="disruption-detail__affected-entities__button-icon mr-2"
+                                size={ 25 }
+                                role="button" />
+                            <span className="disruption-detail__affected-entities__button-span">{ _.map(affectedStops, 'stopCode').join(', ') }</span>
+                        </Button>
+                        <CustomModal
+                            className="cc-modal-standard-width"
+                            title="Select Stops"
+                            isModalOpen={ stopsModalOpen }
+                            onClose={ () => onStopsModalClose() }>
+                            <SelectEntitiesPicklist
+                                data={ ({ affectedStops: affectedStops.map(route => _.mapKeys(route, (value, key) => _.snakeCase(key))) }) }
+                                cancelButtonLabel="Cancel"
+                                onClose={ () => onStopsModalClose() }
+                                type="stops"
+                                onDataUpdate={ selectedItems => updateStops(selectedItems) }
+                                onSubmit={ () => setStopsModalOpen(false) } />
+                        </CustomModal>
+                    </FormGroup>
                 </section>
                 <section className="col-3">
                     <DisruptionDetailSelect
@@ -274,6 +316,7 @@ const DisruptionDetailView = (props) => {
                         options={ disruption.status === STATUSES.NOT_STARTED ? Object.values(STATUSES) : Object.values(STATUSES).filter(s => s !== STATUSES.NOT_STARTED) }
                         label={ LABEL_STATUS }
                         onChange={ setDisruptionStatus } />
+                    <DisruptionLabelAndText id="disruption-detail__mode" label={ LABEL_MODE } text={ mode } />
                 </section>
             </div>
             <div className="row align-items-end">

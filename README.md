@@ -8,8 +8,11 @@ Before you can build this project, you need the following dependencies:
 
 * [NodeJs](https://nodejs.org/en/) (v v10.11.0) The installation depends on the system you have.
 
-* npm install
+* npm ci
 * npm start
+
+**NOTE: y18n@^3.2.1 in some of the packages (which are our of maintenance) dependency list have security flaw, and it's fixed by manually manipulate
+the package-lock.json file to use version 4.0.1, so if you have to use `npm install` instead of `npm ci` in some circumstances, need to revert the changes of package-lock.json that's regarding y18n before commit it.** 
 
 ## Unit test
 
@@ -65,7 +68,8 @@ Firstly, follow [this instruction](https://docs.microsoft.com/en-us/azure/archit
 
 To run in different environments set NODE_ENV before running.
 
-All the configuration to get the user's role is done in [`index.jsx`](./src/index.jsx). Make sure `REACT_APP_ACTIVE_DIRECTORY_LOGIN_REQUIRED` is set up to `true` and `REACT_APP_ACTIVE_DIRECTORY_CLIENT_ID` is your Azure App one.  
+All the configuration to get the user's role is done in [`index.jsx`](./src/index.jsx). Make sure `REACT_APP_ACTIVE_DIRECTORY_CLIENT_ID` is your Azure App one.
+If you want to ban login, set `REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN` to be `'true'`;  
 When the app starts, it loads the user from the cache or it forces to log in before starting. Then you can check the user's role with  `authContext.getCachedUser().profile.roles.includes("USER_ROLE")`.
 
 
@@ -91,7 +95,7 @@ When the app starts, it loads the user from the cache or it forces to log in bef
 | REACT_APP_ALERTS_API                          | string | Alerts API URL                                  |
 | REACT_APP_TRIP_REPLAY_API_URL                 | string | Trip replay API URL                             |
 | REACT_APP_ACTIVE_DIRECTORY_TENANT             | string | Active directory tenant                         |
-| REACT_APP_ACTIVE_DIRECTORY_LOGIN_REQUIRED     | string | Active directory is required                    |
+| REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN      | string | 'true' to disable Active directory login        /
 | REACT_APP_ACTIVE_DIRECTORY_CLIENT_ID          | string | Active directory client ID                      |
 | REACT_APP_FEATURE_NOTIFICATIONS               | bool   | Turn on notifications                           |
 | REACT_APP_FEATURE_DISRUPTIONS                 | bool   | Turn on disruptions                             |

@@ -1,13 +1,13 @@
 import { AuthenticationContext, adalFetch } from 'react-adal';
 
-export const IS_LOGIN_NOT_REQUIRED = process.env.REACT_APP_ACTIVE_DIRECTORY_LOGIN_REQUIRED !== 'true';
+export const IS_LOGIN_NOT_REQUIRED = process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN === 'true';
 const AD_CLIENT_ID = process.env.REACT_APP_ACTIVE_DIRECTORY_CLIENT_ID || 'client-id';
 const AD_TENANT = process.env.REACT_APP_ACTIVE_DIRECTORY_TENANT || 'tenant-name';
 
 const config = {
     tenant: AD_TENANT,
     clientId: AD_CLIENT_ID,
-    cacheLocation: 'localStorage',
+    cacheLocation: 'sessionStorage',
     endpoints: {
         api: AD_CLIENT_ID,
     },

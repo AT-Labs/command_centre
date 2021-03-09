@@ -8,6 +8,7 @@ export const DATE_FORMAT = 'DD/MM/YYYY';
 export const LABEL_CAUSE = 'Cause';
 export const LABEL_MODE = 'Mode';
 export const LABEL_AFFECTED_ROUTES = 'Affected Routes';
+export const LABEL_AFFECTED_STOPS = 'Affected Stops';
 export const LABEL_START_DATE = 'Start Date';
 export const LABEL_START_TIME = 'Start Time';
 export const LABEL_END_DATE = 'End Date';

@@ -108,11 +108,11 @@ export class StopMessagesView extends React.Component {
         ) : null;
     }
 
-    updateStopMessage = (payload) => {
+    updateStopMessage = (payload, recurrence) => {
         const { edit, cancel } = this.MODALS;
         const { modal } = this.props;
         const stopMessageId = (modal.type === edit.type || modal.type === cancel.type) && modal.stopMessage ? modal.stopMessage.id : null;
-        return this.props.updateStopMessage(payload, stopMessageId);
+        return this.props.updateStopMessage(payload, stopMessageId, recurrence);
     }
 
     mergeStopsAndGroupsInMessagesList = () => {
@@ -257,7 +257,7 @@ export class StopMessagesView extends React.Component {
                     </div>
                     <CustomButtonGroup
                         buttons={ [{ type: STOP_MESSAGE_TYPE.TYPE.CURRENT }, { type: STOP_MESSAGE_TYPE.TYPE.EXPIRED }] }
-                        selectedOption={ statusFilterValue }
+                        selectedOptions={ [statusFilterValue] }
                         className="col-3 d-flex justify-content-end align-items-center"
                         onSelection={ (selectedStatus) => {
                             this.props.getStopMessagesAndPermissions();

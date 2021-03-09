@@ -151,3 +151,5 @@ export const isDelayBetweenRange = (delay, range) => {
     const until = range[1] * 60;
     return from < value && value < until;
 };
+
+export const getNumbersSequence = (from, to) => [...Array(to).keys()].map(i => i + from);

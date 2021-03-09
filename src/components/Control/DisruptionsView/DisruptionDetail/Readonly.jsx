@@ -24,7 +24,7 @@ const Readonly = (props) => {
                 <section className="col-3">
                     <DisruptionLabelAndText
                         label={ LABEL_AFFECTED_ROUTES }
-                        id="disruption-detail__effected-routes"
+                        id="disruption-detail__affected-entities"
                         text={ map(disruption.affectedRoutes, 'routeShortName').join(', ') } />
                     <DisruptionLabelAndText label={ LABEL_MODE } id="disruption-detail__mode" text={ disruption.mode } />
                 </section>

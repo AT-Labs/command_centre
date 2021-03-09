@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -6,6 +7,7 @@ const ManifestPlugin = require('webpack-manifest-plugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
 const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
+const pkg = require('../package');
 const paths = require('./paths');
 const getClientEnvironment = require('./env');
 
@@ -23,7 +25,7 @@ const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
 const publicUrl = publicPath.slice(0, -1);
 // Get environment variables to inject into our app.
 const env = getClientEnvironment(publicUrl);
-
+fs.writeFileSync(`${paths.appPublic}/version.txt`, pkg.version);
 // Assert this just to be safe.
 // Development builds of React are slow and not intended for production.
 // if (env.stringified['process.env'].NODE_ENV !== '"production"') {
@@ -31,7 +33,7 @@ const env = getClientEnvironment(publicUrl);
 // }
 
 // Note: defined here because it will be used more than once.
-const cssFilename = 'static/css/[name].[contenthash:8].css';
+const cssFilename = 'static/css/[name].css';
 
 // ExtractTextPlugin expects the build output to be flat.
 // (See https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/27)
@@ -52,15 +54,17 @@ module.exports = {
     // You can exclude the *.map files from the build during deployment.
     devtool: shouldUseSourceMap ? 'source-map' : false,
     // In production, we only want to load the polyfills and the app code.
-    entry: [require.resolve('./polyfills'), paths.appIndexJs],
+    entry: {
+        main: [paths.appIndexJs],
+        app: [require.resolve('./polyfills'), paths.appMainJs],
+    },
     output: {
     // The build folder.
         path: paths.appBuild,
         // Generated JS file names (with nested folders).
         // There will be one main bundle, and one file per asynchronous chunk.
         // We don't currently advertise code splitting but Webpack supports it.
-        filename: 'static/js/[name].[chunkhash:8].js',
-        chunkFilename: 'static/js/[name].[chunkhash:8].chunk.js',
+        filename: 'static/js/[name].js',
         // We inferred the "public path" (such as / or /my-project) from homepage.
         publicPath,
         // Point sourcemap entries to original disk location (format as URL on Windows)
@@ -144,7 +148,6 @@ module.exports = {
                         include: paths.appSrc,
                         loader: require.resolve('babel-loader'),
                         options: {
-
                             compact: true,
                         },
                     },
@@ -252,6 +255,7 @@ module.exports = {
         // Generates an `index.html` file with the <script> injected.
         new HtmlWebpackPlugin({
             inject: true,
+            chunks: ['main'],
             template: paths.appHtml,
             minify: {
                 removeComments: true,

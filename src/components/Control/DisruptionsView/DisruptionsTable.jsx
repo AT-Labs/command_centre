@@ -7,7 +7,7 @@ import { getActiveDisruptionId } from '../../../redux/selectors/control/disrupti
 import { STATUSES, CAUSES, IMPACTS, DEFAULT_IMPACT, DEFAULT_CAUSE } from '../../../types/disruptions-types';
 import {
     DATE_FORMAT,
-    LABEL_AFFECTED_ROUTES,
+    LABEL_AFFECTED_ROUTES, LABEL_AFFECTED_STOPS,
     LABEL_CAUSE, LABEL_CUSTOMER_IMPACT, LABEL_DISRUPTION, LABEL_END_TIME,
     LABEL_MODE, LABEL_START_DATE,
     LABEL_START_TIME, LABEL_STATUS,
@@ -50,15 +50,21 @@ class DisruptionsTable extends React.Component {
                 getContent: (disruption, key) => disruption[key].map(({ routeShortName }) => routeShortName).join(', '),
             },
             {
+                label: LABEL_AFFECTED_STOPS,
+                key: 'affectedStops',
+                cols: 'col-2',
+                getContent: (disruption, key) => disruption[key].map(({ stopCode }) => stopCode).join(', '),
+            },
+            {
                 label: LABEL_CUSTOMER_IMPACT,
                 key: 'impact',
-                cols: 'col-2',
+                cols: 'col-1',
                 getContent: (disruption, key) => (IMPACTS.find(impact => impact.value === disruption[key]) || DEFAULT_IMPACT).label,
             },
             {
                 label: LABEL_CAUSE,
                 key: 'cause',
-                cols: 'col-2',
+                cols: 'col-1',
                 getContent: (disruption, key) => (CAUSES.find(cause => cause.value === disruption[key]) || DEFAULT_CAUSE).label,
             },
             {

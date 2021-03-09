@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import { uniqueId } from 'lodash-es';
 import { Button, ButtonGroup } from 'reactstrap';
 
-const createButton = (onSelection, selectedOption, button) => {
+const createButton = (onSelection, selectedOptions, button) => {
     const { type, label } = button;
     return (
         <Button
-            className={ `btn ${selectedOption === type ? 'btn-info' : 'btn-white'} text-capitalize border border-primary` }
+            className={ `btn ${selectedOptions.includes(type) ? 'btn-info' : 'btn-white'} text-capitalize border border-primary` }
             onClick={ () => onSelection(type) }
             key={ uniqueId() }>
             { label || type }
@@ -15,10 +15,10 @@ const createButton = (onSelection, selectedOption, button) => {
     );
 };
 
-const CustomButtonGroup = ({ onSelection, className, selectedOption, buttons }) => (
+const CustomButtonGroup = ({ onSelection, className, selectedOptions, buttons }) => (
     <div className={ `btn-group btn-group-toggle ${className}` }>
         <ButtonGroup>
-            {buttons.map(button => createButton(onSelection, selectedOption, button))}
+            {buttons.map(button => createButton(onSelection, selectedOptions, button))}
         </ButtonGroup>
     </div>
 );
@@ -26,7 +26,7 @@ const CustomButtonGroup = ({ onSelection, className, selectedOption, buttons }) 
 CustomButtonGroup.propTypes = {
     buttons: PropTypes.array.isRequired,
     onSelection: PropTypes.func.isRequired,
-    selectedOption: PropTypes.string.isRequired,
+    selectedOptions: PropTypes.arrayOf(PropTypes.string).isRequired,
     className: PropTypes.string,
 };
 

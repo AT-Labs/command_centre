@@ -62,9 +62,42 @@ export const getStopMessagesAndPermissions = () => (dispatch) => {
         });
 };
 
-export const updateStopMessage = (payload, stopMessageId) => (dispatch) => {
+export const updateStopMessage = (payload, stopMessageId, recurrence) => (dispatch) => {
     dispatch(updateLoadingStopMessagesState(true));
-    return stopMessagingApi.updateStopMessage(payload, stopMessageId)
+
+    const promises = [];
+    if (!recurrence) {
+        promises.push(stopMessagingApi.updateStopMessage(payload, stopMessageId));
+    } else {
+        for (let index = 1; index <= recurrence.weeks; index++) {
+            let startTime = payload.startTime.clone();
+            let endTime = payload.endTime.clone();
+            const week = index - 1;
+            if (week > 0) {
+                startTime.add(week, 'w');
+                endTime.add(week, 'w');
+            }
+
+            recurrence.days.forEach((day) => {
+                // It's not necessary to clone it every time but it avoids moment variables being the same instance (saw in tests)
+                startTime = startTime.clone().weekday(day);
+                endTime = endTime.clone().weekday(day);
+
+                if (startTime.isBefore(payload.startTime) || endTime.isBefore(Date.now())) {
+                    // We skip recurrent dates that are before the event's start date or that they already ended.
+                    return;
+                }
+
+                const newPayload = {
+                    ...payload,
+                    startTime,
+                    endTime,
+                };
+                promises.push(stopMessagingApi.updateStopMessage(newPayload, stopMessageId));
+            });
+        }
+    }
+    return Promise.all(promises)
         .then(() => {
             dispatch(getStopMessagesAndPermissions());
             dispatch(updateLoadingStopMessagesState(false));

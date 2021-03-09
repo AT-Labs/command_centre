@@ -17,6 +17,7 @@ import { getError } from '../../../../redux/selectors/activity';
 import ModalAlert from '../../BlocksView/BlockModals/ModalAlert';
 import { getAllStopGroups, allSystemStopGroups } from '../../../../redux/selectors/control/stopMessaging/stopGroups';
 import StandardFilter from '../../Common/Filters/StandardFilter';
+import RecurrenceFieldRow from './RecurrenceFieldRow';
 import '../../../../../node_modules/flatpickr/dist/flatpickr.css';
 
 const currentDate = () => new Date();
@@ -40,7 +41,16 @@ const INIT_STATE = {
     priority: '',
     hasModalBeenOpen: true,
     isModalOpen: false,
+    recurrence: {
+        weeks: 0,
+        days: [
+            moment().weekday(),
+        ],
+        isValid: true,
+    },
 };
+const RECURRENCE_VALIDITY_DEPENDANT_FIELDS = ['startDate', 'endTime'];
+
 export class StopMessageModal extends React.Component {
     static propTypes = {
         isModalOpen: PropTypes.bool.isRequired,
@@ -52,12 +62,14 @@ export class StopMessageModal extends React.Component {
         onAction: PropTypes.func.isRequired,
         activeMessage: PropTypes.object, // eslint-disable-line
         stopsGroups: PropTypes.array,
+        modalType: PropTypes.string,
     }
 
     static defaultProps = {
         error: {},
         stopsGroups: [],
         activeMessage: null,
+        modalType: '',
     }
 
     constructor(props) {
@@ -75,15 +87,18 @@ export class StopMessageModal extends React.Component {
     static getDerivedStateFromProps(props, state) {
         if (props.activeMessage && state.hasModalBeenOpen) {
             const { activeMessage: { stopsAndGroups, message, priority, startTime, endTime, isCurrent } } = props;
-
+            const startDatetime = moment(startTime);
             return {
                 stopsAndGroups,
                 message: message || '',
                 priority: priority || '',
-                startDate: moment(startTime).toDate(),
-                startTime: moment(startTime).format('HH:mm'),
+                startDate: startDatetime.toDate(),
+                startTime: startDatetime.format('HH:mm'),
                 endDate: isCurrent ? moment(endTime).toDate() : null,
                 endTime: isCurrent ? moment(endTime).format('HH:mm') : '',
+                recurrence: {
+                    isValid: true,
+                },
                 hasModalBeenOpen: false,
             };
         }
@@ -108,72 +123,127 @@ export class StopMessageModal extends React.Component {
             priority: '',
             hasModalBeenOpen: true, // eslint-disable-line
             hasSubmitButtonBeenClicked: false,
+            recurrence: INIT_STATE.recurrence,
         }, () => {
             this.props.onClose();
             this.dismissErrorHandler();
         });
     }
 
+    updateRecurrenceErrorMessage = () => {
+        const mostFutureDate = this.getMostFutureRecurrentDate();
+        const isRecurrenceValid = mostFutureDate && mostFutureDate.isAfter(Date.now());
+        this.setState(prevState => ({
+            recurrence: {
+                ...prevState.recurrence,
+                isValid: isRecurrenceValid,
+            },
+        }));
+    }
+
+    getMostFutureRecurrentDate = () => {
+        const { recurrence, startDate, endTime } = this.state;
+        const mostFutureDateTime = this.parseSelectedDate(startDate, endTime);
+        if (!mostFutureDateTime.isValid()) {
+            return null;
+        }
+
+        if (!recurrence.days.length) {
+            return null;
+        }
+        const mostFutureDay = _.max(recurrence.days);
+        mostFutureDateTime.add(recurrence.weeks - 1, 'w').weekday(mostFutureDay);
+        return mostFutureDateTime;
+    }
+
+    onRecurrenceUpdate = (update) => {
+        this.setState(prevState => ({
+            recurrence: {
+                ...prevState.recurrence,
+                ...update,
+            },
+        }), this.updateRecurrenceErrorMessage);
+    }
+
     onFormFieldsChange = (name, value) => {
-        this.setState({
-            [name]: value,
-        }, () => this.dismissErrorHandler());
+        this.setState({ [name]: value }, () => {
+            this.dismissErrorHandler();
+            if (this.hasRecurrence() && RECURRENCE_VALIDITY_DEPENDANT_FIELDS.includes(name)) {
+                this.updateRecurrenceErrorMessage();
+            }
+        });
     }
 
     onDateUpdate = (key, value) => {
-        if (!moment(value).isSame(this.state[key])) {
+        const date = moment(value);
+        if (!date.isSame(this.state[key])) {
             this.onFormFieldsChange(key, value);
         }
     }
 
+    hasRecurrence = () => !!this.state.recurrence.weeks;
+
+    getEndDateTime = () => {
+        const { startDate, endTime, endDate } = this.state;
+        // With recurrence multi-day selection is not allowed so we use startDate for start and end.
+        return this.parseSelectedDate(this.hasRecurrence() ? startDate : endDate, endTime);
+    }
+
     updateStopMessage = () => {
-        if (_.isNull(this.props.error.createStopMessage)) {
-            const {
-                stopsAndGroups, message, startTime, startDate, endTime, endDate, priority,
-            } = this.state;
-            const singleStops = stopsAndGroups.filter(selectedItem => !_.isObject(selectedItem.stopGroup));
-            const stopGroups = stopsAndGroups.filter(selectedItem => _.isObject(selectedItem.stopGroup))
-                .map(group => group.stopGroup);
-
-            const payload = {
-                startTime: this.parseSelectedDate(startDate, startTime),
-                endTime: this.parseSelectedDate(endDate, endTime),
-                message,
-                priority,
-                stops: singleStops,
-                stopGroups,
-            };
-
-            this.setState({ hasSubmitButtonBeenClicked: true });
-
-            this.props.onAction(payload)
-                .then(() => this.toggleModal())
-                .catch(() => {});
+        if (!_.isNull(this.props.error.createStopMessage)) {
+            return;
         }
+        const {
+            stopsAndGroups, message, startTime, startDate, priority, recurrence,
+        } = this.state;
+        const singleStops = stopsAndGroups.filter(selectedItem => !_.isObject(selectedItem.stopGroup));
+        const stopGroups = stopsAndGroups.filter(selectedItem => _.isObject(selectedItem.stopGroup))
+            .map(group => group.stopGroup);
+
+        const payload = {
+            startTime: this.parseSelectedDate(startDate, startTime),
+            endTime: this.getEndDateTime(),
+            message,
+            priority,
+            stops: singleStops,
+            stopGroups,
+        };
+
+        this.setState({ hasSubmitButtonBeenClicked: true });
+
+        this.props.onAction(payload, recurrence.weeks ? recurrence : null)
+            .then(() => this.toggleModal())
+            .catch(() => {});
     }
 
     render() {
-        const { error, isModalOpen, title, allStops, stopsGroups, activeMessage } = this.props;
+        const { error, isModalOpen, title, allStops, stopsGroups, activeMessage, modalType } = this.props;
         const {
-            stopsAndGroups, message, startTime, startDate, endTime, endDate, priority, hasSubmitButtonBeenClicked,
+            stopsAndGroups, message, startTime, startDate, endTime, endDate, priority, recurrence, hasSubmitButtonBeenClicked,
         } = this.state;
 
         const groups = formatGroupsForPresentation(stopsGroups);
         const allStopsAndGroups = [...allSystemStopGroups, ...allStops, ...groups];
         const startDatetime = this.parseSelectedDate(startDate, startTime);
-        const endDatetime = this.parseSelectedDate(endDate, endTime);
         const inputLabelAndPlaceholder = 'Search to select a stop';
         const isMaxCharactersLengthExceeded = message.length > MAX_CHARACTERS;
-        const isTimeSelected = _.isDate(startDate) && startTime !== '' && _.isDate(endDate) && endTime !== '';
+        const endDatetime = this.getEndDateTime();
+        const hasRecurrence = this.hasRecurrence();
+        const isTimeSelected = _.isDate(startDate) && startTime !== '' && (_.isDate(endDate) || hasRecurrence) && endTime;
         const isTimeSelectedValid = startDatetime.isBefore(endDatetime);
         const isSaveButtonDisabled = _.isEmpty(stopsAndGroups)
-        || message === ''
-        || !_.isNull(error.createStopMessage)
-        || isMaxCharactersLengthExceeded
-        || !isTimeSelected
-        || !isTimeSelectedValid
-        || priority === ''
-        || hasSubmitButtonBeenClicked;
+            || message === ''
+            || !_.isNull(error.createStopMessage)
+            || isMaxCharactersLengthExceeded
+            || !isTimeSelected
+            || !isTimeSelectedValid
+            || priority === ''
+            || hasSubmitButtonBeenClicked
+            || (hasRecurrence && !recurrence.isValid);
+        const isEditing = modalType === 'edit';
+
+        const areDatesInvalid = (isTimeSelected && !isTimeSelectedValid) || (hasRecurrence && !recurrence.isValid);
+
         return (
             <CustomModal
                 className="message-modal cc-modal-standard-width"
@@ -254,7 +324,7 @@ export class StopMessageModal extends React.Component {
                                         value={ startDate }
                                         options={ {
                                             ...this.datePickerOptions,
-                                            minDate: moment(_.get(activeMessage, 'startTime', new Date())).format('YYYY-MM-DD'),
+                                            minDate: moment.min(moment(), moment(_.get(activeMessage, 'startTime', new Date()))).format('YYYY-MM-DD'),
                                             disable: [activeMessage && {
                                                 from: moment(_.get(activeMessage, 'startTime', new Date())).add(1, 'day').format('D MMMM YYYY'),
                                                 to: moment().add(-1, 'day').format('D MMMM YYYY'),
@@ -264,7 +334,6 @@ export class StopMessageModal extends React.Component {
                                 </div>
                             </React.Fragment>
                         </FormGroup>
-
                     </FormGroup>
                     <FormGroup tag="fieldset" className="col-6 mb-0">
                         <Label>End:</Label>
@@ -280,28 +349,32 @@ export class StopMessageModal extends React.Component {
                                     onSelection={ selectedOption => this.onFormFieldsChange('endTime', selectedOption.value) }
                                     value={ this.state.endTime } />
                             </div>
-                            <div className="col-7 message-modal__end-date">
-                                <Flatpickr
-                                    className="form-control cc-form-control"
-                                    value={ endDate }
-                                    options={ this.datePickerOptions }
-                                    placeholder="Select date"
-                                    onChange={ date => this.onDateUpdate('endDate', date[0]) } />
-                            </div>
+                            {!recurrence.weeks && (
+                                <div className="col-7 message-modal__end-date">
+                                    <Flatpickr
+                                        className="form-control cc-form-control"
+                                        value={ endDate }
+                                        options={ {
+                                            ...this.datePickerOptions,
+                                            minDate: moment(startDate).format('YYYY-MM-DD'),
+                                        } }
+                                        placeholder="Select date"
+                                        onChange={ date => this.onDateUpdate('endDate', date[0]) } />
+                                </div>
+                            )}
                         </FormGroup>
                     </FormGroup>
-                    <div className="col mb-4">
-                        {
-                            isTimeSelected && !isTimeSelectedValid && (
-                                <div className="message-modal__date-alert cc-modal-field-alert d-flex align-items-end text-danger">
-                                    <IoIosWarning size={ 20 } className="mr-1" />
-                                    <span>
-                                        Start date and time must be before end date and time
-                                    </span>
-                                </div>
-                            )
-                        }
-                    </div>
+                </div>
+                {!isEditing && <RecurrenceFieldRow recurrence={ recurrence } onUpdate={ this.onRecurrenceUpdate } />}
+                <div className="col mb-4">
+                    {areDatesInvalid && (
+                        <div className="message-modal__date-alert cc-modal-field-alert d-flex align-items-end text-danger">
+                            <IoIosWarning size={ 20 } className="mr-1" />
+                            <span>
+                                Start date and time must be before end date and time
+                            </span>
+                        </div>
+                    )}
                 </div>
                 <div className="row">
                     <div className="col-6">

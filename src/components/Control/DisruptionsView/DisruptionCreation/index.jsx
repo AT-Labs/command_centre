@@ -8,6 +8,7 @@ import { Button } from 'reactstrap';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import Wizard from '../../../Common/wizard/Wizard';
 import SelectRoutes from './WizardSteps/SelectRoutes';
+import SelectStops from './WizardSteps/SelectStops';
 import SelectDetails from './WizardSteps/SelectDetails';
 import Confirmation from './WizardSteps/Confirmation';
 import { createDisruption } from '../../../../redux/actions/control/disruptions';
@@ -27,6 +28,7 @@ const INIT_STATE = {
     impact: DEFAULT_IMPACT.value,
     cause: DEFAULT_CAUSE.value,
     affectedRoutes: [],
+    affectedStops: [],
     mode: '-',
     status: STATUSES.IN_PROGRESS,
     header: '',
@@ -75,6 +77,7 @@ class DisruptionCreation extends React.Component {
         const { disruptionData } = this.state;
         const modes = [];
         const camelCaseRoutes = [];
+        const camelCaseStops = [];
         const startTimeMoment = momentFromDateTime(disruptionData.startDate, disruptionData.startTime);
         let endTimeMoment;
         if (!_.isEmpty(disruptionData.endDate) && !_.isEmpty(disruptionData.endTime)) {
@@ -85,23 +88,31 @@ class DisruptionCreation extends React.Component {
             modes.push(VEHICLE_TYPES[route.route_type].type);
             camelCaseRoutes.push(_.mapKeys(route, (value, key) => _.camelCase(key)));
         });
-
+        disruptionData.affectedStops.forEach((s) => {
+            camelCaseStops.push(_.mapKeys(s, (value, key) => _.camelCase(key)));
+        });
         return {
             ...disruptionData,
             mode: _.uniq(modes).join(', '),
             affectedRoutes: camelCaseRoutes,
+            affectedStops: camelCaseStops,
             startTime: startTimeMoment,
             endTime: endTimeMoment,
             status: startTimeMoment.isAfter(moment()) ? STATUSES.NOT_STARTED : STATUSES.IN_PROGRESS,
         };
     }
 
+    isSubmitDisabled = (disruptionData) => {
+        const isEntitiesEmpty = _.isEmpty(disruptionData.affectedStops) && _.isEmpty(disruptionData.affectedRoutes);
+        const isPropsEmpty = _.some(_.omit(disruptionData,
+            ['endDate', 'endTime', 'mode', 'affectedRoutes', 'affectedStops', 'url']), _.isEmpty);
+        return isEntitiesEmpty || isPropsEmpty;
+    }
+
     onSubmit = () => this.props.createDisruption(this.buildSubmitBody());
 
     render() {
         const { disruptionData, isOpen } = this.state;
-        const isSubmitDisabled = _.some(_.omit(disruptionData,
-            ['endDate', 'endTime', 'mode', 'url']), _.isEmpty);
 
         return (
             <div className="disruption-creation">
@@ -119,11 +130,12 @@ class DisruptionCreation extends React.Component {
                         className="disruption-creation__wizard container"
                         data={ disruptionData }
                         response={ this.props.action }
-                        isSubmitDisabled={ isSubmitDisabled }
+                        isSubmitDisabled={ this.isSubmitDisabled(disruptionData) }
                         onStepUpdate={ activeStep => activeStep === null && this.toggleModal(false) }
                         onDataUpdate={ this.updateData }
                         onSubmit={ this.onSubmit }>
                         <SelectRoutes />
+                        <SelectStops />
                         <SelectDetails />
                         <Confirmation />
                     </Wizard>
