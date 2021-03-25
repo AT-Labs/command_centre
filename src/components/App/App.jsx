@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { getAuthUser } from '../../auth';
 import { startPollingSiteStatus } from '../../redux/actions/activity';
@@ -32,76 +32,83 @@ import './App.scss';
 import Header from './Header/Header';
 import ERROR_TYPE from '../../types/error-types';
 
-class App extends Component {
-    static propTypes = {
-        hasError: PropTypes.bool.isRequired,
-        isInitLoading: PropTypes.bool.isRequired,
-        getStops: PropTypes.func.isRequired,
-        getRoutes: PropTypes.func.isRequired,
-        startPollingSiteStatus: PropTypes.func.isRequired,
-        getTrains: PropTypes.func.isRequired,
-        getFerries: PropTypes.func.isRequired,
-        getBuses: PropTypes.func.isRequired,
-        startTrackingVehicleAllocations: PropTypes.func.isRequired,
-        activeMainView: PropTypes.string.isRequired,
-        updateUserProfile: PropTypes.func.isRequired,
-        fetchRoutesViewPermission: PropTypes.func.isRequired,
-        fetchBlocksViewPermission: PropTypes.func.isRequired,
-        fetchStopMessagingViewPermission: PropTypes.func.isRequired,
-        fetchDisruptionsViewPermission: PropTypes.func.isRequired,
-        fetchNotificationsViewPermission: PropTypes.func.isRequired,
-        startPollingNotifications: PropTypes.func.isRequired,
-        fetchTripReplaysViewPermission: PropTypes.func.isRequired,
-    }
-
-    mainViews = {
+function App(props) {
+    const mainViews = {
         [VIEW_TYPE.MAIN.REAL_TIME]: <RealTimeView />,
         [VIEW_TYPE.MAIN.CONTROL]: <ControlView />,
         [VIEW_TYPE.MAIN.DASHBOARD]: <DashboardView />,
-    }
+    };
 
-    componentDidMount() {
+    const injectTracingSnippet = () => {
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `/nr/nr-${process.env.NODE_ENV}.js`;
+        document.head.appendChild(script);
+    };
+
+    useEffect(() => {
         Promise.all([
-            this.props.getTrains(),
-            this.props.getBuses(),
-            this.props.getFerries(),
-            this.props.getStops(),
-            this.props.getRoutes(),
+            props.getTrains(),
+            props.getBuses(),
+            props.getFerries(),
+            props.getStops(),
+            props.getRoutes(),
         ]).then(() => {
-            this.props.updateUserProfile(getAuthUser());
-            this.props.fetchBlocksViewPermission();
-            this.props.fetchRoutesViewPermission();
-            this.props.fetchStopMessagingViewPermission();
-            this.props.startTrackingVehicleAllocations();
+            props.updateUserProfile(getAuthUser());
+            props.fetchBlocksViewPermission();
+            props.fetchRoutesViewPermission();
+            props.fetchStopMessagingViewPermission();
+            props.startTrackingVehicleAllocations();
             if (IS_DISRUPTIONS_ENABLED) {
-                this.props.fetchDisruptionsViewPermission();
+                props.fetchDisruptionsViewPermission();
             }
             if (IS_TRIP_REPLAYS_ENABLED) {
-                this.props.fetchTripReplaysViewPermission();
+                props.fetchTripReplaysViewPermission();
             }
             if (IS_NOTIFICATIONS_ENABLED) {
-                this.props.fetchNotificationsViewPermission();
-                this.props.startPollingNotifications();
+                props.fetchNotificationsViewPermission();
+                props.startPollingNotifications();
             }
-            this.props.startPollingSiteStatus();
+            props.startPollingSiteStatus();
+            if (!window.Cypress) {
+                injectTracingSnippet();
+            }
         });
-    }
+    }, []);
 
-    render() {
-        const { isInitLoading, hasError, activeMainView } = this.props;
-        return (
-            <div className="app">
-                <div>
-                    <Header />
-                    {(isInitLoading && <MaskLoader error={ hasError ? ERROR_TYPE.initial : null } />) || (this.mainViews[activeMainView])}
-                    <ActivityIndicator />
-                    <BrowserCompatibilityModal />
-                </div>
-                {process.env.NODE_ENV !== 'local' && <GoogleTagManager gtmId={ process.env.REACT_APP_GOOGLE_TAG_MANAGER_ID } />}
+    return (
+        <div className="app">
+            <div>
+                <Header />
+                {(props.isInitLoading && <MaskLoader error={ props.hasError ? ERROR_TYPE.initial : null } />) || (mainViews[props.activeMainView])}
+                <ActivityIndicator />
+                <BrowserCompatibilityModal />
             </div>
-        );
-    }
+            {process.env.NODE_ENV !== 'local' && <GoogleTagManager gtmId={ process.env.REACT_APP_GOOGLE_TAG_MANAGER_ID } />}
+        </div>
+    );
 }
+
+App.propTypes = {
+    hasError: PropTypes.bool.isRequired,
+    isInitLoading: PropTypes.bool.isRequired,
+    getStops: PropTypes.func.isRequired,
+    getRoutes: PropTypes.func.isRequired,
+    startPollingSiteStatus: PropTypes.func.isRequired,
+    getTrains: PropTypes.func.isRequired,
+    getFerries: PropTypes.func.isRequired,
+    getBuses: PropTypes.func.isRequired,
+    startTrackingVehicleAllocations: PropTypes.func.isRequired,
+    activeMainView: PropTypes.string.isRequired,
+    updateUserProfile: PropTypes.func.isRequired,
+    fetchRoutesViewPermission: PropTypes.func.isRequired,
+    fetchBlocksViewPermission: PropTypes.func.isRequired,
+    fetchStopMessagingViewPermission: PropTypes.func.isRequired,
+    fetchDisruptionsViewPermission: PropTypes.func.isRequired,
+    fetchNotificationsViewPermission: PropTypes.func.isRequired,
+    startPollingNotifications: PropTypes.func.isRequired,
+    fetchTripReplaysViewPermission: PropTypes.func.isRequired,
+};
 
 export default connect(state => ({
     hasError: isAnyError(state),

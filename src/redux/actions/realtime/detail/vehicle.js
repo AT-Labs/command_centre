@@ -47,8 +47,7 @@ export const vehicleSelected = selectedVehicle => (dispatch, getState) => {
     const allVehicles = getAllVehicles(state);
     const allVehicleAllocations = getAllocations(state);
     const trackingVehicle = getTrackingVehicle(selectedVehicleId, allVehicleAllocations, allVehicles);
-
-    dispatch(clearDetail());
+    dispatch(clearDetail(true));
     dispatch(updateRealTimeDetailView(VIEW_TYPE.REAL_TIME_DETAIL.VEHICLE));
 
     if (!trackingVehicle) {

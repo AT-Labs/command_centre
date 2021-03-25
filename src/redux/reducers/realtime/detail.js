@@ -8,9 +8,10 @@ export const INIT_STATE = {
     stop: {},
     address: {},
     route: {},
+    isReplace: false,
 };
 
-const handleClearDetail = () => ({ ...INIT_STATE });
+const handleClearDetail = (state, { payload: { isReplace } }) => ({ ...INIT_STATE, isReplace });
 
 const handleGetTrip = (state, { payload: { trip } }) => ({ ...state, trip });
 

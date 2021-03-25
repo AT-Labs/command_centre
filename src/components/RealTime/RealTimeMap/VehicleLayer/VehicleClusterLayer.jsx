@@ -12,9 +12,8 @@ import { getVehicleDetail } from '../../../../redux/selectors/realtime/detail';
 import { getTripUpdateSnapshot } from '../../../../redux/actions/realtime/detail/quickview';
 import { getTripUpdates } from '../../../../redux/selectors/realtime/quickview';
 import { formatTripDelay } from '../../../../utils/control/routes';
-import {
-    getJoinedVehicleLabel, getVehicleLatLng, getVehiclePositionCoordinates, getVehicleRouteName, getVehicleRouteType,
-} from '../../../../redux/selectors/realtime/vehicles';
+import { getJoinedVehicleLabel,
+    getVehicleLatLng, getVehiclePositionCoordinates, getVehicleRouteName, getVehicleRouteType } from '../../../../redux/selectors/realtime/vehicles';
 import { FOCUS_ZOOM } from '../constants';
 import { FERRY_TYPE_ID } from '../../../../types/vehicle-types';
 import { getClusterIcon } from './vehicleClusterIcon';
@@ -40,6 +39,7 @@ class VehicleClusterLayer extends React.Component {
         super(props);
 
         this.clusterLayerRef = React.createRef();
+        this.unselectedVehiclesClusterLayerRef = React.createRef();
     }
 
     getTripUpdateSnapshotDebounced = _.debounce(tripId => this.props.getTripUpdateSnapshot(tripId), 1000);
@@ -108,27 +108,32 @@ class VehicleClusterLayer extends React.Component {
         const { vehicles, highlightedVehicle } = this.props;
         const bounds = this.props.leafletMap.getBounds();
         const markersInBoundary = _.filter(vehicles, vehicle => bounds.contains(getVehicleLatLng(vehicle)));
-        const markers = _.map(markersInBoundary, vehicle => L.marker(getVehicleLatLng(vehicle), { icon: getVehicleIcon(vehicle), vehicle }));
 
-        this.clusterLayerRef.current.leafletElement.unbindTooltip();
-        this.clusterLayerRef.current.leafletElement.clearLayers();
-
-        this.clusterLayerRef.current.leafletElement.addLayers(markers);
-        this.modifyOverlappedMarkersPosition(markers);
-
-        this.clusterLayerRef.current.leafletElement.bindTooltip(
-            this.getTooltipContent,
-            { direction: 'top', className: 'vehicle-tooltip' },
-        );
+        if (!this.props.vehicleType.startsWith('unselected')) {
+            const markers = _.map(markersInBoundary, vehicle => L.marker(getVehicleLatLng(vehicle), { icon: getVehicleIcon(vehicle, ''), vehicle }));
+            this.handleClusterLayers(this.clusterLayerRef, markers);
+        }
 
         if (!_.isEmpty(highlightedVehicle)) {
             const vehicleId = _.result(highlightedVehicle, 'vehicle.vehicle.id');
             const matchingVehicle = _.find(vehicles, _.matchesProperty('vehicle.vehicle.id', vehicleId));
             if (matchingVehicle) this.props.updateVehicleSelected(matchingVehicle);
-        }
 
-        if (_.isEmpty(highlightedVehicle)) this.clusterLayerRef.current.leafletElement.enableClustering();
-        else this.clusterLayerRef.current.leafletElement.disableClustering();
+            if (this.props.vehicleType.startsWith('unselected')) {
+                const markersInBoundaryIds = markersInBoundary.map(marker => marker.id);
+                const notInRouteVehicles = _.omit(vehicles, markersInBoundaryIds);
+                const allrestMarkersInBoundary = _.filter(notInRouteVehicles, vehicle => bounds.contains(getVehicleLatLng(vehicle)));
+                const unselectedMarkers = allrestMarkersInBoundary.map(vehicle => L.marker(getVehicleLatLng(vehicle), {
+                    icon: getVehicleIcon(vehicle, 'opacity-markers'),
+                    vehicle,
+                }));
+                this.handleClusterLayers(this.unselectedVehiclesClusterLayerRef, unselectedMarkers);
+            }
+            this.clusterLayerRef.current.leafletElement.disableClustering();
+            this.unselectedVehiclesClusterLayerRef.current.leafletElement.enableClustering();
+        } else {
+            this.clusterLayerRef.current.leafletElement.enableClustering();
+        }
     }
 
     handleClick = ({ layer, type }) => {
@@ -137,21 +142,50 @@ class VehicleClusterLayer extends React.Component {
         const { highlightedVehicle } = this.props;
         const { options: { vehicle } } = layer;
 
-        if (highlightedVehicle && highlightedVehicle.id !== vehicle.id) this.props.vehicleSelected(vehicle);
+        if (highlightedVehicle && highlightedVehicle.id !== vehicle.id) {
+            this.props.vehicleSelected(vehicle);
+        }
+    }
+
+    handleClusterLayers = (ref, markers) => {
+        ref.current.leafletElement.unbindTooltip();
+        ref.current.leafletElement.clearLayers();
+        ref.current.leafletElement.addLayers(markers);
+
+        this.modifyOverlappedMarkersPosition(markers);
+
+        ref.current.leafletElement.bindTooltip(
+            this.getTooltipContent,
+            { direction: 'top', className: 'vehicle-tooltip' },
+        );
     }
 
     render() {
         return (
-            <MarkerClusterGroup
-                ref={ this.clusterLayerRef }
-                zoomToBoundsOnClick
-                chunkedLoading
-                spiderfyOnMaxZoom={ false }
-                showCoverageOnHover={ false }
-                disableClusteringAtZoom={ FOCUS_ZOOM }
-                removeOutsideVisibleBounds
-                iconCreateFunction={ cluster => getClusterIcon(cluster, this.props.vehicleType) }
-                onClick={ this.handleClick } />
+            <React.Fragment>
+                {!_.isEmpty(this.props.highlightedVehicle) && (
+                    <MarkerClusterGroup
+                        ref={ this.unselectedVehiclesClusterLayerRef }
+                        zoomToBoundsOnClick
+                        chunkedLoading
+                        spiderfyOnMaxZoom={ false }
+                        showCoverageOnHover={ false }
+                        disableClusteringAtZoom={ FOCUS_ZOOM }
+                        removeOutsideVisibleBounds
+                        iconCreateFunction={ cluster => getClusterIcon(cluster, this.props.vehicleType, 'opacity-markers') }
+                        onClick={ this.handleClick } />
+                )}
+                <MarkerClusterGroup
+                    ref={ this.clusterLayerRef }
+                    zoomToBoundsOnClick
+                    chunkedLoading
+                    spiderfyOnMaxZoom={ false }
+                    showCoverageOnHover={ false }
+                    disableClusteringAtZoom={ FOCUS_ZOOM }
+                    removeOutsideVisibleBounds
+                    iconCreateFunction={ cluster => getClusterIcon(cluster, this.props.vehicleType) }
+                    onClick={ this.handleClick } />
+            </React.Fragment>
         );
     }
 }

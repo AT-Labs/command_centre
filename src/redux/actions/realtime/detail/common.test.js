@@ -31,7 +31,10 @@ describe('Common detail actions', () => {
                     type: ACTION_TYPE.UPDATE_VISIBLE_STOPS,
                     payload: { visible: null },
                 },
-                { type: ACTION_TYPE.CLEAR_DETAIL },
+                {
+                    type: ACTION_TYPE.CLEAR_DETAIL,
+                    payload: { isReplace: false },
+                },
             ];
 
             store.dispatch(clearDetail());

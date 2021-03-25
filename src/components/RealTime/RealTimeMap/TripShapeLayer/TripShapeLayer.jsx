@@ -4,6 +4,7 @@ import React from 'react';
 import { FeatureGroup, Polyline } from 'react-leaflet';
 import { connect } from 'react-redux';
 import { getShapes } from '../../../../redux/selectors/realtime/detail';
+import { ROUTE_COLOR } from '../constants';
 
 class TripShapeLayer extends React.PureComponent {
     static propTypes = {
@@ -29,7 +30,7 @@ class TripShapeLayer extends React.PureComponent {
         return !_.isEmpty(shapes)
             ? (
                 <FeatureGroup ref={ this.polylineGroupRef }>
-                    <Polyline positions={ shapes } weight={ 5 } color="DEEPSKYBLUE" />
+                    <Polyline positions={ shapes } weight={ 5 } color={ ROUTE_COLOR } />
                 </FeatureGroup>
             )
             : null;

@@ -3,11 +3,12 @@ import ACTION_TYPE from '../../../action-types';
 import { updateVisibleStops } from '../../static/stops';
 import { mergeVehicleFilters } from '../vehicles';
 
-export const clearDetail = () => (dispatch) => {
+export const clearDetail = isReplace => (dispatch) => {
     dispatch(mergeVehicleFilters({ predicate: null }));
     dispatch(updateVisibleStops(null));
     dispatch({
         type: ACTION_TYPE.CLEAR_DETAIL,
+        payload: { isReplace: !!isReplace },
     });
 };
 

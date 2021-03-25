@@ -59,7 +59,9 @@ class StopsLayer extends React.Component {
 
     handleStopOnClick = (stop) => {
         const { stopDetail } = this.props;
-        if (stopDetail && stopDetail.stop_id !== stop.stop_id) this.props.stopSelected(stop);
+        if (stopDetail && stopDetail.stop_id !== stop.stop_id) {
+            this.props.stopSelected(stop);
+        }
     };
 
     render() {

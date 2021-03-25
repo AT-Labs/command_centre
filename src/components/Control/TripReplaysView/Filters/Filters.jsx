@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import _ from 'lodash-es';
@@ -12,7 +12,6 @@ import {
     getTripReplaySearchDateFilter,
     getTripReplayStartTimeFilter,
     getTripReplayEndTimeFilter } from '../../../../redux/selectors/control/tripReplays/filters';
-import { Search } from '../../../Common/Search/Search';
 import OmniSearch, { defaultTheme } from '../../../OmniSearch/OmniSearch';
 import {
     resetTripReplaySearchTerm,
@@ -54,7 +53,6 @@ export const formatVehiclesSearchResults = (selectedOption, mode) => {
 const Filters = (props) => {
     const { ROUTE, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
     const { searchTerm, searchDate, startTime, endTime } = props;
-    const [displayText, setDisplayText] = useState(_.get(searchTerm, 'label', ''));
     const actionHandlers = {
         selection: {
             [SEARCH_RESULT_TYPE.BUS.type]: selectedOption => props.updateTripReplaySearchTerm(formatVehiclesSearchResults(selectedOption, SEARCH_RESULT_TYPE.BUS)),
@@ -79,7 +77,6 @@ const Filters = (props) => {
     };
 
     const handleOmniSearchTextChange = (text) => {
-        setDisplayText(text !== Search.NO_RESULTS ? text : '');
         if (searchTerm && searchTerm.label && !_.isEqual(text, searchTerm.label)) {
             props.resetTripReplaySearchTerm();
         }
@@ -123,7 +120,7 @@ const Filters = (props) => {
                         }
                     }
                     inputId="vehicle-route-id"
-                    value={ displayText }
+                    value={ searchTerm.label }
                     placeholder="Search the Routes or Vehicles"
                     isSelectedValueShown
                     searchInCategory={ [ROUTE.type, BUS.type, TRAIN.type, FERRY.type] }

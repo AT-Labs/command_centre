@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { getVisibleVehicles } from './vehicles';
+import { getVisibleVehicles, getUnselectedVehicles } from './vehicles';
 import { TRAIN_TYPE_ID, BUS_TYPE_ID, FERRY_TYPE_ID, TRIP_DIRECTION_INBOUND } from '../../../types/vehicle-types';
 
 const busNewZealandBus = {
@@ -245,12 +245,11 @@ const allocationsWithTrips = {
 describe('Vehicles selectors', () => {
     context('when selecting vehicles', () => {
         it('should select all vehicles when no vehicles filters are defined', () => {
-            const visibleVehicles = getVisibleVehicles.resultFunc(
+            const unselectedVehicles = getUnselectedVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,
                 tripUpdates,
-                null,
                 null,
                 null,
                 true,
@@ -258,6 +257,10 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+            );
+            const visibleVehicles = getVisibleVehicles.resultFunc(
+                unselectedVehicles,
+                null,
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -268,12 +271,11 @@ describe('Vehicles selectors', () => {
         });
 
         it('should select vehicle of a particular route type only when filtered by routeType', () => {
-            const visibleVehicles = getVisibleVehicles.resultFunc(
+            const unselectedVehicles = getUnselectedVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,
                 tripUpdates,
-                null,
                 BUS_TYPE_ID,
                 null,
                 true,
@@ -281,6 +283,10 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+            );
+            const visibleVehicles = getVisibleVehicles.resultFunc(
+                unselectedVehicles,
+                null,
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -289,12 +295,11 @@ describe('Vehicles selectors', () => {
         });
 
         it('should filter by operator/agency', () => {
-            const visibleVehicles = getVisibleVehicles.resultFunc(
+            const unselectedVehicles = getUnselectedVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,
                 tripUpdates,
-                null,
                 BUS_TYPE_ID,
                 ['RIT'],
                 true,
@@ -303,18 +308,21 @@ describe('Vehicles selectors', () => {
                 [],
                 {},
             );
+            const visibleVehicles = getVisibleVehicles.resultFunc(
+                unselectedVehicles,
+                null,
+            );
             expect(visibleVehicles).to.eql({
                 [busRitchiesTransport.id]: busRitchiesTransport,
             });
         });
 
         it('should filter by multiple operators/agencies', () => {
-            const visibleVehicles = getVisibleVehicles.resultFunc(
+            const unselectedVehicles = getUnselectedVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,
                 tripUpdates,
-                null,
                 BUS_TYPE_ID,
                 ['RIT', 'NZB'],
                 true,
@@ -323,6 +331,10 @@ describe('Vehicles selectors', () => {
                 [],
                 {},
             );
+            const visibleVehicles = getVisibleVehicles.resultFunc(
+                unselectedVehicles,
+                null,
+            );
             expect(visibleVehicles).to.eql({
                 [busRitchiesTransport.id]: busRitchiesTransport,
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -330,12 +342,11 @@ describe('Vehicles selectors', () => {
         });
 
         it('should only filter by operator/agency when filtered by any of the route types', () => {
-            const visibleVehicles = getVisibleVehicles.resultFunc(
+            const unselectedVehicles = getUnselectedVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,
                 tripUpdates,
-                null,
                 null,
                 ['RIT'],
                 true,
@@ -343,6 +354,10 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+            );
+            const visibleVehicles = getVisibleVehicles.resultFunc(
+                unselectedVehicles,
+                null,
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -353,12 +368,11 @@ describe('Vehicles selectors', () => {
         });
 
         it('should filter by trip direction', () => {
-            const visibleVehicles = getVisibleVehicles.resultFunc(
+            const unselectedVehicles = getUnselectedVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,
                 tripUpdates,
-                null,
                 BUS_TYPE_ID,
                 null,
                 false,
@@ -367,18 +381,21 @@ describe('Vehicles selectors', () => {
                 [],
                 {},
             );
+            const visibleVehicles = getVisibleVehicles.resultFunc(
+                unselectedVehicles,
+                null,
+            );
             expect(visibleVehicles).to.eql({
                 [busRitchiesTransport.id]: busRitchiesTransport,
             });
         });
 
         it('should only filter by trip direction when filtered by any of the route types', () => {
-            const visibleVehicles = getVisibleVehicles.resultFunc(
+            const unselectedVehicles = getUnselectedVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,
                 tripUpdates,
-                null,
                 null,
                 null,
                 false,
@@ -386,6 +403,10 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+            );
+            const visibleVehicles = getVisibleVehicles.resultFunc(
+                unselectedVehicles,
+                null,
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -396,12 +417,11 @@ describe('Vehicles selectors', () => {
         });
 
         it('should filter by predicate defined as a function', () => {
-            const visibleVehicles = getVisibleVehicles.resultFunc(
+            const unselectedVehicles = getUnselectedVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,
                 tripUpdates,
-                v => v.vehicle.vehicle.id === busNewZealandBus.id,
                 null,
                 null,
                 null,
@@ -409,6 +429,10 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+            );
+            const visibleVehicles = getVisibleVehicles.resultFunc(
+                unselectedVehicles,
+                v => v.vehicle.vehicle.id === busNewZealandBus.id,
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -416,12 +440,11 @@ describe('Vehicles selectors', () => {
         });
 
         it('should filter by predicate defined as an object', () => {
-            const visibleVehicles = getVisibleVehicles.resultFunc(
+            const unselectedVehicles = getUnselectedVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,
                 tripUpdates,
-                { vehicle: { vehicle: { id: busNewZealandBus.id } } },
                 null,
                 null,
                 null,
@@ -429,6 +452,10 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+            );
+            const visibleVehicles = getVisibleVehicles.resultFunc(
+                unselectedVehicles,
+                { vehicle: { vehicle: { id: busNewZealandBus.id } } },
             );
             expect(visibleVehicles).to.eql({
                 [busNewZealandBus.id]: busNewZealandBus,
@@ -436,12 +463,11 @@ describe('Vehicles selectors', () => {
         });
 
         it('should filter by both predicate and route type at the same time', () => {
-            const visibleVehicles = getVisibleVehicles.resultFunc(
+            const unselectedVehicles = getUnselectedVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,
                 tripUpdates,
-                { vehicle: { vehicle: { id: busNewZealandBus.id } } },
                 TRAIN_TYPE_ID,
                 null,
                 null,
@@ -450,16 +476,19 @@ describe('Vehicles selectors', () => {
                 [],
                 {},
             );
+            const visibleVehicles = getVisibleVehicles.resultFunc(
+                unselectedVehicles,
+                { vehicle: { vehicle: { id: busNewZealandBus.id } } },
+            );
             expect(visibleVehicles).to.eql({});
         });
 
         it('should filter by vehicle service status', () => {
-            expect(getVisibleVehicles.resultFunc(
+            let unselectedVehicles = getUnselectedVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,
                 tripUpdates,
-                null,
                 TRAIN_TYPE_ID,
                 null,
                 null,
@@ -467,18 +496,20 @@ describe('Vehicles selectors', () => {
                 true,
                 [],
                 {},
+            );
+            expect(getVisibleVehicles.resultFunc(
+                unselectedVehicles,
+                null,
             )).to.eql({
                 [train.id]: train,
                 [trainNotInService.id]: trainNotInService,
                 [trainJoined.id]: trainJoined,
             });
-
-            expect(getVisibleVehicles.resultFunc(
+            unselectedVehicles = getUnselectedVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,
                 tripUpdates,
-                null,
                 TRAIN_TYPE_ID,
                 null,
                 null,
@@ -486,18 +517,21 @@ describe('Vehicles selectors', () => {
                 false,
                 [],
                 {},
+            );
+            expect(getVisibleVehicles.resultFunc(
+                unselectedVehicles,
+                null,
             )).to.eql({
                 [train.id]: train,
             });
         });
 
         it('should filter joined vehicles out of NIS vehicles', () => {
-            expect(getVisibleVehicles.resultFunc(
+            const unselectedVehicles = getUnselectedVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocationsWithTrips,
                 tripUpdates,
-                null,
                 TRAIN_TYPE_ID,
                 null,
                 null,
@@ -505,6 +539,10 @@ describe('Vehicles selectors', () => {
                 true,
                 [],
                 {},
+            );
+            expect(getVisibleVehicles.resultFunc(
+                unselectedVehicles,
+                null,
             )).to.eql({
                 [train.id]: train,
                 [trainNotInService.id]: trainNotInService,

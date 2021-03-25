@@ -69,12 +69,11 @@ export const getVehiclesFilterIsShowingDirectionOutbound = createSelector(getVeh
 export const getVehiclesFilterShowingDelay = createSelector(getVehiclesFilters, filters => get(filters, 'showingDelay', {}));
 export const getVehiclesFilterShowingOccupancyLevels = createSelector(getVehiclesFilters, filters => get(filters, 'showingOccupancyLevels', []));
 export const getVehiclesFilterIsShowingNIS = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingNIS'));
-export const getVisibleVehicles = createSelector(
+export const getUnselectedVehicles = createSelector(
     getAllVehicles,
     getFleetState,
     getAllocations,
     getTripUpdates,
-    getVehiclesFilterPredicate,
     getVehiclesFilterRouteType,
     getVehiclesFilterAgencyIds,
     getVehiclesFilterIsShowingDirectionInbound,
@@ -82,7 +81,7 @@ export const getVisibleVehicles = createSelector(
     getVehiclesFilterIsShowingNIS,
     getVehiclesFilterShowingOccupancyLevels,
     getVehiclesFilterShowingDelay,
-    (allVehicles, allFleet, allocations, tripUpdates, predicate, routeType, agencyIds, showInbound, showOutbound, showNIS, showingOccupancyLevels, showingDelay) => {
+    (allVehicles, allFleet, allocations, tripUpdates, routeType, agencyIds, showInbound, showOutbound, showNIS, showingOccupancyLevels, showingDelay) => {
         const runningVehiclesWithAllocations = showNIS ? getVehiclesWithAllocations(allVehicles, allocations) : [];
         const visibleVehicles = filter(allVehicles, (vehicle) => {
             const id = getVehicleId(vehicle);
@@ -134,16 +133,25 @@ export const getVisibleVehicles = createSelector(
                 return false;
             }
 
+            return true;
+        });
+
+        return keyBy(visibleVehicles, 'vehicle.vehicle.id');
+    },
+);
+export const getVisibleVehicles = createSelector(
+    getUnselectedVehicles,
+    getVehiclesFilterPredicate,
+    (unselectedVehicles, predicate) => {
+        const visibleVehicles = filter(unselectedVehicles, (vehicle) => {
             if (predicate) {
                 const matchesPredicate = isFunction(predicate) ? predicate(vehicle) : isMatch(vehicle, predicate);
                 if (!matchesPredicate) {
                     return false;
                 }
             }
-
             return true;
         });
-
         return keyBy(visibleVehicles, 'vehicle.vehicle.id');
     },
 );

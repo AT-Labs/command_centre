@@ -21,3 +21,4 @@ global.Logging = noop;
 global.addEventListener = noop;
 
 require.extensions['.svg', '.css', '.scss'] = noop; // eslint-disable-line
+require.extensions['.png'] = noop;

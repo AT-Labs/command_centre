@@ -83,3 +83,4 @@ export const getShapes = createSelector(
         return wktShapes.map(wktShape => getJSONFromWKT(wktShape).coordinates.map(c => c.reverse()));
     },
 );
+export const getClearForReplace = createSelector(getDetailState, detailState => detailState.isReplace);

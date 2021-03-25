@@ -3,10 +3,10 @@ import { getVehicleBearing, getVehicleRouteType, getVehicleRouteName } from '../
 import VEHICLE_TYPE from '../../../../types/vehicle-types';
 import VEHICLE_OCCUPANCY_STATUS_TYPE from '../../../../types/vehicle-occupancy-status-types';
 
-const getVehicleIconWithoutArrow = vehicleTypeClass => new L.DivIcon({
+const getVehicleIconWithoutArrow = (vehicleTypeClass, opacityClass) => new L.DivIcon({
     html: `<svg width="30" height="30" class="${vehicleTypeClass}"><circle cx="15" cy="15" r="12" stroke-width="3" /></svg>`,
     iconAnchor: [15, 15],
-    className: 'vehicle-marker',
+    className: `vehicle-marker ${opacityClass}`,
 });
 
 const getVehicleIconWithArrow = (bearing, vehicleTypeClass, routeName) => {
@@ -22,7 +22,7 @@ const getVehicleIconWithArrow = (bearing, vehicleTypeClass, routeName) => {
 };
 
 
-export const getVehicleIcon = (vehicle) => {
+export const getVehicleIcon = (vehicle, opacityClass) => {
     const { full, standingRoomOnly } = VEHICLE_OCCUPANCY_STATUS_TYPE;
     const newBearing = getVehicleBearing(vehicle);
     const routeTypeId = getVehicleRouteType(vehicle);
@@ -31,5 +31,5 @@ export const getVehicleIcon = (vehicle) => {
         || vehicle.vehicle.occupancyStatus === full
         ? 'vehicle-occupancy-highlight' : '';
     const routeName = getVehicleRouteName(vehicle) || '';
-    return newBearing !== undefined && routeTypeId ? getVehicleIconWithArrow(newBearing, `${vehicleTypeClass} ${vehicleOccupancyStatusClass}`, routeName) : getVehicleIconWithoutArrow(vehicleTypeClass);
+    return newBearing !== undefined && routeTypeId ? getVehicleIconWithArrow(newBearing, `${vehicleTypeClass} ${vehicleOccupancyStatusClass} ${opacityClass}`, routeName) : getVehicleIconWithoutArrow(vehicleTypeClass, opacityClass);
 };

@@ -44,7 +44,7 @@ const formatArrivalDeparture = (times) => {
 function PopupContent({ selectedKeyEvent, currentTrip, coordinates, scheduledTime, time, markerId }) {
     const tripDate = moment(currentTrip.tripSignOn).format('YYYY-MM-DD');
     const tripDateAndTime = moment(`${tripDate} ${time.arrival}`).unix().toString();
-    const vehicleEvent = currentTrip.vehicleEvents.find(e => e.timestamp === tripDateAndTime);
+    const vehicleEvent = currentTrip.vehicleEvents ? currentTrip.vehicleEvents.find(e => e.timestamp === tripDateAndTime) : undefined;
 
     return (
         <div>

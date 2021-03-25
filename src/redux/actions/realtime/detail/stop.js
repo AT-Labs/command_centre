@@ -38,7 +38,7 @@ export const getRoutesByStop = stopCode => (dispatch) => {
 };
 
 export const stopSelected = stop => (dispatch) => {
-    dispatch(clearDetail());
+    dispatch(clearDetail(true));
     dispatch(getRoutesByStop(stop.stop_code));
     dispatch(updateRealTimeDetailView(VIEW_TYPE.REAL_TIME_DETAIL.STOP));
     dispatch(updateVisibleStops([stop]));

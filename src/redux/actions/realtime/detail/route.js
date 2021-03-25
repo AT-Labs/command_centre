@@ -74,7 +74,7 @@ const generateRouteSelectedPayload = (route, state) => {
     return payload;
 };
 export const routeSelected = route => (dispatch, getState) => {
-    dispatch(clearDetail());
+    dispatch(clearDetail(true));
     dispatch(updateRealTimeDetailView(VIEW_TYPE.REAL_TIME_DETAIL.ROUTE));
     dispatch({
         type: ACTION_TYPE.UPDATE_SELECTED_ROUTE,

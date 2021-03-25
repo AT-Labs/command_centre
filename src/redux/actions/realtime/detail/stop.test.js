@@ -408,6 +408,9 @@ describe('Stop detail actions', () => {
                 },
                 {
                     type: ACTION_TYPE.CLEAR_DETAIL,
+                    payload: {
+                        isReplace: true,
+                    },
                 },
                 {
                     type: ACTION_TYPE.DATA_LOADING,
