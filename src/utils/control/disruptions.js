@@ -1,5 +1,6 @@
 import moment from 'moment';
 import * as _ from 'lodash-es';
+
 import { TIME_FORMAT, DATE_FORMAT } from '../../constants/disruptions';
 
 export const formatCreatedUpdatedTime = time => moment(time).format(`${DATE_FORMAT} ${TIME_FORMAT}`);

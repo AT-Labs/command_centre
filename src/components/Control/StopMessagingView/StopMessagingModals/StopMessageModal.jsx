@@ -9,7 +9,7 @@ import { FormGroup, Input, Label } from 'reactstrap';
 
 import { getTimePickerOptions, formatGroupsForPresentation } from '../../../../utils/helpers';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
-import Picklist from '../../../Common/Picklist/Picklist';
+import PickList from '../../../Common/PickList/PickList';
 import ControlSearch from '../../Common/ControlSearch/ControlSearch';
 import { getAllStops } from '../../../../redux/selectors/control/stopMessaging/stops';
 import { dismissError } from '../../../../redux/actions/activity';
@@ -242,7 +242,9 @@ export class StopMessageModal extends React.Component {
             || (hasRecurrence && !recurrence.isValid);
         const isEditing = modalType === 'edit';
 
-        const areDatesInvalid = (isTimeSelected && !isTimeSelectedValid) || (hasRecurrence && !recurrence.isValid);
+        const areDatesInvalid = (isTimeSelected && !isTimeSelectedValid);
+
+        const isRecurrenceDaySelected = (hasRecurrence && recurrence.days.length === 0);
 
         return (
             <CustomModal
@@ -266,7 +268,7 @@ export class StopMessageModal extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col">
-                        <Picklist
+                        <PickList
                             staticItemList={ allStopsAndGroups }
                             selectedValues={ stopsAndGroups }
                             onChange={ selectedItem => this.setState({ stopsAndGroups: selectedItem }) }
@@ -276,7 +278,9 @@ export class StopMessageModal extends React.Component {
                             leftPanePlaceholder={ inputLabelAndPlaceholder }
                             rightPaneLabel="Selected stop:"
                             rightPaneClassName="cc__picklist-pane-right"
-                            rightPanePlaceholder={ inputLabelAndPlaceholder } />
+                            rightPanePlaceholder={ inputLabelAndPlaceholder }
+                            valueKey="value"
+                            labelKey="label" />
                     </div>
                 </div>
                 <div className="row py-3">
@@ -372,6 +376,14 @@ export class StopMessageModal extends React.Component {
                             <IoIosWarning size={ 20 } className="mr-1" />
                             <span>
                                 Start date and time must be before end date and time
+                            </span>
+                        </div>
+                    )}
+                    {isRecurrenceDaySelected && (
+                        <div className="message-modal__date-alert cc-modal-field-alert d-flex align-items-end text-danger">
+                            <IoIosWarning size={ 20 } className="mr-1" />
+                            <span>
+                                Please select at least one recurring day
                             </span>
                         </div>
                     )}

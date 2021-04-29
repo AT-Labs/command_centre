@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { Form, FormGroup, Label, Button, Input, FormFeedback } from 'reactstrap';
+import { Collapse, Form, FormGroup, Label, Button, Input, FormFeedback } from 'reactstrap';
 import Flatpickr from 'react-flatpickr';
+import { FaRegCalendarAlt } from 'react-icons/fa';
 import { isUrlValid } from '../../../../../utils/helpers';
 import { isStartTimeValid, isStartDateValid, isEndDateValid, isEndTimeValid, getDatePickerOptions } from '../../../../../utils/control/disruptions';
+import { toggleDisruptionModals, updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { DisruptionDetailSelect } from '../../DisruptionDetail/DisruptionDetailSelect';
+import { getAffectedRoutes, getAffectedStops } from '../../../../../redux/selectors/control/disruptions';
 import {
     CAUSES,
     IMPACTS,
@@ -24,11 +28,18 @@ import {
     DATE_FORMAT,
     LABEL_END_TIME, LABEL_END_DATE,
 } from '../../../../../constants/disruptions';
+import TripIcon from '../../../Common/Trip/TripIcon';
+import Icon from '../../../../Common/Icon/Icon';
+import Footer from './Footer';
 
 const SelectDetails = (props) => {
-    const { startDate, startTime, endDate, endTime, impact, cause, affectedRoutes, affectedStops, header, description, url } = props.data;
+    const { startDate, startTime, endDate, endTime, impact, cause, header, description, url } = props.data;
+    const { routes, stops } = props;
 
     const [modalOpenedTime] = useState(moment().second(0).millisecond(0));
+    const [collapse, setCollapse] = useState(false);
+
+    const toggle = () => setCollapse(!collapse);
 
     const startTimeValid = () => isStartTimeValid(startDate, startTime, modalOpenedTime);
 
@@ -44,18 +55,72 @@ const SelectDetails = (props) => {
 
     const endDateDatePickerOptions = getDatePickerOptions(startDate);
 
+    const isSubmitEnabled = props.isSubmitDisabled || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid();
+
+    const onContinue = () => {
+        props.onStepUpdate(3);
+        props.updateCurrentStep(1);
+        props.onSubmit();
+    };
+
+    const onBack = () => {
+        props.onStepUpdate(1);
+        props.updateCurrentStep(2);
+    };
+
+    const showViewMoreLessButton = routes.length + stops.length > 4;
+
     return (
         <div className="disruption-creation__wizard-select-details">
-            <div className="row">
+            <div className="disruption-creation__wizard-select-details__selected-dates row p-4">
                 <div className="col">
-                    <span className="font-weight-bold d-block">What is affected?</span>
-                    Routes: { affectedRoutes.map(route => route.route_short_name).join(', ') }
-                    <br />
-                    Stops: { affectedStops.map(stop => stop.stop_code).join(', ') }
+                    <span className="font-weight-bold mb-4">Affected Routes</span>
+                    <span className="float-right">
+                        <Button
+                            className="btn cc-btn-link p-0"
+                            onClick={ () => {
+                                props.onStepUpdate(0);
+                                props.updateCurrentStep(1);
+                            } }>
+                            Edit
+                        </Button>
+                    </span>
+                    <Collapse isOpen={ collapse } className="w-100">
+                        <ul className="disruption-creation__wizard-select-details__selected-routes p-0 mt-3">
+                            { routes.map(route => (
+                                <li key={ route.route_id }>
+                                    <TripIcon type={ route.route_type } className="disruption-creation__wizard-select-details__vehicle-icon" />
+                                    { route.route_short_name }
+                                </li>
+                            ))}
+                            { stops.map(stop => (
+                                <li key={ stop.stop_id }>
+                                    <div className="trip-icon">
+                                        <Icon icon="bus-stop" className="disruption-creation__wizard-select-details__vehicle-icon" />
+                                    </div>
+                                    { stop.stop_code }
+                                </li>
+                            ))}
+                        </ul>
+                    </Collapse>
+                    {showViewMoreLessButton
+                        && (
+                            <div>
+                                <Button
+                                    className="btn cc-btn-link p-0"
+                                    onClick={ toggle }>
+                                    {collapse ? 'View Less' : 'View More'}
+                                </Button>
+                            </div>
+                        )
+                    }
                 </div>
             </div>
-            <Form className="row my-3">
-                <div className="col-4">
+            <Form className="row my-3 p-4">
+                <div className="col-12">
+                    <h3>Add disruption details</h3>
+                </div>
+                <div className="col-6">
                     <FormGroup>
                         <Label for="disruption-creation__wizard-select-details__start-date">
                             <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
@@ -67,6 +132,9 @@ const SelectDetails = (props) => {
                             options={ datePickerOptions }
                             placeholder="Select date"
                             onChange={ date => props.onDataUpdate('startDate', moment(date[0]).format(DATE_FORMAT)) } />
+                        <FaRegCalendarAlt
+                            className="disruption-creation__wizard-select-details__icon position-absolute"
+                            size={ 22 } />
                     </FormGroup>
                     <FormGroup>
                         <Label for="disruption-creation__wizard-select-details__end-date">
@@ -83,10 +151,19 @@ const SelectDetails = (props) => {
                                     props.onDataUpdate('endTime', '');
                                 }
                             } } />
+                        <FaRegCalendarAlt
+                            className="disruption-creation__wizard-select-details__icon position-absolute"
+                            size={ 22 } />
                     </FormGroup>
-
+                    <DisruptionDetailSelect
+                        id="disruption-creation__wizard-select-details__cause"
+                        className=""
+                        value={ cause }
+                        options={ CAUSES }
+                        label={ LABEL_CAUSE }
+                        onChange={ selectedItem => props.onDataUpdate('cause', selectedItem) } />
                 </div>
-                <div className="col-4">
+                <div className="col-6">
                     <FormGroup>
                         <Label for="disruption-creation__wizard-select-details__start-time">
                             <span className="font-size-md font-weight-bold">{LABEL_START_TIME}</span>
@@ -111,8 +188,6 @@ const SelectDetails = (props) => {
                             invalid={ !endTimeValid() }
                         />
                     </FormGroup>
-                </div>
-                <div className="col-4">
                     <DisruptionDetailSelect
                         id="disruption-creation__wizard-select-details__impact"
                         className=""
@@ -120,13 +195,6 @@ const SelectDetails = (props) => {
                         options={ IMPACTS }
                         label={ LABEL_CUSTOMER_IMPACT }
                         onChange={ selectedItem => props.onDataUpdate('impact', selectedItem) } />
-                    <DisruptionDetailSelect
-                        id="disruption-creation__wizard-select-details__cause"
-                        className=""
-                        value={ cause }
-                        options={ CAUSES }
-                        label={ LABEL_CAUSE }
-                        onChange={ selectedItem => props.onDataUpdate('cause', selectedItem) } />
                 </div>
                 <div className="col-12">
                     <FormGroup>
@@ -179,26 +247,14 @@ const SelectDetails = (props) => {
                     </FormGroup>
                 </div>
             </Form>
-            <footer className="row justify-content-between">
-                <div className="col-4">
-                    <Button
-                        className="btn cc-btn-secondary btn-block"
-                        onClick={ () => props.onStepUpdate(1) }>
-                        Back to stops
-                    </Button>
-                </div>
-                <div className="col-4">
-                    <Button
-                        disabled={ props.isSubmitDisabled || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() }
-                        className="btn cc-btn-primary btn-block"
-                        onClick={ () => {
-                            props.onSubmit();
-                            props.onStepUpdate(3);
-                        } }>
-                        Finish logging disruption
-                    </Button>
-                </div>
-            </footer>
+            <Footer
+                updateCurrentStep={ props.updateCurrentStep }
+                onStepUpdate={ props.onStepUpdate }
+                toggleDisruptionModals={ props.toggleDisruptionModals }
+                isSubmitEnabled={ isSubmitEnabled }
+                nextButtonValue="Finish"
+                onContinue={ () => onContinue() }
+                onBack={ () => onBack() } />
         </div>
     );
 };
@@ -209,6 +265,10 @@ SelectDetails.propTypes = {
     onDataUpdate: PropTypes.func,
     isSubmitDisabled: PropTypes.bool,
     onSubmit: PropTypes.func,
+    toggleDisruptionModals: PropTypes.func.isRequired,
+    updateCurrentStep: PropTypes.func,
+    stops: PropTypes.array,
+    routes: PropTypes.array,
 };
 
 SelectDetails.defaultProps = {
@@ -216,7 +276,13 @@ SelectDetails.defaultProps = {
     onStepUpdate: () => { },
     onDataUpdate: () => { },
     onSubmit: () => { },
+    updateCurrentStep: () => { },
     isSubmitDisabled: false,
+    stops: [],
+    routes: [],
 };
 
-export default SelectDetails;
+export default connect(state => ({
+    stops: getAffectedStops(state),
+    routes: getAffectedRoutes(state),
+}), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);

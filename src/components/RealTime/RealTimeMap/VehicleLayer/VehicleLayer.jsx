@@ -1,9 +1,9 @@
-import { groupBy, isEmpty, map } from 'lodash-es';
+import { groupBy, isEmpty, map, omit } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { LayerGroup } from 'react-leaflet';
 import { connect } from 'react-redux';
-import { getVisibleVehicles, getUnselectedVehicles } from '../../../../redux/selectors/realtime/vehicles';
+import { getVisibleVehicles, getFilteredVehicles } from '../../../../redux/selectors/realtime/vehicles';
 import { getFleetState, getFleetVehicleType } from '../../../../redux/selectors/static/fleet';
 import VehicleClusterLayer from './VehicleClusterLayer';
 import { getAllocations } from '../../../../redux/selectors/control/blocks';
@@ -15,11 +15,11 @@ class VehicleLayer extends React.PureComponent {
         vehicleAllocations: PropTypes.object.isRequired,
         allFleet: PropTypes.object.isRequired,
         highlightedVehicle: PropTypes.object.isRequired,
-        unselectedVehicles: PropTypes.array,
+        filteredVehicles: PropTypes.object,
     };
 
     static defaultProps = {
-        unselectedVehicles: [],
+        filteredVehicles: [],
     }
 
     groupVehicles = vehicles => groupBy(vehicles, vehicle => getFleetVehicleType(this.props.allFleet[vehicle.id]));
@@ -28,7 +28,7 @@ class VehicleLayer extends React.PureComponent {
         const allVehicles = this.groupVehicles(this.props.vehicles);
 
         if (!isEmpty(this.props.highlightedVehicle)) {
-            const unselectedVehicles = this.groupVehicles(this.props.unselectedVehicles);
+            const unselectedVehicles = this.groupVehicles(omit(this.props.filteredVehicles, Object.keys(this.props.vehicles)));
             const vehicleKeys = Object.keys(unselectedVehicles);
             vehicleKeys.forEach((key) => {
                 if (Object.prototype.hasOwnProperty.call(unselectedVehicles, key)) {
@@ -63,5 +63,5 @@ export default connect(state => ({
     vehicleAllocations: getAllocations(state),
     allFleet: getFleetState(state),
     highlightedVehicle: getVehicleDetail(state),
-    unselectedVehicles: getUnselectedVehicles(state),
+    filteredVehicles: getFilteredVehicles(state),
 }))(VehicleLayer);

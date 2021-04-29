@@ -19,4 +19,13 @@
 
 .add-trips-modal {
     max-width: 750px !important;
+
+    .picklist__list {
+        height: 100%;
+        padding-top: 0 !important;
+    }
+
+    .picklist__list-btn.text-left {
+        max-height: initial;
+    }
 }

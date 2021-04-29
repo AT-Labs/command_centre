@@ -1,0 +1,51 @@
+@import '../../../assets/styles/variables';
+.picklist-pane {
+    .picklist-pane__inner {
+        overflow: hidden;
+    }
+
+    .picklist__list {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .picklist__close-button {
+        background-color: transparent;
+        border: none;
+        height: 20px;
+        right: 9px;
+        top: 9px;
+        width: 20px;
+
+        &:hover {
+            background-color: transparent;
+        }
+    }
+
+    .picklist__icon-close {
+        color: $at-shore;
+        left: 0;
+        top: 0;
+    }
+
+    .picklist__list-btn__vehicle-icon svg {
+        fill: $at-ocean;
+        width: 23px;
+    }
+
+    .picklist__list-btn {
+        & button {
+            text-decoration: underline;
+        }
+
+        & .trip-icon,
+        &.text-left {
+            max-height: 28px;
+        }
+    }
+
+    .picklist__checkbox {
+        width: 26px;
+        height: 26px;
+    }
+}

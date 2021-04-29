@@ -32,19 +32,6 @@ export const splitAffectedEntities = (rawDisruption) => {
     return disruption;
 };
 
-/**
- * transform a disruption from {affectedRoutes:[],affectedStops:[], cause: , ...} to {affectedEntities:[], cause: , ...}
- * @param rawDisruption disruption assembled from UI
- * @returns {*} disruption suitable for back end usage
- */
-export const combineAffectedEntities = (rawDisruption) => {
-    const disruption = _.cloneDeep(rawDisruption);
-    disruption.affectedEntities = _.concat(rawDisruption.affectedRoutes, rawDisruption.affectedStops);
-    delete disruption.affectedRoutes;
-    delete disruption.affectedStops;
-    return disruption;
-};
-
 export const getDisruptionsViewPermission = () => getViewPermission(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/view`);
 
 export const getDisruptions = () => fetchWithAuthHeader(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions`, { method: GET })
@@ -67,7 +54,7 @@ export const updateDisruption = (disruption) => {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(combineAffectedEntities(disruption)),
+            body: JSON.stringify(disruption),
         },
     ).then(response => jsonResponseHandling(response));
 };
@@ -82,7 +69,7 @@ export const createDisruption = (disruption) => {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(combineAffectedEntities(disruption)),
+            body: JSON.stringify(disruption),
         },
     ).then(response => jsonResponseHandling(response));
 };

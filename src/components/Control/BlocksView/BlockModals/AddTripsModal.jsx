@@ -10,7 +10,7 @@ import { addOrphanOperationalTrips } from '../../../../redux/actions/control/blo
 import { getAllBlocks } from '../../../../redux/selectors/control/blocks';
 import { getServiceDate } from '../../../../redux/selectors/control/serviceDate';
 import { BlockType } from '../types';
-import Picklist from '../../../Common/Picklist/Picklist';
+import PickList from '../../../Common/PickList/PickList';
 import * as blockMgtApi from '../../../../utils/transmitters/block-mgt-api';
 import { BLOCKS_SERVICE_DATE_FORMAT } from '../../../../utils/control/blocks';
 
@@ -100,7 +100,7 @@ export class AddTripsModal extends React.Component {
                     <dt className="col">Block number:</dt>
                     <dd className="col">{ this.props.block.operationalBlockId }</dd>
                 </dl>
-                <Picklist
+                <PickList
                     staticItemList={ this.state.orphanExternalRefs }
                     minValueLength={ 0 }
                     onChange={ values => this.setState({ selectedTripExternalRefs: values }) }
@@ -111,7 +111,9 @@ export class AddTripsModal extends React.Component {
                     rightPaneLabel="Selected trip:"
                     rightPaneClassName="cc__picklist-pane-right"
                     rightPanePlaceholder={ inputLabelAndPlaceholder }
-                    isLoading={ this.state.isLoading } />
+                    isLoading={ this.state.isLoading }
+                    valueKey="value"
+                    labelKey="label" />
             </CustomModal>
         );
     }

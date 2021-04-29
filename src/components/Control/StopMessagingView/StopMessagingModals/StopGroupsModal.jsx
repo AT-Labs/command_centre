@@ -6,7 +6,7 @@ import { IoIosWarning } from 'react-icons/io';
 import { Input, Label } from 'reactstrap';
 
 import CustomModal from '../../../Common/CustomModal/CustomModal';
-import Picklist from '../../../Common/Picklist/Picklist';
+import PickList from '../../../Common/PickList/PickList';
 import { getAllStops } from '../../../../redux/selectors/control/stopMessaging/stops';
 import { dismissError } from '../../../../redux/actions/activity';
 import { getError } from '../../../../redux/selectors/activity';
@@ -145,7 +145,7 @@ export class StopGroupsModal extends React.Component {
                 </div>
                 <div className="row pt-3">
                     <div className="col">
-                        <Picklist
+                        <PickList
                             staticItemList={ allStops }
                             selectedValues={ stops }
                             onChange={ values => this.setState({ stops: values }) }
@@ -155,7 +155,9 @@ export class StopGroupsModal extends React.Component {
                             leftPanePlaceholder={ inputLabelAndPlaceholder }
                             rightPaneLabel="Selected stops/groups:"
                             rightPaneClassName="cc__picklist-pane-right"
-                            rightPanePlaceholder={ inputLabelAndPlaceholder } />
+                            rightPanePlaceholder={ inputLabelAndPlaceholder }
+                            valueKey="value"
+                            labelKey="label" />
                     </div>
                 </div>
             </CustomModal>

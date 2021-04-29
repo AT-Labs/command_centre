@@ -1,11 +1,12 @@
-import _ from 'lodash-es';
+/* eslint-disable camelcase */
+import { isEmpty, uniqBy } from 'lodash-es';
 
 import { ACTION_RESULT } from '../../../types/disruptions-types';
 import ERROR_TYPE from '../../../types/error-types';
 import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
 import ACTION_TYPE from '../../action-types';
-import { setBannerError } from '../activity';
+import { setBannerError, modalStatus } from '../activity';
 
 const loadDisruptions = disruptions => ({
     type: ACTION_TYPE.FETCH_CONTROL_DISRUPTIONS,
@@ -14,12 +15,6 @@ const loadDisruptions = disruptions => ({
     },
 });
 
-const updateDisruptionsRoutesLoadingState = isDisruptionsRoutesLoading => ({
-    type: ACTION_TYPE.UPDATE_DISRUPTIONS_ROUTES_LOADING_STATE,
-    payload: {
-        isDisruptionsRoutesLoading,
-    },
-});
 
 const updateDisruptionsPermissions = permissions => ({
     type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_PERMISSIONS,
@@ -59,22 +54,55 @@ const copyDisruptionToClipboard = isCopied => ({
     },
 });
 
-export const getDisruptions = (isVisible = true) => (dispatch) => {
-    dispatch(updateLoadingDisruptionsState(!!isVisible));
-    return disruptionsMgtApi.getDisruptions()
-        .then((response) => {
-            const { disruptions, _links: { permissions } } = response;
-            dispatch(updateDisruptionsPermissions(permissions));
-            dispatch(loadDisruptions(disruptions));
-        })
-        .catch(() => {
-            if (ERROR_TYPE.fetchDisruptionsEnabled) {
-                const errorMessage = ERROR_TYPE.fetchDisruptions;
-                dispatch(setBannerError(errorMessage));
-            }
-        })
-        .finally(() => dispatch(updateLoadingDisruptionsState(false)));
-};
+export const updateAffectedRoutesState = affectedRoutes => ({
+    type: ACTION_TYPE.UPDATE_AFFECTED_ROUTES,
+    payload: {
+        affectedRoutes,
+    },
+});
+
+export const updateAffectedStopsState = affectedStops => ({
+    type: ACTION_TYPE.UPDATE_AFFECTED_STOPS,
+    payload: {
+        affectedStops,
+    },
+});
+
+export const updateAffectedEntitiesState = affectedEntities => ({
+    type: ACTION_TYPE.UPDATE_AFFECTED_ENTITIES,
+    payload: {
+        affectedEntities,
+    },
+});
+
+const showSelectedRoutesState = show => ({
+    type: ACTION_TYPE.SHOW_SELECTED_ROUTES,
+    payload: {
+        showSelectedRoutes: show,
+    },
+});
+
+export const updateRoutesByStop = (routesByStop, isLoading = false) => ({
+    type: ACTION_TYPE.UPDATE_ROUTES_BY_STOP,
+    payload: {
+        routesByStop,
+        isLoading,
+    },
+});
+
+export const getDisruptions = () => dispatch => disruptionsMgtApi.getDisruptions()
+    .then((response) => {
+        const { disruptions, _links: { permissions } } = response;
+        dispatch(updateDisruptionsPermissions(permissions));
+        dispatch(loadDisruptions(disruptions));
+    })
+    .catch(() => {
+        if (ERROR_TYPE.fetchDisruptionsEnabled) {
+            const errorMessage = ERROR_TYPE.fetchDisruptions;
+            dispatch(setBannerError(errorMessage));
+        }
+    })
+    .finally(() => dispatch(updateLoadingDisruptionsState(false)));
 
 export const updateDisruption = disruption => async (dispatch) => {
     const { disruptionId, incidentNo } = disruption;
@@ -119,36 +147,123 @@ export const createDisruption = disruption => async (dispatch) => {
     } catch (error) {
         dispatch(updateRequestingDisruptionResult(null, ACTION_RESULT.CREATE_ERROR(error.code)));
     } finally {
+        dispatch(modalStatus(true));
         dispatch(updateRequestingDisruptionState(false));
+        dispatch(updateAffectedRoutesState([]));
     }
 
     await dispatch(getDisruptions(false));
 };
 
 export const getRoutesByStop = stops => async (dispatch) => {
-    try {
-        dispatch(updateDisruptionsRoutesLoadingState(true));
-        if (!_.isEmpty(stops)) {
-            const routesByStop = stops.map(
-                stop => ccStatic.getRoutesByStop(stop.stop_code)
-                    .then(routes => routes),
-            );
-
-            return Promise.all(routesByStop)
-                .then((routes) => {
-                    dispatch(updateDisruptionsRoutesLoadingState(false));
-                    return routes;
+    dispatch(updateLoadingDisruptionsState(true));
+    if (!isEmpty(stops)) {
+        const shapesByStop = {};
+        return Promise.all(stops.map(stop => ccStatic.getRoutesByStop(stop.stop_code)))
+            .then((allRoutes) => {
+                allRoutes.forEach((routes, index) => {
+                    shapesByStop[stops[index].stop_id] = uniqBy(routes, 'route_id');
                 });
-        }
-
-        dispatch(updateDisruptionsRoutesLoadingState(false));
-        return null;
-    } catch (error) {
-        dispatch(updateDisruptionsRoutesLoadingState(false));
-        throw error;
+            })
+            .catch((error) => {
+                dispatch(updateLoadingDisruptionsState(false));
+                throw error;
+            })
+            .finally(() => {
+                dispatch(updateRoutesByStop(shapesByStop, false));
+            });
     }
+    return dispatch(updateRoutesByStop({}, false));
 };
 
 export const updateCopyDisruptionState = isCopied => async (dispatch) => {
     dispatch(copyDisruptionToClipboard(isCopied));
 };
+
+const updateOpenCreateDisruption = isCreateEnabled => ({
+    type: ACTION_TYPE.OPEN_CREATE_DISRUPTIONS,
+    payload: {
+        isCreateEnabled,
+    },
+});
+
+export const openCreateDisruption = isCreateEnabled => (dispatch) => {
+    dispatch(updateOpenCreateDisruption(isCreateEnabled));
+};
+
+const updatedSelectedRoutes = () => ({
+    type: ACTION_TYPE.DESELECT_ALL_ROUTES,
+    payload: {
+        deselectAllRoutes: true,
+    },
+});
+
+export const deselectAllRoutes = () => (dispatch) => {
+    dispatch(updatedSelectedRoutes());
+};
+
+export const resetState = () => ({
+    type: ACTION_TYPE.RESET_STATE,
+});
+
+export const deleteAffectedEntities = () => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.DELETE_AFFECTED_ENTITIES,
+        payload: {
+            activeStep: 1,
+            showSelectedRoutes: false,
+            affectedEntities: {
+                affectedRoutes: [],
+                affectedStops: [],
+            },
+            routesByStop: {},
+        },
+    });
+};
+
+export const getRoutes = routesToUpdate => (dispatch) => {
+    dispatch(updateLoadingDisruptionsState(true));
+    const newRouteSelected = routesToUpdate[routesToUpdate.length - 1];
+    ccStatic.getRoutesByShortName(newRouteSelected.route_short_name)
+        .then((routes) => {
+            const route = routes.find(({ route_id }) => route_id === newRouteSelected.route_id);
+            newRouteSelected.shape_wkt = route ? route.trips[0].shape_wkt : '';
+            return newRouteSelected;
+        }).finally(() => {
+            dispatch(updateAffectedRoutesState(routesToUpdate));
+            dispatch(updateLoadingDisruptionsState(false));
+        });
+};
+
+export const cancelCreateDisruption = () => (dispatch) => {
+    dispatch(({
+        type: ACTION_TYPE.CANCEL_CREATE_DISRUPTIONS,
+        payload: {
+            affectedRoutes: [],
+        },
+    }));
+};
+
+export const updateAffectedRoutes = (routes, show) => (dispatch) => {
+    dispatch(showSelectedRoutesState(show));
+    dispatch(updateAffectedRoutesState(routes));
+};
+
+export const updateAffectedStops = routes => (dispatch) => {
+    dispatch(updateAffectedStopsState(routes));
+};
+
+export const toggleDisruptionModals = (type, isOpen) => ({
+    type: ACTION_TYPE.SET_DISRUPTIONS_MODAL_STATUS,
+    payload: {
+        type,
+        isOpen,
+    },
+});
+
+export const updateCurrentStep = activeStep => ({
+    type: ACTION_TYPE.UPDATE_CURRENT_STEP,
+    payload: {
+        activeStep,
+    },
+});

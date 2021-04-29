@@ -4,3 +4,14 @@
     overflow-x: hidden;
     padding-top: $header-height;
 }
+
+.sidepanel-control-component-view {
+    width: 100%;
+    height: calc(100vh - 60px);
+    right: 0;
+}
+
+.sidepanel-primary-panel {
+    overflow-y: auto;
+    position: relative;
+}

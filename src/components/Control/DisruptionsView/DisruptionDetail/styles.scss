@@ -23,3 +23,8 @@
         white-space: pre-line;
     }
 }
+
+// TODO: Remove when the new view design is merge.
+.expandable .disruption-creation__wizard-select-details__icon {
+    display: none;
+}

@@ -124,7 +124,7 @@ export const ACTION_RESULT = {
     }),
     CREATE_SUCCESS: incidentNo => ({
         resultStatus: ACTION_RESULT_TYPES.SUCCESS,
-        resultMessage: `Disruption with disrupt # ${incidentNo} created successfully.`,
+        resultMessage: `Disruption with disrupt number #${incidentNo} created successfully.`,
     }),
     CREATE_ERROR: () => ({
         resultStatus: ACTION_RESULT_TYPES.ERROR,

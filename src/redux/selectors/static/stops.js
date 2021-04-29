@@ -5,6 +5,7 @@ import { TRAIN_TYPE_ID } from '../../../types/vehicle-types';
 
 export const getStopsState = state => _.result(state, 'static.stops');
 export const getAllStops = createSelector(getStopsState, stopsState => _.result(stopsState, 'all', {}));
+export const getMinimalStops = createSelector(getAllStops, stops => _.map(stops, stop => _.pick(stop, ['stop_id', 'stop_code', 'stop_lat', 'stop_lon'])));
 export const getVisibleStops = createSelector(getStopsState, stopsState => _.result(stopsState, 'visible', []));
 export const hasStopsLoaded = createSelector(getAllStops, stops => !_.isEmpty(stops));
 export const getStopLatLng = stop => new L.LatLng(stop.stop_lat, stop.stop_lon);

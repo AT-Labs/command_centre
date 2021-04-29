@@ -190,6 +190,14 @@
     @extend .p-3;
 }
 
+.cc__picklist-pane-vertical {
+    .picklist__list-action-btn {
+        color: $at-shore;
+        background-color: #FFF;
+        text-decoration: underline;
+    }
+}
+
 // Custom modal styles
 .cc-modal-standard-width {
     @media (min-width: 576px) {

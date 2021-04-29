@@ -143,7 +143,24 @@ export class Stop extends React.Component {
                             <DropdownToggle caret className="text-info bg-transparent border-0">
                                 <span className="white-space-normal">{transformStopName(stop.stopName)}</span>
                             </DropdownToggle>
-                            <DropdownMenu className="py-1">
+                            <DropdownMenu className="py-1"
+                                modifiers={
+                                    {
+                                        setMaxHeight: {
+                                            enabled: true,
+                                            order: 890,
+                                            fn: data => ({
+                                                ...data,
+                                                styles: {
+                                                    ...data.styles,
+                                                    overflow: 'auto',
+                                                    maxHeight: '100px',
+                                                },
+                                            }),
+                                        },
+                                    }
+                                }
+                            >
                                 {platforms.map(item => (
                                     <DropdownItem
                                         className="btn-sm"

@@ -5,7 +5,7 @@ import { Button } from 'reactstrap';
 
 import Message from '../../../Common/Message/Message';
 import DetailLoader from '../../../../Common/Loader/DetailLoader';
-import { clearDisruptionActionResult, updateActiveDisruptionId } from '../../../../../redux/actions/control/disruptions';
+import { clearDisruptionActionResult, updateActiveDisruptionId, openCreateDisruption, deleteAffectedEntities } from '../../../../../redux/actions/control/disruptions';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
 
 const Confirmation = (props) => {
@@ -16,10 +16,10 @@ const Confirmation = (props) => {
         return resultDisruptionId
             ? (
                 <React.Fragment>
-                    <h2>New disruption created successfully</h2>
+                    <h2>New disruption has been created</h2>
                     <div>
-                        <span className="d-block mt-3 mb-2">{ resultMessage }</span>
-                        <span>Please ensure you update the created disruption with new information as it becomes available</span>
+                        <span className="d-block mt-3 mb-2">{ resultMessage }</span><br />
+                        <span>Please ensure you update the created disruption with new information as it becomes available.</span>
                     </div>
                 </React.Fragment>
             )
@@ -29,7 +29,7 @@ const Confirmation = (props) => {
                     isDismissible={ false }
                     onClose={ () => {
                         props.clearDisruptionActionResult();
-                        props.onStepUpdate(null);
+                        props.openCreateDisruption(false);
                     } }
                     message={ {
                         id: '',
@@ -48,13 +48,14 @@ const Confirmation = (props) => {
             </div>
             { !isRequesting && (
                 <footer className="row justify-content-between mt-3">
-                    <div className="col-4">
+                    <div className="col-6">
                         {
                             resultDisruptionId && (
                                 <Button
                                     className="btn cc-btn-primary btn-block"
                                     onClick={ () => {
-                                        props.onStepUpdate(null);
+                                        props.openCreateDisruption(false);
+                                        props.deleteAffectedEntities();
                                         if (!props.isModalOpen) {
                                             setTimeout(() => props.updateActiveDisruptionId(resultDisruptionId), 0);
                                         }
@@ -67,7 +68,10 @@ const Confirmation = (props) => {
                     <div className="col-4">
                         <Button
                             className="btn cc-btn-secondary btn-block"
-                            onClick={ () => props.onStepUpdate(null) }>
+                            onClick={ () => {
+                                props.openCreateDisruption(false);
+                                props.deleteAffectedEntities();
+                            } }>
                             { resultDisruptionId ? 'Done' : 'Close' }
                         </Button>
                     </div>
@@ -79,15 +83,15 @@ const Confirmation = (props) => {
 
 Confirmation.propTypes = {
     response: PropTypes.object,
-    onStepUpdate: PropTypes.func,
     clearDisruptionActionResult: PropTypes.func.isRequired, // eslint-disable-line
     updateActiveDisruptionId: PropTypes.func.isRequired,
     isModalOpen: PropTypes.bool.isRequired,
+    openCreateDisruption: PropTypes.func.isRequired,
+    deleteAffectedEntities: PropTypes.func.isRequired,
 };
 
 Confirmation.defaultProps = {
     response: {},
-    onStepUpdate: () => {},
 };
 
 export default connect(state => ({
@@ -96,4 +100,6 @@ export default connect(state => ({
 {
     clearDisruptionActionResult,
     updateActiveDisruptionId,
+    openCreateDisruption,
+    deleteAffectedEntities,
 })(Confirmation);

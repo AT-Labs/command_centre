@@ -120,10 +120,8 @@ class VehicleClusterLayer extends React.Component {
             if (matchingVehicle) this.props.updateVehicleSelected(matchingVehicle);
 
             if (this.props.vehicleType.startsWith('unselected')) {
-                const markersInBoundaryIds = markersInBoundary.map(marker => marker.id);
-                const notInRouteVehicles = _.omit(vehicles, markersInBoundaryIds);
-                const allrestMarkersInBoundary = _.filter(notInRouteVehicles, vehicle => bounds.contains(getVehicleLatLng(vehicle)));
-                const unselectedMarkers = allrestMarkersInBoundary.map(vehicle => L.marker(getVehicleLatLng(vehicle), {
+                const unselectedVehiclesInBoundary = _.filter(vehicles, vehicle => bounds.contains(getVehicleLatLng(vehicle)));
+                const unselectedMarkers = unselectedVehiclesInBoundary.map(vehicle => L.marker(getVehicleLatLng(vehicle), {
                     icon: getVehicleIcon(vehicle, 'opacity-markers'),
                     vehicle,
                 }));

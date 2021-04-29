@@ -13,7 +13,7 @@ import {
     getTripReplaySingleTripDisplayed, getTripReplayTotalResults,
     getTripReplayTrips,
 } from '../../../redux/selectors/control/tripReplays/tripReplayView';
-import './TripReplaysView.scss';
+import '../../Common/OffCanvasLayout/OffCanvasLayout.scss';
 import TripSearchResultsList from './SearchResults/SearchResultsList';
 import SidePanel from '../../Common/OffCanvasLayout/SidePanel/SidePanel';
 import HistoricalMap from './Map/Map';
@@ -218,11 +218,11 @@ const TripReplaysView = (props) => {
 
 
     return (
-        <div className="control-trip-replays-view d-flex">
+        <div className="sidepanel-control-component-view d-flex">
             <SidePanel
                 isOpen
                 isActive
-                className="trip-replay-primary-panel"
+                className="sidepanel-primary-panel"
                 toggleButton={ false }>
                 { !props.isFiltersViewDisplayed && <BackHeader text={ `Back to ${props.isSingleTripDisplayed ? 'Result' : 'Search'}` } onClick={ backClick } /> }
                 { renderMain() }

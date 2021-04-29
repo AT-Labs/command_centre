@@ -69,7 +69,7 @@ export const getVehiclesFilterIsShowingDirectionOutbound = createSelector(getVeh
 export const getVehiclesFilterShowingDelay = createSelector(getVehiclesFilters, filters => get(filters, 'showingDelay', {}));
 export const getVehiclesFilterShowingOccupancyLevels = createSelector(getVehiclesFilters, filters => get(filters, 'showingOccupancyLevels', []));
 export const getVehiclesFilterIsShowingNIS = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingNIS'));
-export const getUnselectedVehicles = createSelector(
+export const getFilteredVehicles = createSelector(
     getAllVehicles,
     getFleetState,
     getAllocations,
@@ -140,7 +140,7 @@ export const getUnselectedVehicles = createSelector(
     },
 );
 export const getVisibleVehicles = createSelector(
-    getUnselectedVehicles,
+    getFilteredVehicles,
     getVehiclesFilterPredicate,
     (unselectedVehicles, predicate) => {
         const visibleVehicles = filter(unselectedVehicles, (vehicle) => {

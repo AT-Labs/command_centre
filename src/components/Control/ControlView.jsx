@@ -29,7 +29,7 @@ const ControlView = (props) => {
         <OffCanvasLayout>
             <Main className="control-view">
                 <ErrorBanner />
-                <div className={ classNames({ 'p-4': !isTripReplaysView }) }>
+                <div className={ classNames({ 'p-4': (!isTripReplaysView && !isDisruptionsView) }) }>
                     { isBlocksView && <BlocksView /> }
                     { isRoutesView && <CommonView /> }
                     { isStopMessagesView && <StopMessagesView /> }

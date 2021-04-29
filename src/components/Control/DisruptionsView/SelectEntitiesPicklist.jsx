@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import _ from 'lodash-es';
 import { Button } from 'reactstrap';
 
-import Picklist from '../../Common/Picklist/Picklist';
+import PickList from '../../Common/PickList/PickList';
 import { getAllRoutes } from '../../../redux/selectors/static/routes';
 import { getAllStops } from '../../../redux/selectors/static/stops';
 
@@ -12,7 +12,7 @@ const SelectEntitiesPicklist = props => (
     <div className="disruption-creation__wizard-select-routes">
         <div className="row my-3">
             <div className="col">
-                <Picklist
+                <PickList
                     staticItemList={ props.type === 'routes' ? props.allRoutes : props.stops }
                     selectedValues={ props.data[props.type === 'routes' ? 'affectedRoutes' : 'affectedStops'] }
                     valueKey={ props.type === 'routes' ? 'route_id' : 'stop_id' }
