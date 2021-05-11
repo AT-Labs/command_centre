@@ -148,7 +148,7 @@ const DisruptionDetailView = (props) => {
 
     const updateRoutesAndMode = (selectedItems) => {
         setAffectedRoutes(selectedItems.map(route => _.mapKeys(route, (value, key) => _.camelCase(key))));
-        const modes = _.uniq(selectedItems.map(route => route.route_type)).map(routeType => VEHICLE_TYPES[routeType].type).join(', ');
+        const modes = _.without(_.uniq(selectedItems.map(route => route.route_type)), undefined).map(routeType => VEHICLE_TYPES[routeType].type).join(', ');
         setMode(modes);
     };
 

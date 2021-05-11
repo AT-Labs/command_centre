@@ -119,7 +119,7 @@ class CreateDisruption extends React.Component {
             camelCaseStops.push(_.mapKeys(stop, (value, key) => _.camelCase(key)));
         });
 
-        const routesToRequest = camelCaseRoutes.map(({ routeId, routeShortName }) => ({ routeId, routeShortName }));
+        const routesToRequest = camelCaseRoutes.map(({ routeId, routeShortName, routeType }) => ({ routeId, routeShortName, routeType }));
 
         this.toggleModal('Confirmation', true);
         return {
