@@ -1,26 +1,22 @@
 /* eslint-disable camelcase */
-import { result, uniqBy, map, orderBy, compact, pick, groupBy, keyBy, unionBy, each, indexof, filter, intersectionBy, join } from 'lodash-es';
-import VIEW_TYPE from '../../../../types/view-types';
+import { result, uniqBy, map, orderBy, compact, groupBy, keyBy, unionBy, each, indexof, filter, intersectionBy, join } from 'lodash-es';
 import ACTION_TYPE from '../../../action-types';
+import VIEW_TYPE from '../../../../types/view-types';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import { getChildStops } from '../../../selectors/static/stops';
-import { getVisibleVehicles, getVehicleTripStartTimeISO } from '../../../selectors/realtime/vehicles';
+import { getAllVehicles, getVehicleTripStartTimeISO } from '../../../selectors/realtime/vehicles';
 import { updateDataLoading } from '../../activity';
-import { updateVisibleStops } from '../../static/stops';
-import { mergeVehicleFilters } from '../vehicles';
+import { clearDetail, updateViewDetailKey } from './common';
+import { getAllRoutes } from '../../../selectors/static/routes';
 import { updateRealTimeDetailView } from '../../navigation';
-import { clearDetail } from './common';
-import { updateSearchTerms } from '../../search';
-import { getRouteSearchTerms, getAllRoutes } from '../../../selectors/static/routes';
 
-export const displayRoutesDetails = trips => (dispatch, getState) => {
-    const state = getState();
+export const mergeRoutesDetails = (entityKey, trips, vehiclesInAllRoutes) => (dispatch) => {
     const routeVariants = groupBy(trips, 'trip_headsign');
-    const visibleVehiclesKeydByTripId = keyBy(getVisibleVehicles(state), 'vehicle.trip.tripId');
-
+    const visibleVehiclesKeydByTripId = keyBy(vehiclesInAllRoutes, 'vehicle.trip.tripId');
     dispatch({
         type: ACTION_TYPE.FETCH_ROUTE_TRIPS,
         payload: {
+            entityKey,
             routes: map(routeVariants, (routeVariantTrips, headsign) => ({
                 shape_wkt: routeVariantTrips[0].shape_wkt,
                 routeVariantName: headsign,
@@ -30,7 +26,7 @@ export const displayRoutesDetails = trips => (dispatch, getState) => {
     });
 };
 
-export const updateVisibleStopsByRoute = routeTrips => (dispatch, getState) => {
+export const getStopsByRoute = (entityKey, routeTrips) => (dispatch, getState) => {
     const allStops = getChildStops(getState());
     const uniqueTrips = uniqBy(routeTrips, 'trip_headsign');
     return Promise.all(uniqueTrips.map(({ trip_id }) => ccStatic.getTripById(trip_id)))
@@ -39,13 +35,16 @@ export const updateVisibleStopsByRoute = routeTrips => (dispatch, getState) => {
                 ...trips.map(({ stopTimes }) => stopTimes.map(({ stop }) => allStops[stop.stop_code])),
                 'stop_id',
             );
-            dispatch(updateVisibleStops(stops));
+            dispatch({
+                type: ACTION_TYPE.FETCH_ROUTE_STOPS,
+                payload: { entityKey, stops },
+            });
         });
 };
 
-export const getRoutesByRouteShortName = route => (dispatch) => {
+export const getRoutesByRouteShortName = route => (dispatch, getState) => {
     const routeShortName = result(route, 'route_short_name');
-
+    const entityKey = result(route, 'key');
     dispatch(updateDataLoading(true));
     return ccStatic.getRoutesByShortName(routeShortName)
         .then((routes) => {
@@ -55,12 +54,18 @@ export const getRoutesByRouteShortName = route => (dispatch) => {
                 tripsInAllRoutes.push(...trips);
                 routeIds.push(route_id);
             });
-            dispatch(updateVisibleStopsByRoute(tripsInAllRoutes));
-            dispatch(mergeVehicleFilters({ predicate: vehicle => indexof(routeIds, result(vehicle, 'vehicle.trip.routeId')) >= 0 }));
-            dispatch(displayRoutesDetails(tripsInAllRoutes));
+            const vehiclePredicate = vehicle => indexof(routeIds, result(vehicle, 'vehicle.trip.routeId')) >= 0;
+            const vehiclesInAllRoutes = filter(getAllVehicles(getState()), vehiclePredicate);
+            dispatch({
+                type: ACTION_TYPE.UPDATE_ROUTE_VEHICLE_PREDICATE,
+                payload: { entityKey, vehiclePredicate },
+            });
+            dispatch(mergeRoutesDetails(entityKey, tripsInAllRoutes, vehiclesInAllRoutes));
+            dispatch(getStopsByRoute(entityKey, tripsInAllRoutes));
             dispatch(updateDataLoading(false));
         });
 };
+
 const getOperatorsForDisplay = (route_short_name, state) => {
     const tokenResults = filter(getAllRoutes(state), route => route.route_short_name === route_short_name);
     const filteredRoutes = intersectionBy(tokenResults, 'agency_name');
@@ -68,20 +73,30 @@ const getOperatorsForDisplay = (route_short_name, state) => {
     const routeAgencyForDisplay = join(routeAgencys, ', ');
     return routeAgencyForDisplay;
 };
-const generateRouteSelectedPayload = (route, state) => {
-    const payload = pick(route, ['route_short_name', 'route_type']);
-    payload.agency_name = getOperatorsForDisplay(payload.route_short_name, state);
-    return payload;
-};
+
+const generateRouteSelectedPayload = (route, state) => ({ ...route, agency_name: getOperatorsForDisplay(result(route, 'route_short_name'), state) });
+
 export const routeSelected = route => (dispatch, getState) => {
     dispatch(clearDetail(true));
+    dispatch(updateViewDetailKey(route.key));
     dispatch(updateRealTimeDetailView(VIEW_TYPE.REAL_TIME_DETAIL.ROUTE));
     dispatch({
         type: ACTION_TYPE.UPDATE_SELECTED_ROUTE,
         payload: {
+            entityKey: result(route, 'key'),
             route: generateRouteSelectedPayload(route, getState()),
         },
     });
     dispatch(getRoutesByRouteShortName(route));
-    dispatch(updateSearchTerms(getRouteSearchTerms(route)));
+};
+
+export const routeChecked = route => (dispatch, getState) => {
+    dispatch({
+        type: ACTION_TYPE.UPDATE_SELECTED_ROUTE,
+        payload: {
+            entityKey: result(route, 'key'),
+            route: generateRouteSelectedPayload(route, getState()),
+        },
+    });
+    dispatch(getRoutesByRouteShortName(route));
 };

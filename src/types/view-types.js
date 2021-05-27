@@ -9,6 +9,7 @@ export default {
         VEHICLE: 'vehicle-real-time-view',
         STOP: 'stop-real-time-view',
         ROUTE: 'route-real-time-view',
+        LIST: 'list-real-time-view',
     },
     SECONDARY_PANEL: {
         NOTIFICATIONS: 'secondary-panel-notifications-view',

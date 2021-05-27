@@ -7,6 +7,7 @@ import { fetchWithAuthHeader } from '../auth';
 
 export const generateUniqueID = () => Math.random().toString(36).substr(2, 16);
 export const getJSONFromWKT = text => wellknown.parse(text);
+export const getAllCoordinatesFromWKT = text => getJSONFromWKT(text).coordinates.map(c => c.reverse());
 export const parseTime = (time, date) => {
     const [hour, minute = 0, second = 0, millisecond = 0] = time.split(':').map(part => parseInt(part, 10));
     const datetime = moment(date).set({ hour, minute, second, millisecond });
@@ -153,3 +154,7 @@ export const isDelayBetweenRange = (delay, range) => {
 };
 
 export const getNumbersSequence = (from, to) => [...Array(to).keys()].map(i => i + from);
+
+export const formatRealtimeDetailListItemKey = (entityType, entityId) => (`${entityType}-${entityId}`);
+
+export const idFromString = string => string.replace(/[^a-zA-Z0-9]/g, '');

@@ -40,6 +40,7 @@ const ControlTable = (props) => {
                                 rowBody={ props.rowBody ? props.rowBody(rowData) : null }
                                 rowClassName={ props.rowClassName ? props.rowClassName(rowData) : null }
                                 isExpandable={ props.isExpandable }
+                                isFocused={ props.rowFocused ? props.rowFocused(rowData) : null }
                                 level={ level } />
                         </li>
                     )) }
@@ -64,6 +65,7 @@ ControlTable.propTypes = {
     isLoading: PropTypes.bool,
     rowOnClick: PropTypes.func,
     getRowId: PropTypes.func,
+    rowFocused: PropTypes.func,
     rowActive: PropTypes.oneOfType([PropTypes.func, PropTypes.bool]),
     rowBody: PropTypes.func,
     rowClassName: PropTypes.func,
@@ -75,6 +77,7 @@ ControlTable.defaultProps = {
     getRowId: null,
     rowActive: null,
     rowOnClick: null,
+    rowFocused: null,
     isExpandable: true,
     level: 1,
     rowBody: null,

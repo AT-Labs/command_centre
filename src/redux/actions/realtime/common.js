@@ -1,4 +1,4 @@
-import { clearDetail } from './detail/common';
+import { clearDetail, clearSelectedSearchResult } from './detail/common';
 import { clearSearchResults } from '../search';
 import { mergeVehicleFilters } from './vehicles';
 import { recenterMap } from './map';
@@ -8,6 +8,7 @@ import VIEW_TYPE from '../../../types/view-types';
 export const resetRealtimeToDefault = () => (dispatch) => {
     dispatch(recenterMap(true));
     dispatch(clearDetail());
+    dispatch(clearSelectedSearchResult());
     dispatch(clearSearchResults());
     dispatch(mergeVehicleFilters({ routeType: null }));
     dispatch(updateMainView(VIEW_TYPE.MAIN.REAL_TIME));

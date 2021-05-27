@@ -1,0 +1,7 @@
+@import '../../../../assets/styles/variables';
+@import '../DetailView';
+
+.vehicle-detail-view {
+    background-color: $white;
+    height: calc(100vh - #{$header-height + $back-header-height + $back-header-margin-y*2});
+}

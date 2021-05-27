@@ -24,14 +24,6 @@ describe('Common detail actions', () => {
         it('Should clear the detail', () => {
             const expectedActions = [
                 {
-                    type: ACTION_TYPE.MERGE_VEHICLE_FILTERS,
-                    payload: { filters: { predicate: null } },
-                },
-                {
-                    type: ACTION_TYPE.UPDATE_VISIBLE_STOPS,
-                    payload: { visible: null },
-                },
-                {
                     type: ACTION_TYPE.CLEAR_DETAIL,
                     payload: { isReplace: false },
                 },

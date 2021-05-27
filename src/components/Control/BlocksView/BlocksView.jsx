@@ -14,12 +14,14 @@ import inView from 'in-view';
 import _ from 'lodash-es';
 import moment from 'moment-timezone';
 
-import { getBlocks, updateActiveBlock, updateBlocksSortingParams } from '../../../redux/actions/control/blocks';
-import { getActiveBlockOperationalBlockId,
+import { getBlocks, updateActiveBlock, updateBlocksSortingParams, clearActiveBlock, updateFocusedBlock } from '../../../redux/actions/control/blocks';
+import {
+    getActiveBlocksIds,
     getSortedBlocks,
     getBlocksLoadingState,
     getBlocksPermissions,
     getBlocksSortingParams,
+    getFocusedBlock,
 } from '../../../redux/selectors/control/blocks';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import SEARCH_RESULT_TYPE from '../../../types/search-result-types';
@@ -42,19 +44,23 @@ import './BlocksView.scss';
 
 export class BlocksView extends React.Component {
     static propTypes = {
+        focusedBlock: PropTypes.object,
+        activeBlocksIds: PropTypes.array,
         blocks: PropTypes.array.isRequired,
         blocksPermissions: PropTypes.array.isRequired,
-        activeBlockOperationalBlockId: PropTypes.string,
         isLoading: PropTypes.bool.isRequired,
         getBlocks: PropTypes.func.isRequired,
         updateActiveBlock: PropTypes.func.isRequired,
+        clearActiveBlock: PropTypes.func.isRequired,
+        updateFocusedBlock: PropTypes.func.isRequired,
         updateBlocksSortingParams: PropTypes.func.isRequired,
         serviceDate: PropTypes.string.isRequired,
         blocksSortingParams: PropTypes.object.isRequired,
     }
 
     static defaultProps = {
-        activeBlockOperationalBlockId: null,
+        activeBlocksIds: [],
+        focusedBlock: null,
     }
 
     constructor(props) {
@@ -172,11 +178,21 @@ export class BlocksView extends React.Component {
 
     isToday = date => moment.tz(date, DATE_TYPE.TIME_ZONE).isSame(moment(), 'day')
 
-    isRowActive = block => !!(this.props.activeBlockOperationalBlockId && this.props.activeBlockOperationalBlockId === block.operationalBlockId)
+    isRowActive = (block) => {
+        const { activeBlocksIds } = this.props;
+        return !!activeBlocksIds.find(activeBlock => activeBlock === block.operationalBlockId);
+    }
 
-    handleBlockOnClick = block => (this.isRowActive(block) ? this.props.updateActiveBlock(null) : this.props.updateActiveBlock(block));
+    handleBlockOnClick = (block) => {
+        if (this.isRowActive(block)) {
+            this.props.clearActiveBlock(block);
+            return;
+        }
+        this.props.updateActiveBlock(block);
+        this.props.updateFocusedBlock(block);
+    }
 
-    renderRowBody = () => <BlockTrips />
+    renderRowBody = activeBlock => <BlockTrips activeBlock={ activeBlock } />;
 
     getRowId = block => block.operationalBlockId
 
@@ -200,6 +216,7 @@ export class BlocksView extends React.Component {
 
     render() {
         const isGlobalAddBlockPermitted = IS_LOGIN_NOT_REQUIRED || isGlobalAddBlocksPermitted(this.props.blocksPermissions);
+
         return (
             <div className="control-block-view" ref={ this.ref }>
                 <TableTitle
@@ -215,7 +232,7 @@ export class BlocksView extends React.Component {
                                 [SEARCH_RESULT_TYPE.BLOCK.type]: selected => this.handleBlockSearchOnSelect(selected),
                             } }
                             clearHandlers={ {
-                                [SEARCH_RESULT_TYPE.BLOCK.type]: () => this.props.updateActiveBlock(null),
+                                [SEARCH_RESULT_TYPE.BLOCK.type]: () => this.props.clearActiveBlock(null),
                             } } />
                     </div>
                     <div className="col-9 d-flex justify-content-end align-items-center">
@@ -229,6 +246,7 @@ export class BlocksView extends React.Component {
                     isLoading={ this.state.shouldLoaderBeShown && this.props.isLoading }
                     rowOnClick={ this.handleBlockOnClick }
                     rowActive={ this.isRowActive }
+                    rowFocused={ block => this.props.focusedBlock && this.props.focusedBlock.operationalBlockId === block.operationalBlockId }
                     rowBody={ this.renderRowBody }
                     rowClassName={ this.getRowClassName } />
             </div>
@@ -239,9 +257,10 @@ export class BlocksView extends React.Component {
 export default connect(state => ({
     blocks: getSortedBlocks(state),
     blocksSortingParams: getBlocksSortingParams(state),
-    activeBlockOperationalBlockId: getActiveBlockOperationalBlockId(state),
+    activeBlocksIds: getActiveBlocksIds(state),
     isLoading: getBlocksLoadingState(state),
     serviceDate: getServiceDate(state),
     blocksPermissions: getBlocksPermissions(state),
+    focusedBlock: getFocusedBlock(state),
 }),
-{ getBlocks, updateActiveBlock, updateBlocksSortingParams })(BlocksView);
+{ getBlocks, updateActiveBlock, updateBlocksSortingParams, clearActiveBlock, updateFocusedBlock })(BlocksView);

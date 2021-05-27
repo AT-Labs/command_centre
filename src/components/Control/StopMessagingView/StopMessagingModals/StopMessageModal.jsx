@@ -96,9 +96,7 @@ export class StopMessageModal extends React.Component {
                 startTime: startDatetime.format('HH:mm'),
                 endDate: isCurrent ? moment(endTime).toDate() : null,
                 endTime: isCurrent ? moment(endTime).format('HH:mm') : '',
-                recurrence: {
-                    isValid: true,
-                },
+                recurrence: INIT_STATE.recurrence,
                 hasModalBeenOpen: false,
             };
         }

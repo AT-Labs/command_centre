@@ -1,0 +1,5 @@
+export const SEARCH_BAR_INPUT_STATE = {
+    INITIAL: 'INITIAL',
+    COLLAPSED: 'COLLAPSED',
+    EXPANDED: 'EXPANDED',
+};

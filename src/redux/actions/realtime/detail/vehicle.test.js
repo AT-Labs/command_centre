@@ -7,7 +7,6 @@ import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import ACTION_TYPE from '../../../action-types';
 import VEHICLE_OCCUPANCY_STATUS_TYPE from '../../../../types/vehicle-occupancy-status-types';
-import * as selectorsDetails from '../../../selectors/realtime/detail';
 import * as vehicleDetailActions from './vehicle';
 
 const mockStore = configureMockStore([thunk]);
@@ -25,7 +24,7 @@ describe('Vehicle detail actions', () => {
         store.clearActions();
     });
 
-    context('getTrip()', () => {
+    context('getVehicleTripInfo()', () => {
         const trip = {
             trip_id: '438136127-20180910114240_v70.21',
             shape_wkt: 'shape_wkt',
@@ -50,6 +49,7 @@ describe('Vehicle detail actions', () => {
 
         it('Should dispatch the actions', async () => {
             const fakeTrip = sandbox.fake.resolves(trip);
+            const entityKey = undefined;
             const expectedActions = [
                 {
                     type: ACTION_TYPE.DATA_LOADING,
@@ -57,11 +57,11 @@ describe('Vehicle detail actions', () => {
                 },
                 {
                     type: ACTION_TYPE.FETCH_TRIP,
-                    payload: { trip },
+                    payload: { entityKey, trip },
                 },
                 {
-                    type: ACTION_TYPE.UPDATE_VISIBLE_STOPS,
-                    payload: { visible: trip.stopTimes[0].stop },
+                    type: ACTION_TYPE.FETCH_VEHICLE_TRIP_STOPS,
+                    payload: { entityKey, stops: [trip.stopTimes[0].stop] },
                 },
                 {
                     type: ACTION_TYPE.DATA_LOADING,
@@ -70,13 +70,10 @@ describe('Vehicle detail actions', () => {
             ];
 
             const getTrip = sandbox.stub(ccStatic, 'getTripById').callsFake(fakeTrip);
-            const getTripStops = sandbox.stub(selectorsDetails, 'getTripStops').returns(trip.stopTimes[0].stop);
 
-            await store.dispatch(vehicleDetailActions.getTrip());
+            await store.dispatch(vehicleDetailActions.getVehicleTripInfo());
 
             sandbox.assert.calledOnce(getTrip);
-            sandbox.assert.calledOnce(getTripStops);
-
             expect(store.getActions()).to.eql(expectedActions);
         });
     });
@@ -123,7 +120,7 @@ describe('Vehicle detail actions', () => {
                     vehicle,
                 },
             }];
-            store.dispatch(vehicleDetailActions.updateVehicleSelected(vehicle));
+            store.dispatch(vehicleDetailActions.updateSelectedVehicle(vehicle));
             expect(store.getActions()).to.eql(expectedActions);
         });
     });
@@ -208,6 +205,9 @@ describe('Vehicle detail actions', () => {
                             7235: {},
                         },
                     },
+                    vehicles: {
+                        all: { vehicleId: { id: 'vehicleId' } },
+                    },
                 },
             });
 
@@ -286,7 +286,12 @@ describe('Vehicle detail actions', () => {
             const getHistoryByVehicleId = sandbox.stub(ccRealtime, 'getHistoryByVehicleId').callsFake(fakeUpcomingStops);
 
             await vehicleDetailActions.fetchPastStops('vehicleId')(store.dispatch, () => ({
-                realtime: { detail: { vehicle: { updatedVehicle: { vehicle: { trip: { tripId: '51437148842-20180921103729_v70.37' } } } } } },
+                realtime: {
+                    detail: { viewDetailKey: 'vehicleId', vehicle: { key: 'vehicleId', trip: { tripId: '51437148842-20180921103729_v70.37' } } },
+                    vehicles: {
+                        all: { vehicleId: { id: 'vehicleId' } },
+                    },
+                },
             }));
             sandbox.assert.calledOnce(getHistoryByVehicleId);
             sandbox.assert.calledWith(getHistoryByVehicleId, 'vehicleId');

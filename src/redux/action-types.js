@@ -27,6 +27,13 @@ export default {
     UPDATE_STOP_IN_GROUP_SEARCH_RESULTS: 'update-stop-in-group-search-results',
     UPDATE_STOP_MESSAGES_SORTING_PARAMS: 'update-stop-messages-sorting-params',
     CLEAR_SEARCH_RESULTS: 'clear-search-results',
+    UPDATE_SEARCH_BAR_FOCUS: 'update-search-bar-focus',
+    UPDATE_SELECTED_SEARCH_RESULTS_CHECK_STATUS: 'update-selected-search-result-check-status',
+    UPDATE_VIEW_DETAIL_KEY: 'update-view-detail-key',
+    ADD_SELECTED_SEARCH_RESULT: 'add-selected-search-result',
+    REMOVE_SELECTED_SEARCH_RESULT: 'remove-selected-search-result',
+    CLEAR_SELECTED_SEARCH_RESULT: 'clear-selected-search-result',
+
     // Detail
     CLEAR_DETAIL: 'clear-detail',
     DISPLAY_REAL_TIME_DETAIL: 'display-real-time-detail',
@@ -41,10 +48,13 @@ export default {
     FETCH_STOP_ROUTES: 'fetch-stop-routes',
     FETCH_STOP_PID_MESSAGES: 'fetch-stop-pid-messages',
     FETCH_STOP_PID_INFORMATION: 'fetch-stop-pid-information',
-    UPDATE_VISIBLE_STOPS: 'update-visible-stops',
+    FETCH_STOP_ROUTES_STOPS: 'fetch-stop-routes-stops',
+    UPDATE_STOP_VEHICLE_PREDICATE: 'update-stop-vehicle-predicate',
     // Route detail
     FETCH_ROUTE_INFO: 'fetch-route-info',
     FETCH_ROUTE_TRIPS: 'fetch-route-trips',
+    FETCH_ROUTE_STOPS: 'fetch-route-stops',
+    UPDATE_ROUTE_VEHICLE_PREDICATE: 'update-route-vehicle-predicate',
     // Fleet
     FETCH_TRAINS_FROM_FLEET: 'fetch-trains-from-fleet',
     FETCH_BUSES_FROM_FLEET: 'fetch-buses-from-fleet',
@@ -55,10 +65,13 @@ export default {
     FETCH_VEHICLE_UPCOMING_STOPS: 'fetch-vehicle-upcoming-stops',
     FETCH_VEHICLE_PAST_STOPS: 'fetch-vehicle-past-stops',
     FETCH_TRIP: 'fetch-trip',
+    FETCH_VEHICLE_TRIP_STOPS: 'fetch-vehicle-trip-stops',
+    UPDATE_VEHICLE_VEHICLE_PREDICATE: 'update-vehicle-vehicle-predicate',
     // Vehicle quick view
     FETCH_TRIP_UPDATE_SNAPSHOT: 'fetch-trip-update-snapshot',
     // Map
     RECENTER_MAP: 'recenter-map',
+    UPDATE_HOVERED_ENTITY_KEY: 'update-hovered-entity-key',
     // navigation
     UPDATE_MAIN_VIEW: 'update-main-view',
     TOGGLE_RT_SIDE_PANEL: 'toggle-rt-side-panel',
@@ -69,6 +82,9 @@ export default {
     UPDATE_CONTROL_VEHICLE_ALLOCATIONS: 'update-control-vehicle-allocations',
     UPDATE_CONTROL_BLOCKS_SORTING_PARAMS: 'update-control-blocks-sorting-params',
     UPDATE_CONTROL_BLOCKS_ACTIVE_BLOCK: 'update-control-blocks-active-block',
+    CLEAR_CONTROL_BLOCKS_ACTIVE_BLOCK: 'clear-control-blocks-active-block',
+    UPDATE_FOCUSED_BLOCK: 'update-focused-block',
+
     UPDATE_CONTROL_BLOCKS_ACTIVE_TRIP: 'update-control-blocks-active-trip',
     UPDATE_CONTROL_BLOCKS_LOADING: 'update-control-blocks-loading',
     UPDATE_CONTROL_BLOCKS_ACTIVE_BLOCK_LOADING: 'update-control-blocks-active-block-loading',

@@ -22,21 +22,21 @@ const StopDetailView = ({ stopDetail }) => {
     if (!stopDetail || !stopDetail.stop_code || !stopDetail.stop_id) return null;
 
     return (
-        <section className="stop-detail-view">
+        <section className="stop-detail-view overflow-y-auto">
             <StopDetails />
-
-            <Nav tabs className="cc-tabs mb-3">
-                <NavItem>
+            <Routes />
+            <Nav tabs className="cc-tabs mb-3 row mx-0 px-0">
+                <NavItem className="col-6 pr-0">
                     <NavLink
-                        className={ classnames('cc-nav-link', { active: activeTab === '1' }) }
+                        className={ classnames('cc-nav-link text-center text-dark rounded-left border-right-0', { active: activeTab === '1' }) }
                         onClick={ () => { toggle('1'); } }
                     >
                         Stop Information
                     </NavLink>
                 </NavItem>
-                <NavItem>
+                <NavItem className="col-6 pl-0">
                     <NavLink
-                        className={ classnames('cc-nav-link', { active: activeTab === '2' }) }
+                        className={ classnames('cc-nav-link text-center text-dark rounded-right', { active: activeTab === '2' }) }
                         onClick={ () => { toggle('2'); } }
                     >
                         PID Information
@@ -44,11 +44,10 @@ const StopDetailView = ({ stopDetail }) => {
                 </NavItem>
             </Nav>
 
-            <TabContent activeTab={ activeTab }>
+            <TabContent activeTab={ activeTab } className="px-3">
                 <TabPane tabId="1">
                     <UpcomingVehicles stopId={ stopDetail.stop_id } />
                     <PastVehicles stopId={ stopDetail.stop_id } />
-                    <Routes />
                 </TabPane>
                 <TabPane tabId="2">
                     <PidInformation stopCode={ stopDetail.stop_code } />

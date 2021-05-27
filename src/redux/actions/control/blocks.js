@@ -8,7 +8,7 @@ import * as blockMgtApi from '../../../utils/transmitters/block-mgt-api';
 import { getTrips } from '../../../utils/transmitters/trip-mgt-api';
 import { subscribeVehicleAllocation } from '../../../utils/transmitters/vehicle-allocation-streaming-api';
 import ACTION_TYPE from '../../action-types';
-import { getActiveBlockOperationalBlockId, getAllBlocks, getBlockTrips } from '../../selectors/control/blocks';
+import { getActiveBlocksIds, getAllBlocks, getBlockTrips } from '../../selectors/control/blocks';
 import { getLinkRouteVariantId, getLinkStartTime } from '../../selectors/control/link';
 import { getServiceDate } from '../../selectors/control/serviceDate';
 import { reportError, setBannerError } from '../activity';
@@ -39,6 +39,13 @@ const updateBlocksPermissions = blocksPermissions => ({
     type: ACTION_TYPE.UPDATE_BLOCKS_PERMISSIONS,
     payload: {
         blocksPermissions,
+    },
+});
+
+export const updateFocusedBlock = focusedBlock => ({
+    type: ACTION_TYPE.UPDATE_FOCUSED_BLOCK,
+    payload: {
+        focusedBlock,
     },
 });
 
@@ -79,6 +86,13 @@ export const updateActiveBlock = activeBlock => ({
     },
 });
 
+export const clearActiveBlock = activeBlock => ({
+    type: ACTION_TYPE.CLEAR_CONTROL_BLOCKS_ACTIVE_BLOCK,
+    payload: {
+        activeBlock,
+    },
+});
+
 export const updateActiveTrip = activeTrip => ({
     type: ACTION_TYPE.UPDATE_CONTROL_BLOCKS_ACTIVE_TRIP,
     payload: {
@@ -100,11 +114,14 @@ export const getBlocks = shouldUpdateLoader => (dispatch, getState) => {
                 await getTripsWithStatusFromTripMgtApi(blocks, getServiceDate(getState()))
                     .then((tripsWithStatusFromTripMgtApi) => {
                         dispatch(loadBlocks(enrichBlocksTrips(blocks, tripsWithStatusFromTripMgtApi)));
-                        const activeBlockInStoreId = () => getActiveBlockOperationalBlockId(getState());
-                        const isActiveBlockInBlockList = activeBlockInStoreId() && _.some(blocks, { operationalBlockId: activeBlockInStoreId() });
-                        if (activeBlockInStoreId() && isActiveBlockInBlockList) {
-                            dispatch(updateActiveBlock(_.find(getAllBlocks(getState()), { operationalBlockId: activeBlockInStoreId() })));
-                        }
+
+                        const activeBlocksInStoreIds = getActiveBlocksIds(getState());
+
+                        blocks.forEach((block) => {
+                            if (activeBlocksInStoreIds.includes(block.operationalBlockId)) {
+                                dispatch(updateActiveBlock(_.find(getAllBlocks(getState()), { operationalBlockId: block.operationalBlockId })));
+                            }
+                        });
                     });
             } else {
                 dispatch(loadBlocks(blocks));
@@ -115,8 +132,10 @@ export const getBlocks = shouldUpdateLoader => (dispatch, getState) => {
             const activeTripFromLink = _.find(getBlockTrips(getState()), { routeVariantId: linkRouteVariantId, startTime: linkTripStartTime });
 
             if (activeTripFromLink) {
+                const activeBlock = _.find(getAllBlocks(getState()), { operationalBlockId: activeTripFromLink.operationalBlockId });
+                dispatch(updateActiveBlock(activeBlock));
                 dispatch(updateActiveTrip(activeTripFromLink));
-                dispatch(updateActiveBlock(_.find(getAllBlocks(getState()), { operationalBlockId: activeTripFromLink.operationalBlockId })));
+                dispatch(updateFocusedBlock(activeBlock));
                 dispatch(({ type: ACTION_TYPE.CLEAR_TRIP_CROSS_LINK }));
             }
         })

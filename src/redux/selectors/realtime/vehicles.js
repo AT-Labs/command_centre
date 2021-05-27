@@ -8,22 +8,24 @@ import { getAgencies } from '../static/agencies';
 import { getFleetState, getFleetVehicleAgencyId, getFleetVehicleType } from '../static/fleet';
 import { isDelayBetweenRange } from '../../../utils/helpers';
 import { getTripUpdates } from './quickview';
+import { getVehiclePredicateFromCheckedSearchResults, getVehicleDetail, getRouteDetail } from './detail';
 
 /** Vehicle model selectors */
-export const getVehicleTrip = vehicle => get(vehicle, 'vehicle.trip');
-export const getVehicleTripId = vehicle => get(vehicle, 'vehicle.trip.tripId');
-export const getVehicleTripStartTime = vehicle => get(vehicle, 'vehicle.trip.startTime');
-export const getVehicleTripStartDate = vehicle => get(vehicle, 'vehicle.trip.startDate');
+export const getVehicleTrip = vehicle => get(vehicle, 'vehicle.trip') || get(vehicle, 'trip');
+export const getVehicleTripId = vehicle => get(vehicle, 'vehicle.trip.tripId') || get(vehicle, 'trip.tripId');
+export const getVehicleTripHeadsign = vehicle => get(vehicle, 'vehicle.trip.trip_headsign') || get(vehicle, 'trip.trip_headsign');
+export const getVehicleTripStartTime = vehicle => get(vehicle, 'vehicle.trip.startTime') || get(vehicle, 'trip.startTime');
+export const getVehicleTripStartDate = vehicle => get(vehicle, 'vehicle.trip.startDate') || get(vehicle, 'trip.startDate');
 export const getVehicleTripStartTimeISO = (vehicle) => {
-    const startTime = get(vehicle, 'vehicle.trip.startTime');
+    const startTime = getVehicleTripStartTime(vehicle);
     return startTime && moment(startTime, 'HH:mm:ss').toISOString();
 };
-export const getVehicleDirectionId = vehicle => get(vehicle, 'vehicle.trip.directionId');
-export const getVehiclePosition = vehicle => pick(get(vehicle, 'vehicle.position', {}), ['latitude', 'longitude', 'bearing']);
+export const getVehicleDirectionId = vehicle => get(vehicle, 'trip.directionId') || get(vehicle, 'vehicle.trip.directionId');
+export const getVehiclePosition = vehicle => pick(get(vehicle, 'vehicle.position') || get(vehicle, 'position', {}), ['latitude', 'longitude', 'bearing']);
 export const getVehiclePositionCoordinates = createSelector(getVehiclePosition, ({ latitude, longitude }) => `${latitude},${longitude}`);
 export const getVehicleLatLng = createSelector(getVehiclePosition, position => new L.LatLng(position.latitude, position.longitude));
 export const getVehicleBearing = createSelector(getVehiclePosition, position => position.bearing);
-export const getVehicleRoute = vehicle => get(vehicle, 'vehicle.route', {});
+export const getVehicleRoute = vehicle => get(vehicle, 'vehicle.route') || get(vehicle, 'route', {});
 export const getVehicleRouteType = createSelector(getVehicleRoute, route => route.route_type);
 export const getVehicleRouteName = createSelector(getVehicleRoute, route => route.route_short_name);
 export const getVehicleAgencyId = createSelector(getVehicleRoute, route => route.agency_id);
@@ -135,15 +137,16 @@ export const getFilteredVehicles = createSelector(
 
             return true;
         });
-
         return keyBy(visibleVehicles, 'vehicle.vehicle.id');
     },
 );
 export const getVisibleVehicles = createSelector(
     getFilteredVehicles,
     getVehiclesFilterPredicate,
-    (unselectedVehicles, predicate) => {
+    getVehiclePredicateFromCheckedSearchResults,
+    (unselectedVehicles, predicateFromFilter, predicateFromCheckedSearchResults) => {
         const visibleVehicles = filter(unselectedVehicles, (vehicle) => {
+            const predicate = predicateFromCheckedSearchResults || predicateFromFilter;
             if (predicate) {
                 const matchesPredicate = isFunction(predicate) ? predicate(vehicle) : isMatch(vehicle, predicate);
                 if (!matchesPredicate) {
@@ -154,4 +157,32 @@ export const getVisibleVehicles = createSelector(
         });
         return keyBy(visibleVehicles, 'vehicle.vehicle.id');
     },
+);
+
+export const getActiveRouteVehiclesOccupancyStatus = createSelector(
+    getAllVehicles,
+    getRouteDetail,
+    (allVehicles, routeDetail) => {
+        const occupancyStatuses = {};
+        if (routeDetail.routes) {
+            routeDetail.routes.forEach((routeVariants) => {
+                routeVariants.vehicles.forEach((vehicle) => {
+                    if (allVehicles[vehicle.id]) {
+                        occupancyStatuses[vehicle.id] = allVehicles[vehicle.id].vehicle.occupancyStatus;
+                    }
+                });
+            });
+        }
+        return occupancyStatuses;
+    },
+);
+
+export const getHighlightVehiclePosition = createSelector(
+    getVehicleDetail, getAllVehicles,
+    (vehicleDetail, allVehicles) => get(allVehicles[vehicleDetail.id], 'vehicle.position'),
+);
+
+export const getCurrentVehicleOccupancyStatus = createSelector(
+    getVehicleDetail, getAllVehicles,
+    (vehicleDetail, allVehicles) => get(allVehicles[vehicleDetail.id], 'vehicle.occupancyStatus'),
 );

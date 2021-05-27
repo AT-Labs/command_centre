@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { capitalize } from 'lodash-es';
-
+import { getTripDelayDisplayData } from '../../../utils/control/routes';
 
 const calculateVariance = (scheduledTime, actualTime) => {
     if (!scheduledTime || !actualTime) {
@@ -13,11 +13,7 @@ const calculateVariance = (scheduledTime, actualTime) => {
     const actualMoment = moment(actualTime, moment.ISO_8601);
     const varianceInMinutes = actualMoment.diff(scheduledMoment, 'minute');
 
-    if (varianceInMinutes === 0) {
-        return '';
-    }
-
-    return `(${varianceInMinutes > 0 ? 'Late' : 'Early'} ${Math.abs(varianceInMinutes)} min)`;
+    return getTripDelayDisplayData(varianceInMinutes);
 };
 
 const timeDisplay = (isCancelled, actualTime, type) => {
@@ -37,7 +33,7 @@ const ActualTimeVariance = (props) => {
     return (
         <div className="text-right">
             <p className={ `my-0 ${isCancelled ? 'text-danger' : ''}` }>{actualTimeDisplay}</p>
-            <small className="text-danger">{variance}</small>
+            <small className={ variance.className }>{ variance.className === 'text-danger' ? `(${variance.text})` : variance.text}</small>
         </div>
     );
 };

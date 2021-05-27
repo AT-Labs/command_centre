@@ -2,60 +2,73 @@ import PropTypes from 'prop-types';
 import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
-import { routeSelected } from '../../../../../redux/actions/realtime/detail/route';
-import { getTripHeadsign, getVehicleDetail, getVehicleFleetInfo } from '../../../../../redux/selectors/realtime/detail';
-import {
-    getVehicleRoute,
-    getVehicleRouteId,
-    getVehicleRouteName,
-    getVehicleTripId,
-    getJoinedVehicleLabel,
-    getVehicleTripStartTime,
-    getVehicleRouteType,
-    getVehicleAgencyName,
-} from '../../../../../redux/selectors/realtime/vehicles';
+import { get } from 'lodash-es';
+import { routeSelected, routeChecked } from '../../../../../redux/actions/realtime/detail/route';
+import { clearDetail, addSelectedSearchResult } from '../../../../../redux/actions/realtime/detail/common';
+import { updateRealTimeDetailView } from '../../../../../redux/actions/navigation';
+import { formatRouteSearchResults } from '../../../../../redux/actions/search';
+import { getVehicleDetail, getVehicleFleetInfo } from '../../../../../redux/selectors/realtime/detail';
+import { getJoinedVehicleLabel } from '../../../../../redux/selectors/realtime/vehicles';
 import { getFleetVehicleAgencyName, getFleetVehicleType, getFleetVehicleLabel } from '../../../../../redux/selectors/static/fleet';
+import { getAllocations } from '../../../../../redux/selectors/control/blocks';
+import { formatRealtimeDetailListItemKey } from '../../../../../utils/helpers';
+import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
+import VIEW_TYPE from '../../../../../types/view-types';
 import VehicleCapacityOccupancy from './VehicleCapacityOccupancy';
 import './VehicleDetails.scss';
-import { getAllocations } from '../../../../../redux/selectors/control/blocks';
 
 const VehicleDetails = (props) => {
-    const { vehicleDetail, tripHeadsign, vehicleFleetInfo, vehicleAllocations } = props;
-
+    const { vehicleDetail, vehicleFleetInfo, vehicleAllocations } = props;
+    const { ROUTE } = SEARCH_RESULT_TYPE;
     const createDetailRow = (name, value) => (
         <Fragment key={ name }>
-            <dt className="font-size-sm">{name}</dt>
+            <dt className="font-size-md">{name}</dt>
             <dd>{value}</dd>
         </Fragment>
     );
+    const selectRoute = (route) => {
+        props.clearDetail();
+        props.updateRealTimeDetailView(VIEW_TYPE.REAL_TIME_DETAIL.LIST);
+        const routeSearchResult = formatRouteSearchResults([route])[0];
+        const routeSelectedSearchResult = {
+            ...route,
+            ...routeSearchResult,
+            searchResultType: ROUTE.type,
+            key: formatRealtimeDetailListItemKey(ROUTE.type, route.route_id),
+            checked: true,
+        };
+        props.addSelectedSearchResult(routeSelectedSearchResult);
+        props.routeChecked(routeSelectedSearchResult);
+        props.routeSelected(routeSelectedSearchResult);
+    };
 
     const vehicleLabel = getJoinedVehicleLabel(vehicleDetail, vehicleAllocations) || getFleetVehicleLabel(vehicleFleetInfo);
-    const tripId = getVehicleTripId(vehicleDetail);
-    const startTime = getVehicleTripStartTime(vehicleDetail);
-    const route = getVehicleRoute(vehicleDetail);
-    const routeId = getVehicleRouteId(vehicleDetail);
-    const routeType = getFleetVehicleType(vehicleFleetInfo) || getVehicleRouteType(vehicleDetail);
-    const routeName = getVehicleRouteName(vehicleDetail);
-    const agencyName = getFleetVehicleAgencyName(vehicleFleetInfo) || getVehicleAgencyName(vehicleDetail);
-
+    const tripId = get(vehicleDetail, 'trip.tripId');
+    const tripHeadsign = get(vehicleDetail, 'trip.trip_headsign');
+    const startTime = get(vehicleDetail, 'trip.startTime');
+    const route = get(vehicleDetail, 'route');
+    const routeId = get(route, 'route_id');
+    const routeType = getFleetVehicleType(vehicleFleetInfo) || get(route, 'route_type');
+    const routeName = get(route, 'route_short_name');
+    const agencyName = getFleetVehicleAgencyName(vehicleFleetInfo) || get(route, 'agency_name');
     return (
-        <section className="vehicle-detail-view__vehicle-details px-3 pt-3">
-            <h2 className="font-weight-normal text-capitalize">
+        <section className="vehicle-detail-view__vehicle-details">
+            <h2 className="text-capitalize px-4 pt-3 border-bottom">
                 {`${routeType || ''} ${vehicleLabel}`}
             </h2>
 
-            <dl className="vehicle-details__list my-3">
+            <dl className="vehicle-details__list px-4 pt-3">
                 <VehicleCapacityOccupancy />
                 {
                     ((tripId && [
                         ['Route:', (
                             <Button
                                 className="cc-btn-link pl-0"
-                                onClick={ () => props.routeSelected(route) }>
+                                onClick={ () => selectRoute(route) }>
                                 { routeName }
                             </Button>
                         )],
-                        ['Description:', tripHeadsign],
+                        ['Description:', tripHeadsign || ' '],
                         ['Operator:', agencyName],
                         ['Trip Start Time:', startTime],
                         ['Route ID:', routeId],
@@ -72,15 +85,17 @@ const VehicleDetails = (props) => {
 };
 
 VehicleDetails.propTypes = {
-    tripHeadsign: PropTypes.string,
     vehicleDetail: PropTypes.object.isRequired,
     vehicleFleetInfo: PropTypes.object,
     routeSelected: PropTypes.func.isRequired,
+    routeChecked: PropTypes.func.isRequired,
     vehicleAllocations: PropTypes.object.isRequired,
+    clearDetail: PropTypes.func.isRequired,
+    updateRealTimeDetailView: PropTypes.func.isRequired,
+    addSelectedSearchResult: PropTypes.func.isRequired,
 };
 
 VehicleDetails.defaultProps = {
-    tripHeadsign: '',
     vehicleFleetInfo: {},
 };
 
@@ -88,8 +103,7 @@ export default connect(
     state => ({
         vehicleDetail: getVehicleDetail(state),
         vehicleFleetInfo: getVehicleFleetInfo(state),
-        tripHeadsign: getTripHeadsign(state),
         vehicleAllocations: getAllocations(state),
     }),
-    { routeSelected },
+    { routeSelected, routeChecked, clearDetail, updateRealTimeDetailView, addSelectedSearchResult },
 )(VehicleDetails);

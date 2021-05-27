@@ -10,5 +10,22 @@
         &:hover {
             background-color: $table-hover-bg !important; // Overwrites Bootstraps bg-light (wihch has !important)
         }
+
+        & .cc-btn-link {
+            font-size: 14px;
+            text-decoration: underline;
+        }
+    }
+
+    .route-detail-view__vehicles-th {
+        background-color: $at-dark-blue;
+        color: #FFFFFF;
+    }
+
+    .route-detail-view__vehicle-icon {
+        width: 24px;
+        svg {
+            fill: map_get($theme-colors, 'at-shore-shade-80');
+        }
     }
 }

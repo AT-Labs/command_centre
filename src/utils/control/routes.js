@@ -28,10 +28,21 @@ export const getStartTimeFromFilterInitialTime = (time) => {
     return timeMoment.format(TIME_FORMAT);
 };
 
-export const formatTripDelay = (delay) => {
-    let res = delay && Math.trunc(delay / 60);
+export const formatTripDelay = (delaySeconds) => {
+    let res = delaySeconds && Math.trunc(delaySeconds / 60);
     res = Object.is(res, -0) ? 0 : res;
     return res;
+};
+
+export const getTripDelayDisplayData = (delayMinutes) => {
+    if (delayMinutes === 0) {
+        return { text: 'On time', className: 'text-success' };
+    }
+    if (!delayMinutes) {
+        return { text: '--', className: '' };
+    }
+
+    return { text: `${delayMinutes > 0 ? 'Late' : 'Early'} ${Math.abs(delayMinutes)} min`, className: 'text-danger' };
 };
 
 export const unformatTripDelay = formattedDelay => formattedDelay * 60;

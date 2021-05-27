@@ -8,36 +8,30 @@ import { getAllRoutes } from '../../../../redux/selectors/static/routes';
 import DetailLoader from '../../../Common/Loader/DetailLoader';
 
 export class Routes extends React.Component {
-    concatenateRouteName = route => [route.route_short_name, route.route_long_name].filter(Boolean).join(': ');
-
-    getRoutes = (allRoutes, routeIds) => {
-        const routes = routeIds
+    getRouteNames = (allRoutes, routeIds) => {
+        const routeNames = routeIds
             .map((routeId) => {
                 const route = allRoutes[routeId];
                 if (!route) {
                     return null;
                 }
-                return {
-                    routeId,
-                    routeName: this.concatenateRouteName(route),
-                };
-            })
-            .filter(route => !!route);
-        return _.uniqBy(_.sortBy(routes, 'routeName'), 'routeName');
+                return route.route_short_name;
+            }).filter(route => !!route);
+        return _.uniq(_.sortBy(routeNames));
     };
 
     render() {
         const { allRoutes, routeIds } = this.props;
-        const routes = this.getRoutes(allRoutes, routeIds);
+        const routeNames = this.getRouteNames(allRoutes, routeIds);
         return (
-            <section className="stop-detail-view__routes col-12 py-3">
-                <h4 className="text-uppercase mb-0">
-                    Routes
-                </h4>
+            <section className="stop-detail-view__routes col-12 py-3 row">
+                <div className="col-4 font-weight-bold">
+                    Routes:
+                </div>
                 {!routeIds.length && <DetailLoader />}
-                {routeIds.length > 0 && routes.length > 0
-                    && routes.map(route => <div className="text-muted font-weight-normal" key={ route.routeId }>{route.routeName}</div>)
-                }
+                <div className="col-8 text-muted font-weight-normal text-right pr-0">
+                    { routeIds.length > 0 && routeNames.length > 0 && routeNames.join(', ') }
+                </div>
             </section>
         );
     }

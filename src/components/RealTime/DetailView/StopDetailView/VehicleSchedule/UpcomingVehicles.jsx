@@ -8,6 +8,8 @@ import MESSAGE_TYPES from '../../../../../types/detail-message-types';
 import AutoRefreshTable from '../../../../Common/AutoRefreshTable/AutoRefreshTable';
 import { getColumns } from './columns';
 
+import './VehicleSchedule.scss';
+
 export class UpcomingVehicles extends PureComponent {
     static propTypes = {
         stopId: PropTypes.string.isRequired,
@@ -28,7 +30,8 @@ export class UpcomingVehicles extends PureComponent {
                 fetchRows={ () => this.props.fetchUpcomingVehicles(stopId) }
                 columns={ getColumns({ isHistorical: false }) }
                 className="upcoming-vehicles"
-                title="Upcoming Vehicles"
+                title="Upcoming"
+                striped={ false }
                 emptyMessage={ MESSAGE_TYPES.upcomingVehicleNoInfo } />
         );
     }

@@ -5,7 +5,6 @@ import sinon from 'sinon';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import ACTION_TYPE from '../../../action-types';
 import * as stops from '../../../selectors/static/stops';
-import * as vehicles from '../../../selectors/realtime/vehicles';
 import * as route from './route';
 
 
@@ -60,7 +59,7 @@ describe('Route detail actions', () => {
             },
         },
     };
-    const vehiclesVisibleFake = {
+    const vehiclesInAllRoutesFake = {
         '1086147568-20180921103729_v70.37': fakeVehicle,
     };
     const tripsFake = {
@@ -86,11 +85,12 @@ describe('Route detail actions', () => {
         trip_id: '1086098588-20180921103729_v70.37',
     };
 
-    it('Should display routes details actions and return visible vehicles - displayRoutesDetails()', async () => {
+    it('Should display routes details actions and return visible vehicles - mergeRoutesDetails()', async () => {
         const expectedActions = [
             {
                 type: ACTION_TYPE.FETCH_ROUTE_TRIPS,
                 payload: {
+                    entityKey: undefined,
                     routes: [
                         {
                             routeVariantName: 'Head Sign A',
@@ -106,19 +106,18 @@ describe('Route detail actions', () => {
                 },
             },
         ];
-        const getVisibleVehicles = sandbox.stub(vehicles, 'getVisibleVehicles').returns(vehiclesVisibleFake);
 
-        store.dispatch(route.displayRoutesDetails(routeTrips));
-        sandbox.assert.calledOnce(getVisibleVehicles);
+        store.dispatch(route.mergeRoutesDetails(undefined, routeTrips, vehiclesInAllRoutesFake));
         expect(store.getActions()).to.eql(expectedActions);
     });
 
     it('Should get stops by route - getStopsByRoute()', async () => {
         const expectedActions = [
             {
-                type: ACTION_TYPE.UPDATE_VISIBLE_STOPS,
+                type: ACTION_TYPE.FETCH_ROUTE_STOPS,
                 payload: {
-                    visible: [
+                    entityKey: undefined,
+                    stops: [
                         {
                             location_type: 0,
                             stop_code: '1599',
@@ -138,7 +137,7 @@ describe('Route detail actions', () => {
 
         const getAllStops = sandbox.stub(stops, 'getChildStops').returns(allStopsFake);
 
-        await store.dispatch(route.updateVisibleStopsByRoute(routeTrips));
+        await store.dispatch(route.getStopsByRoute(undefined, routeTrips));
         sandbox.assert.calledTwice(getTrip);
         sandbox.assert.calledOnce(getAllStops);
         expect(store.getActions()).to.eql(expectedActions);

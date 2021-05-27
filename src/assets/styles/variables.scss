@@ -62,12 +62,15 @@ $pagination-hover-color:            $at-shore;
 $pagination-active-bg:              $at-shore;
 $pagination-active-border-color:    $at-shore;
 
-$side-panel-width: 490px;
+$side-panel-width: 560px;
 $side-panel-width-small: 340px;
-$real-time-side-panel-search-height: 44px;
+$real-time-side-panel-search-input-label-height: 32px;
+$real-time-side-panel-search-input-height: 44px;
+$real-time-side-panel-search-input-reset-height: 45px;
 $real-time-side-panel-search-spacing: 15px;
+$real-time-side-panel-toggle-button-top: #{$real-time-side-panel-search-spacing + $real-time-side-panel-search-input-label-height};
 $real-time-side-panel-toggle-button-width: 40px;
-$real-time-side-panel-search-panel-height: calc(100vh - #{$header-height + $real-time-side-panel-search-height + $real-time-side-panel-search-spacing * 2});
+$real-time-side-panel-search-panel-height: calc(100vh - #{$header-height + $real-time-side-panel-search-input-label-height + $real-time-side-panel-search-input-height + $real-time-side-panel-search-input-reset-height + $real-time-side-panel-search-spacing * 2});
 
 $trip-replay-side-panel-search-height: 44px;
 $trip-replay-side-panel-search-spacing: 27px;

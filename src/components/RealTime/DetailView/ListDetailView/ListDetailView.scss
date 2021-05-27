@@ -1,0 +1,44 @@
+@import '../../../../assets/styles/variables';
+
+.selection-container {
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .1);
+}
+
+.selection-item {
+
+    .selection-item-header {
+        background: $white;
+        font-size: 20px;
+        font-weight: bold;
+        font-stretch: normal;
+    }
+
+    .selection-item-body {
+        background: tint($very-light-blue, 50);
+    }
+
+    .select-all {
+        background: $white;
+        font-size: 16px;
+        font-stretch: normal;
+    }
+
+    .selection-item__checkbox {
+        width: 26px;
+        height: 26px;
+        margin-right: 13px;
+    }
+
+    .selection-item__button {
+        font-size: 16px !important;
+        font-weight: bold !important;
+        padding-right: 0;
+    }
+
+    .selection-item__icon {
+        margin-left: .75rem;
+        color: $at-ocean;
+        width: 20px;
+        height: 20px;
+    }
+}

@@ -7,7 +7,8 @@ import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { disableClustering, enableClustering } from 'leaflet.markercluster.freezable'; // eslint-disable-line
 import 'react-leaflet-markercluster/dist/styles.min.css';
 import { connect } from 'react-redux';
-import { updateVehicleSelected, vehicleSelected } from '../../../../redux/actions/realtime/detail/vehicle';
+import { vehicleSelected } from '../../../../redux/actions/realtime/detail/vehicle';
+
 import { getVehicleDetail } from '../../../../redux/selectors/realtime/detail';
 import { getTripUpdateSnapshot } from '../../../../redux/actions/realtime/detail/quickview';
 import { getTripUpdates } from '../../../../redux/selectors/realtime/quickview';
@@ -15,10 +16,11 @@ import { formatTripDelay } from '../../../../utils/control/routes';
 import { getJoinedVehicleLabel,
     getVehicleLatLng, getVehiclePositionCoordinates, getVehicleRouteName, getVehicleRouteType } from '../../../../redux/selectors/realtime/vehicles';
 import { FOCUS_ZOOM } from '../constants';
-import { FERRY_TYPE_ID } from '../../../../types/vehicle-types';
+import VEHICLE_TYPES, { FERRY_TYPE_ID } from '../../../../types/vehicle-types';
 import { getClusterIcon } from './vehicleClusterIcon';
 import { getVehicleIcon } from './vehicleIcon';
 import { tooltipContent } from './vehicleTooltip';
+import { formatRealtimeDetailListItemKey } from '../../../../utils/helpers';
 import './VehicleLayer.scss';
 
 
@@ -28,12 +30,15 @@ class VehicleClusterLayer extends React.Component {
         vehicleAllocations: PropTypes.object.isRequired,
         vehicleType: PropTypes.string.isRequired,
         vehicleSelected: PropTypes.func.isRequired,
-        highlightedVehicle: PropTypes.object.isRequired,
+        highlightedVehicle: PropTypes.object,
         leafletMap: PropTypes.object.isRequired,
-        updateVehicleSelected: PropTypes.func.isRequired,
         tripUpdates: PropTypes.object.isRequired,
         getTripUpdateSnapshot: PropTypes.func.isRequired,
     };
+
+    static defaultProps = {
+        highlightedVehicle: undefined,
+    }
 
     constructor(props) {
         super(props);
@@ -115,10 +120,6 @@ class VehicleClusterLayer extends React.Component {
         }
 
         if (!_.isEmpty(highlightedVehicle)) {
-            const vehicleId = _.result(highlightedVehicle, 'vehicle.vehicle.id');
-            const matchingVehicle = _.find(vehicles, _.matchesProperty('vehicle.vehicle.id', vehicleId));
-            if (matchingVehicle) this.props.updateVehicleSelected(matchingVehicle);
-
             if (this.props.vehicleType.startsWith('unselected')) {
                 const unselectedVehiclesInBoundary = _.filter(vehicles, vehicle => bounds.contains(getVehicleLatLng(vehicle)));
                 const unselectedMarkers = unselectedVehiclesInBoundary.map(vehicle => L.marker(getVehicleLatLng(vehicle), {
@@ -139,9 +140,16 @@ class VehicleClusterLayer extends React.Component {
 
         const { highlightedVehicle } = this.props;
         const { options: { vehicle } } = layer;
-
-        if (highlightedVehicle && highlightedVehicle.id !== vehicle.id) {
-            this.props.vehicleSelected(vehicle);
+        if (!highlightedVehicle || highlightedVehicle.id !== vehicle.id) {
+            const vehicleRouteType = getVehicleRouteType(vehicle);
+            const vehicleType = vehicleRouteType ? _.lowerCase(VEHICLE_TYPES[vehicleRouteType].type) : '';
+            this.props.vehicleSelected({
+                id: vehicle.id,
+                ...vehicle.vehicle,
+                searchResultType: vehicleType,
+                key: formatRealtimeDetailListItemKey(vehicleType, vehicle.id),
+                checked: true,
+            });
         }
     }
 
@@ -192,7 +200,7 @@ export default connect(state => ({
     highlightedVehicle: getVehicleDetail(state),
     tripUpdates: getTripUpdates(state),
 }),
-{ vehicleSelected, updateVehicleSelected, getTripUpdateSnapshot })(props => (
+{ vehicleSelected, getTripUpdateSnapshot })(props => (
     <LeafletConsumer>
         {({ map }) => <VehicleClusterLayer { ...props } leafletMap={ map } />}
     </LeafletConsumer>

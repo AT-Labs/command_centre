@@ -3,21 +3,22 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { clearSearchResults, search, updateSearchLoading } from '../../redux/actions/search';
+import { clearSearchResults, search, updateSearchLoading, updateSearchBarFocus } from '../../redux/actions/search';
 import { getSearchResults, isSearchLoading } from '../../redux/selectors/search';
+import { getSelectedSearchResults } from '../../redux/selectors/realtime/detail';
 import SEARCH_RESULT_TYPE from '../../types/search-result-types';
 import Search from '../Common/Search/Search';
 import './OmniSearch.scss';
 
 export const defaultTheme = {
     container: 'search__autosuggest',
-    suggestionsContainer: 'search__dropdown position-absolute bg-white',
+    suggestionsContainer: 'search__dropdown position-absolute',
     suggestionsList: 'search__dropdown-menu m-0 p-0 bg-white h-100',
     suggestion: 'search__dropdown-item suggestion__text px-3 py-3',
     input: 'search__input w-100 px-5 py-3 border-0 text-secondary bg-primary design-update-temp-placeholder--dark',
     inputOpen: 'search__input--open',
     suggestionHighlighted: 'active bg-at-ocean-tint-10',
-    sectionContainer: 'search__section-container',
+    sectionContainer: 'search__section-container bg-white',
     sectionTitle: 'search__section-title border-top px-3 text-right text-uppercase',
 };
 
@@ -57,6 +58,11 @@ export class OmniSearch extends Component {
         onClearCallBack: PropTypes.func,
         isDisabled: PropTypes.bool,
         inputId: PropTypes.string,
+        updateSearchBarFocus: PropTypes.func.isRequired,
+        onResetCallBack: PropTypes.func,
+        multiSearch: PropTypes.bool,
+        label: PropTypes.string,
+        allSearchResults: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
@@ -70,11 +76,18 @@ export class OmniSearch extends Component {
         onClearCallBack: null,
         isDisabled: false,
         inputId: '',
+        onResetCallBack: null,
+        multiSearch: false,
+        label: '',
     };
 
     handleSelect = (selectedItem) => {
         this.props.selectionHandlers[selectedItem.category.type](selectedItem);
         this.props.updateSearchLoading(false);
+    }
+
+    handleUnselect = (selectedItem) => {
+        this.props.clearHandlers[selectedItem.category.type](selectedItem);
     }
 
     handleClear = (selectedItem) => {
@@ -84,7 +97,7 @@ export class OmniSearch extends Component {
 
     render() {
         return (
-            <div className="omni-search">
+            <div className="omni-search flex-grow-1">
                 <Search
                     inputId={ this.props.inputId }
                     isIconVisible={ this.props.isIconVisible }
@@ -98,9 +111,16 @@ export class OmniSearch extends Component {
                     onClear={ this.handleClear }
                     onClearCallBack={ this.props.onClearCallBack }
                     onSelection={ this.handleSelect }
+                    onUnselection={ this.handleUnselect }
                     value={ this.props.value }
                     onInputValueChange={ this.props.onInputValueChange }
-                    isDisabled={ this.props.isDisabled } />
+                    onFocus={ () => this.props.updateSearchBarFocus(true) }
+                    onBlur={ () => this.props.updateSearchBarFocus(false) }
+                    isDisabled={ this.props.isDisabled }
+                    onResetCallBack={ this.props.onResetCallBack }
+                    multiSearch={ this.props.multiSearch }
+                    label={ this.props.label }
+                    selectedEntities={ this.props.allSearchResults } />
             </div>
         );
     }
@@ -110,10 +130,12 @@ export default connect(
     state => ({
         searchResults: getSearchResults(state),
         isSearchLoading: isSearchLoading(state),
+        allSearchResults: getSelectedSearchResults(state),
     }),
     {
         search,
         clearSearchResults,
         updateSearchLoading,
+        updateSearchBarFocus,
     },
 )(OmniSearch);

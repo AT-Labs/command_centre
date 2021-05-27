@@ -58,12 +58,9 @@ describe('Stop detail actions', () => {
                     },
                 },
                 {
-                    type: ACTION_TYPE.MERGE_VEHICLE_FILTERS,
-                    payload: () => { },
-                },
-                {
                     type: ACTION_TYPE.FETCH_STOP_ROUTES,
                     payload: {
+                        entityKey: undefined,
                         routes: [{
                             route_id: '10601-20180910114240_v70.21',
                             shape_wkt: 'shape_wkt',
@@ -73,6 +70,10 @@ describe('Stop detail actions', () => {
                             shape_wkt: 'shape_wkt',
                         }],
                     },
+                },
+                {
+                    type: ACTION_TYPE.UPDATE_STOP_VEHICLE_PREDICATE,
+                    payload: () => { },
                 },
                 {
                     type: ACTION_TYPE.DATA_LOADING,
@@ -86,7 +87,7 @@ describe('Stop detail actions', () => {
             const promiseVersion = Promise.resolve(currentVersion);
 
             const promiseRoutes = Promise.resolve(versionedRoutes);
-            const getRoutesByStop = sandbox.stub(ccStatic, 'getRoutesByStop').withArgs(stopCode).resolves(promiseRoutes);
+            const getRoutesByStop = sandbox.stub(ccStatic, 'getRoutesByStop').resolves(promiseRoutes);
             store.dispatch(stopDetailActions.getRoutesByStop(stopCode));
 
             promiseVersion.then(() => {
@@ -94,10 +95,10 @@ describe('Stop detail actions', () => {
                     const actions = store.getActions();
                     expect(actions.length).to.equal(expectedActions.length);
                     for (let i = 0; i < actions.length; i++) {
-                        if (i !== 1) {
+                        if (i !== 2) {
                             expect(actions[i]).to.eql(expectedActions[i]);
                         } else {
-                            assert.isFunction(actions[1].payload.filters.predicate);
+                            assert.isFunction(actions[2].payload.vehiclePredicate);
                         }
                     }
                     sandbox.assert.calledOnce(getRoutesByStop);
@@ -389,23 +390,13 @@ describe('Stop detail actions', () => {
                 stop_lon: 174.7506,
                 stop_name: 'Opp 78 Franklin Rd',
                 tokens: ['opp', '78', 'franklin', 'rd', '1349'],
+                key: 'stop-1349-20180921103729_v70.37',
+                searchResultType: 'stop',
             };
 
             store.dispatch(stopDetailActions.stopSelected(stop));
 
             const expectedActions = [
-                {
-                    type: ACTION_TYPE.MERGE_VEHICLE_FILTERS,
-                    payload: {
-                        filters: { predicate: null },
-                    },
-                },
-                {
-                    type: ACTION_TYPE.UPDATE_VISIBLE_STOPS,
-                    payload: {
-                        visible: null,
-                    },
-                },
                 {
                     type: ACTION_TYPE.CLEAR_DETAIL,
                     payload: {
@@ -426,21 +417,15 @@ describe('Stop detail actions', () => {
                     },
                 },
                 {
-                    type: ACTION_TYPE.UPDATE_VISIBLE_STOPS,
+                    type: ACTION_TYPE.UPDATE_VIEW_DETAIL_KEY,
                     payload: {
-                        visible: [stop],
+                        viewDetailKey: stop.key,
                     },
                 },
                 {
                     type: ACTION_TYPE.UPDATE_SELECTED_STOP,
                     payload: {
                         stop,
-                    },
-                },
-                {
-                    type: ACTION_TYPE.UPDATE_SEARCH_TERMS,
-                    payload: {
-                        searchTerms: stop.stop_code,
                     },
                 },
             ];

@@ -3,13 +3,18 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { CircleMarker } from 'react-leaflet';
 import { connect } from 'react-redux';
-import { getStopDetail, getVehicleDetail } from '../../../../redux/selectors/realtime/detail';
+import { getStopDetail } from '../../../../redux/selectors/realtime/detail';
+import { getHighlightVehiclePosition } from '../../../../redux/selectors/realtime/vehicles';
 
 export class HighlightingLayer extends React.PureComponent {
     static propTypes = {
-        vehicleDetail: PropTypes.object.isRequired,
+        vehiclePosition: PropTypes.object,
         stopDetail: PropTypes.object.isRequired,
     };
+
+    static defaultProps = {
+        vehiclePosition: undefined,
+    }
 
     constructor(props) {
         super(props);
@@ -22,7 +27,7 @@ export class HighlightingLayer extends React.PureComponent {
     }
 
     renderHiglightingLayer = () => {
-        const { stopDetail, vehicleDetail } = this.props;
+        const { stopDetail, vehiclePosition } = this.props;
         let newHiglightPosition;
 
         if (stopDetail.stop_code) {
@@ -30,10 +35,10 @@ export class HighlightingLayer extends React.PureComponent {
                 stopDetail.stop_lat,
                 stopDetail.stop_lon,
             );
-        } else if (vehicleDetail.vehicle) {
+        } else if (vehiclePosition) {
             newHiglightPosition = new L.LatLng(
-                vehicleDetail.vehicle.position.latitude,
-                vehicleDetail.vehicle.position.longitude,
+                vehiclePosition.latitude,
+                vehiclePosition.longitude,
             );
         }
 
@@ -41,8 +46,8 @@ export class HighlightingLayer extends React.PureComponent {
     }
 
     render() {
-        const { stopDetail, vehicleDetail } = this.props;
-        const layer = (stopDetail.stop_code || vehicleDetail.vehicle)
+        const { stopDetail, vehiclePosition } = this.props;
+        const layer = ((stopDetail && stopDetail.stop_code) || vehiclePosition)
             ? (
                 <CircleMarker
                     ref={ this.highlightingLayerRef }
@@ -60,7 +65,7 @@ export class HighlightingLayer extends React.PureComponent {
 
 export default connect(
     state => ({
-        vehicleDetail: getVehicleDetail(state),
+        vehiclePosition: getHighlightVehiclePosition(state),
         stopDetail: getStopDetail(state),
     }),
 )(HighlightingLayer);

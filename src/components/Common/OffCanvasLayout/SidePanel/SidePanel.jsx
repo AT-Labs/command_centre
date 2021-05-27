@@ -5,18 +5,17 @@ import { connect } from 'react-redux';
 import Icon from '../../Icon/Icon';
 
 import { toggleRealTimeSidePanel } from '../../../../redux/actions/navigation';
-import { shouldGetActiveRealTimeDetailView } from '../../../../redux/selectors/realtime/detail';
 import './SidePanel.scss';
 
 const SidePanel = (props) => {
-    const { isOpen, isActive, position, children, hasActiveDetailView, toggleButton, className } = props;
+    const { isOpen, isActive, position, children, toggleButton, className } = props;
     return (
         <section className={ `side-panel ${isActive ? 'side-panel--active' : ''} ${isOpen ? 'side-panel--open' : ''} side-panel--${position} ${className}` }>
             <div className="side-panel__inner h-100 d-flex position-relative flex-column">
                 { children }
             </div>
             {
-                toggleButton && hasActiveDetailView
+                toggleButton && isActive
                     && (
                         <Button
                             className="side-panel__toggle-btn"
@@ -42,7 +41,6 @@ SidePanel.propTypes = {
     toggleButton: PropTypes.bool,
     isActive: PropTypes.bool.isRequired,
     position: PropTypes.oneOf(['left', 'right']),
-    hasActiveDetailView: PropTypes.bool.isRequired,
     className: PropTypes.string,
 };
 
@@ -52,9 +50,4 @@ SidePanel.defaultProps = {
     className: '',
 };
 
-export default connect(
-    state => ({
-        hasActiveDetailView: shouldGetActiveRealTimeDetailView(state),
-    }),
-    { toggleRealTimeSidePanel },
-)(SidePanel);
+export default connect(null, { toggleRealTimeSidePanel })(SidePanel);

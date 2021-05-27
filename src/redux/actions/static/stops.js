@@ -17,13 +17,6 @@ const tokenizeStops = stops => stops.map(stop => ({
     tokens: stop.stop_name.toLowerCase().split(' ').concat(stop.stop_code),
 }));
 
-export const updateVisibleStops = visible => ({
-    type: ACTION_TYPE.UPDATE_VISIBLE_STOPS,
-    payload: {
-        visible,
-    },
-});
-
 export const getStops = () => dispatch => isCacheValid('stops')
     .then(({ isValid }) => {
         if (isValid) return cache.stops.toArray();

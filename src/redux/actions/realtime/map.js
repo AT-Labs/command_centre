@@ -6,3 +6,10 @@ export const recenterMap = shouldMapBeRecentered => ({
         shouldMapBeRecentered,
     },
 });
+
+export const updateHoveredEntityKey = hoveredEntityKey => ({
+    type: ACTION_TYPE.UPDATE_HOVERED_ENTITY_KEY,
+    payload: {
+        hoveredEntityKey,
+    },
+});

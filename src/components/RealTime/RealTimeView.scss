@@ -1,6 +1,7 @@
 @import '../../assets/styles/variables';
 
 .real-time-primary-panel {
+
     .omni-search {
         margin: $real-time-side-panel-search-spacing 0;
 
@@ -10,8 +11,8 @@
         }
 
         .search__loader {
-            top: 12px;
-            right: $real-time-side-panel-search-spacing + 10;
+            position: static;
+            margin: 0 10px;
         }
 
         .search__autosuggest {
@@ -19,8 +20,8 @@
         }
 
         .search__input {
-            height: $real-time-side-panel-search-height;
-            line-height: $real-time-side-panel-search-height;
+            height: $real-time-side-panel-search-input-height;
+            line-height: $real-time-side-panel-search-input-height;
             box-shadow: $box-shadow-sm;
         }
 
@@ -35,6 +36,131 @@
         .search__input--open + .search__dropdown,
         .search--loading .search__dropdown {
             min-height: $real-time-side-panel-search-panel-height;
+        }
+
+        .search__label {
+            display: inline-block;
+            padding-bottom: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #2C384C;
+        }
+
+        .search__reset {
+            height: $real-time-side-panel-search-input-reset-height;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            color: #2D7CAF;
+            padding: 20px 0 0;
+        }
+
+        .search__reset:hover {
+            text-decoration: underline;
+        }
+
+        .react-select {
+            &__container {
+                padding: 0 $real-time-side-panel-search-spacing;
+            }
+
+            &__menu {
+                margin-top: $real-time-side-panel-search-spacing;
+                margin-bottom: 0;
+                margin-left: -$real-time-side-panel-search-spacing;
+                margin-right: -$real-time-side-panel-search-spacing;
+            }
+
+            &__menu-list {
+                max-height: $real-time-side-panel-search-panel-height;
+                padding: 0;
+            }
+
+            &__control {
+                min-height: $real-time-side-panel-search-input-height;
+                box-shadow: none;
+                border-color: #152239;
+                font-weight: 300;
+                flex-wrap: nowrap;
+            }
+
+            &__group {
+                border-top: 1px solid #DEE2E6;
+                padding: 0;
+            }
+
+            &__group-heading {
+                font-size: 14px;
+                color: #2C3847;
+                text-transform: uppercase;
+                text-align: left;
+                padding: 15px 15px 0;
+
+                div:nth-child(1) {
+                    font-weight: bold;
+                    display: inline-block;
+                }
+
+                div:nth-child(2) {
+                    float: right;
+                    text-transform: none;
+                }
+            }
+
+            &__option {
+                background-color: transparent;
+                padding: 8px 15px;
+
+                label {
+                    font-size: 14px;
+                    color: #2C384C;
+                }
+
+                input {
+                    width: 26px;
+                    height: 26px;
+                    float: right;
+                    position: relative;
+                }
+            }
+
+            &__menu-notice--no-options {
+                text-align: left;
+            }
+
+            &__value-container {
+                flex-wrap: wrap;
+            }
+
+            &__multi-value {
+                background-color: #E7E8EB;
+            }
+
+            &__multi-value:hover {
+                background-color: #276C98;
+
+                & .react-select__multi-value__label,
+                & .react-select__multi-value__remove {
+                    background-color: #276C98;
+                    color: white;
+                }
+            }
+
+            &__multi-value__label {
+                color: #152239;
+                font-size: 16px;
+                font-weight: normal;
+                background-color: #E7E8EB;
+            }
+
+            &__multi-value__remove {
+                color: #152239;
+                background-color: #E7E8EB;
+            }
+
+            &__multi-value__remove:hover {
+                cursor: pointer;
+            }
         }
     }
 

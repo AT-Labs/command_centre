@@ -76,7 +76,7 @@ const queryRealTimeSnapshot = () => (dispatch, getState) => {
         });
 };
 
-const updateVehiclePosition = (data, state) => {
+const updateVehiclePosition = (data, dispatch, state) => {
     const vehicle = _.pick(data, ['id', 'vehicle']);
     const routes = getAllRoutes(state);
     const cachedVehicle = vehiclesTrackingCache[getVehicleId(vehicle)];
@@ -104,7 +104,7 @@ export const handleRealTimeUpdate = data => (dispatch, getState) => {
     const allFleet = getFleetState(state);
 
     if (isValidVehicleUpdate(data, allFleet)) {
-        const isUpdateNeeded = updateVehiclePosition(data, state);
+        const isUpdateNeeded = updateVehiclePosition(data, dispatch, state);
         if (isUpdateNeeded) {
             throttledRealTimeUpdates(dispatch);
         }

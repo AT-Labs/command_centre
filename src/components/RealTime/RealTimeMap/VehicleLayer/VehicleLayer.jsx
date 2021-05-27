@@ -14,19 +14,19 @@ class VehicleLayer extends React.PureComponent {
         vehicles: PropTypes.object.isRequired,
         vehicleAllocations: PropTypes.object.isRequired,
         allFleet: PropTypes.object.isRequired,
-        highlightedVehicle: PropTypes.object.isRequired,
+        highlightedVehicle: PropTypes.object,
         filteredVehicles: PropTypes.object,
     };
 
     static defaultProps = {
         filteredVehicles: [],
+        highlightedVehicle: undefined,
     }
 
     groupVehicles = vehicles => groupBy(vehicles, vehicle => getFleetVehicleType(this.props.allFleet[vehicle.id]));
 
     setVehiclesToRender = () => {
         const allVehicles = this.groupVehicles(this.props.vehicles);
-
         if (!isEmpty(this.props.highlightedVehicle)) {
             const unselectedVehicles = this.groupVehicles(omit(this.props.filteredVehicles, Object.keys(this.props.vehicles)));
             const vehicleKeys = Object.keys(unselectedVehicles);

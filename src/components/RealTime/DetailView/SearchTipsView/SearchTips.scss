@@ -1,0 +1,21 @@
+@import '../../../../assets/styles/variables';
+
+.search-tips {
+    text-align: center;
+    padding: 169px 113px 437px;
+
+    .search-tips-icon svg {
+        width: 54px;
+        height: 54px;
+        fill: #A1A7B0;
+    }
+
+    .search-tips-title {
+        font-size: 20px;
+        margin: 20px 106px;
+    }
+
+    .search-tips-content {
+        font-size: 16px;
+    }
+}

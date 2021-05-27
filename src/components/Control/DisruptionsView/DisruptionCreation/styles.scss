@@ -51,7 +51,7 @@
         background-color: #FFF;
         border-top: 1px solid $at-light-gray;
         bottom: 0;
-        width: 490px;
+        width: $side-panel-width;
         z-index: 1;
 
         & .cc-btn-link {

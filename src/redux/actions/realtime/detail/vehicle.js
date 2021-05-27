@@ -4,31 +4,66 @@ import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import ACTION_TYPE from '../../../action-types';
-import { getTripStops, getVehicleTripId } from '../../../selectors/realtime/detail';
-import { getAllVehicles, getVehicleRouteId, getVehicleDirectionId, getVehicleTrip } from '../../../selectors/realtime/vehicles';
+import { getCurrentVehicleTripId } from '../../../selectors/realtime/detail';
+import { getAllVehicles, getVehicleTrip, getVehicleDirectionId, getVehicleRouteId } from '../../../selectors/realtime/vehicles';
 import { updateDataLoading } from '../../activity';
 import { updateRealTimeDetailView } from '../../navigation';
-import { updateVisibleStops } from '../../static/stops';
-import { mergeVehicleFilters } from '../vehicles';
-import { calculateScheduledAndActualTimes, clearDetail, isWithinNextHalfHour, isWithinPastHalfHour } from './common';
+import { calculateScheduledAndActualTimes, clearDetail, isWithinNextHalfHour, isWithinPastHalfHour, updateViewDetailKey } from './common';
 import { getVehicleAllocationByVehicleId, getAllocations } from '../../../selectors/control/blocks';
 
-export const getTrip = tripId => (dispatch, getState) => {
+export const updateSelectedVehicle = vehicle => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.UPDATE_SELECTED_VEHICLE,
+        payload: {
+            vehicle,
+        },
+    });
+};
+
+export const updateSelectedVehiclePosition = position => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.UPDATE_SELECTED_VEHICLE_POSITION,
+        payload: {
+            position,
+        },
+    });
+};
+
+export const updateVehiclePredicate = (entityKey, vehiclePredicate) => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.UPDATE_VEHICLE_VEHICLE_PREDICATE,
+        payload: { entityKey, vehiclePredicate },
+    });
+};
+
+export const updateVehicleTripInfo = (entityKey, trip) => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.FETCH_TRIP,
+        payload: { entityKey, trip },
+    });
+};
+
+export const updateVehicleTripStops = (entityKey, stops) => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.FETCH_VEHICLE_TRIP_STOPS,
+        payload: { entityKey, stops },
+    });
+};
+
+export const getVehicleTripInfo = (tripId, entityKey) => (dispatch) => {
     dispatch(updateDataLoading(true));
     return ccStatic.getTripById(tripId)
         .then((trip) => {
-            dispatch({
-                type: ACTION_TYPE.FETCH_TRIP,
-                payload: { trip },
-            });
-            dispatch(updateVisibleStops(getTripStops(getState())));
+            dispatch(updateVehicleTripInfo(entityKey, trip));
+            dispatch(updateVehicleTripStops(entityKey, _.uniqBy(_.map(_.result(trip, 'stopTimes', []), 'stop'))));
             dispatch(updateDataLoading(false));
         });
 };
 
-const getTrackingVehicle = (selectedVehicleId, allVehicleAllocations, allTrackingVehicles) => {
+const getTrackingVehicle = (selectedVehicleId, state) => {
+    const allTrackingVehicles = getAllVehicles(state);
+    const allVehicleAllocations = getAllocations(state);
     const matchingVehicleAllocations = getVehicleAllocationByVehicleId(selectedVehicleId, allVehicleAllocations);
-
     const matchingVehiclesInStore = _.flatten(matchingVehicleAllocations).filter(({ vehicleId, tripId, serviceDate, startTime }) => {
         const vehicleInStore = allTrackingVehicles[vehicleId];
         if (!vehicleInStore) return false;
@@ -43,66 +78,51 @@ const getTrackingVehicle = (selectedVehicleId, allVehicleAllocations, allTrackin
 
 export const vehicleSelected = selectedVehicle => (dispatch, getState) => {
     const selectedVehicleId = selectedVehicle.id;
-    const state = getState();
-    const allVehicles = getAllVehicles(state);
-    const allVehicleAllocations = getAllocations(state);
-    const trackingVehicle = getTrackingVehicle(selectedVehicleId, allVehicleAllocations, allVehicles);
+    const trackingVehicle = getTrackingVehicle(selectedVehicleId, getState());
     dispatch(clearDetail(true));
     dispatch(updateRealTimeDetailView(VIEW_TYPE.REAL_TIME_DETAIL.VEHICLE));
-
-    if (!trackingVehicle) {
-        // Could not find a vehicle in the vehicle positions store
-        const vehicle = { id: selectedVehicleId };
-
-        dispatch({
-            type: ACTION_TYPE.UPDATE_SELECTED_VEHICLE,
-            payload: { vehicle },
-        });
-
-        dispatch(mergeVehicleFilters({
-            predicate: vehicle,
-        }));
-    } else {
+    dispatch(updateViewDetailKey(selectedVehicle.key));
+    dispatch(updateVehiclePredicate(selectedVehicle.key, { id: selectedVehicleId }));
+    if (trackingVehicle) {
         const selectedDirectionId = getVehicleDirectionId(trackingVehicle);
         const selectedRouteId = getVehicleRouteId(trackingVehicle);
+        dispatch(updateSelectedVehicle(
+            {
+                ...selectedVehicle,
+                ...trackingVehicle.vehicle,
+                vehiclePredicate: (vehicle) => {
+                    if (!selectedRouteId) {
+                        return vehicle.id === selectedVehicleId;
+                    }
+
+                    const { directionId, routeId } = _.result(vehicle, 'vehicle.trip') || {};
+
+                    return (selectedRouteId === routeId) && (_.isInteger(selectedDirectionId) ? selectedDirectionId === directionId : true);
+                },
+            },
+        ));
         const selectedTripId = _.result(trackingVehicle, 'vehicle.trip.tripId');
-
         if (selectedTripId) {
-            dispatch(getTrip(selectedTripId));
+            dispatch(getVehicleTripInfo(selectedTripId, selectedVehicle.key));
         }
-
-        dispatch(mergeVehicleFilters({
-            predicate: (vehicle) => {
-                if (!selectedRouteId) {
-                    return vehicle.id === selectedVehicleId;
-                }
-
-                const { directionId, routeId } = _.result(vehicle, 'vehicle.trip') || {};
-                return (selectedRouteId === routeId) && (_.isInteger(selectedDirectionId) ? selectedDirectionId === directionId : true);
-            },
-        }));
-
-        dispatch({
-            type: ACTION_TYPE.UPDATE_SELECTED_VEHICLE,
-            payload: {
-                vehicle: trackingVehicle,
-            },
-        });
+    } else {
+        dispatch(updateSelectedVehicle(selectedVehicle));
     }
 };
 
-export const updateVehicleSelected = vehicle => (dispatch) => {
-    dispatch({
-        type: ACTION_TYPE.UPDATE_SELECTED_VEHICLE,
-        payload: {
-            vehicle,
-        },
-    });
+export const vehicleChecked = ({ id, key }) => (dispatch, getState) => {
+    const trackingVehicle = getTrackingVehicle(id, getState());
+    const selectedTripId = _.result(trackingVehicle, 'vehicle.trip.tripId');
+    if (selectedTripId) {
+        dispatch(getVehicleTripInfo(selectedTripId, key));
+    }
+    dispatch(updateVehiclePredicate(key, { id }));
 };
 
-export const fetchUpcomingStops = vehicleId => (dispatch) => {
+export const fetchUpcomingStops = vehicleId => (dispatch, getState) => {
     dispatch(updateDataLoading(true));
-    return ccRealtime.getUpcomingByVehicleId(vehicleId)
+    const trackingVehicle = getTrackingVehicle(vehicleId, getState());
+    return ccRealtime.getUpcomingByVehicleId(_.result(trackingVehicle, 'id'))
         .then(upcoming => upcoming.map(({ stop, trip }) => {
             const { stopCode, stopName, scheduleRelationship, passed } = stop;
             const { scheduledTime, actualTime } = calculateScheduledAndActualTimes(stop);
@@ -128,9 +148,10 @@ export const fetchUpcomingStops = vehicleId => (dispatch) => {
 
 export const fetchPastStops = vehicleId => (dispatch, getState) => {
     dispatch(updateDataLoading(true));
-    return ccRealtime.getHistoryByVehicleId(vehicleId)
+    const trackingVehicle = getTrackingVehicle(vehicleId, getState());
+    return ccRealtime.getHistoryByVehicleId(_.result(trackingVehicle, 'id'))
         .then((history) => {
-            const vehicleTripId = getVehicleTripId(getState());
+            const vehicleTripId = getCurrentVehicleTripId(getState());
             return history.filter(({ trip }) => trip.tripId === vehicleTripId)
                 .map(({ stop, trip }) => {
                     const { stopCode, stopName, stopSequence, scheduleRelationship, passed } = stop;

@@ -55,14 +55,9 @@ describe('<HighlightingLayer />', () => {
         instance = wrapper.instance();
 
         wrapper.setProps({
-            vehicleDetail: {
-                id: '12465',
-                vehicle: {
-                    position: {
-                        latitude: -36.84912166666667,
-                        longitude: 174.75817333333333,
-                    },
-                },
+            vehiclePosition: {
+                latitude: -36.84912166666667,
+                longitude: 174.75817333333333,
             },
         });
 

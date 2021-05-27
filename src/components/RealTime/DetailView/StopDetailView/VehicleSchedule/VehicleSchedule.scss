@@ -1,0 +1,10 @@
+@import '../../../../../assets/styles/variables';
+
+.upcoming-vehicles,
+.past-vehicles {
+    h4 {
+        text-transform: unset !important;
+        margin-top: 1rem;
+        margin-bottom: 1rem !important;
+    }
+}

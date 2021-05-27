@@ -11,6 +11,7 @@ import { getBoundsToFit, getMapRecenterStatus, getMaxZoom, getShouldOffsetForSid
 import HighlightingLayer from './HighlightingLayer/HighlightingLayer';
 import SelectedAddressMarker from './SelectedAddressMarker/SelectedAddressMarker';
 import StopsLayer from './StopsLayer/StopsLayer';
+import SelectedStopsMarker from './StopsLayer/SelectedStopsMarker';
 import TripShapeLayer from './TripShapeLayer/TripShapeLayer';
 import VehicleLayer from './VehicleLayer/VehicleLayer';
 import { MAP_DATA } from '../../../types/map-types';
@@ -110,6 +111,7 @@ class RealTimeMap extends React.Component {
                     <TripShapeLayer />
                     <StopsLayer />
                     <HighlightingLayer />
+                    <SelectedStopsMarker />
                     <VehicleLayer />
                 </LeafletMap>
             </LeafletProvider>

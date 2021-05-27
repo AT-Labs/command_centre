@@ -35,10 +35,10 @@
     .side-panel__toggle-btn {
         position: absolute;
         padding: 0;
-        height: $real-time-side-panel-search-height;
+        height: $real-time-side-panel-search-input-height;
         width: $real-time-side-panel-toggle-button-width;
         right: -$real-time-side-panel-toggle-button-width;
-        top: $real-time-side-panel-search-spacing;
+        top: $real-time-side-panel-toggle-button-top;
         border-bottom-left-radius: 0;
         border-top-left-radius: 0;
 

@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Autosuggest from 'react-autosuggest';
-import _ from 'lodash-es';
+import { debounce, isEmpty } from 'lodash-es';
 
 import Icon from '../Icon/Icon';
 import SearchResultItem from './SearchResultItem';
 import { SearchResultsShape } from './Shapes';
 import SearchLoader from './SearchLoader';
 import SearchClearButton from './SearchClearButton';
+import CustomSelect from './CustomSelect/CustomSelect';
+import { SEARCH_BAR_INPUT_STATE } from './constants';
 
 export class Search extends Component {
     static propTypes = {
@@ -17,6 +19,7 @@ export class Search extends Component {
         onSearch: PropTypes.func.isRequired,
         onClear: PropTypes.func.isRequired,
         onSelection: PropTypes.func.isRequired,
+        onUnselection: PropTypes.func,
         onInputValueChange: PropTypes.func,
         showValue: PropTypes.bool,
         isIconVisible: PropTypes.bool,
@@ -27,6 +30,12 @@ export class Search extends Component {
         isDisabled: PropTypes.bool,
         id: PropTypes.string,
         inputId: PropTypes.string,
+        onFocus: PropTypes.func,
+        onBlur: PropTypes.func,
+        onResetCallBack: PropTypes.func,
+        multiSearch: PropTypes.bool,
+        label: PropTypes.string,
+        selectedEntities: PropTypes.object,
     }
 
     static defaultProps = {
@@ -40,6 +49,13 @@ export class Search extends Component {
         isDisabled: false,
         id: '',
         inputId: '',
+        onFocus: null,
+        onBlur: null,
+        onResetCallBack: null,
+        multiSearch: false,
+        label: '',
+        onUnselection: null,
+        selectedEntities: [],
     }
 
     static NO_RESULTS = 'No Results';
@@ -51,10 +67,14 @@ export class Search extends Component {
             value: props.value,
             selected: null,
             isPending: false,
+            focus: false,
+            inputCollapseState: SEARCH_BAR_INPUT_STATE.INITIAL,
+            multiValue: '',
+            searchPerformed: false,
         };
 
-        this.debouncedSearch = _.debounce((searchTerms) => {
-            this.setState({ isPending: false });
+        this.debouncedSearch = debounce((searchTerms) => {
+            this.setState({ isPending: false, searchPerformed: true });
             if (searchTerms) props.onSearch(searchTerms, this.props.searchInCategory);
         }, 350);
     }
@@ -90,7 +110,7 @@ export class Search extends Component {
         const { suggestions, isLoading } = this.props;
         const { value, isPending } = this.state;
 
-        if (_.isEmpty(suggestions) && value && !isLoading && !isPending) {
+        if (isEmpty(suggestions) && value && !isLoading && !isPending) {
             return [{
                 category: {
                     label: '',
@@ -112,6 +132,40 @@ export class Search extends Component {
         if (this.props.onInputValueChange) this.props.onInputValueChange(newValue);
     }
 
+    handleInputChangeMultiSelect = (multiValue, reason) => {
+        if (reason.action === 'set-value'
+            || reason.action === 'input-blur'
+            || reason.action === 'menu-close') {
+            return;
+        }
+        if (multiValue) {
+            this.setState({ multiValue, isPending: true });
+            this.debouncedSearch(multiValue);
+        } else {
+            this.setState({ multiValue });
+            this.props.onClear();
+        }
+    }
+
+    handleChange = (selected, reason) => {
+        this.setState({ multiValue: '' });
+        switch (reason.action) {
+        case 'select-option':
+            this.props.onSelection(reason.option);
+            break;
+        case 'deselect-option':
+            if (this.props.onUnselection) this.props.onUnselection(reason.option);
+            break;
+        case 'pop-value':
+        case 'remove-value':
+            if (this.props.onUnselection && reason.removedValue) {
+                this.props.onUnselection(reason.removedValue);
+            }
+            break;
+        default:
+        }
+    }
+
     handleClearButtonClick = () => {
         if (this.props.onClearCallBack) this.props.onClearCallBack();
         this.props.onClear(this.state.selected);
@@ -122,12 +176,52 @@ export class Search extends Component {
 
     renderSectionTitle = section => (section.category.label ? <small>{section.category.label}</small> : null)
 
+    handleFocus = () => {
+        this.setState({ focus: true });
+        if (this.props.onFocus) this.props.onFocus();
+    }
+
+    handleBlur = () => {
+        this.setState({ multiValue: '', focus: false, searchPerformed: false });
+        if (this.props.onBlur) this.props.onBlur();
+        this.props.onClear();
+    }
+
+    handleResetButtonClick = () => {
+        this.setState({ multiValue: '', inputCollapseState: SEARCH_BAR_INPUT_STATE.INITIAL });
+        if (this.props.onResetCallBack) this.props.onResetCallBack();
+        this.props.onClear();
+    }
+
+    setInputCollapse = (value) => {
+        this.setState({ inputCollapseState: value });
+    }
+
+    menuIsOpen = () => {
+        const { suggestions, isLoading } = this.props;
+        const { focus, isPending, searchPerformed } = this.state;
+
+        return !isPending && (!isLoading || !isEmpty(suggestions)) && focus && searchPerformed;
+    }
+
+    getMultiSelectSuggestions = () => {
+        const { suggestions } = this.props;
+
+        return suggestions.map(section => ({
+            label: section.category.label,
+            options: section.items,
+        }));
+    }
+
+    getSelectedEntities = () => Object.values(this.props.selectedEntities);
+
     render() {
-        const { value } = this.state;
+        const { value, focus, inputCollapseState, multiValue } = this.state;
         const inputProps = {
             placeholder: this.props.placeholder,
             onChange: this.handleInputChange,
-            onFocus: () => this.setState({ isPending: true }),
+            onFocus: this.handleFocus,
+            onBlur: this.handleBlur,
             value,
             id: this.props.inputId,
             disabled: this.props.isDisabled,
@@ -135,23 +229,56 @@ export class Search extends Component {
 
         return (
             <section className={ `search position-relative ${this.props.isLoading ? 'search--loading' : ''}` }>
-                <Autosuggest
-                    theme={ this.props.customTheme }
-                    id={ this.props.id || 'default' }
-                    multiSection
-                    suggestions={ this.getSuggestionsToDisplay() }
-                    getSectionSuggestions={ this.getSectionSuggestions }
-                    onSuggestionsFetchRequested={ this.onSuggestionsFetchRequested }
-                    onSuggestionsClearRequested={ this.onSuggestionsClearRequested }
-                    onSuggestionSelected={ this.onSuggestionSelected }
-                    getSuggestionValue={ this.getSuggestionValue }
-                    renderSuggestion={ this.renderSuggestion }
-                    renderSectionTitle={ this.renderSectionTitle }
-                    inputProps={ inputProps } />
+                { !this.props.multiSearch && (
+                    <Autosuggest
+                        theme={ this.props.customTheme }
+                        id={ this.props.id || 'default' }
+                        multiSection
+                        shouldRenderSuggestions={ () => true }
+                        suggestions={ this.getSuggestionsToDisplay() }
+                        getSectionSuggestions={ this.getSectionSuggestions }
+                        onSuggestionsFetchRequested={ this.onSuggestionsFetchRequested }
+                        onSuggestionsClearRequested={ this.onSuggestionsClearRequested }
+                        onSuggestionSelected={ this.onSuggestionSelected }
+                        getSuggestionValue={ this.getSuggestionValue }
+                        renderSuggestion={ this.renderSuggestion }
+                        renderSectionTitle={ this.renderSectionTitle }
+                        inputProps={ inputProps } />
+                ) }
+                { this.props.multiSearch && (
+                    <CustomSelect
+                        className="react-select__container"
+                        classNamePrefix="react-select"
+                        isClearable={ false }
+                        isMulti={ this.props.multiSearch }
+                        onInputChange={ this.handleInputChangeMultiSelect }
+                        onChange={ this.handleChange }
+                        onFocus={ this.handleFocus }
+                        onBlur={ this.handleBlur }
+                        options={ this.getMultiSelectSuggestions() }
+                        getOptionLabel={ option => option.text }
+                        getOptionValue={ option => option.text }
+                        placeholder={ this.props.placeholder }
+                        hideSelectedOptions={ false }
+                        closeMenuOnSelect={ false }
+                        openMenuOnClick={ false }
+                        isSearchable
+                        inputCollapseState={ inputCollapseState }
+                        setInputCollapse={ this.setInputCollapse }
+                        label={ this.props.label }
+                        onReset={ this.handleResetButtonClick }
+                        focus={ focus }
+                        value={ this.getSelectedEntities() }
+                        menuIsOpen={ this.menuIsOpen() }
+                        noOptionsMessage={ () => Search.NO_RESULTS }
+                        inputValue={ multiValue }
+                        loading={ this.props.isLoading }
+                        filterOption={ () => true } />
+                ) }
                 { this.props.isIconVisible && <Icon className="search__icon position-absolute" icon="search" /> }
-                { this.state.value && !this.props.isLoading
+                { this.state.value && !this.props.isLoading && !this.props.multiSearch
                 && <SearchClearButton onClick={ this.handleClearButtonClick } /> }
-                { this.props.isLoading && <SearchLoader /> }
+                { this.props.isLoading && !this.props.multiSearch && <SearchLoader /> }
             </section>
         );
     }

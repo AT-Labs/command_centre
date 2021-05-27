@@ -28,7 +28,8 @@ class PastVehicles extends PureComponent {
                 fetchRows={ () => this.props.fetchPastVehicles(stopId) }
                 columns={ getColumns({ isHistorical: true }) }
                 className="past-vehicles"
-                title="Past Vehicles"
+                title="Past"
+                striped={ false }
                 emptyMessage={ MESSAGE_TYPES.pastVehicleNotInfo }
             />
         );

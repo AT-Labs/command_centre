@@ -22,7 +22,7 @@ const StopDetails = (props) => {
     const { stopDetail } = props;
 
     return (
-        <section className="stop-detail-view__stop-details col-12 pt-3">
+        <section className="stop-detail-view__stop-details col-12 pt-3 border-bottom">
             <h2>
                 <div className="d-flex justify-content-between">
                     <span>Stop {stopDetail.stop_id}</span>

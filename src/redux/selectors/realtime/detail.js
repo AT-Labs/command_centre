@@ -1,25 +1,32 @@
 import _ from 'lodash-es';
 import { createSelector } from 'reselect';
 import VIEW_TYPE from '../../../types/view-types';
-import { getJSONFromWKT } from '../../../utils/helpers';
+import SEARCH_RESULT_TYPE from '../../../types/search-result-types';
 import { getActiveRealTimeDetailView } from '../navigation';
 import { getFleetState } from '../static/fleet';
-import * as vehicleSelectors from './vehicles';
 import { getAllocations, getVehicleAllocationByTrip } from '../control/blocks';
-import { getVehicleTrip } from './vehicles';
 
 export const getDetailState = state => _.result(state, 'realtime.detail');
 export const shouldGetActiveRealTimeDetailView = createSelector(
     getActiveRealTimeDetailView,
     activeRealTimeDetailView => activeRealTimeDetailView !== VIEW_TYPE.REAL_TIME_DETAIL.DEFAULT,
 );
-export const getVehicleState = createSelector(getDetailState, detailState => detailState.vehicle);
-export const getVehicleDetail = createSelector(getVehicleState, vehicleState => _.result(vehicleState, 'updatedVehicle', {}));
-export const getVehicleOccupancyStatus = createSelector(getVehicleState,
-    vehicleState => _.result(vehicleState, 'updatedVehicle.vehicle.occupancyStatus'));
+export const getSelectedSearchResults = createSelector(getDetailState, detailState => _.get(detailState, 'selectedSearchResults'));
+export const getCheckedSearchResults = createSelector(
+    getSelectedSearchResults,
+    allSelectedSearchResults => _.filter(allSelectedSearchResults, selectedSearchResult => selectedSearchResult.checked),
+);
+
+export const getViewDetailKey = createSelector(getDetailState, detailState => _.result(detailState, 'viewDetailKey'));
+
+export const getVehicleDetail = createSelector(getDetailState, getViewDetailKey,
+    (detailState, viewDetailKey) => ((viewDetailKey && viewDetailKey === _.get(detailState, 'vehicle.key')) ? _.get(detailState, 'vehicle') : {}));
+
+export const getVehicleOccupancyStatus = createSelector(getVehicleDetail,
+    vehicleState => _.result(vehicleState, 'occupancyStatus'));
 export const getVehicleId = createSelector(getVehicleDetail, vehicleDetailState => vehicleDetailState.id);
-export const getVehicleTripId = createSelector(getVehicleDetail, vehicleDetailState => vehicleSelectors.getVehicleTripId(vehicleDetailState));
-export const getVehicleLastStopSequence = createSelector(getVehicleState, vehicleState => vehicleState.lastStopSequence);
+export const getCurrentVehicleTripId = createSelector(getVehicleDetail, vehicleDetailState => _.get(vehicleDetailState, 'trip.tripId'));
+export const getVehicleLastStopSequence = createSelector(getVehicleDetail, vehicleState => vehicleState.lastStopSequence);
 export const getVehicleUpcomingStops = createSelector(getDetailState, detailState => _.result(detailState, 'vehicle.upcomingStops'));
 export const getVehiclePastStops = createSelector(getDetailState, detailState => _.result(detailState, 'vehicle.pastStops'));
 export const getVehicleFleetInfo = createSelector(getFleetState, getVehicleId, (allFleetState, vehicleId) => _.result(allFleetState, vehicleId));
@@ -28,7 +35,7 @@ export const getVehicleCapacity = createSelector(
     getFleetState,
     getAllocations,
     (vehicleDetail, fleeState, vehicleAllocations) => {
-        const trip = getVehicleTrip(vehicleDetail);
+        const trip = _.get(vehicleDetail, 'trip');
         if (!trip) return _.result(fleeState, `${vehicleDetail.id}.capacity`, 0);
 
         const allocation = getVehicleAllocationByTrip(trip, vehicleAllocations);
@@ -50,7 +57,8 @@ export const getVehicleCapacity = createSelector(
     },
 );
 
-export const getStopDetail = createSelector(getDetailState, detailState => _.result(detailState, 'stop'));
+export const getStopDetail = createSelector(getDetailState, getViewDetailKey,
+    (detailState, viewDetailKey) => ((viewDetailKey && viewDetailKey === _.get(detailState, 'stop.key')) ? _.get(detailState, 'stop') : {}));
 export const getStopCode = createSelector(getStopDetail, stopDetail => _.result(stopDetail, 'stop_code'));
 export const getStopId = createSelector(getStopDetail, stopDetail => _.result(stopDetail, 'stop_id'));
 export const getPastVehicles = createSelector(getStopDetail, stopDetail => _.result(stopDetail, 'pastVehicles'));
@@ -60,27 +68,85 @@ export const getPidInformation = createSelector(getStopDetail, stopDetail => _.r
 export const getPidMessages = createSelector(getStopDetail, stopDetail => _.result(stopDetail, 'pidMessages'));
 export const getTripStops = createSelector(getDetailState, detailState => _.uniqBy(_.map(_.result(detailState, 'trip.stopTimes', []), 'stop')));
 export const getAddressDetail = createSelector(getDetailState, detailState => _.result(detailState, 'address'));
-export const getRouteDetail = createSelector(getDetailState, detailState => _.result(detailState, 'route'));
 export const getRoutesByStopShape = createSelector(getDetailState, detailState => _.result(detailState, 'stop.routes', []));
 export const getRouteIdsByStop = createSelector(getRoutesByStopShape, routes => _.map(routes, 'route_id'));
-export const getTripShape = createSelector(getDetailState, detailState => _.result(detailState, 'trip.shape_wkt'));
-export const getTripHeadsign = createSelector(getDetailState, detailState => _.result(detailState, 'trip.trip_headsign'));
-export const getRoutesByRoute = createSelector(getDetailState, detailState => _.result(detailState, 'route.routes'));
-export const getShapes = createSelector(
+
+export const getClearForReplace = createSelector(getDetailState, detailState => detailState.isReplace);
+
+export const getRouteDetail = createSelector(getSelectedSearchResults, getViewDetailKey,
+    (selectedSearchResults, viewDetailKey) => (viewDetailKey ? selectedSearchResults[viewDetailKey] : {}));
+
+export const getRoutesByRoute = createSelector(getRouteDetail, routeDetail => routeDetail.routes || []);
+
+export const getViewDetailEntity = createSelector(
     getActiveRealTimeDetailView,
-    getRoutesByStopShape,
-    getTripShape,
-    getRoutesByRoute,
-    (activeRealTimeDetailView, routesByStopShape, tripShape, routesByRoute) => {
-        let wktShapes = [];
+    getRouteDetail,
+    getStopDetail,
+    getVehicleDetail,
+    (activeRealTimeDetailView, routeDetail, stopDetail, vehicleDetail) => {
         if (activeRealTimeDetailView === VIEW_TYPE.REAL_TIME_DETAIL.STOP) {
-            wktShapes = routesByStopShape.map(r => r.shape_wkt);
-        } else if (activeRealTimeDetailView === VIEW_TYPE.REAL_TIME_DETAIL.VEHICLE) {
-            wktShapes = tripShape ? [tripShape] : [];
-        } else if (activeRealTimeDetailView === VIEW_TYPE.REAL_TIME_DETAIL.ROUTE) {
-            wktShapes = routesByRoute ? routesByRoute.map(r => r.shape_wkt) : [];
+            return stopDetail;
         }
-        return wktShapes.map(wktShape => getJSONFromWKT(wktShape).coordinates.map(c => c.reverse()));
+        if (activeRealTimeDetailView === VIEW_TYPE.REAL_TIME_DETAIL.VEHICLE) {
+            return vehicleDetail;
+        }
+        if ([VIEW_TYPE.REAL_TIME_DETAIL.LIST, VIEW_TYPE.REAL_TIME_DETAIL.ROUTE].includes(activeRealTimeDetailView)) {
+            return routeDetail;
+        }
+        return {};
     },
 );
-export const getClearForReplace = createSelector(getDetailState, detailState => detailState.isReplace);
+
+const isCheckedRouteOrOtherEntity = (viewDetailEntity) => {
+    if (SEARCH_RESULT_TYPE.ROUTE.type === _.result(viewDetailEntity, 'searchResultType')) {
+        return _.result(viewDetailEntity, 'checked');
+    }
+    return !_.isEmpty(viewDetailEntity);
+};
+
+export const getVisibleEntities = createSelector(
+    getActiveRealTimeDetailView,
+    getViewDetailEntity,
+    getCheckedSearchResults,
+    (activeRealTimeDetailView, currentViewDetailEntity, checkedSearchResults) => {
+        if ([VIEW_TYPE.REAL_TIME_DETAIL.LIST, VIEW_TYPE.REAL_TIME_DETAIL.ROUTE].includes(activeRealTimeDetailView)) {
+            return checkedSearchResults;
+        }
+        return isCheckedRouteOrOtherEntity(currentViewDetailEntity) ? [currentViewDetailEntity] : [];
+    },
+);
+
+export const getVehiclePredicateFromCheckedSearchResults = createSelector(
+    getCheckedSearchResults,
+    getViewDetailEntity,
+    (checkedSearchResults, currentViewDetailEntity) => {
+        let predicate = () => true;
+        if (isCheckedRouteOrOtherEntity(currentViewDetailEntity)) {
+            predicate = currentViewDetailEntity.vehiclePredicate;
+        } else if (checkedSearchResults.length) {
+            const allPredicates = [];
+            predicate = vehicle => allPredicates.reduce((previousResult, currentPredicate) => {
+                const matchesPredicate = _.isFunction(currentPredicate) ? currentPredicate(vehicle) : _.isMatch(vehicle, currentPredicate);
+                return previousResult || matchesPredicate;
+            }, false);
+            checkedSearchResults.forEach(({ vehiclePredicate, searchResultType }) => {
+                if (vehiclePredicate && SEARCH_RESULT_TYPE.STOP.type !== searchResultType) {
+                    allPredicates.push(vehiclePredicate);
+                }
+            });
+            predicate.allPredicates = allPredicates;
+        }
+        return predicate;
+    },
+);
+
+export const getCheckedStops = createSelector(
+    getCheckedSearchResults,
+    checkedSearchResults => _.filter(checkedSearchResults,
+        checkedSearchResult => (checkedSearchResult.checked && SEARCH_RESULT_TYPE.STOP.type === checkedSearchResult.searchResultType)),
+);
+
+export const getVisibleStops = createSelector(
+    getViewDetailEntity,
+    viewDetailEntity => isCheckedRouteOrOtherEntity(viewDetailEntity) && _.result(viewDetailEntity, 'stops'),
+);

@@ -9,17 +9,26 @@ export const INIT_STATE = {
     address: {},
     route: {},
     isReplace: false,
+    selectedSearchResults: {},
+    viewDetailKey: '',
 };
 
-const handleClearDetail = (state, { payload: { isReplace } }) => ({ ...INIT_STATE, isReplace });
-
-const handleGetTrip = (state, { payload: { trip } }) => ({ ...state, trip });
+const handleClearDetail = (state, { payload: { isReplace } }) => ({
+    ...state,
+    vehicle: {},
+    trip: {},
+    stop: {},
+    address: {},
+    route: {},
+    isReplace,
+    viewDetailKey: '',
+});
 
 const handleSelectedVehicle = (state, { payload: { vehicle } }) => ({
     ...state,
     vehicle: {
         ...state.vehicle,
-        updatedVehicle: vehicle,
+        ...vehicle,
     },
 });
 
@@ -35,16 +44,6 @@ const handlePastStopsOfSelectedVehicle = (state, { payload: { pastStops } }) => 
 const handleSelectedStop = (state, { payload: { stop } }) => ({ ...state, stop });
 
 const handleSelectedAddress = (state, { payload: { address } }) => ({ ...state, address });
-
-const handleSelectedRoute = (state, { payload: { route } }) => ({ ...state, route });
-
-const handleRouteByStop = (state, { payload: { routes } }) => ({
-    ...state,
-    stop: {
-        ...state.stop,
-        routes,
-    },
-});
 
 export const handleUpcomingVehiclesOfSelectedStop = (state, { payload: { upcomingVehicles } }) => ({
     ...state,
@@ -96,13 +95,115 @@ const handleVehicleFleetInfo = (state, { payload: { vehicleFleetInfo } }) => ({
     },
 });
 
-const handleRoutesByShortName = (state, { payload: { routes } }) => ({
+const updateSelectedSearchResults = (selectedSearchResults, entityKey, fieldValues) => (
+    selectedSearchResults[entityKey] ? {
+        ...selectedSearchResults,
+        [entityKey]: { ...selectedSearchResults[entityKey], ...fieldValues },
+    } : selectedSearchResults
+);
+
+const handleSelectedRoute = (state, { payload: { entityKey, route } }) => ({
+    ...state,
+    route,
+    selectedSearchResults: updateSelectedSearchResults(state.selectedSearchResults, entityKey, route),
+});
+
+const handleRoutesByShortName = (state, { payload: { entityKey, routes } }) => ({
     ...state,
     route: {
         ...state.route,
         routes,
     },
+    selectedSearchResults: updateSelectedSearchResults(state.selectedSearchResults, entityKey, { routes }),
 });
+
+const handleRouteByStop = (state, { payload: { entityKey, routes } }) => ({
+    ...state,
+    stop: {
+        ...state.stop,
+        routes,
+    },
+    selectedSearchResults: updateSelectedSearchResults(state.selectedSearchResults, entityKey, { routes }),
+});
+
+const handleGetTrip = (state, { payload: { entityKey, trip } }) => ({
+    ...state,
+    vehicle: {
+        ...state.vehicle,
+        trip: {
+            ...state.vehicle.trip,
+            ...trip,
+        },
+    },
+    selectedSearchResults: updateSelectedSearchResults(state.selectedSearchResults, entityKey, { trip }),
+});
+
+const handleUpdateSearchResultsCheckStatus = (state, { payload: { searchResultsCheckStatus } }) => {
+    const selectedSearchResults = { ...state.selectedSearchResults };
+    const keys = Object.keys(searchResultsCheckStatus);
+    keys.forEach((key) => {
+        selectedSearchResults[key].checked = searchResultsCheckStatus[key].checked;
+    });
+
+    return {
+        ...state,
+        selectedSearchResults,
+    };
+};
+
+const handleUpdateViewDetailKey = (state, { payload: { viewDetailKey } }) => ({ ...state, viewDetailKey });
+
+const handleAddSelectedSearchResult = (state, { payload: { selectedSearchResult } }) => (
+    { ...state, selectedSearchResults: { ...state.selectedSearchResults, [selectedSearchResult.key]: selectedSearchResult } });
+
+const handleFetchRouteStops = (state, { payload: { entityKey, stops } }) => ({
+    ...state,
+    route: {
+        ...state.route,
+        stops,
+    },
+    selectedSearchResults: updateSelectedSearchResults(state.selectedSearchResults, entityKey, { stops }),
+});
+
+const handleFetchVehicleTripStops = (state, { payload: { entityKey, stops } }) => ({
+    ...state,
+    vehicle: {
+        ...state.vehicle,
+        stops,
+    },
+    selectedSearchResults: updateSelectedSearchResults(state.selectedSearchResults, entityKey, { stops }),
+});
+
+const handleFetchStopRoutesStops = (state, { payload: { entityKey, stops } }) => ({
+    ...state,
+    stop: { ...state.stop, stops },
+    selectedSearchResults: updateSelectedSearchResults(state.selectedSearchResults, entityKey, { stops }),
+});
+
+const handleUpdateVehicleVehiclePredicate = (state, { payload: { entityKey, vehiclePredicate } }) => ({
+    ...state,
+    vehicle: { ...state.vehicle, vehiclePredicate },
+    selectedSearchResults: updateSelectedSearchResults(state.selectedSearchResults, entityKey, { vehiclePredicate }),
+});
+
+const handleUpdateRouteVehiclePredicate = (state, { payload: { entityKey, vehiclePredicate } }) => ({
+    ...state,
+    route: { ...state.route, vehiclePredicate },
+    selectedSearchResults: updateSelectedSearchResults(state.selectedSearchResults, entityKey, { vehiclePredicate }),
+});
+
+const handleUpdateStopVehiclePredicate = (state, { payload: { entityKey, vehiclePredicate } }) => ({
+    ...state,
+    stop: { ...state.stop, vehiclePredicate },
+    selectedSearchResults: updateSelectedSearchResults(state.selectedSearchResults, entityKey, { vehiclePredicate }),
+});
+
+const handleRemoveSelectedSearchResult = (state, { payload: { selectedSearchResult } }) => {
+    const { [selectedSearchResult.key]: removedSearchResult, ...selectedSearchResults } = state.selectedSearchResults;
+    return { ...state, selectedSearchResults };
+};
+
+const handleClearSelectedSearchResult = state => ({ ...state, selectedSearchResults: {} });
 
 export default handleActions({
     [ACTION_TYPE.CLEAR_DETAIL]: handleClearDetail,
@@ -120,4 +221,15 @@ export default handleActions({
     [ACTION_TYPE.FETCH_STOP_PID_INFORMATION]: handlePidInformationOfSelectedStop,
     [ACTION_TYPE.UPDATE_SELECTED_ROUTE]: handleSelectedRoute,
     [ACTION_TYPE.FETCH_ROUTE_TRIPS]: handleRoutesByShortName,
+    [ACTION_TYPE.UPDATE_SELECTED_SEARCH_RESULTS_CHECK_STATUS]: handleUpdateSearchResultsCheckStatus,
+    [ACTION_TYPE.UPDATE_VIEW_DETAIL_KEY]: handleUpdateViewDetailKey,
+    [ACTION_TYPE.ADD_SELECTED_SEARCH_RESULT]: handleAddSelectedSearchResult,
+    [ACTION_TYPE.FETCH_ROUTE_STOPS]: handleFetchRouteStops,
+    [ACTION_TYPE.FETCH_VEHICLE_TRIP_STOPS]: handleFetchVehicleTripStops,
+    [ACTION_TYPE.FETCH_STOP_ROUTES_STOPS]: handleFetchStopRoutesStops,
+    [ACTION_TYPE.UPDATE_VEHICLE_VEHICLE_PREDICATE]: handleUpdateVehicleVehiclePredicate,
+    [ACTION_TYPE.UPDATE_ROUTE_VEHICLE_PREDICATE]: handleUpdateRouteVehiclePredicate,
+    [ACTION_TYPE.UPDATE_STOP_VEHICLE_PREDICATE]: handleUpdateStopVehiclePredicate,
+    [ACTION_TYPE.REMOVE_SELECTED_SEARCH_RESULT]: handleRemoveSelectedSearchResult,
+    [ACTION_TYPE.CLEAR_SELECTED_SEARCH_RESULT]: handleClearSelectedSearchResult,
 }, INIT_STATE);

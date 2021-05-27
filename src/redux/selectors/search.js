@@ -10,3 +10,4 @@ export const getAddressSearchResults = createSelector(getSearchResults, searchRe
 export const getStopSearchResults = createSelector(getSearchResults, searchResults => _.result(searchResults, SEARCH_RESULT_TYPE.STOP.type));
 export const getRouteSearchResults = createSelector(getSearchResults, searchResults => _.result(searchResults, SEARCH_RESULT_TYPE.ROUTE.type));
 export const getVehicleSearchResults = createSelector(getSearchResults, searchResults => _.result(searchResults, SEARCH_RESULT_TYPE.VEHICLE.type));
+export const isSearchBarFocus = createSelector(getSearchState, searchState => _.result(searchState, 'isFocus'));

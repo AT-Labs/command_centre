@@ -9,7 +9,9 @@ import SecondarySidePanel from '../Common/OffCanvasLayout/SecondarySidePanel/Sec
 export default class DashboardView extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { data: [] };
+        this.state = {
+            data: [],
+        };
         this.intervalId = null;
     }
 

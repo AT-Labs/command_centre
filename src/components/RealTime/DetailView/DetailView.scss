@@ -1,0 +1,43 @@
+@import '../../../assets/styles/variables';
+
+.detail-view {
+    background-color: tint($very-light-blue, 50%);
+    height: $real-time-side-panel-search-panel-height;
+}
+
+.tips-view {
+    height: calc(#{$real-time-side-panel-search-panel-height} + #{$real-time-side-panel-search-input-reset-height}) !important;
+}
+
+.detail-back-header + .detail-view {
+    height: 100%;
+}
+
+.detail-view-wrap {
+    background-color: $white;
+}
+
+$back-header-height: 30px;
+$back-header-margin-y: 15px;
+
+.detail-back-header {
+    margin: $back-header-margin-y 0;
+    height: $back-header-height;
+
+    &__header {
+        display: inline-block;
+        background: none;
+        border: none;
+    }
+
+    &__btn-icon {
+        svg {
+            fill: $at-dark-blue;
+        }
+    }
+
+    &__title {
+        position: relative;
+        top: 2px;
+    }
+}

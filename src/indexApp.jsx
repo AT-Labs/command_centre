@@ -26,7 +26,7 @@ ReactDOM.render(
                     <App />
                 </Route>
             </Switch>
-        </Provider>,
+        </Provider>
     </Router>,
     document.getElementById('root'),
 );

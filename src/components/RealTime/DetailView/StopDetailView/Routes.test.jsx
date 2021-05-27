@@ -83,47 +83,18 @@ describe('<Routes />', () => {
 
     afterEach(() => { sandbox.restore(); });
 
-    it('Should concatenate Route Name', () => {
-        const route = {
-            route_short_name: '221X',
-            route_long_name: 'Rosebank Rd to City Centre via New North Rd Express',
-        };
-        const expectedName = '221X: Rosebank Rd to City Centre via New North Rd Express';
-        const concatenateRouteName = instance.concatenateRouteName(route);
-
-        expect(concatenateRouteName).to.equal(expectedName);
-    });
-
-    it('Should return routes sorted and unique by route name', () => {
+    it('Should return route names sorted and unique by route name', () => {
         const expectedData = [
-            {
-                routeId: '00103-20180910114240_v70.21',
-                routeName: '1: Onetangi To Matiatia Wharf',
-            },
-            {
-                routeId: '22107-20180910114240_v70.21',
-                routeName: '221X: Rosebank Rd to City Centre via New North Rd Express',
-            },
-            {
-                routeId: '22307-20180910114240_v70.21',
-                routeName: '223X: New Lynn to City Centre via New North Rd Express',
-            },
-            {
-                routeId: '02209-20180910114240_v70.21',
-                routeName: '22A: Avondale To City Centre Via New North Rd',
-            },
-            {
-                routeId: '02203-20180910114240_v70.21',
-                routeName: '22N: New Lynn To City Centre Via New North Rd',
-            },
-            {
-                routeId: '02201-20180910114240_v70.21',
-                routeName: '22R: Rosebank Rd To City Centre Via New North Rd',
-            },
+            '1',
+            '221X',
+            '223X',
+            '22A',
+            '22N',
+            '22R',
         ];
 
-        const getRoutes = instance.getRoutes(allRoutes, routeIds);
+        const routeNames = instance.getRouteNames(allRoutes, routeIds);
 
-        expect(_.isEqual(getRoutes, expectedData)).to.equal(true);
+        expect(_.isEqual(routeNames, expectedData)).to.equal(true);
     });
 });

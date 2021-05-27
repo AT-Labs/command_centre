@@ -7,16 +7,24 @@ import { connect } from 'react-redux';
 import { Button, Collapse } from 'reactstrap';
 import { vehicleSelected } from '../../../../../redux/actions/realtime/detail/vehicle';
 import { getRoutesByRoute } from '../../../../../redux/selectors/realtime/detail';
-import { getJoinedVehicleLabel, getVehicleTripStartTimeISO } from '../../../../../redux/selectors/realtime/vehicles';
+import { getJoinedVehicleLabel, getVehicleTripStartTimeISO, getVehicleRouteType, getActiveRouteVehiclesOccupancyStatus } from '../../../../../redux/selectors/realtime/vehicles';
+import { getActiveRouteVehiclesDelay } from '../../../../../redux/selectors/realtime/quickview';
 import DetailLoader from '../../../../Common/Loader/DetailLoader';
 import './Routes.scss';
 import { getAllocations } from '../../../../../redux/selectors/control/blocks';
+import VEHICLE_TYPES from '../../../../../types/vehicle-types';
+import { formatRealtimeDetailListItemKey } from '../../../../../utils/helpers';
+import { formatTripDelay, getTripDelayDisplayData } from '../../../../../utils/control/routes';
+import OccupancyStatus from '../../OccupancyStatus';
+import Icon from '../../../../Common/Icon/Icon';
 
 class Routes extends Component {
     static propTypes = {
         routes: PropTypes.array,
         vehicleAllocations: PropTypes.object.isRequired,
         vehicleSelected: PropTypes.func.isRequired,
+        occupancyStatuses: PropTypes.object.isRequired,
+        delays: PropTypes.object.isRequired,
     }
 
     static defaultProps = {
@@ -37,31 +45,51 @@ class Routes extends Component {
 
     renderSelectedRouteInfo = route => (
         <Collapse
-            className="mx-5 my-2"
+            className="mx-1 my-2"
             isOpen={ this.state.routeVariantSelected === route.routeVariantName }>
-            <div className="route-detail-view__vehicles-table">
-                <div className="row py-2">
-                    <div className="col-6 font-weight-bold">Vehicle</div>
-                    <div className="col-6 text-right font-weight-bold">Trip start time</div>
+            <div className="route-detail-view__vehicles-table font-size-sm">
+                <div className="route-detail-view__vehicles-th row py-3 rounded-top">
+                    <div className="col-2">Vehicle</div>
+                    <div className="col-3">Trip start time</div>
+                    <div className="col-3">Trip status</div>
+                    <div className="col-4">Occupancy</div>
                 </div>
                 <div className="row">
                     { _.map(_.orderBy(route.vehicles, ['arrivalTime'], 'asc'), (vehicle) => {
+                        const vehicleRouteType = getVehicleRouteType(vehicle);
+                        const vehicleType = vehicleRouteType ? _.lowerCase(VEHICLE_TYPES[vehicleRouteType].type) : '';
                         const startTime = getVehicleTripStartTimeISO(vehicle);
                         const formattedStartTime = (startTime && moment(startTime).format('HH:mm')) || '-';
+                        const occupancyStatus = this.props.occupancyStatuses[vehicle.id];
+                        const delayDisplayData = getTripDelayDisplayData(formatTripDelay(this.props.delays[vehicle.id]));
                         return (
                             <div
                                 key={ vehicle.id }
                                 className="route-detail-view__vehicles-tr custom-table--hover col-12 py-2">
-                                <div className="row">
-                                    <div className="col-10 text-info">
+                                <div className="row border-bottom">
+                                    <div className="col-2 text-info px-0">
                                         <Button
-                                            className="cc-btn-link pl-0"
-                                            onClick={ () => this.props.vehicleSelected(vehicle) }>
+                                            className="font-size-sm cc-btn-link px-0"
+                                            onClick={ () => {
+                                                this.props.vehicleSelected({
+                                                    id: vehicle.id,
+                                                    ...vehicle.vehicle,
+                                                    searchResultType: vehicleType,
+                                                    key: formatRealtimeDetailListItemKey(vehicleType, vehicle.id),
+                                                });
+                                            } }>
+                                            <Icon icon={ vehicleType } className="route-detail-view__vehicle-icon float-left pr-1" />
                                             { getJoinedVehicleLabel(vehicle, this.props.vehicleAllocations) }
                                         </Button>
                                     </div>
-                                    <div className="col-2 text-right">
+                                    <div className="col-3 pt-2">
                                         {formattedStartTime}
+                                    </div>
+                                    <div className="col-3 pt-2">
+                                        <p className={ delayDisplayData.className }>{ delayDisplayData.text }</p>
+                                    </div>
+                                    <div className="col-4 pt-2">
+                                        <div className="float-left"><OccupancyStatus occupancyStatus={ occupancyStatus } /></div>
                                     </div>
                                 </div>
                             </div>
@@ -81,8 +109,8 @@ class Routes extends Component {
 
         return (
             <section className="route-detail-view__routes col-12">
-                <h4 className="text-uppercase mb-0">
-                    Routes with running vehicles
+                <h4 className="mb-0">
+                    Routes
                 </h4>
 
                 { shouldShowDetailLoader && <DetailLoader /> }
@@ -91,14 +119,10 @@ class Routes extends Component {
 
                 { areVehiclesForRouteAvailable && (
                     <div className="route-detail-view__routes-table">
-                        <div className="row py-3">
-                            <div className="col-6 font-weight-bold">Route</div>
-                            <div className="col-6 text-right font-weight-bold">Vehicles</div>
-                        </div>
                         <div className="row">
-                            { _.map(routesWithVehicles, (route, index) => (
+                            { _.map(routesWithVehicles, route => (
                                 <div
-                                    className={ `route-detail-view__routes-tr col-12 ${index % 2 ? 'bg-white' : 'bg-at-ocean-tint-10'}` }
+                                    className="route-detail-view__routes-tr col-12"
                                     key={ route.routeVariantName }>
                                     <div className="custom-table--hover row py-3"
                                         role="button"
@@ -123,6 +147,8 @@ export default connect(
     state => ({
         routes: getRoutesByRoute(state),
         vehicleAllocations: getAllocations(state),
+        occupancyStatuses: getActiveRouteVehiclesOccupancyStatus(state),
+        delays: getActiveRouteVehiclesDelay(state),
     }),
     { vehicleSelected },
 )(Routes);

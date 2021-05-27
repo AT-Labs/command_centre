@@ -5,15 +5,12 @@ import { connect } from 'react-redux';
 import { getRouteDetail } from '../../../../../redux/selectors/realtime/detail';
 
 const RouteDetails = ({ routeDetail }) => (
-    <section className="route-detail-view__route-details col-12 py-3">
-        <h2 className="font-weight-normal">
-            Route { routeDetail.route_short_name }
-        </h2>
-        <dl className="my-3">
+    <section className="route-detail-view__route-details col-12">
+        <dl className="mb-3">
             <dt>
-                OPERATOR
+                Operator
             </dt>
-            <dd className="text-muted font-weight-normal mb-3">
+            <dd className="text-muted font-weight-normal">
                 { routeDetail.agency_name }
             </dd>
         </dl>

@@ -7,14 +7,14 @@ export const getBlocksState = state => _.result(state, 'control.blocks');
 export const getAllBlocks = createSelector(getBlocksState, blocksState => _.result(blocksState, 'blocks'));
 export const getBlocksSortingParams = createSelector(getBlocksState, blocksState => _.result(blocksState, 'sortingParams'));
 export const getBlockTrips = createSelector(getBlocksState, blocksState => _.result(blocksState, 'trips'));
-export const getActiveBlock = createSelector(getBlocksState, blocksState => _.result(blocksState, 'activeBlock'));
+export const getActiveBlocks = createSelector(getBlocksState, blocksState => _.result(blocksState, 'activeBlocks'));
+export const getActiveBlocksIds = createSelector(getActiveBlocks, activeBlocks => _.uniq(activeBlocks.map(block => block.operationalBlockId)));
+
 export const getActiveTrip = createSelector(getBlocksState, blocksState => _.result(blocksState, 'activeTrip'));
 export const getBlocksLoadingState = createSelector(getBlocksState, blocksState => _.result(blocksState, 'isLoading'));
 export const getActiveBlocksLoadingState = createSelector(getBlocksState, blocksState => _.result(blocksState, 'isActiveBlockLoading'));
 export const getBlocksPermissions = createSelector(getBlocksState, blocksState => _.result(blocksState, 'blocksPermissions'));
-export const getActiveBlockOperationalBlockId = createSelector(
-    getBlocksState, blocksState => _.result(blocksState, 'activeBlock.operationalBlockId'),
-);
+
 export const getSortedBlocks = createSelector(
     getAllBlocks,
     getBlocksSortingParams,
@@ -45,6 +45,8 @@ export const getAllTrainsWithAssignedBlocks = createSelector(
     },
 );
 
+
+export const getFocusedBlock = createSelector(getBlocksState, blocksState => _.result(blocksState, 'focusedBlock'));
 export const getAllocations = createSelector(getBlocksState, blocksState => _.result(blocksState, 'allocations'));
 export const getVehicleAllocationByTrip = (trip, allocations) => {
     const { tripId, startTime, startDate, serviceDate } = trip;

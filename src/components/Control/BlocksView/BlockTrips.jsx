@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 
 import { formatStatusColumn } from '../RoutesView/TripsView';
 import { updateActiveTrip } from '../../../redux/actions/control/blocks';
-import { getActiveTrip, getActiveBlock } from '../../../redux/selectors/control/blocks';
+import { getActiveTrip } from '../../../redux/selectors/control/blocks';
 import { getTripVehiclesDisplay } from '../../../utils/control/blocks';
 import { getTripTimeDisplay } from '../../../utils/helpers';
 import ButtonBar from '../Common/ButtonBar/ButtonBar';
@@ -267,5 +267,4 @@ export class BlockTrips extends React.Component {
 
 export default connect(state => ({
     activeTrip: getActiveTrip(state),
-    activeBlock: getActiveBlock(state),
 }), { updateActiveTrip })(BlockTrips);

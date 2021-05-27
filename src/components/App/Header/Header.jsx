@@ -15,6 +15,8 @@ import { getUserPermissions, getUserProfile } from '../../../redux/selectors/use
 import VIEW_TYPE from '../../../types/view-types';
 import { IS_NOTIFICATIONS_ENABLED, IS_DISRUPTIONS_ENABLED, IS_TRIP_REPLAYS_ENABLED } from '../../../utils/feature-toggles';
 import CustomButton from '../../Common/CustomButton/CustomButton';
+import Icon from '../../Common/Icon/Icon';
+import { HelpInformationModal } from '../HelpInformationModal/HelpInformationModal';
 import { resetRealtimeToDefault } from '../../../redux/actions/realtime/common';
 import './Header.scss';
 
@@ -23,6 +25,7 @@ function Header(props) {
     const history = useHistory();
     const [isOpen, setIsOpen] = useState(false);
     const [isUserPopoverOpen, setIsUserPopoverOpen] = useState(false);
+    const [isHelpModalVisible, setIsHelpModalVisible] = useState(false);
 
     const handleUrlChange = (inputLocation) => {
         if (inputLocation.pathname === '/') {
@@ -37,6 +40,10 @@ function Header(props) {
                 props.updateControlDetailView(paths[2]);
             }
         }
+    };
+
+    const toggleHelpModal = () => {
+        setIsHelpModalVisible(!isHelpModalVisible);
     };
 
     useEffect(() => {
@@ -65,8 +72,8 @@ function Header(props) {
     }, [props.controlActiveView]);
 
     useEffect(() => {
-        const locationToPush = `/${props.activeView}`;
-        if (locationToPush !== location.pathname && props.activeView === VIEW_TYPE.MAIN.DASHBOARD) {
+        const locationToPush = props.activeView === VIEW_TYPE.MAIN.REAL_TIME ? '/' : `/${props.activeView}`;
+        if (locationToPush !== location.pathname && [VIEW_TYPE.MAIN.DASHBOARD, VIEW_TYPE.MAIN.REAL_TIME].includes(props.activeView)) {
             history.push(locationToPush);
         }
     }, [props.activeView]);
@@ -235,6 +242,22 @@ function Header(props) {
                                 )}
                             </PopoverBody>
                         </Popover>
+                    </NavItem>
+                    <NavItem>
+                        <CustomButton
+                            className="header__btn header__user rounded-0 px-3 position-relative"
+                            ariaLabel="Help information button"
+                            onClick={ toggleHelpModal }
+                            id="header-help"
+                            active={ isHelpModalVisible }
+                        >
+                            <Icon className="user-manual d-block" icon="user-manual" />
+                        </CustomButton>
+                        {isHelpModalVisible && (
+                            <HelpInformationModal
+                                onClose={ toggleHelpModal }
+                            />
+                        )}
                     </NavItem>
                 </Nav>
             </Collapse>

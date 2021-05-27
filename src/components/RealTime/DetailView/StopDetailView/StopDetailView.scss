@@ -1,13 +1,19 @@
 @import '../../../../assets/styles/variables';
+@import '../DetailView';
 
 $link-color:  map-get($theme-colors, "at-shore");
+
+.stop-detail-view {
+    background-color: $white;
+    height: calc(100vh - #{$header-height + $back-header-height + $back-header-margin-y*2});
+}
 
 .nav-tabs.cc-tabs {
     border: none;
     padding: 0 15px;
 
     .nav-link.cc-nav-link {
-        border: 1px solid $link-color;
+        border: 1px solid $at-dark-blue;
         border-radius: 0;
         box-sizing: border-box;
         height: 40px;
@@ -16,7 +22,7 @@ $link-color:  map-get($theme-colors, "at-shore");
         cursor: pointer;
 
         &.active {
-            border-color: $link-color;
+            border-bottom-color: $link-color;
             border-bottom-width: 5px;
         }
     }

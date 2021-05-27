@@ -33,6 +33,7 @@ export default class AutoRefreshTable extends Component {
         clickable: PropTypes.bool,
         refresh: PropTypes.bool,
         pollingInternval: PropTypes.number,
+        striped: PropTypes.bool,
     }
 
     static defaultProps = {
@@ -46,6 +47,7 @@ export default class AutoRefreshTable extends Component {
         clickable: false,
         refresh: true,
         pollingInternval: null,
+        striped: true,
     }
 
     componentDidMount = () => {
@@ -66,7 +68,7 @@ export default class AutoRefreshTable extends Component {
                     'table--alternatively-striped': this.props.isAlternativelyStriped,
                 })
             }
-            striped
+            striped={ this.props.striped }
             borderless
             hover={ this.props.hover }
         >

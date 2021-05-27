@@ -15,7 +15,8 @@ export class ControlTableRow extends React.Component {
         this.summaryRef = React.createRef();
     }
 
-    static getDerivedStateFromProps({ row, rowActive }, currentState) {
+    static getDerivedStateFromProps(props, currentState) {
+        const { row, rowActive, isFocused } = props;
         let { isActive } = currentState;
 
         if (rowActive instanceof Function) {
@@ -24,15 +25,17 @@ export class ControlTableRow extends React.Component {
             isActive = rowActive;
         }
 
-        return { isActive };
+        return { isActive, isFocused };
     }
 
+    isRowFocused = state => (state.isFocused != null ? (state.isActive && state.isFocused) : state.isActive);
+
     componentDidUpdate(prevProps, prevState) {
-        if (!prevState.isActive && this.state.isActive) this.scrollIntoView();
+        if (!this.isRowFocused(prevState) && this.isRowFocused(this.state)) this.scrollIntoView();
     }
 
     componentDidMount() {
-        if (this.state.isActive) this.scrollIntoView();
+        if (this.isRowFocused(this.state)) this.scrollIntoView();
     }
 
     scrollIntoView = () => {
@@ -98,6 +101,8 @@ ControlTableRow.propTypes = {
         cols: PropTypes.string.isRequired,
         getContent: PropTypes.func,
     })).isRequired,
+    // eslint-disable-next-line react/no-unused-prop-types
+    isFocused: PropTypes.bool,
     isExpandable: PropTypes.bool.isRequired,
     row: PropTypes.object.isRequired,
     rowOnClick: PropTypes.func,
@@ -111,6 +116,7 @@ ControlTableRow.defaultProps = {
     rowActive: null,
     rowOnClick: null,
     rowBody: null,
+    isFocused: null,
     rowClassName: null,
 };
 

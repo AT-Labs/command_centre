@@ -9,20 +9,23 @@ import STOP_TYPES from '../../../../../types/stop-types';
 
 export const getColumns = ({ isHistorical }) => [{
     header: 'Vehicle',
-    headerClassName: 'w-20',
+    headerClassName: 'w-20 border-top border-bottom font-size-sm',
+    cellClassName: 'border-bottom font-size-sm',
     formatter: ({ vehicle, allocation }) => getVehicleAllocationLabel(allocation) || _.result(vehicle, 'label', '—'),
 }, {
     header: 'Route',
-    headerClassName: '',
+    headerClassName: 'border-top border-bottom font-size-sm',
+    cellClassName: 'border-bottom font-size-sm',
     formatter: ({ route, trip }) => `${route.route_short_name}${trip.headsign ? `: ${trip.headsign}` : ''}`,
 }, {
     header: 'Scheduled',
-    headerClassName: 'w-15',
-    cellClassName: 'text-right',
+    headerClassName: 'border-top w-15 border-bottom font-size-sm',
+    cellClassName: 'text-right border-bottom font-size-sm',
     formatter: ({ scheduledTime }) => (scheduledTime && moment(scheduledTime).format('HH:mm')) || '',
 }, {
     header: isHistorical ? 'Arrived' : 'Due',
-    headerClassName: 'w-25 text-right',
+    headerClassName: 'border-top w-25 text-right border-bottom font-size-sm',
+    cellClassName: 'border-bottom font-size-sm',
     formatter: vehicle => (
         <ActualTimeVariance { ...vehicle } />
     ),

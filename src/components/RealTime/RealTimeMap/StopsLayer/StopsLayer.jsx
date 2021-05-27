@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { filter, isEmpty } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
@@ -6,11 +6,13 @@ import {
 } from 'react-leaflet';
 import { connect } from 'react-redux';
 import { stopSelected } from '../../../../redux/actions/realtime/detail/stop';
-import { getStopDetail } from '../../../../redux/selectors/realtime/detail';
-import { getChildStops, getStopLatLng, getVisibleStops } from '../../../../redux/selectors/static/stops';
+import { getStopDetail, getVisibleStops } from '../../../../redux/selectors/realtime/detail';
+import { getChildStops, getStopLatLng } from '../../../../redux/selectors/static/stops';
 import './StopsLayer.scss';
 import { TRAIN_TYPE_ID } from '../../../../types/vehicle-types';
+import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import { FOCUS_ZOOM } from '../constants';
+import { formatRealtimeDetailListItemKey } from '../../../../utils/helpers';
 
 class StopsLayer extends React.Component {
     static propTypes = {
@@ -52,15 +54,19 @@ class StopsLayer extends React.Component {
         const { zoomLevel, bounds } = this.state;
         let stopsInBoundary = [];
         if (zoomLevel > FOCUS_ZOOM) {
-            stopsInBoundary = _.filter(childStops, stop => bounds.contains(getStopLatLng(stop)));
+            stopsInBoundary = filter(childStops, stop => bounds.contains(getStopLatLng(stop)));
         }
-        return (!_.isEmpty(visibleStops)) ? visibleStops : stopsInBoundary.filter(stop => !this.isChildTrainPlatform(stop));
+        return (!isEmpty(visibleStops)) ? visibleStops : stopsInBoundary.filter(stop => !this.isChildTrainPlatform(stop));
     };
 
     handleStopOnClick = (stop) => {
         const { stopDetail } = this.props;
         if (stopDetail && stopDetail.stop_id !== stop.stop_id) {
-            this.props.stopSelected(stop);
+            this.props.stopSelected({
+                ...stop,
+                searchResultType: SEARCH_RESULT_TYPE.STOP.type,
+                key: formatRealtimeDetailListItemKey(SEARCH_RESULT_TYPE.STOP.type, stop.stop_id),
+            });
         }
     };
 

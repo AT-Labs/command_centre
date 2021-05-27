@@ -4,6 +4,7 @@ import SEARCH_RESULT_TYPE from '../../types/search-result-types';
 
 export const INIT_STATE = {
     isLoading: false,
+    isFocus: false,
     searchTerms: '',
     results: {
         [SEARCH_RESULT_TYPE.ADDRESS.type]: [],
@@ -37,6 +38,8 @@ const handleUpdateSearchResults = (state, { payload }) => ({
     },
 });
 
+const handleUpdateSearchBarFocus = (state, { payload: { isFocus } }) => ({ ...state, isFocus });
+
 export default handleActions({
     [ACTION_TYPE.SEARCH_LOADING]: handleSearchLoading,
     [ACTION_TYPE.UPDATE_ADDRESS_SEARCH_RESULTS]: handleUpdateSearchResults,
@@ -53,4 +56,5 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_STOP_IN_GROUP_SEARCH_RESULTS]: handleUpdateSearchResults,
     [ACTION_TYPE.UPDATE_SEARCH_TERMS]: handleUpdateSearchTerms,
     [ACTION_TYPE.CLEAR_SEARCH_RESULTS]: handleClearSearchResults,
+    [ACTION_TYPE.UPDATE_SEARCH_BAR_FOCUS]: handleUpdateSearchBarFocus,
 }, INIT_STATE);

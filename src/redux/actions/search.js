@@ -35,6 +35,13 @@ export const clearSearchResults = () => ({
     type: ACTION_TYPE.CLEAR_SEARCH_RESULTS,
 });
 
+export const updateSearchBarFocus = isFocus => ({
+    type: ACTION_TYPE.UPDATE_SEARCH_BAR_FOCUS,
+    payload: {
+        isFocus,
+    },
+});
+
 const formatAddressSearchResults = addressEntries => addressEntries.map((entry) => {
     const { address } = entry;
     return {
