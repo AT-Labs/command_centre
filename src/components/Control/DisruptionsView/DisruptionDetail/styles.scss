@@ -4,13 +4,62 @@
     width: 2em;
 }
 
-.disruption-detail__affected-entities__button-span {
-    width: calc(100% - 2em);
+.disruption-detail__affected-entities__button-div {
+    background-color: $at-bk-gray;
+    border: solid 1px $at-battleship-gray;
+    border-radius: 4px;
+    height: 128px;
+    overflow-y: auto;
+    padding: 10px 16px 65px 14px;
     text-align: left;
+
+    &.disabled {
+        background-color: $at-bk-gray;
+    }
+}
+
+.disruption-detail__map {
+    height: 392px;
+
+    & .loader {
+        $loaderSize: 50px;
+
+        height: #{$loaderSize};
+        left: calc((100% - #{$loaderSize}) / 2);
+        position: absolute !important;
+        top: calc((100% - #{$loaderSize}) / 2);
+        width: #{$loaderSize};
+        z-index: 500;
+    }
 }
 
 .disruption-detail__affected-entities__button {
     height: auto !important;
+}
+
+.disruption-detail__contributors {
+    & .form-group {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0;
+
+        & label {
+            margin-bottom: 0;
+        }
+        & span {
+            font-size: .9rem;
+        }
+
+        & .form-control-plaintext {
+            font-size: .9rem;
+            width: auto;
+        }
+
+        & .disruption-detail__last-updated {
+            padding-bottom: 0;
+        }
+    }
 }
 
 .disruption-summary {
@@ -24,7 +73,12 @@
     }
 }
 
-// TODO: Remove when the new view design is merge.
-.expandable .disruption-creation__wizard-select-details__icon {
-    display: none;
+.map-note {
+    position: absolute;
+    right: 0;
+    bottom: -30px;
+}
+
+.height-entities {
+    height: 392px;
 }

@@ -4,24 +4,36 @@ import { PropTypes } from 'prop-types';
 import { isEmpty, uniqBy, isEqual } from 'lodash-es';
 import { FormGroup } from 'reactstrap';
 
-import { getAffectedStops, getAffectedRoutes, getRoutesByStop, getDisruptionsLoadingState } from '../../../../../redux/selectors/control/disruptions';
 import {
-    updateAffectedRoutes,
-    updateAffectedStops,
+    getAffectedStops,
+    getAffectedRoutes,
+    getRoutesByStop,
+    getDisruptionsLoadingState,
+    isEditEnabled,
+    getDisruptionAction,
+    getDisruptionToEdit,
+} from '../../../../../redux/selectors/control/disruptions';
+import {
+    showAndUpdateAffectedRoutes,
+    updateAffectedStopsState,
     toggleDisruptionModals,
     updateCurrentStep,
+    openCreateDisruption,
+    updateDisruption,
     updateRoutesByStop,
+    updateAffectedRoutesState,
 } from '../../../../../redux/actions/control/disruptions';
 import Footer from './Footer';
 import { EntityCheckbox } from './EntityCheckbox';
 import Loader from '../../../../Common/Loader/Loader';
+import { buildSubmitBody } from '../../../../../utils/control/disruptions';
 
 const ENTITIES_TYPES = {
     SELECTED_ROUTES: 'selectedRoutes',
     SELECTED_STOPS: 'selectedStops',
     SELECTED_ROUTES_BY_STOPS: 'selectedRoutesByStops',
-    ROUTE_ID: 'route_id',
-    STOP_ID: 'stop_id',
+    ROUTE_ID: 'routeId',
+    STOP_ID: 'stopId',
 };
 
 class SelectAffectedEntities extends React.Component {
@@ -32,6 +44,7 @@ class SelectAffectedEntities extends React.Component {
             selectedStops: this.addKeys(this.props.stops),
             selectedRoutesByStops: [],
             isSelectedAll: false,
+            isModalOpen: false,
         };
     }
 
@@ -55,10 +68,10 @@ class SelectAffectedEntities extends React.Component {
         const routes = Object.values(this.props.routesByStop);
         if (routes.length > 0) {
             const selectedRoutesByStops = uniqBy(routes.flat(), ENTITIES_TYPES.ROUTE_ID);
-            const routesIds = this.state.selectedRoutes.map(route => route.route_id);
+            const routesIds = this.state.selectedRoutes.map(route => route[ENTITIES_TYPES.ROUTE_ID]);
             selectedRoutesByStops.forEach((selectedRoute) => {
                 const currentRoute = selectedRoute;
-                currentRoute.checked = !!routesIds.find(id => id === currentRoute.route_id);
+                currentRoute.checked = !!routesIds.find(id => id === currentRoute[ENTITIES_TYPES.ROUTE_ID]);
             });
             this.setState({ selectedRoutesByStops });
         }
@@ -85,7 +98,7 @@ class SelectAffectedEntities extends React.Component {
         const asEntities = [entity];
         if (this.isRouteType(entity)) {
             this.addOrRemoveRoutes(asEntities, isChecked);
-            this.props.updateAffectedRoutes(isChecked
+            this.props.showAndUpdateAffectedRoutes(isChecked
                 ? uniqBy([...this.props.routes, ...asEntities])
                 : this.removeFromList(this.props.routes, asEntities, ENTITIES_TYPES.ROUTE_ID), true);
         } else {
@@ -95,7 +108,7 @@ class SelectAffectedEntities extends React.Component {
                 ENTITIES_TYPES.STOP_ID,
                 isChecked,
             );
-            this.props.updateAffectedStops(isChecked
+            this.props.updateAffectedStopsState(isChecked
                 ? uniqBy([...this.props.stops, ...asEntities])
                 : this.removeFromList(this.props.stops, asEntities, ENTITIES_TYPES.STOP_ID), true);
         }
@@ -120,19 +133,19 @@ class SelectAffectedEntities extends React.Component {
     renderRoutesByStop = (stopId) => {
         if (!isEmpty(this.props.routesByStop) && this.props.routesByStop[stopId] && !isEmpty(this.state.selectedRoutesByStops)) {
             return this.props.routesByStop[stopId].map((route) => {
-                const currentRoute = this.state.selectedRoutesByStops.find(sr => sr.route_id === route.route_id);
+                const currentRoute = this.state.selectedRoutesByStops.find(sr => sr[ENTITIES_TYPES.ROUTE_ID] === route[ENTITIES_TYPES.ROUTE_ID]);
                 const isChecked = currentRoute && currentRoute.checked ? currentRoute.checked : false;
                 return (
-                    <li key={ `${stopId}-${route.route_id}` }>
+                    <li key={ `${stopId}-${route[ENTITIES_TYPES.ROUTE_ID]}` }>
                         <EntityCheckbox
                             checked={ isChecked }
                             onChange={ (e) => {
                                 this.addOrRemoveRoutes([route], e.target.checked);
-                                this.props.updateAffectedRoutes(e.target.checked
+                                this.props.showAndUpdateAffectedRoutes(e.target.checked
                                     ? uniqBy([...this.props.routes, route])
                                     : this.removeFromList(this.props.routes, [route], ENTITIES_TYPES.ROUTE_ID), true);
                             } }
-                            label={ route.route_short_name }
+                            label={ route.routeShortName }
                         />
                     </li>
                 );
@@ -152,20 +165,28 @@ class SelectAffectedEntities extends React.Component {
         const routes = this.state.selectedRoutes.filter(entity => entity.checked !== isChecked);
         this.addOrRemoveEntities(ENTITIES_TYPES.SELECTED_ROUTES, routes, ENTITIES_TYPES.ROUTE_ID, isChecked);
 
-        this.props.updateAffectedRoutes(isChecked
+        this.props.showAndUpdateAffectedRoutes(isChecked
             ? uniqBy([...this.props.routes, ...routesByStop, ...routes], ENTITIES_TYPES.ROUTE_ID)
             : this.removeFromList(this.props.routes, this.props.routes, ENTITIES_TYPES.ROUTE_ID), true);
 
         const stops = this.state.selectedStops.filter(entity => entity.checked !== isChecked);
         this.addOrRemoveEntities(ENTITIES_TYPES.SELECTED_STOPS, stops, ENTITIES_TYPES.STOP_ID, isChecked);
-        this.props.updateAffectedStops(isChecked
+        this.props.updateAffectedStopsState(isChecked
             ? uniqBy([...this.props.stops, ...stops])
             : this.removeFromList(this.props.stops, stops, ENTITIES_TYPES.STOP_ID), true);
     }
 
     onContinue = () => {
-        this.props.onStepUpdate(2);
-        this.props.updateCurrentStep(3);
+        if (!this.props.isEditMode) {
+            this.props.onStepUpdate(2);
+            this.props.updateCurrentStep(3);
+        } else {
+            const disruptionRequest = buildSubmitBody(this.props.disruptionToEdit, this.props.routes, this.props.stops);
+            this.props.updateAffectedRoutesState(disruptionRequest.affectedEntities.filter(entity => entity.routeId));
+            this.props.updateDisruption(disruptionRequest);
+            this.props.openCreateDisruption(false);
+            this.props.toggleDisruptionModals('isConfirmationOpen', true);
+        }
     }
 
     onBack = () => {
@@ -207,12 +228,12 @@ class SelectAffectedEntities extends React.Component {
                     <div>
                         <ul className="p-0">
                             {this.state.selectedRoutes.map(route => (
-                                <li className="border-bottom pb-3 pt-3" key={ route.route_id }>
+                                <li className="border-bottom pb-3 pt-3" key={ route[ENTITIES_TYPES.ROUTE_ID] }>
                                     <FormGroup>
                                         <EntityCheckbox
                                             checked={ route.checked }
                                             onChange={ e => this.handleOnChangeEntities(e, route) }
-                                            label={ route.route_short_name }
+                                            label={ route.routeShortName }
                                         />
                                     </FormGroup>
                                 </li>
@@ -221,17 +242,17 @@ class SelectAffectedEntities extends React.Component {
                     </div>
                     <div>
                         <ul className="p-0">
-                            {this.state.selectedStops.map(stop => (
-                                <li className="border-bottom pb-3 pt-3" key={ stop.stop_id }>
+                            {!isEmpty(this.state.selectedStops) && this.state.selectedStops.map(stop => (
+                                <li className="border-bottom pb-3 pt-3" key={ stop.stopId }>
                                     <FormGroup>
                                         <EntityCheckbox
                                             checked={ stop.checked }
                                             onChange={ e => this.handleOnChangeEntities(e, stop) }
-                                            label={ `Stop ${stop.stop_code}` }
+                                            label={ `Stop ${stop.stopCode}` }
                                         />
                                         <ul className="disruption-creation__wizard-select-details__selected-routes p-0 mt-3">
                                             { !this.props.isLoading
-                                                ? (this.renderRoutesByStop(stop.stop_id)
+                                                ? (this.renderRoutesByStop(stop.stopId)
                                                 ) : <Loader className="loader-disruptions loader-disruptions-list position-absolute" />}
                                         </ul>
                                     </FormGroup>
@@ -244,7 +265,7 @@ class SelectAffectedEntities extends React.Component {
                     updateCurrentStep={ this.props.updateCurrentStep }
                     onStepUpdate={ this.props.onStepUpdate }
                     toggleDisruptionModals={ this.props.toggleDisruptionModals }
-                    nextButtonValue="Continue"
+                    nextButtonValue={ this.props.isEditMode ? 'Save' : 'Continue' }
                     onContinue={ this.onContinue }
                     onBack={ () => this.onBack() }
                     isSubmitEnabled={ this.isAllUnselected() } />
@@ -256,14 +277,19 @@ class SelectAffectedEntities extends React.Component {
 SelectAffectedEntities.propTypes = {
     stops: PropTypes.array,
     routes: PropTypes.array,
-    updateAffectedRoutes: PropTypes.func.isRequired,
-    updateAffectedStops: PropTypes.func.isRequired,
+    showAndUpdateAffectedRoutes: PropTypes.func.isRequired,
+    updateAffectedStopsState: PropTypes.func.isRequired,
     routesByStop: PropTypes.object,
     toggleDisruptionModals: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func.isRequired,
     onStepUpdate: PropTypes.func,
     isLoading: PropTypes.bool,
     updateRoutesByStop: PropTypes.func.isRequired,
+    isEditMode: PropTypes.bool,
+    openCreateDisruption: PropTypes.func.isRequired,
+    updateDisruption: PropTypes.func.isRequired,
+    disruptionToEdit: PropTypes.object,
+    updateAffectedRoutesState: PropTypes.func.isRequired,
 };
 
 SelectAffectedEntities.defaultProps = {
@@ -272,6 +298,8 @@ SelectAffectedEntities.defaultProps = {
     routesByStop: {},
     onStepUpdate: () => {},
     isLoading: false,
+    isEditMode: false,
+    disruptionToEdit: {},
 };
 
 export default connect(state => ({
@@ -279,4 +307,16 @@ export default connect(state => ({
     routes: getAffectedRoutes(state),
     routesByStop: getRoutesByStop(state),
     isLoading: getDisruptionsLoadingState(state),
-}), { updateAffectedRoutes, updateAffectedStops, toggleDisruptionModals, updateCurrentStep, updateRoutesByStop })(SelectAffectedEntities);
+    isEditMode: isEditEnabled(state),
+    action: getDisruptionAction(state),
+    disruptionToEdit: getDisruptionToEdit(state),
+}), {
+    showAndUpdateAffectedRoutes,
+    updateAffectedStopsState,
+    toggleDisruptionModals,
+    updateCurrentStep,
+    openCreateDisruption,
+    updateDisruption,
+    updateRoutesByStop,
+    updateAffectedRoutesState,
+})(SelectAffectedEntities);

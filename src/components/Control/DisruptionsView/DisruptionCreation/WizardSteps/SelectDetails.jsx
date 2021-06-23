@@ -88,17 +88,17 @@ const SelectDetails = (props) => {
                     <Collapse isOpen={ collapse } className="w-100">
                         <ul className="disruption-creation__wizard-select-details__selected-routes p-0 mt-3">
                             { routes.map(route => (
-                                <li key={ route.route_id }>
-                                    <TripIcon type={ route.route_type } className="disruption-creation__wizard-select-details__vehicle-icon" />
-                                    { route.route_short_name }
+                                <li key={ route.routeId }>
+                                    <TripIcon type={ route.routeType } className="disruption-creation__wizard-select-details__vehicle-icon" />
+                                    { route.routeShortName }
                                 </li>
                             ))}
                             { stops.map(stop => (
-                                <li key={ stop.stop_id }>
+                                <li key={ stop.stopId }>
                                     <div className="trip-icon">
                                         <Icon icon="bus-stop" className="disruption-creation__wizard-select-details__vehicle-icon" />
                                     </div>
-                                    { stop.stop_code }
+                                    { stop.stopCode }
                                 </li>
                             ))}
                         </ul>

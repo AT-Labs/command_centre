@@ -34,7 +34,7 @@ import Filters from './Filters/Filters';
 import { SERVICE_DATE_FORMAT, PAGE_SIZE, TRIPS_POLLING_INTERVAL } from '../../../utils/control/routes';
 import { RouteFiltersType } from './Types';
 import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
-import { LoadMore } from './LoadMore/LoadMore';
+import { LoadMore } from '../Common/LoadMore/LoadMore';
 import SelectionToolsFooter from './bulkSelection/TripsSelectionFooter';
 
 const INIT_STATE = {

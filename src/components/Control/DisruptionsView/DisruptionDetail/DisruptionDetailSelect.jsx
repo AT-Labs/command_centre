@@ -13,7 +13,7 @@ export const DisruptionDetailSelect = (props) => {
                 className="w-100 border border-dark disruption-creation__wizard-select-details__select position-relative"
                 disabled={ disabled }
                 id={ id }
-                defaultValue={ value }
+                value={ value }
                 onChange={ e => onChange(e.currentTarget.value) }>
                 {options.map((item) => {
                     if (item.label !== undefined) {

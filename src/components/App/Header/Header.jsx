@@ -13,7 +13,7 @@ import { isNotificationsEmpty } from '../../../redux/selectors/control/notificat
 import { getActiveControlDetailView, getActiveMainView, getActiveSecondaryPanelView } from '../../../redux/selectors/navigation';
 import { getUserPermissions, getUserProfile } from '../../../redux/selectors/user';
 import VIEW_TYPE from '../../../types/view-types';
-import { IS_NOTIFICATIONS_ENABLED, IS_DISRUPTIONS_ENABLED, IS_TRIP_REPLAYS_ENABLED } from '../../../utils/feature-toggles';
+import { IS_NOTIFICATIONS_ENABLED, IS_DISRUPTIONS_ENABLED, IS_TRIP_REPLAYS_ENABLED, IS_ANALYTICS_ENABLED } from '../../../utils/feature-toggles';
 import CustomButton from '../../Common/CustomButton/CustomButton';
 import Icon from '../../Common/Icon/Icon';
 import { HelpInformationModal } from '../HelpInformationModal/HelpInformationModal';
@@ -73,7 +73,7 @@ function Header(props) {
 
     useEffect(() => {
         const locationToPush = props.activeView === VIEW_TYPE.MAIN.REAL_TIME ? '/' : `/${props.activeView}`;
-        if (locationToPush !== location.pathname && [VIEW_TYPE.MAIN.DASHBOARD, VIEW_TYPE.MAIN.REAL_TIME].includes(props.activeView)) {
+        if (locationToPush !== location.pathname && [VIEW_TYPE.MAIN.DASHBOARD, VIEW_TYPE.MAIN.REAL_TIME, VIEW_TYPE.MAIN.ANALYTICS].includes(props.activeView)) {
             history.push(locationToPush);
         }
     }, [props.activeView]);
@@ -179,6 +179,21 @@ function Header(props) {
                                     props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.TRIP_REPLAYS);
                                 } }>
                                 TRIP REPLAYS
+                            </CustomButton>
+                        </NavItem>
+                    )}
+                    { IS_ANALYTICS_ENABLED && (
+                        <NavItem>
+                            <CustomButton
+                                className="header__btn rounded-0 px-3"
+                                active={ activeView === VIEW_TYPE.MAIN.ANALYTICS }
+                                tabIndex="0"
+                                ariaLabel="Analytics section button"
+                                onClick={ () => {
+                                    props.updateMainView(VIEW_TYPE.MAIN.ANALYTICS);
+                                    props.updateControlDetailView();
+                                } }>
+                                ANALYTICS
                             </CustomButton>
                         </NavItem>
                     )}

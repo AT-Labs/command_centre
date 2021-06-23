@@ -1,12 +1,14 @@
 /* eslint-disable camelcase */
-import { isEmpty, uniqBy } from 'lodash-es';
+import { isEmpty, uniqBy, each } from 'lodash-es';
 
 import { ACTION_RESULT } from '../../../types/disruptions-types';
 import ERROR_TYPE from '../../../types/error-types';
 import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
+import { toCamelCaseKeys } from '../../../utils/control/disruptions';
 import ACTION_TYPE from '../../action-types';
 import { setBannerError, modalStatus } from '../activity';
+import { getCachedShapes, getCachedStopsToRoutes } from '../../selectors/control/disruptions';
 
 const loadDisruptions = disruptions => ({
     type: ACTION_TYPE.FETCH_CONTROL_DISRUPTIONS,
@@ -14,7 +16,6 @@ const loadDisruptions = disruptions => ({
         disruptions,
     },
 });
-
 
 const updateDisruptionsPermissions = permissions => ({
     type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_PERMISSIONS,
@@ -55,23 +56,30 @@ const copyDisruptionToClipboard = isCopied => ({
 });
 
 export const updateAffectedRoutesState = affectedRoutes => ({
-    type: ACTION_TYPE.UPDATE_AFFECTED_ROUTES,
+    type: ACTION_TYPE.UPDATE_AFFECTED_ENTITIES,
     payload: {
         affectedRoutes,
     },
 });
 
 export const updateAffectedStopsState = affectedStops => ({
-    type: ACTION_TYPE.UPDATE_AFFECTED_STOPS,
+    type: ACTION_TYPE.UPDATE_AFFECTED_ENTITIES,
     payload: {
         affectedStops,
     },
 });
 
-export const updateAffectedEntitiesState = affectedEntities => ({
-    type: ACTION_TYPE.UPDATE_AFFECTED_ENTITIES,
+export const updateCachedShapesState = shapes => ({
+    type: ACTION_TYPE.UPDATE_CACHED_SHAPES,
     payload: {
-        affectedEntities,
+        shapes,
+    },
+});
+
+export const updateCachedStopsToRoutes = stopsToRoutes => ({
+    type: ACTION_TYPE.UPDATE_CACHED_STOPS_TO_ROUTES,
+    payload: {
+        stopsToRoutes,
     },
 });
 
@@ -155,14 +163,40 @@ export const createDisruption = disruption => async (dispatch) => {
     await dispatch(getDisruptions(false));
 };
 
-export const getRoutesByStop = stops => async (dispatch) => {
+export const getRoutesByStop = stops => async (dispatch, getState) => {
     dispatch(updateLoadingDisruptionsState(true));
     if (!isEmpty(stops)) {
-        const shapesByStop = {};
-        return Promise.all(stops.map(stop => ccStatic.getRoutesByStop(stop.stop_code)))
-            .then((allRoutes) => {
-                allRoutes.forEach((routes, index) => {
-                    shapesByStop[stops[index].stop_id] = uniqBy(routes, 'route_id');
+        const cachedShapes = getCachedShapes(getState());
+        const cachedStopsToRoutes = getCachedStopsToRoutes(getState());
+
+        const routesByStop = {};
+
+        const missingStops = [];
+        const missingCacheShapes = {};
+        const missingCacheStopsToRoutes = {};
+
+        stops.forEach((stop) => {
+            if (cachedStopsToRoutes[stop.stopId]) {
+                routesByStop[stop.stopId] = cachedStopsToRoutes[stop.stopId].map(route => ({ ...route, shapeWkt: cachedShapes[route.routeId] }));
+                return;
+            }
+            missingStops.push(stop);
+        });
+
+        return Promise.all(missingStops.map(stop => ccStatic.getRoutesByStop(stop.stopCode)))
+            .then((allStopsToRoutes) => {
+                allStopsToRoutes.forEach((routes, index) => {
+                    const camelCaseRoutes = toCamelCaseKeys(uniqBy(routes, 'route_id'));
+                    routesByStop[missingStops[index].stopId] = camelCaseRoutes;
+                    camelCaseRoutes.forEach((route) => {
+                        missingCacheShapes[route.routeId] = route.shapeWkt;
+                        missingCacheStopsToRoutes[missingStops[index].stopId] = (missingCacheStopsToRoutes[missingStops[index].stopId] || []).concat([{
+                            routeId: route.routeId,
+                            routeLongName: route.routeLongName,
+                            routeShortName: route.routeShortName,
+                            routeType: route.routeType,
+                        }]);
+                    });
                 });
             })
             .catch((error) => {
@@ -170,7 +204,9 @@ export const getRoutesByStop = stops => async (dispatch) => {
                 throw error;
             })
             .finally(() => {
-                dispatch(updateRoutesByStop(shapesByStop, false));
+                dispatch(updateCachedShapesState(missingCacheShapes));
+                dispatch(updateCachedStopsToRoutes(missingCacheStopsToRoutes));
+                dispatch(updateRoutesByStop(routesByStop, false));
             });
     }
     return dispatch(updateRoutesByStop({}, false));
@@ -221,17 +257,45 @@ export const deleteAffectedEntities = () => (dispatch) => {
     });
 };
 
-export const getRoutes = routesToUpdate => (dispatch) => {
+export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
     dispatch(updateLoadingDisruptionsState(true));
-    const newRouteSelected = routesToUpdate[routesToUpdate.length - 1];
-    ccStatic.getRoutesByShortName(newRouteSelected.route_short_name)
+
+    const cachedShapes = getCachedShapes(getState());
+
+    const missingCacheRoutes = [];
+    const missingCacheShapes = {};
+    const routesWithShapes = [];
+
+    currentRoutes.forEach((route) => {
+        if (cachedShapes[route.routeId]) {
+            routesWithShapes.push({ ...route, shapeWkt: cachedShapes[route.routeId] });
+            return;
+        }
+        missingCacheRoutes.push(route);
+    });
+
+    return Promise.all(missingCacheRoutes.map(route => ccStatic.getRoutesByShortName(route.routeShortName)))
         .then((routes) => {
-            const route = routes.find(({ route_id }) => route_id === newRouteSelected.route_id);
-            newRouteSelected.shape_wkt = route ? route.trips[0].shape_wkt : '';
-            return newRouteSelected;
-        }).finally(() => {
-            dispatch(updateAffectedRoutesState(routesToUpdate));
+            each(routes.flat(), ({ route_id, trips }) => {
+                if (trips && trips.length > 0 && trips[0].shape_wkt) {
+                    const route = missingCacheRoutes.find(({ routeId }) => routeId === route_id);
+                    if (route) {
+                        route.shapeWkt = trips[0].shape_wkt;
+                        routesWithShapes.push(route);
+                        missingCacheShapes[route_id] = route.shapeWkt;
+                    }
+                }
+            });
+
+            return routesWithShapes;
+        })
+        .then(() => {
+            dispatch(updateCachedShapesState(missingCacheShapes));
+            dispatch(updateAffectedRoutesState(routesWithShapes));
             dispatch(updateLoadingDisruptionsState(false));
+        })
+        .catch((err) => {
+            throw err;
         });
 };
 
@@ -244,13 +308,9 @@ export const cancelCreateDisruption = () => (dispatch) => {
     }));
 };
 
-export const updateAffectedRoutes = (routes, show) => (dispatch) => {
+export const showAndUpdateAffectedRoutes = (routes, show) => (dispatch) => {
     dispatch(showSelectedRoutesState(show));
     dispatch(updateAffectedRoutesState(routes));
-};
-
-export const updateAffectedStops = routes => (dispatch) => {
-    dispatch(updateAffectedStopsState(routes));
 };
 
 export const toggleDisruptionModals = (type, isOpen) => ({
@@ -265,5 +325,19 @@ export const updateCurrentStep = activeStep => ({
     type: ACTION_TYPE.UPDATE_CURRENT_STEP,
     payload: {
         activeStep,
+    },
+});
+
+export const updateEditMode = isEditMode => ({
+    type: ACTION_TYPE.UPDATE_EDIT_MODE,
+    payload: {
+        isEditMode,
+    },
+});
+
+export const updateDisruptionToEdit = disruptionToEdit => ({
+    type: ACTION_TYPE.UPDATE_DISRUPTION_TO_EDIT,
+    payload: {
+        disruptionToEdit,
     },
 });

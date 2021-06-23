@@ -173,13 +173,15 @@ export default {
     OPEN_CREATE_DISRUPTIONS: 'open-create-disruptions',
     DESELECT_ALL_ROUTES: 'deselect-all-routes',
     UPDATE_AFFECTED_ENTITIES: 'update-affected-entities',
+    UPDATE_CACHED_SHAPES: 'update-cached-shapes',
+    UPDATE_CACHED_STOPS_TO_ROUTES: 'update-cached-stops-to-routes',
     DELETE_AFFECTED_ENTITIES: 'delete-affected-entities',
-    UPDATE_AFFECTED_ROUTES: 'update-affected-routes',
-    UPDATE_AFFECTED_STOPS: 'update-affected-stops',
     SET_DISRUPTIONS_MODAL_STATUS: 'set-disruption-modal-status',
     UPDATE_CURRENT_STEP: 'update-current-step',
     UPDATE_ROUTES_BY_STOP: 'update-routes-by-stop',
     RESET_STATE: 'reset_state',
+    UPDATE_EDIT_MODE: 'update-edit-mode',
+    UPDATE_DISRUPTION_TO_EDIT: 'update-disruption-to-edit',
 
     // TripReplays
     UPDATE_CONTROL_TRIP_REPLAYS_LOADING: 'update-control-trip-replays-loading',
@@ -195,4 +197,12 @@ export default {
     FETCH_CONTROL_TRIP_REPLAYS_TRIPS: 'update-control-trip-replay-trips',
     CLEAR_CONTROL_TRIP_REPLAYS_TRIPS: 'clear-control-trip-replay-trips',
     DISPLAY_CONTROL_TRIP_REPLAYS_SINGLE_TRIP: 'display-control-trip-replays-single-trip',
+
+    // Analytics
+    SET_ID_MAPPINGS: 'set-id-mappings',
+    SET_OCCUPANCY: 'set-occupancy',
+    SET_OCCUPANCY_FILTERS: 'set-occupancy-filters',
+    SET_OCCUPANCY_AGENCY_FILTERS: 'set-occupancy-agency-filters',
+    SET_OCCUPANCY_ROUTES_FILTERS: 'set-occupancy-routes-filters',
+    OCCUPANCY_IS_LOADING: 'occupancy-is-loading',
 };

@@ -1,10 +1,7 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import _ from 'lodash-es';
 import { FeatureGroup, Polyline } from 'react-leaflet';
-
-import { getShapes } from '../../../../../redux/selectors/control/disruptions';
 
 class ShapeLayer extends React.Component {
     static propTypes = {
@@ -38,6 +35,4 @@ class ShapeLayer extends React.Component {
     }
 }
 
-export default connect(state => ({
-    shapes: getShapes(state),
-}))(ShapeLayer);
+export default ShapeLayer;

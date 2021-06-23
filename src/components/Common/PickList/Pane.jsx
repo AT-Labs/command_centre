@@ -80,7 +80,7 @@ class Pane extends Component {
         if (!showCheckbox && isVerticalLayout) {
             return (
                 <div className="picklist__list-btn w-100 border-0 rounded-0 text-left mb-2">
-                    { this.renderIcon(items[0].type, items[0].route_type) }
+                    { this.renderIcon(items[0].type, items[0].routeType) }
                     { value }
                     <Button
                         className="btn cc-btn-link float-right p-0"

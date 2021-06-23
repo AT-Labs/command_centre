@@ -6,7 +6,7 @@ import Loader from '../../../Common/Loader/Loader';
 import './LoadMore.scss';
 
 export const LoadMore = (props) => {
-    const { limit, total, chunkSize, isLoading } = props;
+    const { limit, total, chunkSize, isLoading, message } = props;
     const isMaxed = !isLoading && (total < limit);
 
     if (!limit || !total || isMaxed) return null;
@@ -16,10 +16,7 @@ export const LoadMore = (props) => {
             {(total >= chunkSize * 2) && (
                 <Alert color="secondary" className="col-6 col-xl-4 border-0 text-center">
                     <span><strong>Performance may slow down</strong></span><br />
-                    <span>We noticed you are loading a large number of trips.
-                        This may affect the performance of this system.
-                        We recommend using the filters at the top of the screen to help find the information you need.
-                    </span>
+                    <span>{ message }</span>
                 </Alert>
             )}
             <button
@@ -40,9 +37,16 @@ export const LoadMore = (props) => {
 };
 
 LoadMore.propTypes = {
+    message: PropTypes.string,
     limit: PropTypes.number.isRequired,
     total: PropTypes.number.isRequired,
     chunkSize: PropTypes.number.isRequired,
     isLoading: PropTypes.bool.isRequired,
     onClick: PropTypes.func.isRequired,
+};
+
+LoadMore.defaultProps = {
+    message: `We noticed you are loading a large number of trips.
+    This may affect the performance of this system.
+    We recommend using the filters at the top of the screen to help find the information you need.`,
 };

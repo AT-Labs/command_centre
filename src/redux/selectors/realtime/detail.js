@@ -148,5 +148,5 @@ export const getCheckedStops = createSelector(
 
 export const getVisibleStops = createSelector(
     getViewDetailEntity,
-    viewDetailEntity => isCheckedRouteOrOtherEntity(viewDetailEntity) && _.result(viewDetailEntity, 'stops'),
+    viewDetailEntity => (isCheckedRouteOrOtherEntity(viewDetailEntity) && _.result(viewDetailEntity, 'stops')) || [],
 );

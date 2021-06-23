@@ -3,6 +3,7 @@ export default {
         REAL_TIME: 'real-time-main-view',
         CONTROL: 'control-main-view',
         DASHBOARD: 'dashboard-main-view',
+        ANALYTICS: 'analytics-main-view',
     },
     REAL_TIME_DETAIL: {
         DEFAULT: 'default-real-time-view',
@@ -28,5 +29,8 @@ export default {
         ROUTES_TRIPS: 'control-routes-view-routes-trips',
         ROUTE_VARIANTS_TRIPS: 'control-routes-view-route-variants-trips',
         TRIPS: 'control-routes-view-trips',
+    },
+    ANALYTICS_DETAIL: {
+        OCCUPANCY: 'analytics-occupancy',
     },
 };

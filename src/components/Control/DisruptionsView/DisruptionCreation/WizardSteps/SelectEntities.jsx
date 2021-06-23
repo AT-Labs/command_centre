@@ -8,39 +8,44 @@ import { filter } from 'lodash-es';
 import PickList from '../../../../Common/PickList/PickList';
 import { getMinimalRoutes } from '../../../../../redux/selectors/static/routes';
 import { getMinimalStops } from '../../../../../redux/selectors/static/stops';
-import { getAffectedEntities, getDisruptionsLoadingState } from '../../../../../redux/selectors/control/disruptions';
+import { getAffectedRoutes, getAffectedStops, getDisruptionsLoadingState, isEditEnabled } from '../../../../../redux/selectors/control/disruptions';
 import {
     deselectAllRoutes,
     deleteAffectedEntities,
     updateCurrentStep,
     getRoutesByStop,
-    updateAffectedStops,
-    getRoutes,
+    updateAffectedStopsState,
+    getRoutesByShortName,
     updateAffectedRoutesState,
 } from '../../../../../redux/actions/control/disruptions';
+import { toCamelCaseKeys } from '../../../../../utils/control/disruptions';
 
 class SelectEntities extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            entitiesToArray: this.addKeys(props.routes, props.stops),
             deselectEntities: false,
             areEntitiesSelected: false,
-            setSelectedEntities: this.addKeys(this.props.selectedEntities.affectedRoutes, this.props.selectedEntities.affectedStops),
+            affectedEntities: this.addKeys(this.props.affectedRoutes, this.props.affectedStops),
+            allRoutesAndStopsEntities: this.addKeys(props.routes, props.stops),
         };
     }
 
     addKeys = (routes, stops) => {
         const routesModified = routes.map((route) => {
-            route.valueKey = 'route_id';
-            route.labelKey = 'route_short_name';
+            if (this.props.isEditMode && !route.routeType) {
+                const foundRoute = this.props.routes.find(({ routeId }) => routeId === route.routeId);
+                route.routeType = foundRoute.routeType;
+            }
+            route.valueKey = 'routeId';
+            route.labelKey = 'routeShortName';
             route.type = 'route';
             return route;
         });
         const stopsModified = stops.map((stop) => {
-            stop.valueKey = 'stop_id';
-            stop.labelKey = 'stop_code';
+            stop.valueKey = 'stopId';
+            stop.labelKey = 'stopCode';
             stop.type = 'stop';
             return stop;
         });
@@ -51,12 +56,12 @@ class SelectEntities extends React.Component {
         this.setState({
             areEntitiesSelected: false,
             deselectEntities: true,
-            setSelectedEntities: [],
+            affectedEntities: [],
         }, this.props.deleteAffectedEntities());
     }
 
     onContinue = () => {
-        this.props.getRoutesByStop(this.props.selectedEntities.affectedStops);
+        this.props.getRoutesByStop(this.props.affectedStops);
         this.props.onStepUpdate(1);
         this.props.updateCurrentStep(2);
     }
@@ -66,35 +71,24 @@ class SelectEntities extends React.Component {
         this.props.onDataUpdate('affectedEntities', selectedItems);
         this.setState({
             areEntitiesSelected: selectedItems.length > 0,
-            deselectEntities: !(selectedItems.length > 0),
-            setSelectedEntities: selectedItems,
+            deselectEntities: selectedItems.length === 0,
+            affectedEntities: selectedItems,
         });
     }
 
     updateEntities = (selectedItems) => {
-        if (selectedItems.length === 0) {
-            this.props.updateAffectedStops([]);
-            this.props.updateAffectedRoutesState([]);
-            return;
-        }
-
         const stops = filter(selectedItems, { type: 'stop' });
         const routes = filter(selectedItems, { type: 'route' });
 
-        if (routes.length > filter(this.state.setSelectedEntities, { type: 'route' }).length) {
-            this.props.getRoutes(routes);
-        } else {
+        this.props.updateAffectedStopsState(stops);
+
+        if (routes.length !== this.props.affectedRoutes.length) {
             this.props.updateAffectedRoutesState(routes);
-        }
-
-        this.props.updateAffectedStops(stops);
-
-        if (routes.length === 0) {
-            this.props.updateAffectedRoutesState([]);
+            this.props.getRoutesByShortName(routes);
         }
     }
 
-    showFooter = () => this.state.areEntitiesSelected || this.state.setSelectedEntities.length > 0;
+    showFooter = () => this.state.areEntitiesSelected || this.state.affectedEntities.length > 0;
 
     isButtonDisabled = () => !this.showFooter() || this.props.isLoading;
 
@@ -113,34 +107,36 @@ class SelectEntities extends React.Component {
                     rightPaneLabel="Selected routes and stops:"
                     rightPaneClassName="cc__picklist-pane-bottom pl-4 pr-4"
                     rightPaneShowCheckbox={ false }
-                    staticItemList={ this.state.entitiesToArray }
+                    staticItemList={ this.state.allRoutesAndStopsEntities }
                     leftPaneClassName="cc__picklist-pane-vertical"
                     width="w-100"
                     secondPaneHeight="auto"
                     deselectRoutes={ this.state.deselectEntities }
-                    selectedValues={ this.state.setSelectedEntities }
+                    selectedValues={ this.state.affectedEntities }
                     isLoading={ this.props.isLoading }
                 />
-                {this.showFooter() && (
-                    <footer className="row justify-content-between position-fixed p-4 m-0 select_routes-footer">
-                        <div className="col-4">
+                <footer className="row justify-content-between position-fixed p-4 m-0 disruptions-creation__wizard-footer">
+                    <div className="col-4">
+                        {this.state.affectedEntities.length > 0 && (
                             <Button
                                 className="btn cc-btn-secondary btn-block"
                                 disabled={ this.isButtonDisabled() }
                                 onClick={ this.deselectAllRoutes }>
                                 Deselect all
                             </Button>
-                        </div>
-                        <div className="col-4">
+                        )}
+                    </div>
+                    <div className="col-4">
+                        {this.state.affectedEntities.length > 0 && (
                             <Button
                                 className="btn cc-btn-primary btn-block p-2 continue"
                                 disabled={ this.isButtonDisabled() }
                                 onClick={ () => this.onContinue() }>
                                 Continue
                             </Button>
-                        </div>
-                    </footer>
-                )}
+                        )}
+                    </div>
+                </footer>
             </div>
         );
     }
@@ -153,33 +149,35 @@ SelectEntities.propTypes = {
     stops: PropTypes.array.isRequired,
     deleteAffectedEntities: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func,
-    selectedEntities: PropTypes.object,
     getRoutesByStop: PropTypes.func.isRequired,
-    updateAffectedStops: PropTypes.func.isRequired,
+    updateAffectedStopsState: PropTypes.func.isRequired,
     updateAffectedRoutesState: PropTypes.func.isRequired,
-    getRoutes: PropTypes.func.isRequired,
-    isLoading: PropTypes.bool,
+    getRoutesByShortName: PropTypes.func.isRequired,
+    affectedRoutes: PropTypes.array.isRequired,
+    affectedStops: PropTypes.array.isRequired,
+    isLoading: PropTypes.bool.isRequired,
+    isEditMode: PropTypes.bool.isRequired,
 };
 
 SelectEntities.defaultProps = {
-    selectedEntities: {},
     onStepUpdate: () => {},
     onDataUpdate: () => {},
     updateCurrentStep: () => {},
-    isLoading: false,
 };
 
 export default connect(state => ({
-    routes: getMinimalRoutes(state),
-    stops: getMinimalStops(state),
-    selectedEntities: getAffectedEntities(state),
+    affectedStops: getAffectedStops(state),
+    affectedRoutes: getAffectedRoutes(state),
+    routes: toCamelCaseKeys(getMinimalRoutes(state)),
+    stops: toCamelCaseKeys(getMinimalStops(state)),
     isLoading: getDisruptionsLoadingState(state),
+    isEditMode: isEditEnabled(state),
 }), {
     deselectAllRoutes,
     deleteAffectedEntities,
     updateCurrentStep,
     getRoutesByStop,
-    updateAffectedStops,
-    getRoutes,
+    updateAffectedStopsState,
+    getRoutesByShortName,
     updateAffectedRoutesState,
 })(SelectEntities);

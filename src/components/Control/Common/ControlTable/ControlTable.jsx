@@ -41,7 +41,8 @@ const ControlTable = (props) => {
                                 rowClassName={ props.rowClassName ? props.rowClassName(rowData) : null }
                                 isExpandable={ props.isExpandable }
                                 isFocused={ props.rowFocused ? props.rowFocused(rowData) : null }
-                                level={ level } />
+                                level={ level }
+                                renderIcon={ props.renderIcon } />
                         </li>
                     )) }
                 </ul>
@@ -70,6 +71,7 @@ ControlTable.propTypes = {
     rowBody: PropTypes.func,
     rowClassName: PropTypes.func,
     level: PropTypes.number,
+    renderIcon: PropTypes.func,
 };
 
 ControlTable.defaultProps = {
@@ -82,6 +84,7 @@ ControlTable.defaultProps = {
     level: 1,
     rowBody: null,
     rowClassName: null,
+    renderIcon: null,
 };
 
 export default ControlTable;

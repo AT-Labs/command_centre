@@ -78,6 +78,10 @@
     height: 330px;
 }
 
+.disruptions-creation__wizard-footer {
+    height: 89px;
+}
+
 .disruption-creation__wizard-select-address {
     .cc__picklist-pane-right {
         background: tint($at-ocean, 10%);
@@ -94,13 +98,6 @@
         right: 10px;
         top: 40px;
         z-index: 0;
-    }
-
-    & &__select {
-        -moz-appearance: none;
-        -webkit-appearance: none;
-        z-index: 1;
-        padding-right: 35px;
     }
 
     & &__select:hover,

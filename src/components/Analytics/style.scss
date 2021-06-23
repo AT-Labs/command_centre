@@ -1,0 +1,25 @@
+@import '../../assets/styles/variables';
+
+#analytics {
+    padding-top: $header-height;
+
+    .loader {
+        width: 50px;
+        position: absolute;
+        height: 50px;
+        z-index: 10;
+        left: 37%;
+        top: 300px;
+        margin: 0 auto;
+    }
+
+    .search__input {
+        border-color: $at-ocean;
+    }
+
+    & .analytics-view__filters-sidebar {
+        background-color: #E8E9EB;
+        border: 1px solid $at-light-gray;
+        height: 100vh;
+    }
+}

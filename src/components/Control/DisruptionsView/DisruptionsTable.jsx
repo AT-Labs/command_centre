@@ -2,8 +2,12 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
+import { HiOutlineCheckCircle } from 'react-icons/hi';
+import { GiAlarmClock } from 'react-icons/gi';
+import { GoAlert } from 'react-icons/go';
 import { updateActiveDisruptionId, updateCopyDisruptionState } from '../../../redux/actions/control/disruptions';
 import { getActiveDisruptionId } from '../../../redux/selectors/control/disruptions';
+import { PAGE_SIZE } from '../../../utils/control/disruptions';
 import { STATUSES, CAUSES, IMPACTS, DEFAULT_IMPACT, DEFAULT_CAUSE } from '../../../types/disruptions-types';
 import {
     DATE_FORMAT,
@@ -13,8 +17,10 @@ import {
     LABEL_START_TIME, LABEL_STATUS,
     TIME_FORMAT,
 } from '../../../constants/disruptions';
+import { LoadMore } from '../Common/LoadMore/LoadMore';
 import ControlTable from '../Common/ControlTable/ControlTable';
 import DisruptionDetail from './DisruptionDetail';
+import './style.scss';
 
 class DisruptionsTable extends React.Component {
     static propTypes = {
@@ -32,6 +38,10 @@ class DisruptionsTable extends React.Component {
     constructor(props) {
         super(props);
 
+        this.state = {
+            pageSize: PAGE_SIZE,
+        };
+
         this.DISRUPTION_TABLE_COLUMNS = [
             {
                 label: `${LABEL_DISRUPTION}#`,
@@ -45,15 +55,15 @@ class DisruptionsTable extends React.Component {
             },
             {
                 label: LABEL_AFFECTED_ROUTES,
-                key: 'affectedRoutes',
+                key: 'affectedEntities',
                 cols: 'col-2',
-                getContent: (disruption, key) => disruption[key].map(({ routeShortName }) => routeShortName).join(', '),
+                getContent: (disruption, key) => disruption[key].filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName).join(', '),
             },
             {
                 label: LABEL_AFFECTED_STOPS,
-                key: 'affectedStops',
+                key: 'affectedEntities',
                 cols: 'col-2',
-                getContent: (disruption, key) => disruption[key].map(({ stopCode }) => stopCode).join(', '),
+                getContent: (disruption, key) => disruption[key].filter(entity => entity.stopId).map(({ stopCode }) => stopCode).join(', '),
             },
             {
                 label: LABEL_CUSTOMER_IMPACT,
@@ -95,6 +105,16 @@ class DisruptionsTable extends React.Component {
 
     getRowClassName = ({ status }) => (status === STATUSES.RESOLVED ? 'bg-at-ocean-tint-10 text-muted' : '');
 
+    getDisruptionsToDisplay = () => {
+        if (this.props.activeDisruptionId) {
+            const activeDisruptionIndex = this.props.disruptions.findIndex(({ disruptionId }) => disruptionId === this.props.activeDisruptionId);
+            if (this.state.pageSize < activeDisruptionIndex + 1) {
+                this.setState(() => ({ pageSize: activeDisruptionIndex + 1 }));
+            }
+        }
+        return this.props.disruptions.slice(0, Math.min(this.state.pageSize, this.props.disruptions.length));
+    }
+
     renderRowBody = disruption => <DisruptionDetail disruption={ disruption } />
 
     isRowActive = ({ disruptionId }) => this.props.activeDisruptionId === disruptionId
@@ -105,23 +125,46 @@ class DisruptionsTable extends React.Component {
         this.props.updateCopyDisruptionState(false);
     }
 
+    renderIcon = (value) => {
+        if (value === STATUSES.IN_PROGRESS) {
+            return <GoAlert className="icon-in-progress mr-1" />;
+        }
+        if (value === STATUSES.NOT_STARTED) {
+            return <GiAlarmClock className="icon-not-started mr-1" />;
+        }
+        return <HiOutlineCheckCircle className="mr-1" />;
+    }
+
     render() {
-        const { disruptions } = this.props;
+        const disruptionsToLoad = this.getDisruptionsToDisplay();
         return (
-            <ControlTable
-                columns={ this.DISRUPTION_TABLE_COLUMNS }
-                data={ disruptions }
-                getRowId={ row => `${row.disruptionId}` }
-                isExpandable
-                rowActive={ this.isRowActive }
-                rowBody={ this.renderRowBody }
-                rowClassName={ this.getRowClassName }
-                rowOnClick={ this.handleRowClick } />
+            <div id="disruptions-control-table">
+                <ControlTable
+                    columns={ this.DISRUPTION_TABLE_COLUMNS }
+                    data={ disruptionsToLoad }
+                    getRowId={ row => `${row.disruptionId}` }
+                    isExpandable
+                    rowActive={ this.isRowActive }
+                    rowBody={ this.renderRowBody }
+                    rowClassName={ this.getRowClassName }
+                    rowOnClick={ this.handleRowClick }
+                    renderIcon={ this.renderIcon } />
+                <LoadMore
+                    limit={ this.state.pageSize }
+                    total={ this.props.disruptions.length }
+                    chunkSize={ PAGE_SIZE }
+                    isLoading={ false }
+                    message={ `We noticed you are loading a large number of disruptions.
+                    This may affect performance and responsiveness of this system.` }
+                    onClick={ () => this.setState(state => ({
+                        pageSize: state.pageSize + PAGE_SIZE,
+                    })) }
+                />
+            </div>
         );
     }
 }
 
 export default connect(state => ({
     activeDisruptionId: getActiveDisruptionId(state),
-}),
-{ updateActiveDisruptionId, updateCopyDisruptionState })(DisruptionsTable);
+}), { updateActiveDisruptionId, updateCopyDisruptionState })(DisruptionsTable);

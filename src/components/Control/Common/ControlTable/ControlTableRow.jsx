@@ -2,6 +2,7 @@ import inView from 'in-view';
 import _ from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
+
 import { Expandable, ExpandableContent, ExpandableSummary } from '../../../Common/Expandable';
 
 export class ControlTableRow extends React.Component {
@@ -66,6 +67,7 @@ export class ControlTableRow extends React.Component {
                             {
                                 _.map(columns, column => (
                                     <div key={ _.uniqueId('control-table-row-cells') } className={ `${column.cols}` }>
+                                        { column.key === 'status' && this.props.renderIcon && this.props.renderIcon(_.get(row, column.key))}
                                         { column.getContent ? column.getContent(row, column.key) : _.get(row, column.key)}
                                     </div>
                                 ))
@@ -110,6 +112,7 @@ ControlTableRow.propTypes = {
     rowBody: PropTypes.element,
     rowClassName: PropTypes.string,
     level: PropTypes.number.isRequired,
+    renderIcon: PropTypes.func,
 };
 
 ControlTableRow.defaultProps = {
@@ -118,6 +121,7 @@ ControlTableRow.defaultProps = {
     rowBody: null,
     isFocused: null,
     rowClassName: null,
+    renderIcon: null,
 };
 
 export default ControlTableRow;

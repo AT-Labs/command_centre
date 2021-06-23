@@ -13,6 +13,7 @@ _.forEach(schemas, (val) => {
         .upgrade(db => Promise.all([
             db.routes.clear(),
             db.stops.clear(),
+            db.route_mappings.clear(),
         ]));
 });
 

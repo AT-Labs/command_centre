@@ -5,6 +5,9 @@ export const INIT_STATE = {
     activeDisruptionId: null,
     permissions: [],
     disruptions: [],
+    cachedShapes: {},
+    cachedStopsToRoutes: {},
+    disruptionToEdit: {},
     affectedEntities: {
         affectedRoutes: [],
         affectedStops: [],
@@ -26,6 +29,8 @@ export const INIT_STATE = {
         resultMessage: null,
         isCopied: false,
     },
+    shapes: [],
+    isEditMode: false,
 };
 
 const handleDisruptionsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });
@@ -61,10 +66,11 @@ const handleCopyDisruptionsUpdate = (state, { payload: { isCopied } }) => ({
 });
 
 const handleOpenDisruptions = (state, { payload: { isCreateEnabled } }) => ({ ...state, isCreateEnabled });
-
 const handleDeselectRoutes = (state, { payload: { deselectAllRoutes } }) => ({ ...state, deselectAllRoutes });
-const handleUpdateAffectedRoutes = (state, { payload: { affectedRoutes } }) => ({ ...state, affectedEntities: { ...state.affectedEntities, affectedRoutes } });
-const handleUpdateAffectedStops = (state, { payload: { affectedStops } }) => ({ ...state, affectedEntities: { ...state.affectedEntities, affectedStops } });
+const handleUpdateAffectedEntities = (state, { payload }) => ({ ...state, affectedEntities: { ...state.affectedEntities, ...payload } });
+const handleUpdateCachedShapes = (state, { payload }) => ({ ...state, cachedShapes: { ...state.cachedShapes, ...payload.shapes } });
+const handleUpdateCachedStopsToRoutes = (state, { payload }) => ({ ...state, cachedStopsToRoutes: { ...state.cachedStopsToRoutes, ...payload.stopsToRoutes } });
+
 const handleShowRoutes = (state, { payload: { showSelectedRoutes } }) => ({ ...state, showSelectedRoutes });
 const handleDisruptionModal = (state, { payload: { type, isOpen } }) => ({
     ...state,
@@ -84,8 +90,9 @@ const handleAffectedEntities = (state, { payload: {
     activeStep,
     routesByStop,
 });
-const handleUpdateAffectedEntities = (state, { payload: { affectedEntities } }) => ({ ...state, affectedEntities });
 const handleResetState = () => ({ ...INIT_STATE });
+const handleUpdateEditMode = (state, { payload: { isEditMode } }) => ({ ...state, isEditMode });
+const handleDisruptionToEdit = (state, { payload: { disruptionToEdit } }) => ({ ...state, disruptionToEdit });
 
 export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_PERMISSIONS]: handleDisruptionsPermissionsUpdate,
@@ -99,13 +106,15 @@ export default handleActions({
     [ACTION_TYPE.COPY_DISRUPTION]: handleCopyDisruptionsUpdate,
     [ACTION_TYPE.OPEN_CREATE_DISRUPTIONS]: handleOpenDisruptions,
     [ACTION_TYPE.DESELECT_ALL_ROUTES]: handleDeselectRoutes,
-    [ACTION_TYPE.UPDATE_AFFECTED_ROUTES]: handleUpdateAffectedRoutes,
+    [ACTION_TYPE.UPDATE_AFFECTED_ENTITIES]: handleUpdateAffectedEntities,
+    [ACTION_TYPE.UPDATE_CACHED_SHAPES]: handleUpdateCachedShapes,
+    [ACTION_TYPE.UPDATE_CACHED_STOPS_TO_ROUTES]: handleUpdateCachedStopsToRoutes,
     [ACTION_TYPE.SHOW_SELECTED_ROUTES]: handleShowRoutes,
     [ACTION_TYPE.SET_DISRUPTIONS_MODAL_STATUS]: handleDisruptionModal,
     [ACTION_TYPE.UPDATE_CURRENT_STEP]: handleUpdateCurrentStep,
-    [ACTION_TYPE.UPDATE_AFFECTED_STOPS]: handleUpdateAffectedStops,
     [ACTION_TYPE.UPDATE_ROUTES_BY_STOP]: handleUpdateRoutesByStop,
     [ACTION_TYPE.DELETE_AFFECTED_ENTITIES]: handleAffectedEntities,
-    [ACTION_TYPE.UPDATE_AFFECTED_ENTITIES]: handleUpdateAffectedEntities,
     [ACTION_TYPE.RESET_STATE]: handleResetState,
+    [ACTION_TYPE.UPDATE_EDIT_MODE]: handleUpdateEditMode,
+    [ACTION_TYPE.UPDATE_DISRUPTION_TO_EDIT]: handleDisruptionToEdit,
 }, INIT_STATE);

@@ -23,10 +23,15 @@ import {
     getDisruptionStepCreation,
     getAffectedStops,
     getAffectedRoutes,
+    getShapes,
 } from '../../../../../redux/selectors/control/disruptions';
-import { createDisruption, openCreateDisruption, toggleDisruptionModals, updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
-import { momentFromDateTime } from '../../../../../utils/control/disruptions';
-import VEHICLE_TYPES from '../../../../../types/vehicle-types';
+import {
+    createDisruption,
+    openCreateDisruption,
+    toggleDisruptionModals,
+    updateCurrentStep,
+} from '../../../../../redux/actions/control/disruptions';
+import { buildSubmitBody, momentFromDateTime } from '../../../../../utils/control/disruptions';
 import { DEFAULT_IMPACT, DEFAULT_CAUSE, STATUSES } from '../../../../../types/disruptions-types';
 import { DATE_FORMAT, TIME_FORMAT } from '../../../../../constants/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
@@ -42,33 +47,13 @@ const INIT_STATE = {
     cause: DEFAULT_CAUSE.value,
     affectedEntities: [],
     mode: '-',
-    status: STATUSES.IN_PROGRESS,
+    status: STATUSES.NOT_STARTED,
     header: '',
     description: '',
     url: '',
 };
 
 class CreateDisruption extends React.Component {
-    static propTypes = {
-        createDisruption: PropTypes.func.isRequired,
-        action: PropTypes.object.isRequired,
-        isCreateOpen: PropTypes.bool,
-        toggleDisruptionModals: PropTypes.func.isRequired,
-        isCancellationOpen: PropTypes.bool,
-        activeStep: PropTypes.number,
-        stops: PropTypes.array,
-        routes: PropTypes.array,
-        updateCurrentStep: PropTypes.func.isRequired,
-    }
-
-    static defaultProps = {
-        isCreateOpen: false,
-        isCancellationOpen: false,
-        activeStep: 1,
-        stops: [],
-        routes: [],
-    }
-
     constructor(props) {
         super(props);
 
@@ -100,39 +85,23 @@ class CreateDisruption extends React.Component {
         }));
     }
 
-    buildSubmitBody = () => {
+    onSubmit = () => {
+        this.toggleModal('Confirmation', true);
         const { disruptionData } = this.state;
-        const modes = [];
-        const camelCaseRoutes = [];
-        const camelCaseStops = [];
-        const startTimeMoment = momentFromDateTime(disruptionData.startDate, disruptionData.startTime);
+        const startDate = disruptionData.startDate ? disruptionData.startDate : moment(disruptionData.startTime).format(DATE_FORMAT);
+        const startTimeMoment = momentFromDateTime(startDate, disruptionData.startTime);
+
         let endTimeMoment;
         if (!_.isEmpty(disruptionData.endDate) && !_.isEmpty(disruptionData.endTime)) {
             endTimeMoment = momentFromDateTime(disruptionData.endDate, disruptionData.endTime);
         }
-
-        this.props.routes.forEach((route) => {
-            modes.push(VEHICLE_TYPES[route.route_type].type);
-            camelCaseRoutes.push(_.mapKeys(route, (value, key) => _.camelCase(key)));
-        });
-        this.props.stops.forEach((stop) => {
-            camelCaseStops.push(_.mapKeys(stop, (value, key) => _.camelCase(key)));
-        });
-
-        const routesToRequest = camelCaseRoutes.map(({ routeId, routeShortName, routeType }) => ({ routeId, routeShortName, routeType }));
-
-        this.toggleModal('Confirmation', true);
-        return {
+        const disruption = {
             ...disruptionData,
-            mode: _.uniq(modes).join(', '),
-            affectedEntities: [...routesToRequest, ...camelCaseStops],
-            startTime: startTimeMoment,
             endTime: endTimeMoment,
-            status: startTimeMoment.isAfter(moment()) ? STATUSES.NOT_STARTED : STATUSES.IN_PROGRESS,
+            startTime: startTimeMoment,
         };
+        this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops));
     }
-
-    onSubmit = () => this.props.createDisruption(this.buildSubmitBody());
 
     toggleModal = (modalType, isOpen) => {
         const type = `is${modalType}Open`;
@@ -154,7 +123,7 @@ class CreateDisruption extends React.Component {
                 <SidePanel
                     isOpen
                     isActive
-                    className={ `sidepanel-primary-panel disruption-creation__sidepanel ${this.props.stops.length > 0 || this.props.routes.length > 0 ? 'side-panel__scroll-size' : ''} ` }
+                    className="sidepanel-primary-panel disruption-creation__sidepanel side-panel__scroll-size"
                     toggleButton={ false }>
                     <div className="disruption-creation__container">
                         <div className="disruption-creation__steps p-4">
@@ -185,20 +154,18 @@ class CreateDisruption extends React.Component {
                         <CustomModal
                             className="disruption-creation__modal"
                             title="Log a disruption"
-                            isModalOpen={ isConfirmationOpen }
-                            onClose={ () => this.toggleModal('Confirmation', false) }>
+                            isModalOpen={ isConfirmationOpen }>
                             <Confirmation response={ this.props.action } />
                         </CustomModal>
                         <CustomModal
                             className="disruption-creation__modal"
                             title="Log a disruption"
-                            isModalOpen={ this.props.isCancellationOpen }
-                            onClose={ () => this.toggleModal('Cancellation', false) }>
+                            isModalOpen={ this.props.isCancellationOpen }>
                             <Cancellation />
                         </CustomModal>
                     </div>
                 </SidePanel>
-                <Map shouldOffsetForSidePanel />
+                <Map shouldOffsetForSidePanel shapes={ this.props.shapes } stops={ this.props.stops } />
                 <Button
                     className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
                     onClick={ () => this.toggleModal('Cancellation', true) }>
@@ -210,6 +177,28 @@ class CreateDisruption extends React.Component {
     }
 }
 
+CreateDisruption.propTypes = {
+    createDisruption: PropTypes.func.isRequired,
+    action: PropTypes.object.isRequired,
+    isCreateOpen: PropTypes.bool,
+    toggleDisruptionModals: PropTypes.func.isRequired,
+    updateCurrentStep: PropTypes.func.isRequired,
+    isCancellationOpen: PropTypes.bool,
+    activeStep: PropTypes.number,
+    stops: PropTypes.array,
+    routes: PropTypes.array,
+    shapes: PropTypes.array,
+};
+
+CreateDisruption.defaultProps = {
+    isCreateOpen: false,
+    isCancellationOpen: false,
+    activeStep: 1,
+    stops: [],
+    routes: [],
+    shapes: [],
+};
+
 export default connect(state => ({
     action: getDisruptionAction(state),
     isCreateOpen: isDisruptionCreationOpen(state),
@@ -217,4 +206,5 @@ export default connect(state => ({
     activeStep: getDisruptionStepCreation(state),
     stops: getAffectedStops(state),
     routes: getAffectedRoutes(state),
+    shapes: getShapes(state),
 }), { createDisruption, openCreateDisruption, toggleDisruptionModals, updateCurrentStep })(CreateDisruption);

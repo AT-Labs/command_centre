@@ -9,7 +9,7 @@ import { isEqual, isEmpty } from 'lodash-es';
 import { MAP_DATA } from '../../../../../types/map-types';
 import ShapeLayer from './ShapeLayer';
 import StopsLayer from './StopsLayer';
-import { getBoundsToFit, getDisruptionsLoadingState, getAffectedStops } from '../../../../../redux/selectors/control/disruptions';
+import { getBoundsToFit, getDisruptionsLoadingState } from '../../../../../redux/selectors/control/disruptions';
 import Loader from '../../../../Common/Loader/Loader';
 import 'leaflet/dist/leaflet.css';
 
@@ -97,7 +97,7 @@ class Map extends React.Component {
                             attribution={ MAP_DATA.copyright }
                             minZoom={ MAP_DATA.zoomLevel.min }
                             maxZoom={ MAP_DATA.zoomLevel.max } />
-                        <ShapeLayer />
+                        <ShapeLayer shapes={ this.props.shapes } />
                         <StopsLayer stops={ this.props.stops } />
                     </LeafletMap>
                 </LeafletProvider>
@@ -112,12 +112,14 @@ Map.propTypes = {
     center: PropTypes.array,
     isLoading: PropTypes.bool,
     stops: PropTypes.array,
+    shapes: PropTypes.array,
 };
 
 Map.defaultProps = {
     center: null,
     isLoading: false,
     stops: [],
+    shapes: [],
 };
 
 
@@ -125,6 +127,5 @@ export default connect(
     state => ({
         boundsToFit: getBoundsToFit(state),
         isLoading: getDisruptionsLoadingState(state),
-        stops: getAffectedStops(state),
     }), null, null, { withRef: true },
 )(Map);

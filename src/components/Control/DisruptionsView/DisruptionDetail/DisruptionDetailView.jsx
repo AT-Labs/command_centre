@@ -1,16 +1,17 @@
 import moment from 'moment';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap';
-import _ from 'lodash-es';
-import { MdModeEdit } from 'react-icons/md';
+import { map, toString, omit, some, isEmpty } from 'lodash-es';
+import { FaRegCalendarAlt } from 'react-icons/fa';
 import Flatpickr from 'react-flatpickr';
 import { CAUSES, IMPACTS, STATUSES } from '../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
     DESCRIPTION_MAX_LENGTH,
     HEADER_MAX_LENGTH,
-    LABEL_AFFECTED_ROUTES, LABEL_AFFECTED_STOPS,
+    LABEL_ROUTES, LABEL_STOPS,
     LABEL_CAUSE,
     LABEL_CREATED_BY,
     LABEL_CUSTOMER_IMPACT,
@@ -27,6 +28,15 @@ import {
     TIME_FORMAT,
     URL_MAX_LENGTH,
 } from '../../../../constants/disruptions';
+import {
+    getRoutesByShortName,
+    openCreateDisruption,
+    updateAffectedRoutesState,
+    updateAffectedStopsState,
+    updateEditMode,
+    updateDisruptionToEdit,
+} from '../../../../redux/actions/control/disruptions';
+import { getShapes, getDisruptionsLoadingState } from '../../../../redux/selectors/control/disruptions';
 import DetailLoader from '../../../Common/Loader/DetailLoader';
 import { DisruptionDetailSelect } from './DisruptionDetailSelect';
 import DisruptionLabelAndText from './DisruptionLabelAndText';
@@ -40,14 +50,13 @@ import {
     isStartTimeValid,
     momentFromDateTime,
 } from '../../../../utils/control/disruptions';
-import CustomModal from '../../../Common/CustomModal/CustomModal';
-import SelectEntitiesPicklist from '../SelectEntitiesPicklist';
-import VEHICLE_TYPES from '../../../../types/vehicle-types';
 import './styles.scss';
 import DisruptionSummaryModal from './DisruptionSummaryModal';
+import Map from '../DisruptionCreation/CreateDisruption/Map';
 
 const DisruptionDetailView = (props) => {
-    const { disruption, updateDisruption, isRequesting, resultDisruptionId } = props;
+    const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
+
     const [now] = useState(moment().second(0).millisecond(0));
     const [cause, setCause] = useState(disruption.cause);
     const [impact, setImpact] = useState(disruption.impact);
@@ -55,11 +64,7 @@ const DisruptionDetailView = (props) => {
     const [description, setDescription] = useState(disruption.description);
     const [header, setHeader] = useState(disruption.header);
     const [url, setUrl] = useState(disruption.url);
-    const [affectedRoutes, setAffectedRoutes] = useState(disruption.affectedRoutes);
-    const [affectedStops, setAffectedStops] = useState(disruption.affectedStops);
     const [mode, setMode] = useState(disruption.mode);
-    const [routesModalOpen, setRoutesModalOpen] = useState(false);
-    const [stopsModalOpen, setStopsModalOpen] = useState(false);
     const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
     const [startTime, setStartTime] = useState(moment(disruption.startTime).format(TIME_FORMAT));
     const [startDate, setStartDate] = useState(moment(disruption.startTime).format(DATE_FORMAT));
@@ -67,23 +72,60 @@ const DisruptionDetailView = (props) => {
     const [endDate, setEndDate] = useState(disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '');
     const [disruptionOpenedTime] = useState(moment().second(0).millisecond(0));
 
-    const handleUpdateDisruption = () => {
-        const updatedDisruption = {
-            ...disruption,
-            cause,
-            impact,
-            status,
-            description,
-            header,
-            url,
-            affectedEntities: [...affectedRoutes, ...affectedStops],
-            mode,
-            startTime: momentFromDateTime(startDate, startTime),
-            endTime: momentFromDateTime(endDate, endTime),
-        };
+    // A temporary solution to render the routes on the map. It will only render the first ten routes coming
+    // in the array due to the high possibility of collapsing the static API.
+    // This piece of code should be deleted when a better performance solution has been put in place.
 
-        updateDisruption(updatedDisruption);
-    };
+    const affectedEntitiesWithoutShape = toString(disruption.affectedEntities.map(entity => omit(entity, ['shapeWkt'])));
+    useEffect(() => {
+        const affectedStops = disruption.affectedEntities.filter(entity => entity.stopId);
+        const affectedRoutes = disruption.affectedEntities.filter(entity => entity.routeId);
+
+        props.updateAffectedStopsState(affectedStops);
+        props.updateAffectedRoutesState(affectedRoutes);
+
+        if (affectedRoutes.length) {
+            props.getRoutesByShortName(affectedRoutes.slice(0, 10));
+        }
+    }, [affectedEntitiesWithoutShape]);
+
+    useEffect(() => {
+        setHeader(disruption.header);
+        setCause(disruption.cause);
+        setImpact(disruption.impact);
+        setStatus(disruption.status);
+        setDescription(disruption.description);
+        setUrl(disruption.url);
+        setMode(disruption.mode);
+        setEndTime(disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : '');
+        setEndDate(disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '');
+    }, [
+        disruption.header,
+        disruption.cause,
+        disruption.impact,
+        disruption.status,
+        disruption.description,
+        disruption.url,
+        disruption.mode,
+        disruption.endTime,
+        disruption.endDate,
+    ]);
+
+    const setDisruption = () => ({
+        ...disruption,
+        cause,
+        impact,
+        status,
+        description,
+        header,
+        url,
+        mode,
+        affectedEntities: disruption.affectedEntities,
+        startTime: momentFromDateTime(startDate, startTime),
+        endTime: momentFromDateTime(endDate, endTime),
+    });
+
+    const handleUpdateDisruption = () => updateDisruption(setDisruption());
 
     const setDisruptionStatus = (selectedStatus) => {
         setStatus(selectedStatus);
@@ -143,28 +185,13 @@ const DisruptionDetailView = (props) => {
 
     const isUpdating = isRequesting && resultDisruptionId === disruption.disruptionId;
 
-    const isSaveDisabled = _.some([cause, impact, status, description, header], _.isEmpty)
+    const isSaveDisabled = some([cause, impact, status, description, header], isEmpty)
         || !isUrlValid(url);
 
-    const updateRoutesAndMode = (selectedItems) => {
-        setAffectedRoutes(selectedItems.map(route => _.mapKeys(route, (value, key) => _.camelCase(key))));
-        const modes = _.without(_.uniq(selectedItems.map(route => route.route_type)), undefined).map(routeType => VEHICLE_TYPES[routeType].type).join(', ');
-        setMode(modes);
-    };
-
-    const updateStops = (selectedItems) => {
-        setAffectedStops(selectedItems.map(stop => _.mapKeys(stop, (v, k) => _.camelCase(k))));
-    };
-
-    const onRouteModalClose = () => {
-        setRoutesModalOpen(false);
-        setAffectedRoutes(disruption.affectedRoutes);
-        setMode(disruption.mode);
-    };
-
-    const onStopsModalClose = () => {
-        setStopsModalOpen(false);
-        setAffectedStops(disruption.affectedStops);
+    const editRoutesAndStops = () => {
+        props.updateEditMode(true);
+        props.openCreateDisruption(true);
+        props.updateDisruptionToEdit(setDisruption());
     };
 
     const minEndDate = now.isAfter(disruption.startTime, 'day') ? now.format(DATE_FORMAT) : startDate;
@@ -173,85 +200,56 @@ const DisruptionDetailView = (props) => {
 
     return (
         <Form>
-            <div className="row">
-                <section className="col-3">
+            <div className="row position-relative">
+                <section className="col-6 height-entities">
+                    <div className="row">
+                        <div className="col-6">
+                            <h3>Affected routes and stops</h3>
+                        </div>
+                        <div className="col-6 text-right">
+                            <Button
+                                className="btn cc-btn-link pr-0"
+                                onClick={ editRoutesAndStops }
+                                disabled={ isRequesting || isLoading || isResolved() }>
+                                Edit routes and stops
+                            </Button>
+                        </div>
+                    </div>
                     <FormGroup className="mt-2">
                         <Label for="disruption-detail__affected-routes">
-                            <span className="font-size-md font-weight-bold">{ LABEL_AFFECTED_ROUTES }</span>
+                            <span className="font-size-md font-weight-bold">{ LABEL_ROUTES }</span>
                         </Label>
-                        <Button
-                            disabled={ isResolved() }
-                            id="disruption-detail__affected-routes"
-                            className="w-100 border border-dark d-flex align-items-center form-control disruption-detail__affected-entities__button"
-                            onClick={ () => setRoutesModalOpen(true) }>
-                            <MdModeEdit
-                                className="disruption-detail__affected-entities__button-icon mr-2"
-                                size={ 25 }
-                                role="button" />
-                            <span className="disruption-detail__affected-entities__button-span">{ _.map(affectedRoutes, 'routeShortName').join(', ') }</span>
-                        </Button>
-                        <CustomModal
-                            className="cc-modal-standard-width"
-                            title="Select Routes"
-                            isModalOpen={ routesModalOpen }
-                            onClose={ () => onRouteModalClose() }>
-                            <SelectEntitiesPicklist
-                                data={ ({ affectedRoutes: affectedRoutes.map(route => _.mapKeys(route, (value, key) => _.snakeCase(key))) }) }
-                                cancelButtonLabel="Cancel"
-                                onClose={ () => onRouteModalClose() }
-                                type="routes"
-                                onDataUpdate={ selectedItems => updateRoutesAndMode(selectedItems) }
-                                onSubmit={ () => setRoutesModalOpen(false) } />
-                        </CustomModal>
+                        <div className={ `disruption-detail__affected-entities__button-div ${isResolved() && 'disabled'}` }>{ map(disruption.affectedEntities.filter(entity => entity.routeId), 'routeShortName').join(', ') }</div>
                     </FormGroup>
-                    <FormGroup className="mt-2">
+                    <FormGroup>
                         <Label for="disruption-detail__affected-stops">
-                            <span className="font-size-md font-weight-bold">{ LABEL_AFFECTED_STOPS }</span>
+                            <span className="font-size-md font-weight-bold">{ LABEL_STOPS }</span>
                         </Label>
-                        <Button
-                            disabled={ isResolved() }
-                            id="disruption-detail__affected-stops"
-                            className="w-100 border border-dark d-flex align-items-center form-control disruption-detail__affected-entities__button"
-                            onClick={ () => setStopsModalOpen(true) }>
-                            <MdModeEdit
-                                className="disruption-detail__affected-entities__button-icon mr-2"
-                                size={ 25 }
-                                role="button" />
-                            <span className="disruption-detail__affected-entities__button-span">{ _.map(affectedStops, 'stopCode').join(', ') }</span>
-                        </Button>
-                        <CustomModal
-                            className="cc-modal-standard-width"
-                            title="Select Stops"
-                            isModalOpen={ stopsModalOpen }
-                            onClose={ () => onStopsModalClose() }>
-                            <SelectEntitiesPicklist
-                                data={ ({ affectedStops: affectedStops.map(route => _.mapKeys(route, (value, key) => _.snakeCase(key))) }) }
-                                cancelButtonLabel="Cancel"
-                                onClose={ () => onStopsModalClose() }
-                                type="stops"
-                                onDataUpdate={ selectedItems => updateStops(selectedItems) }
-                                onSubmit={ () => setStopsModalOpen(false) } />
-                        </CustomModal>
+                        <div className={ `disruption-detail__affected-entities__button-div ${isResolved() && 'disabled'}` }>{ map(disruption.affectedEntities.filter(entity => entity.stopId), 'stopCode').join(', ') }</div>
                     </FormGroup>
                 </section>
-                <section className="col-3">
-                    <DisruptionDetailSelect
-                        id="disruption-detail__cause"
-                        value={ cause }
-                        options={ CAUSES }
-                        disabled={ isResolved() }
-                        label={ LABEL_CAUSE }
-                        onChange={ setCause } />
-                    <DisruptionDetailSelect
-                        id="disruption-detail__impact"
-                        value={ impact }
-                        options={ IMPACTS }
-                        disabled={ isResolved() }
-                        label={ LABEL_CUSTOMER_IMPACT }
-                        onChange={ setImpact } />
+                <section className="position-relative w-50 d-flex disruption-detail__map">
+                    <Map shouldOffsetForSidePanel={ false }
+                        shapes={ !isLoading ? props.shapes : [] }
+                        stops={ !isLoading ? disruption.affectedEntities.filter(entity => entity.stopId) : [] } />
                 </section>
-                <section className="col-3 row">
-                    <FormGroup className="mt-2 col-6">
+                <span className="map-note">Note: Only a max of ten routes will be displayed on the map.</span>
+            </div>
+            <div className="row mt-3">
+                <section className="col-3">
+                    <div className="mt-2 position-relative form-group">
+                        <DisruptionLabelAndText id="disruption-detail__mode" label={ LABEL_MODE } text={ mode } />
+                    </div>
+                    <div className="mt-2 position-relative form-group">
+                        <DisruptionDetailSelect
+                            id="disruption-detail__cause"
+                            value={ cause }
+                            options={ CAUSES }
+                            disabled={ isResolved() }
+                            label={ LABEL_CAUSE }
+                            onChange={ setCause } />
+                    </div>
+                    <FormGroup className="mt-2">
                         <Label for="disruption-detail__start-date">
                             <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
                         </Label>
@@ -263,21 +261,11 @@ const DisruptionDetailView = (props) => {
                             options={ datePickerOptionsStartDate }
                             placeholder="Select date"
                             onChange={ date => setStartDate(moment(date[0]).format(DATE_FORMAT)) } />
+                        <FaRegCalendarAlt
+                            className="disruption-creation__wizard-select-details__icon position-absolute"
+                            size={ 22 } />
                     </FormGroup>
-                    <FormGroup className="mt-2 col-6">
-                        <Label for="disruption-detail__start-time">
-                            <span className="font-size-md font-weight-bold">{LABEL_START_TIME}</span>
-                        </Label>
-                        <Input
-                            id="disruption-detail__start-time"
-                            className="border border-dark"
-                            value={ startTime }
-                            disabled={ isStartDateTimeDisabled() }
-                            onChange={ event => setStartTime(event.target.value) }
-                            invalid={ !startTimeValid() }
-                        />
-                    </FormGroup>
-                    <FormGroup className="col-6">
+                    <FormGroup>
                         <Label for="disruption-detail__end-date">
                             <span className="font-size-md font-weight-bold">{LABEL_END_DATE}</span>
                         </Label>
@@ -294,8 +282,40 @@ const DisruptionDetailView = (props) => {
                                     setEndTime('');
                                 }
                             } } />
+                        <FaRegCalendarAlt
+                            className="disruption-creation__wizard-select-details__icon position-absolute"
+                            size={ 22 } />
                     </FormGroup>
-                    <FormGroup className="col-6">
+                </section>
+                <section className="col-3">
+                    <div className="mt-2 position-relative form-group">
+                        <DisruptionDetailSelect id="disruption-detail__status"
+                            value={ status }
+                            options={ disruption.status === STATUSES.NOT_STARTED ? Object.values(STATUSES) : Object.values(STATUSES).filter(s => s !== STATUSES.NOT_STARTED) }
+                            label={ LABEL_STATUS }
+                            onChange={ setDisruptionStatus } />
+                    </div>
+                    <DisruptionDetailSelect
+                        id="disruption-detail__impact"
+                        value={ impact }
+                        options={ IMPACTS }
+                        disabled={ isResolved() }
+                        label={ LABEL_CUSTOMER_IMPACT }
+                        onChange={ setImpact } />
+                    <FormGroup className="mt-2">
+                        <Label for="disruption-detail__start-time">
+                            <span className="font-size-md font-weight-bold">{LABEL_START_TIME}</span>
+                        </Label>
+                        <Input
+                            id="disruption-detail__start-time"
+                            className="border border-dark"
+                            value={ startTime }
+                            disabled={ isStartDateTimeDisabled() }
+                            onChange={ event => setStartTime(event.target.value) }
+                            invalid={ !startTimeValid() }
+                        />
+                    </FormGroup>
+                    <FormGroup>
                         <Label for="disruption-detail__end-time">
                             <span className="font-size-md font-weight-bold">{LABEL_END_TIME}</span>
                         </Label>
@@ -309,27 +329,32 @@ const DisruptionDetailView = (props) => {
                         />
                     </FormGroup>
                 </section>
-                <section className="col-3">
-                    <DisruptionDetailSelect id="disruption-detail__status"
-                        value={ status }
-                        options={ disruption.status === STATUSES.NOT_STARTED ? Object.values(STATUSES) : Object.values(STATUSES).filter(s => s !== STATUSES.NOT_STARTED) }
-                        label={ LABEL_STATUS }
-                        onChange={ setDisruptionStatus } />
-                    <DisruptionLabelAndText id="disruption-detail__mode" label={ LABEL_MODE } text={ mode } />
-                </section>
-            </div>
-            <div className="row align-items-end">
-                <div className="col-8">
-                    <FormGroup>
+                <section className="col-6">
+                    <FormGroup className="mt-2">
                         <Label for="disruption-detail__header">
                             <span className="font-size-md font-weight-bold">{LABEL_HEADER}</span>
                         </Label>
                         <Input id="disruption-detail__header"
                             className="border border-dark"
-                            defaultValue={ header }
+                            value={ header }
                             disabled={ isResolved() }
                             onChange={ e => setHeader(e.currentTarget.value) }
                             maxLength={ HEADER_MAX_LENGTH } />
+                    </FormGroup>
+                    <FormGroup className="mt-2">
+                        <Label for="disruption-detail__url">
+                            <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
+                        </Label>
+                        <Input id="disruption-detail__url"
+                            className="border border-dark"
+                            value={ url }
+                            disabled={ isResolved() }
+                            onChange={ e => setUrl(e.currentTarget.value) }
+                            placeholder="e.g. https://at.govt.nz"
+                            maxLength={ URL_MAX_LENGTH }
+                            invalid={ !isUrlValid(url) }
+                        />
+                        <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
                     </FormGroup>
                     <FormGroup>
                         <Label for="disruption-detail__description">
@@ -339,36 +364,25 @@ const DisruptionDetailView = (props) => {
                             className="textarea-no-resize border border-dark"
                             type="textarea"
                             disabled={ isResolved() }
-                            defaultValue={ description }
+                            value={ description }
                             onChange={ e => setDescription(e.currentTarget.value) }
                             maxLength={ DESCRIPTION_MAX_LENGTH }
                             rows={ 5 } />
                     </FormGroup>
-                    <FormGroup>
-                        <Label for="disruption-detail__url">
-                            <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
-                        </Label>
-                        <Input id="disruption-detail__url"
-                            className="border border-dark"
-                            defaultValue={ url }
-                            disabled={ isResolved() }
-                            onChange={ e => setUrl(e.currentTarget.value) }
-                            placeholder="e.g. https://at.govt.nz"
-                            maxLength={ URL_MAX_LENGTH }
-                            invalid={ !isUrlValid(url) }
-                        />
-                        <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
-                    </FormGroup>
-                </div>
-                <div className="col-4">
+                </section>
+            </div>
+            <div className="row">
+                <div className="col-5 disruption-detail__contributors">
                     <DisruptionLabelAndText id="disruption-detail__created-by" label={ LABEL_CREATED_BY } text={ `${disruption.createdBy}, ${formatCreatedUpdatedTime(disruption.createdTime)}` } />
                     <DisruptionLabelAndText id="disruption-detail__last-updated" label={ LABEL_LAST_UPDATED_BY } text={ `${disruption.lastUpdatedBy}, ${formatCreatedUpdatedTime(disruption.lastUpdatedTime)}` } />
-                    <FormGroup className="pl-0 d-flex align-items-center">
+                </div>
+                <div className="col-7">
+                    <FormGroup className="pl-0 h-100 d-flex align-items-end justify-content-end">
                         <Button
                             className="cc-btn-primary mr-3"
                             onClick={ handleUpdateDisruption }
                             disabled={ isUpdating || isSaveDisabled || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() }>
-                            Save Update
+                            Save Changes
                         </Button>
                         <Button
                             className="control-messaging-view__stop-groups-btn cc-btn-secondary ml-3"
@@ -392,10 +406,30 @@ DisruptionDetailView.propTypes = {
     updateDisruption: PropTypes.func.isRequired,
     isRequesting: PropTypes.bool.isRequired,
     resultDisruptionId: PropTypes.number,
+    getRoutesByShortName: PropTypes.func.isRequired,
+    shapes: PropTypes.array,
+    openCreateDisruption: PropTypes.func.isRequired,
+    updateAffectedRoutesState: PropTypes.func.isRequired,
+    updateAffectedStopsState: PropTypes.func.isRequired,
+    updateEditMode: PropTypes.func.isRequired,
+    updateDisruptionToEdit: PropTypes.func.isRequired,
+    isLoading: PropTypes.bool,
 };
 
 DisruptionDetailView.defaultProps = {
+    shapes: [],
+    isLoading: false,
     resultDisruptionId: null,
 };
 
-export default DisruptionDetailView;
+export default connect(state => ({
+    shapes: getShapes(state),
+    isLoading: getDisruptionsLoadingState(state),
+}), {
+    getRoutesByShortName,
+    openCreateDisruption,
+    updateAffectedRoutesState,
+    updateAffectedStopsState,
+    updateEditMode,
+    updateDisruptionToEdit,
+})(DisruptionDetailView);

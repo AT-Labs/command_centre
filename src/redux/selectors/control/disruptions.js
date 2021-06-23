@@ -12,6 +12,7 @@ export const getDisruptionsReverseGeocodeLoadingState = createSelector(getDisrup
 export const getDisruptionsRoutesLoadingState = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'isDisruptionsRoutesLoading'));
 
 export const getActiveDisruptionId = createSelector(getDisruptionsState, action => result(action, 'activeDisruptionId'));
+export const getDisruptionToEdit = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'disruptionToEdit'));
 
 export const isDisruptionUpdateAllowed = disruption => !!find(result(disruption, '_links.permissions'), { _rel: USER_PERMISSIONS.DISRUPTIONS.EDIT_DISRUPTION });
 export const isDisruptionCreationAllowed = createSelector(getDisruptionsPermissions, permissions => !!find(permissions, { _rel: USER_PERMISSIONS.DISRUPTIONS.ADD_DISRUPTION }));
@@ -23,20 +24,28 @@ export const getDisruptionActionState = createSelector(getDisruptionAction, acti
 export const getDisruptionActionResult = createSelector(getDisruptionAction, action => pick(action, ['resultStatus', 'resultMessage']));
 export const getDisruptionStepCreation = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'activeStep'));
 
-export const getAffectedEntities = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'affectedEntities'));
+export const getCachedShapes = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'cachedShapes'));
+export const getCachedStopsToRoutes = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'cachedStopsToRoutes'));
+
+export const getRoutesByStop = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'routesByStop'));
+export const isEditEnabled = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'isEditMode'));
+
+export const getAffectedStops = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'affectedEntities.affectedStops'));
 export const getAffectedRoutes = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'affectedEntities.affectedRoutes'));
 export const getShapes = createSelector(getAffectedRoutes, (affectedRoutes) => {
     if (!isEmpty(affectedRoutes)) {
         const withShapes = [];
         flatMap(affectedRoutes).forEach((r) => {
-            if (r.shape_wkt) {
-                withShapes.push(getJSONFromWKT(r.shape_wkt).coordinates.map(c => c.reverse()));
+            if (r.shapeWkt) {
+                withShapes.push(getJSONFromWKT(r.shapeWkt).coordinates.map(c => c.reverse()));
             }
         });
+
         return withShapes;
     }
     return [];
 });
+
 export const getBoundsToFit = createSelector(getShapes, (shape) => {
     let pointsInBounds = [];
 
@@ -46,5 +55,3 @@ export const getBoundsToFit = createSelector(getShapes, (shape) => {
 
     return pointsInBounds;
 });
-export const getAffectedStops = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'affectedEntities.affectedStops'));
-export const getRoutesByStop = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'routesByStop'));

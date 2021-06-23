@@ -25,6 +25,7 @@ import BrowserCompatibilityModal from '../Common/BrowserCompatibilityModal/Brows
 import MaskLoader from '../Common/Loader/MaskLoader';
 import ControlView from '../Control/ControlView';
 import DashboardView from '../Dashboard/DashboardView';
+import AnalyticsView from '../Analytics/AnalyticsView';
 import GoogleTagManager from '../GoogleTagManager/GoogleTagManager';
 import RealTimeView from '../RealTime/RealTimeView';
 import ActivityIndicator from './ActivityIndicator';
@@ -37,6 +38,7 @@ function App(props) {
         [VIEW_TYPE.MAIN.REAL_TIME]: <RealTimeView />,
         [VIEW_TYPE.MAIN.CONTROL]: <ControlView />,
         [VIEW_TYPE.MAIN.DASHBOARD]: <DashboardView />,
+        [VIEW_TYPE.MAIN.ANALYTICS]: <AnalyticsView />,
     };
 
     const injectTracingSnippet = () => {

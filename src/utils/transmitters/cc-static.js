@@ -1,4 +1,5 @@
 import { jsonResponseHandling } from '../fetch';
+import cache, { isCacheValid } from '../cache';
 
 const CC_STATIC_QUERY_URL = process.env.REACT_APP_CC_STATIC_QUERY_URL;
 const GTFS_STATIC_QUERY_URL = process.env.REACT_APP_GTFS_STATIC_QUERY_URL;
@@ -8,12 +9,6 @@ export const getRoutesByStop = stopCode => fetch(
     `${CC_STATIC_QUERY_URL}/shapes?stop_code=${stopCode}`,
     { method: 'GET' },
 ).then(response => jsonResponseHandling(response));
-
-export const getAllRoutes = () => fetch(
-    `${CC_STATIC_QUERY_URL}/routes`,
-    { method: 'GET' },
-).then(response => jsonResponseHandling(response));
-
 
 export const getAllStops = () => fetch(
     `${CC_STATIC_QUERY_URL}/stops`,
@@ -38,10 +33,37 @@ export const getTripHeadsignById = tripId => fetch(
 export const getRoutesByShortName = routeShortName => fetch(
     `${CC_STATIC_QUERY_URL}/trips?route_short_name=${routeShortName}`,
     { method: 'GET' },
-).then(response => jsonResponseHandling(response))
-    .then(routes => (routes.length && routes) || []);
+).then(response => jsonResponseHandling(response)).then(routes => (routes.length && routes) || []);
 
 export const getHealthMonitorData = () => fetch(
     `${REALTIME_HEALTH_API}/healthmonitor/all`,
     { method: 'GET' },
 ).then(response => jsonResponseHandling(response));
+
+const fetchAllRoutes = () => fetch(
+    `${CC_STATIC_QUERY_URL}/routes`,
+    { method: 'GET' },
+).then(response => jsonResponseHandling(response));
+
+const tokenizeRoutes = routes => routes.map(route => ({
+    ...route,
+    tokens: route.route_short_name.toLowerCase().split(' '),
+}));
+
+export const getAllRoutes = () => isCacheValid('routes')
+    .then(({ isValid }) => {
+        if (isValid) {
+            return cache.routes.toArray();
+        }
+        return fetchAllRoutes()
+            .then((routes) => {
+                const tokenizedRoutes = tokenizeRoutes(routes);
+                return cache.routes.clear()
+                    .then(() => cache.routes.bulkAdd(tokenizedRoutes))
+                    .then(() => tokenizedRoutes);
+            })
+            .catch((error) => {
+                cache.routes.clear();
+                throw error;
+            });
+    });
