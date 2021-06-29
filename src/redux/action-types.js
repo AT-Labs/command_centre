@@ -9,6 +9,8 @@ export default {
     FETCH_STOPS: 'fetch-stops',
     // All routes
     FETCH_ROUTES: 'fetch-routes',
+    // All routes mappings
+    FETCH_ROUTES_MAPPINGS: 'fetch-routes-mappings',
     // All agencies
     POPULATE_AGENCIES: 'populate-agencies',
     // All vehicles
@@ -182,7 +184,6 @@ export default {
     RESET_STATE: 'reset_state',
     UPDATE_EDIT_MODE: 'update-edit-mode',
     UPDATE_DISRUPTION_TO_EDIT: 'update-disruption-to-edit',
-
     // TripReplays
     UPDATE_CONTROL_TRIP_REPLAYS_LOADING: 'update-control-trip-replays-loading',
     UPDATE_CONTROL_TRIP_REPLAYS_CURRENT_TRIP_DETAIL: 'update-control-trip-replays-current-trip-detail',
@@ -197,7 +198,6 @@ export default {
     FETCH_CONTROL_TRIP_REPLAYS_TRIPS: 'update-control-trip-replay-trips',
     CLEAR_CONTROL_TRIP_REPLAYS_TRIPS: 'clear-control-trip-replay-trips',
     DISPLAY_CONTROL_TRIP_REPLAYS_SINGLE_TRIP: 'display-control-trip-replays-single-trip',
-
     // Analytics
     SET_ID_MAPPINGS: 'set-id-mappings',
     SET_OCCUPANCY: 'set-occupancy',

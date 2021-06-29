@@ -6,8 +6,7 @@ import { startPollingSiteStatus } from '../../redux/actions/activity';
 import { startPollingNotifications } from '../../redux/actions/control/notifications';
 import { startTrackingVehicleAllocations } from '../../redux/actions/control/blocks';
 import { getBuses, getFerries, getTrains } from '../../redux/actions/static/fleet';
-import { getRoutes } from '../../redux/actions/static/routes';
-import { getStops } from '../../redux/actions/static/stops';
+import { setCache } from '../../redux/actions/static/cache';
 import {
     fetchBlocksViewPermission,
     fetchDisruptionsViewPermission,
@@ -53,8 +52,7 @@ function App(props) {
             props.getTrains(),
             props.getBuses(),
             props.getFerries(),
-            props.getStops(),
-            props.getRoutes(),
+            props.setCache(),
         ]).then(() => {
             props.updateUserProfile(getAuthUser());
             props.fetchBlocksViewPermission();
@@ -94,8 +92,7 @@ function App(props) {
 App.propTypes = {
     hasError: PropTypes.bool.isRequired,
     isInitLoading: PropTypes.bool.isRequired,
-    getStops: PropTypes.func.isRequired,
-    getRoutes: PropTypes.func.isRequired,
+    setCache: PropTypes.func.isRequired,
     startPollingSiteStatus: PropTypes.func.isRequired,
     getTrains: PropTypes.func.isRequired,
     getFerries: PropTypes.func.isRequired,
@@ -117,8 +114,7 @@ export default connect(state => ({
     isInitLoading: !hasPrerequisiteDataLoaded(state),
     activeMainView: getActiveMainView(state),
 }), {
-    getStops,
-    getRoutes,
+    setCache,
     startPollingSiteStatus,
     getTrains,
     getBuses,

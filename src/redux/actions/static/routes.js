@@ -1,14 +1,15 @@
 /* eslint-disable camelcase */
-import _ from 'lodash-es';
+import { keyBy } from 'lodash-es';
+
 import ACTION_TYPE from '../../action-types';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
 import { reportError } from '../activity';
 import { populateAgencies } from './agencies';
 
-const loadRoutes = routes => ({
+export const loadRoutes = routes => ({
     type: ACTION_TYPE.FETCH_ROUTES,
     payload: {
-        routes: _.keyBy(routes, 'route_id'),
+        routes: keyBy(routes, 'route_id'),
     },
 });
 

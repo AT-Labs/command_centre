@@ -1,5 +1,5 @@
 import { jsonResponseHandling } from '../fetch';
-import cache, { isCacheValid } from '../cache';
+import cache from '../cache';
 
 const CC_STATIC_QUERY_URL = process.env.REACT_APP_CC_STATIC_QUERY_URL;
 const GTFS_STATIC_QUERY_URL = process.env.REACT_APP_GTFS_STATIC_QUERY_URL;
@@ -50,20 +50,14 @@ const tokenizeRoutes = routes => routes.map(route => ({
     tokens: route.route_short_name.toLowerCase().split(' '),
 }));
 
-export const getAllRoutes = () => isCacheValid('routes')
-    .then(({ isValid }) => {
-        if (isValid) {
-            return cache.routes.toArray();
-        }
-        return fetchAllRoutes()
-            .then((routes) => {
-                const tokenizedRoutes = tokenizeRoutes(routes);
-                return cache.routes.clear()
-                    .then(() => cache.routes.bulkAdd(tokenizedRoutes))
-                    .then(() => tokenizedRoutes);
-            })
-            .catch((error) => {
-                cache.routes.clear();
-                throw error;
-            });
+export const getAllRoutes = () => fetchAllRoutes()
+    .then((routes) => {
+        const tokenizedRoutes = tokenizeRoutes(routes);
+        return cache.routes.clear()
+            .then(() => cache.routes.bulkAdd(tokenizedRoutes))
+            .then(() => tokenizedRoutes);
+    })
+    .catch((error) => {
+        cache.routes.clear();
+        throw error;
     });

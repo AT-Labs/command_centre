@@ -1,6 +1,5 @@
 import { subscribeRealTime, unsubscribeRealTime } from '../ws-client';
 import { jsonResponseHandling } from '../fetch';
-import cache, { isCacheValid } from '../cache';
 
 const GTFS_REALTIME_SNAPSHOT_QUERY_URL = process.env.REACT_APP_GTFS_REALTIME_QUERY_URL;
 const GTFS_ID_MAPPING_URL = process.env.REACT_APP_GTFS_ID_MAPPING_API;
@@ -93,20 +92,5 @@ export const getTripUpdateRealTimeSnapshot = (tripId) => {
 export const getNewTripId = oldTripId => fetch(`${GTFS_ID_MAPPING_URL}/mappings/oldtonew/${oldTripId}?current=true&routes=false&shapes=false&stops=false`, { method: 'GET' })
     .then(response => jsonResponseHandling(response));
 
-const fetchRouteMappings = () => fetch(`${GTFS_ID_MAPPING_URL}/mappings/routes`, { method: 'GET' })
+export const fetchRouteMappings = () => fetch(`${GTFS_ID_MAPPING_URL}/mappings/routes`, { method: 'GET' })
     .then(response => jsonResponseHandling(response));
-
-export const getAllRouteMappings = () => isCacheValid('route_mappings')
-    .then(async ({ isValid }) => {
-        if (isValid) {
-            return cache.route_mappings.toArray();
-        }
-        return fetchRouteMappings().then(
-            routeMappings => cache.route_mappings.clear()
-                .then(() => cache.route_mappings.bulkAdd(routeMappings))
-                .then(() => routeMappings),
-        ).catch(() => {
-            cache.route_mappings.clear();
-            return [];
-        });
-    });
