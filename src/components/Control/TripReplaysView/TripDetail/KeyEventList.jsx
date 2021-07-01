@@ -1,42 +1,29 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { map, has, get } from 'lodash-es';
 import moment from 'moment';
 import KeyEvent from './KeyEvent';
 import { EVENT_TYPES } from './KeyEventType';
-import { formatTime, getTimesFromStop, formatUnixTime, spreadStateIntoStops } from '../../../../utils/helpers';
+import { formatTime, getTimesFromStop } from '../../../../utils/helpers';
 import './KeyEventList.scss';
+import TripUpdateTag from '../../Common/Trip/TripUpdateTag';
+import { TRIP_UPDATE_TYPE, TRIP_FINAL_STATUS } from '../../../../constants/tripReplays';
+import { getCanceledEvent, getPlatformChanges, getSkippedStops, getStopIndexAfterCancel } from '../../../../utils/control/tripReplays';
 
-const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick) => {
-    const currentStops = spreadStateIntoStops(stops, status);
+const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, operationalEvents) => {
+    const skippedStops = getSkippedStops(operationalEvents);
+    const platformChanges = getPlatformChanges(operationalEvents);
+    const canceledEvent = getCanceledEvent(operationalEvents);
+    const stopIndexAfterCancel = getStopIndexAfterCancel(stops, canceledEvent);
 
-    return _.map(currentStops, (stop, index) => {
+    const stopsRendered = map(stops, (stop, index) => {
         let type = EVENT_TYPES.STOP;
 
-        if (stop.stopCode === 'CANCELED' || stop.stopCode === 'REINSTATED') {
-            if (stop.stopCode === 'CANCELED') {
-                type = EVENT_TYPES.CANCELED;
-            } else if (stop.stopCode === 'REINSTATED') {
-                type = EVENT_TYPES.REINSTATED;
-            }
-            const time = {
-                arrival: formatUnixTime(stop.time),
-                departure: formatUnixTime(stop.time),
-            };
-            return (
-                <KeyEvent
-                    key={ `${stop.stopCode}_${index}` }
-                    type={ type }
-                    time={ time }
-                />
-            );
-        }
-
-        if (!_.has(stop, 'stopLat')) return null;
+        if (!has(stop, 'stopLat')) return null;
         if (index === 0) {
             type = EVENT_TYPES.FIRST_STOP;
         }
-        if (index === (currentStops.length - 1)) {
+        if (index === (stops.length - 1)) {
             type = EVENT_TYPES.TRIP_END;
         }
 
@@ -48,6 +35,9 @@ const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMo
             title: `Stop ${stop.stopCode} - ${stop.stopName}`,
             type,
             occupancyStatus: stop.occupancyStatus,
+            skippedData: skippedStops[stop.stopSequence],
+            plaformChangeData: platformChanges[stop.stopSequence],
+            isCanceled: index >= stopIndexAfterCancel,
         };
 
         return (
@@ -63,10 +53,25 @@ const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMo
             />
         );
     });
+
+    if (status === TRIP_FINAL_STATUS.CANCELED && canceledEvent) {
+        const canceledIndicator = (
+            <TripUpdateTag
+                key="canceledTag"
+                type={ TRIP_UPDATE_TYPE.CANCELED }
+                indicatorBar
+                data={ canceledEvent }
+                hasIcon
+                hasTooltip />
+        );
+        stopsRendered.splice(stopIndexAfterCancel, 0, canceledIndicator);
+    }
+
+    return stopsRendered;
 };
 
-function KeyEventList({ tripId, tripSignOn, stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, tripSignOnPosition }) {
-    const tripSignOnCoordinates = [_.get(tripSignOnPosition, 'position.latitude'), _.get(tripSignOnPosition, 'position.longitude')];
+function KeyEventList({ tripId, tripSignOn, stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, tripSignOnPosition, operationalEvents }) {
+    const tripSignOnCoordinates = [get(tripSignOnPosition, 'position.latitude'), get(tripSignOnPosition, 'position.longitude')];
     const keyEventDetail = {
         id: moment(tripSignOn).unix().toString(),
         latlon: tripSignOnCoordinates,
@@ -86,7 +91,7 @@ function KeyEventList({ tripId, tripSignOn, stops, status, handleMouseEnter, han
                 )
             }
             {
-                renderStops(stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick)
+                renderStops(stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, operationalEvents)
             }
         </ul>
     );
@@ -101,6 +106,7 @@ KeyEventList.propTypes = {
     handleMouseEnter: PropTypes.func.isRequired,
     handleMouseLeave: PropTypes.func.isRequired,
     handleMouseClick: PropTypes.func.isRequired,
+    operationalEvents: PropTypes.array,
 };
 
 KeyEventList.defaultProps = {
@@ -109,6 +115,7 @@ KeyEventList.defaultProps = {
     tripSignOn: '',
     tripSignOnPosition: null,
     status: null,
+    operationalEvents: [],
 };
 
 export default KeyEventList;

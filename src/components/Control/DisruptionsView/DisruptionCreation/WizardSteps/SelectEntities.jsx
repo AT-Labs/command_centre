@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
@@ -20,22 +20,11 @@ import {
 } from '../../../../../redux/actions/control/disruptions';
 import { toCamelCaseKeys } from '../../../../../utils/control/disruptions';
 
-class SelectEntities extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            deselectEntities: false,
-            areEntitiesSelected: false,
-            affectedEntities: this.addKeys(this.props.affectedRoutes, this.props.affectedStops),
-            allRoutesAndStopsEntities: this.addKeys(props.routes, props.stops),
-        };
-    }
-
-    addKeys = (routes, stops) => {
+const SelectEntities = (props) => {
+    const addKeys = (routes, stops) => {
         const routesModified = routes.map((route) => {
-            if (this.props.isEditMode && !route.routeType) {
-                const foundRoute = this.props.routes.find(({ routeId }) => routeId === route.routeId);
+            if (props.isEditMode && !route.routeType) {
+                const foundRoute = props.routes.find(({ routeId }) => routeId === route.routeId);
                 route.routeType = foundRoute.routeType;
             }
             route.valueKey = 'routeId';
@@ -50,97 +39,112 @@ class SelectEntities extends React.Component {
             return stop;
         });
         return [...routesModified, ...stopsModified];
-    }
+    };
 
-    deselectAllRoutes = () => {
-        this.setState({
-            areEntitiesSelected: false,
-            deselectEntities: true,
-            affectedEntities: [],
-        }, this.props.deleteAffectedEntities());
-    }
+    const [areEntitiesSelected, setAreEntitiesSelected] = useState(false);
+    const [affectedEntities, setAffectedEntities] = useState(addKeys(props.affectedRoutes, props.affectedStops));
+    const [allRoutesAndStopsEntities, setAllRoutesAndStopsEntities] = useState(addKeys(props.routes, props.stops));
 
-    onContinue = () => {
-        this.props.getRoutesByStop(this.props.affectedStops);
-        this.props.onStepUpdate(1);
-        this.props.updateCurrentStep(2);
-    }
+    const filterEntitiesByType = (entities, type) => filter(entities, { type });
 
-    onChange = (selectedItems) => {
-        this.updateEntities(selectedItems);
-        this.props.onDataUpdate('affectedEntities', selectedItems);
-        this.setState({
-            areEntitiesSelected: selectedItems.length > 0,
-            deselectEntities: selectedItems.length === 0,
-            affectedEntities: selectedItems,
-        });
-    }
+    const updateSelectedItems = (selectedItems) => {
+        props.onDataUpdate('affectedEntities', selectedItems);
+        setAreEntitiesSelected(selectedItems.length > 0);
+        setAffectedEntities(selectedItems);
+    };
 
-    updateEntities = (selectedItems) => {
+    useEffect(() => {
+        const stops = filterEntitiesByType(allRoutesAndStopsEntities, 'stop');
+        const routes = filterEntitiesByType(allRoutesAndStopsEntities, 'route');
+
+        const filteredStops = filter(stops, stop => !props.affectedStops.map(affectedStop => affectedStop.routeId).includes(stop.stopId));
+        const newEntities = addKeys(props.affectedRoutes, props.affectedStops);
+        updateSelectedItems(newEntities);
+        setAllRoutesAndStopsEntities([...routes, ...filteredStops]);
+    }, [props.affectedRoutes, props.affectedStops]);
+
+
+    const deselectAllEntities = () => {
+        setAreEntitiesSelected(false);
+        setAffectedEntities([]);
+        props.deleteAffectedEntities();
+    };
+
+    const onContinue = () => {
+        props.getRoutesByStop(props.affectedStops);
+        props.onStepUpdate(1);
+        props.updateCurrentStep(2);
+    };
+
+    const updateEntities = (selectedItems) => {
         const stops = filter(selectedItems, { type: 'stop' });
         const routes = filter(selectedItems, { type: 'route' });
 
-        this.props.updateAffectedStopsState(stops);
+        props.updateAffectedStopsState(stops);
 
-        if (routes.length !== this.props.affectedRoutes.length) {
-            this.props.updateAffectedRoutesState(routes);
-            this.props.getRoutesByShortName(routes);
+        if (routes.length !== props.affectedRoutes.length) {
+            props.updateAffectedRoutesState(routes);
+            props.getRoutesByShortName(routes);
         }
-    }
+    };
 
-    showFooter = () => this.state.areEntitiesSelected || this.state.affectedEntities.length > 0;
+    const onChange = (selectedItems) => {
+        updateEntities(selectedItems);
+        props.onDataUpdate('affectedEntities', selectedItems);
+        setAreEntitiesSelected(selectedItems.length > 0);
+        setAffectedEntities(selectedItems);
+    };
 
-    isButtonDisabled = () => !this.showFooter() || this.props.isLoading;
+    const showFooter = () => areEntitiesSelected || affectedEntities.length > 0;
 
-    render() {
-        return (
-            <div className="select_disruption">
-                <PickList
-                    isVerticalLayout
-                    height={ 100 }
-                    leftPaneLabel="Search routes or stops"
-                    leftPanePlaceholder="Enter a route or stop number"
-                    minValueLength={ 2 }
-                    onAddingOrRemoving={ this.onAddingOrRemoving }
-                    onChange={ selectedItem => this.onChange(selectedItem) }
-                    rightPanelShowSearch={ false }
-                    rightPaneLabel="Selected routes and stops:"
-                    rightPaneClassName="cc__picklist-pane-bottom pl-4 pr-4"
-                    rightPaneShowCheckbox={ false }
-                    staticItemList={ this.state.allRoutesAndStopsEntities }
-                    leftPaneClassName="cc__picklist-pane-vertical"
-                    width="w-100"
-                    secondPaneHeight="auto"
-                    deselectRoutes={ this.state.deselectEntities }
-                    selectedValues={ this.state.affectedEntities }
-                    isLoading={ this.props.isLoading }
-                />
-                <footer className="row justify-content-between position-fixed p-4 m-0 disruptions-creation__wizard-footer">
-                    <div className="col-4">
-                        {this.state.affectedEntities.length > 0 && (
-                            <Button
-                                className="btn cc-btn-secondary btn-block"
-                                disabled={ this.isButtonDisabled() }
-                                onClick={ this.deselectAllRoutes }>
-                                Deselect all
-                            </Button>
-                        )}
-                    </div>
-                    <div className="col-4">
-                        {this.state.affectedEntities.length > 0 && (
-                            <Button
-                                className="btn cc-btn-primary btn-block p-2 continue"
-                                disabled={ this.isButtonDisabled() }
-                                onClick={ () => this.onContinue() }>
-                                Continue
-                            </Button>
-                        )}
-                    </div>
-                </footer>
-            </div>
-        );
-    }
-}
+    const isButtonDisabled = () => !showFooter() || props.isLoading;
+
+    return (
+        <div className="select_disruption">
+            <PickList
+                isVerticalLayout
+                height={ 100 }
+                leftPaneLabel="Search routes or stops"
+                leftPanePlaceholder="Enter a route or stop number"
+                minValueLength={ 2 }
+                onChange={ selectedItem => onChange(selectedItem) }
+                rightPanelShowSearch={ false }
+                rightPaneLabel="Selected routes and stops:"
+                rightPaneClassName="cc__picklist-pane-bottom pl-4 pr-4"
+                rightPaneShowCheckbox={ false }
+                staticItemList={ allRoutesAndStopsEntities }
+                leftPaneClassName="cc__picklist-pane-vertical"
+                width="w-100"
+                secondPaneHeight="auto"
+                deselectRoutes={ !areEntitiesSelected }
+                selectedValues={ affectedEntities }
+                isLoading={ props.isLoading }
+            />
+            <footer className="row justify-content-between position-fixed p-4 m-0 disruptions-creation__wizard-footer">
+                <div className="col-4">
+                    {affectedEntities.length > 0 && (
+                        <Button
+                            className="btn cc-btn-secondary btn-block"
+                            disabled={ isButtonDisabled() }
+                            onClick={ deselectAllEntities }>
+                            Deselect all
+                        </Button>
+                    )}
+                </div>
+                <div className="col-4">
+                    {affectedEntities.length > 0 && (
+                        <Button
+                            className="btn cc-btn-primary btn-block p-2 continue"
+                            disabled={ isButtonDisabled() }
+                            onClick={ () => onContinue() }>
+                            Continue
+                        </Button>
+                    )}
+                </div>
+            </footer>
+        </div>
+    );
+};
 
 SelectEntities.propTypes = {
     onStepUpdate: PropTypes.func,

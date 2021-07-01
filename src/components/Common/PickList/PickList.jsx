@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { isEqual } from 'lodash-es';
 
 import Pane from './Pane';
 import './Picklist.scss';
@@ -104,11 +105,21 @@ class PickList extends Component {
         if (this.props.deselectRoutes && this.props.deselectRoutes !== prevProps.deselectRoutes) {
             this.updateSelectedValues();
         }
+
+        if (!isEqual(this.props.selectedValues, prevProps.selectedValues)) {
+            this.setSelectedValuesPickedExternally();
+        }
     }
 
     updateSelectedValues = () => {
         this.setState({
             picklistSelectedValues: [],
+        });
+    }
+
+    setSelectedValuesPickedExternally = () => {
+        this.setState({
+            picklistSelectedValues: this.props.selectedValues,
         });
     }
 

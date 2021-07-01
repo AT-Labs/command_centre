@@ -30,13 +30,8 @@
             margin-left: -$trip-replay-side-panel-search-spacing;
             margin-right: -$trip-replay-side-panel-search-spacing;
             max-height: $trip-replay-side-panel-search-panel-height;
-        }
-
-        .search__input--open + .search__dropdown,
-        .search--loading .search__dropdown {
-            min-height: $trip-replay-side-panel-search-panel-height;
-            margin-top: 0;
-            padding-top: $trip-replay-side-panel-search-spacing;
+            border-radius: 4px;
+            box-shadow: rgba(0, 0, 0, .1) 0 0 0 1px, rgba(0, 0, 0, .1) 0 4px 11px;
         }
     }
 }

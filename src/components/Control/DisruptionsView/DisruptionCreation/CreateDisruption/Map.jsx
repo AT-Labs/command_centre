@@ -98,7 +98,7 @@ class Map extends React.Component {
                             minZoom={ MAP_DATA.zoomLevel.min }
                             maxZoom={ MAP_DATA.zoomLevel.max } />
                         <ShapeLayer shapes={ this.props.shapes } />
-                        <StopsLayer stops={ this.props.stops } />
+                        <StopsLayer />
                     </LeafletMap>
                 </LeafletProvider>
             </React.Fragment>
@@ -111,14 +111,12 @@ Map.propTypes = {
     boundsToFit: PropTypes.array.isRequired,
     center: PropTypes.array,
     isLoading: PropTypes.bool,
-    stops: PropTypes.array,
     shapes: PropTypes.array,
 };
 
 Map.defaultProps = {
     center: null,
     isLoading: false,
-    stops: [],
     shapes: [],
 };
 

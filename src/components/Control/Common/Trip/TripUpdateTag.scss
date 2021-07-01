@@ -1,0 +1,100 @@
+@import '../../../../assets/styles/variables';
+
+.trip-update-tag {
+    display: inline-block;
+    padding-left: 5px;
+    padding-right: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 3px;
+    border-width: 1.5px;
+
+    &__tooltip {
+        .tooltip-inner {
+            border-color: #B8BCC3;
+            border-style: solid;
+            border-width: thin;
+            color: $at-dark-blue;
+            background: $white;
+            font-size: $font-size-sm;
+            text-align: left;
+        }
+
+        &.tooltip.show {
+            opacity: 1;
+        }
+
+        &.bs-tooltip-top .arrow:before {
+            border-top-color: #B8BCC3;
+        }
+
+        &.bs-tooltip-top .arrow:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            border-width: .4rem .4rem 0;
+            transform: translateY(-1px);
+            border-color: transparent;
+            border-style: solid;
+            border-top-color: $white;
+        }
+    }
+
+    &__icon {
+        margin-left: 3px;
+        margin-bottom: 2px;
+    }
+
+    &--indicator-bar {
+        height: 3px;
+        position: relative;
+        background: $at-red;
+
+        .trip-update-tag--canceled {
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: $white;
+        }
+    }
+
+    &--missed {
+        background: $at-red;
+        color: $white;
+    }
+
+    &--canceled {
+        background: $at-red;
+        color: $white;
+    }
+
+    &--copy-trip {
+        background: $white;
+        color: $at-gray;
+        border-color: $at-gray;
+        border-style: solid;
+    }
+
+    &--skipped {
+        background: $at-red;
+        color: $white;
+    }
+
+    &--platform-change {
+        background: $at-yellow;
+        color: $at-dark-blue;
+
+        > div:first-child {
+            background-image: url('../../../../assets/img/platform-change-tag.svg');
+            background-repeat: no-repeat;
+            background-size: contain;
+            padding-right: 10px;
+        }
+
+        &__icon {
+            margin-left: 8px;
+            margin-bottom: 3px;
+            color: $at-shore;
+        }
+    }
+}

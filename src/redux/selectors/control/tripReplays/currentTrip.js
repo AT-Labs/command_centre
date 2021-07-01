@@ -20,6 +20,11 @@ export const getStops = createSelector(getCurrentTripState, (tripDetail) => {
     return _.isEmpty(stops) ? [] : stops;
 });
 
+export const getOperationalEvents = createSelector(getCurrentTripState, (tripDetail) => {
+    const operationalEvents = _.result(tripDetail, 'operationalEvents', []);
+    return _.isEmpty(operationalEvents) ? [] : operationalEvents;
+});
+
 export const getTripStatus = createSelector(getCurrentTripState, tripDetail => _.result(tripDetail, 'finalStatus'));
 
 export const getVehicleInfo = createSelector(getCurrentTripState, tripDetail => _.pick(tripDetail, ['vehicleId', 'vehicleLabel', 'vehicleRegistration']));

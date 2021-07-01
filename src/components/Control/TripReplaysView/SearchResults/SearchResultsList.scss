@@ -12,10 +12,8 @@
     &__fixed-table-cell--time {
         width: 90px;
     }
-    .trip-replay-trip-canceled > &__fixed-table-cell--stop {
-        color: $danger;
-    }
-    .trip-replay-trip-reinstated > &__fixed-table-cell--stop {
-        color: $success;
+
+    &__fixed-table-row--canceled {
+        background-color: #FDEAE9 !important;
     }
 }

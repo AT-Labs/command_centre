@@ -114,33 +114,6 @@ export const getTimesFromStop = (stop) => {
         time,
     };
 };
-export const spreadStateIntoStops = (stops, status) => {
-    if (!status) return stops;
-    const newStops = _.cloneDeep(stops);
-    const raw = status.split(';');
-    const states = _.map(raw, (state) => {
-        const stateArray = state.split('@');
-        return {
-            stopCode: stateArray[0],
-            time: parseInt(stateArray[1], 10),
-        };
-    });
-    for (let i, j = states.length - 1; j >= 0; j--) {
-        const v = states[j];
-        i = 0;
-        for (; i < newStops.length - 1; i++) {
-            const arrival = newStops[i].time || parseInt(_.get(newStops[i], 'arrival.time') || _.get(newStops[i], 'arrival.scheduledTime'), 10) || 0;
-            const departure = newStops[i].time || parseInt(_.get(newStops[i], 'departure.time') || _.get(newStops[i], 'departure.scheduledTime'), 10) || Number.MAX_SAFE_INTEGER;
-            const nextArrival = newStops[i + 1].time || parseInt(_.get(newStops[i + 1], 'arrival.time') || _.get(newStops[i + 1], 'arrival.scheduledTime'), 10) || 0;
-            if ((v.time >= arrival && v.time <= departure) || (v.time >= departure && v.time <= nextArrival)) {
-                break;
-            }
-        }
-        i += 1;
-        newStops.splice(i, 0, v);
-    }
-    return _.isEmpty(newStops) ? [] : newStops;
-};
 
 export const getExpiredMessageRowClassName = ({ isCurrent }) => (isCurrent ? '' : 'bg-at-ocean-tint-10 text-muted');
 

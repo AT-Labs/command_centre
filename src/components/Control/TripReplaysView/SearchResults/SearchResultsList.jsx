@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import moment from 'moment';
-import _ from 'lodash-es';
 import { connect } from 'react-redux';
 import dateTypes from '../../../../types/date-types';
 import { getColumns } from './columns';
 import AutoRefreshTable from '../../../Common/AutoRefreshTable/AutoRefreshTable';
 import { selectTrip } from '../../../../redux/actions/control/tripReplays/currentTrip';
+import { isTripCanceled } from '../../../../utils/control/tripReplays';
 import './SearchResultsList.scss';
 
 class SearchResultsList extends PureComponent {
@@ -40,16 +40,7 @@ class SearchResultsList extends PureComponent {
 
     render() {
         const { trips, hasMore, totalResults, searchParams: { route, date, startTime, endTime } } = this.props;
-        const mappedTrips = _.isArray(trips) ? _.map(trips, (trip) => {
-            if (trip.finalStatus) {
-                const states = trip.finalStatus.split(';');
-                const result = states[states.length - 1].split('@')[0];
-                return _.assign(trip, {
-                    finalStatus: result,
-                });
-            }
-            return trip;
-        }) : trips;
+
         return (
             <section className="trip-progress flex-grow-1 overflow-y-auto">
                 <p className="text-muted font-weight-normal mb-3 ml-3">
@@ -60,9 +51,8 @@ class SearchResultsList extends PureComponent {
 
                 <h2 className="mx-3 mt-4 mb-0">Select a trip</h2>
                 <AutoRefreshTable
-                    rows={ mappedTrips }
-                    fetchRows={ () => {
-                    } }
+                    rows={ trips }
+                    fetchRows={ () => {} }
                     columns={ getColumns() }
                     className="trip-progress__past-stops-table pb-0 pt-3"
                     emptyMessage="No trips found, please try again."
@@ -70,6 +60,8 @@ class SearchResultsList extends PureComponent {
                     hover
                     clickable
                     refresh={ false }
+                    isRowStyled={ row => isTripCanceled(row) }
+                    rowClassName="trip-replay-progress__fixed-table-row--canceled"
                 />
                 { hasMore && <div className="text-muted p-4">Showing {trips ? trips.length : 0} of {totalResults} results. Please refine your search.</div>}
 
@@ -78,5 +70,9 @@ class SearchResultsList extends PureComponent {
     }
 }
 
-export default connect(() => ({}),
-    { selectTrip })(SearchResultsList);
+export default connect(
+    () => ({}),
+    {
+        selectTrip,
+    },
+)(SearchResultsList);

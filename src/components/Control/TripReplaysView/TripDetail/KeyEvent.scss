@@ -14,4 +14,8 @@
     &:hover {
         background-color: $table-hover-bg !important; // Overwrites Bootstraps bg-light (wihch has !important)
     }
+
+    &--canceled {
+        background-color: #FDEAE9;
+    }
 }

@@ -34,6 +34,8 @@ export default class AutoRefreshTable extends Component {
         refresh: PropTypes.bool,
         pollingInternval: PropTypes.number,
         striped: PropTypes.bool,
+        isRowStyled: PropTypes.func,
+        rowClassName: PropTypes.string,
     }
 
     static defaultProps = {
@@ -48,6 +50,8 @@ export default class AutoRefreshTable extends Component {
         refresh: true,
         pollingInternval: null,
         striped: true,
+        isRowStyled: () => false,
+        rowClassName: '',
     }
 
     componentDidMount = () => {
@@ -86,10 +90,11 @@ export default class AutoRefreshTable extends Component {
                 <tbody>
                     { rows.map(row => (
                         <tr onClick={ () => this.props.onRowClick(row) }
-                            className={ classNames('align-items-center', {
-                                'trip-replay-trip-canceled': row.finalStatus === 'CANCELED',
-                                'trip-replay-trip-reinstated': row.finalStatus === 'REINSTATED',
-                            }) }
+                            className={
+                                classNames('align-items-center', {
+                                    [this.props.rowClassName]: this.props.isRowStyled(row),
+                                })
+                            }
                             key={ generateUniqueID() }>
                             {
                                 columns.map(({ formatter, cellClassName }) => (
