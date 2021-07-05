@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import moment from 'moment';
-import _ from 'lodash-es';
+import { find } from 'lodash-es';
+import { Alert } from 'reactstrap';
 import Filters from './Filters/Filters';
 import { getTripReplayFilters } from '../../../redux/selectors/control/tripReplays/filters';
 import { getTripInfo } from '../../../redux/selectors/control/tripReplays/currentTrip';
@@ -29,7 +30,9 @@ import {
 } from '../../../redux/actions/control/tripReplays/filters';
 import { clearCurrentTrip, selectTrip } from '../../../redux/actions/control/tripReplays/currentTrip';
 import VIEW_TYPE from '../../../types/view-types';
+import { SERVICE_DATE_FORMAT } from '../../../utils/control/routes';
 import BackHeader from '../../Common/BackHeader/BackHeader';
+import './TripReplaysView.scss';
 
 const TripReplaysView = (props) => {
     const history = useHistory();
@@ -44,6 +47,8 @@ const TripReplaysView = (props) => {
     const [inputTripParam, setInputTripParam] = useState();
     // eslint-disable-next-line no-unused-vars
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
+    const [shouldShowMissingDataNotification, setShouldShowMissingDataNotification] = useState(false);
+    const [shouldNotificationBeClosed, setShouldNotificationBeClosed] = useState(false);
 
     const handleUrlChange = (inputLocation) => {
         if (inputLocation.pathname !== `/${VIEW_TYPE.MAIN.CONTROL}/${VIEW_TYPE.CONTROL_DETAIL.TRIP_REPLAYS}`) {
@@ -115,7 +120,7 @@ const TripReplaysView = (props) => {
         if (inputTripParam && trips) {
             const tripId = inputTripParam.split('_')[0];
             const tripStartTimestamp = inputTripParam.split('_')[1];
-            const selectedTrip = _.find(trips, trip => trip.tripId === tripId && moment.unix(tripStartTimestamp).isSame(trip.tripStart));
+            const selectedTrip = find(trips, trip => trip.tripId === tripId && moment.unix(tripStartTimestamp).isSame(trip.tripStart));
             if (selectedTrip) {
                 props.selectTrip(selectedTrip);
                 props.updateTripReplayDisplaySingleTrip(true);
@@ -143,6 +148,12 @@ const TripReplaysView = (props) => {
             history.replace(`${location.pathname}?${params.toString()}`);
         }
     }, [startTime, endTime]);
+
+    useEffect(() => {
+        const today = moment().format(SERVICE_DATE_FORMAT);
+        const dueDate = moment('15/08/2021', SERVICE_DATE_FORMAT);
+        setShouldShowMissingDataNotification(today <= dueDate && !shouldNotificationBeClosed);
+    }, [shouldShowMissingDataNotification, shouldNotificationBeClosed]);
 
     const handleMouseEnter = (keyEventDetail) => {
         setHoveredKeyEvent(keyEventDetail.id);
@@ -216,9 +227,11 @@ const TripReplaysView = (props) => {
         }
     };
 
+    const toggleNotification = () => setShouldNotificationBeClosed(true);
+
 
     return (
-        <div className="sidepanel-control-component-view d-flex">
+        <div className="sidepanel-control-component-view d-flex trip-replay">
             <SidePanel
                 isOpen
                 isActive
@@ -235,6 +248,13 @@ const TripReplaysView = (props) => {
                 handlePopupClose={ handlePopupClose }
                 clearSelectedKeyEvent={ clearSelectedKeyEvent }
                 center={ selectedKeyEventLatLng } />
+            <Alert
+                color="warning position-fixed"
+                toggle={ toggleNotification }
+                isOpen={ shouldShowMissingDataNotification }
+            >
+                Trips between 16th-21st of June may have missing data
+            </Alert>
         </div>
     );
 };
