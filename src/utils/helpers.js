@@ -52,7 +52,7 @@ export const getClosestTimeValueForFilter = (time) => {
 };
 
 export const formatGroupsForPresentation = items => items.map(item => ({
-    value: item.id,
+    value: `group_${item.id}`,
     label: item.title,
     stopGroup: item,
 }));
