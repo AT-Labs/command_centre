@@ -8,7 +8,7 @@ import { routeChecked } from '../../redux/actions/realtime/detail/route';
 import { stopChecked } from '../../redux/actions/realtime/detail/stop';
 import { vehicleChecked } from '../../redux/actions/realtime/detail/vehicle';
 import { startTrackingVehicles } from '../../redux/actions/realtime/vehicles';
-import { getStopDetail, getRouteDetail, getVehicleDetail, getClearForReplace } from '../../redux/selectors/realtime/detail';
+import { getStopDetail, getRouteDetail, getVehicleDetail, getClearForReplace, getSelectedSearchResults } from '../../redux/selectors/realtime/detail';
 import { getAllocations } from '../../redux/selectors/control/blocks';
 import { getRealTimeSidePanelIsOpen, getRealTimeSidePanelIsActive, getShouldShowSearchBox } from '../../redux/selectors/navigation';
 import SEARCH_RESULT_TYPE from '../../types/search-result-types';
@@ -147,7 +147,8 @@ function RealTimeView(props) {
                             props.addressSelected({});
                             props.clearSelectedSearchResult();
                         } }
-                        label="Search route, stop or vehicle" />
+                        label="Search route, stop or vehicle"
+                        selectedEntities={ props.allSearchResults } />
                 )}
                 { props.isSidePanelActive && (
                     <DetailView />
@@ -178,6 +179,7 @@ RealTimeView.propTypes = {
     addSelectedSearchResult: PropTypes.func.isRequired,
     removeSelectedSearchResult: PropTypes.func.isRequired,
     clearSelectedSearchResult: PropTypes.func.isRequired,
+    allSearchResults: PropTypes.object.isRequired,
 };
 
 export default connect(
@@ -191,6 +193,7 @@ export default connect(
         selectedVehicle: getVehicleDetail(state),
         isClearForReplace: getClearForReplace(state),
         allAllocations: getAllocations(state),
+        allSearchResults: getSelectedSearchResults(state),
     }),
     {
         addressSelected,

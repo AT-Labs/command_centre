@@ -4,11 +4,12 @@ import { isEqual } from 'lodash-es';
 
 import Pane from './Pane';
 import './Picklist.scss';
+import { PaneSearch } from './PaneSearch';
 
 class PickList extends Component {
     static propTypes = {
-        staticItemList: PropTypes.array.isRequired,
-        minValueLength: PropTypes.number.isRequired,
+        staticItemList: PropTypes.array,
+        minValueLength: PropTypes.number,
         valueKey: PropTypes.oneOfType([
             PropTypes.string,
             PropTypes.array,
@@ -51,9 +52,14 @@ class PickList extends Component {
         rightPaneShowCheckbox: PropTypes.bool,
 
         isVerticalLayout: PropTypes.bool,
+        searchInCategory: PropTypes.array,
+        entityToItemTransformers: PropTypes.object,
+        itemToEntityTransformers: PropTypes.object,
     }
 
     static defaultProps = {
+        staticItemList: [],
+        minValueLength: 0,
         valueKey: undefined,
         labelKey: undefined,
         onChange: () => {},
@@ -86,6 +92,9 @@ class PickList extends Component {
         selectBtnLabel: 'Select',
         RemoveBtnLabel: 'Remove',
 
+        searchInCategory: [],
+        entityToItemTransformers: {},
+        itemToEntityTransformers: {},
     }
 
     constructor(props) {
@@ -170,27 +179,43 @@ class PickList extends Component {
     render() {
         return (
             <section className={ this.state.pickListClasses }>
-                <Pane
-                    actionBtnLabel={ this.props.selectBtnLabel }
-                    actionElement="Add all"
-                    defaultContent={ this.props.leftPanelDefaultContent }
-                    height={ this.props.height }
-                    isVerticalLayout={ this.props.isVerticalLayout }
-                    labelKey={ this.props.labelKey }
-                    minValueLength={ this.props.minValueLength }
-                    onAction={ items => this.add(items) }
-                    onChange={ items => this.onChange(items) }
-                    paneClassName={ this.props.leftPaneClassName }
-                    paneId="picklist__pane-left"
-                    paneLabel={ this.props.leftPaneLabel }
-                    panelId="left-pane"
-                    placeholder={ this.props.leftPanePlaceholder }
-                    selectAllBtn={ this.props.leftPanelSelectAllBtn }
-                    selectAllBtnValue={ this.props.leftPanelSelectAllBtnValue }
-                    showSearch={ this.props.leftPanelShowSearch }
-                    staticItemList={ this.getAvailableOptions() }
-                    width={ this.props.width }
-                    valueKey={ this.props.valueKey } />
+                { this.props.searchInCategory.length > 0 && (
+                    <PaneSearch
+                        paneClassName={ this.props.leftPaneClassName }
+                        paneId="picklist__pane-left"
+                        paneLabel={ this.props.leftPaneLabel }
+                        placeholder={ this.props.leftPanePlaceholder }
+                        height={ this.props.height }
+                        width={ this.props.width }
+                        onSelect={ items => this.add(items) }
+                        onUnselect={ items => this.remove(items) }
+                        searchInCategory={ this.props.searchInCategory }
+                        entityToItemTransformers={ this.props.entityToItemTransformers }
+                        itemToEntityTransformers={ this.props.itemToEntityTransformers }
+                        selectedItems={ this.state.picklistSelectedValues } />
+                ) }
+                { this.props.searchInCategory.length === 0 && (
+                    <Pane
+                        actionBtnLabel={ this.props.selectBtnLabel }
+                        actionElement="Add all"
+                        defaultContent={ this.props.leftPanelDefaultContent }
+                        height={ this.props.height }
+                        isVerticalLayout={ this.props.isVerticalLayout }
+                        labelKey={ this.props.labelKey }
+                        minValueLength={ this.props.minValueLength }
+                        onAction={ items => this.add(items) }
+                        paneClassName={ this.props.leftPaneClassName }
+                        paneId="picklist__pane-left"
+                        paneLabel={ this.props.leftPaneLabel }
+                        panelId="left-pane"
+                        placeholder={ this.props.leftPanePlaceholder }
+                        selectAllBtn={ this.props.leftPanelSelectAllBtn }
+                        selectAllBtnValue={ this.props.leftPanelSelectAllBtnValue }
+                        showSearch={ this.props.leftPanelShowSearch }
+                        staticItemList={ this.getAvailableOptions() }
+                        width={ this.props.width }
+                        valueKey={ this.props.valueKey } />
+                ) }
                 {this.showSecondPane() && (
                     <Pane
                         actionBtnLabel={ this.props.RemoveBtnLabel }

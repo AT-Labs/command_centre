@@ -173,7 +173,6 @@ export default {
     SHOW_SELECTED_ROUTES: 'show-selected-routes',
     COPY_DISRUPTION: 'copy-disruptions',
     OPEN_CREATE_DISRUPTIONS: 'open-create-disruptions',
-    DESELECT_ALL_ROUTES: 'deselect-all-routes',
     UPDATE_AFFECTED_ENTITIES: 'update-affected-entities',
     UPDATE_CACHED_SHAPES: 'update-cached-shapes',
     UPDATE_CACHED_STOPS_TO_ROUTES: 'update-cached-stops-to-routes',

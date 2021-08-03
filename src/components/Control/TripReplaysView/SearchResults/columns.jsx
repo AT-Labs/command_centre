@@ -26,13 +26,18 @@ export const getColumns = () => [{
         </React.Fragment>
     ),
 }, {
-    header: 'Scheduled Start',
+    header: 'Scheduled First Stop Departure',
     headerClassName: 'trip-replay-progress__fixed-table-cell--scheduled-time font-size-sm text-right alignment',
     cellClassName: 'trip-replay-progress__fixed-table-cell--scheduled-time font-size-sm text-right',
     formatter: ({ tripStart }) => (tripStart && formatTime(tripStart)) || '',
 }, {
-    header: 'Actual Start',
+    header: 'Trip Sign On',
     headerClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-right alignment',
     cellClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-right',
     formatter: ({ tripSignOn }) => (tripSignOn && formatTime((tripSignOn))) || '',
+}, {
+    header: 'Actual First Stop Departure',
+    headerClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-right alignment',
+    cellClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-right',
+    formatter: ({ firstStopDeparture }) => (firstStopDeparture && formatTime((firstStopDeparture))) || '-',
 }];

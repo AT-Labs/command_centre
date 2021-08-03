@@ -227,17 +227,6 @@ export const openCreateDisruption = isCreateEnabled => (dispatch) => {
     dispatch(updateOpenCreateDisruption(isCreateEnabled));
 };
 
-const updatedSelectedRoutes = () => ({
-    type: ACTION_TYPE.DESELECT_ALL_ROUTES,
-    payload: {
-        deselectAllRoutes: true,
-    },
-});
-
-export const deselectAllRoutes = () => (dispatch) => {
-    dispatch(updatedSelectedRoutes());
-};
-
 export const resetState = () => ({
     type: ACTION_TYPE.RESET_STATE,
 });

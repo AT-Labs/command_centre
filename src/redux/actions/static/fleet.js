@@ -37,7 +37,7 @@ const tokenizeTrains = trains => trains.map(train => ({
 
 const tokenizeFerries = ferries => ferries.map(ferry => ({
     ...ferry,
-    tokens: [ferry.label && ferry.label.toLowerCase(), ferry.id],
+    tokens: [...ferry.label && ferry.label.toLowerCase().split(' '), ferry.id],
 }));
 
 export const getTrains = () => dispatch => fleetApi.fetchTrains()

@@ -13,7 +13,6 @@ export const INIT_STATE = {
         affectedStops: [],
     },
     routesByStop: {},
-    deselectAllRoutes: false,
     isCreateEnabled: false,
     isLoading: false,
     isConfirmationOpen: false,
@@ -66,7 +65,6 @@ const handleCopyDisruptionsUpdate = (state, { payload: { isCopied } }) => ({
 });
 
 const handleOpenDisruptions = (state, { payload: { isCreateEnabled } }) => ({ ...state, isCreateEnabled });
-const handleDeselectRoutes = (state, { payload: { deselectAllRoutes } }) => ({ ...state, deselectAllRoutes });
 const handleUpdateAffectedEntities = (state, { payload }) => ({ ...state, affectedEntities: { ...state.affectedEntities, ...payload } });
 const handleUpdateCachedShapes = (state, { payload }) => ({ ...state, cachedShapes: { ...state.cachedShapes, ...payload.shapes } });
 const handleUpdateCachedStopsToRoutes = (state, { payload }) => ({ ...state, cachedStopsToRoutes: { ...state.cachedStopsToRoutes, ...payload.stopsToRoutes } });
@@ -105,7 +103,6 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT]: handleDisruptionActionResultUpdate,
     [ACTION_TYPE.COPY_DISRUPTION]: handleCopyDisruptionsUpdate,
     [ACTION_TYPE.OPEN_CREATE_DISRUPTIONS]: handleOpenDisruptions,
-    [ACTION_TYPE.DESELECT_ALL_ROUTES]: handleDeselectRoutes,
     [ACTION_TYPE.UPDATE_AFFECTED_ENTITIES]: handleUpdateAffectedEntities,
     [ACTION_TYPE.UPDATE_CACHED_SHAPES]: handleUpdateCachedShapes,
     [ACTION_TYPE.UPDATE_CACHED_STOPS_TO_ROUTES]: handleUpdateCachedStopsToRoutes,

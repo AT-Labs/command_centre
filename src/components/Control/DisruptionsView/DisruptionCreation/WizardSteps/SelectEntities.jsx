@@ -6,11 +6,8 @@ import { Button } from 'reactstrap';
 import { filter } from 'lodash-es';
 
 import PickList from '../../../../Common/PickList/PickList';
-import { getMinimalRoutes } from '../../../../../redux/selectors/static/routes';
-import { getMinimalStops } from '../../../../../redux/selectors/static/stops';
-import { getAffectedRoutes, getAffectedStops, getDisruptionsLoadingState, isEditEnabled } from '../../../../../redux/selectors/control/disruptions';
+import { getAffectedRoutes, getAffectedStops, getDisruptionsLoadingState } from '../../../../../redux/selectors/control/disruptions';
 import {
-    deselectAllRoutes,
     deleteAffectedEntities,
     updateCurrentStep,
     getRoutesByStop,
@@ -18,15 +15,11 @@ import {
     getRoutesByShortName,
     updateAffectedRoutesState,
 } from '../../../../../redux/actions/control/disruptions';
-import { toCamelCaseKeys } from '../../../../../utils/control/disruptions';
+import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
 
 const SelectEntities = (props) => {
     const addKeys = (routes, stops) => {
         const routesModified = routes.map((route) => {
-            if (props.isEditMode && !route.routeType) {
-                const foundRoute = props.routes.find(({ routeId }) => routeId === route.routeId);
-                route.routeType = foundRoute.routeType;
-            }
             route.valueKey = 'routeId';
             route.labelKey = 'routeShortName';
             route.type = 'route';
@@ -43,9 +36,6 @@ const SelectEntities = (props) => {
 
     const [areEntitiesSelected, setAreEntitiesSelected] = useState(false);
     const [affectedEntities, setAffectedEntities] = useState(addKeys(props.affectedRoutes, props.affectedStops));
-    const [allRoutesAndStopsEntities, setAllRoutesAndStopsEntities] = useState(addKeys(props.routes, props.stops));
-
-    const filterEntitiesByType = (entities, type) => filter(entities, { type });
 
     const updateSelectedItems = (selectedItems) => {
         props.onDataUpdate('affectedEntities', selectedItems);
@@ -54,15 +44,9 @@ const SelectEntities = (props) => {
     };
 
     useEffect(() => {
-        const stops = filterEntitiesByType(allRoutesAndStopsEntities, 'stop');
-        const routes = filterEntitiesByType(allRoutesAndStopsEntities, 'route');
-
-        const filteredStops = filter(stops, stop => !props.affectedStops.map(affectedStop => affectedStop.routeId).includes(stop.stopId));
         const newEntities = addKeys(props.affectedRoutes, props.affectedStops);
         updateSelectedItems(newEntities);
-        setAllRoutesAndStopsEntities([...routes, ...filteredStops]);
     }, [props.affectedRoutes, props.affectedStops]);
-
 
     const deselectAllEntities = () => {
         setAreEntitiesSelected(false);
@@ -99,6 +83,72 @@ const SelectEntities = (props) => {
 
     const isButtonDisabled = () => !showFooter() || props.isLoading;
 
+    const { ROUTE, STOP } = SEARCH_RESULT_TYPE;
+
+    const entityToItemTransformers = {
+        [ROUTE.type]: entity => ({
+            routeId: entity.data.route_id,
+            routeType: entity.data.route_type,
+            routeShortName: entity.data.route_short_name,
+            agencyName: entity.data.agency_name,
+            agencyId: entity.data.agency_id,
+            text: entity.text,
+            category: entity.category,
+            icon: entity.icon,
+            valueKey: 'routeId',
+            labelKey: 'routeShortName',
+            type: ROUTE.type,
+        }),
+        [STOP.type]: entity => ({
+            stopId: entity.data.stop_id,
+            stopName: entity.data.stop_name,
+            stopCode: entity.data.stop_code,
+            locationType: entity.data.location_type,
+            stopLat: entity.data.stop_lat,
+            stopLon: entity.data.stop_lon,
+            parentStation: entity.data.parent_station,
+            platformCode: entity.data.platform_code,
+            routeType: entity.data.route_type,
+            text: entity.text,
+            category: entity.category,
+            icon: entity.icon,
+            valueKey: 'stopId',
+            labelKey: 'stopCode',
+            type: STOP.type,
+        }),
+    };
+
+    const itemToEntityTransformers = {
+        [ROUTE.type]: item => ({
+            text: item.routeShortName,
+            data: {
+                route_id: item.routeId,
+                route_type: item.routeType,
+                route_short_name: item.routeShortName,
+                agency_name: item.agencyName,
+                agency_id: item.agencyId,
+            },
+            category: item.category,
+            icon: item.icon,
+        }),
+        [STOP.type]: item => ({
+            text: item.text,
+            data: {
+                stop_id: item.stopId,
+                stop_name: item.stopName,
+                stop_code: item.stopCode,
+                location_type: item.locationType,
+                stop_lat: item.stopLat,
+                stop_lon: item.stopLon,
+                parent_station: item.parentStation,
+                platform_code: item.platformCode,
+                route_type: item.routeType,
+            },
+            category: item.category,
+            icon: item.icon,
+        }),
+    };
+
     return (
         <div className="select_disruption">
             <PickList
@@ -106,19 +156,20 @@ const SelectEntities = (props) => {
                 height={ 100 }
                 leftPaneLabel="Search routes or stops"
                 leftPanePlaceholder="Enter a route or stop number"
-                minValueLength={ 2 }
                 onChange={ selectedItem => onChange(selectedItem) }
                 rightPanelShowSearch={ false }
                 rightPaneLabel="Selected routes and stops:"
                 rightPaneClassName="cc__picklist-pane-bottom pl-4 pr-4"
                 rightPaneShowCheckbox={ false }
-                staticItemList={ allRoutesAndStopsEntities }
                 leftPaneClassName="cc__picklist-pane-vertical"
                 width="w-100"
                 secondPaneHeight="auto"
                 deselectRoutes={ !areEntitiesSelected }
                 selectedValues={ affectedEntities }
                 isLoading={ props.isLoading }
+                searchInCategory={ [ROUTE.type, STOP.type] }
+                entityToItemTransformers={ entityToItemTransformers }
+                itemToEntityTransformers={ itemToEntityTransformers }
             />
             <footer className="row justify-content-between position-fixed p-4 m-0 disruptions-creation__wizard-footer">
                 <div className="col-4">
@@ -149,8 +200,6 @@ const SelectEntities = (props) => {
 SelectEntities.propTypes = {
     onStepUpdate: PropTypes.func,
     onDataUpdate: PropTypes.func,
-    routes: PropTypes.array.isRequired,
-    stops: PropTypes.array.isRequired,
     deleteAffectedEntities: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func,
     getRoutesByStop: PropTypes.func.isRequired,
@@ -160,7 +209,6 @@ SelectEntities.propTypes = {
     affectedRoutes: PropTypes.array.isRequired,
     affectedStops: PropTypes.array.isRequired,
     isLoading: PropTypes.bool.isRequired,
-    isEditMode: PropTypes.bool.isRequired,
 };
 
 SelectEntities.defaultProps = {
@@ -172,12 +220,8 @@ SelectEntities.defaultProps = {
 export default connect(state => ({
     affectedStops: getAffectedStops(state),
     affectedRoutes: getAffectedRoutes(state),
-    routes: toCamelCaseKeys(getMinimalRoutes(state)),
-    stops: toCamelCaseKeys(getMinimalStops(state)),
     isLoading: getDisruptionsLoadingState(state),
-    isEditMode: isEditEnabled(state),
 }), {
-    deselectAllRoutes,
     deleteAffectedEntities,
     updateCurrentStep,
     getRoutesByStop,

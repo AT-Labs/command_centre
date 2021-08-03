@@ -1,11 +1,10 @@
-import _ from 'lodash-es';
+import { isEmpty, find, has } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { clearSearchResults, search, updateSearchLoading, updateSearchBarFocus } from '../../redux/actions/search';
 import { getSearchResults, isSearchLoading } from '../../redux/selectors/search';
-import { getSelectedSearchResults } from '../../redux/selectors/realtime/detail';
 import SEARCH_RESULT_TYPE from '../../types/search-result-types';
 import Search from '../Common/Search/Search';
 import './OmniSearch.scss';
@@ -28,9 +27,9 @@ export const getFormattedSearchResults = (searchResults, categories) => {
     const sections = [];
     categories.forEach((type) => {
         const resultsForType = searchResults[type];
-        if (!_.isEmpty(resultsForType)) {
+        if (!isEmpty(resultsForType)) {
             sections.push({
-                category: _.find(SEARCH_RESULT_TYPE, { type }),
+                category: find(SEARCH_RESULT_TYPE, { type }),
                 items: resultsForType.slice(0, CATEGORY_SIZE),
             });
         }
@@ -62,7 +61,8 @@ export class OmniSearch extends Component {
         onResetCallBack: PropTypes.func,
         multiSearch: PropTypes.bool,
         label: PropTypes.string,
-        allSearchResults: PropTypes.object.isRequired,
+        selectedEntities: PropTypes.object,
+        showTags: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -79,15 +79,21 @@ export class OmniSearch extends Component {
         onResetCallBack: null,
         multiSearch: false,
         label: '',
+        selectedEntities: {},
+        showTags: true,
     };
 
     handleSelect = (selectedItem) => {
-        this.props.selectionHandlers[selectedItem.category.type](selectedItem);
+        if (has(selectedItem, 'category.type')) {
+            this.props.selectionHandlers[selectedItem.category.type](selectedItem);
+        }
         this.props.updateSearchLoading(false);
     }
 
     handleUnselect = (selectedItem) => {
-        this.props.clearHandlers[selectedItem.category.type](selectedItem);
+        if (has(selectedItem, 'category.type')) {
+            this.props.clearHandlers[selectedItem.category.type](selectedItem);
+        }
     }
 
     handleClear = (selectedItem) => {
@@ -120,7 +126,8 @@ export class OmniSearch extends Component {
                     onResetCallBack={ this.props.onResetCallBack }
                     multiSearch={ this.props.multiSearch }
                     label={ this.props.label }
-                    selectedEntities={ this.props.allSearchResults } />
+                    selectedEntities={ this.props.selectedEntities }
+                    showTags={ this.props.showTags } />
             </div>
         );
     }
@@ -130,7 +137,6 @@ export default connect(
     state => ({
         searchResults: getSearchResults(state),
         isSearchLoading: isSearchLoading(state),
-        allSearchResults: getSelectedSearchResults(state),
     }),
     {
         search,

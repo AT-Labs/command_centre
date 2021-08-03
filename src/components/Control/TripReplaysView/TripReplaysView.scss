@@ -1,7 +1,14 @@
+@import '../../../assets/styles/variables';
+
 .trip-replay {
     & .alert {
         z-index: 1050;
         left: 50%;
         margin-left: -219px;
+    }
+
+    .sidepanel-primary-panel {
+        width: $trip-replay-side-panel-width;
+        left: -$trip-replay-side-panel-width;
     }
 }

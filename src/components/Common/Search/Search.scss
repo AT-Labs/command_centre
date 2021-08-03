@@ -1,0 +1,125 @@
+@import '../../../assets/styles/variables';
+.search {
+    &__label {
+        display: inline-block;
+        padding-bottom: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        color: $at-dark-blue;
+    }
+
+    &__reset {
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        color: #2D7CAF;
+        padding: 20px 0 0;
+    }
+
+    &__reset:hover {
+        text-decoration: underline;
+    }
+
+    .react-select {
+        &__menu {
+            margin: 0;
+        }
+
+        &__menu-list {
+            padding: 0;
+        }
+
+        &__control {
+            box-shadow: none;
+            border-color: $at-ocean;
+            font-weight: 300;
+            flex-wrap: nowrap;
+        }
+
+        &__control:hover {
+            border-color: $at-ocean;
+        }
+
+        &__group {
+            border-top: 1px solid #DEE2E6;
+            padding: 0;
+        }
+
+        &__group-heading {
+            font-size: 14px;
+            color: #2C3847;
+            text-transform: uppercase;
+            text-align: left;
+            padding: 15px 15px 0;
+
+            div:nth-child(1) {
+                font-weight: bold;
+                display: inline-block;
+            }
+
+            div:nth-child(2) {
+                float: right;
+                text-transform: none;
+            }
+        }
+
+        &__option {
+            background-color: transparent;
+            padding: 8px 15px;
+
+            label {
+                font-size: 14px;
+                color: $at-dark-blue;
+            }
+
+            input {
+                width: 26px;
+                height: 26px;
+                float: right;
+                position: relative;
+            }
+        }
+
+        &__option:active {
+            background-color: transparent;
+        }
+
+        &__menu-notice--no-options {
+            text-align: left;
+        }
+
+        &__value-container {
+            flex-wrap: wrap;
+        }
+
+        &__multi-value {
+            background-color: $very-light-blue;
+        }
+
+        &__multi-value:hover {
+            background-color: #276C98;
+
+            & .react-select__multi-value__label,
+            & .react-select__multi-value__remove {
+                background-color: #276C98;
+                color: white;
+            }
+        }
+
+        &__multi-value__label {
+            color: $at-ocean;
+            font-size: 16px;
+            font-weight: normal;
+            background-color: $very-light-blue;
+        }
+
+        &__multi-value__remove {
+            color: $at-ocean;
+            background-color: $very-light-blue;
+        }
+
+        &__multi-value__remove:hover {
+            cursor: pointer;
+        }
+    }
+}

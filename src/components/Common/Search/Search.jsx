@@ -10,6 +10,7 @@ import SearchLoader from './SearchLoader';
 import SearchClearButton from './SearchClearButton';
 import CustomSelect from './CustomSelect/CustomSelect';
 import { SEARCH_BAR_INPUT_STATE } from './constants';
+import './Search.scss';
 
 export class Search extends Component {
     static propTypes = {
@@ -36,6 +37,7 @@ export class Search extends Component {
         multiSearch: PropTypes.bool,
         label: PropTypes.string,
         selectedEntities: PropTypes.object,
+        showTags: PropTypes.bool,
     }
 
     static defaultProps = {
@@ -55,7 +57,8 @@ export class Search extends Component {
         multiSearch: false,
         label: '',
         onUnselection: null,
-        selectedEntities: [],
+        selectedEntities: {},
+        showTags: true,
     }
 
     static NO_RESULTS = 'No Results';
@@ -142,7 +145,7 @@ export class Search extends Component {
             this.setState({ multiValue, isPending: true });
             this.debouncedSearch(multiValue);
         } else {
-            this.setState({ multiValue });
+            this.setState({ multiValue, searchPerformed: false });
             this.props.onClear();
         }
     }
@@ -158,7 +161,7 @@ export class Search extends Component {
             break;
         case 'pop-value':
         case 'remove-value':
-            if (this.props.onUnselection && reason.removedValue) {
+            if (this.props.showTags && this.props.onUnselection && reason.removedValue) {
                 this.props.onUnselection(reason.removedValue);
             }
             break;
@@ -197,12 +200,7 @@ export class Search extends Component {
         this.setState({ inputCollapseState: value });
     }
 
-    menuIsOpen = () => {
-        const { suggestions, isLoading } = this.props;
-        const { focus, isPending, searchPerformed } = this.state;
-
-        return !isPending && (!isLoading || !isEmpty(suggestions)) && focus && searchPerformed;
-    }
+    menuIsOpen = () => this.state.focus && this.state.searchPerformed;
 
     getMultiSelectSuggestions = () => {
         const { suggestions } = this.props;
@@ -266,14 +264,15 @@ export class Search extends Component {
                         inputCollapseState={ inputCollapseState }
                         setInputCollapse={ this.setInputCollapse }
                         label={ this.props.label }
-                        onReset={ this.handleResetButtonClick }
+                        onReset={ this.props.onResetCallBack ? this.handleResetButtonClick : null }
                         focus={ focus }
                         value={ this.getSelectedEntities() }
                         menuIsOpen={ this.menuIsOpen() }
                         noOptionsMessage={ () => Search.NO_RESULTS }
                         inputValue={ multiValue }
                         loading={ this.props.isLoading }
-                        filterOption={ () => true } />
+                        filterOption={ () => true }
+                        controlShouldRenderValue={ this.props.showTags } />
                 ) }
                 { this.props.isIconVisible && <Icon className="search__icon position-absolute" icon="search" /> }
                 { this.state.value && !this.props.isLoading && !this.props.multiSearch
