@@ -9,6 +9,7 @@ import { toCamelCaseKeys } from '../../../utils/control/disruptions';
 import ACTION_TYPE from '../../action-types';
 import { setBannerError, modalStatus } from '../activity';
 import { getCachedShapes, getCachedStopsToRoutes } from '../../selectors/control/disruptions';
+import { getAllRoutes } from '../../selectors/static/routes';
 
 const loadDisruptions = disruptions => ({
     type: ACTION_TYPE.FETCH_CONTROL_DISRUPTIONS,
@@ -249,13 +250,17 @@ export const deleteAffectedEntities = () => (dispatch) => {
 export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
     dispatch(updateLoadingDisruptionsState(true));
 
-    const cachedShapes = getCachedShapes(getState());
+    const state = getState();
+    const cachedShapes = getCachedShapes(state);
+    const allRoutes = getAllRoutes(state);
 
     const missingCacheRoutes = [];
     const missingCacheShapes = {};
     const routesWithShapes = [];
 
-    currentRoutes.forEach((route) => {
+    currentRoutes.map(route => (
+        { ...route, routeColor: allRoutes[route.routeId].route_color }
+    )).forEach((route) => {
         if (cachedShapes[route.routeId]) {
             routesWithShapes.push({ ...route, shapeWkt: cachedShapes[route.routeId] });
             return;

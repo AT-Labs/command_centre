@@ -45,6 +45,19 @@ export const getShapes = createSelector(getAffectedRoutes, (affectedRoutes) => {
     }
     return [];
 });
+export const getRouteColors = createSelector(getAffectedRoutes, (affectedRoutes) => {
+    if (!isEmpty(affectedRoutes)) {
+        const withRouteColors = [];
+        flatMap(affectedRoutes).forEach((r) => {
+            if (r.routeColor) {
+                withRouteColors.push(r.routeColor);
+            }
+        });
+
+        return withRouteColors;
+    }
+    return [];
+});
 
 export const getBoundsToFit = createSelector(getShapes, (shape) => {
     let pointsInBounds = [];

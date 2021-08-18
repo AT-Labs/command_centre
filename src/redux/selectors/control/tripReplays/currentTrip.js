@@ -9,6 +9,7 @@ export const getShape = createSelector(getRouteInfo, (route) => {
     const shape = _.result(route, 'shape');
     return _.isEmpty(shape) ? [] : getJsonFromWkt(shape);
 });
+export const getRouteColor = createSelector(getRouteInfo, route => _.result(route, 'routeColor'));
 
 export const getVehiclePositions = createSelector(getCurrentTripState, (tripDetail) => {
     const vehiclePositions = _.result(tripDetail, 'vehicleEvents');

@@ -3,13 +3,14 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { formatStatusColumn } from '../RoutesView/TripsView';
 import { updateActiveTrip } from '../../../redux/actions/control/blocks';
 import { getActiveTrip } from '../../../redux/selectors/control/blocks';
 import { getTripVehiclesDisplay } from '../../../utils/control/blocks';
+import { formatTripDelay } from '../../../utils/control/routes';
 import { getTripTimeDisplay } from '../../../utils/helpers';
 import ButtonBar from '../Common/ButtonBar/ButtonBar';
 import ControlTable from '../Common/ControlTable/ControlTable';
+import TripDelay from '../Common/Trip/TripDelay';
 import AddTripsModal from './BlockModals/AddTripsModal';
 import AllocateVehiclesModal from './BlockModals/AllocateVehiclesModal';
 import MoveTripsModal from './BlockModals/MoveTripsModal';
@@ -18,6 +19,19 @@ import { BlockType, TripType } from './types';
 import { isIndividualEditBlockPermitted } from '../../../utils/user-permissions';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
+
+const formatStatusColumn = (row) => {
+    const trip = row.tripInstance || row;
+    const delay = formatTripDelay(_.get(trip, 'delay', 0));
+    const status = _.lowerCase(row.status);
+    if (row.status === TRIP_STATUS_TYPES.cancelled) {
+        return <span className="text-danger">{status}</span>;
+    }
+    if (delay !== 0) {
+        return <span>{status}: <TripDelay delayInSeconds={ _.get(trip, 'delay', 0) } /></span>;
+    }
+    return status;
+};
 
 export class BlockTrips extends React.Component {
     static propTypes = {

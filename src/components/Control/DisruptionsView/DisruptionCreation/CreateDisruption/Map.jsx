@@ -97,7 +97,9 @@ class Map extends React.Component {
                             attribution={ MAP_DATA.copyright }
                             minZoom={ MAP_DATA.zoomLevel.min }
                             maxZoom={ MAP_DATA.zoomLevel.max } />
-                        <ShapeLayer shapes={ this.props.shapes } />
+                        <ShapeLayer
+                            shapes={ this.props.shapes }
+                            routeColors={ this.props.routeColors } />
                         <StopsLayer />
                     </LeafletMap>
                 </LeafletProvider>
@@ -112,12 +114,14 @@ Map.propTypes = {
     center: PropTypes.array,
     isLoading: PropTypes.bool,
     shapes: PropTypes.array,
+    routeColors: PropTypes.array,
 };
 
 Map.defaultProps = {
     center: null,
     isLoading: false,
     shapes: [],
+    routeColors: [],
 };
 
 

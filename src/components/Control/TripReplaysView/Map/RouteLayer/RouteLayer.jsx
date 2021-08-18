@@ -15,11 +15,11 @@ class RouteLayer extends React.PureComponent {
     }
 
     render() {
-        const { shapes } = this.props;
+        const { shapes, routeColor } = this.props;
         return !_.isEmpty(shapes)
             ? (
                 <FeatureGroup ref={ this.polylineGroupRef }>
-                    <Polyline positions={ shapes } weight={ 5 } color="DEEPSKYBLUE" />
+                    <Polyline positions={ shapes } weight={ 5 } color={ routeColor ? `#${routeColor}` : 'DEEPSKYBLUE' } />
                 </FeatureGroup>
             )
             : null;
@@ -28,10 +28,12 @@ class RouteLayer extends React.PureComponent {
 
 RouteLayer.propTypes = {
     shapes: PropTypes.array,
+    routeColor: PropTypes.string,
 };
 
 RouteLayer.defaultProps = {
     shapes: [],
+    routeColor: null,
 };
 
 export default RouteLayer;

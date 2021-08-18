@@ -36,7 +36,7 @@ import {
     updateEditMode,
     updateDisruptionToEdit,
 } from '../../../../redux/actions/control/disruptions';
-import { getShapes, getDisruptionsLoadingState } from '../../../../redux/selectors/control/disruptions';
+import { getShapes, getDisruptionsLoadingState, getRouteColors } from '../../../../redux/selectors/control/disruptions';
 import DetailLoader from '../../../Common/Loader/DetailLoader';
 import { DisruptionDetailSelect } from './DisruptionDetailSelect';
 import DisruptionLabelAndText from './DisruptionLabelAndText';
@@ -231,7 +231,8 @@ const DisruptionDetailView = (props) => {
                 <section className="position-relative w-50 d-flex disruption-detail__map">
                     <Map shouldOffsetForSidePanel={ false }
                         shapes={ !isLoading ? props.shapes : [] }
-                        stops={ !isLoading ? disruption.affectedEntities.filter(entity => entity.stopId) : [] } />
+                        stops={ !isLoading ? disruption.affectedEntities.filter(entity => entity.stopId) : [] }
+                        routeColors={ !isLoading ? props.routeColors : [] } />
                 </section>
                 <span className="map-note">Note: Only a max of ten routes will be displayed on the map.</span>
             </div>
@@ -414,17 +415,20 @@ DisruptionDetailView.propTypes = {
     updateEditMode: PropTypes.func.isRequired,
     updateDisruptionToEdit: PropTypes.func.isRequired,
     isLoading: PropTypes.bool,
+    routeColors: PropTypes.array,
 };
 
 DisruptionDetailView.defaultProps = {
     shapes: [],
     isLoading: false,
     resultDisruptionId: null,
+    routeColors: [],
 };
 
 export default connect(state => ({
     shapes: getShapes(state),
     isLoading: getDisruptionsLoadingState(state),
+    routeColors: getRouteColors(state),
 }), {
     getRoutesByShortName,
     openCreateDisruption,

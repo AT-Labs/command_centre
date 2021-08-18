@@ -51,8 +51,9 @@ export const getTrips = ({
     if (tripIds) { variables.tripIds = tripIds; }
     if (tripStatus) { variables.tripStatus = tripStatus; }
     if (TRIP_STATUS_TYPES.inProgress === tripStatus && trackingStatuses) { variables.trackingStatuses = trackingStatuses; }
-    if (sorting && !isGroupedByRoute && !isGroupedByRouteVariant) { variables.sorting = sorting; }
-
+    if (sorting && !isGroupedByRoute && !isGroupedByRouteVariant) {
+        variables.sorting = sorting.sortBy === 'delay' ? { ...sorting, sortBy: 'combinedDelay' } : sorting;
+    }
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
     return fetchWithAuthHeader(
@@ -65,7 +66,8 @@ export const getTrips = ({
             },
             body: JSON.stringify(variables),
         },
-    ).then(response => jsonResponseHandling(response));
+    ).then(response => jsonResponseHandling(response))
+        .then(result => ({ ...result, tripInstances: result.tripInstances.map(tripInstance => ({ ...tripInstance, delay: tripInstance.combinedDelay })) }));
 };
 
 export const getRoutesViewPermission = () => getViewPermission(`${REACT_APP_TRIP_MGT_QUERY_URL}/view`);

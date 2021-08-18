@@ -24,6 +24,7 @@ import {
     getAffectedStops,
     getAffectedRoutes,
     getShapes,
+    getRouteColors,
 } from '../../../../../redux/selectors/control/disruptions';
 import {
     createDisruption,
@@ -165,7 +166,11 @@ class CreateDisruption extends React.Component {
                         </CustomModal>
                     </div>
                 </SidePanel>
-                <Map shouldOffsetForSidePanel shapes={ this.props.shapes } stops={ this.props.stops } />
+                <Map
+                    shouldOffsetForSidePanel
+                    shapes={ this.props.shapes }
+                    stops={ this.props.stops }
+                    routeColors={ this.props.routeColors } />
                 <Button
                     className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
                     onClick={ () => this.toggleModal('Cancellation', true) }>
@@ -188,6 +193,7 @@ CreateDisruption.propTypes = {
     stops: PropTypes.array,
     routes: PropTypes.array,
     shapes: PropTypes.array,
+    routeColors: PropTypes.array,
 };
 
 CreateDisruption.defaultProps = {
@@ -197,6 +203,7 @@ CreateDisruption.defaultProps = {
     stops: [],
     routes: [],
     shapes: [],
+    routeColors: [],
 };
 
 export default connect(state => ({
@@ -207,4 +214,5 @@ export default connect(state => ({
     stops: getAffectedStops(state),
     routes: getAffectedRoutes(state),
     shapes: getShapes(state),
+    routeColors: getRouteColors(state),
 }), { createDisruption, openCreateDisruption, toggleDisruptionModals, updateCurrentStep })(CreateDisruption);

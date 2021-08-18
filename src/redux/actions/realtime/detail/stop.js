@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import _ from 'lodash-es';
+import { map, indexOf, result, orderBy } from 'lodash-es';
 import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
@@ -14,21 +14,23 @@ import {
 } from './common';
 import { getAllocations, getVehicleAllocationByTrip, getNumberOfCarsByAllocations } from '../../../selectors/control/blocks';
 
-export const getRoutesByStop = stop => (dispatch) => {
+export const getRoutesByStop = stop => (dispatch, getState) => {
     const stopCode = stop.stop_code;
     const entityKey = stop.key;
+    const state = getState();
+    const allRoutes = getAllRoutes(state);
     dispatch(updateDataLoading(true));
     ccStatic.getRoutesByStop(stopCode)
         .then((routes) => {
             dispatch({
                 type: ACTION_TYPE.FETCH_STOP_ROUTES,
-                payload: { entityKey, routes },
+                payload: { entityKey, routes: map(routes, route => ({ ...route, ...allRoutes[route.route_id] })) },
             });
             dispatch({
                 type: ACTION_TYPE.UPDATE_STOP_VEHICLE_PREDICATE,
                 payload: {
                     entityKey,
-                    vehiclePredicate: vehicle => (_.indexOf(_.map(routes, 'route_id'), _.result(vehicle, 'vehicle.trip.routeId')) !== -1),
+                    vehiclePredicate: vehicle => (indexOf(map(routes, 'route_id'), result(vehicle, 'vehicle.trip.routeId')) !== -1),
                 },
             });
             dispatch(updateDataLoading(false));
@@ -75,7 +77,7 @@ export const fetchUpcomingVehicles = stopId => (dispatch, getState) => {
                 };
             }))
         .then(vehicles => vehicles.filter(({ actualTime, scheduledTime }) => isWithinNextHalfHour(actualTime || scheduledTime)))
-        .then(upcomingVehicles => _.orderBy(upcomingVehicles, 'scheduledTime'))
+        .then(upcomingVehicles => orderBy(upcomingVehicles, 'scheduledTime'))
         .then(upcomingVehicles => dispatch({
             type: ACTION_TYPE.FETCH_STOP_UPCOMING_VEHICLES,
             payload: {
@@ -107,7 +109,7 @@ export const fetchPastVehicles = stopId => (dispatch, getState) => {
             };
         }))
         .then(vehicles => vehicles.filter(({ actualTime, scheduledTime }) => isWithinPastHalfHour(actualTime || scheduledTime)))
-        .then(pastVehicles => _.orderBy(pastVehicles, 'actualTime', 'desc'))
+        .then(pastVehicles => orderBy(pastVehicles, 'actualTime', 'desc'))
         .then((pastVehicles) => {
             dispatch({
                 type: ACTION_TYPE.FETCH_STOP_PAST_VEHICLES,
@@ -167,7 +169,7 @@ export const fetchPidInformation = (stopCode, isTrainStop) => (dispatch, getStat
             });
             return Promise.all(mapPidInformation(validPidMovements, allVehicles, isTrainStop));
         })
-        .then(pidInformation => _.orderBy(pidInformation, 'scheduledTime'))
+        .then(pidInformation => orderBy(pidInformation, 'scheduledTime'))
         .then((pidInformation) => {
             dispatch({
                 type: ACTION_TYPE.FETCH_STOP_PID_INFORMATION,

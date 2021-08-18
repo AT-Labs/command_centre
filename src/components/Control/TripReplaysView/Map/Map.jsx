@@ -6,7 +6,7 @@ import {
     LeafletProvider, Map as LeafletMap, TileLayer, ZoomControl,
 } from 'react-leaflet';
 import { getBoundsToFit } from '../../../../redux/selectors/control/tripReplays/map';
-import { getShape, getStops } from '../../../../redux/selectors/control/tripReplays/currentTrip';
+import { getRouteColor, getShape, getStops } from '../../../../redux/selectors/control/tripReplays/currentTrip';
 import SelectedAddressMarker from '../../../RealTime/RealTimeMap/SelectedAddressMarker/SelectedAddressMarker';
 import RouteLayer from './RouteLayer/RouteLayer';
 import StopsLayer from './StopsLayer/StopsLayer';
@@ -80,7 +80,7 @@ class Map extends React.Component {
     handleZoom = () => this.setState({ needBoundsFit: false });
 
     render() {
-        const { shape, stops } = this.props;
+        const { shape, stops, routeColor } = this.props;
         return (
             <LeafletProvider>
                 <LeafletMap
@@ -101,7 +101,7 @@ class Map extends React.Component {
                         attribution={ MAP_DATA.copyright }
                         minZoom={ MAP_DATA.zoomLevel.min }
                         maxZoom={ MAP_DATA.zoomLevel.max } />
-                    <RouteLayer shapes={ [shape] } />
+                    <RouteLayer shapes={ [shape] } routeColor={ routeColor } />
                     <StopThresholdsLayer route={ shape } stops={ stops } />
                     <StopsLayer
                         stops={ stops }
@@ -131,6 +131,7 @@ Map.propTypes = {
     handlePopupClose: PropTypes.func.isRequired,
     center: PropTypes.array,
     clearSelectedKeyEvent: PropTypes.func.isRequired,
+    routeColor: PropTypes.string,
 };
 
 Map.defaultProps = {
@@ -138,6 +139,7 @@ Map.defaultProps = {
     selectedKeyEvent: null,
     hoveredKeyEvent: null,
     center: null,
+    routeColor: null,
 };
 
 export default connect(
@@ -145,5 +147,6 @@ export default connect(
         boundsToFit: getBoundsToFit(state),
         shape: getShape(state),
         stops: getStops(state),
+        routeColor: getRouteColor(state),
     }), null, null, { withRef: true },
 )(Map);

@@ -1,15 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { isEmpty } from 'lodash-es';
 import { FeatureGroup, Polyline } from 'react-leaflet';
+import { generateUniqueID } from '../../../../../utils/helpers';
 
 class ShapeLayer extends React.Component {
     static propTypes = {
         shapes: PropTypes.array,
+        routeColors: PropTypes.array,
     };
 
     static defaultProps = {
         shapes: [],
+        routeColors: [],
     }
 
     constructor(props) {
@@ -24,11 +27,18 @@ class ShapeLayer extends React.Component {
     }
 
     render() {
-        const { shapes } = this.props;
-        return !_.isEmpty(shapes)
+        const { shapes, routeColors } = this.props;
+        const routeColorsHexFormat = routeColors.map(color => `#${color}`);
+        return !isEmpty(shapes)
             ? (
                 <FeatureGroup ref={ this.polylineGroupRef }>
-                    <Polyline positions={ shapes } weight={ 5 } color="DEEPSKYBLUE" />
+                    { shapes.map((shape, index) => (
+                        <Polyline
+                            key={ generateUniqueID() }
+                            positions={ shape }
+                            weight={ 5 }
+                            color={ routeColorsHexFormat[index] || 'DEEPSKYBLUE' } />
+                    )) }
                 </FeatureGroup>
             )
             : null;
