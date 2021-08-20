@@ -105,39 +105,33 @@ describe('<TripsView />', () => {
     });
 
     context('Sort by delay', () => {
-        const getDelayColumn = () => {
+        const getStatusColumn = () => {
             const columns = wrapper.instance().getRowColumnsConfig();
-            const delayColumn = columns.find(column => column.key === 'delay');
-            return delayColumn;
+            const statusColumn = columns.find(column => column.key === 'status');
+            return statusColumn;
         };
 
         it('Should not visible by default', () => {
             setup({ filters: INIT_STATE });
-            expect(getDelayColumn().label).to.equal('delay');
+            expect(getStatusColumn().label).to.equal('status');
         });
 
         it('Should not visible when filter status is cancelled', () => {
             const filters = { tripStatus: TRIP_STATUS_TYPES.cancelled };
             setup({ filters });
-            expect(getDelayColumn().label).to.equal('delay');
+            expect(getStatusColumn().label).to.equal('status');
         });
 
         it('Should visible when filter status is in-progress', () => {
             const filters = { tripStatus: TRIP_STATUS_TYPES.inProgress };
             setup({ filters });
-            expect(getDelayColumn().label.toString()).to.contain('Sortable');
-        });
-
-        it('Should visible when filter status is not-started', () => {
-            const filters = { tripStatus: TRIP_STATUS_TYPES.notStarted };
-            setup({ filters });
-            expect(getDelayColumn().label.toString()).to.contain('Sortable');
+            expect(getStatusColumn().label.toString()).to.contain('Sortable');
         });
 
         it('Should visible when filter status is completed', () => {
             const filters = { tripStatus: TRIP_STATUS_TYPES.completed };
             setup({ filters });
-            expect(getDelayColumn().label.toString()).to.contain('Sortable');
+            expect(getStatusColumn().label.toString()).to.contain('Sortable');
         });
 
         it('Should not set active when sortBy is not delay', () => {

@@ -20,7 +20,6 @@ import { getTripInstanceId, getTripTimeDisplay, checkIfAllTripsAreSelected } fro
 import ControlTable from '../Common/ControlTable/ControlTable';
 import TripIcon from '../Common/Trip/TripIcon';
 import SortButton from '../Common/SortButton/SortButton';
-import TripDelay from '../Common/Trip/TripDelay';
 import {
     fetchTripInstances, updateActiveTripInstanceId, selectSingleTrip, selectAllTrips,
 } from '../../../redux/actions/control/routes/trip-instances';
@@ -31,14 +30,16 @@ import {
     getActiveTripInstance, getAllTripInstancesList, getTripInstancesLoadingState, getTripInstancesUpdatingState, getSelectedTripsKeys, getAllNotCompletedTrips,
 } from '../../../redux/selectors/control/routes/trip-instances';
 
-const formatDelayColumn = (row) => {
+export const formatStatusColumn = (row) => {
     const trip = row.tripInstance || row;
-    return <TripDelay delayInSeconds={ _.get(trip, 'delay', 0) } noDelayText="-" />;
-};
-
-const formatStatusColumn = (row) => {
-    const lowerCaseStatus = _.lowerCase(row.status);
-    return row.status === TRIP_STATUS_TYPES.cancelled ? <span className="text-danger">{lowerCaseStatus}</span> : lowerCaseStatus;
+    const delay = formatTripDelay(_.get(trip, 'delay', 0));
+    let status = _.lowerCase(row.status);
+    if (row.status === TRIP_STATUS_TYPES.cancelled) {
+        status = <span className="text-danger">{status}</span>;
+    } else if (delay !== 0) {
+        status = <span>{status}: <span className="text-lowercase">{`${Math.abs(delay)} mins ${delay > 0 ? 'delayed' : 'early'}`}</span></span>;
+    }
+    return status;
 };
 
 export const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
@@ -108,7 +109,10 @@ export class TripsView extends React.Component {
 
     getSorting = () => _.get(this.props.filters, 'sorting')
 
-    isSortByDelayVisible = () => [TRIP_STATUS_TYPES.notStarted, TRIP_STATUS_TYPES.inProgress, TRIP_STATUS_TYPES.completed].includes(_.get(this.props.filters, 'tripStatus'));
+    isSortByDelayVisible = () => {
+        const tripStatusFilter = _.get(this.props.filters, 'tripStatus');
+        return tripStatusFilter === TRIP_STATUS_TYPES.inProgress || tripStatusFilter === TRIP_STATUS_TYPES.completed;
+    }
 
     retrieveTripInstances = (isUpdate) => {
         const variables = {
@@ -165,16 +169,10 @@ export class TripsView extends React.Component {
         };
         const endTimeCol = { label: 'end', key: 'endTime', cols: 'col-1' };
         const statusCol = {
-            label: 'status',
+            label: this.isSortingEnable() && this.isSortByDelayVisible() ? () => this.renderSortableColumnLabel('delay', 'status') : 'status',
             key: 'status',
-            cols: 'col-1',
+            cols: 'col-3',
             getContent: row => formatStatusColumn(row),
-        };
-        const delayCol = {
-            label: this.isSortingEnable() && this.isSortByDelayVisible() ? () => this.renderSortableColumnLabel('delay', 'delay') : 'delay',
-            key: 'delay',
-            cols: 'col-2',
-            getContent: row => formatDelayColumn(row),
         };
         const routeCol = {
             label: 'route',
@@ -197,7 +195,6 @@ export class TripsView extends React.Component {
         config.push(startTimeCol);
         config.push(endTimeCol);
         config.push(statusCol);
-        config.push(delayCol);
         if (this.isRoutesTripsView() || this.isTripsOnlyView()) {
             config.push(routeCol);
         }
