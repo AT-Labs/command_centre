@@ -142,7 +142,7 @@ export class TripView extends React.Component {
         }
 
         if (isDelayEditPermitted && isDelayEditPossible) {
-            if (!formatTripDelay(tripInstance.delay)) {
+            if (!tripInstance.hasManualDelay) {
                 buttonBarConfig.push({
                     label: 'Set trip delay',
                     icon: <FaRegClock className="text-info" />,

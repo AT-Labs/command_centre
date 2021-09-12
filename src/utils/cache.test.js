@@ -23,8 +23,10 @@ describe('Cache', () => {
         it('Should return valid version', async () => {
             cache.default.routes.count = fakedCount(1984);
             cache.default.published_version.get = fakedVersion();
+            cache.default.stops.count = fakedCount(1984);
+            cache.default.route_mappings.count = fakedCount(1984);
 
-            const isCacheValid = await cache.isCacheValid('routes');
+            const isCacheValid = await cache.isCacheValid();
             expect(isCacheValid.isValid).to.equal(true);
             expect(isCacheValid.validVersion).to.eql(currentVersion.version);
         });
@@ -32,8 +34,10 @@ describe('Cache', () => {
         it('Should return not valid version when there is not data', async () => {
             cache.default.routes.count = fakedCount(undefined);
             cache.default.published_version.get = fakedVersion();
+            cache.default.stops.count = fakedCount(1984);
+            cache.default.route_mappings.count = fakedCount(1984);
 
-            const isCacheValid = await cache.isCacheValid('routes');
+            const isCacheValid = await cache.isCacheValid();
             expect(isCacheValid.isValid).to.equal(false);
             expect(isCacheValid.validVersion).to.eql(currentVersion.version);
         });
