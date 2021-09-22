@@ -1,9 +1,7 @@
 import React from 'react';
-import moment from 'moment';
 import PropTypes from 'prop-types';
 import { formatTripDelay } from '../../../../utils/control/routes';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
-import { parseTime } from '../../../../utils/helpers';
 
 const TripDelay = ({ delayInSeconds, noDelayText, status }) => {
     const delay = formatTripDelay(delayInSeconds);

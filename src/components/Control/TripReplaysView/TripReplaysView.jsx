@@ -48,7 +48,7 @@ const TripReplaysView = (props) => {
     // eslint-disable-next-line no-unused-vars
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
     const [shouldShowMissingDataNotification, setShouldShowMissingDataNotification] = useState(false);
-    const [shouldNotificationBeClosed, setShouldNotificationBeClosed] = useState(false);
+    const [shouldNotificationBeClosed, setShouldNotificationBeClosed] = useState(true);
 
     const handleUrlChange = (inputLocation) => {
         if (inputLocation.pathname !== `/${VIEW_TYPE.MAIN.CONTROL}/${VIEW_TYPE.CONTROL_DETAIL.TRIP_REPLAYS}`) {

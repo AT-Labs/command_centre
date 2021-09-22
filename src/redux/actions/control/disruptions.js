@@ -259,7 +259,7 @@ export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
     const routesWithShapes = [];
 
     currentRoutes.map(route => (
-        { ...route, routeColor: allRoutes[route.routeId].route_color }
+        { ...route, routeColor: allRoutes[route.routeId] && allRoutes[route.routeId].route_color }
     )).forEach((route) => {
         if (cachedShapes[route.routeId]) {
             routesWithShapes.push({ ...route, shapeWkt: cachedShapes[route.routeId] });
