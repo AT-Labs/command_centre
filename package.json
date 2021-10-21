@@ -1,6 +1,6 @@
 {
   "name": "at_command_centre",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "description": "Auckland Transport Command Centre",
   "license": "MIT",
   "private": true,
@@ -107,6 +107,7 @@
     "eslint-plugin-react": "^7.10.0",
     "extract-text-webpack-plugin": "3.0.2",
     "html-webpack-plugin": "2.29.0",
+    "ignore-styles": "^5.0.1",
     "mocha": "^5.2.0",
     "mocha-junit-reporter": "^1.17.0",
     "mocha-multi-reporters": "^1.1.7",

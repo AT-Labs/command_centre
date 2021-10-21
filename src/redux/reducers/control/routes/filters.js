@@ -19,6 +19,7 @@ export const INIT_STATE = {
     routeVariantId: '',
     trackingStatuses: [],
     sorting: { sortBy: 'startTime', order: 'asc' },
+    delayRange: { min: null, max: null },
 };
 
 const handleRouteFiltersMerge = (state, { payload: { filters } }) => ({ ...state, ...filters });

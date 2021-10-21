@@ -4,10 +4,15 @@ import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 
 import { getDisruptions, openCreateDisruption, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState } from '../../../redux/actions/control/disruptions';
-import { getAllDisruptions, isDisruptionCreationAllowed, isDisruptionCreationOpen } from '../../../redux/selectors/control/disruptions';
+import {
+    isDisruptionCreationAllowed,
+    isDisruptionCreationOpen,
+    getFilteredDisruptions,
+} from '../../../redux/selectors/control/disruptions';
 import { DISRUPTION_POLLING_INTERVAL } from '../../../constants/disruptions';
 import DisruptionsTable from './DisruptionsTable';
 import CreateDisruption from './DisruptionCreation/CreateDisruption/index';
+import Filters from './Filters/Filters';
 
 export class DisruptionsView extends React.Component {
     constructor(props) {
@@ -19,7 +24,7 @@ export class DisruptionsView extends React.Component {
     }
 
     static defaultProps = {
-        disruptions: [],
+        filteredDisruptions: [],
         isCreateOpen: false,
     }
 
@@ -59,22 +64,28 @@ export class DisruptionsView extends React.Component {
     )
 
     render() {
-        const { disruptions, isCreateAllowed, isCreateOpen } = this.props;
+        const { filteredDisruptions, isCreateAllowed, isCreateOpen } = this.props;
+
         return (
             <div className="control-disruptions-view">
                 {!isCreateOpen
                     && (
                         <div className="ml-4 mr-4">
-                            <div className="control-disruptions-view__header mt-4 mb-4">
+                            <div className="control-disruptions-view__header mt-4">
                                 <div>
                                     <h1>Disruptions</h1>
                                 </div>
-                                <div className="d-flex justify-content-end align-items-center mb-3">
+                                <div className="d-flex justify-content-end align-items-center">
                                     { isCreateAllowed && this.createDisruptionButton() }
                                 </div>
                             </div>
+                            <div className="row">
+                                <div className="col-10">
+                                    <Filters />
+                                </div>
+                            </div>
                             <DisruptionsTable
-                                disruptions={ disruptions } />
+                                disruptions={ filteredDisruptions } />
                         </div>
                     )
                 }
@@ -85,7 +96,7 @@ export class DisruptionsView extends React.Component {
 }
 
 DisruptionsView.propTypes = {
-    disruptions: PropTypes.array,
+    filteredDisruptions: PropTypes.array,
     getDisruptions: PropTypes.func.isRequired,
     isCreateAllowed: PropTypes.bool.isRequired,
     isCreateOpen: PropTypes.bool,
@@ -96,7 +107,7 @@ DisruptionsView.propTypes = {
 };
 
 export default connect(state => ({
-    disruptions: getAllDisruptions(state),
+    filteredDisruptions: getFilteredDisruptions(state),
     isCreateOpen: isDisruptionCreationOpen(state),
     isCreateAllowed: isDisruptionCreationAllowed(state),
 }), { getDisruptions, openCreateDisruption, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState })(DisruptionsView);

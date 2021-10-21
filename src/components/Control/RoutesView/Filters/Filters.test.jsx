@@ -80,4 +80,50 @@ describe('<Filters />', () => {
             expect(getActionsString(store.getActions())).to.contains(expectedAction);
         });
     });
+
+    context('Status change impact on Delay Range Filter', () => {
+        const getFiltersString = action => JSON.stringify(action.payload.filters);
+
+        it('Will reset delay filter when status is cleared', () => {
+            setup({
+                delayRange: { min: -20, max: 20 },
+                tripStatus: TRIP_STATUS_TYPES.inProgress,
+            });
+            const statusFilter = wrapper.find('#control-filters-status').at(0);
+            statusFilter.props().onSelection({ value: null });
+
+            const action = store.getActions().find(a => a.type === ACTION_TYPE.MERGE_CONTROL_ROUTES_FILTERS);
+
+            expect(action != null).to.true;
+            expect(getFiltersString(action)).to.contain('"delayRange":{}');
+        });
+
+        it('Will reset delay filter when status is set to MISSED state', () => {
+            setup({
+                delayRange: { min: -20, max: 20 },
+                tripStatus: TRIP_STATUS_TYPES.inProgress,
+            });
+            const statusFilter = wrapper.find('#control-filters-status').at(0);
+            statusFilter.props().onSelection({ value: TRIP_STATUS_TYPES.missed });
+
+            const action = store.getActions().find(a => a.type === ACTION_TYPE.MERGE_CONTROL_ROUTES_FILTERS);
+
+            expect(action != null).to.true;
+            expect(getFiltersString(action)).to.contain('"delayRange":{}');
+        });
+
+        it('Will reset delay filter when status is set to CANCELLED', () => {
+            setup({
+                delayRange: { min: -20, max: 20 },
+                tripStatus: TRIP_STATUS_TYPES.inProgress,
+            });
+            const statusFilter = wrapper.find('#control-filters-status').at(0);
+            statusFilter.props().onSelection({ value: TRIP_STATUS_TYPES.cancelled });
+
+            const action = store.getActions().find(a => a.type === ACTION_TYPE.MERGE_CONTROL_ROUTES_FILTERS);
+
+            expect(action != null).to.true;
+            expect(getFiltersString(action)).to.contain('"delayRange":{}');
+        });
+    });
 });

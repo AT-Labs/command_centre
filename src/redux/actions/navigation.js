@@ -3,6 +3,7 @@ import VIEW_TYPE from '../../types/view-types';
 import { getRealTimeSidePanelIsOpen } from '../selectors/navigation';
 
 export const toggleRealTimeSidePanel = () => ({ type: ACTION_TYPE.TOGGLE_RT_SIDE_PANEL });
+export const resetRealTimeSidePanel = () => ({ type: ACTION_TYPE.RESET_RT_SIDE_PANEL });
 export const updateMainView = activeMainView => ({
     type: ACTION_TYPE.UPDATE_MAIN_VIEW,
     payload: {

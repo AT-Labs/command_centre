@@ -77,6 +77,7 @@ export default {
     // navigation
     UPDATE_MAIN_VIEW: 'update-main-view',
     TOGGLE_RT_SIDE_PANEL: 'toggle-rt-side-panel',
+    RESET_RT_SIDE_PANEL: 'reset-rt-side-panel',
     UPDATE_SECONDARY_PANEL_VIEW: 'update-secondary-panel-view',
     // Blocks
     FETCH_CONTROL_BLOCKS: 'fetch-control-blocks',
@@ -183,6 +184,7 @@ export default {
     RESET_STATE: 'reset_state',
     UPDATE_EDIT_MODE: 'update-edit-mode',
     UPDATE_DISRUPTION_TO_EDIT: 'update-disruption-to-edit',
+    UPDATE_DISRUPTION_FILTERS: 'update-disruption-filters',
     // TripReplays
     UPDATE_CONTROL_TRIP_REPLAYS_LOADING: 'update-control-trip-replays-loading',
     UPDATE_CONTROL_TRIP_REPLAYS_CURRENT_TRIP_DETAIL: 'update-control-trip-replays-current-trip-detail',

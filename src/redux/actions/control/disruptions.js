@@ -335,3 +335,10 @@ export const updateDisruptionToEdit = disruptionToEdit => ({
         disruptionToEdit,
     },
 });
+
+export const updateDisruptionFilters = filter => ({
+    type: ACTION_TYPE.UPDATE_DISRUPTION_FILTERS,
+    payload: {
+        filters: filter,
+    },
+});

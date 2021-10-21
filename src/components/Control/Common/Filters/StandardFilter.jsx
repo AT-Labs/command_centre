@@ -19,7 +19,7 @@ const StandardFilter = (props) => {
     StandardFilter.defaultProps = {
         className: '',
         id: 'standard-filter',
-        title: 'Select option',
+        title: '',
         placeholder: 'Select option',
         updateOnPropsValueChange: false,
     };

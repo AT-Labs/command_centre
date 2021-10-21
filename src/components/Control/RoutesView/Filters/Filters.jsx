@@ -11,9 +11,10 @@ import FilterRouteVariantGroup from './FilterByGroup';
 import FilterByStartTime from './FilterByStartTime';
 import StandardFilter from '../../Common/Filters/StandardFilter';
 import SearchFilter from '../../Common/Filters/SearchFilter/SearchFilter';
+import FilterByDelay from '../../Common/Filters/FilterByDelay';
 import {
     getTripStatusFilter, getAgencyIdRouteFilter, getModeRouteFilter,
-    getRouteShortNameFilter, getRouteVariantIdFilter, getDepotIdsRouteFilter, getSorting,
+    getRouteShortNameFilter, getRouteVariantIdFilter, getDepotIdsRouteFilter, getSorting, getDelayRangeRouteFilter,
 } from '../../../../redux/selectors/control/routes/filters';
 import { mergeRouteFilters, resetSorting } from '../../../../redux/actions/control/routes/filters';
 import { clearSelectedStops } from '../../../../redux/actions/control/routes/trip-instances';
@@ -27,6 +28,11 @@ const STATUS = [
     TRIP_STATUS_TYPES.cancelled,
     TRIP_STATUS_TYPES.missed,
 ];
+
+const DELAY_RANGE_LIMITS = {
+    MIN: -30,
+    MAX: 30,
+};
 
 const Filters = (props) => {
     const valuesOnClear = {
@@ -66,6 +72,7 @@ const Filters = (props) => {
         props.mergeRouteFilters(status);
     };
 
+
     return (
         <section className="search-filters bg-at-ocean-tint-10 border border-at-ocean-tint-20 mb-3">
             <div className="row justify-content-between pt-3 px-3">
@@ -86,37 +93,51 @@ const Filters = (props) => {
             </div>
             <div className="border-bottom border-at-ocean-tint-20" />
             <div className="row justify-content-between pt-3 px-3">
-                <div className="col-md-6 col-lg-4 col-xl-3">
-                    <FilterByOperator
-                        id="control-filters-operators-search"
-                        selectedOption={ props.agencyId }
-                        onSelection={ selectedOption => props.mergeRouteFilters({ agencyId: selectedOption.value }) } />
+                <div className="col-md-12 col-xl-9">
+                    <div className="row justify-content-between">
+                        <div className="col-md-6 col-lg-4 col-xl-4">
+                            <FilterByOperator
+                                id="control-filters-operators-search"
+                                selectedOption={ props.agencyId }
+                                onSelection={ selectedOption => props.mergeRouteFilters({ agencyId: selectedOption.value }) } />
+                        </div>
+                        <div className="col-md-6 col-lg-4 col-xl-4">
+                            <FilterByDepot
+                                id="control-filters-depot"
+                                selectedAgency={ props.agencyId }
+                                selectedOptions={ props.depotIds }
+                                onSelection={ selectedOptions => props.mergeRouteFilters({ depotIds: selectedOptions }) } />
+                        </div>
+                        <div className="col-md-6 col-lg-4 col-xl-4">
+                            <StandardFilter
+                                id="control-filters-status"
+                                title="Status"
+                                placeholder="Select status"
+                                options={ STATUS }
+                                selectedOption={ props.status || '' }
+                                onSelection={ selectedOption => onStatusFilterChange({ tripStatus: selectedOption.value }) }
+                                updateOnPropsValueChange />
+                        </div>
+
+                    </div>
+                    <div className="row justify-content-between pt-3 px-3">
+                        <div className="col-md-6 col-lg-4 col-xl-4">
+                            <FilterRouteVariantGroup />
+                        </div>
+                        <div className="col-md-6 col-lg-4 col-xl-4">
+                            <div><FilterByStartTime /></div>
+                        </div>
+                        <div className="col-md-6 col-lg-4 col-xl-4">
+                            <FilterByTrackingStatus />
+                        </div>
+                    </div>
                 </div>
-                <div className="col-md-6 col-lg-4 col-xl-3">
-                    <FilterByDepot
-                        id="control-filters-depot"
-                        selectedAgency={ props.agencyId }
-                        selectedOptions={ props.depotIds }
-                        onSelection={ selectedOptions => props.mergeRouteFilters({ depotIds: selectedOptions }) } />
-                </div>
-                <div className="col-md-6 col-lg-4 col-xl-3">
-                    <StandardFilter
-                        id="control-filters-status"
-                        title="Status"
-                        placeholder="Select status"
-                        options={ STATUS }
-                        selectedOption={ props.status || '' }
-                        onSelection={ selectedOption => onStatusFilterChange({ tripStatus: selectedOption.value }) }
-                        updateOnPropsValueChange />
-                </div>
-                <div className="col-md-6 col-lg-4 col-xl-3"><FilterByStartTime /></div>
-            </div>
-            <div className="row justify-content-between pb-3 px-3">
-                <div className="col-md-6">
-                    <FilterRouteVariantGroup />
-                </div>
-                <div className="col-md-6">
-                    <FilterByTrackingStatus />
+                <div className="col-md-6 col-lg-4 col-xl-3 px-3">
+                    <FilterByDelay
+                        id="control-filters-delayRange"
+                        delayRange={ props.delayRange }
+                        delayRangeLimits={ DELAY_RANGE_LIMITS }
+                        onRangeChange={ newDelayRange => props.mergeRouteFilters({ delayRange: newDelayRange }) } />
                 </div>
             </div>
         </section>
@@ -134,6 +155,7 @@ Filters.propTypes = {
     clearSelectedStops: PropTypes.func.isRequired,
     sorting: PropTypes.object.isRequired,
     resetSorting: PropTypes.func.isRequired,
+    delayRange: PropTypes.object.isRequired,
 };
 
 Filters.defaultProps = {
@@ -145,6 +167,7 @@ export default connect(state => ({
     agencyId: getAgencyIdRouteFilter(state),
     depotIds: getDepotIdsRouteFilter(state),
     routeType: getModeRouteFilter(state),
+    delayRange: getDelayRangeRouteFilter(state),
     routeShortName: getRouteShortNameFilter(state),
     routeVariantId: getRouteVariantIdFilter(state),
     sorting: getSorting(state),

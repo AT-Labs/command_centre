@@ -30,6 +30,12 @@ export const INIT_STATE = {
     },
     shapes: [],
     isEditMode: false,
+    filters: {
+        selectedEntity: {},
+        selectedStatus: '',
+        selectedStartDate: null,
+        selectedEndDate: null,
+    },
 };
 
 const handleDisruptionsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });
@@ -91,6 +97,7 @@ const handleAffectedEntities = (state, { payload: {
 const handleResetState = () => ({ ...INIT_STATE });
 const handleUpdateEditMode = (state, { payload: { isEditMode } }) => ({ ...state, isEditMode });
 const handleDisruptionToEdit = (state, { payload: { disruptionToEdit } }) => ({ ...state, disruptionToEdit });
+const handleUpdateDisruptionFilters = (state, { payload: { filters } }) => ({ ...state, filters: { ...state.filters, ...filters } });
 
 export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_PERMISSIONS]: handleDisruptionsPermissionsUpdate,
@@ -114,4 +121,5 @@ export default handleActions({
     [ACTION_TYPE.RESET_STATE]: handleResetState,
     [ACTION_TYPE.UPDATE_EDIT_MODE]: handleUpdateEditMode,
     [ACTION_TYPE.UPDATE_DISRUPTION_TO_EDIT]: handleDisruptionToEdit,
+    [ACTION_TYPE.UPDATE_DISRUPTION_FILTERS]: handleUpdateDisruptionFilters,
 }, INIT_STATE);

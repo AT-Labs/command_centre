@@ -1,4 +1,5 @@
-import { result, find, pick, isEmpty, flatMap } from 'lodash-es';
+import moment from 'moment';
+import { result, find, pick, isEmpty, flatMap, get } from 'lodash-es';
 import { createSelector } from 'reselect';
 import USER_PERMISSIONS from '../../../types/user-permissions-types';
 import { getJSONFromWKT } from '../../../utils/helpers';
@@ -7,6 +8,11 @@ export const getDisruptionsState = state => result(state, 'control.disruptions')
 export const getAllDisruptions = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'disruptions'));
 export const getDisruptionsPermissions = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'permissions'));
 export const getDisruptionsLoadingState = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'isLoading'));
+
+export const getSelectedEntityFilter = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'filters.selectedEntity'));
+export const getSelectedStatusFilter = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'filters.selectedStatus'));
+export const getSelectedStartDateFilter = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'filters.selectedStartDate'));
+export const getSelectedEndDateFilter = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'filters.selectedEndDate'));
 
 export const getDisruptionsReverseGeocodeLoadingState = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'isDisruptionsReverseGeocodeLoading'));
 export const getDisruptionsRoutesLoadingState = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'isDisruptionsRoutesLoading'));
@@ -68,3 +74,43 @@ export const getBoundsToFit = createSelector(getShapes, (shape) => {
 
     return pointsInBounds;
 });
+
+export const getFilteredDisruptions = createSelector(
+    getAllDisruptions,
+    getSelectedEntityFilter,
+    getSelectedStatusFilter,
+    getSelectedStartDateFilter,
+    getSelectedEndDateFilter,
+    (allDisruptions, selectedEntity, selectedStatus, selectedStartDate, selectedEndDate) => {
+        let filteredDisruptions = [...allDisruptions];
+
+        if (get(selectedEntity, 'data.route_id')) {
+            filteredDisruptions = filteredDisruptions.filter(({ affectedEntities }) => (
+                affectedEntities.find(entity => entity.routeId === get(selectedEntity, 'data.route_id'))
+            ));
+        } else if (get(selectedEntity, 'data.stop_id')) {
+            filteredDisruptions = filteredDisruptions.filter(({ affectedEntities }) => (
+                affectedEntities.find(entity => entity.stopId === get(selectedEntity, 'data.stop_id'))
+            ));
+        }
+
+        if (selectedStatus) {
+            filteredDisruptions = filteredDisruptions.filter(({ status }) => (
+                status === selectedStatus
+            ));
+        }
+
+        if (selectedStartDate) {
+            filteredDisruptions = filteredDisruptions.filter(({ endTime }) => (
+                !endTime || moment(endTime).isSameOrAfter(moment(selectedStartDate))
+            ));
+        }
+        if (selectedEndDate) {
+            filteredDisruptions = filteredDisruptions.filter(({ startTime }) => (
+                moment(startTime).isSameOrBefore(moment(selectedEndDate))
+            ));
+        }
+
+        return filteredDisruptions;
+    },
+);

@@ -38,6 +38,7 @@ export const getTrips = ({
     sorting,
     isGroupedByRoute,
     isGroupedByRouteVariant,
+    delayRange,
 }) => {
     const variables = { serviceDate };
     if (agencyId) { variables.agencyId = agencyId; }
@@ -54,6 +55,8 @@ export const getTrips = ({
     if (sorting && !isGroupedByRoute && !isGroupedByRouteVariant) {
         variables.sorting = sorting.sortBy === 'delay' ? { ...sorting, sortBy: 'combinedDelay' } : sorting;
     }
+    if (delayRange && delayRange.min != null) { variables.delayMin = delayRange.min * 60; }
+    if (delayRange && delayRange.max != null) { variables.delayMax = delayRange.max * 60; }
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
     return fetchWithAuthHeader(

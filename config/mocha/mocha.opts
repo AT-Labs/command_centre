@@ -4,5 +4,6 @@ src/**/*.test.jsx
 --require esm
 --require babel-register
 --require config/mocha/setup.js
+--require ignore-styles
 --reporter mocha-multi-reporters
 --reporter-options configFile=config/mocha/reporters.json
