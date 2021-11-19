@@ -80,7 +80,7 @@ export class DisruptionsView extends React.Component {
                                 </div>
                             </div>
                             <div className="row">
-                                <div className="col-10">
+                                <div className="col-12">
                                     <Filters />
                                 </div>
                             </div>

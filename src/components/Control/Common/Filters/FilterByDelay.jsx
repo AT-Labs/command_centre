@@ -15,14 +15,10 @@ const FilterByDelay = (props) => {
         props.delayRange.max != null ? props.delayRange.max : delayLimitMax,
     ]);
 
-    const getDelayRangeLimits = (range) => {
-        const updatedDelayRange = {
-            min: range[0] === delayLimitMin ? null : range[0],
-            max: range[1] === delayLimitMax ? null : range[1],
-        };
-
-        return updatedDelayRange;
-    };
+    const getDelayRangeLimits = range => ({
+        min: range[0] === delayLimitMin ? null : range[0],
+        max: range[1] === delayLimitMax ? null : range[1],
+    });
 
     const updateDelayRange = () => {
         const updatedDelayRange = getDelayRangeLimits(delayRange);
@@ -58,7 +54,7 @@ const FilterByDelay = (props) => {
 
     const disabled = !delayRangeAllowedTripStatuses.includes(props.tripStatusFilter);
 
-    const [earlyText, lateText] = disabled ? [null, null] : calculateDelayText(delayRange);
+    const [early, late] = disabled ? [null, null] : calculateDelayText(delayRange);
 
     if (disabled && (delayLimitMin !== delayRange[0] || delayLimitMax !== delayRange[1])) {
         setDelayRange([delayLimitMin, delayLimitMax]);
@@ -86,11 +82,11 @@ const FilterByDelay = (props) => {
             {!disabled && (
                 <div className="font-size-sm">
                     <span className="font-weight-bold">Selected</span>
-                    {earlyText && (
-                        <span className="font-weight-bold d-block">Early: <span className="font-weight-light"> {earlyText} </span></span>
+                    {early && (
+                        <span className="font-weight-bold d-block">Early: <span className="font-weight-light"> {early} </span></span>
                     )}
-                    {lateText && (
-                        <span className="font-weight-bold d-block">Late: <span className="font-weight-light"> {lateText} </span></span>
+                    {late && (
+                        <span className="font-weight-bold d-block">Late: <span className="font-weight-light"> {late} </span></span>
                     )}
                 </div>
             )}

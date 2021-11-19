@@ -13,6 +13,7 @@ export const getSelectedEntityFilter = createSelector(getDisruptionsState, disru
 export const getSelectedStatusFilter = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'filters.selectedStatus'));
 export const getSelectedStartDateFilter = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'filters.selectedStartDate'));
 export const getSelectedEndDateFilter = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'filters.selectedEndDate'));
+export const getSelectedImpactFilter = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'filters.selectedImpact'));
 
 export const getDisruptionsReverseGeocodeLoadingState = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'isDisruptionsReverseGeocodeLoading'));
 export const getDisruptionsRoutesLoadingState = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'isDisruptionsRoutesLoading'));
@@ -81,7 +82,8 @@ export const getFilteredDisruptions = createSelector(
     getSelectedStatusFilter,
     getSelectedStartDateFilter,
     getSelectedEndDateFilter,
-    (allDisruptions, selectedEntity, selectedStatus, selectedStartDate, selectedEndDate) => {
+    getSelectedImpactFilter,
+    (allDisruptions, selectedEntity, selectedStatus, selectedStartDate, selectedEndDate, selectedImpact) => {
         let filteredDisruptions = [...allDisruptions];
 
         if (get(selectedEntity, 'data.route_id')) {
@@ -108,6 +110,12 @@ export const getFilteredDisruptions = createSelector(
         if (selectedEndDate) {
             filteredDisruptions = filteredDisruptions.filter(({ startTime }) => (
                 moment(startTime).isSameOrBefore(moment(selectedEndDate))
+            ));
+        }
+
+        if (selectedImpact) {
+            filteredDisruptions = filteredDisruptions.filter(({ impact }) => (
+                impact === selectedImpact
             ));
         }
 

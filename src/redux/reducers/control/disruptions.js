@@ -35,6 +35,7 @@ export const INIT_STATE = {
         selectedStatus: '',
         selectedStartDate: null,
         selectedEndDate: null,
+        selectedImpact: null,
     },
 };
 

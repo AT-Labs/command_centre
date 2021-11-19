@@ -1,10 +1,11 @@
+import { map } from 'lodash-es';
 import { jsonResponseHandling } from '../fetch';
 import { getViewPermission } from '../helpers';
 import { fetchWithAuthHeader } from '../../auth';
 import HTTP_TYPES from '../../types/http-types';
 
 const { REACT_APP_DISRUPTION_MGT_QUERY_URL } = process.env;
-const { GET, POST, PUT } = HTTP_TYPES;
+const { GET, POST, PUT, DELETE } = HTTP_TYPES;
 
 export const getDisruptionsViewPermission = () => getViewPermission(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/view`);
 
@@ -38,6 +39,40 @@ export const createDisruption = (disruption) => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(disruption),
+        },
+    ).then(response => jsonResponseHandling(response));
+};
+
+export const uploadDisruptionFiles = (disruption, files) => {
+    const { disruptionId } = disruption;
+    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions/${disruptionId}/files`;
+
+    const formData = new FormData();
+    map(files, (file, index) => formData.append(`file${index}`, file));
+
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: POST,
+            headers: {
+                Accept: 'application/json',
+            },
+            body: formData,
+        },
+    ).then(response => jsonResponseHandling(response));
+};
+
+export const deleteDisruptionFile = (disruption, fileId) => {
+    const { disruptionId } = disruption;
+    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions/${disruptionId}/file/${fileId}`;
+
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: DELETE,
+            headers: {
+                Accept: 'application/json',
+            },
         },
     ).then(response => jsonResponseHandling(response));
 };

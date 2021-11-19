@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
 import { GiAlarmClock } from 'react-icons/gi';
 import { GoAlert } from 'react-icons/go';
+import { FaPaperclip } from 'react-icons/fa';
 import { updateActiveDisruptionId, updateCopyDisruptionState } from '../../../redux/actions/control/disruptions';
 import { getActiveDisruptionId } from '../../../redux/selectors/control/disruptions';
 import { PAGE_SIZE } from '../../../utils/control/disruptions';
@@ -47,6 +48,7 @@ class DisruptionsTable extends React.Component {
                 label: `${LABEL_DISRUPTION}#`,
                 key: 'incidentNo',
                 cols: 'col-1',
+                getContent: disruption => this.getDisruptionLabel(disruption),
             },
             {
                 label: LABEL_MODE,
@@ -101,6 +103,20 @@ class DisruptionsTable extends React.Component {
                 cols: 'col-1',
             },
         ];
+    }
+
+    getDisruptionLabel = (disruption) => {
+        const { uploadedFiles, incidentNo } = disruption;
+
+        if (uploadedFiles && uploadedFiles.length > 0) {
+            return (
+                <span>{ incidentNo }<FaPaperclip size={ 12 } className="ml-1" /></span>
+            );
+        }
+
+        return (
+            <span>{ incidentNo }</span>
+        );
     }
 
     getRowClassName = ({ status }) => (status === STATUSES.RESOLVED ? 'bg-at-ocean-tint-10 text-muted' : '');

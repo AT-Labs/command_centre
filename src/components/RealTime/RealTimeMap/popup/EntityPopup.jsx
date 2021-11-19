@@ -56,7 +56,7 @@ class EntityPopup extends React.PureComponent {
         const { entity } = this.props;
         return (
             <div>
-                <div className="entity-popup-title">{ `Stop ${entity.stop_id}` }</div>
+                <div className="entity-popup-title">{ `Stop ${entity.stop_code}` }</div>
                 <div className="entity-popup-content">{ entity.stop_name }</div>
             </div>
         );

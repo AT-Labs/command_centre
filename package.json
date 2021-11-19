@@ -1,6 +1,6 @@
 {
   "name": "at_command_centre",
-  "version": "1.20.0",
+  "version": "1.21.0",
   "description": "Auckland Transport Command Centre",
   "license": "MIT",
   "private": true,
@@ -94,7 +94,7 @@
     "chai": "^4.2.0",
     "css-loader": "^3.2.0",
     "cssnano": "^4.1.10",
-    "cypress": "3.8.1",
+    "cypress": "^8.5.0",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint": "^4.19.1",
@@ -136,7 +136,7 @@
   },
   "scripts": {
     "start": "node scripts/start.js",
-    "start:e2e": "cross-env REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN=true node scripts/start.js",
+    "start:e2e": "cross-env NODE_ENV=test REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN=true node scripts/start.js",
     "build-prod": "cross-env NODE_ENV=production BABEL_ENV=production node scripts/build.js",
     "build-preprod": "cross-env NODE_ENV=preprod BABEL_ENV=production node scripts/build.js",
     "build-test": "cross-env NODE_ENV=test BABEL_ENV=production node scripts/build.js",

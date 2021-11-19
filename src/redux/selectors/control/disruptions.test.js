@@ -114,6 +114,7 @@ const mockStateWithFilters = filters => ({
                 selectedStatus: '',
                 selectedStartDate: null,
                 selectedEndDate: null,
+                selectedImpact: null,
                 ...filters,
             },
         },
@@ -175,6 +176,27 @@ describe('Filtered disruptions', () => {
         });
     });
 
+    context('When end date is selected', () => {
+        it('should return an array with all disruptions that started before the selected date', () => {
+            const filters = {
+                selectedEndDate: new Date('September 1 2021 00:00:00.000Z'),
+            };
+            expect(getFilteredDisruptions(mockStateWithFilters(filters))).deep.to.equal([
+                mockStoreDisruptions[0],
+                mockStoreDisruptions[1],
+            ]);
+        });
+    });
+
+    context('When DETOUR impact is selected', () => {
+        it('should return an array with no disruptions', () => {
+            const filters = {
+                selectedImpact: 'DETOUR',
+            };
+            expect(getFilteredDisruptions(mockStateWithFilters(filters))).to.be.empty;
+        });
+    });
+
     context('When all filters are selected', () => {
         it('should return an array with all disruptions that satisfy all filters condition', () => {
             const filters = {
@@ -187,6 +209,7 @@ describe('Filtered disruptions', () => {
                 selectedStatus: 'resolved',
                 selectedStartDate: new Date('September 1 2021 00:00:00.000Z'),
                 selectedEndDate: new Date('September 1 2021 23:59:59.999Z'),
+                selectedImpact: 'REDUCED_SERVICE',
             };
             expect(getFilteredDisruptions(mockStateWithFilters(filters))).deep.to.equal([
                 mockStoreDisruptions[3],

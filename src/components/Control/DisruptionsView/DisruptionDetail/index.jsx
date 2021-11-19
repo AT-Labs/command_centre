@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
-import { clearDisruptionActionResult, updateDisruption, updateCopyDisruptionState } from '../../../../redux/actions/control/disruptions';
+import { clearDisruptionActionResult, updateDisruption, updateCopyDisruptionState,
+    uploadDisruptionFiles, deleteDisruptionFile } from '../../../../redux/actions/control/disruptions';
 import { getDisruptionAction, isDisruptionUpdateAllowed } from '../../../../redux/selectors/control/disruptions';
 
 import Message from '../../Common/Message/Message';
@@ -51,6 +52,8 @@ DisruptionExpandedDetail.propTypes = {
     updateDisruption: PropTypes.func.isRequired,
     clearDisruptionActionResult: PropTypes.func.isRequired,
     updateCopyDisruptionState: PropTypes.func.isRequired,
+    uploadDisruptionFiles: PropTypes.func.isRequired,
+    deleteDisruptionFile: PropTypes.func.isRequired,
 };
 
 DisruptionExpandedDetail.defaultProps = {
@@ -65,4 +68,6 @@ export default connect(state => getDisruptionAction(state), {
     updateDisruption,
     clearDisruptionActionResult,
     updateCopyDisruptionState,
+    uploadDisruptionFiles,
+    deleteDisruptionFile,
 })(DisruptionExpandedDetail);

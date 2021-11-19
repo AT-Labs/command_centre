@@ -35,6 +35,8 @@ import {
     updateAffectedStopsState,
     updateEditMode,
     updateDisruptionToEdit,
+    uploadDisruptionFiles,
+    deleteDisruptionFile,
 } from '../../../../redux/actions/control/disruptions';
 import { getShapes, getDisruptionsLoadingState, getRouteColors } from '../../../../redux/selectors/control/disruptions';
 import DetailLoader from '../../../Common/Loader/DetailLoader';
@@ -53,6 +55,7 @@ import {
 import './styles.scss';
 import DisruptionSummaryModal from './DisruptionSummaryModal';
 import Map from '../DisruptionCreation/CreateDisruption/Map';
+import DiversionUpload from './DiversionUpload';
 
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
@@ -372,6 +375,14 @@ const DisruptionDetailView = (props) => {
                     </FormGroup>
                 </section>
             </div>
+
+            <DiversionUpload
+                disruption={ disruption }
+                disabled={ isUpdating || isSaveDisabled || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() }
+                uploadDisruptionFiles={ props.uploadDisruptionFiles }
+                deleteDisruptionFile={ props.deleteDisruptionFile }
+            />
+
             <div className="row">
                 <div className="col-5 disruption-detail__contributors">
                     <DisruptionLabelAndText id="disruption-detail__created-by" label={ LABEL_CREATED_BY } text={ `${disruption.createdBy}, ${formatCreatedUpdatedTime(disruption.createdTime)}` } />
@@ -380,7 +391,7 @@ const DisruptionDetailView = (props) => {
                 <div className="col-7">
                     <FormGroup className="pl-0 h-100 d-flex align-items-end justify-content-end">
                         <Button
-                            className="cc-btn-primary mr-3"
+                            className="cc-btn-primary ml-3 mr-3"
                             onClick={ handleUpdateDisruption }
                             disabled={ isUpdating || isSaveDisabled || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() }>
                             Save Changes
@@ -409,13 +420,15 @@ DisruptionDetailView.propTypes = {
     resultDisruptionId: PropTypes.number,
     getRoutesByShortName: PropTypes.func.isRequired,
     shapes: PropTypes.array,
+    isLoading: PropTypes.bool,
+    routeColors: PropTypes.array,
     openCreateDisruption: PropTypes.func.isRequired,
     updateAffectedRoutesState: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
     updateEditMode: PropTypes.func.isRequired,
     updateDisruptionToEdit: PropTypes.func.isRequired,
-    isLoading: PropTypes.bool,
-    routeColors: PropTypes.array,
+    uploadDisruptionFiles: PropTypes.func.isRequired,
+    deleteDisruptionFile: PropTypes.func.isRequired,
 };
 
 DisruptionDetailView.defaultProps = {
@@ -436,4 +449,6 @@ export default connect(state => ({
     updateAffectedStopsState,
     updateEditMode,
     updateDisruptionToEdit,
+    uploadDisruptionFiles,
+    deleteDisruptionFile,
 })(DisruptionDetailView);

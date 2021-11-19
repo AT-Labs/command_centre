@@ -50,7 +50,7 @@ const FilterByDate = (props) => {
 };
 
 FilterByDate.propTypes = {
-    selectedDate: PropTypes.object.isRequired,
+    selectedDate: PropTypes.object,
     minDate: PropTypes.object,
     maxDate: PropTypes.object,
     onChange: PropTypes.func.isRequired,
@@ -58,6 +58,7 @@ FilterByDate.propTypes = {
 };
 
 FilterByDate.defaultProps = {
+    selectedDate: null,
     minDate: null,
     maxDate: null,
     label: '',

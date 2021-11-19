@@ -342,3 +342,33 @@ export const updateDisruptionFilters = filter => ({
         filters: filter,
     },
 });
+
+export const uploadDisruptionFiles = (disruption, file) => async (dispatch) => {
+    const { disruptionId, incidentNo } = disruption;
+    dispatch(updateRequestingDisruptionState(true, disruptionId));
+    try {
+        await disruptionsMgtApi.uploadDisruptionFiles(disruption, file);
+        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentNo)));
+    } catch (error) {
+        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentNo, error.code)));
+    } finally {
+        dispatch(updateRequestingDisruptionState(false, disruptionId));
+    }
+
+    await dispatch(getDisruptions());
+};
+
+export const deleteDisruptionFile = (disruption, fileId) => async (dispatch) => {
+    const { disruptionId, incidentNo } = disruption;
+    dispatch(updateRequestingDisruptionState(true, disruptionId));
+    try {
+        await disruptionsMgtApi.deleteDisruptionFile(disruption, fileId);
+        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentNo)));
+    } catch (error) {
+        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentNo, error.code)));
+    } finally {
+        dispatch(updateRequestingDisruptionState(false, disruptionId));
+    }
+
+    await dispatch(getDisruptions());
+};

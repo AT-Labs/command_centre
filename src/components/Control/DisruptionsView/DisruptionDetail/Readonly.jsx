@@ -21,6 +21,7 @@ import {
 } from '../../../../redux/actions/control/disruptions';
 import { formatCreatedUpdatedTime } from '../../../../utils/control/disruptions';
 import DisruptionLabelAndText from './DisruptionLabelAndText';
+import DiversionUpload from './DiversionUpload';
 import Map from '../DisruptionCreation/CreateDisruption/Map';
 
 const Readonly = (props) => {
@@ -146,6 +147,10 @@ const Readonly = (props) => {
                     </FormGroup>
                 </section>
             </div>
+            <DiversionUpload
+                disruption={ disruption }
+                readonly
+            />
             <div className="row">
                 <div className="col-5 disruption-detail__contributors">
                     <DisruptionLabelAndText id="disruption-detail__created-by" label={ LABEL_CREATED_BY } text={ `${disruption.createdBy}, ${formatCreatedUpdatedTime(disruption.createdTime)}` } />

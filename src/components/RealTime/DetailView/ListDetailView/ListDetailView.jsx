@@ -70,7 +70,7 @@ function ListDetailView(props) {
             onButtonClick: toggleRouteExpand,
         },
         [STOP.type]: {
-            title: entity => `${capitalize(entity.searchResultType)}  ${entity.stop_id} ${entity.stop_name}`,
+            title: entity => `${capitalize(entity.searchResultType)}  ${entity.stop_code} ${entity.stop_name}`,
             onCheckboxChange: (target, entity) => toggleEntityCheck(target, entity, props.stopChecked),
             onButtonClick: entity => props.stopSelected(entity),
         },
