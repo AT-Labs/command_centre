@@ -230,10 +230,32 @@ describe('<TripView />', () => {
         });
 
         context('When serviceDate is TOMORROW', () => {
-            const trip = { ...busTrip, status: 'NOT_STARTED' };
+            const trip = { ...trainTrip, status: 'NOT_STARTED', _links: { permissions: [{ _rel: 'cancel' }, { _rel: 'delay' }, { _rel: 'advancer' }] } };
             let result;
             beforeEach(() => {
                 wrapper = setup({ tripInstance: trip, serviceDate: moment().add(1, 'days').format() });
+                result = wrapper.instance().getButtonBarConfig(trip);
+            });
+
+            it('should contain some buttons', () => {
+                expect(_.isEmpty(result)).to.be.false;  // eslint-disable-line
+            });
+            it('should not contain Set trip delay button', () => {
+                expect(_.find(result, { label: 'Set trip delay' })).to.be.undefined;  // eslint-disable-line
+            });
+            it('should not contain Move to next stop button', () => {
+                expect(_.find(result, { label: 'Move to next stop' })).to.be.undefined;  // eslint-disable-line
+            });
+            it('should not contain View in Blocks button', () => {
+                expect(_.find(result, { label: 'View in Blocks' })).to.be.undefined;  // eslint-disable-line
+            });
+        });
+
+        context('When serviceDate is after TOMORROW', () => {
+            const trip = { ...busTrip, status: 'NOT_STARTED', _links: { permissions: [{ _rel: 'cancel' }, { _rel: 'delay' }] } };
+            let result;
+            beforeEach(() => {
+                wrapper = setup({ tripInstance: trip, serviceDate: moment().add(2, 'days').format() });
                 result = wrapper.instance().getButtonBarConfig(trip);
             });
 

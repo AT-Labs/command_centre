@@ -13,8 +13,7 @@ import { AiOutlineClose } from 'react-icons/ai';
 import Map from './Map';
 import SidePanel from '../../../../Common/OffCanvasLayout/SidePanel/SidePanel';
 import Wizard from '../../../../Common/wizard/Wizard';
-import SelectEntities from '../WizardSteps/SelectEntities';
-import SelectAffectedEntities from '../WizardSteps/SelectAffectedEntities';
+import SelectDisruptionEntities from '../WizardSteps/SelectDisruptionEntities';
 import SelectDetails from '../WizardSteps/SelectDetails';
 import {
     getDisruptionAction,
@@ -25,12 +24,14 @@ import {
     getAffectedRoutes,
     getShapes,
     getRouteColors,
+    getDisruptionToEdit,
 } from '../../../../../redux/selectors/control/disruptions';
 import {
     createDisruption,
     openCreateDisruption,
     toggleDisruptionModals,
     updateCurrentStep,
+    updateDisruption,
 } from '../../../../../redux/actions/control/disruptions';
 import { buildSubmitBody, momentFromDateTime } from '../../../../../utils/control/disruptions';
 import { DEFAULT_IMPACT, DEFAULT_CAUSE, STATUSES } from '../../../../../types/disruptions-types';
@@ -104,6 +105,13 @@ class CreateDisruption extends React.Component {
         this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops));
     }
 
+    onSubmitUpdate = () => {
+        const disruptionRequest = buildSubmitBody(this.props.disruptionToEdit, this.props.routes, this.props.stops);
+        this.props.updateDisruption(disruptionRequest);
+        this.props.openCreateDisruption(false);
+        this.props.toggleDisruptionModals('isConfirmationOpen', true);
+    }
+
     toggleModal = (modalType, isOpen) => {
         const type = `is${modalType}Open`;
         this.setState({ [type]: isOpen });
@@ -126,16 +134,13 @@ class CreateDisruption extends React.Component {
                     isActive
                     className="sidepanel-primary-panel disruption-creation__sidepanel side-panel__scroll-size"
                     toggleButton={ false }>
-                    <div className="disruption-creation__container">
+                    <div className="disruption-creation__container h-100">
                         <div className="disruption-creation__steps p-4">
                             <ol>
                                 <li className={ `position-relative ${this.props.activeStep === 1 ? 'active' : ''}` }>
-                                    Search location
+                                    Search routes or stops
                                 </li>
                                 <li className={ this.props.activeStep === 2 ? 'active' : '' }>
-                                    Select routes
-                                </li>
-                                <li className={ this.props.activeStep === 3 ? 'active' : '' }>
                                     Enter Details
                                 </li>
                             </ol>
@@ -148,8 +153,8 @@ class CreateDisruption extends React.Component {
                             isSubmitDisabled={ this.isSubmitDisabled(disruptionData) }
                             onDataUpdate={ this.updateData }
                             onSubmit={ this.onSubmit }>
-                            <SelectEntities />
-                            <SelectAffectedEntities />
+                            <SelectDisruptionEntities
+                                onSubmitUpdate={ this.onSubmitUpdate } />
                             <SelectDetails />
                         </Wizard>
                         <CustomModal
@@ -169,7 +174,7 @@ class CreateDisruption extends React.Component {
                 <Map
                     shouldOffsetForSidePanel
                     shapes={ this.props.shapes }
-                    stops={ this.props.stops }
+                    stops={ _.uniqBy(this.props.stops, stop => stop.stopId) }
                     routeColors={ this.props.routeColors } />
                 <Button
                     className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
@@ -194,6 +199,9 @@ CreateDisruption.propTypes = {
     routes: PropTypes.array,
     shapes: PropTypes.array,
     routeColors: PropTypes.array,
+    updateDisruption: PropTypes.func.isRequired,
+    disruptionToEdit: PropTypes.object,
+    openCreateDisruption: PropTypes.func.isRequired,
 };
 
 CreateDisruption.defaultProps = {
@@ -204,6 +212,7 @@ CreateDisruption.defaultProps = {
     routes: [],
     shapes: [],
     routeColors: [],
+    disruptionToEdit: {},
 };
 
 export default connect(state => ({
@@ -215,4 +224,5 @@ export default connect(state => ({
     routes: getAffectedRoutes(state),
     shapes: getShapes(state),
     routeColors: getRouteColors(state),
-}), { createDisruption, openCreateDisruption, toggleDisruptionModals, updateCurrentStep })(CreateDisruption);
+    disruptionToEdit: getDisruptionToEdit(state),
+}), { createDisruption, openCreateDisruption, toggleDisruptionModals, updateCurrentStep, updateDisruption })(CreateDisruption);

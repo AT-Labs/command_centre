@@ -1,4 +1,4 @@
-import { map, toString, omit } from 'lodash-es';
+import { toString, omit, uniqBy, isEmpty } from 'lodash-es';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -8,7 +8,6 @@ import { CAUSES, IMPACTS } from '../../../../types/disruptions-types';
 import { getShapes, getDisruptionsLoadingState } from '../../../../redux/selectors/control/disruptions';
 import {
     DATE_FORMAT,
-    LABEL_ROUTES, LABEL_STOPS,
     LABEL_CAUSE, LABEL_CREATED_BY,
     LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_END_DATE, LABEL_END_TIME, LABEL_HEADER, LABEL_LAST_UPDATED_BY,
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME, LABEL_STATUS, LABEL_URL,
@@ -23,6 +22,7 @@ import { formatCreatedUpdatedTime } from '../../../../utils/control/disruptions'
 import DisruptionLabelAndText from './DisruptionLabelAndText';
 import DiversionUpload from './DiversionUpload';
 import Map from '../DisruptionCreation/CreateDisruption/Map';
+import AffectedEntities from '../AffectedEntities';
 
 const Readonly = (props) => {
     const { disruption, isLoading } = props;
@@ -30,42 +30,25 @@ const Readonly = (props) => {
     const affectedEntitiesWithoutShape = toString(disruption.affectedEntities.map(entity => omit(entity, ['shapeWkt'])));
     useEffect(() => {
         const affectedStops = disruption.affectedEntities.filter(entity => entity.stopId);
-        const affectedRoutes = disruption.affectedEntities.filter(entity => entity.routeId);
+        const affectedRoutes = disruption.affectedEntities.filter(entity => entity.routeId && isEmpty(entity.stopId));
 
         props.updateAffectedStopsState(affectedStops);
         props.updateAffectedRoutesState(affectedRoutes);
 
-        if (affectedRoutes.length) {
-            props.getRoutesByShortName(affectedRoutes.slice(0, 10));
+        const routesToGet = uniqBy([...affectedRoutes, ...affectedStops.filter(stop => stop.routeId)], item => item.routeId);
+
+        if (routesToGet.length) {
+            props.getRoutesByShortName(routesToGet.slice(0, 10));
         }
     }, [affectedEntitiesWithoutShape]);
 
     return (
         <Form>
             <div className="row position-relative">
-                <section className="col-6 height-entities">
-                    <div className="row">
-                        <div className="col-6">
-                            <h3>Affected routes and stops</h3>
-                        </div>
-                    </div>
-                    <FormGroup className="mt-2">
-                        <Label for="disruption-detail__affected-routes">
-                            <span className="font-size-md font-weight-bold">{ LABEL_ROUTES }</span>
-                        </Label>
-                        <div className="disruption-detail__affected-entities__button-div disabled">
-                            { map(disruption.affectedEntities.filter(entity => entity.routeId), 'routeShortName').join(', ') }
-                        </div>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for="disruption-detail__affected-stops">
-                            <span className="font-size-md font-weight-bold">{ LABEL_STOPS }</span>
-                        </Label>
-                        <div className="disruption-detail__affected-entities__button-div disabled">
-                            { map(disruption.affectedEntities.filter(entity => entity.stopId), 'stopCode').join(', ') }
-                        </div>
-                    </FormGroup>
-                </section>
+                <AffectedEntities
+                    isEditDisabled
+                    affectedEntities={ disruption.affectedEntities }
+                />
                 <section className="position-relative w-50 d-flex disruption-detail__map">
                     <Map shouldOffsetForSidePanel={ false }
                         shapes={ !isLoading ? props.shapes : [] }

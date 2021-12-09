@@ -52,6 +52,7 @@ class PickList extends Component {
         rightPaneShowCheckbox: PropTypes.bool,
 
         isVerticalLayout: PropTypes.bool,
+        displayResults: PropTypes.bool,
         searchInCategory: PropTypes.array,
         entityToItemTransformers: PropTypes.object,
         itemToEntityTransformers: PropTypes.object,
@@ -88,6 +89,7 @@ class PickList extends Component {
         rightPaneShowCheckbox: true,
 
         isVerticalLayout: false,
+        displayResults: true,
 
         selectBtnLabel: 'Select',
         RemoveBtnLabel: 'Remove',
@@ -174,7 +176,7 @@ class PickList extends Component {
         }
     }
 
-    showSecondPane = () => !this.props.isVerticalLayout || (this.props.isVerticalLayout && this.state.picklistSelectedValues.length > 0);
+    showSecondPane = () => this.props.displayResults && (!this.props.isVerticalLayout || (this.props.isVerticalLayout && this.state.picklistSelectedValues.length > 0));
 
     render() {
         return (

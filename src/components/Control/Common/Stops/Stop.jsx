@@ -57,7 +57,9 @@ export class Stop extends React.Component {
     isMissedTrip = () => this.props.tripInstance.status === TRIP_STATUS_TYPES.missed;
 
     isStopMutationPossible = () => (this.isNotStartedTrip() || this.isInProgressTrip() || this.isMissedTrip())
-        && (moment(this.props.serviceDate).isSame(moment(), 'day') || (moment(this.props.serviceDate).isBefore(moment(), 'day') && this.props.tripInstance.endTime > '24:00:00'));
+        && (moment(this.props.serviceDate).isSame(moment(), 'day')
+            || moment(this.props.serviceDate).isSame(moment().add(1, 'days'), 'day')
+            || (moment(this.props.serviceDate).isBefore(moment(), 'day') && this.props.tripInstance.endTime > '24:00:00'));
 
     isStopSkippingPermitted = () => IS_LOGIN_NOT_REQUIRED || isSkipStopPermitted(this.props.stop);
 
@@ -71,7 +73,8 @@ export class Stop extends React.Component {
 
     isChangePlatformDisabled = () => !this.isStopMutationPermitted()
         || !this.isStopMutationPossible()
-        || this.getAvailablePlatforms().length < 2;
+        || this.getAvailablePlatforms().length < 2
+        || moment(this.props.serviceDate).isAfter(moment(), 'day');
 
     showChangePlatformModal = newPlatform => this.setState({ isChangePlatformModalOpen: true, newPlatform });
 

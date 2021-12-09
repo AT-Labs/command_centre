@@ -89,10 +89,6 @@
 }
 
 .disruption-creation__wizard-select-details {
-    &__selected-dates {
-        background-color: $very-light-blue;
-    }
-
     &__icon {
         color: $at-shore;
         right: 10px;
@@ -121,15 +117,17 @@
         grid-gap: 10px;
     }
 
-    & .collapse:not(.show) {
-        display: block;
-        height: 5rem;
-        overflow: hidden;
-    }
+    & .disruption__affected-entities {
+        max-width: 100%;
+        padding: 0;
 
-    & .collapsing {
-        height: 5rem !important;
-        transition: height .35s ease;
+        & .collapse:not(.show) {
+            height: 10rem;
+        }
+
+        & .collapsing {
+            height: 10rem !important;
+        }
     }
 }
 
@@ -156,7 +154,7 @@
         display: flex;
         margin: 0;
         list-style: none;
-        justify-content: space-between;
+        justify-content: space-evenly;
         padding: 0;
 
         li {
@@ -194,10 +192,10 @@
                 content: '';
                 border-bottom: 1px solid $at-light-gray;
                 height: 1px;
-                width: 10px;
+                width: 40px;
                 vertical-align: middle;
                 position: absolute;
-                right: -20px;
+                right: -50px;
                 top: 50%;
                 bottom: 50%;
             }
@@ -265,4 +263,9 @@
 button.continue {
     color: white !important;
     font-weight: 500 !important;
+}
+
+.toggle-button-space {
+    display: inline-block;
+    width: 32px;
 }

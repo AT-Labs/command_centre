@@ -1,4 +1,4 @@
-import { isEmpty, camelCase, isObject, uniq, transform, isArray } from 'lodash-es';
+import { isEmpty, camelCase, isObject, uniq, transform, isArray, omit } from 'lodash-es';
 import moment from 'moment';
 
 import { TIME_FORMAT, DATE_FORMAT } from '../../constants/disruptions';
@@ -60,12 +60,14 @@ export const getDatePickerOptions = (minimumDate) => {
 };
 
 export const buildSubmitBody = (disruption, routes, stops) => {
-    const modes = routes.map(route => VEHICLE_TYPES[route.routeType].type);
+    const modes = [...routes.map(route => VEHICLE_TYPES[route.routeType].type),
+        ...stops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType].type)];
     const routesToRequest = routes.map(({ routeId, routeShortName, routeType }) => ({ routeId, routeShortName, routeType }));
+    const stopsToRequest = stops.map(entity => omit(entity, ['shapeWkt']));
     return {
         ...disruption,
         mode: uniq(modes).join(', '),
-        affectedEntities: [...routesToRequest, ...stops],
+        affectedEntities: [...routesToRequest, ...stopsToRequest],
     };
 };
 

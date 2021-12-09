@@ -104,7 +104,7 @@ export class TripView extends React.Component {
     };
 
     getButtonBarConfig = (tripInstance) => {
-        if (moment(this.props.serviceDate).isAfter(moment(), 'day')) {
+        if (moment(this.props.serviceDate).isAfter(moment().add(1, 'days'), 'day')) {
             return [];
         }
 
@@ -113,6 +113,7 @@ export class TripView extends React.Component {
         }
 
         const buttonBarConfig = [];
+        const isBeforeTomorrow = moment(this.props.serviceDate).isBefore(moment().add(1, 'days'), 'day');
         const isNotStarted = tripInstance.status === TRIP_STATUS_TYPES.notStarted;
         const isInProgress = tripInstance.status === TRIP_STATUS_TYPES.inProgress;
         const isMissed = tripInstance.status === TRIP_STATUS_TYPES.missed;
@@ -120,7 +121,7 @@ export class TripView extends React.Component {
         const isCancelPermitted = IS_LOGIN_NOT_REQUIRED || isTripCancelPermitted(tripInstance);
         const isCancelPossible = isNotStarted || isMissed || isInProgress;
         const isReinstatePossible = isCancelled;
-        const isDelayEditPermitted = IS_LOGIN_NOT_REQUIRED || isTripDelayPermitted(tripInstance);
+        const isDelayEditPermitted = isBeforeTomorrow && (IS_LOGIN_NOT_REQUIRED || isTripDelayPermitted(tripInstance));
         const isDelayEditPossible = isInProgress || isNotStarted || isMissed;
         const isMoveTripToNextStopPermitted = IS_LOGIN_NOT_REQUIRED || isMoveToStopPermitted(tripInstance);
         const isMoveTripToNextStopPossible = isInProgress || isMissed || isNotStarted;
@@ -169,14 +170,14 @@ export class TripView extends React.Component {
             });
         }
 
-        if (this.props.isControlBlockViewPermitted && tripInstance.routeType === TRAIN_TYPE_ID) { // Only supports trains at the moment
+        if (this.props.isControlBlockViewPermitted && tripInstance.routeType === TRAIN_TYPE_ID && isBeforeTomorrow) { // Only supports trains at the moment
             buttonBarConfig.push({
                 label: 'View in Blocks',
                 action: () => this.props.goToBlocksView(tripInstance),
             });
         }
 
-        if (isMoveTripToNextStopPermitted && isMoveTripToNextStopPossible) {
+        if (isMoveTripToNextStopPermitted && isMoveTripToNextStopPossible && isBeforeTomorrow) {
             buttonBarConfig.push({
                 label: 'Move to next stop',
                 action: () => this.setState({ isMoveToNextStopModalOpen: true }),

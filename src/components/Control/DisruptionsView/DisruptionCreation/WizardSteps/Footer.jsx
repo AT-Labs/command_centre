@@ -5,11 +5,13 @@ import { Button } from 'reactstrap';
 const Footer = props => (
     <footer className="row m-0 justify-content-between p-4 position-fixed">
         <div className="col-4">
-            <Button
-                className="btn cc-btn-link"
-                onClick={ props.onBack }>
-                Go back
-            </Button>
+            { props.onBack && (
+                <Button
+                    className="btn cc-btn-link"
+                    onClick={ props.onBack }>
+                    Go back
+                </Button>
+            )}
         </div>
         <div className="col-4 pl-0">
             <Button
@@ -34,13 +36,14 @@ const Footer = props => (
 Footer.propTypes = {
     toggleDisruptionModals: PropTypes.func.isRequired,
     onContinue: PropTypes.func.isRequired,
-    onBack: PropTypes.func.isRequired,
+    onBack: PropTypes.func,
     isSubmitEnabled: PropTypes.bool,
     nextButtonValue: PropTypes.string.isRequired,
 };
 
 Footer.defaultProps = {
     isSubmitEnabled: false,
+    onBack: null,
 };
 
 export default Footer;

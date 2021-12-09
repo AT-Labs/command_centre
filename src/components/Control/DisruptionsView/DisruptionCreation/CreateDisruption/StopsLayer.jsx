@@ -2,8 +2,7 @@ import React, { Fragment, useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { CircleMarker, FeatureGroup, LeafletConsumer, Tooltip } from 'react-leaflet';
-import { filter } from 'lodash-es';
-
+import { filter, uniqBy } from 'lodash-es';
 import IconMarker from '../../../../Common/IconMarker/IconMarker';
 import { getStopDetail } from '../../../../../redux/selectors/realtime/detail';
 import { getChildStops, getStopLatLng } from '../../../../../redux/selectors/static/stops';
@@ -45,7 +44,7 @@ const StopsLayer = (props) => {
     return (
         <Fragment>
             <FeatureGroup>
-                {props.affectedStops.map(stop => (stop.stopLat
+                {uniqBy(props.affectedStops, stop => stop.stopId).map(stop => (stop.stopLat
                     ? (
                         <IconMarker
                             key={ stop.stopId }

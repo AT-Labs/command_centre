@@ -8,7 +8,7 @@ import * as ccStatic from '../../../utils/transmitters/cc-static';
 import { toCamelCaseKeys } from '../../../utils/control/disruptions';
 import ACTION_TYPE from '../../action-types';
 import { setBannerError, modalStatus } from '../activity';
-import { getCachedShapes, getCachedStopsToRoutes } from '../../selectors/control/disruptions';
+import { getAffectedStops, getAffectedRoutes, getCachedShapes, getCachedStopsToRoutes } from '../../selectors/control/disruptions';
 import { getAllRoutes } from '../../selectors/static/routes';
 
 const loadDisruptions = disruptions => ({
@@ -167,8 +167,10 @@ export const createDisruption = disruption => async (dispatch) => {
 export const getRoutesByStop = stops => async (dispatch, getState) => {
     dispatch(updateLoadingDisruptionsState(true));
     if (!isEmpty(stops)) {
-        const cachedShapes = getCachedShapes(getState());
-        const cachedStopsToRoutes = getCachedStopsToRoutes(getState());
+        const state = getState();
+        const allRoutes = getAllRoutes(state);
+        const cachedShapes = getCachedShapes(state);
+        const cachedStopsToRoutes = getCachedStopsToRoutes(state);
 
         const routesByStop = {};
 
@@ -205,6 +207,14 @@ export const getRoutesByStop = stops => async (dispatch, getState) => {
                 throw error;
             })
             .finally(() => {
+                stops.forEach((stop) => {
+                    if (routesByStop[stop.stopId]) {
+                        routesByStop[stop.stopId] = routesByStop[stop.stopId].map(route => ({
+                            ...route,
+                            routeColor: allRoutes[route.routeId] && allRoutes[route.routeId].route_color,
+                        }));
+                    }
+                });
                 dispatch(updateCachedShapesState(missingCacheShapes));
                 dispatch(updateCachedStopsToRoutes(missingCacheStopsToRoutes));
                 dispatch(updateRoutesByStop(routesByStop, false));
@@ -247,16 +257,34 @@ export const deleteAffectedEntities = () => (dispatch) => {
     });
 };
 
+const addShapesToEntities = (entities, routesWithShapes) => entities.map((entity) => {
+    const mappedEntity = { ...entity };
+    if (mappedEntity.routeId) {
+        const route = routesWithShapes.find(routeWithShapes => entity.routeId === routeWithShapes.routeId);
+
+        if (route) {
+            mappedEntity.shapeWkt = route.shapeWkt;
+            mappedEntity.routeColor = route.routeColor;
+        }
+    }
+    return mappedEntity;
+});
+
+
 export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
     dispatch(updateLoadingDisruptionsState(true));
 
     const state = getState();
     const cachedShapes = getCachedShapes(state);
     const allRoutes = getAllRoutes(state);
+    const affectedStops = getAffectedStops(state);
+    const affectedRoutes = getAffectedRoutes(state);
 
     const missingCacheRoutes = [];
     const missingCacheShapes = {};
     const routesWithShapes = [];
+    let stopsWithShapes = [];
+    let affectedRoutesWithShapes = [];
 
     currentRoutes.map(route => (
         { ...route, routeColor: allRoutes[route.routeId] && allRoutes[route.routeId].route_color }
@@ -281,11 +309,16 @@ export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
                 }
             });
 
-            return routesWithShapes;
+            stopsWithShapes = addShapesToEntities(affectedStops, routesWithShapes);
+
+            affectedRoutesWithShapes = addShapesToEntities(affectedRoutes, routesWithShapes);
+
+            return [stopsWithShapes, affectedRoutesWithShapes];
         })
         .then(() => {
             dispatch(updateCachedShapesState(missingCacheShapes));
-            dispatch(updateAffectedRoutesState(routesWithShapes));
+            dispatch(updateAffectedRoutesState(affectedRoutesWithShapes));
+            dispatch(updateAffectedStopsState(stopsWithShapes));
             dispatch(updateLoadingDisruptionsState(false));
         })
         .catch((err) => {

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap';
-import { map, toString, omit, some, isEmpty } from 'lodash-es';
+import { toString, omit, some, isEmpty, uniqBy, uniqWith } from 'lodash-es';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import Flatpickr from 'react-flatpickr';
 import { CAUSES, IMPACTS, STATUSES } from '../../../../types/disruptions-types';
@@ -11,7 +11,6 @@ import {
     DATE_FORMAT,
     DESCRIPTION_MAX_LENGTH,
     HEADER_MAX_LENGTH,
-    LABEL_ROUTES, LABEL_STOPS,
     LABEL_CAUSE,
     LABEL_CREATED_BY,
     LABEL_CUSTOMER_IMPACT,
@@ -38,7 +37,7 @@ import {
     uploadDisruptionFiles,
     deleteDisruptionFile,
 } from '../../../../redux/actions/control/disruptions';
-import { getShapes, getDisruptionsLoadingState, getRouteColors } from '../../../../redux/selectors/control/disruptions';
+import { getShapes, getDisruptionsLoadingState, getRouteColors, getAffectedRoutes, getAffectedStops } from '../../../../redux/selectors/control/disruptions';
 import DetailLoader from '../../../Common/Loader/DetailLoader';
 import { DisruptionDetailSelect } from './DisruptionDetailSelect';
 import DisruptionLabelAndText from './DisruptionLabelAndText';
@@ -56,6 +55,7 @@ import './styles.scss';
 import DisruptionSummaryModal from './DisruptionSummaryModal';
 import Map from '../DisruptionCreation/CreateDisruption/Map';
 import DiversionUpload from './DiversionUpload';
+import AffectedEntities from '../AffectedEntities';
 
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
@@ -75,6 +75,14 @@ const DisruptionDetailView = (props) => {
     const [endDate, setEndDate] = useState(disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '');
     const [disruptionOpenedTime] = useState(moment().second(0).millisecond(0));
 
+    const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
+        const uniqRoutes = uniqBy([...affectedRoutes, ...props.routes], route => route.routeId);
+        const uniqStops = uniqWith([...affectedStops, ...props.stops], (stopA, stopB) => stopA.stopId === stopB.stopId && stopA.routeId === stopB.routeId);
+
+        return uniqRoutes.length !== affectedRoutes.length || uniqStops.length !== affectedStops.length
+            || uniqRoutes.length !== props.routes.length || uniqStops.length !== props.stops.length;
+    };
+
     // A temporary solution to render the routes on the map. It will only render the first ten routes coming
     // in the array due to the high possibility of collapsing the static API.
     // This piece of code should be deleted when a better performance solution has been put in place.
@@ -82,15 +90,19 @@ const DisruptionDetailView = (props) => {
     const affectedEntitiesWithoutShape = toString(disruption.affectedEntities.map(entity => omit(entity, ['shapeWkt'])));
     useEffect(() => {
         const affectedStops = disruption.affectedEntities.filter(entity => entity.stopId);
-        const affectedRoutes = disruption.affectedEntities.filter(entity => entity.routeId);
+        const affectedRoutes = disruption.affectedEntities.filter(entity => entity.routeId && isEmpty(entity.stopId));
 
-        props.updateAffectedStopsState(affectedStops);
-        props.updateAffectedRoutesState(affectedRoutes);
+        if ((isEmpty(props.stops) && isEmpty(props.routes)) || haveRoutesOrStopsChanged(affectedRoutes, affectedStops)) {
+            props.updateAffectedStopsState(affectedStops);
+            props.updateAffectedRoutesState(affectedRoutes);
 
-        if (affectedRoutes.length) {
-            props.getRoutesByShortName(affectedRoutes.slice(0, 10));
+            const routesToGet = uniqBy([...affectedRoutes, ...affectedStops.filter(stop => stop.routeId)], item => item.routeId);
+
+            if (routesToGet.length) {
+                props.getRoutesByShortName(routesToGet.slice(0, 10));
+            }
         }
-    }, [affectedEntitiesWithoutShape]);
+    }, [affectedEntitiesWithoutShape, disruption.affectedEntities]);
 
     useEffect(() => {
         setHeader(disruption.header);
@@ -204,33 +216,12 @@ const DisruptionDetailView = (props) => {
     return (
         <Form>
             <div className="row position-relative">
-                <section className="col-6 height-entities">
-                    <div className="row">
-                        <div className="col-6">
-                            <h3>Affected routes and stops</h3>
-                        </div>
-                        <div className="col-6 text-right">
-                            <Button
-                                className="btn cc-btn-link pr-0"
-                                onClick={ editRoutesAndStops }
-                                disabled={ isRequesting || isLoading || isResolved() }>
-                                Edit routes and stops
-                            </Button>
-                        </div>
-                    </div>
-                    <FormGroup className="mt-2">
-                        <Label for="disruption-detail__affected-routes">
-                            <span className="font-size-md font-weight-bold">{ LABEL_ROUTES }</span>
-                        </Label>
-                        <div className={ `disruption-detail__affected-entities__button-div ${isResolved() && 'disabled'}` }>{ map(disruption.affectedEntities.filter(entity => entity.routeId), 'routeShortName').join(', ') }</div>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for="disruption-detail__affected-stops">
-                            <span className="font-size-md font-weight-bold">{ LABEL_STOPS }</span>
-                        </Label>
-                        <div className={ `disruption-detail__affected-entities__button-div ${isResolved() && 'disabled'}` }>{ map(disruption.affectedEntities.filter(entity => entity.stopId), 'stopCode').join(', ') }</div>
-                    </FormGroup>
-                </section>
+                <AffectedEntities
+                    editLabel="Edit routes and stops"
+                    editAction={ editRoutesAndStops }
+                    isEditDisabled={ isRequesting || isLoading || isResolved() }
+                    affectedEntities={ disruption.affectedEntities }
+                />
                 <section className="position-relative w-50 d-flex disruption-detail__map">
                     <Map shouldOffsetForSidePanel={ false }
                         shapes={ !isLoading ? props.shapes : [] }
@@ -429,6 +420,8 @@ DisruptionDetailView.propTypes = {
     updateDisruptionToEdit: PropTypes.func.isRequired,
     uploadDisruptionFiles: PropTypes.func.isRequired,
     deleteDisruptionFile: PropTypes.func.isRequired,
+    routes: PropTypes.array.isRequired,
+    stops: PropTypes.array.isRequired,
 };
 
 DisruptionDetailView.defaultProps = {
@@ -442,6 +435,8 @@ export default connect(state => ({
     shapes: getShapes(state),
     isLoading: getDisruptionsLoadingState(state),
     routeColors: getRouteColors(state),
+    routes: getAffectedRoutes(state),
+    stops: getAffectedStops(state),
 }), {
     getRoutesByShortName,
     openCreateDisruption,

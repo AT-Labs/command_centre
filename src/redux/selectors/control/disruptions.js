@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { result, find, pick, isEmpty, flatMap, get } from 'lodash-es';
+import { result, find, pick, isEmpty, flatMap, get, uniqBy } from 'lodash-es';
 import { createSelector } from 'reselect';
 import USER_PERMISSIONS from '../../../types/user-permissions-types';
 import { getJSONFromWKT } from '../../../utils/helpers';
@@ -39,10 +39,11 @@ export const isEditEnabled = createSelector(getDisruptionsState, disruptionsStat
 
 export const getAffectedStops = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'affectedEntities.affectedStops'));
 export const getAffectedRoutes = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'affectedEntities.affectedRoutes'));
-export const getShapes = createSelector(getAffectedRoutes, (affectedRoutes) => {
-    if (!isEmpty(affectedRoutes)) {
+export const getShapes = createSelector(getAffectedRoutes, getAffectedStops, (affectedRoutes, affectedStops) => {
+    const allAffectedRoutes = uniqBy([...affectedRoutes, ...affectedStops.filter(stop => stop.routeId)], route => route.routeId);
+    if (!isEmpty(allAffectedRoutes)) {
         const withShapes = [];
-        flatMap(affectedRoutes).forEach((r) => {
+        flatMap(allAffectedRoutes).forEach((r) => {
             if (r.shapeWkt) {
                 withShapes.push(getJSONFromWKT(r.shapeWkt).coordinates.map(c => c.reverse()));
             }
@@ -52,10 +53,11 @@ export const getShapes = createSelector(getAffectedRoutes, (affectedRoutes) => {
     }
     return [];
 });
-export const getRouteColors = createSelector(getAffectedRoutes, (affectedRoutes) => {
-    if (!isEmpty(affectedRoutes)) {
+export const getRouteColors = createSelector(getAffectedRoutes, getAffectedStops, (affectedRoutes, affectedStops) => {
+    const allAffectedRoutes = uniqBy([...affectedRoutes, ...affectedStops.filter(stop => stop.routeId)], route => route.routeId);
+    if (!isEmpty(allAffectedRoutes)) {
         const withRouteColors = [];
-        flatMap(affectedRoutes).forEach((r) => {
+        flatMap(allAffectedRoutes).forEach((r) => {
             if (r.routeColor) {
                 withRouteColors.push(r.routeColor);
             }

@@ -121,11 +121,11 @@ describe('<Stop />', () => {
             expect(wrapper.instance().isStopMutationPossible()).to.be.true; // eslint-disable-line
         });
 
-        it('does not allow mutations when it is tomorrow', () => {
+        it('does not allow mutations after tomorrow', () => {
             wrapper = setup({
                 tripInstance: { ...trip, status: 'NOT_STARTED' },
                 stop: { ...stop, status: 'NOT_PASSED' },
-                serviceDate: moment().add(1, 'days').format(),
+                serviceDate: moment().add(2, 'days').format(),
             });
             expect(wrapper.instance().isStopMutationPossible()).to.be.false; // eslint-disable-line
         });
@@ -312,6 +312,25 @@ describe('<Stop />', () => {
                         ],
                     },
                 },
+            });
+            expect(wrapper.instance().isChangePlatformDisabled()).to.be.true; // eslint-disable-line
+        });
+
+        it('disables change platform for trips after today', () => {
+            wrapper = setup({
+                tripInstance: { ...trip, status: 'NOT_STARTED', routeType: 2 },
+                stop: {
+                    ...stop,
+                    status: 'NOT_PASSED',
+                    _links: {
+                        permissions: [
+                            { _rel: 'skip' },
+                            { _rel: 'change' },
+                        ],
+                    },
+                },
+                serviceDate: moment().add(1, 'days').format(),
+                platforms,
             });
             expect(wrapper.instance().isChangePlatformDisabled()).to.be.true; // eslint-disable-line
         });

@@ -1,4 +1,5 @@
 import _ from 'lodash-es';
+import moment from 'moment';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
@@ -19,10 +20,11 @@ const StopSelectionFooter = (props) => {
     const [activeModal, setActiveModal] = useState(updateStopsModalTypes.SKIP);
 
     const { tripInstance } = props;
+    const isBeforeTomorrow = moment(tripInstance.serviceDate).isBefore(moment().add(1, 'days'), 'day');
     const selectedStops = props.selectedStopsByTripKey(tripInstance);
     const isOnlyOneStopSelected = _.size(selectedStops) === 1;
     const onlySelectedStop = selectedStops && selectedStops[_.findKey(selectedStops)];
-    const isMoveTripToStopPossible = isOnlyOneStopSelected && (IS_LOGIN_NOT_REQUIRED || isMoveToStopPermitted(onlySelectedStop));
+    const isMoveTripToStopPossible = isBeforeTomorrow && isOnlyOneStopSelected && (IS_LOGIN_NOT_REQUIRED || isMoveToStopPermitted(onlySelectedStop));
 
     const handleModalOnToggle = (activeModalName) => {
         setIsModalOpen(!isModalOpen);

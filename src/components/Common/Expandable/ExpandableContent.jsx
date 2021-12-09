@@ -7,7 +7,7 @@ export const ExpandableContent = (props) => {
     return (
         <div
             id={ props.expandableRegionId }
-            className="expandable__body"
+            className={ `expandable__body ${props.extendClassName}` }
             role="region"
             aria-labelledby={ props.expandableButtonId }
         >
@@ -24,6 +24,7 @@ ExpandableContent.propTypes = {
         PropTypes.arrayOf(PropTypes.node),
         PropTypes.node,
     ]),
+    extendClassName: PropTypes.string,
 };
 
 ExpandableContent.defaultProps = {
@@ -31,4 +32,5 @@ ExpandableContent.defaultProps = {
     expandableButtonId: 'expandable-button',
     isActive: false,
     children: [],
+    extendClassName: '',
 };

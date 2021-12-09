@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { Collapse, Form, FormGroup, Label, Button, Input, FormFeedback } from 'reactstrap';
+import { Form, FormGroup, Label, Input, FormFeedback } from 'reactstrap';
 import Flatpickr from 'react-flatpickr';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { isUrlValid } from '../../../../../utils/helpers';
@@ -28,18 +28,14 @@ import {
     DATE_FORMAT,
     LABEL_END_TIME, LABEL_END_DATE,
 } from '../../../../../constants/disruptions';
-import TripIcon from '../../../Common/Trip/TripIcon';
-import Icon from '../../../../Common/Icon/Icon';
 import Footer from './Footer';
+import AffectedEntities from '../../AffectedEntities';
 
 const SelectDetails = (props) => {
     const { startDate, startTime, endDate, endTime, impact, cause, header, description, url } = props.data;
     const { routes, stops } = props;
 
     const [modalOpenedTime] = useState(moment().second(0).millisecond(0));
-    const [collapse, setCollapse] = useState(false);
-
-    const toggle = () => setCollapse(!collapse);
 
     const startTimeValid = () => isStartTimeValid(startDate, startTime, modalOpenedTime);
 
@@ -58,64 +54,26 @@ const SelectDetails = (props) => {
     const isSubmitEnabled = props.isSubmitDisabled || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid();
 
     const onContinue = () => {
-        props.onStepUpdate(3);
+        props.onStepUpdate(2);
         props.updateCurrentStep(1);
         props.onSubmit();
     };
 
     const onBack = () => {
-        props.onStepUpdate(1);
-        props.updateCurrentStep(2);
+        props.onStepUpdate(0);
+        props.updateCurrentStep(1);
     };
-
-    const showViewMoreLessButton = routes.length + stops.length > 4;
 
     return (
         <div className="disruption-creation__wizard-select-details">
-            <div className="disruption-creation__wizard-select-details__selected-dates row p-4">
-                <div className="col">
-                    <span className="font-weight-bold mb-4">Affected Routes</span>
-                    <span className="float-right">
-                        <Button
-                            className="btn cc-btn-link p-0"
-                            onClick={ () => {
-                                props.onStepUpdate(0);
-                                props.updateCurrentStep(1);
-                            } }>
-                            Edit
-                        </Button>
-                    </span>
-                    <Collapse isOpen={ collapse } className="w-100">
-                        <ul className="disruption-creation__wizard-select-details__selected-routes p-0 mt-3">
-                            { routes.map(route => (
-                                <li key={ route.routeId }>
-                                    <TripIcon type={ route.routeType } className="disruption-creation__wizard-select-details__vehicle-icon" />
-                                    { route.routeShortName }
-                                </li>
-                            ))}
-                            { stops.map(stop => (
-                                <li key={ stop.stopId }>
-                                    <div className="trip-icon">
-                                        <Icon icon="bus-stop" className="disruption-creation__wizard-select-details__vehicle-icon" />
-                                    </div>
-                                    { stop.stopCode }
-                                </li>
-                            ))}
-                        </ul>
-                    </Collapse>
-                    {showViewMoreLessButton
-                        && (
-                            <div>
-                                <Button
-                                    className="btn cc-btn-link p-0"
-                                    onClick={ toggle }>
-                                    {collapse ? 'View Less' : 'View More'}
-                                </Button>
-                            </div>
-                        )
-                    }
-                </div>
-            </div>
+            <AffectedEntities
+                editLabel="Edit"
+                editAction={ () => {
+                    props.onStepUpdate(0);
+                    props.updateCurrentStep(1);
+                } }
+                affectedEntities={ [...stops, ...routes] }
+            />
             <Form className="row my-3 p-4">
                 <div className="col-12">
                     <h3>Add disruption details</h3>
