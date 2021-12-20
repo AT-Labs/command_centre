@@ -25,6 +25,7 @@ import {
     updateTripReplaySearchTerm,
     updateTripReplayStartTime,
     updateTripReplayEndTime,
+    updateTripReplayTimeType,
     handleSearchDateChange,
     search,
 } from '../../../redux/actions/control/tripReplays/filters';
@@ -39,7 +40,7 @@ const TripReplaysView = (props) => {
     const location = useLocation();
 
     const { searchFilters, trips, totalResults, hasMore, isSingleTripDisplayed } = props;
-    const { searchTerm, searchDate, startTime, endTime } = searchFilters;
+    const { searchTerm, searchDate, startTime, endTime, timeType } = searchFilters;
     const [hoveredKeyEvent, setHoveredKeyEvent] = useState();
     const [selectedKeyEventDetail, setSelectedKeyEventDetail] = useState();
     const [selectedKeyEventId, setSelectedKeyEventId] = useState();
@@ -76,6 +77,10 @@ const TripReplaysView = (props) => {
             const endTimeParam = params.get('endTime');
             if (endTimeParam) {
                 props.updateTripReplayEndTime(endTimeParam);
+            }
+            const timeTypeParam = params.get('timeType');
+            if (timeTypeParam) {
+                props.updateTripReplayTimeType(timeTypeParam);
             }
             const showResultParam = params.get('showResult');
             if (showResultParam === 'true') {
@@ -133,7 +138,7 @@ const TripReplaysView = (props) => {
         const searchTermParam = searchTerm.type && searchTerm.id ? `${searchTerm.type}_${searchTerm.id}_${searchTerm.label}` : '';
         const showResult = !props.isFiltersViewDisplayed;
         const trip = isSingleTripDisplayed && props.currentTrip ? `${props.currentTrip.tripId}_${moment(props.currentTrip.tripStart).unix()}` : '';
-        const urlSearchParams = searchTermParam ? `?${new URLSearchParams({ searchTerm: searchTermParam, searchDate, startTime, endTime, showResult, trip }).toString()}` : '';
+        const urlSearchParams = searchTermParam ? `?${new URLSearchParams({ searchTerm: searchTermParam, searchDate, startTime, endTime, timeType, showResult, trip }).toString()}` : '';
         const fullPath = `/${VIEW_TYPE.MAIN.CONTROL}/${VIEW_TYPE.CONTROL_DETAIL.TRIP_REPLAYS}${urlSearchParams}`;
         if (`${location.pathname}${location.search}` !== fullPath) {
             history.push(fullPath);
@@ -148,6 +153,14 @@ const TripReplaysView = (props) => {
             history.replace(`${location.pathname}?${params.toString()}`);
         }
     }, [startTime, endTime]);
+
+    useEffect(() => {
+        if (location.search && location.search.includes('timeType')) {
+            const params = new URLSearchParams(location.search);
+            params.set('timeType', timeType);
+            history.replace(`${location.pathname}?${params.toString()}`);
+        }
+    }, [timeType]);
 
     useEffect(() => {
         const today = moment().format(SERVICE_DATE_FORMAT);
@@ -201,10 +214,11 @@ const TripReplaysView = (props) => {
                 totalResults={ totalResults }
                 hasMore={ hasMore }
                 searchParams={ {
-                    route: searchTerm.label,
+                    searchTerm,
                     date: searchDate,
                     startTime,
                     endTime,
+                    timeType,
                 } }
             />
         );
@@ -265,6 +279,7 @@ TripReplaysView.propTypes = {
         searchDate: PropTypes.string,
         startTime: PropTypes.string.isRequired,
         endTime: PropTypes.string.isRequired,
+        timeType: PropTypes.string.isRequired,
     }).isRequired,
     trips: PropTypes.array,
     totalResults: PropTypes.number.isRequired,
@@ -281,6 +296,7 @@ TripReplaysView.propTypes = {
     handleSearchDateChange: PropTypes.func.isRequired,
     updateTripReplayStartTime: PropTypes.func.isRequired,
     updateTripReplayEndTime: PropTypes.func.isRequired,
+    updateTripReplayTimeType: PropTypes.func.isRequired,
     search: PropTypes.func.isRequired,
     selectTrip: PropTypes.func.isRequired,
 };
@@ -311,6 +327,7 @@ export default connect(
         handleSearchDateChange,
         updateTripReplayStartTime,
         updateTripReplayEndTime,
+        updateTripReplayTimeType,
         selectTrip,
     },
 )(TripReplaysView);

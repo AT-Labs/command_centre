@@ -6,3 +6,4 @@ export const getTripReplaySearchTermFilter = createSelector(getTripReplayFilters
 export const getTripReplaySearchDateFilter = createSelector(getTripReplayFilters, tripReplayFilters => _.result(tripReplayFilters, 'searchDate'));
 export const getTripReplayStartTimeFilter = createSelector(getTripReplayFilters, tripReplayFilters => _.result(tripReplayFilters, 'startTime'));
 export const getTripReplayEndTimeFilter = createSelector(getTripReplayFilters, tripReplayFilters => _.result(tripReplayFilters, 'endTime'));
+export const getTripReplayTimeTypeFilter = createSelector(getTripReplayFilters, tripReplayFilters => _.result(tripReplayFilters, 'timeType'));

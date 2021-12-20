@@ -116,6 +116,34 @@
     }
 }
 
+.cc-btn-alert {
+    border: 1px solid map_get($theme-colors, "at-magenta");
+
+    border-radius: .25rem;
+    color: #FFF;
+    background-color: map_get($theme-colors, "at-magenta");
+    border-color: map_get($theme-colors, "at-magenta");
+    font-size: 12px;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+
+    span {
+        vertical-align: middle;
+    }
+
+    svg {
+        stroke: map_get($theme-colors, "at-magenta");
+
+        path {
+            fill: #FFF;
+        }
+    }
+
+    &:not([disabled]):hover {
+        background-color: map_get($theme-colors, "at-magenta-tint-80");
+        border-color: map_get($theme-colors, "at-magenta-tint-80");
+    }
+}
+
 .cc-btn-inner-nav {
     @extend .cc-btn-secondary-base;
     @extend .border-0;

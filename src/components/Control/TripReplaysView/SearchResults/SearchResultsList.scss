@@ -17,3 +17,18 @@
         background-color: #FDEAE9 !important;
     }
 }
+
+.alert-icon {
+    align-self: auto;
+    flex-basis: fit-content;
+
+    & svg {
+        height: 14px;
+        width: 16px;
+        stroke: #FFF;
+
+        & path {
+            fill: map_get($theme-colors, "at-magenta");
+        }
+    }
+}

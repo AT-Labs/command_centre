@@ -4,6 +4,8 @@ import { getViewPermission } from '../helpers';
 import { fetchWithAuthHeader } from '../../auth';
 import { jsonResponseHandling } from '../fetch';
 import HTTP_TYPES from '../../types/http-types';
+import SEARCH_RESULT_TYPE from '../../types/search-result-types';
+import { TIME_TYPE } from '../../constants/tripReplays';
 
 const { REACT_APP_TRIP_REPLAY_API_URL } = process.env;
 const { GET } = HTTP_TYPES;
@@ -24,9 +26,27 @@ export const getTripReplayTrips = (searchFilters) => {
     const startDateTime = parseSelectedDate(searchFilters.searchDate, startTime);
     const endDateTime = parseSelectedDate(searchFilters.searchDate, endTime);
     const serviceDate = moment(searchFilters.searchDate).format('YYYYMMDD');
-    const searchTermType = _.get(searchFilters, 'searchTerm.type') === 'route' ? 'routeShortName' : 'vehicleId';
+    const timeType = _.get(searchFilters, 'timeType') || TIME_TYPE.Scheduled;
+    let endpoint = '';
+
+    // setup the endpoint
+    const searchTermType = _.get(searchFilters, 'searchTerm.type');
     const searchTerm = _.get(searchFilters, 'searchTerm.id');
-    const url = `${REACT_APP_TRIP_REPLAY_API_URL}/trips?${searchTermType}=${searchTerm}&startDateTime=${startDateTime}&endDateTime=${endDateTime}&serviceDate=${serviceDate}`;
+
+    switch (searchTermType) {
+    case SEARCH_RESULT_TYPE.ROUTE.type:
+        endpoint = `${REACT_APP_TRIP_REPLAY_API_URL}/routes/${searchTerm}/trips`;
+        break;
+    case SEARCH_RESULT_TYPE.STOP.type:
+        endpoint = `${REACT_APP_TRIP_REPLAY_API_URL}/stops/${searchTerm}/trips`;
+        break;
+    default:
+        endpoint = `${REACT_APP_TRIP_REPLAY_API_URL}/vehicles/${searchTerm}/trips`;
+        break;
+    }
+
+    const url = `${endpoint}?serviceDate=${serviceDate}&timeType=${timeType}`
+                + `&startDateTime=${startDateTime}&endDateTime=${endDateTime}`;
 
     return fetchWithAuthHeader(
         url, { method: 'GET' },

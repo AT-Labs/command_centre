@@ -27,7 +27,7 @@ const SearchFilter = (props) => {
 SearchFilter.propTypes = {
     selectionHandlers: PropTypes.object.isRequired,
     clearHandlers: PropTypes.object.isRequired,
-    value: PropTypes.string.isRequired,
+    value: PropTypes.string,
     placeholder: PropTypes.string,
     searchInCategory: PropTypes.array.isRequired,
     onClearCallBack: PropTypes.func.isRequired,
@@ -35,6 +35,7 @@ SearchFilter.propTypes = {
 
 SearchFilter.defaultProps = {
     placeholder: '',
+    value: '',
 };
 
 export default SearchFilter;

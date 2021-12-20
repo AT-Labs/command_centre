@@ -30,3 +30,8 @@ ReactDOM.render(
     </Router>,
     document.getElementById('root'),
 );
+
+// expose store when run in Cypress (https://www.cypress.io/blog/2018/11/14/testing-redux-store/)
+if (window.Cypress) {
+    window.store = store;
+}

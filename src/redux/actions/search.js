@@ -75,6 +75,8 @@ export const searchAddresses = searchTerms => (dispatch, getState) => {
 
 export const performTokenSearch = (searchTerms, entries, intersectionBy) => new Promise((resolve) => {
     const searchTokens = searchTerms.toLowerCase().split(' ');
+    // remove '-' as it interferes with search. entry tokens do not have a '-' in them
+    _.remove(searchTokens, token => token === '-');
     const tokenResults = searchTokens.map(searchTerm => _.filter(entries, entry => _.some(entry.tokens, token => _.startsWith(token, searchTerm))));
     const results = _.intersectionBy(...tokenResults, intersectionBy);
     resolve(_.orderBy(results, intersectionBy));

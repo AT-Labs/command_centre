@@ -11,6 +11,8 @@ export const isTripCanceled = ({ finalStatus }) => (finalStatus === TRIP_FINAL_S
 
 export const isTripMissed = ({ finalStatus }) => (finalStatus === TRIP_FINAL_STATUS.MISSED);
 
+export const tripHasDisruption = ({ hasDisruption }) => hasDisruption;
+
 export const isCopyTrip = ({ operationalEvents }) => (
     !!find(operationalEvents, { type: TRIP_UPDATE_TYPE.COPY_TRIP })
 );

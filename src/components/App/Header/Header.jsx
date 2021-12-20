@@ -170,7 +170,7 @@ function Header(props) {
                     { (IS_TRIP_REPLAYS_ENABLED && isViewPermitted('controlTripReplaysView')) && (
                         <NavItem>
                             <CustomButton
-                                className="header__btn rounded-0 px-3"
+                                className="header__btn header__trip-replays rounded-0 px-3"
                                 active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.TRIP_REPLAYS }
                                 tabIndex="0"
                                 ariaLabel="Trip Replays section button"

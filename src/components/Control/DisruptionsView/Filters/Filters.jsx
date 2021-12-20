@@ -36,7 +36,7 @@ const Filters = (props) => {
                     searchInCategory={ [ROUTE.type, STOP.type] }
                     selectionHandlers={ actionHandlers.selection }
                     clearHandlers={ actionHandlers.clear }
-                    onClearCallBack={ () => props.updateDisruptionFilters({ selectedEntity: {} }) }
+                    onClearCallBack={ () => props.updateDisruptionFilters({ selectedEntity: Filters.defaultProps.selectedEntity }) }
                 />
             </div>
             <div className="status-filter col-2">
@@ -61,7 +61,7 @@ const Filters = (props) => {
                     minDate={ props.selectedStartDate }
                     onChange={ (date) => {
                         if (date && date[0]) {
-                            date[0].setUTCHours(23, 59, 59, 999);
+                            date[0].setHours(23, 59, 59, 999);
                         }
                         props.updateDisruptionFilters({ selectedEndDate: date && date[0] });
                     } } />

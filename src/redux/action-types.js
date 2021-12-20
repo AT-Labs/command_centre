@@ -194,6 +194,7 @@ export default {
     UPDATE_CONTROL_TRIP_REPLAYS_SEARCH_DATE: 'update-control-trip-replay-search-date',
     UPDATE_CONTROL_TRIP_REPLAYS_START_TIME: 'update-control-trip-replay-start-time',
     UPDATE_CONTROL_TRIP_REPLAYS_END_TIME: 'update-control-trip-replay-end-time',
+    UPDATE_CONTROL_TRIP_REPLAYS_TIME_TYPE: 'update-control-trip-replay-time-type',
     UPDATE_CONTROL_TRIP_REPLAYS_DISPLAY_FILTERS: 'update-control-trip-replay-display-filters',
     UPDATE_CONTROL_TRIP_REPLAYS_CLEAR_DATE: 'update-control-trip-replay-clear-date',
     FETCH_CONTROL_TRIP_REPLAYS_TRIPS: 'update-control-trip-replay-trips',

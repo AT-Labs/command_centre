@@ -20,6 +20,27 @@ class ShapeLayer extends React.Component {
         this.polylineGroupRef = React.createRef();
     }
 
+    renderShapes = () => {
+        const { shapes, routeColors } = this.props;
+        const routeColorsHexFormat = routeColors.map(color => (color ? `#${color}` : null));
+
+        const polylines = shapes.map((shape, index) => {
+            if (!shape) {
+                return null;
+            }
+
+            return (
+                <Polyline
+                    key={ generateUniqueID() }
+                    positions={ shape }
+                    weight={ 5 }
+                    color={ routeColorsHexFormat[index] || 'DEEPSKYBLUE' } />
+            );
+        }).filter(shape => !!shape);
+
+        return polylines;
+    }
+
     componentDidUpdate = () => {
         if (this.polylineGroupRef.current) {
             this.polylineGroupRef.current.leafletElement.bringToBack();
@@ -27,18 +48,11 @@ class ShapeLayer extends React.Component {
     }
 
     render() {
-        const { shapes, routeColors } = this.props;
-        const routeColorsHexFormat = routeColors.map(color => `#${color}`);
+        const { shapes } = this.props;
         return !isEmpty(shapes)
             ? (
                 <FeatureGroup ref={ this.polylineGroupRef }>
-                    { shapes.map((shape, index) => (
-                        <Polyline
-                            key={ generateUniqueID() }
-                            positions={ shape }
-                            weight={ 5 }
-                            color={ routeColorsHexFormat[index] || 'DEEPSKYBLUE' } />
-                    )) }
+                    { this.renderShapes() }
                 </FeatureGroup>
             )
             : null;

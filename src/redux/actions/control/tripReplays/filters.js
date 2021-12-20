@@ -47,6 +47,13 @@ export const clearDate = () => ({
     },
 });
 
+export const updateTripReplayTimeType = timeType => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_TIME_TYPE,
+    payload: {
+        timeType,
+    },
+});
+
 export const handleSearchDateChange = searchDate => (dispatch) => {
     if (searchDate) {
         dispatch(updateTripReplaySearchDate(moment(searchDate).format('YYYY-MM-DD')));

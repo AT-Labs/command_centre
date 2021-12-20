@@ -15,10 +15,11 @@ class SearchResultsList extends PureComponent {
         hasMore: PropTypes.bool,
         totalResults: PropTypes.number,
         searchParams: PropTypes.shape({
-            route: PropTypes.string.isRequired,
+            searchTerm: PropTypes.object.isRequired,
             date: PropTypes.string.isRequired,
             startTime: PropTypes.string.isRequired,
             endTime: PropTypes.string.isRequired,
+            timeType: PropTypes.string.isRequired,
         }).isRequired,
         selectTrip: PropTypes.func.isRequired,
     };
@@ -39,21 +40,24 @@ class SearchResultsList extends PureComponent {
     }
 
     render() {
-        const { trips, hasMore, totalResults, searchParams: { route, date, startTime, endTime } } = this.props;
+        const { trips, hasMore, totalResults, searchParams: { searchTerm, date, startTime, endTime } } = this.props;
+        const { type, label } = searchTerm;
 
         return (
             <section className="trip-progress flex-grow-1 overflow-y-auto">
                 <p className="text-muted font-weight-normal mb-3 ml-3">
                     Showing results
-                    for {route} between {this.formatTime(startTime || '00:00')} and {this.formatTime(endTime || '27:59')} on
+                    for {label} between {this.formatTime(startTime || '00:00')} and {this.formatTime(endTime || '27:59')} on
                     the {moment(date).tz(dateTypes.TIME_ZONE).format('Do MMMM Y')}
                 </p>
 
                 <h2 className="mx-3 mt-4 mb-0">Select a trip</h2>
                 <AutoRefreshTable
                     rows={ trips }
-                    fetchRows={ () => {} }
-                    columns={ getColumns() }
+                    fetchRows={ () => {
+                        // noop
+                    } }
+                    columns={ getColumns(type) }
                     className="trip-progress__past-stops-table pb-0 pt-3"
                     emptyMessage="No trips found, please try again."
                     onRowClick={ trip => this.props.selectTrip(trip) }

@@ -46,6 +46,8 @@ export const getShapes = createSelector(getAffectedRoutes, getAffectedStops, (af
         flatMap(allAffectedRoutes).forEach((r) => {
             if (r.shapeWkt) {
                 withShapes.push(getJSONFromWKT(r.shapeWkt).coordinates.map(c => c.reverse()));
+            } else { // need a null here to ensure the routecolors has the same array length
+                withShapes.push(null);
             }
         });
 
@@ -60,6 +62,8 @@ export const getRouteColors = createSelector(getAffectedRoutes, getAffectedStops
         flatMap(allAffectedRoutes).forEach((r) => {
             if (r.routeColor) {
                 withRouteColors.push(r.routeColor);
+            } else {
+                withRouteColors.push(null);
             }
         });
 

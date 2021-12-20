@@ -11,7 +11,8 @@ import {
     getTripReplaySearchTermFilter,
     getTripReplaySearchDateFilter,
     getTripReplayStartTimeFilter,
-    getTripReplayEndTimeFilter } from '../../../../redux/selectors/control/tripReplays/filters';
+    getTripReplayEndTimeFilter,
+    getTripReplayTimeTypeFilter } from '../../../../redux/selectors/control/tripReplays/filters';
 import OmniSearch, { defaultTheme } from '../../../OmniSearch/OmniSearch';
 import {
     resetTripReplaySearchTerm,
@@ -19,50 +20,63 @@ import {
     updateTripReplayStartTime,
     updateTripReplayEndTime,
     handleSearchDateChange,
+    updateTripReplayTimeType,
     search,
 } from '../../../../redux/actions/control/tripReplays/filters';
 import ControlSearch from '../../Common/ControlSearch/ControlSearch';
 import { getTimePickerOptions } from '../../../../utils/helpers';
 import '../../../../../node_modules/flatpickr/dist/flatpickr.css';
 import './Filters.scss';
+import { TIME_TYPE } from '../../../../constants/tripReplays';
 
 const OPTIONS = getTimePickerOptions(28);
 
 export const formatVehiclesSearchResults = (selectedOption, mode) => {
+    // setup the id & label
     let label;
+    let id = _.get(selectedOption, 'data.id');
 
     if (mode.type === SEARCH_RESULT_TYPE.BUS.type) {
-        label = `${_.get(selectedOption, 'data.label')} ${_.get(selectedOption, 'data.registration') ? `- ${_.get(selectedOption, 'data.registration')}` : ''}`;
+        label = _.get(selectedOption, 'data.label');
+        const dataRegistration = _.get(selectedOption, 'data.registration');
+        if (!_.isEmpty(dataRegistration)) {
+            label = `${label} - ${dataRegistration}`;
+        }
     } else if (mode.type === SEARCH_RESULT_TYPE.TRAIN.type) {
         label = _.get(selectedOption, 'data.label').replace(/\s+/g, ' ');
     } else if (mode.type === SEARCH_RESULT_TYPE.FERRY.type) {
-        label = `${_.get(selectedOption, 'data.label')} - ${_.get(selectedOption, 'data.id')}`;
+        label = `${_.get(selectedOption, 'data.label')} - ${id}`;
     } else if (mode.type === SEARCH_RESULT_TYPE.ROUTE.type) {
         label = _.get(selectedOption, 'data.route_short_name');
+        id = label;
+    } else if (mode.type === SEARCH_RESULT_TYPE.STOP.type) {
+        id = _.get(selectedOption, 'data.stop_code');
+        const stopName = _.get(selectedOption, 'data.stop_name');
+        label = !_.isEmpty(stopName) ? `${id} - ${stopName}` : id;
     }
 
-    const idOut = mode.type === SEARCH_RESULT_TYPE.ROUTE.type ? label : _.get(selectedOption, 'data.id');
-
     return ({
-        id: idOut,
+        id,
         label,
         type: mode.type,
     });
 };
 
 const Filters = (props) => {
-    const { ROUTE, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
-    const { searchTerm, searchDate, startTime, endTime } = props;
+    const { ROUTE, BUS, TRAIN, FERRY, STOP } = SEARCH_RESULT_TYPE;
+    const { searchTerm, searchDate, startTime, endTime, timeType } = props;
     const actionHandlers = {
         selection: {
             [SEARCH_RESULT_TYPE.BUS.type]: selectedOption => props.updateTripReplaySearchTerm(formatVehiclesSearchResults(selectedOption, SEARCH_RESULT_TYPE.BUS)),
             [SEARCH_RESULT_TYPE.ROUTE.type]: selectedOption => props.updateTripReplaySearchTerm(formatVehiclesSearchResults(selectedOption, SEARCH_RESULT_TYPE.ROUTE)),
+            [SEARCH_RESULT_TYPE.STOP.type]: selectedOption => props.updateTripReplaySearchTerm(formatVehiclesSearchResults(selectedOption, SEARCH_RESULT_TYPE.STOP)),
             [SEARCH_RESULT_TYPE.TRAIN.type]: selectedOption => props.updateTripReplaySearchTerm(formatVehiclesSearchResults(selectedOption, SEARCH_RESULT_TYPE.TRAIN)),
             [SEARCH_RESULT_TYPE.FERRY.type]: selectedOption => props.updateTripReplaySearchTerm(formatVehiclesSearchResults(selectedOption, SEARCH_RESULT_TYPE.FERRY)),
         },
         clear: {
             [SEARCH_RESULT_TYPE.BUS.type]: _.noop,
             [SEARCH_RESULT_TYPE.ROUTE.type]: _.noop,
+            [SEARCH_RESULT_TYPE.STOP.type]: _.noop,
             [SEARCH_RESULT_TYPE.TRAIN.type]: _.noop,
             [SEARCH_RESULT_TYPE.FERRY.type]: _.noop,
         },
@@ -102,7 +116,7 @@ const Filters = (props) => {
                 <h3>Historical playback</h3>
                 <div>
                     <h3 className="text-muted font-weight-normal">
-                        Search for vehicle or route&apos;s history within a certain time.
+                        Search for a vehicle, route, or stop/platform/pier&apos;s history within a certain time.
                     </h3>
                 </div>
             </div>
@@ -110,7 +124,7 @@ const Filters = (props) => {
                 <label // eslint-disable-line
                     htmlFor="vehicle-route-id"
                     className="font-size-md font-weight-bold filter-components">
-                    Vehicle or Route ID
+                    Vehicle, Route, Stop/Platform/Pier
                 </label>
                 <OmniSearch
                     theme={
@@ -119,11 +133,11 @@ const Filters = (props) => {
                             input: 'search__input form-control cc-form-control',
                         }
                     }
-                    inputId="vehicle-route-id"
+                    inputId="trip-replay-vehicle-route-stop-id"
                     value={ searchTerm.label }
-                    placeholder="Search the Routes or Vehicles"
+                    placeholder="Search for Vehicle, Route, Stop/Platform/Pier"
                     isSelectedValueShown
-                    searchInCategory={ [ROUTE.type, BUS.type, TRAIN.type, FERRY.type] }
+                    searchInCategory={ [ROUTE.type, STOP.type, BUS.type, TRAIN.type, FERRY.type] }
                     selectionHandlers={ actionHandlers.selection }
                     onInputValueChange={ handleOmniSearchTextChange }
                     onClearCallBack={ props.resetTripReplaySearchTerm }
@@ -133,6 +147,7 @@ const Filters = (props) => {
                 <FormGroup tag="fieldset">
                     <Label className="font-size-md font-weight-bold">Date</Label>
                     <Flatpickr
+                        id="trip-replay-select-date"
                         className="form-control cc-form-control"
                         value={ searchDate }
                         options={ datePickerOptions }
@@ -172,18 +187,46 @@ const Filters = (props) => {
                     </div>
                 </FormGroup>
             </div>
-            <div className="col mb-4 px-4">
-                {
-                    isTimeSelected && !isTimeSelectedValid && (
+            {
+                isTimeSelected && !isTimeSelectedValid && (
+                    <div className="col mb-4 px-4">
                         <div className="cc-modal-field-alert d-flex align-items-end text-danger">
                             <IoIosWarning size={ 20 } className="mr-1" />
                             <span>
                                 Start time must be before end time
                             </span>
                         </div>
-                    )
-                }
-            </div>
+                    </div>
+                )
+            }
+            <FormGroup tag="fieldset" className="block ml-1 pb-3 px-4">
+                <div className="row no-gutters mb-0">
+                    <div className="col-md-6 px-3">
+                        <input
+                            id="trip-replay-time-type-scheduled"
+                            value={ TIME_TYPE.Scheduled }
+                            name="trip-replay-time-type"
+                            type="radio"
+                            className="form-check-input mr-2"
+                            checked={ timeType === TIME_TYPE.Scheduled }
+                            onChange={ () => props.updateTripReplayTimeType(TIME_TYPE.Scheduled) }
+                        />
+                        <Label className="font-size-md font-weight-bold form-check-label">Scheduled Time</Label>
+                    </div>
+                    <div className="col-md-6 px-3">
+                        <input
+                            id="trip-replay-time-type-actual"
+                            value={ TIME_TYPE.Actual }
+                            name="trip-replay-time-type"
+                            type="radio"
+                            className="form-check-input mr-2"
+                            checked={ timeType === TIME_TYPE.Actual }
+                            onChange={ () => props.updateTripReplayTimeType(TIME_TYPE.Actual) }
+                        />
+                        <Label className="font-size-md font-weight-bold form-check-label">Actual Time</Label>
+                    </div>
+                </div>
+            </FormGroup>
             <div className="block px-4 py-2">
                 <Button
                     className="cc-btn-primary w-100"
@@ -202,6 +245,7 @@ Filters.propTypes = {
     handleSearchDateChange: PropTypes.func.isRequired,
     updateTripReplayStartTime: PropTypes.func.isRequired,
     updateTripReplayEndTime: PropTypes.func.isRequired,
+    updateTripReplayTimeType: PropTypes.func.isRequired,
     searchTerm: PropTypes.shape({
         id: PropTypes.string.isRequired,
         label: PropTypes.string.isRequired,
@@ -210,6 +254,7 @@ Filters.propTypes = {
     searchDate: PropTypes.string,
     startTime: PropTypes.string.isRequired,
     endTime: PropTypes.string.isRequired,
+    timeType: PropTypes.string.isRequired,
     search: PropTypes.func.isRequired,
 };
 
@@ -222,6 +267,7 @@ export default connect(state => ({
     searchDate: getTripReplaySearchDateFilter(state),
     startTime: getTripReplayStartTimeFilter(state),
     endTime: getTripReplayEndTimeFilter(state),
+    timeType: getTripReplayTimeTypeFilter(state),
 }), {
     search,
     updateTripReplaySearchTerm,
@@ -229,4 +275,5 @@ export default connect(state => ({
     handleSearchDateChange,
     updateTripReplayStartTime,
     updateTripReplayEndTime,
+    updateTripReplayTimeType,
 })(Filters);

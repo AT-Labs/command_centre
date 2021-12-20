@@ -37,6 +37,7 @@ $theme-colors: (
     'at-orange':            $at-orange,
     'at-magenta':           $at-magenta,
     'at-magenta-tint-5':    tint($at-magenta, 5%),
+    'at-magenta-tint-80':   tint($at-magenta, 80%),
 );
 
 $sizes: () !default;

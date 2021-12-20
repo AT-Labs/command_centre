@@ -14,3 +14,8 @@ export const TRIP_FINAL_STATUS = {
     IN_PROGRESS: 'IN_PROGRESS',
     COMPLETED: 'COMPLETED',
 };
+
+export const TIME_TYPE = {
+    Scheduled: 'scheduledTime',
+    Actual: 'actualTime',
+};
