@@ -61,14 +61,14 @@ export class TripsView extends React.Component {
         selectAllTrips: PropTypes.func.isRequired,
         notCompletedTrips: PropTypes.object.isRequired,
         mergeRouteFilters: PropTypes.func.isRequired,
-    }
+    };
 
     static defaultProps = {
         activeRoute: null,
         activeRouteVariant: null,
         activeTripInstance: [],
         routeVariants: [],
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -76,7 +76,7 @@ export class TripsView extends React.Component {
         this.intervalId = null;
     }
 
-    componentDidMount = () => {
+    componentDidMount() {
         if (!this.isTripsOnlyView()) {
             this.retrieveTripInstances(false);
 
@@ -94,19 +94,19 @@ export class TripsView extends React.Component {
         }
     }
 
-    isRoutesRouteVariantsTripsView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_ROUTE_VARIANTS_TRIPS
+    isRoutesRouteVariantsTripsView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_ROUTE_VARIANTS_TRIPS;
 
-    isRouteVariantsTripsView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTE_VARIANTS_TRIPS
+    isRouteVariantsTripsView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTE_VARIANTS_TRIPS;
 
-    isRoutesTripsView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_TRIPS
+    isRoutesTripsView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_TRIPS;
 
-    isTripsOnlyView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.TRIPS
+    isTripsOnlyView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.TRIPS;
 
-    isTrainMode = () => _.get(this.props.filters, 'routeType') === TRAIN_TYPE_ID
+    isTrainMode = () => _.get(this.props.filters, 'routeType') === TRAIN_TYPE_ID;
 
-    isSortingEnable = () => this.isTripsOnlyView()
+    isSortingEnable = () => this.isTripsOnlyView();
 
-    getSorting = () => _.get(this.props.filters, 'sorting')
+    getSorting = () => _.get(this.props.filters, 'sorting');
 
     isSortByDelayVisible = () => [TRIP_STATUS_TYPES.notStarted, TRIP_STATUS_TYPES.inProgress, TRIP_STATUS_TYPES.completed].includes(_.get(this.props.filters, 'tripStatus'));
 
@@ -123,7 +123,7 @@ export class TripsView extends React.Component {
             variables.routeVariantIds = _.map(routeVariants, item => item.routeVariantId);
         }
         this.props.fetchTripInstances(variables, { isUpdate });
-    }
+    };
 
     renderSortableColumnLabel = (columnName, label) => (
         <div className="d-flex align-content-center">
@@ -138,12 +138,12 @@ export class TripsView extends React.Component {
                 }) } />
             <div>{ label }</div>
         </div>
-    )
+    );
 
     getRowColumnsConfig = () => {
         const iconCol = {
             label: () => (
-                <React.Fragment>
+                <>
                     <input
                         type="checkbox"
                         className="select-all-trips-checkbox mr-2"
@@ -151,7 +151,7 @@ export class TripsView extends React.Component {
                         checked={ !this.props.isLoading && checkIfAllTripsAreSelected(Object.keys(this.props.notCompletedTrips), this.props.selectedTrips) }
                         onChange={ this.props.selectAllTrips } />
                     <span>route #</span>
-                </React.Fragment>
+                </>
             ),
             key: 'icon',
             cols: 'col-1',
@@ -202,16 +202,16 @@ export class TripsView extends React.Component {
             config.push(routeCol);
         }
         return config;
-    }
+    };
 
-    handleRowClick = tripInstance => this.props.updateActiveTripInstanceId(getTripInstanceId(tripInstance))
+    handleRowClick = tripInstance => this.props.updateActiveTripInstanceId(getTripInstanceId(tripInstance));
 
     isRowActive = tripInstance => !_.isEmpty(this.props.activeTripInstance) && !_.isEmpty(
         this.props.activeTripInstance
             .filter(trip => getTripInstanceId(trip) === getTripInstanceId(tripInstance)),
-    )
+    );
 
-    renderRowBody = tripInstances => <TripView tripInstance={ tripInstances.tripInstance } />
+    renderRowBody = tripInstances => <TripView tripInstance={ tripInstances.tripInstance } />;
 
     getRowClassName = (tripInstance) => {
         const status = _.get(tripInstance, 'status', null);
@@ -225,9 +225,9 @@ export class TripsView extends React.Component {
             return 'bg-at-magenta-tint-5';
         }
         return '';
-    }
+    };
 
-    removeCompletedTripFromSelectedListAfterUpdate = (tripKey, trip) => this.props.selectSingleTrip({ [tripKey]: trip })
+    removeCompletedTripFromSelectedListAfterUpdate = (tripKey, trip) => this.props.selectSingleTrip({ [tripKey]: trip });
 
     renderIconColumnContent = (row) => {
         let iconColor = '';
@@ -255,7 +255,7 @@ export class TripsView extends React.Component {
         if (shouldCheckboxBeRemoved) this.removeCompletedTripFromSelectedListAfterUpdate(tripKey, row.tripInstance);
 
         return (
-            <React.Fragment>
+            <>
                 <input
                     type="checkbox"
                     key={ tripKey }
@@ -268,9 +268,9 @@ export class TripsView extends React.Component {
                     type={ row.routeType }
                     className={ iconColor }
                     subIcon={ subIcon } />
-            </React.Fragment>
+            </>
         );
-    }
+    };
 
     render() {
         let tripInstancesFilterPredicate = null;

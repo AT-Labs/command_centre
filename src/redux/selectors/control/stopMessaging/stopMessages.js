@@ -4,13 +4,16 @@ import { createSelector } from 'reselect';
 export const getStopMessagesState = state => _.result(state, 'control.stopMessaging');
 export const getAllStopMessages = createSelector(getStopMessagesState, stopMessagesState => _.result(stopMessagesState, 'stopMessages'));
 export const getStopMessagesPermissions = createSelector(getStopMessagesState, stopMessagesState => _.result(
-    stopMessagesState, 'stopMessagesPermissions',
+    stopMessagesState,
+    'stopMessagesPermissions',
 ));
 export const getStopMessagesLoadingState = createSelector(getStopMessagesState, stopMessagesState => _.result(
-    stopMessagesState, 'isStopMessagesLoading',
+    stopMessagesState,
+    'isStopMessagesLoading',
 ));
 export const getStopMessagesSortingParams = createSelector(getStopMessagesState, stopMessagesState => _.result(
-    stopMessagesState, 'sortingParams',
+    stopMessagesState,
+    'sortingParams',
 ));
 export const getSortedStopMesssages = createSelector(
     getAllStopMessages,
@@ -20,5 +23,6 @@ export const getSortedStopMesssages = createSelector(
         : allStopMessages),
 );
 export const getModal = createSelector(getStopMessagesState, stopMessagesState => _.result(
-    stopMessagesState, 'modal',
+    stopMessagesState,
+    'modal',
 ));

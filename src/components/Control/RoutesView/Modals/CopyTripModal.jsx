@@ -68,22 +68,22 @@ class CopyTripModal extends React.Component {
         const minsOfTrip = durationInMinutes % 60;
 
         const startTimeAsArray = newStartTime.split(':');
-        const startTimeHours = parseInt(startTimeAsArray[0], 0);
-        const startTimeMin = parseInt(startTimeAsArray[1], 0);
+        const startTimeHours = parseInt(startTimeAsArray[0], 10);
+        const startTimeMin = parseInt(startTimeAsArray[1], 10);
 
         const endTimeMin = `${((minsOfTrip + startTimeMin) % 60)}`;
         const endTimeHours = `${(hoursOfTrip + startTimeHours + Math.floor((minsOfTrip + startTimeMin) / 60))}`;
 
         return `${endTimeHours.padStart(2, '0')}:${endTimeMin.padStart(2, '0')}`;
-    }
+    };
 
-    isMainActionEnabled = (newStartTime, referenceId) => (!this.isReferenceIdRequired() || this.isReferenceIdValid(referenceId)) && this.isStartTimeValid(newStartTime)
+    isMainActionEnabled = (newStartTime, referenceId) => (!this.isReferenceIdRequired() || this.isReferenceIdValid(referenceId)) && this.isStartTimeValid(newStartTime);
 
     isStartTimeValid = startTime => startTime.match('^(([0-3][0-9])|40):[0-5][0-9]$') && `${startTime}:00` !== this.props.tripInstance.startTime;
 
-    isReferenceIdValid = referenceId => !!referenceId.trim()
+    isReferenceIdValid = referenceId => !!referenceId.trim();
 
-    isReferenceIdRequired = () => this.props.tripInstance.routeType === TRAIN_TYPE_ID
+    isReferenceIdRequired = () => this.props.tripInstance.routeType === TRAIN_TYPE_ID;
 
     handleReferenceIdChange = (event) => {
         const { value } = event.target;
@@ -91,7 +91,7 @@ class CopyTripModal extends React.Component {
             referenceId: value,
             isActionDisabled: !this.isMainActionEnabled(prevState.startTime, value.trim()),
         }));
-    }
+    };
 
     render() {
         const { routeLongName, routeShortName } = this.props.tripInstance;
@@ -110,7 +110,12 @@ class CopyTripModal extends React.Component {
                 isModalOpen={ this.props.isOpen }
             >
                 <div className="row mb-3">
-                    <div className="col">Duplicating trip: {routeShortName} {routeLongName}</div>
+                    <div className="col">
+                        Duplicating trip:
+                        {routeShortName}
+                        {' '}
+                        {routeLongName}
+                    </div>
                 </div>
                 <div className="row">
                     <div className={ this.isReferenceIdRequired() ? 'col-4' : 'col-6' }>

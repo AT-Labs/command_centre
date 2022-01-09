@@ -25,11 +25,11 @@ class Routes extends Component {
         vehicleSelected: PropTypes.func.isRequired,
         occupancyStatuses: PropTypes.object.isRequired,
         delays: PropTypes.object.isRequired,
-    }
+    };
 
     static defaultProps = {
         routes: undefined,
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -41,7 +41,7 @@ class Routes extends Component {
 
     toggleSelectedRoute = ({ routeVariantName }) => {
         this.setState(({ routeVariantSelected }) => ({ routeVariantSelected: routeVariantSelected === routeVariantName ? null : routeVariantName }));
-    }
+    };
 
     renderSelectedRouteInfo = route => (
         <Collapse

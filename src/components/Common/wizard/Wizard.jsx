@@ -14,7 +14,7 @@ export default class Wizard extends Component {
             PropTypes.arrayOf(PropTypes.node),
             PropTypes.node,
         ]).isRequired,
-    }
+    };
 
     static defaultProps = {
         className: '',
@@ -22,7 +22,7 @@ export default class Wizard extends Component {
         response: {},
         onStepUpdate: () => {},
         onDataUpdate: () => {},
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -34,17 +34,20 @@ export default class Wizard extends Component {
     }
 
     onStepUpdate = (activeStep) => {
-        this.setState(prevState => ({
-            activeStep,
-            prevStep: prevState.activeStep,
-        }),
-        () => this.props.onStepUpdate(this.state.activeStep));
-    }
+        this.setState(
+            prevState => ({
+                activeStep,
+                prevStep: prevState.activeStep,
+            }),
+            () => this.props.onStepUpdate(this.state.activeStep),
+        );
+    };
 
     render() {
         const { data, response, isSubmitDisabled, onSubmit } = this.props;
         const { activeStep, prevStep } = this.state;
-        const childrenWithProps = React.Children.map(this.props.children, child => React.cloneElement(child,
+        const childrenWithProps = React.Children.map(this.props.children, child => React.cloneElement(
+            child,
             {
                 data,
                 response,
@@ -54,7 +57,8 @@ export default class Wizard extends Component {
                 prevStep,
                 onStepUpdate: nextStep => this.onStepUpdate(nextStep),
                 onDataUpdate: (wizard, key, value) => this.props.onDataUpdate(wizard, key, value),
-            }));
+            },
+        ));
 
         return (
             <section className={ `${this.props.className} wizard container` }>

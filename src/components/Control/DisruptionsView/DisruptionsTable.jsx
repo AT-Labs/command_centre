@@ -29,12 +29,12 @@ class DisruptionsTable extends React.Component {
         updateActiveDisruptionId: PropTypes.func.isRequired,
         activeDisruptionId: PropTypes.number,
         updateCopyDisruptionState: PropTypes.func.isRequired,
-    }
+    };
 
     static defaultProps = {
         disruptions: [],
         activeDisruptionId: null,
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -110,14 +110,17 @@ class DisruptionsTable extends React.Component {
 
         if (uploadedFiles && uploadedFiles.length > 0) {
             return (
-                <span>{ incidentNo }<FaPaperclip size={ 12 } className="ml-1" /></span>
+                <span>
+                    { incidentNo }
+                    <FaPaperclip size={ 12 } className="ml-1" />
+                </span>
             );
         }
 
         return (
             <span>{ incidentNo }</span>
         );
-    }
+    };
 
     getRowClassName = ({ status }) => (status === STATUSES.RESOLVED ? 'bg-at-ocean-tint-10 text-muted' : '');
 
@@ -129,17 +132,17 @@ class DisruptionsTable extends React.Component {
             }
         }
         return this.props.disruptions.slice(0, Math.min(this.state.pageSize, this.props.disruptions.length));
-    }
+    };
 
-    renderRowBody = disruption => <DisruptionDetail disruption={ disruption } />
+    renderRowBody = disruption => <DisruptionDetail disruption={ disruption } />;
 
-    isRowActive = ({ disruptionId }) => this.props.activeDisruptionId === disruptionId
+    isRowActive = ({ disruptionId }) => this.props.activeDisruptionId === disruptionId;
 
     handleRowClick = ({ disruptionId }) => {
         const currentActiveId = this.props.activeDisruptionId;
         this.props.updateActiveDisruptionId((disruptionId === currentActiveId ? null : disruptionId));
         this.props.updateCopyDisruptionState(false);
-    }
+    };
 
     renderIcon = (value) => {
         if (value === STATUSES.IN_PROGRESS) {
@@ -149,7 +152,7 @@ class DisruptionsTable extends React.Component {
             return <GiAlarmClock className="icon-not-started mr-1" />;
         }
         return <HiOutlineCheckCircle className="mr-1" />;
-    }
+    };
 
     render() {
         const disruptionsToLoad = this.getDisruptionsToDisplay();

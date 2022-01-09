@@ -30,7 +30,6 @@ import ResetButton from '../../../../Common/Search/CustomSelect/ResetButton';
 import Loader from '../../../../Common/Loader/Loader';
 import { Expandable, ExpandableContent, ExpandableSummary } from '../../../../Common/Expandable';
 
-
 const SelectDisruptionEntities = (props) => {
     const addKeys = (routes = [], stops = []) => {
         const routesModified = routes.map(route => ({

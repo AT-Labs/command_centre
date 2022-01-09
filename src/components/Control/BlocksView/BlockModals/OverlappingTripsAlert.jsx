@@ -8,7 +8,15 @@ const OverlappingTripsAlert = ({
 }) => {
     const renderOverlappingTripsContent = () => {
         const blockIds = _.keys(overlappingBlocks);
-        return blockIds.map(blockId => <div key={ blockId }>{blockId} - {overlappingBlocks[blockId].map(trip => trip.externalRef).join(', ')}</div>);
+        return blockIds.map(blockId => (
+            <div key={ blockId }>
+                {blockId}
+                {' '}
+                -
+                {' '}
+                {overlappingBlocks[blockId].map(trip => trip.externalRef).join(', ')}
+            </div>
+        ));
     };
 
     return (
@@ -17,7 +25,7 @@ const OverlappingTripsAlert = ({
             isOpen
             content={ (
                 <div>
-                    <h4>Overlapping trips​</h4>
+                    <h4>Overlapping trips</h4>
                     <div>Allocating this vehicle will automatically deallocate it from the following trips.</div>
                     { renderOverlappingTripsContent() }
                 </div>
@@ -29,6 +37,5 @@ const OverlappingTripsAlert = ({
 OverlappingTripsAlert.propTypes = {
     overlappingBlocks: PropTypes.object.isRequired,
 };
-
 
 export default OverlappingTripsAlert;

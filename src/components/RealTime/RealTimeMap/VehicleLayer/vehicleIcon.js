@@ -21,7 +21,6 @@ const getVehicleIconWithArrow = (bearing, vehicleTypeClass, routeName) => {
     });
 };
 
-
 export const getVehicleIcon = (vehicle, opacityClass) => {
     const { full, standingRoomOnly } = VEHICLE_OCCUPANCY_STATUS_TYPE;
     const newBearing = getVehicleBearing(vehicle);

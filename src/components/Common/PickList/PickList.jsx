@@ -56,7 +56,7 @@ class PickList extends Component {
         searchInCategory: PropTypes.array,
         entityToItemTransformers: PropTypes.object,
         itemToEntityTransformers: PropTypes.object,
-    }
+    };
 
     static defaultProps = {
         staticItemList: [],
@@ -97,7 +97,7 @@ class PickList extends Component {
         searchInCategory: [],
         entityToItemTransformers: {},
         itemToEntityTransformers: {},
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -126,13 +126,13 @@ class PickList extends Component {
         this.setState({
             picklistSelectedValues: [],
         });
-    }
+    };
 
     setSelectedValuesPickedExternally = () => {
         this.setState({
             picklistSelectedValues: this.props.selectedValues,
         });
-    }
+    };
 
     add = (items) => {
         const { valueKey } = this.props;
@@ -147,7 +147,7 @@ class PickList extends Component {
                 picklistSelectedValues: values,
             };
         });
-    }
+    };
 
     remove = (items) => {
         const { valueKey } = this.props;
@@ -163,18 +163,18 @@ class PickList extends Component {
                 picklistSelectedValues: values,
             };
         });
-    }
+    };
 
     getAvailableOptions = () => {
         const { staticItemList, valueKey } = this.props;
         return staticItemList.filter(option => this.state.picklistSelectedValues.find(v => v[valueKey || option.valueKey] === option[valueKey || option.valueKey]) === undefined);
-    }
+    };
 
     setLayout = () => {
         if (!this.props.isVerticalLayout) {
             this.setState(prevState => ({ pickListClasses: `${prevState.pickListClasses} d-flex` }));
         }
-    }
+    };
 
     showSecondPane = () => this.props.displayResults && (!this.props.isVerticalLayout || (this.props.isVerticalLayout && this.state.picklistSelectedValues.length > 0));
 

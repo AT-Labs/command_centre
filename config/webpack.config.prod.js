@@ -2,8 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const ManifestPlugin = require('webpack-manifest-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
 const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
@@ -35,19 +34,14 @@ fs.writeFileSync(`${paths.appPublic}/version.txt`, pkg.version);
 // Note: defined here because it will be used more than once.
 const cssFilename = `static/css/[name].${pkg.version}.css`;
 
-// ExtractTextPlugin expects the build output to be flat.
-// (See https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/27)
-// However, our output is structured with css, js and media folders.
-// To have this structure working with relative paths, we have to use custom options.
-const extractTextPluginOptions = shouldUseRelativeAssetPaths
-    ? // Making sure that the publicPath goes back to to build folder.
-    { publicPath: Array(cssFilename.split('/').length).join('../') }
-    : {};
-
 // This is the production configuration.
 // It compiles slowly and is focused on producing a fast and minimal bundle.
 // The development configuration is different and lives in a separate file.
 module.exports = {
+    mode: 'production',
+    optimization: {
+        minimize: false,
+    },
     // Don't attempt to continue if there are any errors.
     bail: true,
     // We generate sourcemaps in production. This is slow but gives good results.
@@ -110,23 +104,6 @@ module.exports = {
             // We are waiting for https://github.com/facebookincubator/create-react-app/issues/2176.
             // { parser: { requireEnsure: false } },
 
-            // First, run the linter.
-            // It's important to do this before Babel processes the JS.
-            {
-                test: /\.(js|jsx|mjs)$/,
-                enforce: 'pre',
-                use: [
-                    {
-                        options: {
-                            eslintPath: require.resolve('eslint'),
-                            emitWarning: true,
-                            fix: false,
-                        },
-                        loader: require.resolve('eslint-loader'),
-                    },
-                ],
-                include: paths.appSrc,
-            },
             {
                 // "oneOf" will traverse all following loaders until one will
                 // match the requirements. When no loader matches it will fall
@@ -149,80 +126,39 @@ module.exports = {
                         loader: require.resolve('babel-loader'),
                         options: {
                             compact: true,
+                            presets: ['@babel/preset-env'],
                         },
                     },
                     {
-                        test: /\.scss$/,
-                        loader: ExtractTextPlugin.extract(
-                            Object.assign(
-                                {
-                                    fallback: {
-                                        loader: require.resolve('style-loader'),
-                                        options: {
-                                            hmr: false,
-                                        },
+                        test: /\.css$/,
+                        use: [
+                            {
+                                loader: MiniCssExtractPlugin.loader,
+                            },
+                            'css-loader',
+                            {
+                                loader: require.resolve('postcss-loader'),
+                                options: {
+                                    config: {
+                                        path: 'config/',
                                     },
-                                    use: [
-                                        {
-                                            loader: require.resolve('css-loader'),
-                                            options: {
-                                                importLoaders: 1,
-                                                sourceMap: shouldUseSourceMap,
-                                            },
-                                        },
-                                        {
-                                            loader: require.resolve('postcss-loader'),
-                                            options: {
-                                                config: {
-                                                    path: 'config/',
-                                                },
-                                            },
-
-                                        },
-                                        {
-                                            loader: require.resolve('sass-loader'),
-                                        },
-                                    ],
                                 },
-                                extractTextPluginOptions,
-                            ),
-                        ),
-                        // Note: this won't work without `new ExtractTextPlugin()` in `plugins`.
+
+                            },
+                        ],
+                        sideEffects: true,
                     },
                     {
-                        test: /\.css$/,
-                        loader: ExtractTextPlugin.extract(
-                            Object.assign(
-                                {
-                                    fallback: {
-                                        loader: require.resolve('style-loader'),
-                                        options: {
-                                            hmr: false,
-                                        },
-                                    },
-                                    use: [
-                                        {
-                                            loader: require.resolve('css-loader'),
-                                            options: {
-                                                importLoaders: 1,
-                                                sourceMap: shouldUseSourceMap,
-                                            },
-                                        },
-                                        {
-                                            loader: require.resolve('postcss-loader'),
-                                            options: {
-                                                config: {
-                                                    path: 'config/',
-                                                },
-                                            },
-
-                                        },
-                                    ],
-                                },
-                                extractTextPluginOptions,
-                            ),
-                        ),
-                        // Note: this won't work without `new ExtractTextPlugin()` in `plugins`.
+                        test: /\.scss$/,
+                        use: [{
+                            loader: MiniCssExtractPlugin.loader,
+                        },
+                        {
+                            loader: 'css-loader',
+                        },
+                        'sass-loader',
+                        ],
+                        sideEffects: true,
                     },
                     // "file" loader makes sure assets end up in the `build` folder.
                     // When you `import` an asset, you get its filename.
@@ -235,6 +171,7 @@ module.exports = {
                         // Also exclude `html` and `json` extensions so they get processed
                         // by webpacks internal loaders.
                         exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
+                        type: 'javascript/auto',
                         options: {
                             name: 'static/media/[name].[hash:8].[ext]',
                         },
@@ -251,11 +188,11 @@ module.exports = {
     // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
     // In production, it will be an empty string unless you specify "homepage"
     // in `package.json`, in which case it will be the pathname of that URL.
-        new InterpolateHtmlPlugin(env.raw),
+        new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
         // Generates an `index.html` file with the <script> injected.
         new HtmlWebpackPlugin({
             inject: true,
-            chunks: ['main'],
+            filename: 'index.html',
             template: paths.appHtml,
             minify: {
                 removeComments: true,
@@ -275,15 +212,9 @@ module.exports = {
         // It is absolutely essential that NODE_ENV was set to production here.
         // Otherwise React will be compiled in the very slow development mode.
         new webpack.DefinePlugin(env.stringified),
-        // Note: this won't work without ExtractTextPlugin.extract(..) in `loaders`.
-        new ExtractTextPlugin({
+        // Note: this won't work without MiniCssExtractPlugin.extract(..) in `loaders`.
+        new MiniCssExtractPlugin({
             filename: cssFilename,
-        }),
-        // Generate a manifest file which contains a mapping of all asset filenames
-        // to their corresponding output file so that tools can pick it up without
-        // having to parse `index.html`.
-        new ManifestPlugin({
-            fileName: 'asset-manifest.json',
         }),
         // Generate a service worker script that will precache, and keep up to date,
         // the HTML & assets that are part of the Webpack build.

@@ -37,7 +37,7 @@ class SearchResultsList extends PureComponent {
         m.minutes(minutes);
 
         return `${m.format('HH:mm')}${hours > 23 ? ' (+1)' : ''}`;
-    }
+    };
 
     render() {
         const { trips, hasMore, totalResults, searchParams: { searchTerm, date, startTime, endTime } } = this.props;
@@ -47,8 +47,22 @@ class SearchResultsList extends PureComponent {
             <section className="trip-progress flex-grow-1 overflow-y-auto">
                 <p className="text-muted font-weight-normal mb-3 ml-3">
                     Showing results
-                    for {label} between {this.formatTime(startTime || '00:00')} and {this.formatTime(endTime || '27:59')} on
-                    the {moment(date).tz(dateTypes.TIME_ZONE).format('Do MMMM Y')}
+                    for
+                    {' '}
+                    {label}
+                    {' '}
+                    between
+                    {' '}
+                    {this.formatTime(startTime || '00:00')}
+                    {' '}
+                    and
+                    {' '}
+                    {this.formatTime(endTime || '27:59')}
+                    {' '}
+                    on
+                    the
+                    {' '}
+                    {moment(date).tz(dateTypes.TIME_ZONE).format('Do MMMM Y')}
                 </p>
 
                 <h2 className="mx-3 mt-4 mb-0">Select a trip</h2>
@@ -67,7 +81,17 @@ class SearchResultsList extends PureComponent {
                     isRowStyled={ row => isTripCanceled(row) }
                     rowClassName="trip-replay-progress__fixed-table-row--canceled"
                 />
-                { hasMore && <div className="text-muted p-4">Showing {trips ? trips.length : 0} of {totalResults} results. Please refine your search.</div>}
+                { hasMore && (
+                    <div className="text-muted p-4">
+                        Showing
+                        {trips ? trips.length : 0}
+                        {' '}
+                        of
+                        {totalResults}
+                        {' '}
+                        results. Please refine your search.
+                    </div>
+                )}
 
             </section>
         );

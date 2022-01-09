@@ -18,12 +18,12 @@ class VehicleFilterByRouteType extends React.Component {
 
     static defaultProps = {
         routeType: null,
-    }
+    };
 
     toggleRouteTypeFilter = (newRouteType) => {
         const routeType = newRouteType === this.props.routeType ? null : newRouteType;
         this.props.mergeVehicleFilters({ routeType });
-    }
+    };
 
     createButton = type => (
         <Button
@@ -32,7 +32,7 @@ class VehicleFilterByRouteType extends React.Component {
             tabIndex="0">
             { VEHICLE_TYPE[type].type }
         </Button>
-    )
+    );
 
     render() {
         return (
@@ -45,7 +45,9 @@ class VehicleFilterByRouteType extends React.Component {
     }
 }
 
-export default connect(state => ({
-    routeType: getVehiclesFilterRouteType(state),
-}),
-{ mergeVehicleFilters })(VehicleFilterByRouteType);
+export default connect(
+    state => ({
+        routeType: getVehiclesFilterRouteType(state),
+    }),
+    { mergeVehicleFilters },
+)(VehicleFilterByRouteType);

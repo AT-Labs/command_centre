@@ -23,11 +23,11 @@ class EditVehiclesModal extends React.Component {
         deallocateVehiclesFromAllTripsInBlock: PropTypes.func.isRequired,
         assignedTrains: PropTypes.array.isRequired,
         setModalState: PropTypes.func,
-    }
+    };
 
     static defaultProps = {
         setModalState: () => {},
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -58,17 +58,17 @@ class EditVehiclesModal extends React.Component {
     onVehicleSelection = (isPopulated, vehicles) => this.setState({
         vehicles,
         isPopulated,
-    })
+    });
 
     onTripSelection = (tripSelected) => {
         this.setState({
             tripSelected,
         });
-    }
+    };
 
     onTripInputValueChange = () => this.setState({
         tripSelected: null,
-    })
+    });
 
     getSubtitle = () => {
         const { block: { operationalBlockId } } = this.props;
@@ -80,14 +80,14 @@ class EditVehiclesModal extends React.Component {
                 <dd className="col-6">{ this.getBlockVehicleMappings().join(', ') }</dd>
             </dl>
         );
-    }
+    };
 
     allocateVehicles = () => {
         const { tripSelected, vehicles } = this.state;
         const { block } = this.props;
         this.props.substituteVehicles(block, Array.from(vehicles.values()), tripSelected.externalRef);
         this.toggleModal();
-    }
+    };
 
     deallocateVehicles = () => {
         const { block } = this.props;
@@ -95,34 +95,34 @@ class EditVehiclesModal extends React.Component {
         if (tripSelected) this.props.deallocateVehiclesFromTripSelectedOnwards(block, tripSelected.externalRef);
         else this.props.deallocateVehiclesFromAllTripsInBlock(block, vehicles);
         this.toggleModal();
-    }
+    };
 
     toggleModal = (isSubstitute) => {
-        this.setState(prevState => ({
-            isModalOpen: !prevState.isModalOpen,
-            vehicles: null,
-            tripSelected: null,
-            isSubstitute,
-        }),
-        () => this.props.setModalState(this.state.isModalOpen));
-    }
+        this.setState(
+            prevState => ({
+                isModalOpen: !prevState.isModalOpen,
+                vehicles: null,
+                tripSelected: null,
+                isSubstitute,
+            }),
+            () => this.props.setModalState(this.state.isModalOpen),
+        );
+    };
 
     getBlockVehicleMappings = (renderToggleButtonFunc) => {
         const blockVehicleMappings = getVehiclesFromBlockTrips(this.props.block);
         return _.map(blockVehicleMappings, vehicle => (renderToggleButtonFunc ? renderToggleButtonFunc(vehicle) : vehicle.buttonLabel));
-    }
+    };
 
-    getVehiclesFromBlock = () => _.uniqBy(
-        _.compact(
-            _.flatten(
-                this.props.block.operationalTrips
-                    .map(trip => (
-                        trip.status !== TRIP_STATUS_TYPES.completed && trip.status !== TRIP_STATUS_TYPES.inProgress
-                            ? trip.vehicles
-                            : null)),
-            ),
-        ), 'id',
-    )
+    getVehiclesFromBlock = () => _.uniqBy(_.compact(
+        _.flatten(
+            this.props.block.operationalTrips
+                .map(trip => (
+                    trip.status !== TRIP_STATUS_TYPES.completed && trip.status !== TRIP_STATUS_TYPES.inProgress
+                        ? trip.vehicles
+                        : null)),
+        ),
+    ), 'id');
 
     renderModalToggleButton = () => {
         const renderToggleButton = (blockVehicleMapping) => {
@@ -161,10 +161,10 @@ class EditVehiclesModal extends React.Component {
                 { this.getBlockVehicleMappings(renderToggleButton) }
             </div>
         );
-    }
+    };
 
     renderSubstituteView = () => (
-        <React.Fragment>
+        <>
             <FormGroup check className="pt-1 pb-4">
                 <Label for="deallocate-from-trip-checkbox" check>
                     <Input
@@ -202,10 +202,10 @@ class EditVehiclesModal extends React.Component {
                 placeholder="Select trip"
                 onInputValueChange={ this.onTripInputValueChange }
                 onSelection={ tripSelectedParam => this.onTripSelection(tripSelectedParam) } />
-        </React.Fragment>
-    )
+        </>
+    );
 
-    renderDeallocateView = () => <ConfirmationModalBody message={ this.MODALS_INFO.DEALLOCATE.message() } />
+    renderDeallocateView = () => <ConfirmationModalBody message={ this.MODALS_INFO.DEALLOCATE.message() } />;
 
     render() {
         const { vehicles, isPopulated, tripSelected, isModalOpen, isSubstitute, isDeallocateCheckboxActive } = this.state;
@@ -234,8 +234,10 @@ class EditVehiclesModal extends React.Component {
     }
 }
 
-export default connect(state => ({
-    blocks: getAllBlocks(state),
-    assignedTrains: getAllTrainsWithAssignedBlocks(state),
-}),
-{ substituteVehicles, deallocateVehiclesFromTripSelectedOnwards, deallocateVehiclesFromAllTripsInBlock })(EditVehiclesModal);
+export default connect(
+    state => ({
+        blocks: getAllBlocks(state),
+        assignedTrains: getAllTrainsWithAssignedBlocks(state),
+    }),
+    { substituteVehicles, deallocateVehiclesFromTripSelectedOnwards, deallocateVehiclesFromAllTripsInBlock },
+)(EditVehiclesModal);

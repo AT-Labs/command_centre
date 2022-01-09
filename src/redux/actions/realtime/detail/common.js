@@ -2,7 +2,6 @@ import moment from 'moment';
 import ACTION_TYPE from '../../../action-types';
 import { getViewDetailKey } from '../../../selectors/realtime/detail';
 
-
 export const isWithinNextHalfHour = timeString => (timeString ? moment(timeString).isSameOrBefore(moment().add(30, 'minutes')) : false);
 export const isWithinPastHalfHour = timeString => (timeString ? moment(timeString).isSameOrAfter(moment().subtract(30, 'minutes')) : false);
 

@@ -3,14 +3,14 @@ import { getAuthContext, IS_LOGIN_NOT_REQUIRED } from './auth';
 
 const { VERSION } = process.env;
 function loadApp() {
-    const appJs = document.createElement('script');
-    appJs.src = `/static/js/app.${VERSION}.js`;
-    appJs.crossOrigin = 'use-credentials';
-    appJs.type = 'text/javascript';
-    document.body.appendChild(appJs);
+    // const appJs = document.createElement('script');
+    // appJs.src = `/static/js/app.${VERSION}.js`;
+    // appJs.crossOrigin = 'use-credentials';
+    // appJs.type = 'text/javascript';
+    // document.body.appendChild(appJs);
 }
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms)); // eslint-disable-line
 }
 (function checkVersion() {
     const headers = new Headers();

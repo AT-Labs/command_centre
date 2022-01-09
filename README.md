@@ -6,7 +6,7 @@ Help customer support team efficiently find useful information as per public tra
 
 Before you can build this project, you need the following dependencies:
 
-* [NodeJs](https://nodejs.org/en/) (v v10.11.0) The installation depends on the system you have.
+* [NodeJs](https://nodejs.org/en/) (v14.17.6) The installation depends on the system you have.
 
 * npm ci
 * npm start

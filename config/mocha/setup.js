@@ -1,10 +1,10 @@
 import jsdom from 'jsdom';
 import fetch from 'unfetch';
 import { configure } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
 import path from 'path';
 import * as dotenv from 'dotenv';
-import './../../src/utils/dateLocale';
+import '../../src/utils/dateLocale';
 
 const dotEnvPath = path.resolve('.env.test');
 dotenv.config({ path: dotEnvPath });

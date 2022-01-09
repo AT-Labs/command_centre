@@ -24,7 +24,7 @@ class VehicleFilters extends React.PureComponent {
         routeType: null,
     };
 
-    state = {
+    state = { // eslint-disable-line react/state-in-constructor
         isActive: false,
     };
 
@@ -50,12 +50,12 @@ class VehicleFilters extends React.PureComponent {
                 <div className="vehicle-filters-content">
                     <div><VehicleFilterByRouteType /></div>
                     {!!routeType && (
-                        <React.Fragment>
+                        <>
                             <VehicleFilterByOperator />
                             <div className="mt-3 mb-1">Settings</div>
                             <VehicleFilterByDirection />
                             <hr className="vehicle-filters__separator mt-2 mb-2" />
-                        </React.Fragment>
+                        </>
                     )}
                     <VehicleFilterByDelay />
                     <hr className="vehicle-filters__separator mt-2 mb-2" />

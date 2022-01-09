@@ -60,7 +60,11 @@ class SetTripDelayModal extends React.Component {
             >
                 <div className="row mb-3">
                     <div className="col-4 font-weight-bold">Trip:</div>
-                    <div className="col-8">{routeShortName} {routeLongName}</div>
+                    <div className="col-8">
+                        {routeShortName}
+                        {' '}
+                        {routeLongName}
+                    </div>
                 </div>
                 <div className="row">
                     <div className="col-4 font-weight-bold">Delay time (mins):</div>

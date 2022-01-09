@@ -45,7 +45,7 @@ export class ControlTableRow extends React.Component {
         if (!inView.is(summaryElement)) {
             _.delay(() => summaryElement.scrollIntoView({ block: 'start', behavior: 'smooth' }), 0);
         }
-    }
+    };
 
     render() {
         const {
@@ -59,8 +59,7 @@ export class ControlTableRow extends React.Component {
                     isActive={ this.state.isActive }
                     onToggle={ this.props.rowActive
                         ? () => this.props.rowOnClick(row)
-                        : () => this.setState(prevState => ({ isActive: !prevState.isActive }))
-                    }
+                        : () => this.setState(prevState => ({ isActive: !prevState.isActive })) }
                     level={ level }>
                     <ExpandableSummary className={ rowClassName }>
                         <div className="row" ref={ this.summaryRef }>

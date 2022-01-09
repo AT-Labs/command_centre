@@ -25,7 +25,7 @@ export class MoveTripsModal extends React.Component {
         dismissError: PropTypes.func.isRequired,
         error: PropTypes.object,
         disable: PropTypes.bool,
-    }
+    };
 
     static defaultProps = {
         buttonLabel: '',
@@ -33,7 +33,7 @@ export class MoveTripsModal extends React.Component {
         openModalButtonClass: '',
         selectedTrips: [],
         error: {},
-    }
+    };
 
     constructor() {
         super();
@@ -44,12 +44,12 @@ export class MoveTripsModal extends React.Component {
         };
     }
 
-    isErrorEmpty = () => _.isEmpty(this.props.error.moveTrips)
+    isErrorEmpty = () => _.isEmpty(this.props.error.moveTrips);
 
     moveTrips = () => {
         this.props.moveTrips(this.props.block, this.state.selectedBlock, this.props.selectedTrips);
         if (this.isErrorEmpty()) this.toggleModal();
-    }
+    };
 
     toggleModal = () => {
         this.setState(prevState => ({
@@ -57,7 +57,7 @@ export class MoveTripsModal extends React.Component {
             selectedBlock: null,
         }));
         if (!this.isErrorEmpty()) this.props.dismissError('moveTrips');
-    }
+    };
 
     renderModalToggleButton = () => (
         <Button
@@ -67,12 +67,12 @@ export class MoveTripsModal extends React.Component {
             onClick={ this.toggleModal }>
             { this.props.buttonLabel ? this.props.buttonLabel : 'Move trips' }
         </Button>
-    )
+    );
 
     onChange = (blockSelectedParam) => {
         this.setState({ selectedBlock: blockSelectedParam });
         if (!this.isErrorEmpty()) this.props.dismissError('moveTrips');
-    }
+    };
 
     render() {
         const { selectedBlock, isModalOpen } = this.state;
@@ -95,10 +95,10 @@ export class MoveTripsModal extends React.Component {
                     {
                         (this.props.selectedTrips.length > 0)
                         && (
-                            <React.Fragment>
+                            <>
                                 <dt className="col-6">Selected Trips:</dt>
                                 <dd className="col-6">{ _.join(this.props.selectedTrips.map(trip => trip.externalRef), ', ') }</dd>
-                            </React.Fragment>
+                            </>
                         )
                     }
                 </dl>
@@ -121,8 +121,10 @@ export class MoveTripsModal extends React.Component {
     }
 }
 
-export default connect(state => ({
-    blocks: getAllBlocks(state),
-    error: getError(state),
-}),
-{ moveTrips, dismissError })(MoveTripsModal);
+export default connect(
+    state => ({
+        blocks: getAllBlocks(state),
+        error: getError(state),
+    }),
+    { moveTrips, dismissError },
+)(MoveTripsModal);

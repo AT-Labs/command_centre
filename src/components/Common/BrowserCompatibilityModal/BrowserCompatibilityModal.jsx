@@ -6,7 +6,7 @@ import CustomModal from '../CustomModal/CustomModal';
 class BrowserCompatibilityModal extends React.Component {
     state = {
         isModalOpen: !isChrome,
-    }
+    };
 
     render() {
         return (

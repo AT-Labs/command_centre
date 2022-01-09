@@ -114,11 +114,11 @@ const getThresholds = (leafletMap, stops, route) => _.map(stops, (stop) => {
 
 function StopThresholdsLayer({ leafletMap, stops, route }) {
     return route.length && (
-        <Fragment>
+        <>
             {
                 _.map(getThresholds(leafletMap, stops, route), (threshold, index) => (threshold ? (<StopThreshold key={ `threshold_${index}` } threshold={ threshold } />) : null))
             }
-        </Fragment>
+        </>
     );
 }
 

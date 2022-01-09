@@ -30,12 +30,12 @@ export class StopGroupsModal extends React.Component {
         activeStopGroup: PropTypes.object, // eslint-disable-line
         dismissError: PropTypes.func.isRequired,
         error: PropTypes.object,
-    }
+    };
 
     static defaultProps = {
         error: {},
         activeStopGroup: null,
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -58,7 +58,7 @@ export class StopGroupsModal extends React.Component {
         return null;
     }
 
-    dismissErrorHandler = () => !_.isNull(this.props.error.createStopGroup) && this.props.dismissError('createStopGroup')
+    dismissErrorHandler = () => !_.isNull(this.props.error.createStopGroup) && this.props.dismissError('createStopGroup');
 
     toggleModal = () => {
         this.setState({
@@ -69,13 +69,13 @@ export class StopGroupsModal extends React.Component {
             this.props.onClose();
             this.dismissErrorHandler();
         });
-    }
+    };
 
     onFormFieldsChange = (name, value) => {
         this.setState({
             [name]: value,
         }, () => this.dismissErrorHandler());
-    }
+    };
 
     updateStopGroup = () => {
         if (_.isNull(this.props.error.createStopGroup)) {
@@ -90,7 +90,7 @@ export class StopGroupsModal extends React.Component {
                 .then(() => this.toggleModal())
                 .catch(() => {});
         }
-    }
+    };
 
     render() {
         const { error, isModalOpen, modalTitle, allStops } = this.props;
@@ -165,8 +165,10 @@ export class StopGroupsModal extends React.Component {
     }
 }
 
-export default connect(state => ({
-    error: getError(state),
-    allStops: getAllStops(state),
-}),
-{ dismissError })(StopGroupsModal);
+export default connect(
+    state => ({
+        error: getError(state),
+        allStops: getAllStops(state),
+    }),
+    { dismissError },
+)(StopGroupsModal);

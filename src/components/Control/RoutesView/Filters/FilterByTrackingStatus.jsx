@@ -71,8 +71,10 @@ export class FilterByTrackingStatus extends React.Component {
     }
 }
 
-export default connect(state => ({
-    tripStatus: getTripStatusFilter(state),
-    trackingStatuses: getTrackingStatusesFilter(state),
-}),
-{ mergeRouteFilters })(FilterByTrackingStatus);
+export default connect(
+    state => ({
+        tripStatus: getTripStatusFilter(state),
+        trackingStatuses: getTrackingStatusesFilter(state),
+    }),
+    { mergeRouteFilters },
+)(FilterByTrackingStatus);

@@ -72,11 +72,11 @@ export const getRouteColors = createSelector(getAffectedRoutes, getAffectedStops
     return [];
 });
 
-export const getBoundsToFit = createSelector(getShapes, (shape) => {
+export const getBoundsToFit = createSelector(getShapes, (shapes) => {
     let pointsInBounds = [];
 
-    if (!isEmpty(shape)) {
-        pointsInBounds = shape;
+    if (!isEmpty(shapes)) {
+        pointsInBounds = shapes.filter(shape => !!shape);
     }
 
     return pointsInBounds;

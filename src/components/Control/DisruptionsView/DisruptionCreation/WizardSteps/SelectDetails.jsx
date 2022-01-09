@@ -32,7 +32,7 @@ import Footer from './Footer';
 import AffectedEntities from '../../AffectedEntities';
 
 const SelectDetails = (props) => {
-    const { startDate, startTime, endDate, endTime, impact, cause, header, description, url } = props.data;
+    const { startDate, startTime, endDate, endTime, impact, cause, header, description, url, createNotification } = props.data;
     const { routes, stops } = props;
 
     const [modalOpenedTime] = useState(moment().second(0).millisecond(0));
@@ -45,7 +45,13 @@ const SelectDetails = (props) => {
 
     const endDateValid = () => isEndDateValid(endDate, startDate);
 
-    const getOptionalLabel = label => <React.Fragment>{label} <small className="text-muted">optional</small></React.Fragment>;
+    const getOptionalLabel = label => (
+        <>
+            {label}
+            {' '}
+            <small className="text-muted">optional</small>
+        </>
+    );
 
     const datePickerOptions = getDatePickerOptions('today');
 
@@ -202,6 +208,19 @@ const SelectDetails = (props) => {
                             invalid={ !isUrlValid(url) }
                         />
                         <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
+                    </FormGroup>
+                </div>
+                <div className="col-12">
+                    <FormGroup id="disruption-creation__wizard-select-details__create-noti">
+                        <Label>
+                            <Input
+                                type="checkbox"
+                                className="ml-0"
+                                onChange={ e => props.onDataUpdate('createNotification', e.currentTarget.checked) }
+                                checked={ createNotification }
+                            />
+                            <span className="pl-2">Create Notification</span>
+                        </Label>
                     </FormGroup>
                 </div>
             </Form>

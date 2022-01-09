@@ -54,7 +54,9 @@ function KeyEvent(props) {
                     <div className="mt-2">
                         <button type="button"
                             className="key-event__more-info pl-0 font-weight-bold"
-                            onClick={ showMoreInfo }>See more information<FaCaretRight />
+                            onClick={ showMoreInfo }>
+                            See more information
+                            <FaCaretRight />
                         </button>
                     </div>
                 </div>
@@ -65,13 +67,17 @@ function KeyEvent(props) {
                             {props.type !== EVENT_TYPES.FIRST_STOP
                             && (
                                 <div
-                                    className="text-left font-weight-bold">A:{has(scheduledTime, 'arrival') ? get(scheduledTime, 'arrival') : '-'}
+                                    className="text-left font-weight-bold">
+                                    A:
+                                    {has(scheduledTime, 'arrival') ? get(scheduledTime, 'arrival') : '-'}
                                 </div>
                             )}
                             {props.type !== EVENT_TYPES.TRIP_END
                             && (
                                 <div
-                                    className="text-left font-weight-bold">D:{has(scheduledTime, 'departure') ? get(scheduledTime, 'departure') : '-'}
+                                    className="text-left font-weight-bold">
+                                    D:
+                                    {has(scheduledTime, 'departure') ? get(scheduledTime, 'departure') : '-'}
                                 </div>
                             )}
                         </div>
@@ -85,20 +91,21 @@ function KeyEvent(props) {
                             {props.type !== EVENT_TYPES.FIRST_STOP
                             && (
                                 <div
-                                    className="text-left font-weight-bold">{has(time, 'arrival') ? get(time, 'arrival') : '-'}
+                                    className="text-left font-weight-bold">
+                                    {has(time, 'arrival') ? get(time, 'arrival') : '-'}
                                 </div>
                             )}
                             {props.type !== EVENT_TYPES.TRIP_END
                             && (
                                 <div
-                                    className="text-left font-weight-bold">{has(time, 'departure') ? get(time, 'departure') : '-'}
+                                    className="text-left font-weight-bold">
+                                    {has(time, 'departure') ? get(time, 'departure') : '-'}
                                 </div>
                             )}
                         </div>
                     )}
                 </div>
             </div>
-
 
         </li>
     );

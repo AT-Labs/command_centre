@@ -9,7 +9,6 @@ import {
     getVehiclesFilterIsShowingDirectionOutbound,
 } from '../../../redux/selectors/realtime/vehicles';
 
-
 class VehicleFilterByDirection extends React.Component {
     static propTypes = {
         isShowingDirectionInbound: PropTypes.bool.isRequired,
@@ -27,7 +26,7 @@ class VehicleFilterByDirection extends React.Component {
 
     render() {
         return (
-            <React.Fragment>
+            <>
                 <FormGroup check>
                     <Label check>
                         <Input
@@ -50,13 +49,15 @@ class VehicleFilterByDirection extends React.Component {
                         <span className="font-weight-light">Outbound</span>
                     </Label>
                 </FormGroup>
-            </React.Fragment>
+            </>
         );
     }
 }
 
-export default connect(state => ({
-    isShowingDirectionInbound: getVehiclesFilterIsShowingDirectionInbound(state),
-    isShowingDirectionOutbound: getVehiclesFilterIsShowingDirectionOutbound(state),
-}),
-{ mergeVehicleFilters })(VehicleFilterByDirection);
+export default connect(
+    state => ({
+        isShowingDirectionInbound: getVehiclesFilterIsShowingDirectionInbound(state),
+        isShowingDirectionOutbound: getVehiclesFilterIsShowingDirectionOutbound(state),
+    }),
+    { mergeVehicleFilters },
+)(VehicleFilterByDirection);

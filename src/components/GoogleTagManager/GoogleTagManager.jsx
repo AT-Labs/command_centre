@@ -25,7 +25,7 @@ class GoogleTagManager extends React.Component {
         f.parentNode.insertBefore(j, f);
     }
 
-    render() {
+    render() { // eslint-disable-line
         return null;
     }
 }

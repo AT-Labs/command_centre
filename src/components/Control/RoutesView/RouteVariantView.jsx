@@ -93,11 +93,13 @@ export class RouteVariantView extends React.Component {
     }
 }
 
-export default connect(state => ({
-    routeVariants: getFilteredRouteVariants(state),
-    activeRoute: getActiveRoute(state),
-    activeRouteVariant: getActiveRouteVariant(state),
-    isLoading: getRouteVariantsLoadingState(state),
-    viewType: getControlDetailRoutesViewType(state),
-}),
-{ updateActiveRouteVariant, clearActiveRouteVariant, clearActiveTripInstanceId })(RouteVariantView);
+export default connect(
+    state => ({
+        routeVariants: getFilteredRouteVariants(state),
+        activeRoute: getActiveRoute(state),
+        activeRouteVariant: getActiveRouteVariant(state),
+        isLoading: getRouteVariantsLoadingState(state),
+        viewType: getControlDetailRoutesViewType(state),
+    }),
+    { updateActiveRouteVariant, clearActiveRouteVariant, clearActiveTripInstanceId },
+)(RouteVariantView);

@@ -16,13 +16,13 @@ export class Footer extends React.Component {
         clearDetail: PropTypes.func.isRequired,
         clearSearchResults: PropTypes.func.isRequired,
         shouldGetActiveRealTimeDetailView: PropTypes.bool.isRequired,
-    }
+    };
 
     handleResetOnClick = () => {
         this.props.clearDetail();
         this.props.clearSearchResults();
         this.props.updateRealTimeDetailView(VIEW_TYPE.REAL_TIME_DETAIL.DEFAULT);
-    }
+    };
 
     render() {
         return this.props.shouldGetActiveRealTimeDetailView && (

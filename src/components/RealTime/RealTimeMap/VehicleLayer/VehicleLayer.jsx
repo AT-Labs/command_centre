@@ -21,7 +21,7 @@ class VehicleLayer extends React.PureComponent {
     static defaultProps = {
         filteredVehicles: [],
         highlightedVehicle: undefined,
-    }
+    };
 
     groupVehicles = vehicles => groupBy(vehicles, vehicle => getFleetVehicleType(this.props.allFleet[vehicle.id]));
 
@@ -37,7 +37,7 @@ class VehicleLayer extends React.PureComponent {
             });
         }
         return allVehicles;
-    }
+    };
 
     render() {
         const groupedVehicles = this.setVehiclesToRender();

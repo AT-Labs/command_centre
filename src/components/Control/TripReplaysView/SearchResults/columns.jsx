@@ -18,22 +18,22 @@ export const getColumns = (searchType) => {
         headerClassName: 'font-size-sm alignment',
         cellClassName: 'font-size-sm',
         formatter: ({ route: { shortName, description }, ...trip }) => (
-            <React.Fragment>
+            <>
                 <div className="d-inline-flex">
                     <span>
                         { `${shortName}: ${description}` }
                         { isTripCanceled(trip) && (
-                            <React.Fragment>
+                            <>
                                 <br />
                                 <TripUpdateTag type={ TRIP_UPDATE_TYPE.CANCELED } />
-                            </React.Fragment>
+                            </>
                         )}
                     </span>
                     { tripHasDisruption(trip) && (
                         <Icon icon="alert" className="icon alert-icon pl-1 d-inline-block" />
                     )}
                 </div>
-            </React.Fragment>
+            </>
         ),
     }, {
         header: 'Scheduled First Stop Departure',

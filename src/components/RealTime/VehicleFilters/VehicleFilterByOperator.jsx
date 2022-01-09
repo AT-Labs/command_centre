@@ -41,11 +41,11 @@ class VehicleFilterByOperator extends React.Component {
 
     static defaultProps = {
         selectedAgencyIds: null,
-    }
+    };
 
-    updateVehicleFilters = agencyIds => this.props.mergeVehicleFilters({ agencyIds })
+    updateVehicleFilters = agencyIds => this.props.mergeVehicleFilters({ agencyIds });
 
-    handleFilterByOperatorSelection = selectedOption => this.updateVehicleFilters(selectedOption.value ? [selectedOption.value] : null)
+    handleFilterByOperatorSelection = selectedOption => this.updateVehicleFilters(selectedOption.value ? [selectedOption.value] : null);
 
     handleCheckboxValueChange = (event, agencyId) => {
         let newSelectedAgencyIds = this.props.selectedAgencyIds;
@@ -57,7 +57,7 @@ class VehicleFilterByOperator extends React.Component {
         } else if (newSelectedAgencyIds.indexOf(agencyId) === -1) {
             this.updateVehicleFilters(newSelectedAgencyIds.concat([agencyId]));
         }
-    }
+    };
 
     getSelectedOption = () => (!_.isNull(this.props.selectedAgencyIds)
         ? this.props.agencyOptions.filter(option => option.value === this.props.selectedAgencyIds[0])[0] || getDefaultOption(this.props.routeType)
@@ -65,7 +65,7 @@ class VehicleFilterByOperator extends React.Component {
 
     render() {
         return (
-            <React.Fragment>
+            <>
                 {
                     this.props.routeType === BUS_TYPE_ID ? (
                         <FilterByOperator
@@ -76,7 +76,7 @@ class VehicleFilterByOperator extends React.Component {
                             selectedOption={ this.getSelectedOption() }
                             onSelection={ this.handleFilterByOperatorSelection } />
                     ) : (
-                        <React.Fragment>
+                        <>
                             <h6 className="mt-3 mb-1">Operators</h6>
                             {
                                 _.map(this.props.agencyOptions, (option, index) => (
@@ -97,21 +97,23 @@ class VehicleFilterByOperator extends React.Component {
                                     )
                                 ))
                             }
-                        </React.Fragment>
+                        </>
                     )
                 }
-            </React.Fragment>
+            </>
         );
     }
 }
 
-export default connect(state => ({
-    agencyOptions: ((s) => {
-        const agencies = getVehiclesFilterAgencies(s);
-        const routeType = getVehiclesFilterRouteType(s);
-        return [getDefaultOption(routeType)].concat(agencies.map(agency => ({ value: agency.agency_id, label: agency.agency_name })));
-    })(state),
-    selectedAgencyIds: getVehiclesFilterAgencyIds(state),
-    routeType: getVehiclesFilterRouteType(state),
-}),
-{ mergeVehicleFilters })(VehicleFilterByOperator);
+export default connect(
+    state => ({
+        agencyOptions: ((s) => {
+            const agencies = getVehiclesFilterAgencies(s);
+            const routeType = getVehiclesFilterRouteType(s);
+            return [getDefaultOption(routeType)].concat(agencies.map(agency => ({ value: agency.agency_id, label: agency.agency_name })));
+        })(state),
+        selectedAgencyIds: getVehiclesFilterAgencyIds(state),
+        routeType: getVehiclesFilterRouteType(state),
+    }),
+    { mergeVehicleFilters },
+)(VehicleFilterByOperator);

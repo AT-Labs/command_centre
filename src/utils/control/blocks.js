@@ -22,4 +22,5 @@ export const getVehiclesFromBlockTrips = (block) => {
     return _.uniqBy(vehicles, 'buttonLabel');
 };
 
-export const getVehicleAllocationKey = (tripId, startDate = moment().tz('Pacific/Auckland').format('YYYYMMDD'), startTime) => `${startDate.replace(/-/g, '')}-${tripId}-${startTime}`;
+// TODO: fix lint issue
+export const getVehicleAllocationKey = (tripId, startDate = moment().tz('Pacific/Auckland').format('YYYYMMDD'), startTime) => `${startDate.replace(/-/g, '')}-${tripId}-${startTime}`; // eslint-disable-line default-param-last

@@ -270,7 +270,6 @@ const addShapesToEntities = (entities, routesWithShapes) => entities.map((entity
     return mappedEntity;
 });
 
-
 export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
     dispatch(updateLoadingDisruptionsState(true));
 

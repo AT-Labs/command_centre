@@ -3,12 +3,11 @@ import PropTypes from 'prop-types';
 import _ from 'lodash-es';
 import './Stops.scss';
 
-
 class Stops extends React.Component {
     static propTypes = {
         stopMessage: PropTypes.object.isRequired,
         messageKey: PropTypes.string.isRequired,
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -42,7 +41,7 @@ class Stops extends React.Component {
             }
 
             return (
-                <Fragment>
+                <>
                     <span>
                         {_.get(stopsCollapseStatus, stopMessage.id, true)
                             ? stops.slice(0, 5).map(stop => stop.label).join(', ')
@@ -51,7 +50,7 @@ class Stops extends React.Component {
                     <button type="button" className="control-messaging-view__collapse-btn" onClick={ () => toggleCollapse() }>
                         {_.get(stopsCollapseStatus, stopMessage.id, true) ? '+' : '-'}
                     </button>
-                </Fragment>
+                </>
             );
         }
         return '';

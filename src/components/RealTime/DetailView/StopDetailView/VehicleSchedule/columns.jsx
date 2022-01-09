@@ -38,7 +38,12 @@ export const formatDestination = (isTrainStop, destinationDisplay) => {
             name: destinationDisplay.replace(stopValue.value, ''),
             via: stopValue.replacement,
         } : destinationDisplay;
-        return stopValue ? <div><strong>{destination.name}</strong><small>{destination.via}</small></div> : <strong>{destination}</strong>;
+        return stopValue ? (
+            <div>
+                <strong>{destination.name}</strong>
+                <small>{destination.via}</small>
+            </div>
+        ) : <strong>{destination}</strong>;
     }
 
     return destinationDisplay;
@@ -65,7 +70,12 @@ export const getPidColumns = ({ isTrainStop, isFerryStop, isParentBusStop }) => 
         return (
             <div>
                 {isTrainStop ? <div><strong>{route}</strong></div> : route}
-                {isTrainStop && numberOfCars && <small>{numberOfCars}-car</small>}
+                {isTrainStop && numberOfCars && (
+                    <small>
+                        {numberOfCars}
+                        -car
+                    </small>
+                )}
             </div>
         );
     },

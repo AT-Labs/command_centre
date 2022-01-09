@@ -45,12 +45,12 @@ export class StopMessagesView extends React.Component {
         stopMessagesSortingParams: PropTypes.object.isRequired,
         modal: PropTypes.object.isRequired,
         toggleModals: PropTypes.func.isRequired,
-    }
+    };
 
     static defaultProps = {
         stopMessages: [],
         isStopMessagesLoading: false,
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -79,12 +79,12 @@ export class StopMessagesView extends React.Component {
         };
     }
 
-    componentDidMount = () => {
+    componentDidMount() {
         this.props.getStopMessagesAndPermissions();
         this.props.getStopGroups();
     }
 
-    componentDidUpdate = (prevProps) => {
+    componentDidUpdate(prevProps) {
         if (this.props.stopMessages && this.props.stopMessages !== prevProps.stopMessages) {
             this.updateMessagesList(this.state.selectedData, this.state.statusFilterValue);
         }
@@ -106,14 +106,14 @@ export class StopMessagesView extends React.Component {
                 </Button>
             </div>
         ) : null;
-    }
+    };
 
     updateStopMessage = (payload, recurrence) => {
         const { edit, cancel } = this.MODALS;
         const { modal } = this.props;
         const stopMessageId = (modal.type === edit.type || modal.type === cancel.type) && modal.stopMessage ? modal.stopMessage.id : null;
         return this.props.updateStopMessage(payload, stopMessageId, recurrence);
-    }
+    };
 
     mergeStopsAndGroupsInMessagesList = () => {
         const getFormattedGroups = message => (
@@ -125,7 +125,7 @@ export class StopMessagesView extends React.Component {
             ...message,
             stopsAndGroups: [...message.stops, ...getFormattedGroups(message)],
         }));
-    }
+    };
 
     stopMessageSelected = selectedData => this.mergeStopsAndGroupsInMessagesList().filter(message => message.id === selectedData.id);
 
@@ -186,7 +186,7 @@ export class StopMessagesView extends React.Component {
             messagesList,
             statusFilterValue,
         });
-    }
+    };
 
     render() {
         const { messagesList, searchValue, selectedData, statusFilterValue } = this.state;
@@ -276,11 +276,13 @@ export class StopMessagesView extends React.Component {
     }
 }
 
-export default connect(state => ({
-    stopMessages: getSortedStopMesssages(state),
-    isStopMessagesLoading: getStopMessagesLoadingState(state),
-    stopMessagesPermissions: getStopMessagesPermissions(state),
-    stopMessagesSortingParams: getStopMessagesSortingParams(state),
-    modal: getModal(state),
-}),
-{ getStopMessagesAndPermissions, updateStopMessage, updateMainView, updateControlDetailView, getStopGroups, toggleModals })(StopMessagesView);
+export default connect(
+    state => ({
+        stopMessages: getSortedStopMesssages(state),
+        isStopMessagesLoading: getStopMessagesLoadingState(state),
+        stopMessagesPermissions: getStopMessagesPermissions(state),
+        stopMessagesSortingParams: getStopMessagesSortingParams(state),
+        modal: getModal(state),
+    }),
+    { getStopMessagesAndPermissions, updateStopMessage, updateMainView, updateControlDetailView, getStopGroups, toggleModals },
+)(StopMessagesView);

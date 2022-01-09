@@ -89,7 +89,6 @@ export const fetchUpcomingVehicles = stopId => (dispatch, getState) => {
         });
 };
 
-
 export const fetchPastVehicles = stopId => (dispatch, getState) => {
     const state = getState();
     const allRoutes = getAllRoutes(state);

@@ -269,3 +269,15 @@ button.continue {
     display: inline-block;
     width: 32px;
 }
+
+#disruption-creation__wizard-select-details__create-noti {
+    input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        position: relative;
+    }
+
+    span {
+        vertical-align: text-bottom;
+    }
+}
