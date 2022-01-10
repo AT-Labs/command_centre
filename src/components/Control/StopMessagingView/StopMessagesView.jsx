@@ -45,12 +45,12 @@ export class StopMessagesView extends React.Component {
         stopMessagesSortingParams: PropTypes.object.isRequired,
         modal: PropTypes.object.isRequired,
         toggleModals: PropTypes.func.isRequired,
-    };
+    }
 
     static defaultProps = {
         stopMessages: [],
         isStopMessagesLoading: false,
-    };
+    }
 
     constructor(props) {
         super(props);
@@ -59,7 +59,8 @@ export class StopMessagesView extends React.Component {
             messagesList: [],
             searchValue: '',
             selectedData: {},
-            statusFilterValue: STOP_MESSAGE_TYPE.TYPE.CURRENT,
+            statusFilterValue: STOP_MESSAGE_TYPE.STATUS.ACTIVE,
+            typeFilterValue: STOP_MESSAGE_TYPE.TYPE.CURRENT,
         };
 
         this.MODALS = {
@@ -79,14 +80,14 @@ export class StopMessagesView extends React.Component {
         };
     }
 
-    componentDidMount() {
+    componentDidMount = () => {
         this.props.getStopMessagesAndPermissions();
         this.props.getStopGroups();
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate = (prevProps) => {
         if (this.props.stopMessages && this.props.stopMessages !== prevProps.stopMessages) {
-            this.updateMessagesList(this.state.selectedData, this.state.statusFilterValue);
+            this.updateMessagesList(this.state.selectedData, this.state.statusFilterValue, this.state.typeFilterValue);
         }
     }
 
@@ -106,14 +107,14 @@ export class StopMessagesView extends React.Component {
                 </Button>
             </div>
         ) : null;
-    };
+    }
 
     updateStopMessage = (payload, recurrence) => {
         const { edit, cancel } = this.MODALS;
         const { modal } = this.props;
         const stopMessageId = (modal.type === edit.type || modal.type === cancel.type) && modal.stopMessage ? modal.stopMessage.id : null;
         return this.props.updateStopMessage(payload, stopMessageId, recurrence);
-    };
+    }
 
     mergeStopsAndGroupsInMessagesList = () => {
         const getFormattedGroups = message => (
@@ -125,7 +126,7 @@ export class StopMessagesView extends React.Component {
             ...message,
             stopsAndGroups: [...message.stops, ...getFormattedGroups(message)],
         }));
-    };
+    }
 
     stopMessageSelected = selectedData => this.mergeStopsAndGroupsInMessagesList().filter(message => message.id === selectedData.id);
 
@@ -151,7 +152,7 @@ export class StopMessagesView extends React.Component {
 
     stopGroupSelected = selectedData => this.mergeStopsAndGroupsInMessagesList().filter(message => some(message.stopGroups, g => g.id === selectedData.id));
 
-    updateMessagesList = (selectedData, statusFilterValue) => {
+    updateMessagesList = (selectedData, statusFilterValue, typeFilterValue) => {
         let messagesList;
         let searchValue;
         if (selectedData.message) {
@@ -171,12 +172,19 @@ export class StopMessagesView extends React.Component {
 
         messagesList = messagesList.map(message => ({
             ...message,
-            isCurrent: moment(message.endTime) >= moment(),
+            isCurrent: !message.endTime || moment(message.endTime) >= moment(),
+            isActive: message.status !== STOP_MESSAGE_TYPE.STATUS.DRAFT.toLowerCase(),
         }));
 
-        if (statusFilterValue === STOP_MESSAGE_TYPE.TYPE.CURRENT) {
+        if (statusFilterValue === STOP_MESSAGE_TYPE.STATUS.ACTIVE) {
+            messagesList = messagesList.filter(message => message.isActive);
+        } else if (statusFilterValue === STOP_MESSAGE_TYPE.STATUS.DRAFT) {
+            messagesList = messagesList.filter(message => !message.isActive);
+        }
+
+        if (typeFilterValue === STOP_MESSAGE_TYPE.TYPE.CURRENT) {
             messagesList = messagesList.filter(message => message.isCurrent);
-        } else if (statusFilterValue === STOP_MESSAGE_TYPE.TYPE.EXPIRED) {
+        } else if (typeFilterValue === STOP_MESSAGE_TYPE.TYPE.EXPIRED) {
             messagesList = messagesList.filter(message => !message.isCurrent);
         }
 
@@ -185,11 +193,12 @@ export class StopMessagesView extends React.Component {
             selectedData,
             messagesList,
             statusFilterValue,
+            typeFilterValue,
         });
-    };
+    }
 
     render() {
-        const { messagesList, searchValue, selectedData, statusFilterValue } = this.state;
+        const { messagesList, searchValue, selectedData, statusFilterValue, typeFilterValue } = this.state;
         const { modal } = this.props;
         const { STOP, STOP_GROUP_MERGED, STOP_MESSAGE } = SEARCH_RESULT_TYPE;
         const { create, edit, cancel } = this.MODALS;
@@ -197,9 +206,9 @@ export class StopMessagesView extends React.Component {
 
         const actionHandlers = {
             selection: {
-                [STOP.type]: ({ data }) => this.updateMessagesList(data, statusFilterValue),
-                [STOP_GROUP_MERGED.type]: ({ data }) => this.updateMessagesList(data, statusFilterValue),
-                [STOP_MESSAGE.type]: ({ data }) => this.updateMessagesList(data, statusFilterValue),
+                [STOP.type]: ({ data }) => this.updateMessagesList(data, statusFilterValue, typeFilterValue),
+                [STOP_GROUP_MERGED.type]: ({ data }) => this.updateMessagesList(data, statusFilterValue, typeFilterValue),
+                [STOP_MESSAGE.type]: ({ data }) => this.updateMessagesList(data, statusFilterValue, typeFilterValue),
             },
             clear: {
                 [STOP.type]: noop,
@@ -219,10 +228,10 @@ export class StopMessagesView extends React.Component {
                             searchInCategory={ [STOP.type, STOP_GROUP_MERGED.type, STOP_MESSAGE.type] }
                             selectionHandlers={ actionHandlers.selection }
                             clearHandlers={ actionHandlers.clear }
-                            onClearCallBack={ () => this.updateMessagesList({}, statusFilterValue) }
+                            onClearCallBack={ () => this.updateMessagesList({}, statusFilterValue, typeFilterValue) }
                         />
                     </div>
-                    <div className="col-6">
+                    <div className="col-5">
                         { isGlobalEditMessagesPermitted && (
                             <div>
                                 <Button
@@ -255,14 +264,24 @@ export class StopMessagesView extends React.Component {
                             onAction={ () => this.updateStopMessage(null).then(() => this.props.toggleModals(null, null)).catch(() => {}) }
                             onClose={ () => this.props.toggleModals(null, null) } />
                     </div>
-                    <CustomButtonGroup
-                        buttons={ [{ type: STOP_MESSAGE_TYPE.TYPE.CURRENT }, { type: STOP_MESSAGE_TYPE.TYPE.EXPIRED }] }
-                        selectedOptions={ [statusFilterValue] }
-                        className="col-3 d-flex justify-content-end align-items-center"
-                        onSelection={ (selectedStatus) => {
-                            this.props.getStopMessagesAndPermissions();
-                            this.updateMessagesList(selectedData, selectedStatus);
-                        } } />
+                    <div className="col-4">
+                        <CustomButtonGroup
+                            buttons={ [{ type: STOP_MESSAGE_TYPE.TYPE.CURRENT }, { type: STOP_MESSAGE_TYPE.TYPE.EXPIRED }] }
+                            selectedOptions={ [typeFilterValue] }
+                            className="d-flex justify-content-end align-items-center float-right ml-3"
+                            onSelection={ (selectedType) => {
+                                this.props.getStopMessagesAndPermissions();
+                                this.updateMessagesList(selectedData, statusFilterValue, selectedType);
+                            } } />
+                        <CustomButtonGroup
+                            buttons={ [{ type: STOP_MESSAGE_TYPE.STATUS.ACTIVE }, { type: STOP_MESSAGE_TYPE.STATUS.DRAFT }] }
+                            selectedOptions={ [statusFilterValue] }
+                            className="d-flex justify-content-end align-items-center float-right"
+                            onSelection={ (selectedStatus) => {
+                                this.props.getStopMessagesAndPermissions();
+                                this.updateMessagesList(selectedData, selectedStatus, typeFilterValue);
+                            } } />
+                    </div>
                 </div>
                 <StopMessagesTable
                     columns={ this.MESSAGING_COLUMNS }
@@ -276,13 +295,11 @@ export class StopMessagesView extends React.Component {
     }
 }
 
-export default connect(
-    state => ({
-        stopMessages: getSortedStopMesssages(state),
-        isStopMessagesLoading: getStopMessagesLoadingState(state),
-        stopMessagesPermissions: getStopMessagesPermissions(state),
-        stopMessagesSortingParams: getStopMessagesSortingParams(state),
-        modal: getModal(state),
-    }),
-    { getStopMessagesAndPermissions, updateStopMessage, updateMainView, updateControlDetailView, getStopGroups, toggleModals },
-)(StopMessagesView);
+export default connect(state => ({
+    stopMessages: getSortedStopMesssages(state),
+    isStopMessagesLoading: getStopMessagesLoadingState(state),
+    stopMessagesPermissions: getStopMessagesPermissions(state),
+    stopMessagesSortingParams: getStopMessagesSortingParams(state),
+    modal: getModal(state),
+}),
+{ getStopMessagesAndPermissions, updateStopMessage, updateMainView, updateControlDetailView, getStopGroups, toggleModals })(StopMessagesView);

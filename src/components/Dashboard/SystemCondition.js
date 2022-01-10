@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 
+
 const period = PropTypes.shape({
     id: PropTypes.number.isRequired,
     start: PropTypes.instanceOf(Date).isRequired,

@@ -45,13 +45,7 @@ const SelectDetails = (props) => {
 
     const endDateValid = () => isEndDateValid(endDate, startDate);
 
-    const getOptionalLabel = label => (
-        <>
-            {label}
-            {' '}
-            <small className="text-muted">optional</small>
-        </>
-    );
+    const getOptionalLabel = label => <React.Fragment>{label} <small className="text-muted">optional</small></React.Fragment>;
 
     const datePickerOptions = getDatePickerOptions('today');
 

@@ -68,7 +68,7 @@ const UpdateTripStatusModal = (props) => {
         props.onClose(CANCEL_MODAL);
     };
 
-    useEffect(() => { // eslint-disable-line
+    useEffect(() => {
         if (!hasModalBeenInit) onModalInit();
 
         if (isModalOpen) {
@@ -135,28 +135,26 @@ UpdateTripStatusModal.defaultProps = {
     bulkUpdateConfirmationMessages: [],
 };
 
-export default connect(
-    (state) => {
-        const selectedTrips = getSelectedTripInstances(state);
-        const actionResults = getTripInstancesActionResults(state);
-        const actionLoadingStatesByTripId = getTripInstancesActionLoading(state);
+export default connect((state) => {
+    const selectedTrips = getSelectedTripInstances(state);
+    const actionResults = getTripInstancesActionResults(state);
+    const actionLoadingStatesByTripId = getTripInstancesActionLoading(state);
 
-        return {
+    return {
+        selectedTrips,
+        actionLoadingStatesByTripId,
+        bulkUpdateErrorMessages: getBulkUpdateMessagesByType(
+            actionResults,
             selectedTrips,
-            actionLoadingStatesByTripId,
-            bulkUpdateErrorMessages: getBulkUpdateMessagesByType(
-                actionResults,
-                selectedTrips,
-                ERROR_MESSAGE_TYPE,
-                MESSAGE_ACTION_TYPES.bulkStatusUpdate,
-            ),
-            bulkUpdateConfirmationMessages: getBulkUpdateMessagesByType(
-                actionResults,
-                selectedTrips,
-                CONFIRMATION_MESSAGE_TYPE,
-                MESSAGE_ACTION_TYPES.bulkStatusUpdate,
-            ),
-        };
-    },
-    { fetchAndUpdateSelectedTrips, collectTripsDataAndUpdateTripsStatus, removeBulkUpdateMessages },
-)(UpdateTripStatusModal);
+            ERROR_MESSAGE_TYPE,
+            MESSAGE_ACTION_TYPES.bulkStatusUpdate,
+        ),
+        bulkUpdateConfirmationMessages: getBulkUpdateMessagesByType(
+            actionResults,
+            selectedTrips,
+            CONFIRMATION_MESSAGE_TYPE,
+            MESSAGE_ACTION_TYPES.bulkStatusUpdate,
+        ),
+    };
+},
+{ fetchAndUpdateSelectedTrips, collectTripsDataAndUpdateTripsStatus, removeBulkUpdateMessages })(UpdateTripStatusModal);

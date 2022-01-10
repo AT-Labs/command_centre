@@ -2,7 +2,7 @@ src/**/*.test.js
 src/**/*.test.jsx
 --file config/mocha/setup-auth-mock.js
 --require esm
---require @babel/register
+--require babel-register
 --require config/mocha/setup.js
 --require ignore-styles
 --reporter mocha-multi-reporters

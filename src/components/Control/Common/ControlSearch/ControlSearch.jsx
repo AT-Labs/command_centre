@@ -66,7 +66,7 @@ class ControlSearch extends React.Component {
         this.autosuggestInputRef = React.createRef();
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
+    componentWillReceiveProps(nextProps) {
         if (this.props.updateOnPropsValueChange && nextProps.value === '') {
             this.setState({ value: '', selectedSuggestion: null });
         } else if (!_.isEmpty(nextProps.value) && this.props.value !== nextProps.value) {
@@ -116,40 +116,35 @@ class ControlSearch extends React.Component {
             propToSearch = propToSearch.replace(/  +/g, ' ');
             return regex.test(propToSearch);
         });
-    };
+    }
 
     getSuggestionValue = suggestion => _.result(suggestion, this.props.pathToProperty);
 
     renderSuggestion = (suggestion) => {
         const label = _.result(suggestion, this.props.pathToProperty);
         const labelAndAllocatedBlock = _.result(suggestion, this.props.pathToEditedPropForSuggestion);
-        return (
-            <span>
-                { label }
-                <b>{ labelAndAllocatedBlock }</b>
-            </span>
-        );
-    };
+        return <span>{ label }<b>{ labelAndAllocatedBlock }</b></span>;
+    }
 
     onChange = (event, { newValue }) => {
         this.setState({ value: newValue, selectedSuggestion: null });
         if (this.props.onInputValueChange) this.props.onInputValueChange(newValue);
-    };
+    }
 
     onSuggestionSelected = (event, { suggestion }) => {
         this.props.onSelection(suggestion);
         this.setState({ selectedSuggestion: suggestion });
-    };
+    }
 
     onSuggestionsFetchRequested = ({ value, reason }) => {
         if (this.props.focusInputBackOnClickOut && reason === 'input-focused' && value) return;
         this.setState({ suggestions: this.getSuggestions(value, reason) });
-    };
+    }
 
     onSuggestionsClearRequested = () => this.setState({ suggestions: [] });
 
     renderInputComponent = inputProps => (
-        <>
+        <React.Fragment>
             <input { ...inputProps } />
             { this.props.shouldShowArrow && (
                 <IoIosArrowDown
@@ -167,8 +162,8 @@ class ControlSearch extends React.Component {
                     role="button"
                     aria-label="Clear search text" />
             )}
-        </>
-    );
+        </React.Fragment>
+    )
 
     render() {
         const { value, suggestions } = this.state;

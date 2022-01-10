@@ -26,9 +26,9 @@ export class DisruptionsView extends React.Component {
     static defaultProps = {
         filteredDisruptions: [],
         isCreateOpen: false,
-    };
+    }
 
-    componentDidMount() {
+    componentDidMount = () => {
         this.getDisruptions();
     }
 
@@ -42,7 +42,7 @@ export class DisruptionsView extends React.Component {
         this.setState({
             timer,
         });
-    };
+    }
 
     componentWillUnmount() {
         clearTimeout(this.state.timer);
@@ -61,7 +61,7 @@ export class DisruptionsView extends React.Component {
                 Create a new disruption
             </Button>
         </div>
-    );
+    )
 
     render() {
         const { filteredDisruptions, isCreateAllowed, isCreateOpen } = this.props;
@@ -87,7 +87,8 @@ export class DisruptionsView extends React.Component {
                             <DisruptionsTable
                                 disruptions={ filteredDisruptions } />
                         </div>
-                    )}
+                    )
+                }
                 {isCreateOpen && isCreateAllowed && <CreateDisruption />}
             </div>
         );

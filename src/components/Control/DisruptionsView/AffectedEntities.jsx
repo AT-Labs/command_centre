@@ -23,9 +23,7 @@ const AffectedEntities = (props) => {
             .map(entity => (
                 <li key={ entity.routeId }>
                     <div className="font-size-sm font-weight-bold">
-                        Route
-                        {' '}
-                        { entity.routeShortName }
+                        Route { entity.routeShortName }
                     </div>
                 </li>
             ))
@@ -38,15 +36,11 @@ const AffectedEntities = (props) => {
             return (
                 <li key={ stopId }>
                     <div className="font-size-sm font-weight-bold">
-                        Stop
-                        {' '}
-                        { affectedEntitiesByStop[stopId][0].text }
+                        Stop { affectedEntitiesByStop[stopId][0].text }
                     </div>
                     {routes && (
                         <div className="font-size-sm">
-                            Route
-                            {' '}
-                            { routes }
+                            Route { routes }
                         </div>
                     )}
                 </li>

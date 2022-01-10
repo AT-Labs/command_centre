@@ -25,6 +25,7 @@ import {
 } from '../../../../redux/actions/control/tripReplays/filters';
 import ControlSearch from '../../Common/ControlSearch/ControlSearch';
 import { getTimePickerOptions } from '../../../../utils/helpers';
+import '../../../../../node_modules/flatpickr/dist/flatpickr.css';
 import './Filters.scss';
 import { TIME_TYPE } from '../../../../constants/tripReplays';
 
@@ -158,10 +159,7 @@ const Filters = (props) => {
                 <FormGroup tag="fieldset">
                     <div className="row no-gutters mb-0">
                         <div className="col-md-6 pr-2">
-                            <Label className="font-size-md font-weight-bold">
-                                From
-                                <span className="text-muted">(optional)</span>
-                            </Label>
+                            <Label className="font-size-md font-weight-bold">From <span className="text-muted">(optional)</span></Label>
                             <ControlSearch
                                 id="trip-replay-time-from"
                                 data={ getStartTimeOptions() }
@@ -174,10 +172,7 @@ const Filters = (props) => {
                                 updateOnPropsValueChange />
                         </div>
                         <div className="col-md-6">
-                            <Label className="font-size-md font-weight-bold">
-                                To
-                                <span className="text-muted">(optional)</span>
-                            </Label>
+                            <Label className="font-size-md font-weight-bold">To <span className="text-muted">(optional)</span></Label>
                             <ControlSearch
                                 id="trip-replay-time-to"
                                 data={ getEndTimeOptions() }

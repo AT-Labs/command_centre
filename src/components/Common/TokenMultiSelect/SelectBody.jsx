@@ -45,7 +45,7 @@ class SelectBody extends React.Component {
         return res;
     }
 
-    isFilterSet = () => this.state.filter && this.state.filter.trim().length;
+    isFilterSet = () => this.state.filter && this.state.filter.trim().length
 
     getFilteredOptions = () => {
         const { filter, optionsForSelection } = this.state;
@@ -53,30 +53,30 @@ class SelectBody extends React.Component {
             return optionsForSelection.filter(option => option.label.toLowerCase().indexOf(filter.toLowerCase()) > -1);
         }
         return optionsForSelection;
-    };
+    }
 
     getSelectedValuesInFilter = () => {
         if (this.isFilterSet()) {
             return _.intersection(this.props.selectedValues, this.getFilteredOptions().map(option => option.value));
         }
         return this.props.selectedValues;
-    };
+    }
 
     getSelectedValuesOutOfFilter = () => {
         if (this.isFilterSet()) {
             return _.difference(this.props.selectedValues, this.getFilteredOptions().map(option => option.value));
         }
         return [];
-    };
+    }
 
-    compareArrays = (firstArray, secondArray) => firstArray.sort().join() === secondArray.sort().join();
+    compareArrays = (firstArray, secondArray) => firstArray.sort().join() === secondArray.sort().join()
 
     isOptionChecked = (value) => {
         if (value === SELECT_ALL_VALUE) {
             return this.getFilteredOptions().length > 0 && this.compareArrays(this.getSelectedValuesInFilter(), this.getFilteredOptions().map(option => option.value));
         }
         return _.includes(this.props.selectedValues, value);
-    };
+    }
 
     handleSelectionChange = (event) => {
         const optionValue = event.target.value;
@@ -90,7 +90,7 @@ class SelectBody extends React.Component {
             newSelectedValuesInFilter = this.getSelectedValuesInFilter().filter(selectedValues => selectedValues !== optionValue);
         }
         this.props.onSelectionChange([...this.getSelectedValuesOutOfFilter(), ...newSelectedValuesInFilter]);
-    };
+    }
 
     renderSelectItems = () => [{ value: SELECT_ALL_VALUE, label: this.props.displayProps.SELECT_ALL }]
         .concat(this.getFilteredOptions()).map(
@@ -101,7 +101,7 @@ class SelectBody extends React.Component {
                     checked={ this.isOptionChecked(option.value) }
                     onSelectionChange={ this.handleSelectionChange } />
             ),
-        );
+        )
 
     render() {
         return (

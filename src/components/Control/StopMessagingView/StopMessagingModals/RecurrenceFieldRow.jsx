@@ -18,7 +18,7 @@ export default class RecurrenceFieldRow extends React.PureComponent {
     static propTypes = {
         recurrence: PropTypes.object.isRequired,
         onUpdate: PropTypes.func.isRequired,
-    };
+    }
 
     toggleModal = () => this.setState(prevState => ({ isModalOpen: !prevState.isModalOpen }));
 

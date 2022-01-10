@@ -13,22 +13,22 @@ export class ServiceDatePicker extends React.Component {
         serviceDate: PropTypes.string.isRequired,
         updateServiceDate: PropTypes.func.isRequired,
         isServiceDatePickerDisabled: PropTypes.bool,
-    };
+    }
 
     static defaultProps = {
         isServiceDatePickerDisabled: false,
-    };
+    }
 
     nameDate = date => moment.tz(date, DATE_TYPE.TIME_ZONE).calendar(null, {
         sameDay: `[${DATE_TYPE.TODAY}]`,
         nextDay: `[${DATE_TYPE.TOMORROW}]`,
         lastDay: `[${DATE_TYPE.YESTERDAY}]`,
     })
-    || moment(date).format('DD MMM');
+    || moment(date).format('DD MMM')
 
-    addDay = date => moment(date).add(1, 'day').format();
+    addDay = date => moment(date).add(1, 'day').format()
 
-    subtractDay = date => moment(date).subtract(1, 'day').format();
+    subtractDay = date => moment(date).subtract(1, 'day').format()
 
     render() {
         const { serviceDate, isServiceDatePickerDisabled } = this.props;
@@ -40,7 +40,7 @@ export class ServiceDatePicker extends React.Component {
             <section className="service-date-picker d-flex flex-row">
                 <h3 className="font-weight-light">
                     { this.nameDate(serviceDate) }
-                    <small className="d-block">{ moment(serviceDate).format('DD-MM-YYYY') }</small>
+                    { <small className="d-block">{ moment(serviceDate).format('DD-MM-YYYY') }</small>}
                 </h3>
                 <div className="align-self-start">
                     <button

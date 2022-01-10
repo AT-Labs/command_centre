@@ -45,6 +45,7 @@ export const getAllTrainsWithAssignedBlocks = createSelector(
     },
 );
 
+
 export const getFocusedBlock = createSelector(getBlocksState, blocksState => _.result(blocksState, 'focusedBlock'));
 export const getAllocations = createSelector(getBlocksState, blocksState => _.result(blocksState, 'allocations'));
 export const getVehicleAllocationByTrip = (trip, allocations) => {

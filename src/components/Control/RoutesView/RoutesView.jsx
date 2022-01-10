@@ -61,7 +61,7 @@ export class RoutesView extends React.Component {
             this.props.clearActiveTripInstanceId();
             this.props.updateActiveRoute(route.routeShortName);
         }
-    };
+    }
 
     isRowActive = route => !!(this.props.activeRoute && this.props.activeRoute.routeShortName === route.routeShortName);
 
@@ -73,7 +73,7 @@ export class RoutesView extends React.Component {
             return <TripsView />;
         }
         return null;
-    };
+    }
 
     render() {
         const pageData = _.slice(this.props.routes, (this.props.page - 1) * PAGE_SIZE, this.props.page * PAGE_SIZE);
@@ -92,12 +92,10 @@ export class RoutesView extends React.Component {
     }
 }
 
-export default connect(
-    state => ({
-        routes: getFilteredRoutes(state),
-        activeRoute: getActiveRoute(state),
-        isLoading: getRoutesLoadingState(state),
-        viewType: getControlDetailRoutesViewType(state),
-    }),
-    { updateActiveRoute, clearActiveRoute, clearActiveTripInstanceId },
-)(RoutesView);
+export default connect(state => ({
+    routes: getFilteredRoutes(state),
+    activeRoute: getActiveRoute(state),
+    isLoading: getRoutesLoadingState(state),
+    viewType: getControlDetailRoutesViewType(state),
+}),
+{ updateActiveRoute, clearActiveRoute, clearActiveTripInstanceId })(RoutesView);

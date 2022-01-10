@@ -28,14 +28,7 @@ const formatStatusColumn = (row) => {
         return <span className="text-danger">{status}</span>;
     }
     if (delay !== 0) {
-        return (
-            <span>
-                {status}
-                :
-                {' '}
-                <TripDelay delayInSeconds={ _.get(trip, 'delay', 0) } />
-            </span>
-        );
+        return <span>{status}: <TripDelay delayInSeconds={ _.get(trip, 'delay', 0) } /></span>;
     }
     return status;
 };
@@ -45,11 +38,11 @@ export class BlockTrips extends React.Component {
         activeBlock: BlockType.isRequired,
         activeTrip: TripType,
         updateActiveTrip: PropTypes.func.isRequired,
-    };
+    }
 
     static defaultProps = {
         activeTrip: null,
-    };
+    }
 
     constructor(props) {
         super(props);
@@ -63,8 +56,8 @@ export class BlockTrips extends React.Component {
         this.isEditPermitted = IS_LOGIN_NOT_REQUIRED || isIndividualEditBlockPermitted(this.props.activeBlock);
         this.trips = [
             {
-                label: () => ( // eslint-disable-line react/no-unstable-nested-components
-                    <>
+                label: () => (
+                    <React.Fragment>
                         {
                             this.isEditPermitted && (
                                 <input
@@ -82,17 +75,17 @@ export class BlockTrips extends React.Component {
                             )
                         }
                         <span>Trip ID</span>
-                    </>
+                    </React.Fragment>
                 ),
                 key: 'externalRef',
                 cols: 'col',
-                getContent: (trip, key) => { // eslint-disable-line react/no-unstable-nested-components
+                getContent: (trip, key) => {
                     const { externalRef } = trip;
                     const { checkboxes } = this.state;
                     const isCompleted = trip.status === TRIP_STATUS_TYPES.completed;
 
                     return (
-                        <>
+                        <React.Fragment>
                             {
                                 this.isEditPermitted && (
                                     <input
@@ -107,7 +100,7 @@ export class BlockTrips extends React.Component {
                                 )
                             }
                             { trip[key] }
-                        </>
+                        </React.Fragment>
                     );
                 },
             },
@@ -182,7 +175,7 @@ export class BlockTrips extends React.Component {
                 },
             }));
         });
-    };
+    }
 
     handleCheckboxChange = (changeEvent) => {
         const { name } = changeEvent.target;
@@ -211,7 +204,7 @@ export class BlockTrips extends React.Component {
             if (allTripsAreSelected) this.setState({ allSelected: true });
             if (!atLeastOneTripSelected) this.setState({ atLeastOneTripSelected: false });
         });
-    };
+    }
 
     returnTripObj = () => _.map(_.filter(this.state.checkboxes, 'selected'), 'tripObj');
 
@@ -253,14 +246,14 @@ export class BlockTrips extends React.Component {
                 selectedTrips={ this.returnTripObj() } />,
             action: null,
         },
-    ];
+    ]
 
     renderRowBody = trip => (
         <BlockTrip trip={ {
             ...trip,
             serviceDate: this.props.activeBlock.serviceDate,
         } } />
-    );
+    )
 
     isRowActive = ({ externalRef }) => !!(this.props.activeTrip && this.props.activeTrip.externalRef === externalRef);
 
@@ -271,7 +264,7 @@ export class BlockTrips extends React.Component {
         const buttonBarConfig = this.getButtonBarConfig(activeBlock);
 
         return (
-            <>
+            <React.Fragment>
                 { this.isEditPermitted && buttonBarConfig.length > 0 && <ButtonBar buttons={ buttonBarConfig } isLoading={ false } /> }
                 <ControlTable
                     columns={ this.trips }
@@ -281,7 +274,7 @@ export class BlockTrips extends React.Component {
                     rowActive={ this.isRowActive }
                     rowOnClick={ this.handleTripOnClick }
                     level={ 2 } />
-            </>
+            </React.Fragment>
         );
     }
 }

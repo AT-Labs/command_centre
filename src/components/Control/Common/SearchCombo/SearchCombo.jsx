@@ -16,7 +16,7 @@ export class SearchCombo extends React.Component {
         onSelection: PropTypes.func.isRequired,
         maxSearchFields: PropTypes.number,
         focusInputBackOnClickOut: PropTypes.bool, // Refer to control search for details on this prop.
-    };
+    }
 
     static defaultProps = {
         pathToEditedPropForSuggestion: '',
@@ -25,7 +25,7 @@ export class SearchCombo extends React.Component {
         addButtonLabel: '',
         maxSearchFields: 2,
         focusInputBackOnClickOut: false,
-    };
+    }
 
     constructor() {
         super();
@@ -42,18 +42,16 @@ export class SearchCombo extends React.Component {
         };
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return this.state.valuesString !== nextState.valuesString
+    shouldComponentUpdate = (nextProps, nextState) => this.state.valuesString !== nextState.valuesString
     || this.state.inputsLength !== nextState.inputsLength;
-    }
 
-    componentDidUpdate() {
+    componentDidUpdate = () => {
         const { searchFields } = this.state;
         const isPopulated = !_.some(Array.from(searchFields.values()), _.isEmpty);
         this.props.onSelection(isPopulated, searchFields);
     }
 
-    getSearchValues = prevState => Array.from(prevState.searchFields.values()).map(searchTerm => JSON.stringify(searchTerm)).join(','); // eslint-disable-line
+    getSearchValues = prevState => Array.from(prevState.searchFields.values()).map(searchTerm => JSON.stringify(searchTerm)).join(',');
 
     onInputValueChange = (search) => {
         this.setState((prevState) => {
@@ -63,7 +61,7 @@ export class SearchCombo extends React.Component {
                 valuesString: this.getSearchValues(prevState),
             };
         });
-    };
+    }
 
     appendSearch() {
         const newSearch = `search-${this.state.searchFields.size}`;
@@ -82,7 +80,7 @@ export class SearchCombo extends React.Component {
             searchFields: prevState.searchFields,
             inputsLength: Array.from(prevState.searchFields).length,
         };
-    });
+    })
 
     renderSearch = (search) => {
         const { searchFields } = this.state;
@@ -104,7 +102,8 @@ export class SearchCombo extends React.Component {
                             searchFields: prevState.searchFields,
                             valuesString: this.getSearchValues(prevState),
                         };
-                    }) } />
+                    })
+                    } />
                 {
                     search !== this.defaultSearch.key && (
                         <Button
@@ -119,7 +118,7 @@ export class SearchCombo extends React.Component {
                 }
             </React.Fragment>
         );
-    };
+    }
 
     render() {
         const { searchFields } = this.state;

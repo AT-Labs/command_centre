@@ -53,6 +53,7 @@ export const handleUpcomingVehiclesOfSelectedStop = (state, { payload: { upcomin
     },
 });
 
+
 const handlePastVehiclesOfSelectedStop = (state, { payload: { pastVehicles } }) => ({
     ...state,
     stop: {
@@ -84,6 +85,7 @@ export const handleUpcomingStopsOfSelectedVehicle = (state, { payload: { upcomin
         upcomingStops,
     },
 });
+
 
 const handleVehicleFleetInfo = (state, { payload: { vehicleFleetInfo } }) => ({
     ...state,

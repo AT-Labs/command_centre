@@ -18,7 +18,7 @@ const TripUpdateTag = ({ className, type, indicatorBar, data, hasIcon, hasToolti
     );
 
     const renderCanceledTag = () => (
-        <>
+        <React.Fragment>
             <div className="trip-update-tag trip-update-tag--canceled">
                 CANCELLED
                 { hasIcon && (
@@ -33,7 +33,7 @@ const TripUpdateTag = ({ className, type, indicatorBar, data, hasIcon, hasToolti
                     { `This trip was cancelled at ${formatUnixTime(data.timestamp)}` }
                 </UncontrolledTooltip>
             ) }
-        </>
+        </React.Fragment>
     );
 
     const renderCopyTripTag = () => (
@@ -43,7 +43,7 @@ const TripUpdateTag = ({ className, type, indicatorBar, data, hasIcon, hasToolti
     );
 
     const renderSkippedTag = () => (
-        <>
+        <React.Fragment>
             <div className="trip-update-tag trip-update-tag--skipped">
                 SKIPPED
                 { hasIcon && (
@@ -58,11 +58,11 @@ const TripUpdateTag = ({ className, type, indicatorBar, data, hasIcon, hasToolti
                     { `This stop was skipped at ${formatUnixTime(data.timestamp)}` }
                 </UncontrolledTooltip>
             ) }
-        </>
+        </React.Fragment>
     );
 
     const renderPlatformChangeTag = () => (
-        <>
+        <React.Fragment>
             <div className="trip-update-tag trip-update-tag--platform-change p-0">
                 <div className="trip-update-tag">
                     { `Stop ${data.oldStop.stopCode}` }
@@ -84,7 +84,7 @@ const TripUpdateTag = ({ className, type, indicatorBar, data, hasIcon, hasToolti
                     { `${data.oldStop.stopName} to ${data.newStop.stopName} at ${formatUnixTime(data.timestamp)}` }
                 </UncontrolledTooltip>
             ) }
-        </>
+        </React.Fragment>
     );
 
     const renderTagByType = () => {

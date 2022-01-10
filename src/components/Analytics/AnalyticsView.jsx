@@ -7,19 +7,20 @@ import Filters from './Filters';
 
 import { getOccupancy } from '../../redux/actions/analytics/occupancy';
 
+
 import './style.scss';
 
 const AnalyticsView = (props) => {
     useEffect(() => {
         props.getOccupancy();
-    });
+    }, []);
 
     useEffect(() => {
         const getOccupancyInterval = setInterval(() => {
             props.getOccupancy(Math.floor((Date.now() / 1000) - 300));
         }, 30 * 1000);
         return () => clearInterval(getOccupancyInterval);
-    });
+    }, []);
 
     return (
         <section id="analytics" className="analytics-view">

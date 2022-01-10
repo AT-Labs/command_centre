@@ -24,7 +24,7 @@ class VehicleFilterByOccupancy extends React.PureComponent {
     render() {
         const { showingOccupancyLevels } = this.props;
         return (
-            <>
+            <React.Fragment>
                 <div className="mt-3 mb-1">Occupancy</div>
                 {Object.values(VEHICLE_OCCUPANCY_STATUS_TYPE).map(level => (
                     <FormGroup key={ level } check>
@@ -42,14 +42,12 @@ class VehicleFilterByOccupancy extends React.PureComponent {
                         </Label>
                     </FormGroup>
                 ))}
-            </>
+            </React.Fragment>
         );
     }
 }
 
-export default connect(
-    state => ({
-        showingOccupancyLevels: getVehiclesFilterShowingOccupancyLevels(state),
-    }),
-    { mergeVehicleFilters },
-)(VehicleFilterByOccupancy);
+export default connect(state => ({
+    showingOccupancyLevels: getVehiclesFilterShowingOccupancyLevels(state),
+}),
+{ mergeVehicleFilters })(VehicleFilterByOccupancy);

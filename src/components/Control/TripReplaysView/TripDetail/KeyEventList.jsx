@@ -38,6 +38,7 @@ const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMo
             skippedData: skippedStops[stop.stopSequence],
             plaformChangeData: platformChanges[stop.stopSequence],
             isCanceled: index >= stopIndexAfterCancel,
+            timepoint: stop.timepoint,
         };
 
         return (

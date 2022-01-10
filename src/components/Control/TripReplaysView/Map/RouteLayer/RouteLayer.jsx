@@ -10,7 +10,7 @@ class RouteLayer extends React.PureComponent {
         this.polylineGroupRef = React.createRef();
     }
 
-    componentDidUpdate() {
+    componentDidUpdate = () => {
         if (this.polylineGroupRef.current) this.polylineGroupRef.current.leafletElement.bringToBack();
     }
 

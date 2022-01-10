@@ -83,24 +83,10 @@ const FilterByDelay = (props) => {
                 <div className="font-size-sm">
                     <span className="font-weight-bold">Selected</span>
                     {early && (
-                        <span className="font-weight-bold d-block">
-                            Early:
-                            <span className="font-weight-light">
-                                {' '}
-                                {early}
-                                {' '}
-                            </span>
-                        </span>
+                        <span className="font-weight-bold d-block">Early: <span className="font-weight-light"> {early} </span></span>
                     )}
                     {late && (
-                        <span className="font-weight-bold d-block">
-                            Late:
-                            <span className="font-weight-light">
-                                {' '}
-                                {late}
-                                {' '}
-                            </span>
-                        </span>
+                        <span className="font-weight-bold d-block">Late: <span className="font-weight-light"> {late} </span></span>
                     )}
                 </div>
             )}

@@ -45,12 +45,12 @@ export const Pagination = (props) => {
                 </li>
 
                 { arePagesNoLongerAtTheStart && (
-                    <>
+                    <React.Fragment>
                         <li className="page-item">
                             <button type="button" className="page-link" onClick={ () => props.onPageClick(1) }>1</button>
                         </li>
                         <li className="page-item disabled"><span className="page-link">...</span></li>
-                    </>
+                    </React.Fragment>
                 )}
 
                 {_.map(pagesVisible, page => (
@@ -66,12 +66,12 @@ export const Pagination = (props) => {
                 ))}
 
                 { !havePagesReachedTheEnd && (
-                    <>
+                    <React.Fragment>
                         <li className="page-item disabled"><span className="page-link">...</span></li>
                         <li className="page-item">
                             <button type="button" className="page-link" onClick={ () => props.onPageClick(pagesTotal) }>{pagesTotal}</button>
                         </li>
-                    </>
+                    </React.Fragment>
                 )}
 
                 <li className={ `page-item ${currentPage >= pagesTotal ? 'disabled' : ''}` }>

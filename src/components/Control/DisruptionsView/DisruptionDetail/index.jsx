@@ -14,7 +14,7 @@ const DisruptionExpandedDetail = (props) => {
 
     if (isDisruptionUpdateAllowed(disruption)) {
         return (
-            <>
+            <React.Fragment>
                 {resultStatus && resultDisruptionId === disruption.disruptionId && (
                     <Message
                         message={ {
@@ -36,7 +36,7 @@ const DisruptionExpandedDetail = (props) => {
                     />
                 )}
                 <DisruptionDetailView { ...props } />
-            </>
+            </React.Fragment>
         );
     }
     return <Readonly { ...props } />;

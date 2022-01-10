@@ -38,7 +38,7 @@ export class Search extends Component {
         label: PropTypes.string,
         selectedEntities: PropTypes.object,
         showTags: PropTypes.bool,
-    };
+    }
 
     static defaultProps = {
         suggestions: [],
@@ -59,7 +59,7 @@ export class Search extends Component {
         onUnselection: null,
         selectedEntities: {},
         showTags: true,
-    };
+    }
 
     static NO_RESULTS = 'No Results';
 
@@ -92,9 +92,9 @@ export class Search extends Component {
         }
     }
 
-    onSuggestionsFetchRequested = ({ value }) => this.debouncedSearch(value);
+    onSuggestionsFetchRequested = ({ value }) => this.debouncedSearch(value)
 
-    onSuggestionsClearRequested = () => this.props.onClear();
+    onSuggestionsClearRequested = () => this.props.onClear()
 
     onSuggestionSelected = (event, { suggestion }) => {
         if (suggestion.noResultPlaceHolder) {
@@ -105,7 +105,7 @@ export class Search extends Component {
         const value = this.props.showValue ? suggestion.text : '';
         this.setState({ selected: suggestion, value });
         this.props.onSelection(suggestion);
-    };
+    }
 
     getSuggestionValue = suggestion => suggestion.text;
 
@@ -126,14 +126,14 @@ export class Search extends Component {
         }
 
         return suggestions;
-    };
+    }
 
     getSectionSuggestions = section => section.items;
 
     handleInputChange = (event, { newValue }) => {
         this.setState({ value: newValue, isPending: true });
         if (this.props.onInputValueChange) this.props.onInputValueChange(newValue);
-    };
+    }
 
     handleInputChangeMultiSelect = (multiValue, reason) => {
         if (reason.action === 'set-value'
@@ -148,7 +148,7 @@ export class Search extends Component {
             this.setState({ multiValue, searchPerformed: false });
             this.props.onClear();
         }
-    };
+    }
 
     handleChange = (selected, reason) => {
         this.setState({ multiValue: '' });
@@ -167,38 +167,38 @@ export class Search extends Component {
             break;
         default:
         }
-    };
+    }
 
     handleClearButtonClick = () => {
         if (this.props.onClearCallBack) this.props.onClearCallBack();
         this.props.onClear(this.state.selected);
         this.setState({ value: '', selected: null });
-    };
+    }
 
-    renderSuggestion = suggestion => <SearchResultItem { ...suggestion } />;
+    renderSuggestion = suggestion => <SearchResultItem { ...suggestion } />
 
-    renderSectionTitle = section => (section.category.label ? <small>{section.category.label}</small> : null);
+    renderSectionTitle = section => (section.category.label ? <small>{section.category.label}</small> : null)
 
     handleFocus = () => {
         this.setState({ focus: true });
         if (this.props.onFocus) this.props.onFocus();
-    };
+    }
 
     handleBlur = () => {
         this.setState({ multiValue: '', focus: false, searchPerformed: false });
         if (this.props.onBlur) this.props.onBlur();
         this.props.onClear();
-    };
+    }
 
     handleResetButtonClick = () => {
         this.setState({ multiValue: '', inputCollapseState: SEARCH_BAR_INPUT_STATE.INITIAL });
         if (this.props.onResetCallBack) this.props.onResetCallBack();
         this.props.onClear();
-    };
+    }
 
     setInputCollapse = (value) => {
         this.setState({ inputCollapseState: value });
-    };
+    }
 
     menuIsOpen = () => this.state.focus && this.state.searchPerformed;
 
@@ -209,7 +209,7 @@ export class Search extends Component {
             label: section.category.label,
             options: section.items,
         }));
-    };
+    }
 
     getSelectedEntities = () => Object.values(this.props.selectedEntities);
 

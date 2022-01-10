@@ -86,7 +86,7 @@ class CreateDisruption extends React.Component {
                 [key]: value,
             },
         }));
-    };
+    }
 
     onSubmit = () => {
         this.toggleModal('Confirmation', true);
@@ -104,29 +104,27 @@ class CreateDisruption extends React.Component {
             startTime: startTimeMoment,
         };
         this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops));
-    };
+    }
 
     onSubmitUpdate = () => {
         const disruptionRequest = buildSubmitBody(this.props.disruptionToEdit, this.props.routes, this.props.stops);
         this.props.updateDisruption(disruptionRequest);
         this.props.openCreateDisruption(false);
         this.props.toggleDisruptionModals('isConfirmationOpen', true);
-    };
+    }
 
     toggleModal = (modalType, isOpen) => {
         const type = `is${modalType}Open`;
         this.setState({ [type]: isOpen });
         this.props.toggleDisruptionModals(type, isOpen);
-    };
+    }
 
     isSubmitDisabled = (disruptionData) => {
         const isEntitiesEmpty = _.isEmpty(disruptionData.affectedEntities);
-        const isPropsEmpty = _.some(_.omit(
-            disruptionData,
-            ['endDate', 'endTime', 'mode', 'affectedEntities', 'url', 'createNotification'],
-        ), _.isEmpty);
+        const isPropsEmpty = _.some(_.omit(disruptionData,
+            ['endDate', 'endTime', 'mode', 'affectedEntities', 'url', 'createNotification']), _.isEmpty);
         return isEntitiesEmpty || isPropsEmpty;
-    };
+    }
 
     render() {
         const { disruptionData, isConfirmationOpen } = this.state;

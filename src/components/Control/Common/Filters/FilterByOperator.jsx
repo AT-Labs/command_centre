@@ -21,7 +21,7 @@ class FilterByOperator extends React.Component {
         id: PropTypes.string,
         placeholder: PropTypes.string,
         customData: PropTypes.array,
-    };
+    }
 
     static defaultProps = {
         className: '',
@@ -29,15 +29,15 @@ class FilterByOperator extends React.Component {
         selectedOption: '',
         placeholder: 'Select operator',
         customData: null,
-    };
+    }
 
     componentDidMount() { if (_.isEmpty(this.props.agencies)) this.props.retrieveAgencies(); }
 
-    onInputValueChange = (value) => { if (!value) this.props.onSelection({ value: '', label: '' }); };
+    onInputValueChange = (value) => { if (!value) this.props.onSelection({ value: '', label: '' }); }
 
-    getOptions = () => this.props.agencies.map(agency => ({ value: agency.agencyId, label: agency.agencyName }));
+    getOptions = () => this.props.agencies.map(agency => ({ value: agency.agencyId, label: agency.agencyName }))
 
-    getSelectedOption = () => this.getOptions().filter(option => option.value === this.props.selectedOption)[0] || {};
+    getSelectedOption = () => this.getOptions().filter(option => option.value === this.props.selectedOption)[0] || {}
 
     render() {
         return (
@@ -57,9 +57,7 @@ class FilterByOperator extends React.Component {
     }
 }
 
-export default connect(
-    state => ({
-        agencies: getAgencies(state),
-    }),
-    { retrieveAgencies },
-)(FilterByOperator);
+export default connect(state => ({
+    agencies: getAgencies(state),
+}),
+{ retrieveAgencies })(FilterByOperator);

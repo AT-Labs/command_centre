@@ -29,9 +29,9 @@ export class OffCanvasLayout extends React.Component {
 
     static defaultProps = {
         onToggle: _.noop,
-    };
+    }
 
-    componentDidUpdate() { return this.props.onToggle(); }
+    componentDidUpdate = () => this.props.onToggle();
 
     renderContent = childName => this.props.children.filter(child => child.type.displayName === childName || child.type.name === childName);
 

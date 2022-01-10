@@ -14,15 +14,15 @@ class SelectedStopsMarker extends React.PureComponent {
 
     handleClick = (event) => {
         event.target.openPopup(event.latlng);
-    };
+    }
 
     handlePopupOpen = (entity) => {
         this.props.updateHoveredEntityKey(entity.key);
-    };
+    }
 
     handlePopupClose = () => {
         this.props.updateHoveredEntityKey('');
-    };
+    }
 
     render() {
         const { stops } = this.props;

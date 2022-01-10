@@ -12,14 +12,14 @@ const cssModuleModalHeader = {
 const CustomModal = ({
     children, className, isModalOpen, title, okButton, onClose, renderToggleButton,
 }) => (
-    <>
+    <React.Fragment>
         {renderToggleButton && renderToggleButton()}
         <Modal
             isOpen={ isModalOpen }
             backdrop="static"
             className={ className }
             contentClassName="rounded-0">
-            <ModalHeader toggle={ onClose } className="w-100" cssModule={ cssModuleModalHeader } tag="h3">
+            <ModalHeader toggle={ onClose } className="w-100" cssModule={ cssModuleModalHeader } tag="h3" charCode="&times;">
                 {title}
             </ModalHeader>
             <ModalBody>
@@ -36,7 +36,7 @@ const CustomModal = ({
                 </ModalFooter>
             )}
         </Modal>
-    </>
+    </React.Fragment>
 );
 
 CustomModal.propTypes = {

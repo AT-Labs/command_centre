@@ -48,24 +48,24 @@ class SelectHead extends React.Component {
         if (!event.currentTarget.value && this.props.selectedOptions.length > 0) {
             this.props.onItemDelete(this.props.selectedOptions[this.props.selectedOptions.length - 1]);
         }
-    };
+    }
 
     handleKeyDown = (event) => {
         if (event.which === 0x8) {
             this.handleBackspace(event);
         }
-    };
+    }
 
     handleClear = () => {
         this.setState({ inputValue: '' });
         this.props.onClear();
-    };
+    }
 
     handleInputChange = (event) => {
         const inputValue = event.target.value;
         this.setState({ inputValue });
         this.props.onInputChange(inputValue);
-    };
+    }
 
     renderSearchInput = placeholder => (
         <input
@@ -79,7 +79,7 @@ class SelectHead extends React.Component {
             onInput={ this.handleInputChange }
             onKeyDown={ this.handleKeyDown }
         />
-    );
+    )
 
     renderSelectedItemTokens = () => {
         if (this.props.selectedOptions.length === 0) {
@@ -128,10 +128,10 @@ class SelectHead extends React.Component {
         }
         res.push(this.renderSearchInput());
         return res;
-    };
+    }
 
-    render = () => ( // eslint-disable-line react/no-arrow-function-lifecycle
-        <>
+    render = () => (
+        <React.Fragment>
             <div
                 role="button"
                 tabIndex="0"
@@ -156,7 +156,7 @@ class SelectHead extends React.Component {
                     role="button"
                     aria-label="Clear search text" />
             )}
-        </>
+        </React.Fragment>
     );
 }
 

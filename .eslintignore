@@ -3,5 +3,3 @@
 build/*
 scripts/*
 test-reports/*
-**/*.test.js
-**/*.test.jsx

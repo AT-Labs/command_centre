@@ -21,11 +21,11 @@ export class SecondarySidePanel extends React.Component {
         updateMainView: PropTypes.func.isRequired,
         updateControlDetailView: PropTypes.func.isRequired,
         notifications: PropTypes.array,
-    };
+    }
 
     static defaultProps = {
         notifications: [],
-    };
+    }
 
     renderNotifications = notifications => notifications.map(notification => (
         <Notification
@@ -43,7 +43,7 @@ export class SecondarySidePanel extends React.Component {
             dismissNotification={ notification.dismissNotification }
             // eslint-disable-next-line no-underscore-dangle
             links={ notification._links } />
-    ));
+    ))
 
     render() {
         const { notifications, activeSecondaryPanelView } = this.props;

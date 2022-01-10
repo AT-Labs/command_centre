@@ -48,5 +48,7 @@ export const getTripReplayTrips = (searchFilters) => {
     const url = `${endpoint}?serviceDate=${serviceDate}&timeType=${timeType}`
                 + `&startDateTime=${startDateTime}&endDateTime=${endDateTime}`;
 
-    return fetchWithAuthHeader(url, { method: 'GET' }).then(response => jsonResponseHandling(response));
+    return fetchWithAuthHeader(
+        url, { method: 'GET' },
+    ).then(response => jsonResponseHandling(response));
 };

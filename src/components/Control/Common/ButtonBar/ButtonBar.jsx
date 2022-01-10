@@ -30,8 +30,7 @@ const ButtonBar = ({ buttons, isLoading }) => (
                     tabIndex={ index }
                     aria-label={ label }
                     disabled={ !isLoading ? disable : isLoading }>
-                    { icon ? createIconElement(icon) : '' }
-                    <span className="align-middle ml-2">{ label }</span>
+                    { icon ? createIconElement(icon) : '' }<span className="align-middle ml-2">{ label }</span>
                 </button>
             );
         }) }

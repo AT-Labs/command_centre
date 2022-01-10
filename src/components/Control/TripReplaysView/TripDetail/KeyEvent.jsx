@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { has, get } from 'lodash-es';
 import { FaCaretRight } from 'react-icons/fa';
+import { RiMapPinTimeFill } from 'react-icons/ri';
+import { UncontrolledTooltip } from 'reactstrap';
 import classNames from 'classnames';
 import KeyEventType, { EVENT_TYPES } from './KeyEventType';
 import Icon from '../../../Common/Icon/Icon';
@@ -32,6 +34,12 @@ function KeyEvent(props) {
                             { keyEventDetail.occupancyStatus && (
                                 <Icon className="icon d-inline-block ml-2" icon={ occupancyStatusToIconSvg(keyEventDetail.occupancyStatus) } />
                             ) }
+                            { keyEventDetail.timepoint === 1 && (
+                                <Fragment>
+                                    <RiMapPinTimeFill id={ `timepoint-${keyEventDetail.id}` } className="icon d-inline-block ml-2 text-at-orange" size="24px" />
+                                    <UncontrolledTooltip target={ `timepoint-${keyEventDetail.id}` }>Timepoint Stop</UncontrolledTooltip>
+                                </Fragment>
+                            ) }
                             { keyEventDetail.skippedData && (
                                 <TripUpdateTag
                                     className="d-inline-block ml-2"
@@ -54,9 +62,7 @@ function KeyEvent(props) {
                     <div className="mt-2">
                         <button type="button"
                             className="key-event__more-info pl-0 font-weight-bold"
-                            onClick={ showMoreInfo }>
-                            See more information
-                            <FaCaretRight />
+                            onClick={ showMoreInfo }>See more information<FaCaretRight />
                         </button>
                     </div>
                 </div>
@@ -67,17 +73,13 @@ function KeyEvent(props) {
                             {props.type !== EVENT_TYPES.FIRST_STOP
                             && (
                                 <div
-                                    className="text-left font-weight-bold">
-                                    A:
-                                    {has(scheduledTime, 'arrival') ? get(scheduledTime, 'arrival') : '-'}
+                                    className="text-left font-weight-bold">A:{has(scheduledTime, 'arrival') ? get(scheduledTime, 'arrival') : '-'}
                                 </div>
                             )}
                             {props.type !== EVENT_TYPES.TRIP_END
                             && (
                                 <div
-                                    className="text-left font-weight-bold">
-                                    D:
-                                    {has(scheduledTime, 'departure') ? get(scheduledTime, 'departure') : '-'}
+                                    className="text-left font-weight-bold">D:{has(scheduledTime, 'departure') ? get(scheduledTime, 'departure') : '-'}
                                 </div>
                             )}
                         </div>
@@ -91,21 +93,20 @@ function KeyEvent(props) {
                             {props.type !== EVENT_TYPES.FIRST_STOP
                             && (
                                 <div
-                                    className="text-left font-weight-bold">
-                                    {has(time, 'arrival') ? get(time, 'arrival') : '-'}
+                                    className="text-left font-weight-bold">{has(time, 'arrival') ? get(time, 'arrival') : '-'}
                                 </div>
                             )}
                             {props.type !== EVENT_TYPES.TRIP_END
                             && (
                                 <div
-                                    className="text-left font-weight-bold">
-                                    {has(time, 'departure') ? get(time, 'departure') : '-'}
+                                    className="text-left font-weight-bold">{has(time, 'departure') ? get(time, 'departure') : '-'}
                                 </div>
                             )}
                         </div>
                     )}
                 </div>
             </div>
+
 
         </li>
     );

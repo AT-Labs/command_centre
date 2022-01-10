@@ -25,12 +25,12 @@ export class AddNewBlockModal extends React.Component {
         blocks: PropTypes.array.isRequired,
         error: PropTypes.object,
         isLoading: PropTypes.bool,
-    };
+    }
 
     static defaultProps = {
         error: {},
         isLoading: false,
-    };
+    }
 
     constructor() {
         super();
@@ -41,13 +41,13 @@ export class AddNewBlockModal extends React.Component {
         };
     }
 
-    isErrorEmpty = () => _.isEmpty(this.props.error.addBlock);
+    isErrorEmpty = () => _.isEmpty(this.props.error.addBlock)
 
     handleBlockNumberChange = (event) => {
         const { value } = event.target;
         this.setState({ operationalBlockId: value });
         if (!this.isErrorEmpty()) this.props.dismissError('addBlock');
-    };
+    }
 
     addOperationalBlockRun = () => {
         if (!this.props.error.addBlock) {
@@ -56,7 +56,7 @@ export class AddNewBlockModal extends React.Component {
             this.props.addOperationalBlockRun(operationalBlockRun)
                 .then(() => this.toggleModal());
         }
-    };
+    }
 
     toggleModal = () => {
         this.setState(prevState => ({
@@ -64,7 +64,7 @@ export class AddNewBlockModal extends React.Component {
             operationalBlockId: '',
         }));
         if (!this.isErrorEmpty()) this.props.dismissError('addBlock');
-    };
+    }
 
     renderModalToggleButton = () => (
         <Button
@@ -75,7 +75,7 @@ export class AddNewBlockModal extends React.Component {
                 className="cc-btn-secondary__icon" />
             Add new block
         </Button>
-    );
+    )
 
     render() {
         const { isModalOpen, operationalBlockId } = this.state;
@@ -114,11 +114,9 @@ export class AddNewBlockModal extends React.Component {
     }
 }
 
-export default connect(
-    state => ({
-        blocks: getAllBlocks(state),
-        error: getError(state),
-        isLoading: getBlocksLoadingState(state),
-    }),
-    { addOperationalBlockRun, dismissError },
-)(AddNewBlockModal);
+export default connect(state => ({
+    blocks: getAllBlocks(state),
+    error: getError(state),
+    isLoading: getBlocksLoadingState(state),
+}),
+{ addOperationalBlockRun, dismissError })(AddNewBlockModal);

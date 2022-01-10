@@ -14,6 +14,7 @@ import VIEW_TYPE from '../../../../types/view-types';
 import ListDetailItem from './ListDetailItem';
 import RouteDetailView from '../RouteDetailView/RouteDetailView';
 
+
 import './ListDetailView.scss';
 
 function ListDetailView(props) {
@@ -82,9 +83,7 @@ function ListDetailView(props) {
         <div className="selection-container h-100">
             <Card className="selection-item" key="select-all">
                 <CardHeader className="select-all border-top border-bottom-0 rounded-0">
-                    <input type="checkbox" className="align-middle selection-item__checkbox" checked={ isCheckAllChecked } onChange={ toggleDisplayAll } />
-                    {' '}
-                    Show on the map
+                    <input type="checkbox" className="align-middle selection-item__checkbox" checked={ isCheckAllChecked } onChange={ toggleDisplayAll } /> Show on the map
                 </CardHeader>
             </Card>
             {allSelectedSearchResultList.map((entity) => {

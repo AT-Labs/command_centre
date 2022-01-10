@@ -46,17 +46,13 @@ const filterRouteVariants = (routeVariants, filters, serviceDateState, isForSear
 };
 
 export const getFilteredRouteVariants = createSelector(
-    getAllRouteVariants,
-    getFiltersState,
-    getServiceDateState,
+    getAllRouteVariants, getFiltersState, getServiceDateState,
     (routeVariants, filters, serviceDateState) => filterRouteVariants(routeVariants, filters, serviceDateState, false),
 );
 
 export const getFilteredRouteVariantsTotal = createSelector(getFilteredRouteVariants, variants => variants.length);
 
 export const getRouteVariantsForSearch = createSelector(
-    getAllRouteVariants,
-    getFiltersState,
-    getServiceDateState,
+    getAllRouteVariants, getFiltersState, getServiceDateState,
     (routeVariants, filters, serviceDateState) => filterRouteVariants(routeVariants, filters, serviceDateState, true),
 );

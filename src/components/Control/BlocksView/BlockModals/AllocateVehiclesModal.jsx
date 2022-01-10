@@ -20,7 +20,7 @@ export class AllocateVehiclesModal extends React.Component {
         selectedTrips: PropTypes.arrayOf(TripType),
         disable: PropTypes.bool,
         setModalState: PropTypes.func,
-    };
+    }
 
     static defaultProps = {
         buttonLabel: '',
@@ -28,7 +28,7 @@ export class AllocateVehiclesModal extends React.Component {
         openModalButtonClass: '',
         selectedTrips: [],
         setModalState: () => {},
-    };
+    }
 
     constructor() {
         super();
@@ -43,7 +43,7 @@ export class AllocateVehiclesModal extends React.Component {
     onSelection = (isPopulated, vehicles) => this.setState({
         vehicles,
         isPopulated,
-    }, () => this.state.vehicles);
+    }, () => this.state.vehicles)
 
     allocateVehicles = () => {
         const { vehicles } = this.state;
@@ -52,17 +52,15 @@ export class AllocateVehiclesModal extends React.Component {
         this.props.allocateVehicles(block, selectedVehicles, selectedTrips);
 
         this.toggleModal();
-    };
+    }
 
     toggleModal = () => {
-        this.setState(
-            prevState => ({
-                isModalOpen: !prevState.isModalOpen,
-                vehicles: null,
-            }),
-            () => this.props.setModalState(this.state.isModalOpen),
-        );
-    };
+        this.setState(prevState => ({
+            isModalOpen: !prevState.isModalOpen,
+            vehicles: null,
+        }),
+        () => this.props.setModalState(this.state.isModalOpen));
+    }
 
     renderModalToggleButton = () => (
         <Button
@@ -76,7 +74,7 @@ export class AllocateVehiclesModal extends React.Component {
             onClick={ this.toggleModal }>
             { this.props.buttonLabel ? this.props.buttonLabel : 'Allocate vehicles' }
         </Button>
-    );
+    )
 
     render() {
         const { vehicles, isPopulated, isModalOpen } = this.state;
@@ -100,10 +98,10 @@ export class AllocateVehiclesModal extends React.Component {
                     {
                         (this.props.selectedTrips.length > 0)
                         && (
-                            <>
+                            <React.Fragment>
                                 <dt className="col-6">Selected Trips:</dt>
                                 <dd className="col-6">{ this.props.selectedTrips.map(trip => trip.externalRef).join(', ') }</dd>
-                            </>
+                            </React.Fragment>
                         )
                     }
                 </dl>
@@ -121,10 +119,8 @@ export class AllocateVehiclesModal extends React.Component {
     }
 }
 
-export default connect(
-    state => ({
-        blocks: getAllBlocks(state),
-        assignedTrains: getAllTrainsWithAssignedBlocks(state),
-    }),
-    { allocateVehicles },
-)(AllocateVehiclesModal);
+export default connect(state => ({
+    blocks: getAllBlocks(state),
+    assignedTrains: getAllTrainsWithAssignedBlocks(state),
+}),
+{ allocateVehicles })(AllocateVehiclesModal);

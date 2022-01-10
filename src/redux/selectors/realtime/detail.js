@@ -19,16 +19,11 @@ export const getCheckedSearchResults = createSelector(
 
 export const getViewDetailKey = createSelector(getDetailState, detailState => _.result(detailState, 'viewDetailKey'));
 
-export const getVehicleDetail = createSelector(
-    getDetailState,
-    getViewDetailKey,
-    (detailState, viewDetailKey) => ((viewDetailKey && viewDetailKey === _.get(detailState, 'vehicle.key')) ? _.get(detailState, 'vehicle') : {}),
-);
+export const getVehicleDetail = createSelector(getDetailState, getViewDetailKey,
+    (detailState, viewDetailKey) => ((viewDetailKey && viewDetailKey === _.get(detailState, 'vehicle.key')) ? _.get(detailState, 'vehicle') : {}));
 
-export const getVehicleOccupancyStatus = createSelector(
-    getVehicleDetail,
-    vehicleState => _.result(vehicleState, 'occupancyStatus'),
-);
+export const getVehicleOccupancyStatus = createSelector(getVehicleDetail,
+    vehicleState => _.result(vehicleState, 'occupancyStatus'));
 export const getVehicleId = createSelector(getVehicleDetail, vehicleDetailState => vehicleDetailState.id);
 export const getCurrentVehicleTripId = createSelector(getVehicleDetail, vehicleDetailState => _.get(vehicleDetailState, 'trip.tripId'));
 export const getVehicleLastStopSequence = createSelector(getVehicleDetail, vehicleState => vehicleState.lastStopSequence);
@@ -62,11 +57,8 @@ export const getVehicleCapacity = createSelector(
     },
 );
 
-export const getStopDetail = createSelector(
-    getDetailState,
-    getViewDetailKey,
-    (detailState, viewDetailKey) => ((viewDetailKey && viewDetailKey === _.get(detailState, 'stop.key')) ? _.get(detailState, 'stop') : {}),
-);
+export const getStopDetail = createSelector(getDetailState, getViewDetailKey,
+    (detailState, viewDetailKey) => ((viewDetailKey && viewDetailKey === _.get(detailState, 'stop.key')) ? _.get(detailState, 'stop') : {}));
 export const getStopCode = createSelector(getStopDetail, stopDetail => _.result(stopDetail, 'stop_code'));
 export const getStopId = createSelector(getStopDetail, stopDetail => _.result(stopDetail, 'stop_id'));
 export const getPastVehicles = createSelector(getStopDetail, stopDetail => _.result(stopDetail, 'pastVehicles'));
@@ -81,11 +73,8 @@ export const getRouteIdsByStop = createSelector(getRoutesByStopShape, routes => 
 
 export const getClearForReplace = createSelector(getDetailState, detailState => detailState.isReplace);
 
-export const getRouteDetail = createSelector(
-    getSelectedSearchResults,
-    getViewDetailKey,
-    (selectedSearchResults, viewDetailKey) => (viewDetailKey ? selectedSearchResults[viewDetailKey] : {}),
-);
+export const getRouteDetail = createSelector(getSelectedSearchResults, getViewDetailKey,
+    (selectedSearchResults, viewDetailKey) => (viewDetailKey ? selectedSearchResults[viewDetailKey] : {}));
 
 export const getRoutesByRoute = createSelector(getRouteDetail, routeDetail => routeDetail.routes || []);
 
@@ -153,10 +142,8 @@ export const getVehiclePredicateFromCheckedSearchResults = createSelector(
 
 export const getCheckedStops = createSelector(
     getCheckedSearchResults,
-    checkedSearchResults => _.filter(
-        checkedSearchResults,
-        checkedSearchResult => (checkedSearchResult.checked && SEARCH_RESULT_TYPE.STOP.type === checkedSearchResult.searchResultType),
-    ),
+    checkedSearchResults => _.filter(checkedSearchResults,
+        checkedSearchResult => (checkedSearchResult.checked && SEARCH_RESULT_TYPE.STOP.type === checkedSearchResult.searchResultType)),
 );
 
 export const getVisibleStops = createSelector(

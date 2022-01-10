@@ -57,8 +57,10 @@ DetailView.propTypes = {
     isSearchBarFocus: PropTypes.bool.isRequired,
 };
 
-export default connect(state => ({
-    activeRealTimeDetailView: getActiveRealTimeDetailView(state),
-    allSearchResults: getSelectedSearchResults(state),
-    isSearchBarFocus: isSearchBarFocus(state),
-}), { clearDetail, updateRealTimeDetailView })(DetailView);
+export default connect(
+    state => ({
+        activeRealTimeDetailView: getActiveRealTimeDetailView(state),
+        allSearchResults: getSelectedSearchResults(state),
+        isSearchBarFocus: isSearchBarFocus(state),
+    }), { clearDetail, updateRealTimeDetailView },
+)(DetailView);

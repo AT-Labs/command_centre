@@ -7,8 +7,6 @@ const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
 const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
-const ESLintWebpackPlugin = require('eslint-webpack-plugin');
-const ignoredFiles = require('react-dev-utils/ignoredFiles');
 const getClientEnvironment = require('./env');
 const pkg = require('../package');
 const paths = require('./paths');
@@ -28,16 +26,9 @@ const env = getClientEnvironment(publicUrl);
 // It is focused on developer experience and fast rebuilds.
 // The production configuration is different and lives in a separate file.
 module.exports = {
-    mode: 'development',
     // You may want 'eval' instead if you prefer to see the compiled output in DevTools.
     // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
     devtool: 'cheap-module-source-map',
-    watchOptions: {
-        ignored: ignoredFiles(paths.appSrc),
-    },
-    devServer: {
-        stats: 'minimal',
-    },
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
     // The first two entry points enable "hot" CSS and auto-refreshes for JS.
@@ -62,7 +53,7 @@ module.exports = {
             // initialization, it doesn't blow up the WebpackDevServer client, and
             // changing JS code would still trigger a refresh.
         ],
-        app: [paths.appMainJs],
+        app: [paths.appMainJs]
     },
     output: {
     // Add /* filename */ comments to generated require()s in the output.
@@ -73,9 +64,8 @@ module.exports = {
         filename: `static/js/[name].${pkg.version}.js`,
         // This is the URL that app is served from. We use "/" in development.
         publicPath,
-        path: path.resolve(__dirname, './dist'),
         // Point sourcemap entries to original disk location (format as URL on Windows)
-        devtoolModuleFilenameTemplate: (info) => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+        devtoolModuleFilenameTemplate: info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
     },
     resolve: {
     // This allows you to set a fallback for where Webpack should look for modules.
@@ -114,6 +104,24 @@ module.exports = {
             // TODO: Disable require.ensure as it's not a standard language feature.
             // We are waiting for https://github.com/facebookincubator/create-react-app/issues/2176.
             // { parser: { requireEnsure: false } },
+
+            // First, run the linter.
+            // It's important to do this before Babel processes the JS.
+            {
+                test: /\.(js|jsx|mjs)$/,
+                enforce: 'pre',
+                use: [
+                    {
+                        options: {
+                            eslintPath: require.resolve('eslint'),
+                            emitWarning: true,
+                            fix: false,
+                        },
+                        loader: require.resolve('eslint-loader'),
+                    },
+                ],
+                include: paths.appSrc,
+            },
             {
                 // "oneOf" will traverse all following loaders until one will
                 // match the requirements. When no loader matches it will fall
@@ -136,7 +144,7 @@ module.exports = {
                         include: paths.appSrc,
                         loader: require.resolve('babel-loader'),
                         options: {
-                            presets: ['@babel/preset-env'],
+
                             // This is a feature of `babel-loader` for webpack (not Babel itself).
                             // It enables caching results in ./node_modules/.cache/babel-loader/
                             // directory for faster rebuilds.
@@ -200,7 +208,6 @@ module.exports = {
                         // by webpacks internal loaders.
                         exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
                         loader: require.resolve('file-loader'),
-                        type: 'javascript/auto',
                         options: {
                             name: 'static/media/[name].[hash:8].[ext]',
                         },
@@ -215,20 +222,15 @@ module.exports = {
         new StyleLintPlugin({
             emitErrors: false,
         }),
-        new ESLintWebpackPlugin({
-            emitWarning: true,
-            fix: false,
-        }),
         // Makes some environment variables available in index.html.
         // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
         // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
         // In development, this will be an empty string.
-        new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
+        new InterpolateHtmlPlugin(env.raw),
         // Generates an `index.html` file with the <script> injected.
         new HtmlWebpackPlugin({
             inject: true,
             template: paths.appHtml,
-            filename: 'index.html',
         }),
         // Add module names to factory functions so they appear in browser profiler.
         new webpack.NamedModulesPlugin(),

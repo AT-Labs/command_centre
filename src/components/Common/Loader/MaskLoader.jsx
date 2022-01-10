@@ -8,14 +8,7 @@ const MaskLoader = ({ error }) => (
     <div className="mask-loader bg-white fixed-top h-100 w-100">
         <div className="d-flex justify-content-center align-items-center h-100">
             {(error && (
-                <h3>
-                    <FaExclamationTriangle color="red" size="24px" />
-                    {' '}
-                    <span className="p-1">
-                        {error}
-                        {' '}
-                    </span>
-                </h3>
+                <h3><FaExclamationTriangle color="red" size="24px" /> <span className="p-1">{error} </span></h3>
             )) || (
                 <div className="mask-loader__loader-container">
                     <Loader />

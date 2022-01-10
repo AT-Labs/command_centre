@@ -56,12 +56,12 @@ export class BlocksView extends React.Component {
         updateBlocksSortingParams: PropTypes.func.isRequired,
         serviceDate: PropTypes.string.isRequired,
         blocksSortingParams: PropTypes.object.isRequired,
-    };
+    }
 
     static defaultProps = {
         activeBlocksIds: [],
         focusedBlock: null,
-    };
+    }
 
     constructor(props) {
         super(props);
@@ -73,7 +73,7 @@ export class BlocksView extends React.Component {
 
         this.BLOCKS_COLUMNS = [
             {
-                label: () => ( // eslint-disable-line react/no-unstable-nested-components
+                label: () => (
                     <div className="d-flex align-content-center">
                         <SortButton
                             className="mr-1"
@@ -93,7 +93,7 @@ export class BlocksView extends React.Component {
                 cols: 'col-3',
             },
             {
-                label: () => ( // eslint-disable-line react/no-unstable-nested-components
+                label: () => (
                     <div className="d-flex align-content-center">
                         <SortButton
                             className="mr-1"
@@ -129,30 +129,26 @@ export class BlocksView extends React.Component {
         this.ref = React.createRef();
     }
 
-    componentDidMount() {
-        return this.props.getBlocks(true)
-            .then(() => {
-                this.setState({ shouldLoaderBeShown: false });
-                this.interval = setInterval(() => this.props.getBlocks(true), 9000);
-            });
-    }
+    componentDidMount = () => this.props.getBlocks(true)
+        .then(() => {
+            this.setState({ shouldLoaderBeShown: false });
+            this.interval = setInterval(() => this.props.getBlocks(true), 9000);
+        })
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate = (prevProps) => {
         const hasServiceDateChanged = !moment(this.props.serviceDate).isSame(moment(prevProps.serviceDate), 'day');
         if (hasServiceDateChanged) {
-            this.setState(
-                { shouldLoaderBeShown: true },
+            this.setState({ shouldLoaderBeShown: true },
                 () => {
                     this.props.getBlocks(true)
                         .then(() => this.setState({ shouldLoaderBeShown: false }));
-                },
-            );
+                });
         }
     }
 
-    componentWillUnmount() { return clearInterval(this.interval); }
+    componentWillUnmount = () => clearInterval(this.interval)
 
-    shouldComponentUpdate(nextProps, nextState) { return !nextState.isAnyModalOpen; } // eslint-disable-line class-methods-use-this
+    shouldComponentUpdate = (nextProps, nextState) => !nextState.isAnyModalOpen
 
     renderAllocationVehicleModal = (block) => {
         const isEditPermitted = IS_LOGIN_NOT_REQUIRED || isIndividualEditBlockPermitted(block);
@@ -178,14 +174,14 @@ export class BlocksView extends React.Component {
         }
         if (vehiclesLength) return <div>{ _.map(vehicles, 'buttonLabel').join(', ') }</div>;
         return null;
-    };
+    }
 
-    isToday = date => moment.tz(date, DATE_TYPE.TIME_ZONE).isSame(moment(), 'day');
+    isToday = date => moment.tz(date, DATE_TYPE.TIME_ZONE).isSame(moment(), 'day')
 
     isRowActive = (block) => {
         const { activeBlocksIds } = this.props;
         return !!activeBlocksIds.find(activeBlock => activeBlock === block.operationalBlockId);
-    };
+    }
 
     handleBlockOnClick = (block) => {
         if (this.isRowActive(block)) {
@@ -194,17 +190,17 @@ export class BlocksView extends React.Component {
         }
         this.props.updateActiveBlock(block);
         this.props.updateFocusedBlock(block);
-    };
+    }
 
     renderRowBody = activeBlock => <BlockTrips activeBlock={ activeBlock } />;
 
-    getRowId = block => block.operationalBlockId;
+    getRowId = block => block.operationalBlockId
 
     handleBlockSearchOnSelect = ({ data: block }) => {
         this.props.updateActiveBlock(block);
         const blockElement = this.ref.current.querySelector(`li[data-row-id="${this.getRowId(block)}"]`);
         if (!inView.is(blockElement)) _.delay(() => blockElement.scrollIntoView(), 0);
-    };
+    }
 
     getRowClassName = (block) => {
         const { cancelled, completed } = TRIP_STATUS_TYPES;
@@ -216,7 +212,7 @@ export class BlocksView extends React.Component {
                 ? 'bg-at-magenta-tint-5'
                 : ''
         );
-    };
+    }
 
     render() {
         const isGlobalAddBlockPermitted = IS_LOGIN_NOT_REQUIRED || isGlobalAddBlocksPermitted(this.props.blocksPermissions);
@@ -258,15 +254,13 @@ export class BlocksView extends React.Component {
     }
 }
 
-export default connect(
-    state => ({
-        blocks: getSortedBlocks(state),
-        blocksSortingParams: getBlocksSortingParams(state),
-        activeBlocksIds: getActiveBlocksIds(state),
-        isLoading: getBlocksLoadingState(state),
-        serviceDate: getServiceDate(state),
-        blocksPermissions: getBlocksPermissions(state),
-        focusedBlock: getFocusedBlock(state),
-    }),
-    { getBlocks, updateActiveBlock, updateBlocksSortingParams, clearActiveBlock, updateFocusedBlock },
-)(BlocksView);
+export default connect(state => ({
+    blocks: getSortedBlocks(state),
+    blocksSortingParams: getBlocksSortingParams(state),
+    activeBlocksIds: getActiveBlocksIds(state),
+    isLoading: getBlocksLoadingState(state),
+    serviceDate: getServiceDate(state),
+    blocksPermissions: getBlocksPermissions(state),
+    focusedBlock: getFocusedBlock(state),
+}),
+{ getBlocks, updateActiveBlock, updateBlocksSortingParams, clearActiveBlock, updateFocusedBlock })(BlocksView);

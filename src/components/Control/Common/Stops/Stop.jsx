@@ -31,7 +31,7 @@ export class Stop extends React.Component {
         onHover: PropTypes.func.isRequired,
         isStopInSelectionRange: PropTypes.bool,
         lineInteractionClasses: PropTypes.string.isRequired,
-    };
+    }
 
     static defaultProps = {
         isStopInSelectionRange: false,

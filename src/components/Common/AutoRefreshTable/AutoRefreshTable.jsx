@@ -36,7 +36,7 @@ export default class AutoRefreshTable extends Component {
         striped: PropTypes.bool,
         isRowStyled: PropTypes.func,
         rowClassName: PropTypes.string,
-    };
+    }
 
     static defaultProps = {
         title: null,
@@ -52,9 +52,9 @@ export default class AutoRefreshTable extends Component {
         striped: true,
         isRowStyled: () => false,
         rowClassName: '',
-    };
+    }
 
-    componentDidMount() {
+    componentDidMount = () => {
         const { refresh } = this.props;
         this.props.fetchRows();
         if (refresh) {
@@ -62,7 +62,7 @@ export default class AutoRefreshTable extends Component {
         }
     }
 
-    componentWillUnmount() { return clearInterval(this.intervalHandler); }
+    componentWillUnmount = () => clearInterval(this.intervalHandler);
 
     renderTable = (columns, rows) => (
         <Table
@@ -99,8 +99,7 @@ export default class AutoRefreshTable extends Component {
                             {
                                 columns.map(({ formatter, cellClassName }) => (
                                     <td key={ generateUniqueID() }
-                                        className={ cellClassName }>
-                                        {formatter(row)}
+                                        className={ cellClassName }>{formatter(row)}
                                     </td>
                                 ))
                             }
@@ -109,7 +108,7 @@ export default class AutoRefreshTable extends Component {
                 </tbody>
             )}
         </Table>
-    );
+    )
 
     renderEmptyMessage = (rows, emptyMessage) => rows
         && _.isEmpty(rows)

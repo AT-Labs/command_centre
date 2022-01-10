@@ -77,7 +77,8 @@ const ValueContainer = ({ children, ...props }) => {
                 { value }
                 { !isValuePlaceholder(value)
                 && props.selectProps.inputCollapseState === COLLAPSED
-                && <span>...</span>}
+                && <span>...</span>
+                }
                 { input }
             </components.ValueContainer>
         </div>

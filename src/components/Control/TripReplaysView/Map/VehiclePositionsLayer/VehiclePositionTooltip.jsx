@@ -48,67 +48,20 @@ function VehiclePositionTooltip({ position, routeInfo, tripInfo, vehicleInfo, op
     const title = getKeyEventTitle(position, tripInfo, stops);
     return (
         <Tooltip>
-            { title && (
-                <>
-                    <b>{ title }</b>
-                    <br />
-                </>
-            )}
-            Time:
-            {' '}
-            { getDatetime(position) }
-            <br />
-            Location: lat:
-            {' '}
-            { position.position.latitude.toFixed(5) }
-            , lon:
-            {' '}
-            { position.position.longitude.toFixed(5)}
-            <br />
-            Status:
-            {' '}
-            { position.nis ? <b className="text--nis">NIS</b> : 'In Service' }
-            <br />
-            { routeInfo && (
-                <>
-                    Route:
-                    { routeInfo.shortName }
-                    <br />
-                </>
-            ) }
-            { tripInfo && (
-                <>
-                    Trip:
-                    { tripInfo.tripId }
-                    <br />
-                </>
-            ) }
-            { operatorCode && (
-                <>
-                    Operator code:
-                    { operatorCode }
-                    <br />
-                </>
-            ) }
+            { title && <React.Fragment><b>{ title }</b><br /></React.Fragment>}
+            Time: { getDatetime(position) }<br />
+            Location: lat: { position.position.latitude.toFixed(5) }, lon: { position.position.longitude.toFixed(5)}<br />
+            Status: { position.nis ? <b className="text--nis">NIS</b> : 'In Service' }<br />
+            { routeInfo && <React.Fragment>Route: { routeInfo.shortName }<br /></React.Fragment> }
+            { tripInfo && <React.Fragment>Trip: { tripInfo.tripId }<br /></React.Fragment> }
+            { operatorCode && <React.Fragment>Operator code: { operatorCode }<br /></React.Fragment> }
             { vehicleInfo && (
-                <>
-                    Fleet number:
-                    {' '}
-                    { vehicleInfo.vehicleId }
-                    <br />
-                    Vehicle label:
-                    {' '}
-                    { vehicleInfo.vehicleLabel }
-                </>
+                <React.Fragment>
+                    Fleet number: { vehicleInfo.vehicleId }<br />
+                    Vehicle label: { vehicleInfo.vehicleLabel }
+                </React.Fragment>
             )}
-            {!position.nis && position.occupancyStatus && (
-                <>
-                    <br />
-                    Occupancy:
-                    {' '}
-                    { occupancyStatusToMessage(position.occupancyStatus) }
-                </>
-            )}
+            {!position.nis && position.occupancyStatus && <React.Fragment><br />Occupancy: { occupancyStatusToMessage(position.occupancyStatus) }</React.Fragment>}
         </Tooltip>
     );
 }

@@ -14,24 +14,9 @@ const ListDetailItem = (props) => {
                 <input type="checkbox" className="align-middle selection-item__checkbox" checked={ checked } onChange={ props.onCheckboxChange } />
                 { title }
                 <Button color="link" className="cc-btn-link selection-item__button float-right position-relative" onClick={ props.onButtonClick }>
-                    { expandable && expanded && (
-                        <>
-                            { expandedLinkText }
-                            <BsCaretUpFill className="selection-item__icon" />
-                        </>
-                    )}
-                    { expandable && !expanded && (
-                        <>
-                            { collapsedLinkText }
-                            <BsCaretDownFill className="selection-item__icon" />
-                        </>
-                    ) }
-                    { !expandable && (
-                        <>
-                            { inExpandableLinkText }
-                            <BsChevronRight className="selection-item__icon" />
-                        </>
-                    ) }
+                    { expandable && expanded && <React.Fragment>{ expandedLinkText }<BsCaretUpFill className="selection-item__icon" /></React.Fragment>}
+                    { expandable && !expanded && <React.Fragment>{ collapsedLinkText }<BsCaretDownFill className="selection-item__icon" /></React.Fragment> }
+                    { !expandable && <React.Fragment>{ inExpandableLinkText }<BsChevronRight className="selection-item__icon" /></React.Fragment> }
                 </Button>
             </CardHeader>
             {

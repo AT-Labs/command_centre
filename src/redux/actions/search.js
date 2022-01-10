@@ -208,11 +208,13 @@ const formatNotificationsRoutesSearchResults = routes => routes.map(route => ({
 export const searchControlNotificationsRoutes = searchTerms => (dispatch, getState) => {
     const allRoutes = getAllRoutes(getState());
     const allNotifications = getAllNotifications(getState());
-    const routesInNotificationsList = _.uniqBy(_.flatten(
-        allNotifications.map(
-            notification => _.filter(allRoutes, route => route.route_short_name === notification.routeShortName),
-        ),
-    ), 'route_id');
+    const routesInNotificationsList = _.uniqBy(
+        _.flatten(
+            allNotifications.map(
+                notification => _.filter(allRoutes, route => route.route_short_name === notification.routeShortName),
+            ),
+        ), 'route_id',
+    );
     const routes = _.filter(routesInNotificationsList, route => _.startsWith(route.route_short_name.toUpperCase(), searchTerms.toUpperCase()));
 
     dispatch({

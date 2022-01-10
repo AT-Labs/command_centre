@@ -56,7 +56,8 @@ function VehiclePositionMarker({ center, openTooltip, openPopup, selectedKeyEven
                         time={ time }
                     />
                 </Popup>
-            )}
+            )
+            }
         </CircleMarker>
     );
 }

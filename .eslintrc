@@ -17,19 +17,6 @@
 		"jsx-a11y"
 	],
 	"rules": {
-		"arrow-parens": [
-			1,
-			"as-needed",
-			{
-				"requireForBlockBody": true
-			}
-		],
-		"class-methods-use-this":[
-			"error",
-			{
-				"enforceForClassFields": false
-			}
-		],
 		"max-len": [
 			"error",
 			{
@@ -94,7 +81,7 @@
 			}
 		],
 		"react/jsx-one-expression-per-line": [
-			1
+			"literal"
 		],
 		"react/sort-comp": "off",
 		"react/destructuring-assignment": "off",
@@ -115,21 +102,12 @@
 		"jsx-a11y/no-noninteractive-element-interactions": "off",
 		"jsx-a11y/no-noninteractive-tabindex": "warn",
 		"jsx-a11y/label-has-for": "warn",
-		"jsx-a11y/href-no-hash": "off",
-		"react/static-property-placement": "off",
-		"react/function-component-definition": "off",
-		"react/jsx-props-no-spreading": "off",
-		"react/jsx-no-useless-fragment": "off",
-		"react/jsx-no-constructed-context-values": "off",
-		"react-hooks/exhaustive-deps": "off",
-		"react/state-in-constructor": "off",
-		"react/no-unused-class-component-methods": "off",
-		"react/no-unstable-nested-components": "off"
+		"jsx-a11y/href-no-hash": "off"
     },
     "overrides": [
         {
             "files": [
-                "*.test.*"
+                "*.test.*",
             ],
             "rules": {
                 "no-unused-expressions": "off"

@@ -13,7 +13,7 @@ export default class StopLinesHelperClass {
         isHoveredStopSetSet: !_.isEmpty(this.hoveredStop),
         isSelectedStopsEmpty: _.isEmpty(this.selectedStops),
         selectedStop: this.selectedStops && this.selectedStops[_.findKey(this.selectedStops)],
-    });
+    })
 
     getHoverDirectionClass() {
         // This method generates the necessary classes to the parent as for the children to be aware of the direction they should point to.

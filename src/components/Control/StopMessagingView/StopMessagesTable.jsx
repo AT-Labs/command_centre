@@ -31,7 +31,7 @@ export const StopMessagesTable = (props) => {
                 </div>
             ),
             key: 'startTime',
-            cols: 'col-2',
+            cols: 'col-1',
             getContent: (stopMessage, key) => moment(stopMessage[key]).format(dateFormat),
         },
         {
@@ -45,8 +45,8 @@ export const StopMessagesTable = (props) => {
                 </div>
             ),
             key: 'endTime',
-            cols: 'col-2',
-            getContent: (stopMessage, key) => moment(stopMessage[key]).format(dateFormat),
+            cols: 'col-1',
+            getContent: ({ endTime }) => (endTime ? moment(endTime).format(dateFormat) : ''),
         },
         {
             label: 'displaying on',
@@ -63,6 +63,17 @@ export const StopMessagesTable = (props) => {
             label: 'priority',
             key: 'priority',
             cols: 'col-1',
+        },
+        {
+            label: 'status',
+            key: 'status',
+            cols: 'col-1',
+        },
+        {
+            label: 'timestamp',
+            key: 'timestamp',
+            cols: 'col-1',
+            getContent: (stopMessage, key) => moment(stopMessage[key]).format(dateFormat),
         },
         {
             label: 'creator',

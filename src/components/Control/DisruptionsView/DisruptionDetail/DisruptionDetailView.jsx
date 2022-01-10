@@ -200,13 +200,7 @@ const DisruptionDetailView = (props) => {
         return isStartDateValid(startDate, disruptionOpenedTime);
     };
 
-    const getOptionalLabel = label => (
-        <>
-            {label}
-            {' '}
-            <small className="text-muted">optional</small>
-        </>
-    );
+    const getOptionalLabel = label => <React.Fragment>{label} <small className="text-muted">optional</small></React.Fragment>;
 
     const isUpdating = isRequesting && resultDisruptionId === disruption.disruptionId;
 

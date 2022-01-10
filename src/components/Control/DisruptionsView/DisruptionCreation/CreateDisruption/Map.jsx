@@ -39,9 +39,9 @@ class Map extends React.Component {
     // It only listens to one focusTrap at a time (https://github.com/davidtheclark/focus-trap#one-at-a-time)
     // This approach skips the map on tab, forwards and backwards, and allows us to access all other elements without having to refactor
     // the whole structure, which might possibly be the other option.
-    componentDidMount() {
+    componentDidMount = () => {
         document.querySelector('.map').addEventListener('keyup', this.skipMapOnTab);
-    }
+    };
 
     skipMapOnTab = (event) => {
         const TabKeyCode = 9;
@@ -51,9 +51,9 @@ class Map extends React.Component {
     };
     // ================================= Temporary workaround ends
 
-    shouldComponentUpdate(nextProps, nextState) { return !(isEqual(nextProps, this.props) && isEqual(nextState, this.state)); }
+    shouldComponentUpdate = (nextProps, nextState) => !(isEqual(nextProps, this.props) && isEqual(nextState, this.state));
 
-    componentDidUpdate() { return this.fitBounds(); }
+    componentDidUpdate = () => this.fitBounds();
 
     fitBounds = () => {
         const leafletInstance = this.mapRef.current.leafletElement;
@@ -77,7 +77,7 @@ class Map extends React.Component {
     render() {
         const { isLoading } = this.props;
         return (
-            <>
+            <React.Fragment>
                 { isLoading && <Loader className="loader-disruptions position-fixed" />}
                 <LeafletProvider>
                     <LeafletMap
@@ -103,7 +103,7 @@ class Map extends React.Component {
                         <StopsLayer />
                     </LeafletMap>
                 </LeafletProvider>
-            </>
+            </React.Fragment>
         );
     }
 }
@@ -124,7 +124,10 @@ Map.defaultProps = {
     routeColors: [],
 };
 
-export default connect(state => ({
-    boundsToFit: getBoundsToFit(state),
-    isLoading: getDisruptionsLoadingState(state),
-}), null, null, { forwardRef: true })(Map);
+
+export default connect(
+    state => ({
+        boundsToFit: getBoundsToFit(state),
+        isLoading: getDisruptionsLoadingState(state),
+    }), null, null, { withRef: true },
+)(Map);

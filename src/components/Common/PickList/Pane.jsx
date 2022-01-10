@@ -39,7 +39,7 @@ class Pane extends Component {
         ]),
         width: PropTypes.string,
         isVerticalLayout: PropTypes.bool,
-    };
+    }
 
     static defaultProps = {
         isLoading: false,
@@ -50,7 +50,7 @@ class Pane extends Component {
         showCheckbox: true,
         labelKey: undefined,
         valueKey: undefined,
-    };
+    }
 
     constructor(props) {
         super(props);
@@ -73,7 +73,7 @@ class Pane extends Component {
         }
 
         return [];
-    };
+    }
 
     renderListItemButton = (value, items) => {
         const { isVerticalLayout, showCheckbox } = this.props;
@@ -110,10 +110,10 @@ class Pane extends Component {
                 { value }
             </Button>
         );
-    };
+    }
 
     renderIcon = (entityType, iconType) => (
-        <>
+        <React.Fragment>
             { entityType === 'route'
                 && <TripIcon type={ iconType } className="picklist__list-btn__vehicle-icon" />}
             { entityType === 'stop'
@@ -121,21 +121,22 @@ class Pane extends Component {
                     <div className="trip-icon">
                         <Icon icon="bus-stop" className="picklist__list-btn__vehicle-icon" />
                     </div>
-                )}
-        </>
-    );
+                )
+            }
+        </React.Fragment>
+    )
 
     onChange = (e) => {
         this.setState({ searchText: e.target.value });
-    };
+    }
 
     onAction = (items) => {
         this.props.onAction(items);
-    };
+    }
 
     onCleanSearch = () => {
         this.setState({ searchText: '' });
-    };
+    }
 
     render() {
         const {
@@ -182,7 +183,8 @@ class Pane extends Component {
                                                 className="picklist__icon-close position-absolute"
                                                 size={ 20 } />
                                         </Button>
-                                    )}
+                                    )
+                                }
                             </div>
                         </div>
                     ) }

@@ -6,12 +6,8 @@ export const getFleetByType = createSelector(getFleetState, fleetState => groupB
 export const getAllFleetTrains = createSelector(getFleetByType, fleetByType => result(fleetByType, 'Train', []));
 export const getAllFleetBuses = createSelector(getFleetByType, fleetByType => result(fleetByType, 'Bus', []));
 export const getAllFleetFerries = createSelector(getFleetByType, fleetByType => result(fleetByType, 'Ferry', []));
-export const hasFleetLoaded = createSelector(
-    getAllFleetTrains,
-    getAllFleetBuses,
-    getAllFleetFerries,
-    (trains, buses, ferries) => !!trains.length && !!buses.length && !!ferries.length,
-);
+export const hasFleetLoaded = createSelector(getAllFleetTrains, getAllFleetBuses, getAllFleetFerries,
+    (trains, buses, ferries) => !!trains.length && !!buses.length && !!ferries.length);
 
 export const getFleetVehicleAgencyName = fleetInfo => result(fleetInfo, 'agency.agencyName');
 export const getFleetVehicleAgencyId = fleetInfo => result(fleetInfo, 'agency.agencyId');

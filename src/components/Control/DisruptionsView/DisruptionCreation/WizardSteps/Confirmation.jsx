@@ -15,14 +15,13 @@ const Confirmation = (props) => {
         if (isRequesting) return <DetailLoader />;
         return resultDisruptionId
             ? (
-                <>
+                <React.Fragment>
                     <h2>New disruption has been created</h2>
                     <div>
-                        <span className="d-block mt-3 mb-2">{ resultMessage }</span>
-                        <br />
+                        <span className="d-block mt-3 mb-2">{ resultMessage }</span><br />
                         <span>Please ensure you update the created disruption with new information as it becomes available.</span>
                     </div>
-                </>
+                </React.Fragment>
             )
             : (
                 <Message
@@ -95,14 +94,12 @@ Confirmation.defaultProps = {
     response: {},
 };
 
-export default connect(
-    state => ({
-        isModalOpen: isModalOpen(state),
-    }),
-    {
-        clearDisruptionActionResult,
-        updateActiveDisruptionId,
-        openCreateDisruption,
-        deleteAffectedEntities,
-    },
-)(Confirmation);
+export default connect(state => ({
+    isModalOpen: isModalOpen(state),
+}),
+{
+    clearDisruptionActionResult,
+    updateActiveDisruptionId,
+    openCreateDisruption,
+    deleteAffectedEntities,
+})(Confirmation);

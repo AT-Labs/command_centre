@@ -22,7 +22,7 @@ class EntityPopup extends React.PureComponent {
 
     static defaultProps = {
         currentDetailKey: '',
-    };
+    }
 
     handleViewDetails = (entity) => {
         this.props.updateHoveredEntityKey('');
@@ -31,7 +31,7 @@ class EntityPopup extends React.PureComponent {
         } else if (entity.searchResultType === SEARCH_RESULT_TYPE.STOP.type) {
             this.props.stopSelected(entity);
         }
-    };
+    }
 
     renderRoutePopupContent() {
         const { entity } = this.props;
@@ -81,6 +81,8 @@ class EntityPopup extends React.PureComponent {
     }
 }
 
-export default connect(state => ({
-    currentDetailKey: getViewDetailKey(state),
-}), { updateHoveredEntityKey, routeSelected, stopSelected })(EntityPopup);
+export default connect(
+    state => ({
+        currentDetailKey: getViewDetailKey(state),
+    }), { updateHoveredEntityKey, routeSelected, stopSelected },
+)(EntityPopup);

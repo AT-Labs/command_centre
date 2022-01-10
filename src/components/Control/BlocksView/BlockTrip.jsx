@@ -26,8 +26,7 @@ const BlockTrip = (props) => {
 
     const buttonBarConfig = [{
         label: 'View in Routes & Trips',
-        action: () => props.goToRoutesView(
-            trip,
+        action: () => props.goToRoutesView(trip,
             {
                 agencyId: trip.agencyId || '',
                 routeType: trip.routeType,
@@ -38,15 +37,14 @@ const BlockTrip = (props) => {
                 tripStatus: '',
                 routeShortName: '',
                 routeVariantId: '',
-            },
-        ),
+            }),
     }];
 
     return (
-        <>
+        <React.Fragment>
             { isControlRoutesViewPermitted && (<ButtonBar buttons={ buttonBarConfig } isLoading={ false } />) }
             <TripDetails data={ getTripDetailsData() } />
-        </>
+        </React.Fragment>
     );
 };
 
@@ -58,9 +56,7 @@ BlockTrip.propTypes = {
     }).isRequired,
 };
 
-export default connect(
-    state => ({
-        userPermissions: getUserPermissions(state),
-    }),
-    { goToRoutesView },
-)(BlockTrip);
+export default connect(state => ({
+    userPermissions: getUserPermissions(state),
+}),
+{ goToRoutesView })(BlockTrip);

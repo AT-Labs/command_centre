@@ -25,7 +25,7 @@ export class StopGroupsView extends React.Component {
         updateMainView: PropTypes.func.isRequired,
         updateControlDetailView: PropTypes.func.isRequired,
         isStopGroupsLoading: PropTypes.bool,
-    };
+    }
 
     static defaultProps = {
         stopGroups: [],
@@ -99,11 +99,11 @@ export class StopGroupsView extends React.Component {
         ];
     }
 
-    componentDidMount() {
+    componentDidMount = () => {
         this.resetStopGroupsList();
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate = (prevProps) => {
         if (this.props.stopGroups && this.props.stopGroups !== prevProps.stopGroups) {
             const { selectedData } = this.state;
             if (selectedData.label) {
@@ -120,7 +120,7 @@ export class StopGroupsView extends React.Component {
         modalType: type,
         isModalOpen: !prevState.isModalOpen,
         activeStopGroup: stopGroup,
-    }));
+    }))
 
     updateStopGroup = (payload) => {
         const { edit, cancel } = this.MODALS;
@@ -128,7 +128,7 @@ export class StopGroupsView extends React.Component {
 
         const stopGroupId = (modalType === edit.type || modalType === cancel.type) && activeStopGroup ? activeStopGroup.id : null;
         return this.props.updateStopGroup(payload, stopGroupId);
-    };
+    }
 
     resetStopGroupsList = () => {
         this.setState({
@@ -136,7 +136,7 @@ export class StopGroupsView extends React.Component {
             selectedData: {},
             stopGroupsList: this.props.stopGroups,
         });
-    };
+    }
 
     stopInGroupSelected = (stop) => {
         this.setState({
@@ -144,7 +144,7 @@ export class StopGroupsView extends React.Component {
             selectedData: stop,
             stopGroupsList: this.props.stopGroups.filter(group => some(group.stops, s => s.value === stop.value)),
         });
-    };
+    }
 
     stopGroupSelected = (stopGroup) => {
         this.setState({
@@ -152,7 +152,7 @@ export class StopGroupsView extends React.Component {
             selectedData: stopGroup,
             stopGroupsList: this.props.stopGroups.filter(group => group.id === stopGroup.id),
         });
-    };
+    }
 
     render() {
         const { modalType, isModalOpen, activeStopGroup, stopGroupsList, searchValue } = this.state;
@@ -224,10 +224,8 @@ export class StopGroupsView extends React.Component {
     }
 }
 
-export default connect(
-    state => ({
-        stopGroups: getAllStopGroups(state),
-        isStopGroupsLoading: getStopGroupsLoadingState(state),
-    }),
-    { updateStopGroup, updateMainView, updateControlDetailView },
-)(StopGroupsView);
+export default connect(state => ({
+    stopGroups: getAllStopGroups(state),
+    isStopGroupsLoading: getStopGroupsLoadingState(state),
+}),
+{ updateStopGroup, updateMainView, updateControlDetailView })(StopGroupsView);

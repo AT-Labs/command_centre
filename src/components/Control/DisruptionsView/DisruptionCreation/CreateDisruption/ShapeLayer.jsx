@@ -13,7 +13,7 @@ class ShapeLayer extends React.Component {
     static defaultProps = {
         shapes: [],
         routeColors: [],
-    };
+    }
 
     constructor(props) {
         super(props);
@@ -37,9 +37,9 @@ class ShapeLayer extends React.Component {
                     color={ routeColorsHexFormat[index] || 'DEEPSKYBLUE' } />
             );
         }).filter(shape => !!shape);
-    };
+    }
 
-    componentDidUpdate() {
+    componentDidUpdate = () => {
         if (this.polylineGroupRef.current) {
             this.polylineGroupRef.current.leafletElement.bringToBack();
         }

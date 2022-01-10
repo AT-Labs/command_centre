@@ -9,6 +9,7 @@ import {
     getGroupedByRouteVariantFilter,
 } from '../../../../redux/selectors/control/routes/filters';
 
+
 class FilterByGroup extends React.Component {
     static propTypes = {
         isGroupedByRouteVariant: PropTypes.bool.isRequired,
@@ -54,10 +55,8 @@ class FilterByGroup extends React.Component {
     }
 }
 
-export default connect(
-    state => ({
-        isGroupedByRouteVariant: getGroupedByRouteVariantFilter(state),
-        isGroupedByRoute: getGroupedByRouteFilter(state),
-    }),
-    { mergeRouteFilters },
-)(FilterByGroup);
+export default connect(state => ({
+    isGroupedByRouteVariant: getGroupedByRouteVariantFilter(state),
+    isGroupedByRoute: getGroupedByRouteFilter(state),
+}),
+{ mergeRouteFilters })(FilterByGroup);
