@@ -24,7 +24,7 @@ class ShapeLayer extends React.Component {
         const { shapes, routeColors } = this.props;
         const routeColorsHexFormat = routeColors.map(color => (color ? `#${color}` : null));
 
-        return shapes.map((shape, index) => {
+        const polylines = shapes.map((shape, index) => {
             if (!shape) {
                 return null;
             }
@@ -37,6 +37,8 @@ class ShapeLayer extends React.Component {
                     color={ routeColorsHexFormat[index] || 'DEEPSKYBLUE' } />
             );
         }).filter(shape => !!shape);
+
+        return polylines;
     }
 
     componentDidUpdate = () => {
@@ -47,7 +49,7 @@ class ShapeLayer extends React.Component {
 
     render() {
         const { shapes } = this.props;
-        return !isEmpty(shapes.filter(shape => !!shape))
+        return !isEmpty(shapes)
             ? (
                 <FeatureGroup ref={ this.polylineGroupRef }>
                     { this.renderShapes() }

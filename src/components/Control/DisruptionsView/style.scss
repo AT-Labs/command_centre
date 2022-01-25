@@ -89,15 +89,4 @@
             font-weight: 500 !important;
         }
     }
-
-    & #disruption-detail__create-noti {
-        input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-        }
-
-        & span {
-            vertical-align: text-top;
-        }
-    }
 }

@@ -29,8 +29,7 @@ import Footer from './Footer';
 import ResetButton from '../../../../Common/Search/CustomSelect/ResetButton';
 import Loader from '../../../../Common/Loader/Loader';
 import { Expandable, ExpandableContent, ExpandableSummary } from '../../../../Common/Expandable';
-import { search } from '../../../../../redux/actions/search';
-import { getSearchResults } from '../../../../../redux/selectors/search';
+
 
 const SelectDisruptionEntities = (props) => {
     const addKeys = (routes = [], stops = []) => {
@@ -59,7 +58,6 @@ const SelectDisruptionEntities = (props) => {
     const [editedRoutes, setEditedRoutes] = useState([]);
     const [loadedRoutesByStop, setLoadedRoutesByStop] = useState([]);
     const [isLoadingRoutesByStop, setIsLoadingRoutesByStop] = useState(false);
-    const [stopCurrentlySearchingFor, setStopCurrentlySearchingFor] = useState(null);
 
     const ENTITIES_TYPES = {
         SELECTED_ROUTES: 'selectedRoutes',
@@ -74,18 +72,7 @@ const SelectDisruptionEntities = (props) => {
 
     const saveStopsState = stops => props.updateAffectedStopsState(sortBy(stops, sortedStop => sortedStop.stopId));
 
-    const fetchStopDetails = (stop) => {
-        if (!stopCurrentlySearchingFor) {
-            setStopCurrentlySearchingFor(stop.stopId);
-            props.search(stop.stopCode, ['stop']);
-        }
-    };
-
     const updateSelectedEntities = (selectedItems) => {
-        const stopSelectedOnMap = selectedItems.find(entity => entity.stopId && !entity.text);
-        if (stopSelectedOnMap) {
-            fetchStopDetails(stopSelectedOnMap);
-        }
         props.onDataUpdate('affectedEntities', selectedItems);
         setAreEntitiesSelected(selectedItems.length > 0);
 
@@ -118,30 +105,6 @@ const SelectDisruptionEntities = (props) => {
     useEffect(() => {
         setIsLoadingRoutesByStop(false);
     }, [props.findRoutesByStop]);
-
-    useEffect(() => {
-        if (!stopCurrentlySearchingFor
-            || !props.searchResults.stop
-            || isEmpty(props.searchResults.stop)
-            || props.searchResults.stop.findIndex(stop => stop.data.stop_id === stopCurrentlySearchingFor) === -1) {
-            return;
-        }
-
-        setStopCurrentlySearchingFor(null);
-
-        const foundStop = props.searchResults.stop.find(stop => stop.data.stop_id === stopCurrentlySearchingFor);
-
-        const affectedStopsToUpdate = [...props.affectedStops];
-        const stopToUpdateIdx = affectedStopsToUpdate.findIndex(stop => stop.stopId === foundStop.data.stop_id);
-
-        if (stopToUpdateIdx >= 0) {
-            affectedStopsToUpdate[stopToUpdateIdx].category = foundStop.category;
-            affectedStopsToUpdate[stopToUpdateIdx].text = foundStop.text;
-            affectedStopsToUpdate[stopToUpdateIdx].icon = foundStop.icon;
-
-            saveStopsState(affectedStopsToUpdate);
-        }
-    }, [props.searchResults]);
 
     // footer buttons
     const deselectAllEntities = () => {
@@ -516,8 +479,6 @@ SelectDisruptionEntities.propTypes = {
     isEditMode: PropTypes.bool,
     toggleDisruptionModals: PropTypes.func.isRequired,
     onSubmitUpdate: PropTypes.func.isRequired,
-    search: PropTypes.func.isRequired,
-    searchResults: PropTypes.object.isRequired,
 };
 
 SelectDisruptionEntities.defaultProps = {
@@ -532,7 +493,6 @@ export default connect(state => ({
     findRoutesByStop: findRoutesByStop(state),
     isEditMode: isEditEnabled(state),
     disruptionToEdit: getDisruptionToEdit(state),
-    searchResults: getSearchResults(state),
 }), {
     deleteAffectedEntities,
     updateCurrentStep,
@@ -542,5 +502,4 @@ export default connect(state => ({
     updateAffectedRoutesState,
     showAndUpdateAffectedRoutes,
     toggleDisruptionModals,
-    search,
 })(SelectDisruptionEntities);

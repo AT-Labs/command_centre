@@ -8,7 +8,6 @@ import { IoIosWarning } from 'react-icons/io';
 import { FormGroup, Input, Label } from 'reactstrap';
 
 import { getTimePickerOptions, formatGroupsForPresentation } from '../../../../utils/helpers';
-import MESSAGING_MODAL_TYPE from '../../../../types/messaging-modal-types';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import PickList from '../../../Common/PickList/PickList';
 import ControlSearch from '../../Common/ControlSearch/ControlSearch';
@@ -20,7 +19,6 @@ import { getAllStopGroups, allSystemStopGroups } from '../../../../redux/selecto
 import StandardFilter from '../../Common/Filters/StandardFilter';
 import RecurrenceFieldRow from './RecurrenceFieldRow';
 import '../../../../../node_modules/flatpickr/dist/flatpickr.css';
-import STOP_MESSAGE_TYPE from '../../../../types/stop-messages-types';
 
 const currentDate = () => new Date();
 const currentTime = () => moment().format('HH:mm');
@@ -32,10 +30,6 @@ const PRIORITY_LIST = [
     'critical',
     'emergency',
 ];
-const STATUS_LIST = [
-    STOP_MESSAGE_TYPE.STATUS.DRAFT.toLowerCase(),
-    STOP_MESSAGE_TYPE.STATUS.ACTIVE.toLowerCase(),
-];
 const OPTIONS = getTimePickerOptions();
 const INIT_STATE = {
     stopsAndGroups: [],
@@ -45,7 +39,6 @@ const INIT_STATE = {
     endTime: '',
     endDate: null,
     priority: '',
-    status: STOP_MESSAGE_TYPE.STATUS.ACTIVE.toLowerCase(),
     hasModalBeenOpen: true,
     isModalOpen: false,
     recurrence: {
@@ -93,17 +86,16 @@ export class StopMessageModal extends React.Component {
 
     static getDerivedStateFromProps(props, state) {
         if (props.activeMessage && state.hasModalBeenOpen) {
-            const { activeMessage: { stopsAndGroups, message, priority, status, startTime, endTime, isCurrent } } = props;
+            const { activeMessage: { stopsAndGroups, message, priority, startTime, endTime, isCurrent } } = props;
             const startDatetime = moment(startTime);
             return {
                 stopsAndGroups,
                 message: message || '',
                 priority: priority || '',
-                status: status || INIT_STATE.status,
                 startDate: startDatetime.toDate(),
                 startTime: startDatetime.format('HH:mm'),
-                endDate: (isCurrent && endTime) ? moment(endTime).toDate() : null,
-                endTime: (isCurrent && endTime) ? moment(endTime).format('HH:mm') : '',
+                endDate: isCurrent ? moment(endTime).toDate() : null,
+                endTime: isCurrent ? moment(endTime).format('HH:mm') : '',
                 recurrence: INIT_STATE.recurrence,
                 hasModalBeenOpen: false,
             };
@@ -127,7 +119,6 @@ export class StopMessageModal extends React.Component {
             endTime: '',
             endDate: null,
             priority: '',
-            status: INIT_STATE.status,
             hasModalBeenOpen: true, // eslint-disable-line
             hasSubmitButtonBeenClicked: false,
             recurrence: INIT_STATE.recurrence,
@@ -182,13 +173,9 @@ export class StopMessageModal extends React.Component {
     }
 
     onDateUpdate = (key, value) => {
-        if (value) {
-            const date = moment(value);
-            if (!date.isSame(this.state[key])) {
-                this.onFormFieldsChange(key, value);
-            }
-        } else {
-            this.onFormFieldsChange(key, null);
+        const date = moment(value);
+        if (!date.isSame(this.state[key])) {
+            this.onFormFieldsChange(key, value);
         }
     }
 
@@ -205,7 +192,7 @@ export class StopMessageModal extends React.Component {
             return;
         }
         const {
-            stopsAndGroups, message, startTime, startDate, priority, status, recurrence,
+            stopsAndGroups, message, startTime, startDate, priority, recurrence,
         } = this.state;
         const singleStops = stopsAndGroups.filter(selectedItem => !_.isObject(selectedItem.stopGroup));
         const stopGroups = stopsAndGroups.filter(selectedItem => _.isObject(selectedItem.stopGroup))
@@ -216,7 +203,6 @@ export class StopMessageModal extends React.Component {
             endTime: this.getEndDateTime(),
             message,
             priority,
-            status,
             stops: singleStops,
             stopGroups,
         };
@@ -231,7 +217,7 @@ export class StopMessageModal extends React.Component {
     render() {
         const { error, isModalOpen, title, allStops, stopsGroups, activeMessage, modalType } = this.props;
         const {
-            stopsAndGroups, message, startTime, startDate, endTime, endDate, priority, status, recurrence, hasSubmitButtonBeenClicked,
+            stopsAndGroups, message, startTime, startDate, endTime, endDate, priority, recurrence, hasSubmitButtonBeenClicked,
         } = this.state;
 
         const groups = formatGroupsForPresentation(stopsGroups);
@@ -241,29 +227,20 @@ export class StopMessageModal extends React.Component {
         const isMaxCharactersLengthExceeded = message.length > MAX_CHARACTERS;
         const endDatetime = this.getEndDateTime();
         const hasRecurrence = this.hasRecurrence();
-        const isEditing = modalType === MESSAGING_MODAL_TYPE.EDIT;
-        const isStartTimeSelected = _.isDate(startDate) && startTime !== '';
-        const isEndDateAndTimeBothSelected = _.isDate(endDate) && endTime !== '';
-        const isEndDateAndTimeSelectedPartly = !!_.isDate(endDate) !== !!endTime;
-        const isEndDateTimeOptional = status === STOP_MESSAGE_TYPE.STATUS.DRAFT.toLowerCase();
-        const isEndTimeValid = (isEndDateTimeOptional && !isEndDateAndTimeSelectedPartly) || isEndDateAndTimeBothSelected;
-        const now = moment();
-        const isTimeSelectedValid = !isEndDateAndTimeBothSelected || (startDatetime.isBefore(endDatetime) && endDatetime.isAfter(now));
-
+        const isTimeSelected = _.isDate(startDate) && startTime !== '' && (_.isDate(endDate) || hasRecurrence) && endTime;
+        const isTimeSelectedValid = startDatetime.isBefore(endDatetime);
         const isSaveButtonDisabled = _.isEmpty(stopsAndGroups)
             || message === ''
             || !_.isNull(error.createStopMessage)
             || isMaxCharactersLengthExceeded
-            || !isStartTimeSelected
-            || !isEndTimeValid
+            || !isTimeSelected
             || !isTimeSelectedValid
             || priority === ''
-            || status === ''
             || hasSubmitButtonBeenClicked
             || (hasRecurrence && !recurrence.isValid);
+        const isEditing = modalType === 'edit';
 
-        const isStartDateAfterEndDate = isStartTimeSelected && isEndDateAndTimeBothSelected && startDatetime.isAfter(endDatetime);
-        const isEndDateInThePast = !isStartDateAfterEndDate && isEndDateAndTimeBothSelected && endDatetime.isBefore(now);
+        const areDatesInvalid = (isTimeSelected && !isTimeSelectedValid);
 
         const isRecurrenceDaySelected = (hasRecurrence && recurrence.days.length === 0);
 
@@ -392,15 +369,7 @@ export class StopMessageModal extends React.Component {
                 </div>
                 {!isEditing && <RecurrenceFieldRow recurrence={ recurrence } onUpdate={ this.onRecurrenceUpdate } />}
                 <div className="col mb-4">
-                    {isEndDateInThePast && (
-                        <div className="message-modal__date-alert cc-modal-field-alert d-flex align-items-end text-danger">
-                            <IoIosWarning size={ 20 } className="mr-1" />
-                            <span>
-                                End date and time is in the past but should be equal or greater than now
-                            </span>
-                        </div>
-                    )}
-                    {isStartDateAfterEndDate && (
+                    {areDatesInvalid && (
                         <div className="message-modal__date-alert cc-modal-field-alert d-flex align-items-end text-danger">
                             <IoIosWarning size={ 20 } className="mr-1" />
                             <span>
@@ -427,16 +396,6 @@ export class StopMessageModal extends React.Component {
                             selectedOption={ priority }
                             options={ PRIORITY_LIST }
                             onSelection={ selectedOption => this.onFormFieldsChange('priority', selectedOption.value) } />
-                    </div>
-                    <div className="col-6">
-                        <StandardFilter
-                            id="messaging-status"
-                            className="message-modal__status"
-                            title="Status:"
-                            placeholder="Select status"
-                            selectedOption={ status }
-                            options={ STATUS_LIST }
-                            onSelection={ selectedOption => this.onFormFieldsChange('status', selectedOption.value) } />
                     </div>
                 </div>
             </CustomModal>

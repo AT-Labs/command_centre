@@ -53,7 +53,6 @@ const INIT_STATE = {
     header: '',
     description: '',
     url: '',
-    createNotification: false,
 };
 
 class CreateDisruption extends React.Component {
@@ -122,7 +121,7 @@ class CreateDisruption extends React.Component {
     isSubmitDisabled = (disruptionData) => {
         const isEntitiesEmpty = _.isEmpty(disruptionData.affectedEntities);
         const isPropsEmpty = _.some(_.omit(disruptionData,
-            ['endDate', 'endTime', 'mode', 'affectedEntities', 'url', 'createNotification']), _.isEmpty);
+            ['endDate', 'endTime', 'mode', 'affectedEntities', 'url']), _.isEmpty);
         return isEntitiesEmpty || isPropsEmpty;
     }
 

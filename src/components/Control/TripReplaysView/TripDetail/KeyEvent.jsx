@@ -1,9 +1,7 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { has, get } from 'lodash-es';
 import { FaCaretRight } from 'react-icons/fa';
-import { RiMapPinTimeFill } from 'react-icons/ri';
-import { UncontrolledTooltip } from 'reactstrap';
 import classNames from 'classnames';
 import KeyEventType, { EVENT_TYPES } from './KeyEventType';
 import Icon from '../../../Common/Icon/Icon';
@@ -33,12 +31,6 @@ function KeyEvent(props) {
                             <KeyEventType type={ type } />
                             { keyEventDetail.occupancyStatus && (
                                 <Icon className="icon d-inline-block ml-2" icon={ occupancyStatusToIconSvg(keyEventDetail.occupancyStatus) } />
-                            ) }
-                            { keyEventDetail.timepoint === 1 && (
-                                <Fragment>
-                                    <RiMapPinTimeFill id={ `timepoint-${keyEventDetail.id}` } className="icon d-inline-block ml-2 text-at-orange" size="24px" />
-                                    <UncontrolledTooltip target={ `timepoint-${keyEventDetail.id}` }>Timepoint Stop</UncontrolledTooltip>
-                                </Fragment>
                             ) }
                             { keyEventDetail.skippedData && (
                                 <TripUpdateTag

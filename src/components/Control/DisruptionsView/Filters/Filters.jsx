@@ -42,7 +42,7 @@ const Filters = (props) => {
             <div className="status-filter col-2">
                 <StandardFilter
                     placeholder="Select status"
-                    options={ Object.values(STATUSES) }
+                    options={ STATUSES }
                     selectedOption={ props.selectedStatus }
                     onSelection={ selectedOption => props.updateDisruptionFilters({ selectedStatus: selectedOption.value }) }
                     updateOnPropsValueChange />
