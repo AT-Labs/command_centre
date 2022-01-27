@@ -6,13 +6,10 @@ Help customer support team efficiently find useful information as per public tra
 
 Before you can build this project, you need the following dependencies:
 
-* [NodeJs](https://nodejs.org/en/) (v v10.11.0) The installation depends on the system you have.
+* [NodeJs](https://nodejs.org/en/) (v14.17.6) The installation depends on the system you have.
 
 * npm ci
 * npm start
-
-**NOTE: y18n@^3.2.1 in some of the packages (which are our of maintenance) dependency list have security flaw, and it's fixed by manually manipulate
-the package-lock.json file to use version 4.0.1, so if you have to use `npm install` instead of `npm ci` in some circumstances, need to revert the changes of package-lock.json that's regarding y18n before commit it.** 
 
 ## Unit test
 

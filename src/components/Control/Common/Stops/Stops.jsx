@@ -92,7 +92,7 @@ export class Stops extends React.Component {
         }
 
         return null;
-    }
+    };
 
     render() {
         const stops = this.getSortedStops();
@@ -114,7 +114,9 @@ export class Stops extends React.Component {
                     <div className={ `align-self-end ml-3 mr-2 text-right ${this.state.hasScrollbar ? 'stop-times-label__scrollbar' : 'stop-times-label__no-scrollbar'}` }>
                         <div>Scheduled</div>
                         <div>
-                            <span className="text-muted">Actual</span>/<span className="text-prediction">Prediction</span>
+                            <span className="text-muted">Actual</span>
+                            /
+                            <span className="text-prediction">Prediction</span>
                         </div>
                     </div>
                     <div className="overflow-x-auto" ref={ this.containerRef }>

@@ -13,18 +13,20 @@ class FilterByRoute extends React.Component {
         onSelection: PropTypes.func.isRequired,
         className: PropTypes.string,
         id: PropTypes.string,
-    }
+        onDeleteSelection: PropTypes.func,
+    };
 
     static defaultProps = {
         className: '',
         id: 'route-filter',
-    }
+        onDeleteSelection: null,
+    };
 
-    onInputValueChange = (value) => { if (!value) this.props.onSelection({ value: '', label: '' }); }
+    onInputValueChange = (value) => { if (!value) this.props.onSelection({ value: '', label: '' }); };
 
-    getOptions = () => _.map(this.props.routes, route => ({ value: route.route_id, label: route.route_short_name }))
+    getOptions = () => _.map(this.props.routes, route => ({ value: route.route_id, label: route.route_short_name }));
 
-    getSelectedOption = () => this.getOptions().filter(option => option.label === this.props.selectedOption)[0] || {}
+    getSelectedOption = () => this.getOptions().filter(option => option.label === this.props.selectedOption)[0] || {};
 
     render() {
         return (
@@ -40,6 +42,7 @@ class FilterByRoute extends React.Component {
                 shouldShowArrow={ false }
                 onSelection={ selectedOption => this.props.onSelection(selectedOption) }
                 onInputValueChange={ this.onInputValueChange }
+                onClose={ this.props.onDeleteSelection }
                 value={ _.get(this.getSelectedOption(), 'label') } />
         );
     }

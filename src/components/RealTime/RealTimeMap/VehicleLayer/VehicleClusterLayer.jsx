@@ -23,7 +23,6 @@ import { tooltipContent } from './vehicleTooltip';
 import { formatRealtimeDetailListItemKey } from '../../../../utils/helpers';
 import './VehicleLayer.scss';
 
-
 class VehicleClusterLayer extends React.Component {
     static propTypes = {
         vehicles: PropTypes.array.isRequired,
@@ -38,7 +37,7 @@ class VehicleClusterLayer extends React.Component {
 
     static defaultProps = {
         highlightedVehicle: undefined,
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -49,9 +48,9 @@ class VehicleClusterLayer extends React.Component {
 
     getTripUpdateSnapshotDebounced = _.debounce(tripId => this.props.getTripUpdateSnapshot(tripId), 1000);
 
-    componentDidMount = () => this.refreshMarkers();
+    componentDidMount() { return this.refreshMarkers(); }
 
-    componentDidUpdate = () => this.refreshMarkers();
+    componentDidUpdate() { return this.refreshMarkers(); }
 
     modifyOverlappedMarkersPosition = (markers) => {
         let latitudeOffset = 0;
@@ -72,7 +71,7 @@ class VehicleClusterLayer extends React.Component {
                 longitudeOffset += 0.00002;
             });
         });
-    }
+    };
 
     getTooltipContent = ({ options }) => {
         const { vehicleAllocations, tripUpdates } = this.props;
@@ -107,7 +106,7 @@ class VehicleClusterLayer extends React.Component {
             occupancyStatus,
             isLoading,
         );
-    }
+    };
 
     refreshMarkers = () => {
         const { vehicles, highlightedVehicle } = this.props;
@@ -133,7 +132,7 @@ class VehicleClusterLayer extends React.Component {
         } else {
             this.clusterLayerRef.current.leafletElement.enableClustering();
         }
-    }
+    };
 
     handleClick = ({ layer, type }) => {
         if (type === 'clusterclick') return;
@@ -151,7 +150,7 @@ class VehicleClusterLayer extends React.Component {
                 checked: true,
             });
         }
-    }
+    };
 
     handleClusterLayers = (ref, markers) => {
         ref.current.leafletElement.unbindTooltip();
@@ -164,11 +163,11 @@ class VehicleClusterLayer extends React.Component {
             this.getTooltipContent,
             { direction: 'top', className: 'vehicle-tooltip' },
         );
-    }
+    };
 
     render() {
         return (
-            <React.Fragment>
+            <>
                 {!_.isEmpty(this.props.highlightedVehicle) && (
                     <MarkerClusterGroup
                         ref={ this.unselectedVehiclesClusterLayerRef }
@@ -191,16 +190,18 @@ class VehicleClusterLayer extends React.Component {
                     removeOutsideVisibleBounds
                     iconCreateFunction={ cluster => getClusterIcon(cluster, this.props.vehicleType) }
                     onClick={ this.handleClick } />
-            </React.Fragment>
+            </>
         );
     }
 }
 
-export default connect(state => ({
-    highlightedVehicle: getVehicleDetail(state),
-    tripUpdates: getTripUpdates(state),
-}),
-{ vehicleSelected, getTripUpdateSnapshot })(props => (
+export default connect(
+    state => ({
+        highlightedVehicle: getVehicleDetail(state),
+        tripUpdates: getTripUpdates(state),
+    }),
+    { vehicleSelected, getTripUpdateSnapshot },
+)(props => (
     <LeafletConsumer>
         {({ map }) => <VehicleClusterLayer { ...props } leafletMap={ map } />}
     </LeafletConsumer>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { mount } from 'enzyme';
+import { shallow } from 'enzyme';
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
@@ -24,19 +24,14 @@ const setup = (customState) => {
         'control.agencies': { all: [{ agencyId: 'agencyId', agencyName: 'agencyName' }] },
         search: { isLoading: false, results: {} },
     });
-    document.body.innerHTML = '<div id="testContainer"></div>';
-    const options = {
-        attachTo: document.querySelector('#testContainer'),
-        context: { store },
-    };
-    wrapper = mount(<Filters />, options);
+    
+    wrapper = shallow(<Filters store={store} />).childAt(0).dive();
 };
 
 describe('<Filters />', () => {
     beforeEach(() => { sandbox = sinon.createSandbox(); });
     afterEach(() => {
         sandbox.restore();
-        wrapper.detach();
     });
 
     context('Status impact on sorting', () => {

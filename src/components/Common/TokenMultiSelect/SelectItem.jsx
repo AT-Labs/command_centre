@@ -23,11 +23,11 @@ class SelectItem extends React.Component {
 
     handleMouseOver = () => {
         this.setState({ mouseOver: true });
-    }
+    };
 
     handleMouseLeave = () => {
         this.setState({ mouseOver: false });
-    }
+    };
 
     render() {
         return (

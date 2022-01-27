@@ -28,6 +28,7 @@ class ControlSearch extends React.Component {
         shouldRenderSuggestions: PropTypes.func,
         shouldShowArrow: PropTypes.bool,
         focusInputBackOnClickOut: PropTypes.bool,
+        onClose: PropTypes.func,
         // focusInputBackOnClickOut: This prop is meant to give us the flexibility to choose
         // whether we want the input to be focused when you click out of the screen after selection and back.
         // E.g:
@@ -52,6 +53,7 @@ class ControlSearch extends React.Component {
         disabled: false,
         updateOnPropsValueChange: false,
         focusInputBackOnClickOut: false,
+        onClose: null,
     };
 
     constructor(props) {
@@ -66,7 +68,7 @@ class ControlSearch extends React.Component {
         this.autosuggestInputRef = React.createRef();
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (this.props.updateOnPropsValueChange && nextProps.value === '') {
             this.setState({ value: '', selectedSuggestion: null });
         } else if (!_.isEmpty(nextProps.value) && this.props.value !== nextProps.value) {
@@ -116,35 +118,40 @@ class ControlSearch extends React.Component {
             propToSearch = propToSearch.replace(/  +/g, ' ');
             return regex.test(propToSearch);
         });
-    }
+    };
 
     getSuggestionValue = suggestion => _.result(suggestion, this.props.pathToProperty);
 
     renderSuggestion = (suggestion) => {
         const label = _.result(suggestion, this.props.pathToProperty);
         const labelAndAllocatedBlock = _.result(suggestion, this.props.pathToEditedPropForSuggestion);
-        return <span>{ label }<b>{ labelAndAllocatedBlock }</b></span>;
-    }
+        return (
+            <span>
+                { label }
+                <b>{ labelAndAllocatedBlock }</b>
+            </span>
+        );
+    };
 
     onChange = (event, { newValue }) => {
         this.setState({ value: newValue, selectedSuggestion: null });
         if (this.props.onInputValueChange) this.props.onInputValueChange(newValue);
-    }
+    };
 
     onSuggestionSelected = (event, { suggestion }) => {
         this.props.onSelection(suggestion);
         this.setState({ selectedSuggestion: suggestion });
-    }
+    };
 
     onSuggestionsFetchRequested = ({ value, reason }) => {
         if (this.props.focusInputBackOnClickOut && reason === 'input-focused' && value) return;
         this.setState({ suggestions: this.getSuggestions(value, reason) });
-    }
+    };
 
     onSuggestionsClearRequested = () => this.setState({ suggestions: [] });
 
     renderInputComponent = inputProps => (
-        <React.Fragment>
+        <>
             <input { ...inputProps } />
             { this.props.shouldShowArrow && (
                 <IoIosArrowDown
@@ -158,12 +165,12 @@ class ControlSearch extends React.Component {
                 <IoMdClose
                     className={ `control-search__icon control-search__icon--clear text-secondary ${this.props.shouldShowArrow ? 'mr-4' : ''}` }
                     size={ 20 }
-                    onClick={ () => this.onChange({}, { newValue: '' }) }
+                    onClick={ () => { this.onChange({}, { newValue: '' }); if (this.props.onClose !== null) this.props.onClose(); } }
                     role="button"
                     aria-label="Clear search text" />
             )}
-        </React.Fragment>
-    )
+        </>
+    );
 
     render() {
         const { value, suggestions } = this.state;

@@ -7,7 +7,10 @@ const TripDetails = ({ data }) => {
 
     const getRows = rows => rows.map(row => (
         <React.Fragment key={ _.kebabCase(row.name) }>
-            <dt className="col-6 text-right text-nowrap">{row.name}:</dt>
+            <dt className="col-6 text-right text-nowrap">
+                {row.name}
+                :
+            </dt>
             <dd
                 className="col-6 text-left"
                 id={ `trip-detail-${_.kebabCase(row.name)}` }

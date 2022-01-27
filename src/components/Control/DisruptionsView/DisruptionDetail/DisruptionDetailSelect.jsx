@@ -7,7 +7,7 @@ import { IoIosArrowDropdown } from 'react-icons/io';
 export const DisruptionDetailSelect = (props) => {
     const { value, options, label, id, disabled, onChange } = props;
     return (
-        <FormGroup className={ `${props.className}` }>
+        <FormGroup className={ `${props.className} position-relative` }>
             <Label for={ id }><span className="font-size-md font-weight-bold">{ label }</span></Label>
             <Input type="select"
                 className="w-100 border border-dark disruption-creation__wizard-select-details__select position-relative"

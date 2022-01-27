@@ -45,7 +45,13 @@ const SelectDetails = (props) => {
 
     const endDateValid = () => isEndDateValid(endDate, startDate);
 
-    const getOptionalLabel = label => <React.Fragment>{label} <small className="text-muted">optional</small></React.Fragment>;
+    const getOptionalLabel = label => (
+        <>
+            {label}
+            {' '}
+            <small className="text-muted">optional</small>
+        </>
+    );
 
     const datePickerOptions = getDatePickerOptions('today');
 
@@ -79,7 +85,7 @@ const SelectDetails = (props) => {
                     <h3>Add disruption details</h3>
                 </div>
                 <div className="col-6">
-                    <FormGroup>
+                    <FormGroup className="position-relative">
                         <Label for="disruption-creation__wizard-select-details__start-date">
                             <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
                         </Label>
@@ -94,7 +100,7 @@ const SelectDetails = (props) => {
                             className="disruption-creation__wizard-select-details__icon position-absolute"
                             size={ 22 } />
                     </FormGroup>
-                    <FormGroup>
+                    <FormGroup className="position-relative">
                         <Label for="disruption-creation__wizard-select-details__end-date">
                             <span className="font-size-md font-weight-bold">{getOptionalLabel(LABEL_END_DATE)}</span>
                         </Label>

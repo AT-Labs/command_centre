@@ -67,34 +67,34 @@ class TokenMultiSelect extends React.Component {
             this.setState({ expanded: true });
         }
         return false;
-    }
+    };
 
     handleBlur = (e) => {
         if (!e.relatedTarget || !this.wrapper.current.contains(e.relatedTarget)) {
             this.setState({ expanded: false });
         }
-    }
+    };
 
     handleItemsClear = () => {
         this.handleInputChange('');
         this.handleSelectionChange([]);
-    }
+    };
 
     handleItemDelete = (option) => {
         this.handleSelectionChange(this.state.selectedValues.filter(selectedValues => selectedValues !== option.value));
-    }
+    };
 
     handleInputChange = (inputValue) => {
         this.setState({ inputValue });
-    }
+    };
 
     handleSelectionChange = (selectedValues) => {
         this.props.onSelectionChange(selectedValues);
         this.setState({ selectedValues });
         this.inputRef.current.focus();
-    }
+    };
 
-    getDisplayProps = () => ({ ...defaultDisplayProps, ...this.props.displayProps })
+    getDisplayProps = () => ({ ...defaultDisplayProps, ...this.props.displayProps });
 
     getOption = value => this.props.options.find(option => option.value === value);
 

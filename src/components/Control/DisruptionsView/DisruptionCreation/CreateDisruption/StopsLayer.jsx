@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { CircleMarker, FeatureGroup, LeafletConsumer, Tooltip } from 'react-leaflet';
@@ -42,7 +42,7 @@ const StopsLayer = (props) => {
     };
 
     return (
-        <Fragment>
+        <>
             <FeatureGroup>
                 {uniqBy(props.affectedStops, stop => stop.stopId).map(stop => (stop.stopLat
                     ? (
@@ -82,9 +82,8 @@ const StopsLayer = (props) => {
                                 </CircleMarker>
                             ) : null)) }
                     </FeatureGroup>
-                )
-            }
-        </Fragment>
+                )}
+        </>
     );
 };
 

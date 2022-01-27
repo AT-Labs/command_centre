@@ -178,11 +178,13 @@ export const getActiveRouteVehiclesOccupancyStatus = createSelector(
 );
 
 export const getHighlightVehiclePosition = createSelector(
-    getVehicleDetail, getAllVehicles,
+    getVehicleDetail,
+    getAllVehicles,
     (vehicleDetail, allVehicles) => get(allVehicles[vehicleDetail.id], 'vehicle.position'),
 );
 
 export const getCurrentVehicleOccupancyStatus = createSelector(
-    getVehicleDetail, getAllVehicles,
+    getVehicleDetail,
+    getAllVehicles,
     (vehicleDetail, allVehicles) => get(allVehicles[vehicleDetail.id], 'vehicle.occupancyStatus'),
 );

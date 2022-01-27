@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
+import { LicenseInfo } from '@mui/x-data-grid-pro';
+
 import { getAuthUser } from '../../auth';
 import { startPollingSiteStatus } from '../../redux/actions/activity';
 import { startPollingNotifications } from '../../redux/actions/control/notifications';
@@ -31,6 +33,7 @@ import ActivityIndicator from './ActivityIndicator';
 import './App.scss';
 import Header from './Header/Header';
 import ERROR_TYPE from '../../types/error-types';
+import 'flatpickr/dist/flatpickr.css';
 
 function App(props) {
     const mainViews = {
@@ -47,7 +50,10 @@ function App(props) {
         document.head.appendChild(script);
     };
 
+    const { REACT_APP_MUI_LICENSE } = process.env;
+
     useEffect(() => {
+        LicenseInfo.setLicenseKey(REACT_APP_MUI_LICENSE);
         Promise.all([
             props.getTrains(),
             props.getBuses(),

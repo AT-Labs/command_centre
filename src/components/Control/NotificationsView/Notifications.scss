@@ -1,7 +1,7 @@
+@import '../../../assets/styles/variables';
+
 .control-notifications-view {
-    .control-notifications-view__icon-col {
-        > svg {
-            vertical-align: initial;
-        }
+    p {
+        margin-block-start: 1em; // fixes table pagination alignment
     }
 }

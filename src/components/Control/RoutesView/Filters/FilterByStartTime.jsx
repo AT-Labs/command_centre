@@ -96,8 +96,10 @@ class FilterByStartTime extends React.Component {
     }
 }
 
-export default connect(state => ({
-    startTimeFrom: getStartTimeFromFilter(state),
-    startTimeTo: getStartTimeToFilter(state),
-}),
-{ mergeRouteFilters })(FilterByStartTime);
+export default connect(
+    state => ({
+        startTimeFrom: getStartTimeFromFilter(state),
+        startTimeTo: getStartTimeToFilter(state),
+    }),
+    { mergeRouteFilters },
+)(FilterByStartTime);

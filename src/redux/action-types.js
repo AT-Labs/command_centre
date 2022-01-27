@@ -161,6 +161,10 @@ export default {
     UPDATE_CONTROL_NOTIFICATIONS_FILTERS: 'update-notifications-filters',
     UPDATE_CONTROL_NOTIFICATIONS_ROUTES_SEARCH_RESULTS: 'update-control-notifications-search-results',
     UPDATE_USER_PERMISSIONS: 'update-user-permissions',
+    LOAD_CONTROL_NOTIFICATIONS_DATAGRID_FILTER_MODEL: 'load-control-notifications-datagrid-filter-model',
+    UPDATE_CONTROL_NOTIFICATIONS_DATAGRID_FILTER_MODEL: 'update-control-notifications-datagrid-filter-model',
+    UPDATE_CONTROL_NOTIFICATIONS_DATAGRID_CONFIG: 'update-control-notifications-datagrid-config',
+
     // Disruptions
     FETCH_CONTROL_DISRUPTIONS: 'fetch-control-disruptions',
     UPDATE_CONTROL_DISRUPTIONS_PERMISSIONS: 'update-control-disruptions-permissions',

@@ -24,7 +24,7 @@ class TripShapeLayer extends React.PureComponent {
         visibleEntities: [],
         currentDetailKey: '',
         hoveredEntityKey: '',
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -41,7 +41,7 @@ class TripShapeLayer extends React.PureComponent {
             wktShapes = this.props.currentDetailKey === entity.key && entity.routes ? entity.routes.map(r => r.shape_wkt) : [];
         }
         return wktShapes.map(wktShape => getAllCoordinatesFromWKT(wktShape));
-    }
+    };
 
     getRouteColors = (entity) => {
         let routeColors = [];
@@ -53,22 +53,22 @@ class TripShapeLayer extends React.PureComponent {
             routeColors = this.props.currentDetailKey === entity.key && entity.routes ? entity.routes.map(r => r.route_color) : [];
         }
         return routeColors.map(color => color && `#${color}`);
-    }
+    };
 
     handleClick = (event) => {
         event.target.bringToFront();
         event.target.openPopup(event.latlng);
-    }
+    };
 
     handlePopupOpen = (entity) => {
         this.props.updateHoveredEntityKey(entity.key);
-    }
+    };
 
     handlePopupClose = () => {
         this.props.updateHoveredEntityKey('');
-    }
+    };
 
-    componentDidUpdate = () => {
+    componentDidUpdate() {
         if (this.polylineGroupRef.current) this.polylineGroupRef.current.leafletElement.bringToBack();
     }
 

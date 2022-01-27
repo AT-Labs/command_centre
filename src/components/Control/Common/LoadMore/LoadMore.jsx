@@ -15,7 +15,8 @@ export const LoadMore = (props) => {
         <nav aria-label="Page navigation" className="d-flex flex-column align-items-center my-3">
             {(total >= chunkSize * 2) && (
                 <Alert color="secondary" className="col-6 col-xl-4 border-0 text-center">
-                    <span><strong>Performance may slow down</strong></span><br />
+                    <span><strong>Performance may slow down</strong></span>
+                    <br />
                     <span>{ message }</span>
                 </Alert>
             )}
@@ -25,7 +26,12 @@ export const LoadMore = (props) => {
                 disabled={ !!isLoading }
                 onClick={ props.onClick }
             >
-                <strong>Load {chunkSize} more</strong>
+                <strong>
+                    Load
+                    {chunkSize}
+                    {' '}
+                    more
+                </strong>
             </button>
             {isLoading && (
                 <div className="load-more__loader">

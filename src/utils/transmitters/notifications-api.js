@@ -13,6 +13,7 @@ export const getNotifications = (latestModifyAt) => {
         signal: controller.signal,
         headers: {
             'if-match': latestModifyAt,
+            'cache-control': 'no-store',
         },
     };
     return fetchWithAuthHeader(

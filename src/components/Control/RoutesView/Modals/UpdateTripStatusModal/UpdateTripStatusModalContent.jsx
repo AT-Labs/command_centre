@@ -9,7 +9,7 @@ const UpdateTripStatusModalContent = (props) => {
     const { className, confirmationMessage, errorMessage, shouldErrorAlertBeShown, selectedTrips } = props;
 
     return (
-        <React.Fragment>
+        <>
             <div className={ `${className}-confirmation-message mb-4` }>
                 <ConfirmationModalBody message={ confirmationMessage } />
             </div>
@@ -28,7 +28,7 @@ const UpdateTripStatusModalContent = (props) => {
                         } } />
                 )
             }
-        </React.Fragment>
+        </>
     );
 };
 

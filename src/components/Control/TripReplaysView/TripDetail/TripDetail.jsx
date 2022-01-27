@@ -61,7 +61,6 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
         occupancyStatus: vehiclePosition(stop) ? vehiclePosition(stop).occupancyStatus : null,
     }));
 
-
     const fetchDateFromStopEvent = (stopEvent, hasEndTime) => {
         let unixTime = 0;
 
@@ -120,7 +119,8 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
                 <h3>{`${routeInfo.shortName}: ${routeInfo.description}`}</h3>
                 { isTripMissed(summary) && <TripUpdateTag type={ TRIP_UPDATE_TYPE.MISSED } /> }
                 <p className="font-size-sm font-weight-light mt-0 mb-0">
-                    { renderDate(tripStart) }<br />
+                    { renderDate(tripStart) }
+                    <br />
                     { renderStartAndEndTime(tripSignOn, endTime) }
                 </p>
                 { isCopyTrip(summary) && <TripUpdateTag type={ TRIP_UPDATE_TYPE.COPY_TRIP } /> }
@@ -173,18 +173,16 @@ TripDetail.defaultProps = {
     operationalEvents: [],
 };
 
-export default connect(
-    state => ({
-        summary: getCurrentTripState(state),
-        stops: getStops(state),
-        operationalEvents: getOperationalEvents(state),
-        status: getTripStatus(state),
-        vehiclePositions: getVehiclePositions(state),
-        searchResults: getSearchResults(state),
-    }), {
-        updateFilters: updateDisruptionFilters,
-        updateView: updateMainView,
-        navigate: updateControlDetailView,
-        searchRoutes: search,
-    },
-)(TripDetail);
+export default connect(state => ({
+    summary: getCurrentTripState(state),
+    stops: getStops(state),
+    operationalEvents: getOperationalEvents(state),
+    status: getTripStatus(state),
+    vehiclePositions: getVehiclePositions(state),
+    searchResults: getSearchResults(state),
+}), {
+    updateFilters: updateDisruptionFilters,
+    updateView: updateMainView,
+    navigate: updateControlDetailView,
+    searchRoutes: search,
+})(TripDetail);

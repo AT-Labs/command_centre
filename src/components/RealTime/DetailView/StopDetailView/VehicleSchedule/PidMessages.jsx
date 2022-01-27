@@ -4,7 +4,11 @@ import { generateUniqueID } from '../../../../../utils/helpers';
 
 const PidMessage = props => (
     <div>
-        <div>[Severity - <strong>{props.message.priority.toUpperCase()}</strong>]</div>
+        <div>
+            [Severity -
+            <strong>{props.message.priority.toUpperCase()}</strong>
+            ]
+        </div>
         {props.message.text}
     </div>
 );

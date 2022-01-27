@@ -18,7 +18,6 @@ import ModalAlert from '../../BlocksView/BlockModals/ModalAlert';
 import { getAllStopGroups, allSystemStopGroups } from '../../../../redux/selectors/control/stopMessaging/stopGroups';
 import StandardFilter from '../../Common/Filters/StandardFilter';
 import RecurrenceFieldRow from './RecurrenceFieldRow';
-import '../../../../../node_modules/flatpickr/dist/flatpickr.css';
 
 const currentDate = () => new Date();
 const currentTime = () => moment().format('HH:mm');
@@ -63,14 +62,14 @@ export class StopMessageModal extends React.Component {
         activeMessage: PropTypes.object, // eslint-disable-line
         stopsGroups: PropTypes.array,
         modalType: PropTypes.string,
-    }
+    };
 
     static defaultProps = {
         error: {},
         stopsGroups: [],
         activeMessage: null,
         modalType: '',
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -106,9 +105,9 @@ export class StopMessageModal extends React.Component {
         return null;
     }
 
-    parseSelectedDate = (date, time) => moment(`${moment(date).format('YYYY-MM-DD')} ${time}`, 'YYYY-MM-DD HH:mm')
+    parseSelectedDate = (date, time) => moment(`${moment(date).format('YYYY-MM-DD')} ${time}`, 'YYYY-MM-DD HH:mm');
 
-    dismissErrorHandler = () => !_.isNull(this.props.error.createStopMessage) && this.props.dismissError('createStopMessage')
+    dismissErrorHandler = () => !_.isNull(this.props.error.createStopMessage) && this.props.dismissError('createStopMessage');
 
     toggleModal = () => {
         this.setState({
@@ -126,7 +125,7 @@ export class StopMessageModal extends React.Component {
             this.props.onClose();
             this.dismissErrorHandler();
         });
-    }
+    };
 
     updateRecurrenceErrorMessage = () => {
         const mostFutureDate = this.getMostFutureRecurrentDate();
@@ -137,7 +136,7 @@ export class StopMessageModal extends React.Component {
                 isValid: isRecurrenceValid,
             },
         }));
-    }
+    };
 
     getMostFutureRecurrentDate = () => {
         const { recurrence, startDate, endTime } = this.state;
@@ -152,7 +151,7 @@ export class StopMessageModal extends React.Component {
         const mostFutureDay = _.max(recurrence.days);
         mostFutureDateTime.add(recurrence.weeks - 1, 'w').weekday(mostFutureDay);
         return mostFutureDateTime;
-    }
+    };
 
     onRecurrenceUpdate = (update) => {
         this.setState(prevState => ({
@@ -161,7 +160,7 @@ export class StopMessageModal extends React.Component {
                 ...update,
             },
         }), this.updateRecurrenceErrorMessage);
-    }
+    };
 
     onFormFieldsChange = (name, value) => {
         this.setState({ [name]: value }, () => {
@@ -170,14 +169,14 @@ export class StopMessageModal extends React.Component {
                 this.updateRecurrenceErrorMessage();
             }
         });
-    }
+    };
 
     onDateUpdate = (key, value) => {
         const date = moment(value);
         if (!date.isSame(this.state[key])) {
             this.onFormFieldsChange(key, value);
         }
-    }
+    };
 
     hasRecurrence = () => !!this.state.recurrence.weeks;
 
@@ -185,7 +184,7 @@ export class StopMessageModal extends React.Component {
         const { startDate, endTime, endDate } = this.state;
         // With recurrence multi-day selection is not allowed so we use startDate for start and end.
         return this.parseSelectedDate(this.hasRecurrence() ? startDate : endDate, endTime);
-    }
+    };
 
     updateStopMessage = () => {
         if (!_.isNull(this.props.error.createStopMessage)) {
@@ -212,7 +211,7 @@ export class StopMessageModal extends React.Component {
         this.props.onAction(payload, recurrence.weeks ? recurrence : null)
             .then(() => this.toggleModal())
             .catch(() => {});
-    }
+    };
 
     render() {
         const { error, isModalOpen, title, allStops, stopsGroups, activeMessage, modalType } = this.props;
@@ -307,7 +306,7 @@ export class StopMessageModal extends React.Component {
                     <FormGroup tag="fieldset" className="col-6 mb-0">
                         <Label>Start:</Label>
                         <FormGroup className="row no-gutters mb-0">
-                            <React.Fragment>
+                            <>
                                 <div className="col-5 pr-2">
                                     <ControlSearch
                                         id="messaging-start-time"
@@ -334,7 +333,7 @@ export class StopMessageModal extends React.Component {
                                         } }
                                         onChange={ date => this.onDateUpdate('startDate', date[0]) } />
                                 </div>
-                            </React.Fragment>
+                            </>
                         </FormGroup>
                     </FormGroup>
                     <FormGroup tag="fieldset" className="col-6 mb-0">
@@ -403,9 +402,11 @@ export class StopMessageModal extends React.Component {
     }
 }
 
-export default connect(state => ({
-    error: getError(state),
-    allStops: getAllStops(state),
-    stopsGroups: getAllStopGroups(state),
-}),
-{ dismissError })(StopMessageModal);
+export default connect(
+    state => ({
+        error: getError(state),
+        allStops: getAllStops(state),
+        stopsGroups: getAllStopGroups(state),
+    }),
+    { dismissError },
+)(StopMessageModal);

@@ -67,7 +67,7 @@ class VehicleFilterByDelay extends React.PureComponent {
     render() {
         const { showingDelay } = this.state;
         return (
-            <React.Fragment>
+            <>
                 <div className="mt-3 mb-1">Status</div>
                 <DelayOptions range={ showingDelay.early } type={ SHOWING_DELAY.EARLY } onChange={ this.handleShowingDelayChange } />
                 <DelayOptions range={ showingDelay.late } type={ SHOWING_DELAY.LATE } onChange={ this.handleShowingDelayChange } />
@@ -82,13 +82,15 @@ class VehicleFilterByDelay extends React.PureComponent {
                         <span className="font-weight-light">Not In Service</span>
                     </Label>
                 </FormGroup>
-            </React.Fragment>
+            </>
         );
     }
 }
 
-export default connect(state => ({
-    showingDelay: getVehiclesFilterShowingDelay(state),
-    isShowingNIS: getVehiclesFilterIsShowingNIS(state),
-}),
-{ mergeVehicleFilters })(VehicleFilterByDelay);
+export default connect(
+    state => ({
+        showingDelay: getVehiclesFilterShowingDelay(state),
+        isShowingNIS: getVehiclesFilterIsShowingNIS(state),
+    }),
+    { mergeVehicleFilters },
+)(VehicleFilterByDelay);

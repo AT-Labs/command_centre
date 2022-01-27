@@ -72,7 +72,6 @@ const Filters = (props) => {
         props.mergeRouteFilters(status);
     };
 
-
     return (
         <section className="search-filters bg-at-ocean-tint-10 border border-at-ocean-tint-20 mb-3">
             <div className="row justify-content-between pt-3 px-3">
@@ -162,14 +161,16 @@ Filters.defaultProps = {
     status: '',
 };
 
-export default connect(state => ({
-    status: getTripStatusFilter(state),
-    agencyId: getAgencyIdRouteFilter(state),
-    depotIds: getDepotIdsRouteFilter(state),
-    routeType: getModeRouteFilter(state),
-    delayRange: getDelayRangeRouteFilter(state),
-    routeShortName: getRouteShortNameFilter(state),
-    routeVariantId: getRouteVariantIdFilter(state),
-    sorting: getSorting(state),
-}),
-{ mergeRouteFilters, clearSelectedStops, resetSorting })(Filters);
+export default connect(
+    state => ({
+        status: getTripStatusFilter(state),
+        agencyId: getAgencyIdRouteFilter(state),
+        depotIds: getDepotIdsRouteFilter(state),
+        routeType: getModeRouteFilter(state),
+        delayRange: getDelayRangeRouteFilter(state),
+        routeShortName: getRouteShortNameFilter(state),
+        routeVariantId: getRouteVariantIdFilter(state),
+        sorting: getSorting(state),
+    }),
+    { mergeRouteFilters, clearSelectedStops, resetSorting },
+)(Filters);

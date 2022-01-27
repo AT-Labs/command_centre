@@ -196,7 +196,13 @@ const DisruptionDetailView = (props) => {
         return isStartDateValid(startDate, disruptionOpenedTime);
     };
 
-    const getOptionalLabel = label => <React.Fragment>{label} <small className="text-muted">optional</small></React.Fragment>;
+    const getOptionalLabel = label => (
+        <>
+            {label}
+            {' '}
+            <small className="text-muted">optional</small>
+        </>
+    );
 
     const isUpdating = isRequesting && resultDisruptionId === disruption.disruptionId;
 
@@ -244,7 +250,7 @@ const DisruptionDetailView = (props) => {
                             label={ LABEL_CAUSE }
                             onChange={ setCause } />
                     </div>
-                    <FormGroup className="mt-2">
+                    <FormGroup className="mt-2 position-relative">
                         <Label for="disruption-detail__start-date">
                             <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
                         </Label>
@@ -260,7 +266,7 @@ const DisruptionDetailView = (props) => {
                             className="disruption-creation__wizard-select-details__icon position-absolute"
                             size={ 22 } />
                     </FormGroup>
-                    <FormGroup>
+                    <FormGroup className="position-relative">
                         <Label for="disruption-detail__end-date">
                             <span className="font-size-md font-weight-bold">{LABEL_END_DATE}</span>
                         </Label>

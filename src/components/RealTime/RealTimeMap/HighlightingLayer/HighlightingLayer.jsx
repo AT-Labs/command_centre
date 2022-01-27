@@ -14,7 +14,7 @@ export class HighlightingLayer extends React.PureComponent {
 
     static defaultProps = {
         vehiclePosition: undefined,
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -22,7 +22,7 @@ export class HighlightingLayer extends React.PureComponent {
         this.highlightingLayerRef = React.createRef();
     }
 
-    componentDidUpdate = () => {
+    componentDidUpdate() {
         if (this.highlightingLayerRef.current) this.highlightingLayerRef.current.leafletElement.bringToBack();
     }
 
@@ -43,7 +43,7 @@ export class HighlightingLayer extends React.PureComponent {
         }
 
         return newHiglightPosition;
-    }
+    };
 
     render() {
         const { stopDetail, vehiclePosition } = this.props;

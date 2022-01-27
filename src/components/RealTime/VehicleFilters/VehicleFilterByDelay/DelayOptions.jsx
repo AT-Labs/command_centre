@@ -53,7 +53,15 @@ export default class DelayOptions extends React.PureComponent {
                     />
                     <span className="font-weight-light">{ prettyType }</span>
                     {isShowingDelay && (
-                        <span className="font-weight-light"> ({prettyRange} minutes {type})</span>
+                        <span className="font-weight-light">
+                            {' '}
+                            (
+                            {prettyRange}
+                            {' '}
+                            minutes
+                            {type}
+                            )
+                        </span>
                     )}
                 </Label>
                 {!!isShowingDelay && (

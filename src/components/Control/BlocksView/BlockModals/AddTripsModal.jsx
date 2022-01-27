@@ -22,13 +22,13 @@ export class AddTripsModal extends React.Component {
         openModalButtonClass: PropTypes.string,
         disable: PropTypes.bool,
         serviceDate: PropTypes.string.isRequired,
-    }
+    };
 
     static defaultProps = {
         buttonLabel: '',
         disable: false,
         openModalButtonClass: '',
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -62,13 +62,13 @@ export class AddTripsModal extends React.Component {
 
         this.props.addOrphanOperationalTrips(this.props.block, orphanOperationalTripRunsSelected);
         this.toggleModal();
-    }
+    };
 
     toggleModal = () => {
         const { isModalOpen } = this.state;
         if (!isModalOpen) this.getOrphanTrips();
         this.setState(prevState => ({ isModalOpen: !prevState.isModalOpen }));
-    }
+    };
 
     renderModalToggleButton = () => (
         <Button
@@ -77,7 +77,7 @@ export class AddTripsModal extends React.Component {
             onClick={ this.toggleModal }>
             { this.props.buttonLabel ? this.props.buttonLabel : 'Add trips' }
         </Button>
-    )
+    );
 
     render() {
         const { isModalOpen, selectedTripExternalRefs } = this.state;
@@ -119,8 +119,10 @@ export class AddTripsModal extends React.Component {
     }
 }
 
-export default connect(state => ({
-    blocks: getAllBlocks(state),
-    serviceDate: getServiceDate(state),
-}),
-{ addOrphanOperationalTrips })(AddTripsModal);
+export default connect(
+    state => ({
+        blocks: getAllBlocks(state),
+        serviceDate: getServiceDate(state),
+    }),
+    { addOrphanOperationalTrips },
+)(AddTripsModal);

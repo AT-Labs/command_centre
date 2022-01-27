@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash-es';
 import { LeafletConsumer } from 'react-leaflet';
@@ -114,11 +114,11 @@ const getThresholds = (leafletMap, stops, route) => _.map(stops, (stop) => {
 
 function StopThresholdsLayer({ leafletMap, stops, route }) {
     return route.length && (
-        <Fragment>
+        <>
             {
                 _.map(getThresholds(leafletMap, stops, route), (threshold, index) => (threshold ? (<StopThreshold key={ `threshold_${index}` } threshold={ threshold } />) : null))
             }
-        </Fragment>
+        </>
     );
 }
 

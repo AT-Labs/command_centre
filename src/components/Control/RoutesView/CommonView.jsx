@@ -66,7 +66,7 @@ export class CommonView extends React.Component {
         routeVariantsTotal: PropTypes.number.isRequired,
         allRouteVariantsTotal: PropTypes.number.isRequired,
         tripsTotal: PropTypes.number.isRequired,
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -76,13 +76,13 @@ export class CommonView extends React.Component {
         this.intervalId = null;
     }
 
-    isRoutesRouteVariantsTripsView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_ROUTE_VARIANTS_TRIPS
+    isRoutesRouteVariantsTripsView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_ROUTE_VARIANTS_TRIPS;
 
-    isRouteVariantsTripsView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTE_VARIANTS_TRIPS
+    isRouteVariantsTripsView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTE_VARIANTS_TRIPS;
 
-    isRoutesTripsView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_TRIPS
+    isRoutesTripsView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_TRIPS;
 
-    isTripsOnlyView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.TRIPS
+    isTripsOnlyView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.TRIPS;
 
     componentDidMount() {
         if (_.isEmpty(this.props.platforms)) {
@@ -99,7 +99,7 @@ export class CommonView extends React.Component {
         }
     }
 
-    componentDidUpdate = (prevProps, prevState) => {
+    componentDidUpdate(prevProps, prevState) {
         const hasAnyFilterChanged = !_.isEqual(this.props.filters, prevProps.filters);
         const hasServiceDateChanged = !moment(this.props.serviceDate).isSame(moment(prevProps.serviceDate), 'day');
         const hasPageSizeIncreased = this.state.pageSize > prevState.pageSize;
@@ -141,19 +141,19 @@ export class CommonView extends React.Component {
                 this.fetchTripInstances(true);
             }
         }, TRIPS_POLLING_INTERVAL);
-    }
+    };
 
     clearTripPollingInterval = () => {
         if (this.intervalId) {
             clearInterval(this.intervalId);
         }
-    }
+    };
 
     fetchRoutes = () => {
         this.props.fetchRoutes({
             serviceDate: moment(this.props.serviceDate).format(SERVICE_DATE_FORMAT),
         });
-    }
+    };
 
     fetchTripInstances = (isUpdate) => {
         const tripsArgs = {
@@ -171,7 +171,7 @@ export class CommonView extends React.Component {
                 .map(item => item.routeVariantId);
         }
         this.props.fetchTripInstances(tripsArgs, { isUpdate });
-    }
+    };
 
     isLoading = () => {
         if (this.isRoutesTripsView() || this.isRoutesRouteVariantsTripsView()) {
@@ -184,7 +184,7 @@ export class CommonView extends React.Component {
             return this.props.isTripsLoading;
         }
         return false;
-    }
+    };
 
     getTotal = () => {
         if (this.isRoutesTripsView() || this.isRoutesRouteVariantsTripsView()) {
@@ -197,14 +197,14 @@ export class CommonView extends React.Component {
             return this.props.tripsTotal;
         }
         return 0;
-    }
+    };
 
     render() {
         const { isRoutesLoading, isRouteVariantsLoading, isTripsLoading, selectedTrips } = this.props;
         const shouldSelectionToolsFooterBeVisible = selectedTrips.length > 0;
 
         return (
-            <React.Fragment>
+            <>
                 <TableTitle
                     tableTitle="Routes & Trips"
                     isServiceDatePickerDisabled={ isRoutesLoading || isRouteVariantsLoading || isTripsLoading } />
@@ -219,7 +219,7 @@ export class CommonView extends React.Component {
 
                 <div className={ `${shouldSelectionToolsFooterBeVisible ? 'pb-5' : ''}` }>
                     {!this.isLoading() && !this.isTripsOnlyView() && (
-                        <React.Fragment>
+                        <>
                             <PageInfo
                                 currentPage={ this.state.page }
                                 itemsPerPage={ PAGE_SIZE }
@@ -231,11 +231,11 @@ export class CommonView extends React.Component {
                                 itemsTotal={ this.getTotal() }
                                 onPageClick={ page => this.setState({ page }) }
                             />
-                        </React.Fragment>
+                        </>
                     )}
 
                     {!this.isLoading() && this.isTripsOnlyView() && (
-                        <React.Fragment>
+                        <>
                             <p className="text-center text-muted font-size-sm my-3">{`Displaying ${this.getTotal()} trips`}</p>
                             <LoadMore
                                 limit={ this.state.pageSize }
@@ -247,11 +247,11 @@ export class CommonView extends React.Component {
                                     isLoadingMoreSpinnerVisible: true,
                                 })) }
                             />
-                        </React.Fragment>
+                        </>
                     )}
                 </div>
                 { shouldSelectionToolsFooterBeVisible && <SelectionToolsFooter /> }
-            </React.Fragment>
+            </>
         );
     }
 }

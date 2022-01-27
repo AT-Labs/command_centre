@@ -1,289 +1,329 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import _ from 'lodash-es';
 import moment from 'moment-timezone';
-import { Button } from 'reactstrap';
-import { IoIosWarning, IoMdMap, IoMdList, IoIosCheckmark } from 'react-icons/io';
+import {
+    DataGridPro, GridToolbarExport, useGridApiRef, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton,
+    GridToolbarDensitySelector,
+} from '@mui/x-data-grid-pro';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ReadMore from '@mui/icons-material/ReadMore';
 
-import { updateNotificationsFilters, dismissNotification } from '../../../redux/actions/control/notifications';
-import { getAllNotifications, getNotificationsFilters } from '../../../redux/selectors/control/notifications';
+import { parseTime, getClosestTimeValueForFilter } from '../../../utils/helpers';
+import {
+    dismissNotification,
+    updateNotificationsDatagridConfig,
+} from '../../../redux/actions/control/notifications';
+import { getAllNotifications, getNotificationsDatagridConfig } from '../../../redux/selectors/control/notifications';
 import { getAgencies } from '../../../redux/selectors/control/agencies';
-import { isNotificationDismissPermitted } from '../../../utils/user-permissions';
-import ControlTable from '../Common/ControlTable/ControlTable';
-import FilterByOperator from '../Common/Filters/FilterByOperator';
-// import FilterByMode from '../Common/Filters/FilterByMode'; ========= Temporarily disabled =========
-import StandardFilter from '../Common/Filters/StandardFilter';
-import FilterByRoute from '../Common/Filters/FitlerByRoute/FilterByRoute';
-import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
+import { retrieveAgencies } from '../../../redux/actions/control/agencies';
 import VEHICLE_TYPE from '../../../types/vehicle-types';
 import { goToRoutesView } from '../../../redux/actions/control/link';
-import { getClosestTimeValueForFilter } from '../../../utils/helpers';
+import RenderCellExpand from './RenderCellExpand/RenderCellExpand';
+import Overlay from './Overlay/Overlay';
+
 import './Notifications.scss';
 
-const FILTERS = {
-    ROUTE: 'route',
-    STATUS: 'status',
-    OPERATOR: 'operator',
-    SEVERITY: 'severity',
-    MODE: 'routeType',
-};
-const STATUS = [
-    'Active',
-    'Dismissed',
-    'Expired',
-];
-const SEVERITY = [
-    'Low',
-    'Medium',
-    'High',
-];
-const PAGE_SIZE = 100;
-const INIT_STATE = {
-    page: 1,
-};
+export const NotificationsView = (props) => {
+    const apiRef = useGridApiRef();
 
-export class NotificationsView extends React.Component {
-    static propTypes = {
-        updateNotificationsFilters: PropTypes.func.isRequired,
-        dismissNotification: PropTypes.func.isRequired,
-        goToRoutesView: PropTypes.func.isRequired,
-        notifications: PropTypes.array,
-        filters: PropTypes.object.isRequired,
-        operators: PropTypes.array.isRequired,
-    }
+    const getActionsButtons = (params) => {
+        const { row: { allData } } = params;
+        const trip = {
+            routeVariantId: allData.routeVariantId,
+            routeType: allData.routeType,
+            startTime: allData.tripStartTime,
+            routeShortName: allData.routeShortName,
+            agencyId: allData.agencyId,
+            tripStartDate: allData.tripStartDate,
+            tripStartTime: allData.tripStartTime,
+        };
 
-    static defaultProps = {
-        notifications: [],
-    }
+        const filter = {
+            routeType: allData.routeType,
+            startTimeFrom: getClosestTimeValueForFilter(allData.tripStartTime),
+            startTimeTo: '',
+            tripStatus: '',
+            agencyId: '',
+            routeShortName: allData.routeShortName,
+            routeVariantId: allData.routeVariantId,
+        };
 
-    constructor(props) {
-        super(props);
-        this.state = INIT_STATE;
-
-        this.NOTIFICATIONS_COLUMNS = [
-            {
-                label: '',
-                key: '',
-                cols: 'control-notifications-view__icon-col pl-3',
-                getContent: (row) => {
-                    let iconColor = '';
-                    if (row[FILTERS.STATUS] === 'Dismissed') iconColor = 'text-at-warning';
-                    else if (row[FILTERS.STATUS] === 'Active') iconColor = 'text-at-magenta';
-                    else if (row[FILTERS.STATUS] === 'Expired') iconColor = 'text-light';
-                    return <IoIosWarning size={ 20 } className={ `${iconColor}` } />;
-                },
-            },
-            {
-                label: 'created',
-                key: 'createdAt',
-                cols: 'col',
-                getContent: (row, key) => moment(row[key]).format('DD/MM/YYYY - HH:mm'),
-            },
-            {
-                label: 'route',
-                key: 'routeShortName',
-                cols: 'col',
-            },
-            {
-                label: 'mode',
-                key: FILTERS.MODE,
-                cols: 'col',
-                getContent: (row, key) => VEHICLE_TYPE[row[key]].type,
-            },
-            {
-                label: 'notification',
-                key: 'customMessage',
-                cols: 'col',
-            },
-            {
-                label: FILTERS.SEVERITY,
-                key: 'severity',
-                cols: 'col',
-            },
-            {
-                label: FILTERS.OPERATOR,
-                key: FILTERS.OPERATOR,
-                cols: 'col',
-            },
-            {
-                label: FILTERS.STATUS,
-                key: 'status',
-                cols: 'col',
-            },
-            {
-                label: '',
-                key: '',
-                cols: 'col',
-                getContent: row => (
-                    <div className="cc-table-actions-col">
-                        <Button
-                            className="control-notifications-view__map-btn"
-                            onClick={ () => {} }>
-                            <IoMdMap size={ 25 } className="mr-1" />
-                        </Button>
-                        <Button
-                            className="control-notifications-view__trip-btn"
-                            onClick={ () => this.props.goToRoutesView({
-                                routeVariantId: row.routeVariantId,
-                                routeType: row.routeType,
-                                startTime: row.tripStartTime,
-                                routeShortName: row.routeShortName,
-                                agencyId: row.agencyId,
-                                tripStartDate: row.tripStartDate,
-                                tripStartTime: row.tripStartTime,
-                            }, {
-                                routeType: row.routeType,
-                                startTimeFrom: getClosestTimeValueForFilter(row.tripStartTime),
-                                startTimeTo: '',
-                                tripStatus: '',
-                                agencyId: '',
-                                routeShortName: row.routeShortName,
-                                routeVariantId: row.routeVariantId,
-                            }) }>
-                            <IoMdList size={ 25 } className="mr-1" />
-                        </Button>
-                        {
-                            isNotificationDismissPermitted(row) && (
-                                <Button
-                                    className="control-notifications-view__dismiss-btn"
-                                    onClick={ () => this.props.dismissNotification(row) }>
-                                    <IoIosCheckmark size={ 25 } className="mr-1" />
-                                </Button>
-                            )
-                        }
-                    </div>
-                ),
-            },
-        ];
-    }
-
-    enrichNotifications = () => {
-        const { notifications, operators } = this.props;
-        return operators.length ? notifications.map(notification => ({
-            ...notification,
-            operator: _.filter(operators, operator => operator.agencyId === notification.agencyId)[0].agencyName,
-        })) : notifications;
-    }
-
-    formatFilters = (activeFilters) => {
-        const filters = { ...activeFilters };
-
-        if (!_.isEmpty(activeFilters.route)) {
-            delete filters.route;
-            filters.routeShortName = activeFilters.route;
-        }
-
-        if (!_.isEmpty(activeFilters.operator)) {
-            delete filters.operator;
-            filters.agencyId = activeFilters.operator;
-        }
-
-        return filters;
-    }
-
-    filterList = () => {
-        const enrichedNotifications = this.enrichNotifications();
-        const activeFilters = _.pickBy(this.props.filters, _.identity);
-        return _.size(activeFilters) ? _.filter(enrichedNotifications, this.formatFilters(activeFilters)) : enrichedNotifications;
-    }
-
-    getPageData = () => _.slice(this.filterList(), (this.state.page - 1) * PAGE_SIZE, this.state.page * PAGE_SIZE)
-
-    getTotal = () => this.filterList().length
-
-    render() {
         return (
-            <div className="control-notifications-view">
-                <h1>Notifications</h1>
-                <section className="search-filters bg-at-ocean-tint-10 border border-at-ocean-tint-20 mb-3">
-                    <div className="row justify-content-between pt-3 px-3">
-                        <div className="col-md-4">
-                            <FilterByRoute
-                                id="notifications-route-filter"
-                                className="control-notifications-view__route-filter"
-                                selectedOption={ this.props.filters[FILTERS.ROUTE] }
-                                onSelection={ selectedOption => this.props.updateNotificationsFilters({
-                                    [FILTERS.ROUTE]: selectedOption.label,
-                                }) } />
-                        </div>
-                    </div>
-                    <div className="row justify-content-between pt-3 px-3">
-                        <div className="col-md-4">
-                            <FilterByOperator
-                                id="notifications-operator-filter"
-                                className="control-notifications-view__operator-filter"
-                                selectedOption={ this.props.filters[FILTERS.OPERATOR] }
-                                onSelection={ selectedOption => this.props.updateNotificationsFilters({
-                                    [FILTERS.OPERATOR]: selectedOption.value,
-                                }) } />
-                        </div>
-                        <div className="col-md-4">
-                            <StandardFilter
-                                id="notifications-status-filter"
-                                className="control-notifications-view__status-filter"
-                                title="Status"
-                                placeholder="Select status"
-                                selectedOption={ this.props.filters[FILTERS.STATUS] }
-                                options={ STATUS }
-                                onSelection={ selectedOption => this.props.updateNotificationsFilters({
-                                    [FILTERS.STATUS]: selectedOption.value,
-                                }) } />
-                        </div>
-                        <div className="col-md-4">
-                            <StandardFilter
-                                id="notifications-severity-filter"
-                                className="control-notifications-view__severity-filter"
-                                title="Severity"
-                                placeholder="Select severity"
-                                selectedOption={ this.props.filters[FILTERS.SEVERITY] }
-                                options={ SEVERITY }
-                                onSelection={ selectedOption => this.props.updateNotificationsFilters({
-                                    [FILTERS.SEVERITY]: selectedOption.value,
-                                }) } />
-                        </div>
-                        {/*
-                            ========= Temporarily disabled =========
-                            (when enabled the above siblings' col-md-4 classes should be replaced with col-md-3)
-                            <div className="col-md-3 d-flex align-items-center pt-3">
-                            <FilterByMode
-                                className="control-notifications-mode-filter"
-                                selectedOption={ this.props.filters[FILTERS.MODE] }
-                                onSelection={ selectedOption => this.props.updateNotificationsFilters({
-                                    [FILTERS.MODE]: selectedOption === this.props.filters[FILTERS.MODE] ? 0 : selectedOption,
-                                }) } />
-                        </div> */}
-                    </div>
-                </section>
-                <ControlTable
-                    columns={ this.NOTIFICATIONS_COLUMNS }
-                    data={ this.getPageData() }
-                    isExpandable={ false } />
-                <React.Fragment>
-                    <PageInfo
-                        currentPage={ this.state.page }
-                        itemsPerPage={ PAGE_SIZE }
-                        itemsTotal={ this.getTotal() }
-                    />
-                    <Pagination
-                        currentPage={ this.state.page }
-                        itemsPerPage={ PAGE_SIZE }
-                        itemsTotal={ this.getTotal() }
-                        onPageClick={ page => this.setState({ page }) }
-                    />
-                </React.Fragment>
-            </div>
+            <>
+                <Button
+                    size="small"
+                    variant="contained"
+                    endIcon={ <ReadMore /> }
+                    onClick={ () => props.goToRoutesView(trip, filter) }
+                >
+                    View Trip
+                </Button>
+                {params.row.status === 'Active' && (
+                    <IconButton
+                        color="error"
+                        aria-label="delete"
+                        onClick={ () => props.dismissNotification(params.row.id) }
+                    >
+                        <DeleteIcon />
+                    </IconButton>
+                )}
+            </>
         );
-    }
-}
+    };
 
-export default connect(state => ({
-    notifications: getAllNotifications(state),
-    filters: getNotificationsFilters(state),
-    operators: getAgencies(state),
-}),
-{
-    updateNotificationsFilters,
-    dismissNotification,
-    goToRoutesView,
-})(NotificationsView);
+    const NOTIFICATIONS_COLUMNS = [
+        { field: 'route', headerName: 'ROUTE', width: 150 },
+        {
+            field: 'trip_date_start_time',
+            headerName: 'TRIP TIME',
+            width: 250,
+            type: 'dateTime',
+        },
+        {
+            field: 'mode',
+            headerName: 'MODE',
+            width: 150,
+            type: 'singleSelect',
+            valueOptions: ['Bus', 'Train', 'Ferry'],
+        },
+        {
+            field: 'type',
+            headerName: 'TYPE',
+            width: 200,
+            type: 'singleSelect',
+            valueOptions: ['Missed Trip', 'Incorrect Trip Sign On'],
+        },
+        { field: 'operator', headerName: 'OPERATOR', width: 230 },
+        {
+            field: 'description',
+            headerName: 'DESCRIPTION',
+            width: 200,
+            renderCell: RenderCellExpand,
+        },
+        {
+            field: 'severity',
+            headerName: 'SEVERITY',
+            width: 120,
+            type: 'singleSelect',
+            valueOptions: ['Low', 'Medium', 'High'],
+        },
+        {
+            field: 'status',
+            headerName: 'STATUS',
+            width: 150,
+            type: 'singleSelect',
+            valueOptions: ['Active', 'Expired', 'Dismissed'],
+        },
+        {
+            field: 'date_created',
+            headerName: 'DATE CREATED',
+            width: 200,
+            type: 'dateTime',
+        },
+        {
+            field: 'action',
+            headerName: 'ACTION',
+            width: 200,
+            renderCell: getActionsButtons,
+        },
+    ];
+
+    useEffect(() => {
+        if (_.isEmpty(props.operators)) props.retrieveAgencies();
+    }, []);
+
+    const dataGridSave = (gridApi) => {
+        const data = {
+            density: gridApi.state.density.value,
+            columns: gridApi.getAllColumns(),
+        };
+        props.updateNotificationsDatagridConfig(data);
+    };
+
+    React.useEffect(() => {
+        const columnVisChangeEvent = apiRef.current.subscribeEvent('columnVisibilityChange', () => {
+            dataGridSave(apiRef.current);
+        });
+
+        const colOrderChangeEvent = apiRef.current.subscribeEvent('columnOrderChange', () => {
+            dataGridSave(apiRef.current);
+        });
+
+        const colResizeStopEvent = apiRef.current.subscribeEvent('columnResizeStop', () => {
+            dataGridSave(apiRef.current);
+        });
+
+        return () => {
+            columnVisChangeEvent();
+            colOrderChangeEvent();
+            colResizeStopEvent();
+        };
+    }, [apiRef]);
+
+    React.useEffect(() => {
+        const stateChangeEvent = apiRef.current.subscribeEvent('stateChange', () => {
+            if (props.notificationsDatagridConfig.density !== apiRef.current.state.density.value) {
+                dataGridSave(apiRef.current);
+            }
+        });
+
+        return () => {
+            stateChangeEvent();
+        };
+    });
+
+    const parseNotificationType = (type) => {
+        if (type === 'Missed') return 'Missed Trip';
+        if (type === 'Signon') return 'Incorrect Trip Sign On';
+        return null;
+    };
+
+    const enrichNotifications = () => {
+        const { notifications, operators } = props;
+        return operators.length
+            ? notifications.map(notification => ({
+                ...notification,
+                operator: _.filter(
+                    operators,
+                    ope => ope.agencyId === notification.agencyId,
+                )[0].agencyName,
+            }))
+            : notifications;
+    };
+
+    const getPageData = () => enrichNotifications().map(notification => ({
+        id: notification.id,
+        route: notification.routeShortName,
+        mode: VEHICLE_TYPE[notification.routeType].type,
+        type: parseNotificationType(notification.type),
+        operator: notification.operator,
+        description: notification.message,
+        trip_date_start_time: parseTime(
+            notification.tripStartTime,
+            notification.tripStartDate,
+        ).format('MM/DD/YYYY HH:mm a'),
+        severity: notification.severity,
+        status: notification.status,
+        date_created: moment(notification.createdAt).format(
+            'MM/DD/YYYY HH:mm a',
+        ),
+        goToRoutesView: props.goToRoutesView,
+        dismissNotifictation: props.dismissNotification,
+        allData: notification,
+    }));
+
+    const getColumns = () => {
+        if (props.notificationsDatagridConfig.columns.length > 0) return props.notificationsDatagridConfig.columns;
+
+        const operatorColumn = NOTIFICATIONS_COLUMNS.find(
+            column => column.field === 'operator',
+        );
+
+        const operatorColIndex = NOTIFICATIONS_COLUMNS.findIndex(
+            col => col.field === 'operator',
+        );
+
+        NOTIFICATIONS_COLUMNS[operatorColIndex] = {
+            ...operatorColumn,
+            valueOptions: [
+                'AT Metro',
+                'AT Metro Bus',
+                'Bayes Coachlines',
+                'Belaire Ferries',
+                'Fullers360',
+                'Go Bus',
+                'Howick and Eastern',
+                'New Zealand Bus',
+                'Pavlovich Transport Solutions',
+                'Ritchies Transport',
+                'SeaLink Pine Harbour',
+                'Tranzit Group Ltd',
+                'Waiheke Bus Company',
+                'Waikato Regional Council',
+            ],
+            type: 'singleSelect',
+        };
+
+        return NOTIFICATIONS_COLUMNS;
+    };
+
+    const getNoRowsOverlay = () => <Overlay message="No alerts at this time." />;
+
+    const getNoResultsOverlay = () => (
+        <Overlay message="No results found for these criteria." />
+    );
+
+    const CustomToolbar = toolbarProps => (
+        <GridToolbarContainer { ...toolbarProps }>
+            <GridToolbarColumnsButton />
+            <GridToolbarFilterButton />
+            <GridToolbarDensitySelector />
+            <GridToolbarExport printOptions={ { disableToolbarButton: true } } />
+        </GridToolbarContainer>
+    );
+
+    return (
+        <div className="control-notifications-view">
+            <div className="mb-3">
+                <h1>Alerts</h1>
+            </div>
+            <div>
+                <DataGridPro
+                    components={ {
+                        Toolbar: CustomToolbar,
+                        NoRowsOverlay: getNoRowsOverlay,
+                        NoResultsOverlay: getNoResultsOverlay,
+                    } }
+                    apiRef={ apiRef }
+                    page={ props.notificationsDatagridConfig.page }
+                    pageSize={ props.notificationsDatagridConfig.pageSize }
+                    rowsPerPageOptions={ [15, 25, 50, 100] }
+                    onPageSizeChange={ newPageSize => props.updateNotificationsDatagridConfig({ pageSize: newPageSize }) }
+                    rows={ getPageData() }
+                    columns={ getColumns() }
+                    sortModel={ props.notificationsDatagridConfig.sortModel }
+                    onSortModelChange={ model => props.updateNotificationsDatagridConfig({ sortModel: model }) }
+                    filterModel={ props.notificationsDatagridConfig.filterModel }
+                    onFilterModelChange={ model => props.updateNotificationsDatagridConfig({ filterModel: model }) }
+                    density={ props.notificationsDatagridConfig.density }
+                    pinnedColumns={ { right: ['action'] } }
+                    onPageChange={ page => props.updateNotificationsDatagridConfig({ page }) }
+                    pagination
+                    autoHeight
+                />
+            </div>
+        </div>
+    );
+};
+
+NotificationsView.propTypes = {
+    dismissNotification: PropTypes.func.isRequired,
+    goToRoutesView: PropTypes.func.isRequired,
+    notifications: PropTypes.array,
+    operators: PropTypes.array.isRequired,
+    retrieveAgencies: PropTypes.func.isRequired,
+    notificationsDatagridConfig: PropTypes.object.isRequired,
+    updateNotificationsDatagridConfig: PropTypes.func.isRequired,
+};
+
+NotificationsView.defaultProps = {
+    notifications: [],
+};
+
+export default connect(
+    state => ({
+        notifications: getAllNotifications(state),
+        operators: getAgencies(state),
+        notificationsDatagridConfig: getNotificationsDatagridConfig(state),
+    }),
+    {
+        dismissNotification,
+        goToRoutesView,
+        retrieveAgencies,
+        updateNotificationsDatagridConfig,
+    },
+)(NotificationsView);

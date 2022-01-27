@@ -34,11 +34,6 @@ const setup = (customState, customProps, tripStatusFilterInit) => {
 
     const props = {};
     Object.assign(props, mockProps, customProps);
-    document.body.innerHTML = '<div id="testContainer"></div>';
-    const options = {
-        attachTo: document.querySelector('#testContainer'),
-        context: { store },
-    };
 
     if (tripStatusFilterInit) {
         sandbox.stub(reduxSelectors, 'getTripStatusFilter').returns(tripStatusFilterInit);
@@ -50,14 +45,13 @@ const setup = (customState, customProps, tripStatusFilterInit) => {
         return [delayRangeValue, setDelayRange];
     });
 
-    wrapper = mount(<FilterByDelay { ...customProps } />, options);
+    wrapper = mount(<FilterByDelay { ...customProps } store={ store } />);
 };
 
 describe('<FilterByDelay />', () => {
     beforeEach(() => { sandbox = sinon.createSandbox(); });
     afterEach(() => {
         sandbox.restore();
-        wrapper.detach();
         delayRangeValue = null;
     });
 

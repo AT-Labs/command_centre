@@ -45,7 +45,6 @@ export const getNotifications = () => (dispatch, getState) => {
                     }
                     return notification;
                 }), ['createdAt', 'tripStartDate', 'tripStartTime'], ['desc', 'desc', 'desc']);
-
                 dispatch(loadNotifications(activeNotificationsWithinLast12hs));
             }
         })
@@ -65,3 +64,8 @@ export const startPollingNotifications = () => (dispatch) => {
     dispatch(getNotifications());
     setInterval(() => dispatch(getNotifications()), 5 * 60 * 1000);
 };
+
+export const updateNotificationsDatagridConfig = model => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_NOTIFICATIONS_DATAGRID_CONFIG,
+    payload: model,
+});

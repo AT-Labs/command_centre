@@ -45,13 +45,17 @@ const filterRoutes = (routes, routeVariants, filters, isForSearch) => {
 };
 
 export const getFilteredRoutes = createSelector(
-    getAllRoutesArray, getRouteVariantsState, getFiltersState,
+    getAllRoutesArray,
+    getRouteVariantsState,
+    getFiltersState,
     (routes, routeVariants, filters) => filterRoutes(routes, routeVariants, filters, false),
 );
 
 export const getFilteredRoutesTotal = createSelector(getFilteredRoutes, routes => routes.length);
 
 export const getRoutesForSearch = createSelector(
-    getAllRoutesArray, getRouteVariantsState, getFiltersState,
+    getAllRoutesArray,
+    getRouteVariantsState,
+    getFiltersState,
     (routes, routeVariants, filters) => filterRoutes(routes, routeVariants, filters, true),
 );

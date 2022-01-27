@@ -51,9 +51,9 @@ class RealTimeMap extends React.Component {
     // It only listens to one focusTrap at a time (https://github.com/davidtheclark/focus-trap#one-at-a-time)
     // This approach skips the map on tab, forwards and backwards, and allows us to access all other elements without having to refactor
     // the whole structure, which might possibly be the other option.
-    componentDidMount = () => {
+    componentDidMount() {
         document.querySelector('.map').addEventListener('keyup', this.skipMapOnTab);
-    };
+    }
 
     skipMapOnTab = (event) => {
         const TabKeyCode = 9;
@@ -63,9 +63,9 @@ class RealTimeMap extends React.Component {
     };
     // ================================= Temporary workaround ends
 
-    shouldComponentUpdate = (nextProps, nextState) => !(_.isEqual(nextProps, this.props) && _.isEqual(nextState, this.state));
+    shouldComponentUpdate(nextProps, nextState) { return !(_.isEqual(nextProps, this.props) && _.isEqual(nextState, this.state)); }
 
-    componentDidUpdate = () => this.fitBounds();
+    componentDidUpdate() { return this.fitBounds(); }
 
     fitBounds = () => {
         const leafletInstance = this.mapRef.current.leafletElement;
@@ -119,11 +119,9 @@ class RealTimeMap extends React.Component {
     }
 }
 
-export default connect(
-    state => ({
-        shouldMapBeRecentered: getMapRecenterStatus(state),
-        shouldOffsetForSidePanel: getShouldOffsetForSidePanel(state),
-        boundsToFit: getBoundsToFit(state),
-        maxZoom: getMaxZoom(state),
-    }), null, null, { withRef: true },
-)(RealTimeMap);
+export default connect(state => ({
+    shouldMapBeRecentered: getMapRecenterStatus(state),
+    shouldOffsetForSidePanel: getShouldOffsetForSidePanel(state),
+    boundsToFit: getBoundsToFit(state),
+    maxZoom: getMaxZoom(state),
+}), null, null, { forwardRef: true })(RealTimeMap);

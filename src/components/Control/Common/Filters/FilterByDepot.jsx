@@ -7,7 +7,6 @@ import SearchTheme from '../search-theme';
 import { getAgencies } from '../../../../redux/selectors/control/agencies';
 import { retrieveAgencies } from '../../../../redux/actions/control/agencies';
 
-
 const DepotType = PropTypes.shape({
     depotId: PropTypes.string.isRequired,
     depotName: PropTypes.string.isRequired,
@@ -28,13 +27,13 @@ class FilterByDepot extends React.Component {
         onSelection: PropTypes.func.isRequired,
         className: PropTypes.string,
         id: PropTypes.string,
-    }
+    };
 
     static defaultProps = {
         className: '',
         id: 'depot-filter',
         selectedAgency: '',
-    }
+    };
 
     componentDidMount() { if (_.isEmpty(this.props.agencies)) this.props.retrieveAgencies(); }
 
@@ -72,7 +71,9 @@ class FilterByDepot extends React.Component {
     }
 }
 
-export default connect(state => ({
-    agencies: getAgencies(state),
-}),
-{ retrieveAgencies })(FilterByDepot);
+export default connect(
+    state => ({
+        agencies: getAgencies(state),
+    }),
+    { retrieveAgencies },
+)(FilterByDepot);

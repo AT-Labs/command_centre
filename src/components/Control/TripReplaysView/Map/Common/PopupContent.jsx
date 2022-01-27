@@ -56,33 +56,80 @@ function PopupContent({ selectedKeyEvent, currentTrip, coordinates, scheduledTim
             )}
             { scheduledTime && (
                 <div className="row">
-                    <div className="col pb-2"><b>{formatTimeLabel(scheduledTime, 'Scheduled')}:</b> {formatArrivalDeparture(scheduledTime)}</div>
+                    <div className="col pb-2">
+                        <b>
+                            {formatTimeLabel(scheduledTime, 'Scheduled')}
+                            :
+                        </b>
+                        {' '}
+                        {formatArrivalDeparture(scheduledTime)}
+                    </div>
                 </div>
             )}
             <div className="row">
-                <div className="col pb-2"><b>{formatTimeLabel(time, 'Actual')}:</b> {formatArrivalDeparture(time)}</div>
+                <div className="col pb-2">
+                    <b>
+                        {formatTimeLabel(time, 'Actual')}
+                        :
+                    </b>
+                    {' '}
+                    {formatArrivalDeparture(time)}
+                </div>
             </div>
             <div className="row">
-                <div className="col pb-2"><b>Location:</b> lat: { coordinates[0] }, lon: { coordinates[1] }</div>
+                <div className="col pb-2">
+                    <b>Location:</b>
+                    {' '}
+                    lat:
+                    {' '}
+                    { coordinates[0] }
+                    , lon:
+                    {' '}
+                    { coordinates[1] }
+                </div>
             </div>
             <div className="row">
-                <div className="col pb-2"><b>Route:</b> { _.get(currentTrip, 'route.shortName') }</div>
+                <div className="col pb-2">
+                    <b>Route:</b>
+                    {' '}
+                    { _.get(currentTrip, 'route.shortName') }
+                </div>
             </div>
             <div className="row">
-                <div className="col pb-2"><b>Trip ID:</b> { currentTrip.tripId }</div>
+                <div className="col pb-2">
+                    <b>Trip ID:</b>
+                    {' '}
+                    { currentTrip.tripId }
+                </div>
             </div>
             <div className="row">
-                <div className="col pb-2"><b>Operator code:</b> { currentTrip.agencyId }</div>
+                <div className="col pb-2">
+                    <b>Operator code:</b>
+                    {' '}
+                    { currentTrip.agencyId }
+                </div>
             </div>
             <div className="row">
-                <div className="col pb-2"><b>Fleet number:</b> { currentTrip.vehicleId }</div>
+                <div className="col pb-2">
+                    <b>Fleet number:</b>
+                    {' '}
+                    { currentTrip.vehicleId }
+                </div>
             </div>
             <div className="row">
-                <div className="col pb-2"><b>Vehicle label:</b> { currentTrip.vehicleLabel }</div>
+                <div className="col pb-2">
+                    <b>Vehicle label:</b>
+                    {' '}
+                    { currentTrip.vehicleLabel }
+                </div>
             </div>
             {vehicleEvent && vehicleEvent.occupancyStatus && (
                 <div className="row">
-                    <div className="col pb-2"><b>Occupancy:</b> { occupancyStatusToMessage(vehicleEvent.occupancyStatus) }</div>
+                    <div className="col pb-2">
+                        <b>Occupancy:</b>
+                        {' '}
+                        { occupancyStatusToMessage(vehicleEvent.occupancyStatus) }
+                    </div>
                 </div>
             )}
         </div>

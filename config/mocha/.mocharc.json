@@ -1,0 +1,22 @@
+{
+    "diff": true,
+    "extension": ["js","jsx", "cjs", "mjs"],
+    "package": "../../package.json",
+    "reporter": "mocha-multi-reporters",
+    "reporter-options": "configFile=config/mocha/reporters.json",
+    "slow": "75",
+    "timeout": "2000",
+    "recusive": true,
+    "ui": "bdd",    
+    "watch-files": ["src/**/*.test.js", "src/**/*.test.jsx"],    
+    "require": [
+        "esm",
+        "@babel/register",
+        "ignore-styles"
+    ],
+    "file": [
+        "config/mocha/setup-auth-mock.js",
+        "config/mocha/setup.js"
+    ],
+    "spec": ["src/**/*.test.js", "src/**/*.test.jsx"]
+}

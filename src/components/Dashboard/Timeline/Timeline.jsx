@@ -35,14 +35,16 @@ const Timeline = (props) => {
                         target={ `timeline-${props.id}-${item.id}` }
                         className="dashboard-timeline__tooltip"
                     >
-                        {moment(item.start).format('HH:mm')} - {moment(item.end).format('HH:mm')}
+                        {moment(item.start).format('HH:mm')}
+                        {' '}
+                        -
+                        {moment(item.end).format('HH:mm')}
                     </UncontrolledTooltip>
                 ))}
             </div>
         </div>
     );
 };
-
 
 Timeline.propTypes = {
     // eslint-disable-next-line

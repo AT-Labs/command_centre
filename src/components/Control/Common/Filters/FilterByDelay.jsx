@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Slider from '@material-ui/core/Slider';
@@ -10,7 +10,7 @@ const FilterByDelay = (props) => {
     const delayLimitMin = props.delayRangeLimits.MIN;
     const delayLimitMax = props.delayRangeLimits.MAX;
 
-    const [delayRange, setDelayRange] = useState([
+    const [delayRange, setDelayRange] = React.useState([
         props.delayRange.min != null ? props.delayRange.min : delayLimitMin,
         props.delayRange.max != null ? props.delayRange.max : delayLimitMax,
     ]);
@@ -83,10 +83,24 @@ const FilterByDelay = (props) => {
                 <div className="font-size-sm">
                     <span className="font-weight-bold">Selected</span>
                     {early && (
-                        <span className="font-weight-bold d-block">Early: <span className="font-weight-light"> {early} </span></span>
+                        <span className="font-weight-bold d-block">
+                            Early:
+                            <span className="font-weight-light">
+                                {' '}
+                                {early}
+                                {' '}
+                            </span>
+                        </span>
                     )}
                     {late && (
-                        <span className="font-weight-bold d-block">Late: <span className="font-weight-light"> {late} </span></span>
+                        <span className="font-weight-bold d-block">
+                            Late:
+                            <span className="font-weight-light">
+                                {' '}
+                                {late}
+                                {' '}
+                            </span>
+                        </span>
                     )}
                 </div>
             )}

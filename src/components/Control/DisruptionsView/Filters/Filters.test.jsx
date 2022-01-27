@@ -18,12 +18,8 @@ const setup = (customState) => {
     store = mockStore({
         'control.disruptions': state,
     });
-    document.body.innerHTML = '<div id="testContainer"></div>';
-    const options = {
-        attachTo: document.querySelector('#testContainer'),
-        context: { store },
-    };
-    wrapper = shallow(<Filters />, options);
+ 
+    wrapper = shallow(<Filters store={store} />).childAt(0).dive();
     return wrapper;
 };
 

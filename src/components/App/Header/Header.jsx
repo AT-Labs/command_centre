@@ -1,7 +1,7 @@
 import _ from 'lodash-es';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
-import { IoIosNotifications, IoIosStats } from 'react-icons/io';
+import { IoIosStats } from 'react-icons/io';
 import { MdPerson } from 'react-icons/md';
 import { connect } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -66,6 +66,7 @@ function Header(props) {
                 VIEW_TYPE.CONTROL_DETAIL.ROUTES,
                 VIEW_TYPE.CONTROL_DETAIL.STOP_MESSAGES,
                 VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
+                VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS,
             ].includes(props.controlActiveView)) {
             history.push(locationToPush);
         }
@@ -78,7 +79,7 @@ function Header(props) {
         }
     }, [props.activeView]);
 
-    const { activeView, controlActiveView, activeSecondaryPanelView, userProfile, userPermissions, hasNotifications } = props;
+    const { activeView, controlActiveView, userProfile, userPermissions } = props;
     const isViewPermitted = view => IS_LOGIN_NOT_REQUIRED || _.get(userPermissions, view, false);
 
     return (
@@ -197,6 +198,27 @@ function Header(props) {
                             </CustomButton>
                         </NavItem>
                     )}
+                    { (IS_NOTIFICATIONS_ENABLED && isViewPermitted('controlNotificationsView')) && (
+                        <NavItem>
+                            <CustomButton
+                                className="header__btn header__notifications rounded-0 px-3 position-relative"
+                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS }
+                                tabIndex="0"
+                                ariaLabel="Notifications button"
+                                onClick={ () => {
+                                    props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
+                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS);
+                                } }>
+                                ALERTS
+                                {' '}
+                                {!props.hasNotifications && (
+                                    <span style={ { height: 8, width: 8, marginLeft: 3 } } className="header__notifications-badge rounded-circle position-absolute bg-warning">
+                                        &nbsp;
+                                    </span>
+                                )}
+                            </CustomButton>
+                        </NavItem>
+                    )}
                 </Nav>
                 <Nav className="header__toolbar ml-auto" navbar>
                     <NavItem>
@@ -213,25 +235,6 @@ function Header(props) {
                         </CustomButton>
                     </NavItem>
 
-                    { (IS_NOTIFICATIONS_ENABLED && isViewPermitted('controlNotificationsView')) && (
-                        <NavItem>
-                            <CustomButton
-                                className="header__btn header__notifications rounded-0 px-3 position-relative"
-                                active={ activeSecondaryPanelView === VIEW_TYPE.SECONDARY_PANEL.NOTIFICATIONS }
-                                tabIndex="0"
-                                ariaLabel="Notifications button"
-                                onClick={ () => props.updateSecondaryPanelView(VIEW_TYPE.SECONDARY_PANEL.NOTIFICATIONS) }>
-                                <IoIosNotifications
-                                    className="header__notifications-icon rounded-circle"
-                                    size={ 30 }
-                                    role="button"
-                                    aria-label="Notifications icon" />
-                                {!hasNotifications && (
-                                    <span className="header__notifications-badge rounded-circle position-absolute bg-warning">&nbsp;</span>
-                                )}
-                            </CustomButton>
-                        </NavItem>
-                    )}
                     <NavItem>
                         <CustomButton
                             className="header__btn header__user rounded-0 px-3 position-relative"
@@ -291,11 +294,10 @@ function Header(props) {
 Header.propTypes = {
     updateMainView: PropTypes.func.isRequired,
     updateControlDetailView: PropTypes.func.isRequired,
-    updateSecondaryPanelView: PropTypes.func.isRequired,
+    updateSecondaryPanelView: PropTypes.func.isRequired, // eslint-disable-line
     activeView: PropTypes.string.isRequired,
-    activeSecondaryPanelView: PropTypes.string.isRequired,
     controlActiveView: PropTypes.string,
-    hasNotifications: PropTypes.bool,
+    hasNotifications: PropTypes.bool, // eslint-disable-line
     userProfile: PropTypes.shape({
         name: PropTypes.string.isRequired,
         userName: PropTypes.string.isRequired,

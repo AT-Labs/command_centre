@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Loader from '../../../Common/Loader/Loader';
 
 const UpdateStatusModalsBtn = props => (
-    <React.Fragment>
+    <>
         <span>{ props.label }</span>
         {
             props.isLoading && (
@@ -13,7 +13,7 @@ const UpdateStatusModalsBtn = props => (
                 </div>
             )
         }
-    </React.Fragment>
+    </>
 );
 
 UpdateStatusModalsBtn.propTypes = {

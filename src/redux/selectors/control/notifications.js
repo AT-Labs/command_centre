@@ -5,7 +5,7 @@ const PAGE_SIZE = 10;
 
 export const getNotificationsState = state => _.result(state, 'control.notifications');
 export const getAllNotifications = createSelector(getNotificationsState, notificationsState => _.result(notificationsState, 'notifications'));
-export const getNotificationsFilters = createSelector(getNotificationsState, notificationsState => _.result(notificationsState, 'filters'));
+export const getNotificationsDatagridConfig = createSelector(getNotificationsState, notificationsState => _.result(notificationsState, 'notificationsDatagridConfig'));
 // eslint-disable-next-line max-len
 export const getLatestActiveNotifications = createSelector(getAllNotifications, (notifications) => {
     if (!notifications) return [];

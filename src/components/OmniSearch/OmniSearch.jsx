@@ -88,18 +88,18 @@ export class OmniSearch extends Component {
             this.props.selectionHandlers[selectedItem.category.type](selectedItem);
         }
         this.props.updateSearchLoading(false);
-    }
+    };
 
     handleUnselect = (selectedItem) => {
         if (has(selectedItem, 'category.type')) {
             this.props.clearHandlers[selectedItem.category.type](selectedItem);
         }
-    }
+    };
 
     handleClear = (selectedItem) => {
         this.props.clearSearchResults();
         if (selectedItem) this.props.clearHandlers[selectedItem.category.type](selectedItem);
-    }
+    };
 
     render() {
         return (

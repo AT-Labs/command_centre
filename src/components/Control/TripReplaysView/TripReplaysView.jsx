@@ -243,7 +243,6 @@ const TripReplaysView = (props) => {
 
     const toggleNotification = () => setShouldNotificationBeClosed(true);
 
-
     return (
         <div className="sidepanel-control-component-view d-flex trip-replay">
             <SidePanel
