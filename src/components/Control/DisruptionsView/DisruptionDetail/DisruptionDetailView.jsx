@@ -74,6 +74,7 @@ const DisruptionDetailView = (props) => {
     const [endTime, setEndTime] = useState(disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : '');
     const [endDate, setEndDate] = useState(disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '');
     const [disruptionOpenedTime] = useState(moment().second(0).millisecond(0));
+    const [createNotification, setCreateNotification] = useState(false);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqBy([...affectedRoutes, ...props.routes], route => route.routeId);
@@ -114,6 +115,7 @@ const DisruptionDetailView = (props) => {
         setMode(disruption.mode);
         setEndTime(disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : '');
         setEndDate(disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '');
+        setCreateNotification(disruption.createNotification);
     }, [
         disruption.header,
         disruption.cause,
@@ -124,6 +126,7 @@ const DisruptionDetailView = (props) => {
         disruption.mode,
         disruption.endTime,
         disruption.endDate,
+        disruption.createNotification,
     ]);
 
     const setDisruption = () => ({
@@ -138,6 +141,7 @@ const DisruptionDetailView = (props) => {
         affectedEntities: disruption.affectedEntities,
         startTime: momentFromDateTime(startDate, startTime),
         endTime: momentFromDateTime(endDate, endTime),
+        createNotification,
     });
 
     const handleUpdateDisruption = () => updateDisruption(setDisruption());
@@ -387,6 +391,19 @@ const DisruptionDetailView = (props) => {
                 </div>
                 <div className="col-7">
                     <FormGroup className="pl-0 h-100 d-flex align-items-end justify-content-end">
+                        <div id="disruption-detail__create-noti" className="pr-2">
+                            <Label className="font-size-md font-weight-bold">
+                                <Input
+                                    id="disruption-detail__create-noti-checkbox"
+                                    className="test"
+                                    type="checkbox"
+                                    disabled={ isResolved() }
+                                    onChange={ e => setCreateNotification(e.currentTarget.checked) }
+                                    checked={ createNotification }
+                                />
+                                <span className="pl-2">Create Stop Message</span>
+                            </Label>
+                        </div>
                         <Button
                             className="cc-btn-primary ml-3 mr-3"
                             onClick={ handleUpdateDisruption }

@@ -47,7 +47,7 @@ export const getStopMessagesAndPermissions = () => (dispatch) => {
             const stopMessages = messagesAndPermissions.messages;
             const { permissions } = messagesAndPermissions._links; // eslint-disable-line
 
-            const filteredStopMessages = stopMessages.filter(stopMessage => stopMessage.workflowState !== STOP_MESSAGE_TYPE.STATUS.DELETED);
+            const filteredStopMessages = stopMessages.filter(stopMessage => stopMessage.workflowState !== STOP_MESSAGE_TYPE.WORKFLOW_STATUS.DELETED);
             const activeStopMessages = _.sortBy(filteredStopMessages, 'startTime');
             dispatch(updateStopMessagesPermissions(permissions));
             dispatch(loadStopMessages(activeStopMessages));
@@ -115,7 +115,7 @@ export const getStopGroups = () => (dispatch) => {
     return stopMessagingApi.getStopGroups()
         .then((stopGroups) => {
             const filteredStopGroups = stopGroups.filter(
-                stopGroup => stopGroup.workflowState !== STOP_MESSAGE_TYPE.STATUS.DELETED,
+                stopGroup => stopGroup.workflowState !== STOP_MESSAGE_TYPE.WORKFLOW_STATUS.DELETED,
             );
             dispatch(loadStopGroups(filteredStopGroups));
             dispatch(updateLoadingStopGroupsState(false));

@@ -29,6 +29,7 @@ import './Notifications.scss';
 
 export const NotificationsView = (props) => {
     const apiRef = useGridApiRef();
+    const dateFormat = 'DD/MM/YY HH:mm a';
 
     const getActionsButtons = (params) => {
         const { row: { allData } } = params;
@@ -205,12 +206,10 @@ export const NotificationsView = (props) => {
         trip_date_start_time: parseTime(
             notification.tripStartTime,
             notification.tripStartDate,
-        ).format('MM/DD/YYYY HH:mm a'),
+        ).format(dateFormat),
         severity: notification.severity,
         status: notification.status,
-        date_created: moment(notification.createdAt).format(
-            'MM/DD/YYYY HH:mm a',
-        ),
+        date_created: moment(notification.createdAt).format(dateFormat),
         goToRoutesView: props.goToRoutesView,
         dismissNotifictation: props.dismissNotification,
         allData: notification,
@@ -290,7 +289,8 @@ export const NotificationsView = (props) => {
                     filterModel={ props.notificationsDatagridConfig.filterModel }
                     onFilterModelChange={ model => props.updateNotificationsDatagridConfig({ filterModel: model }) }
                     density={ props.notificationsDatagridConfig.density }
-                    pinnedColumns={ { right: ['action'] } }
+                    onPinnedColumnsChange={ model => props.updateNotificationsDatagridConfig({ pinnedColumns: model }) }
+                    pinnedColumns={ props.notificationsDatagridConfig.pinnedColumns }
                     onPageChange={ page => props.updateNotificationsDatagridConfig({ page }) }
                     pagination
                     autoHeight

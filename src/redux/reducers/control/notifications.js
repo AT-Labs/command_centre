@@ -15,6 +15,7 @@ export const INIT_STATE = {
         density: 'standard',
         routeSelection: '',
         filterModel: { items: [], linkOperator: 'and' },
+        pinnedColumns: { right: ['action'] },
     },
 };
 

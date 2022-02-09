@@ -1,5 +1,5 @@
 export default {
-    STATUS: {
+    WORKFLOW_STATUS: {
         DELETED: 'DELETED',
         INSERTED: 'INSERTED',
         UPDATED: 'UPDATED',
@@ -7,5 +7,9 @@ export default {
     TYPE: {
         CURRENT: 'Current',
         EXPIRED: 'Expired',
+    },
+    STATUS: {
+        ACTIVE: 'Active',
+        DRAFT: 'Draft',
     },
 };

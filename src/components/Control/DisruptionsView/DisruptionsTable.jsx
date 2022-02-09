@@ -59,13 +59,13 @@ class DisruptionsTable extends React.Component {
                 label: LABEL_AFFECTED_ROUTES,
                 key: 'affectedEntities',
                 cols: 'col-2',
-                getContent: (disruption, key) => disruption[key].filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName).join(', '),
+                getContent: (disruption, key) => [...new Set(disruption[key].filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))].join(', '),
             },
             {
                 label: LABEL_AFFECTED_STOPS,
                 key: 'affectedEntities',
                 cols: 'col-2',
-                getContent: (disruption, key) => disruption[key].filter(entity => entity.stopId).map(({ stopCode }) => stopCode).join(', '),
+                getContent: (disruption, key) => [...new Set(disruption[key].filter(entity => entity.stopId).map(({ stopCode }) => stopCode))].join(', '),
             },
             {
                 label: LABEL_CUSTOMER_IMPACT,
