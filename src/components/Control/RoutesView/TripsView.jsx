@@ -147,7 +147,7 @@ export class TripsView extends React.Component {
                     <input
                         type="checkbox"
                         className="select-all-trips-checkbox mr-2"
-                        disabled={ !moment().isSame(moment(this.props.serviceDate), 'd') }
+                        disabled={ !this.isDateServiceTodayOrTomorrow() }
                         checked={ !this.props.isLoading && checkIfAllTripsAreSelected(Object.keys(this.props.notCompletedTrips), this.props.selectedTrips) }
                         onChange={ this.props.selectAllTrips } />
                     <span>route #</span>
@@ -229,6 +229,8 @@ export class TripsView extends React.Component {
 
     removeCompletedTripFromSelectedListAfterUpdate = (tripKey, trip) => this.props.selectSingleTrip({ [tripKey]: trip });
 
+    isDateServiceTodayOrTomorrow = () => moment(this.props.serviceDate).isBetween(moment(), moment().add(1, 'd'), 'd', '[]');
+
     renderIconColumnContent = (row) => {
         let iconColor = '';
         let subIcon = null;
@@ -236,9 +238,8 @@ export class TripsView extends React.Component {
         const isCompleted = isTripCompleted(row.tripInstance.status);
         const isTripSelected = _.includes(this.props.selectedTrips, tripKey);
         const isDelayed = formatTripDelay(_.get(row.tripInstance, 'delay')) > 0;
-        const isDateServiceToday = moment().isSame(moment(this.props.serviceDate), 'd');
         const isCancelPermitted = IS_LOGIN_NOT_REQUIRED || isTripCancelPermitted(row.tripInstance);
-        const shouldCheckboxBeDisabled = !isCancelPermitted || isCompleted || !isDateServiceToday;
+        const shouldCheckboxBeDisabled = !isCancelPermitted || isCompleted || !this.isDateServiceTodayOrTomorrow();
 
         if (row.status === TRIP_STATUS_TYPES.cancelled) {
             iconColor = 'text-danger';

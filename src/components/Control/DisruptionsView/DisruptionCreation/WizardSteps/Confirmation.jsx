@@ -9,8 +9,7 @@ import { clearDisruptionActionResult, updateActiveDisruptionId, openCreateDisrup
 import { isModalOpen } from '../../../../../redux/selectors/activity';
 
 const Confirmation = (props) => {
-    const { isRequesting, resultDisruptionId, resultMessage } = props.response;
-
+    const { isRequesting, resultDisruptionId, resultMessage, resultCreateNotification } = props.response;
     const renderContent = () => {
         if (isRequesting) return <DetailLoader />;
         return resultDisruptionId
@@ -19,6 +18,7 @@ const Confirmation = (props) => {
                     <h2>New disruption has been created</h2>
                     <div>
                         <span className="d-block mt-3 mb-2">{ resultMessage }</span>
+                        { resultCreateNotification && <span className="d-block mt-3 mb-2">Draft stop message has been created</span> }
                         <br />
                         <span>Please ensure you update the created disruption with new information as it becomes available.</span>
                     </div>

@@ -20,6 +20,7 @@ export const INIT_STATE = {
         [SEARCH_RESULT_TYPE.STOP_GROUP.type]: [],
         [SEARCH_RESULT_TYPE.STOP_GROUP_MERGED.type]: [],
         [SEARCH_RESULT_TYPE.STOP_MESSAGE.type]: [],
+        [SEARCH_RESULT_TYPE.STOP_DISRUPTION.type]: [],
         [SEARCH_RESULT_TYPE.STOP_IN_GROUP.type]: [],
     },
 };
@@ -53,6 +54,7 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_STOP_GROUP_SEARCH_RESULTS]: handleUpdateSearchResults,
     [ACTION_TYPE.UPDATE_STOP_GROUP_MERGED_SEARCH_RESULTS]: handleUpdateSearchResults,
     [ACTION_TYPE.UPDATE_STOP_MESSAGE_SEARCH_RESULTS]: handleUpdateSearchResults,
+    [ACTION_TYPE.UPDATE_STOP_DISRUPTION_SEARCH_RESULTS]: handleUpdateSearchResults,
     [ACTION_TYPE.UPDATE_STOP_IN_GROUP_SEARCH_RESULTS]: handleUpdateSearchResults,
     [ACTION_TYPE.UPDATE_SEARCH_TERMS]: handleUpdateSearchTerms,
     [ACTION_TYPE.CLEAR_SEARCH_RESULTS]: handleClearSearchResults,

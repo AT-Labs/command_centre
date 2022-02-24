@@ -7,24 +7,22 @@ import moment from 'moment';
 import { some, noop } from 'lodash-es';
 
 import MESSAGING_MODAL_TYPE from '../../../types/messaging-modal-types';
-import VIEW_TYPE from '../../../types/view-types';
 import STOP_MESSAGE_TYPE from '../../../types/stop-messages-types';
 import StopMessagesModal from './StopMessagingModals/StopMessageModal';
 import { formatGroupsForPresentation } from '../../../utils/helpers';
 import ConfirmationModal from '../Common/ConfirmationModal/ConfirmationModal';
 import { getStopMessagesAndPermissions,
     updateStopMessage,
-    getStopGroups,
     toggleModals,
 } from '../../../redux/actions/control/stopMessaging';
+import { getStopGroups } from '../../../redux/actions/control/dataManagement';
 import { getSortedStopMesssages,
     getStopMessagesPermissions,
     getStopMessagesLoadingState,
     getStopMessagesSortingParams,
     getModal,
 } from '../../../redux/selectors/control/stopMessaging/stopMessages';
-import { SYSTEM_STOP_GROUP_ID, SYSTEM_STOP_GROUP_STOP_START, SYSTEM_STOP_GROUP_STOP_END } from '../../../redux/selectors/control/stopMessaging/stopGroups';
-import { updateControlDetailView, updateMainView } from '../../../redux/actions/navigation';
+import { SYSTEM_STOP_GROUP_ID, SYSTEM_STOP_GROUP_STOP_START, SYSTEM_STOP_GROUP_STOP_END } from '../../../redux/selectors/control/dataManagement/stopGroups';
 import { isIndividualEditStopMessagesPermitted, isGlobalEditStopMessagesPermitted } from '../../../utils/user-permissions';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
 import SearchFilter from '../Common/Filters/SearchFilter/SearchFilter';
@@ -38,8 +36,6 @@ export class StopMessagesView extends React.Component {
         stopMessagesPermissions: PropTypes.array.isRequired,
         getStopMessagesAndPermissions: PropTypes.func.isRequired,
         updateStopMessage: PropTypes.func.isRequired,
-        updateMainView: PropTypes.func.isRequired,
-        updateControlDetailView: PropTypes.func.isRequired,
         isStopMessagesLoading: PropTypes.bool,
         getStopGroups: PropTypes.func.isRequired,
         stopMessagesSortingParams: PropTypes.object.isRequired,
@@ -58,6 +54,7 @@ export class StopMessagesView extends React.Component {
         this.state = {
             messagesList: [],
             searchValue: '',
+            disruptionSearchValue: '',
             selectedData: {},
             statusFilterValue: STOP_MESSAGE_TYPE.STATUS.ACTIVE,
             typeFilterValue: STOP_MESSAGE_TYPE.TYPE.CURRENT,
@@ -87,7 +84,7 @@ export class StopMessagesView extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (this.props.stopMessages && this.props.stopMessages !== prevProps.stopMessages) {
-            this.updateMessagesList(this.state.selectedData, this.state.statusFilterValue, this.state.typeFilterValue);
+            this.updateMessagesList(this.state.selectedData, this.state.statusFilterValue, this.state.typeFilterValue, this.state.disruptionSearchValue);
         }
     }
 
@@ -152,9 +149,18 @@ export class StopMessagesView extends React.Component {
 
     stopGroupSelected = selectedData => this.mergeStopsAndGroupsInMessagesList().filter(message => some(message.stopGroups, g => g.id === selectedData.id));
 
-    updateMessagesList = (selectedData, statusFilterValue, typeFilterValue) => {
+    messageSelectedFromIncidentNo = (incidentNo, dataStore) => {
+        if (dataStore) {
+            return dataStore.filter(message => message.incidentNo && message.incidentNo === incidentNo);
+        }
+        return this.mergeStopsAndGroupsInMessagesList().filter(message => message.incidentNo && message.incidentNo === incidentNo);
+    };
+
+    updateMessagesList = (selectedData, statusFilterValue, typeFilterValue, incidentNo = null) => {
         let messagesList;
         let searchValue;
+        let disruptionSearchValue;
+
         if (selectedData.message) {
             searchValue = selectedData.message;
             messagesList = this.stopMessageSelected(selectedData);
@@ -168,6 +174,11 @@ export class StopMessagesView extends React.Component {
             // No search result selected
             searchValue = '';
             messagesList = this.mergeStopsAndGroupsInMessagesList();
+        }
+
+        if (incidentNo) {
+            disruptionSearchValue = incidentNo;
+            messagesList = this.messageSelectedFromIncidentNo(disruptionSearchValue, messagesList);
         }
 
         messagesList = messagesList.map(message => ({
@@ -190,6 +201,7 @@ export class StopMessagesView extends React.Component {
 
         this.setState({
             searchValue,
+            disruptionSearchValue,
             selectedData,
             messagesList,
             statusFilterValue,
@@ -198,17 +210,17 @@ export class StopMessagesView extends React.Component {
     };
 
     render() {
-        const { messagesList, searchValue, selectedData, statusFilterValue, typeFilterValue } = this.state;
+        const { messagesList, searchValue, selectedData, statusFilterValue, typeFilterValue, disruptionSearchValue } = this.state;
         const { modal } = this.props;
-        const { STOP, STOP_GROUP_MERGED, STOP_MESSAGE } = SEARCH_RESULT_TYPE;
+        const { STOP, STOP_GROUP_MERGED, STOP_MESSAGE, STOP_DISRUPTION } = SEARCH_RESULT_TYPE;
         const { create, edit, cancel } = this.MODALS;
         const isGlobalEditMessagesPermitted = IS_LOGIN_NOT_REQUIRED || isGlobalEditStopMessagesPermitted(this.props.stopMessagesPermissions);
 
         const actionHandlers = {
             selection: {
-                [STOP.type]: ({ data }) => this.updateMessagesList(data, statusFilterValue, typeFilterValue),
-                [STOP_GROUP_MERGED.type]: ({ data }) => this.updateMessagesList(data, statusFilterValue, typeFilterValue),
-                [STOP_MESSAGE.type]: ({ data }) => this.updateMessagesList(data, statusFilterValue, typeFilterValue),
+                [STOP.type]: ({ data }) => this.updateMessagesList(data, statusFilterValue, typeFilterValue, disruptionSearchValue),
+                [STOP_GROUP_MERGED.type]: ({ data }) => this.updateMessagesList(data, statusFilterValue, typeFilterValue, disruptionSearchValue),
+                [STOP_MESSAGE.type]: ({ data }) => this.updateMessagesList(data, statusFilterValue, typeFilterValue, disruptionSearchValue),
             },
             clear: {
                 [STOP.type]: noop,
@@ -217,18 +229,37 @@ export class StopMessagesView extends React.Component {
             },
         };
 
+        const disruptionActionHandlers = {
+            selection: {
+                [STOP_DISRUPTION.type]: ({ data }) => this.updateMessagesList(selectedData, statusFilterValue, typeFilterValue, data),
+            },
+            clear: {
+                [STOP_DISRUPTION.type]: noop,
+            },
+        };
+
         return (
             <div className="control-messaging-view">
                 <h1>Messaging</h1>
                 <div className="row py-2">
-                    <div className="search-filters col-3">
+                    <div className="search-filters col-2">
                         <SearchFilter
                             value={ searchValue }
                             placeholder="Search for a stop or message"
                             searchInCategory={ [STOP.type, STOP_GROUP_MERGED.type, STOP_MESSAGE.type] }
                             selectionHandlers={ actionHandlers.selection }
                             clearHandlers={ actionHandlers.clear }
-                            onClearCallBack={ () => this.updateMessagesList({}, statusFilterValue, typeFilterValue) }
+                            onClearCallBack={ () => this.updateMessagesList({}, statusFilterValue, typeFilterValue, disruptionSearchValue) }
+                        />
+                    </div>
+                    <div className="search-filters col-2">
+                        <SearchFilter
+                            value={ disruptionSearchValue }
+                            placeholder="Search by disruption number"
+                            searchInCategory={ [STOP_DISRUPTION.type] }
+                            selectionHandlers={ disruptionActionHandlers.selection }
+                            clearHandlers={ disruptionActionHandlers.clear }
+                            onClearCallBack={ () => this.updateMessagesList(selectedData, statusFilterValue, typeFilterValue, '') }
                         />
                     </div>
                     <div className="col-5">
@@ -238,14 +269,6 @@ export class StopMessagesView extends React.Component {
                                     className="control-messaging-view__create-btn cc-btn-primary"
                                     onClick={ () => this.props.toggleModals(create.type, null) }>
                                     { this.MODALS.create.title }
-                                </Button>
-                                <Button
-                                    className="control-messaging-view__stop-groups-btn cc-btn-secondary ml-3"
-                                    onClick={ () => {
-                                        this.props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
-                                        this.props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.STOP_GROUPS);
-                                    } }>
-                                    Manage stop groups
                                 </Button>
                             </div>
                         )}
@@ -264,14 +287,14 @@ export class StopMessagesView extends React.Component {
                             onAction={ () => this.updateStopMessage(null).then(() => this.props.toggleModals(null, null)).catch(() => {}) }
                             onClose={ () => this.props.toggleModals(null, null) } />
                     </div>
-                    <div className="col-4">
+                    <div className="col-3">
                         <CustomButtonGroup
                             buttons={ [{ type: STOP_MESSAGE_TYPE.TYPE.CURRENT }, { type: STOP_MESSAGE_TYPE.TYPE.EXPIRED }] }
                             selectedOptions={ [typeFilterValue] }
                             className="d-flex justify-content-end align-items-center float-right ml-3"
                             onSelection={ (selectedType) => {
                                 this.props.getStopMessagesAndPermissions();
-                                this.updateMessagesList(selectedData, statusFilterValue, selectedType);
+                                this.updateMessagesList(selectedData, statusFilterValue, selectedType, disruptionSearchValue);
                             } } />
                         <CustomButtonGroup
                             buttons={ [{ type: STOP_MESSAGE_TYPE.STATUS.ACTIVE }, { type: STOP_MESSAGE_TYPE.STATUS.DRAFT }] }
@@ -279,7 +302,7 @@ export class StopMessagesView extends React.Component {
                             className="d-flex justify-content-end align-items-center float-right"
                             onSelection={ (selectedStatus) => {
                                 this.props.getStopMessagesAndPermissions();
-                                this.updateMessagesList(selectedData, selectedStatus, typeFilterValue);
+                                this.updateMessagesList(selectedData, selectedStatus, typeFilterValue, disruptionSearchValue);
                             } } />
                     </div>
                 </div>
@@ -303,5 +326,5 @@ export default connect(
         stopMessagesSortingParams: getStopMessagesSortingParams(state),
         modal: getModal(state),
     }),
-    { getStopMessagesAndPermissions, updateStopMessage, updateMainView, updateControlDetailView, getStopGroups, toggleModals },
+    { getStopMessagesAndPermissions, updateStopMessage, getStopGroups, toggleModals },
 )(StopMessagesView);

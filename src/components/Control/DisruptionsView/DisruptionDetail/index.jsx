@@ -10,7 +10,13 @@ import DisruptionDetailView from './DisruptionDetailView';
 import Readonly from './Readonly';
 
 const DisruptionExpandedDetail = (props) => {
-    const { disruption, resultStatus, resultMessage, resultDisruptionId, isCopied } = props;
+    const { disruption, resultStatus, resultMessage, resultDisruptionId, resultCreateNotification, isCopied } = props;
+
+    let message = resultMessage;
+
+    if (resultCreateNotification) {
+        message = `${resultMessage} Draft stop message has been created.`;
+    }
 
     if (isDisruptionUpdateAllowed(disruption)) {
         return (
@@ -20,7 +26,7 @@ const DisruptionExpandedDetail = (props) => {
                         message={ {
                             id: `${disruption.disruptionId}`,
                             type: resultStatus,
-                            body: resultMessage,
+                            body: message,
                         } }
                         onClose={ () => props.clearDisruptionActionResult() }
                     />
@@ -45,6 +51,7 @@ const DisruptionExpandedDetail = (props) => {
 DisruptionExpandedDetail.propTypes = {
     resultStatus: PropTypes.string,
     resultMessage: PropTypes.string,
+    resultCreateNotification: PropTypes.bool,
     resultDisruptionId: PropTypes.number,
     isRequesting: PropTypes.bool,
     disruption: PropTypes.object.isRequired,
@@ -59,6 +66,7 @@ DisruptionExpandedDetail.propTypes = {
 DisruptionExpandedDetail.defaultProps = {
     resultStatus: null,
     resultMessage: null,
+    resultCreateNotification: false,
     isRequesting: false,
     resultDisruptionId: null,
     isCopied: false,

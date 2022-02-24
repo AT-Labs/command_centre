@@ -77,3 +77,10 @@ const transformKeysToCamelCase = obj => transform(obj, (acc, value, key, target)
 });
 
 export const toCamelCaseKeys = entities => transformKeysToCamelCase(entities);
+
+export const transformIncidentNo = (disruptionId) => {
+    if (!disruptionId) return null;
+    const pad = '00000';
+    const paddedId = (pad + disruptionId).slice(-pad.length);
+    return `DISR${paddedId}`;
+};

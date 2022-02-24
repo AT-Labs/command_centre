@@ -6,6 +6,7 @@ import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap'
 import { toString, omit, some, isEmpty, uniqBy, uniqWith } from 'lodash-es';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import Flatpickr from 'react-flatpickr';
+
 import { CAUSES, IMPACTS, STATUSES } from '../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
@@ -397,11 +398,11 @@ const DisruptionDetailView = (props) => {
                                     id="disruption-detail__create-noti-checkbox"
                                     className="test"
                                     type="checkbox"
-                                    disabled={ isResolved() }
+                                    disabled={ isResolved() || disruption.createNotification }
                                     onChange={ e => setCreateNotification(e.currentTarget.checked) }
                                     checked={ createNotification }
                                 />
-                                <span className="pl-2">Create Stop Message</span>
+                                <span className="pl-2">Draft Stop Message</span>
                             </Label>
                         </div>
                         <Button

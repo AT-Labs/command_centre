@@ -40,12 +40,13 @@ const updateRequestingDisruptionState = (isRequesting, resultDisruptionId) => ({
     },
 });
 
-const updateRequestingDisruptionResult = (resultDisruptionId, { resultStatus, resultMessage }) => ({
+export const updateRequestingDisruptionResult = (resultDisruptionId, { resultStatus, resultMessage, resultCreateNotification }) => ({
     type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
     payload: {
         resultDisruptionId,
         resultStatus,
         resultMessage,
+        resultCreateNotification,
     },
 });
 
@@ -114,11 +115,11 @@ export const getDisruptions = () => dispatch => disruptionsMgtApi.getDisruptions
     .finally(() => dispatch(updateLoadingDisruptionsState(false)));
 
 export const updateDisruption = disruption => async (dispatch) => {
-    const { disruptionId, incidentNo } = disruption;
+    const { disruptionId, incidentNo, createNotification } = disruption;
     dispatch(updateRequestingDisruptionState(true, disruptionId));
     try {
         await disruptionsMgtApi.updateDisruption(disruption);
-        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentNo)));
+        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentNo, createNotification)));
     } catch (error) {
         dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentNo, error.code)));
     } finally {
@@ -152,7 +153,7 @@ export const createDisruption = disruption => async (dispatch) => {
     dispatch(updateRequestingDisruptionState(true));
     try {
         response = await disruptionsMgtApi.createDisruption(disruption);
-        dispatch(updateRequestingDisruptionResult(response.disruptionId, ACTION_RESULT.CREATE_SUCCESS(response.incidentNo)));
+        dispatch(updateRequestingDisruptionResult(response.disruptionId, ACTION_RESULT.CREATE_SUCCESS(response.incidentNo, response.createNotification)));
     } catch (error) {
         dispatch(updateRequestingDisruptionResult(null, ACTION_RESULT.CREATE_ERROR(error.code)));
     } finally {

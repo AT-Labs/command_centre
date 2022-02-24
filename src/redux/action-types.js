@@ -26,6 +26,7 @@ export default {
     UPDATE_STOP_GROUP_SEARCH_RESULTS: 'update-stop-group-search-results',
     UPDATE_STOP_GROUP_MERGED_SEARCH_RESULTS: 'update-stop-group-merged-search-results',
     UPDATE_STOP_MESSAGE_SEARCH_RESULTS: 'update-stop-message-search-results',
+    UPDATE_STOP_DISRUPTION_SEARCH_RESULTS: 'update-stop-disruption-search-results',
     UPDATE_STOP_IN_GROUP_SEARCH_RESULTS: 'update-stop-in-group-search-results',
     UPDATE_STOP_MESSAGES_SORTING_PARAMS: 'update-stop-messages-sorting-params',
     CLEAR_SEARCH_RESULTS: 'clear-search-results',
@@ -211,4 +212,6 @@ export default {
     SET_OCCUPANCY_AGENCY_FILTERS: 'set-occupancy-agency-filters',
     SET_OCCUPANCY_ROUTES_FILTERS: 'set-occupancy-routes-filters',
     OCCUPANCY_IS_LOADING: 'occupancy-is-loading',
+    // Data Management
+    UPDATE_CONTROL_DATAMANAGEMENT_PAGESETTINGS: 'update-control-data-management-pagesettings',
 };

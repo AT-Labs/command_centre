@@ -64,6 +64,11 @@ export default {
         icon: '',
         label: 'Stop messages',
     },
+    STOP_DISRUPTION: {
+        type: 'stop-disruption',
+        icon: '',
+        label: 'Disruption',
+    },
     STOP_IN_GROUP: {
         type: 'stop-in-group',
         icon: 'stop',

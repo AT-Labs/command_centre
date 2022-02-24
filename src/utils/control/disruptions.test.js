@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import moment from 'moment';
 import MockDate from 'mockdate';
-import { isEndDateValid, isEndTimeValid, getDatePickerOptions } from './disruptions';
+import { isEndDateValid, isEndTimeValid, getDatePickerOptions, transformIncidentNo } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 
 describe('isEndDateValid', () => {
@@ -72,5 +72,19 @@ describe('getDatePickerOptions', () => {
         expect(options1.dateFormat).to.equal(options2.dateFormat);
         expect(options1.minDate).to.equal(options2.minDate);
         expect(options1.enableTime).to.equal(options2.enableTime);
+    });
+});
+
+describe('transformIncidentNo', () => {
+    it('Should return null if the incidentNo is undefined or null.', () => {
+        expect(transformIncidentNo(null)).to.equal(null);
+        expect(transformIncidentNo(undefined)).to.equal(null);
+    });
+
+    it('Should return a correct transformed incident No.', () => {
+        const fakeIncident01 = 9384;
+        const fakeIncident02 = 93822;
+        expect(transformIncidentNo(fakeIncident01)).to.equal('DISR09384');
+        expect(transformIncidentNo(fakeIncident02)).to.equal('DISR93822');
     });
 });

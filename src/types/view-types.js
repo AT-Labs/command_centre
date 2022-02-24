@@ -23,6 +23,7 @@ export default {
         NOTIFICATIONS: 'control-notifications',
         DISRUPTIONS: 'control-disruptions',
         TRIP_REPLAYS: 'control-trip-replay',
+        DATA_MANAGEMENT: 'control-data-management',
     },
     CONTROL_DETAIL_ROUTES: {
         ROUTES_ROUTE_VARIANTS_TRIPS: 'control-routes-view-routes-route-variants-trips',

@@ -11,19 +11,19 @@ import Main from '../Common/OffCanvasLayout/Main/Main';
 import OffCanvasLayout from '../Common/OffCanvasLayout/OffCanvasLayout';
 import SecondarySidePanel from '../Common/OffCanvasLayout/SecondarySidePanel/SecondarySidePanel';
 import StopMessagesView from './StopMessagingView/StopMessagesView';
-import StopGroupsView from './StopMessagingView/StopGroupsView';
 import DisruptionsView from './DisruptionsView';
 import Notifications from './NotificationsView/NotificationsView';
 import TripReplaysView from './TripReplaysView/TripReplaysView';
+import DataManagement from './DataManagement/DataManagement';
 
 const ControlView = (props) => {
     const isBlocksView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.BLOCKS;
     const isRoutesView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.ROUTES;
     const isStopMessagesView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.STOP_MESSAGES;
-    const isStopGroupView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.STOP_GROUPS;
     const isNotificationsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS;
     const isDisruptionsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS;
     const isTripReplaysView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.TRIP_REPLAYS;
+    const isDataManagementView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT;
 
     return (
         <OffCanvasLayout>
@@ -33,10 +33,10 @@ const ControlView = (props) => {
                     { isBlocksView && <BlocksView /> }
                     { isRoutesView && <CommonView /> }
                     { isStopMessagesView && <StopMessagesView /> }
-                    { isStopGroupView && <StopGroupsView /> }
                     { isNotificationsView && <Notifications /> }
                     { isDisruptionsView && <DisruptionsView /> }
                     { isTripReplaysView && <TripReplaysView /> }
+                    { isDataManagementView && <DataManagement /> }
                 </div>
             </Main>
             <SecondarySidePanel />

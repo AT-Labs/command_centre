@@ -259,9 +259,10 @@ const updateSelectedTrips = selectedTripsUpdate => ({
 });
 
 export const fetchAndUpdateSelectedTrips = () => (dispatch, getState) => {
-    const selectedTripInstances = getSelectedTripInstances(getState());
+    const state = getState();
+    const selectedTripInstances = getSelectedTripInstances(state);
     const tripsArgs = {
-        serviceDate: moment(getServiceDate(getState)).format(SERVICE_DATE_FORMAT),
+        serviceDate: moment(getServiceDate(state)).format(SERVICE_DATE_FORMAT),
         tripIds: _.map(selectedTripInstances, trip => trip.tripId),
     };
     const startTimeOfSelectedTrips = _.map(selectedTripInstances, trip => `${trip.tripId}-${trip.startTime}`);

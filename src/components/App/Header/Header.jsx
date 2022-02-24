@@ -2,6 +2,8 @@ import _ from 'lodash-es';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import { IoIosStats } from 'react-icons/io';
+import { FcDataConfiguration } from 'react-icons/fc';
+
 import { MdPerson } from 'react-icons/md';
 import { connect } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -67,6 +69,7 @@ function Header(props) {
                 VIEW_TYPE.CONTROL_DETAIL.STOP_MESSAGES,
                 VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
                 VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS,
+                VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT,
             ].includes(props.controlActiveView)) {
             history.push(locationToPush);
         }
@@ -221,6 +224,20 @@ function Header(props) {
                     )}
                 </Nav>
                 <Nav className="header__toolbar ml-auto" navbar>
+                    <NavItem>
+                        <CustomButton
+                            className="header__btn header__data-management rounded-0 px-3"
+                            active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT }
+                            tabIndex="0"
+                            ariaLabel="Data Management"
+                            onClick={ () => {
+                                props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
+                                props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT);
+                            } }>
+                            <FcDataConfiguration size={ 32 } />
+                        </CustomButton>
+                    </NavItem>
+
                     <NavItem>
                         <CustomButton
                             className="header__btn header__dashboard rounded-0 px-3"

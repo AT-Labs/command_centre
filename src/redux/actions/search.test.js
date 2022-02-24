@@ -460,4 +460,27 @@ describe('Search actions', () => {
             expect(response).to.eql([entries]);
         });
     });
+
+    context('formatStopDisruptionSearchResults()', () => {
+        const results = []
+
+        const expectedData = [{
+            text: '123 - Fruitvale Rd Train Station',
+            data: results,
+            category: SEARCH_RESULT_TYPE.STOP,
+            icon: SEARCH_RESULT_TYPE.STOP.icon,
+        }];
+
+        it('searchStopDisruptions() Should return an array of incidentNo', async () => {
+            const incidentNos = ['DISR00701', 'DISR00702', 'DISR00703'];
+
+            const expectedData = incidentNos.map(element => ({
+                text: `${element}`,
+                data: element,
+                category: SEARCH_RESULT_TYPE.STOP_DISRUPTION,
+                icon: '',
+            }));
+            expect(search.formatStopDisruptionSearchResults(incidentNos)).to.eql(expectedData);
+        });
+    });
 });

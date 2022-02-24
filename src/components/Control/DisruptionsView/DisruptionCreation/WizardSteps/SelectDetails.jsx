@@ -219,7 +219,7 @@ const SelectDetails = (props) => {
                                 onChange={ e => props.onDataUpdate('createNotification', e.currentTarget.checked) }
                                 checked={ createNotification }
                             />
-                            <span className="pl-2">Create Stop Message</span>
+                            <span className="pl-2">Draft Stop Message</span>
                         </Label>
                     </FormGroup>
                 </div>

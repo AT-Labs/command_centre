@@ -16,9 +16,10 @@ import { getAllStops } from '../../../../redux/selectors/control/stopMessaging/s
 import { dismissError } from '../../../../redux/actions/activity';
 import { getError } from '../../../../redux/selectors/activity';
 import ModalAlert from '../../BlocksView/BlockModals/ModalAlert';
-import { getAllStopGroups, allSystemStopGroups } from '../../../../redux/selectors/control/stopMessaging/stopGroups';
+import { getAllStopGroups, allSystemStopGroups } from '../../../../redux/selectors/control/dataManagement/stopGroups';
 import StandardFilter from '../../Common/Filters/StandardFilter';
 import RecurrenceFieldRow from './RecurrenceFieldRow';
+import 'flatpickr/dist/flatpickr.css';
 import STOP_MESSAGE_TYPE from '../../../../types/stop-messages-types';
 
 const currentDate = () => new Date();

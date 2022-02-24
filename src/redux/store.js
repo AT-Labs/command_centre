@@ -32,6 +32,7 @@ import currentTrip from './reducers/control/tripReplays/currentTrip';
 import tripReplaysMap from './reducers/control/tripReplays/map';
 import analytics from './reducers/analytics/analytics';
 import routesMappings from './reducers/static/routesMappings';
+import dataManagement from './reducers/control/dataManagement';
 
 const middleware = [thunk];
 let composeEnhancers = compose;
@@ -77,6 +78,7 @@ export default createStore(
             serviceDate,
             platforms,
             disruptions,
+            dataManagement,
         }),
         analytics,
         activity,

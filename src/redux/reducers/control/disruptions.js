@@ -26,6 +26,7 @@ export const INIT_STATE = {
         isRequesting: false,
         resultStatus: null,
         resultMessage: null,
+        resultCreateNotification: false,
         isCopied: false,
     },
     shapes: [],
@@ -53,13 +54,14 @@ const handleDisruptionActionRequestingUpdate = (state, { payload: { isRequesting
         resultDisruptionId,
     },
 });
-const handleDisruptionActionResultUpdate = (state, { payload: { resultDisruptionId, resultMessage, resultStatus } }) => ({
+const handleDisruptionActionResultUpdate = (state, { payload: { resultDisruptionId, resultMessage, resultStatus, resultCreateNotification } }) => ({
     ...state,
     action: {
         ...state.action,
         resultMessage,
         resultStatus,
         resultDisruptionId,
+        resultCreateNotification,
     },
 });
 

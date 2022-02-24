@@ -13,7 +13,7 @@ import { getAllFleetBuses, getAllFleetTrains, getAllFleetFerries } from '../sele
 import { getRouteVariantsForSearch as getControlRouteVariants } from '../selectors/control/routes/routeVariants';
 import { getAllNotifications } from '../selectors/control/notifications';
 import { getSearchTerms } from '../selectors/search';
-import { allStopGroupsWithTokens, mergedAllStopGroupsWithTokens } from '../selectors/control/stopMessaging/stopGroups';
+import { allStopGroupsWithTokens, mergedAllStopGroupsWithTokens } from '../selectors/control/dataManagement/stopGroups';
 import { getAllStopMessages } from '../selectors/control/stopMessaging/stopMessages';
 import { reportError } from './activity';
 
@@ -268,6 +268,23 @@ export const searchStopMessages = searchTerms => (dispatch, getState) => {
     });
 };
 
+export const formatStopDisruptionSearchResults = incidentNos => incidentNos.map(incidentNo => ({
+    text: `${incidentNo}`,
+    data: incidentNo,
+    category: SEARCH_RESULT_TYPE.STOP_DISRUPTION,
+    icon: '',
+}));
+
+export const searchStopDisruptions = searchTerms => (dispatch, getState) => {
+    const allStopMessages = getAllStopMessages(getState());
+    const stopMessages = _.filter(allStopMessages, ({ incidentNo }) => incidentNo && _.includes(incidentNo.toLowerCase(), searchTerms.toLowerCase()));
+    const incidentNos = [...new Set(stopMessages.map(({ incidentNo }) => incidentNo))];
+    dispatch({
+        type: ACTION_TYPE.UPDATE_STOP_DISRUPTION_SEARCH_RESULTS,
+        payload: { [SEARCH_RESULT_TYPE.STOP_DISRUPTION.type]: formatStopDisruptionSearchResults(incidentNos) },
+    });
+};
+
 export const formatStopInGroupsSearchResults = stops => stops.map(stop => ({
     text: stop.label,
     data: stop,
@@ -311,6 +328,7 @@ export const search = (searchTerms, searchInCategory) => (dispatch) => {
         [SEARCH_RESULT_TYPE.STOP_GROUP.type, () => dispatch(searchStopGroups(searchTerms))],
         [SEARCH_RESULT_TYPE.STOP_GROUP_MERGED.type, () => dispatch(searchMergedStopGroups(searchTerms))],
         [SEARCH_RESULT_TYPE.STOP_MESSAGE.type, () => dispatch(searchStopMessages(searchTerms))],
+        [SEARCH_RESULT_TYPE.STOP_DISRUPTION.type, () => dispatch(searchStopDisruptions(searchTerms))],
         [SEARCH_RESULT_TYPE.STOP_IN_GROUP.type, () => dispatch(searchStopInGroups(searchTerms))],
     ]);
 

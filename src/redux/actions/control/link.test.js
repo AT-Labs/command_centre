@@ -4,7 +4,7 @@ import sinon from 'sinon';
 import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 
-import { goToRoutesView, goToBlocksView } from './link';
+import { goToRoutesView, goToBlocksView, goToDisruptionsView } from './link';
 import ACTION_TYPE from '../../action-types';
 import VIEW_TYPE from '../../../types/view-types';
 
@@ -120,6 +120,68 @@ describe('Link actions', () => {
         ];
 
         await store.dispatch(goToBlocksView(mockTrip));
+        expect(store.getActions()).to.eql(expectedActions);
+    });
+
+    it('when going from Messaging to Disruptions, updates the link', async () => {
+        const message = {
+            incidentId: "DISR00644",   
+        };
+
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_MAIN_VIEW,
+                payload: {
+                    activeMainView: VIEW_TYPE.MAIN.CONTROL,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW,
+                payload: {
+                    activeControlDetailView: VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
+                },
+            },
+        ];
+
+        await store.dispatch(goToDisruptionsView(message, { setActiveDisruption: false }));
+        expect(store.getActions()).to.eql(expectedActions);
+    });
+
+    it('when going from Messaging to Disruptions(with an active disruption), updates the link', async () => {
+        const message = {
+            incidentId: "DISR00643",   
+        };
+
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_MAIN_VIEW,
+                payload: {
+                    activeMainView: VIEW_TYPE.MAIN.CONTROL,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW,
+                payload: {
+                    activeControlDetailView: VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_DISRUPTION_ID,
+                payload: {
+                    activeDisruptionId: message.incidentId,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
+                payload: {
+                    disruptionId: null,
+                    resultStatus: null,
+                    resultMessage: null,
+                },
+            },
+        ];
+
+        await store.dispatch(goToDisruptionsView(message, { setActiveDisruption: true }));
         expect(store.getActions()).to.eql(expectedActions);
     });
 });

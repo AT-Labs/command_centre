@@ -41,4 +41,10 @@
     .user-manual {
         width: 35px;
     }
+
+    .header__data-management {
+        svg > g {
+            fill: $secondary;
+        }
+    }
 }

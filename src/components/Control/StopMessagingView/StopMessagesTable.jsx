@@ -8,6 +8,7 @@ import Stops from './Stops';
 import SortButton from '../Common/SortButton/SortButton';
 import ControlTable from '../Common/ControlTable/ControlTable';
 import { getExpiredMessageRowClassName } from '../../../utils/helpers';
+import { goToDisruptionsView } from '../../../redux/actions/control/link';
 
 const dateFormat = 'DD/MM/YY HH:mm';
 
@@ -17,6 +18,15 @@ export const StopMessagesTable = (props) => {
     const activeOrder = (key) => {
         const { stopMessagesSortingParams } = props;
         return stopMessagesSortingParams && stopMessagesSortingParams.sortBy === key ? stopMessagesSortingParams.order : null;
+    };
+
+    const showDisruption = (stopMessage) => {
+        if (!stopMessage.incidentNo) return null;
+        return (
+            <button type="button" className="btn btn-link text-info" onClick={ () => props.goToDisruptionsView(stopMessage, { setActiveDisruption: true }) }>
+                {stopMessage.incidentNo}
+            </button>
+        );
     };
 
     const columns = [
@@ -49,6 +59,12 @@ export const StopMessagesTable = (props) => {
             getContent: ({ endTime }) => (endTime ? moment(endTime).format(dateFormat) : ''),
         },
         {
+            label: 'DISRUPTION#',
+            key: 'incidentNo',
+            cols: 'col-1',
+            getContent: stopMessage => showDisruption(stopMessage),
+        },
+        {
             label: 'displaying on',
             key: 'stopsAndGroups',
             cols: 'col-2',
@@ -57,7 +73,7 @@ export const StopMessagesTable = (props) => {
         {
             label: 'message',
             key: 'message',
-            cols: 'col-3 control-messaging-view__message',
+            cols: 'col-2 control-messaging-view__message',
         },
         {
             label: 'priority',
@@ -104,6 +120,7 @@ StopMessagesTable.propTypes = {
     stopMessagesSortingParams: PropTypes.object.isRequired,
     renderActionsButtons: PropTypes.func.isRequired,
     updateStopMessagesSortingParams: PropTypes.func.isRequired,
+    goToDisruptionsView: PropTypes.func.isRequired,
 };
 
-export default connect(null, { updateStopMessagesSortingParams })(StopMessagesTable);
+export default connect(null, { updateStopMessagesSortingParams, goToDisruptionsView })(StopMessagesTable);

@@ -6,18 +6,31 @@ import { IoMdArrowDropleft, IoMdArrowDropright } from 'react-icons/io';
 
 import { getServiceDate } from '../../../../redux/selectors/control/serviceDate';
 import { updateServiceDate } from '../../../../redux/actions/control/serviceDate';
+import { deselectAllTrips } from '../../../../redux/actions/control/routes/trip-instances';
 import DATE_TYPE from '../../../../types/date-types';
+import ConfirmationModal from '../ConfirmationModal/ConfirmationModal';
+import { getSelectedTripsKeys } from '../../../../redux/selectors/control/routes/trip-instances';
 
 export class ServiceDatePicker extends React.Component {
     static propTypes = {
         serviceDate: PropTypes.string.isRequired,
         updateServiceDate: PropTypes.func.isRequired,
         isServiceDatePickerDisabled: PropTypes.bool,
+        deselectAllTrips: PropTypes.func.isRequired,
+        selectedTrips: PropTypes.array.isRequired,
     };
 
     static defaultProps = {
         isServiceDatePickerDisabled: false,
     };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            isModalOpen: false,
+        };
+    }
 
     nameDate = date => moment.tz(date, DATE_TYPE.TIME_ZONE).calendar(null, {
         sameDay: `[${DATE_TYPE.TODAY}]`,
@@ -29,6 +42,28 @@ export class ServiceDatePicker extends React.Component {
     addDay = date => moment(date).add(1, 'day').format();
 
     subtractDay = date => moment(date).subtract(1, 'day').format();
+
+    serviceDateToUpdate = null;
+
+    updateServiceDate = (date) => {
+        this.serviceDateToUpdate = date;
+
+        if (this.props.selectedTrips && this.props.selectedTrips.length > 0) {
+            this.setState({ isModalOpen: true });
+        } else {
+            this.props.updateServiceDate(date);
+        }
+    };
+
+    handleModalClose = () => {
+        this.setState({ isModalOpen: false });
+    };
+
+    handleChangeDate = () => {
+        this.props.updateServiceDate(this.serviceDateToUpdate);
+        this.props.deselectAllTrips();
+        this.handleModalClose();
+    };
 
     render() {
         const { serviceDate, isServiceDatePickerDisabled } = this.props;
@@ -48,7 +83,7 @@ export class ServiceDatePicker extends React.Component {
                         type="button"
                         aria-label={ this.nameDate(this.subtractDay(serviceDate)) }
                         disabled={ isServiceDateYesterday }
-                        onClick={ () => this.props.updateServiceDate(this.subtractDay(serviceDate)) }>
+                        onClick={ () => this.updateServiceDate(this.subtractDay(serviceDate)) }>
                         <IoMdArrowDropleft size={ 18 } />
                     </button>
                     <button
@@ -56,10 +91,16 @@ export class ServiceDatePicker extends React.Component {
                         type="button"
                         aria-label={ this.nameDate(this.addDay(serviceDate)) }
                         disabled={ isServiceDateTomorrow }
-                        onClick={ () => this.props.updateServiceDate(this.addDay(serviceDate)) }>
+                        onClick={ () => this.updateServiceDate(this.addDay(serviceDate)) }>
                         <IoMdArrowDropright size={ 18 } />
                     </button>
                 </div>
+                <ConfirmationModal
+                    title="Change Service Date"
+                    message="Trips have been selected in Routes and Trips, changing the service date will deselect these trips. Do you wish to continue?"
+                    isOpen={ this.state.isModalOpen }
+                    onClose={ this.handleModalClose }
+                    onAction={ this.handleChangeDate } />
             </section>
         );
     }
@@ -67,4 +108,5 @@ export class ServiceDatePicker extends React.Component {
 
 export default connect(state => ({
     serviceDate: getServiceDate(state),
-}), { updateServiceDate })(ServiceDatePicker);
+    selectedTrips: getSelectedTripsKeys(state),
+}), { updateServiceDate, deselectAllTrips })(ServiceDatePicker);

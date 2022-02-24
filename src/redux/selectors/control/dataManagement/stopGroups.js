@@ -1,14 +1,14 @@
 import _ from 'lodash-es';
 import { createSelector } from 'reselect';
-import { getAllStops } from './stops';
+import { getAllStops } from '../stopMessaging/stops';
 
 export const SYSTEM_STOP_GROUP_ID = -1;
 export const SYSTEM_STOP_GROUP_STOP_START = 1000;
 export const SYSTEM_STOP_GROUP_STOP_END = 8999;
 
-export const getStopMessagingState = state => _.result(state, 'control.stopMessaging');
-export const getAllStopGroups = createSelector(getStopMessagingState, stopGroupsState => _.result(stopGroupsState, 'stopGroups'));
-export const getStopGroupsLoadingState = createSelector(getStopMessagingState, stopGroupsState => _.result(stopGroupsState, 'isStopGroupsLoading'));
+export const getDataManagementState = state => _.result(state, 'control.dataManagement');
+export const getAllStopGroups = createSelector(getDataManagementState, stopGroupsState => _.result(stopGroupsState, 'stopGroups'));
+export const getStopGroupsLoadingState = createSelector(getDataManagementState, stopGroupsState => _.result(stopGroupsState, 'isStopGroupsLoading'));
 
 export const allSystemStopGroups = [
     { value: 0, label: '__ All Stops __', stopGroup: { id: 0, title: '__ All Stops __' } },

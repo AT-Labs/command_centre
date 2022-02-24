@@ -6,6 +6,7 @@ import { HiOutlineCheckCircle } from 'react-icons/hi';
 import { GiAlarmClock } from 'react-icons/gi';
 import { GoAlert } from 'react-icons/go';
 import { FaPaperclip } from 'react-icons/fa';
+import { RiMailCheckLine } from 'react-icons/ri';
 import { updateActiveDisruptionId, updateCopyDisruptionState } from '../../../redux/actions/control/disruptions';
 import { getActiveDisruptionId } from '../../../redux/selectors/control/disruptions';
 import { PAGE_SIZE } from '../../../utils/control/disruptions';
@@ -47,7 +48,7 @@ class DisruptionsTable extends React.Component {
             {
                 label: `${LABEL_DISRUPTION}#`,
                 key: 'incidentNo',
-                cols: 'col-1',
+                cols: 'col-2',
                 getContent: disruption => this.getDisruptionLabel(disruption),
             },
             {
@@ -64,7 +65,7 @@ class DisruptionsTable extends React.Component {
             {
                 label: LABEL_AFFECTED_STOPS,
                 key: 'affectedEntities',
-                cols: 'col-2',
+                cols: 'col-1',
                 getContent: (disruption, key) => [...new Set(disruption[key].filter(entity => entity.stopId).map(({ stopCode }) => stopCode))].join(', '),
             },
             {
@@ -106,19 +107,26 @@ class DisruptionsTable extends React.Component {
     }
 
     getDisruptionLabel = (disruption) => {
-        const { uploadedFiles, incidentNo } = disruption;
+        const { uploadedFiles, incidentNo, createNotification } = disruption;
 
         if (uploadedFiles && uploadedFiles.length > 0) {
             return (
                 <span>
                     { incidentNo }
                     <FaPaperclip size={ 12 } className="ml-1" />
+                    {' '}
+                    { createNotification && <RiMailCheckLine size={ 14 } className="ml-1" /> }
+                    {' '}
                 </span>
             );
         }
 
         return (
-            <span>{ incidentNo }</span>
+            <span>
+                { incidentNo }
+                {' '}
+                { createNotification && <RiMailCheckLine size={ 14 } className="ml-1" /> }
+            </span>
         );
     };
 

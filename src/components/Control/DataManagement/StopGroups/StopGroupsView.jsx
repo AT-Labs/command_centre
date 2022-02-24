@@ -3,33 +3,33 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
-import { FaPlus, FaArrowLeft } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa';
 import { some, noop } from 'lodash-es';
-
-import VIEW_TYPE from '../../../types/view-types';
-import MESSAGING_MODAL_TYPE from '../../../types/messaging-modal-types';
-import StopGroupsModal from './StopMessagingModals/StopGroupsModal';
-import ControlTable from '../Common/ControlTable/ControlTable';
-import Stops from './Stops';
-import { updateControlDetailView, updateMainView } from '../../../redux/actions/navigation';
-import ConfirmationModal from '../Common/ConfirmationModal/ConfirmationModal';
-import { getAllStopGroups, getStopGroupsLoadingState } from '../../../redux/selectors/control/stopMessaging/stopGroups';
-import { updateStopGroup } from '../../../redux/actions/control/stopMessaging';
-import SearchFilter from '../Common/Filters/SearchFilter/SearchFilter';
-import SEARCH_RESULT_TYPE from '../../../types/search-result-types';
+import MESSAGING_MODAL_TYPE from '../../../../types/messaging-modal-types';
+import StopGroupsModal from './StopGroupsModal';
+import ControlTable from '../../Common/ControlTable/ControlTable';
+import Stops from '../../StopMessagingView/Stops';
+import ConfirmationModal from '../../Common/ConfirmationModal/ConfirmationModal';
+import { getAllStopGroups, getStopGroupsLoadingState } from '../../../../redux/selectors/control/dataManagement/stopGroups';
+import { updateStopGroup, getStopGroups } from '../../../../redux/actions/control/dataManagement';
+import { getStopMessagesAndPermissions } from '../../../../redux/actions/control/stopMessaging';
+import SearchFilter from '../../Common/Filters/SearchFilter/SearchFilter';
+import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 
 export class StopGroupsView extends React.Component {
     static propTypes = {
         stopGroups: PropTypes.array,
         updateStopGroup: PropTypes.func.isRequired,
-        updateMainView: PropTypes.func.isRequired,
-        updateControlDetailView: PropTypes.func.isRequired,
         isStopGroupsLoading: PropTypes.bool,
+        getStopMessagesAndPermissions: PropTypes.func.isRequired,
+        getStopGroups: PropTypes.func.isRequired,
+        displayTitle: PropTypes.bool,
     };
 
     static defaultProps = {
         stopGroups: [],
         isStopGroupsLoading: false,
+        displayTitle: true,
     };
 
     constructor(props) {
@@ -64,7 +64,7 @@ export class StopGroupsView extends React.Component {
             {
                 label: 'group name',
                 key: 'title',
-                cols: 'col-4',
+                cols: 'col-3',
             },
             {
                 label: 'stops',
@@ -80,7 +80,7 @@ export class StopGroupsView extends React.Component {
             {
                 label: '',
                 key: '',
-                cols: 'col-1',
+                cols: 'col-2',
                 getContent: stopGroup => (
                     <div className="cc-table-actions-col">
                         <Button
@@ -100,6 +100,8 @@ export class StopGroupsView extends React.Component {
     }
 
     componentDidMount() {
+        this.props.getStopMessagesAndPermissions();
+        this.props.getStopGroups();
         this.resetStopGroupsList();
     }
 
@@ -158,20 +160,14 @@ export class StopGroupsView extends React.Component {
         const { modalType, isModalOpen, activeStopGroup, stopGroupsList, searchValue } = this.state;
         const { create, edit, cancel } = this.MODALS;
         const { STOP_IN_GROUP, STOP_GROUP } = SEARCH_RESULT_TYPE;
+        const { displayTitle } = this.props;
 
         return (
             <div className="messaging-stop-group-view">
-                <Button
-                    className="cc-btn-inner-nav mb-3 "
-                    onClick={ () => {
-                        this.props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
-                        this.props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.STOP_MESSAGES);
-                    } }>
-                    <FaArrowLeft size={ 20 } className="cc-btn-secondary__icon" />
-                    Back to messaging
-                </Button>
-                <h1>Manage stop groups</h1>
-                <div className="row py-2">
+                { displayTitle && (
+                    <h1>Manage stop groups</h1>
+                )}
+                <div className={ `row ${displayTitle ? 'py-2' : 'pb-2'}` }>
                     <div className="search-filters col-3">
                         <SearchFilter
                             value={ searchValue }
@@ -229,5 +225,5 @@ export default connect(
         stopGroups: getAllStopGroups(state),
         isStopGroupsLoading: getStopGroupsLoadingState(state),
     }),
-    { updateStopGroup, updateMainView, updateControlDetailView },
+    { updateStopGroup, getStopMessagesAndPermissions, getStopGroups },
 )(StopGroupsView);

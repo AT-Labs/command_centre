@@ -8,6 +8,8 @@ import { clearActiveTripInstanceId } from './routes/trip-instances';
 import { updateServiceDate } from './serviceDate';
 import { parseStartAndDateTime } from './notifications';
 
+import { updateActiveDisruptionId } from './disruptions';
+
 export const goToRoutesView = (trip, filters) => (dispatch) => {
     const {
         routeVariantId, routeType, startTime, routeShortName, agencyId, tripStartDate, tripStartTime,
@@ -46,4 +48,10 @@ export const goToBlocksView = trip => (dispatch) => {
         },
     });
     dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.BLOCKS));
+};
+
+export const goToDisruptionsView = (message, { setActiveDisruption }) => (dispatch) => {
+    dispatch(updateMainView(VIEW_TYPE.MAIN.CONTROL));
+    dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS));
+    if (setActiveDisruption) dispatch(updateActiveDisruptionId(message.incidentId));
 };

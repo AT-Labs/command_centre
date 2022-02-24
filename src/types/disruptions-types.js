@@ -114,17 +114,19 @@ export const ACTION_RESULT_TYPES = {
 };
 
 export const ACTION_RESULT = {
-    UPDATE_SUCCESS: incidentNo => ({
+    UPDATE_SUCCESS: (incidentNo, createNotification = false) => ({
         resultStatus: ACTION_RESULT_TYPES.SUCCESS,
         resultMessage: `Disruption ${incidentNo} has been updated.`,
+        resultCreateNotification: createNotification,
     }),
     UPDATE_ERROR: incidentNo => ({
         resultStatus: ACTION_RESULT_TYPES.ERROR,
         resultMessage: ERROR_TYPE.disruptionUpdate(incidentNo),
     }),
-    CREATE_SUCCESS: incidentNo => ({
+    CREATE_SUCCESS: (incidentNo, createNotification = false) => ({
         resultStatus: ACTION_RESULT_TYPES.SUCCESS,
         resultMessage: `Disruption with disrupt number #${incidentNo} created successfully.`,
+        resultCreateNotification: createNotification,
     }),
     CREATE_ERROR: () => ({
         resultStatus: ACTION_RESULT_TYPES.ERROR,

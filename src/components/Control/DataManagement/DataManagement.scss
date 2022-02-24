@@ -1,0 +1,8 @@
+.MuiPaper-root {
+    position: relative !important;
+    border-right: none !important;
+
+    > div:first-of-type {
+        min-height: 40px;
+    }
+}
