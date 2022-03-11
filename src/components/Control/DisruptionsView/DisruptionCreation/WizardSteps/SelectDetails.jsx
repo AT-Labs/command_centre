@@ -32,7 +32,7 @@ import Footer from './Footer';
 import AffectedEntities from '../../AffectedEntities';
 
 const SelectDetails = (props) => {
-    const { startDate, startTime, endDate, endTime, impact, cause, header, description, url, createNotification } = props.data;
+    const { startDate, startTime, endDate, endTime, impact, cause, header, description, url, createNotification, exemptAffectedTrips } = props.data;
     const { routes, stops } = props;
 
     const [modalOpenedTime] = useState(moment().second(0).millisecond(0));
@@ -211,7 +211,7 @@ const SelectDetails = (props) => {
                     </FormGroup>
                 </div>
                 <div className="col-12">
-                    <FormGroup id="disruption-creation__wizard-select-details__create-noti">
+                    <FormGroup className="disruption-creation__checkbox">
                         <Label>
                             <Input
                                 type="checkbox"
@@ -222,6 +222,17 @@ const SelectDetails = (props) => {
                             <span className="pl-2">Draft Stop Message</span>
                         </Label>
                     </FormGroup>
+                    {/* <FormGroup className="disruption-creation__checkbox">
+                        <Label>
+                            <Input
+                                type="checkbox"
+                                className="ml-0"
+                                onChange={ e => props.onDataUpdate('exemptAffectedTrips', e.currentTarget.checked) }
+                                checked={ exemptAffectedTrips }
+                            />
+                            <span className="pl-2">Exempt Affected Trips</span>
+                        </Label>
+                    </FormGroup> */}
                 </div>
             </Form>
             <Footer

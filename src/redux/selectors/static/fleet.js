@@ -18,3 +18,4 @@ export const getFleetVehicleAgencyId = fleetInfo => result(fleetInfo, 'agency.ag
 export const getFleetVehicleCapacity = fleetInfo => result(fleetInfo, 'capacity');
 export const getFleetVehicleType = fleetInfo => result(fleetInfo, 'type.type');
 export const getFleetVehicleLabel = fleetInfo => result(fleetInfo, 'label');
+export const getFleetVehicleTag = fleetInfo => result(fleetInfo, 'tag');

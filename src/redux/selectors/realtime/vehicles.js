@@ -5,7 +5,7 @@ import { createSelector } from 'reselect';
 import VEHICLE_TYPE, { TRIP_DIRECTION_INBOUND, TRIP_DIRECTION_OUTBOUND } from '../../../types/vehicle-types';
 import { getAllocations, getVehicleAllocationByTrip, getVehicleAllocationLabelByTrip } from '../control/blocks';
 import { getAgencies } from '../static/agencies';
-import { getFleetState, getFleetVehicleAgencyId, getFleetVehicleType } from '../static/fleet';
+import { getFleetState, getFleetVehicleAgencyId, getFleetVehicleType, getFleetVehicleTag } from '../static/fleet';
 import { isDelayBetweenRange } from '../../../utils/helpers';
 import { getTripUpdates } from './quickview';
 import { getVehiclePredicateFromCheckedSearchResults, getVehicleDetail, getRouteDetail } from './detail';
@@ -71,6 +71,7 @@ export const getVehiclesFilterIsShowingDirectionOutbound = createSelector(getVeh
 export const getVehiclesFilterShowingDelay = createSelector(getVehiclesFilters, filters => get(filters, 'showingDelay', {}));
 export const getVehiclesFilterShowingOccupancyLevels = createSelector(getVehiclesFilters, filters => get(filters, 'showingOccupancyLevels', []));
 export const getVehiclesFilterIsShowingNIS = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingNIS'));
+export const getVehiclesFilterShowingTags = createSelector(getVehiclesFilters, filters => get(filters, 'showingTags', []));
 export const getFilteredVehicles = createSelector(
     getAllVehicles,
     getFleetState,
@@ -83,11 +84,13 @@ export const getFilteredVehicles = createSelector(
     getVehiclesFilterIsShowingNIS,
     getVehiclesFilterShowingOccupancyLevels,
     getVehiclesFilterShowingDelay,
-    (allVehicles, allFleet, allocations, tripUpdates, routeType, agencyIds, showInbound, showOutbound, showNIS, showingOccupancyLevels, showingDelay) => {
+    getVehiclesFilterShowingTags,
+    (allVehicles, allFleet, allocations, tripUpdates, routeType, agencyIds, showInbound, showOutbound, showNIS, showingOccupancyLevels, showingDelay, showingTags) => {
         const runningVehiclesWithAllocations = showNIS ? getVehiclesWithAllocations(allVehicles, allocations) : [];
         const visibleVehicles = filter(allVehicles, (vehicle) => {
             const id = getVehicleId(vehicle);
             const tripId = getVehicleTripId(vehicle);
+            const fleetInfo = allFleet[id];
 
             if (!tripId) {
                 if (!showNIS) {
@@ -111,7 +114,6 @@ export const getFilteredVehicles = createSelector(
             }
 
             if (!isNull(routeType)) {
-                const fleetInfo = allFleet[id];
                 const fleetVehicleType = getFleetVehicleType(fleetInfo);
                 const fleetAgencyId = getFleetVehicleAgencyId(fleetInfo);
 
@@ -132,6 +134,10 @@ export const getFilteredVehicles = createSelector(
             }
 
             if (!!showingOccupancyLevels.length && !showingOccupancyLevels.includes(vehicle.vehicle.occupancyStatus)) {
+                return false;
+            }
+
+            if (!!showingTags.length && !showingTags.includes(getFleetVehicleTag(fleetInfo))) {
                 return false;
             }
 

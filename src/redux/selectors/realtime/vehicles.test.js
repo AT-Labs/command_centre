@@ -1,7 +1,7 @@
 import { expect } from 'chai';
+import { BUS_TYPE_ID, FERRY_TYPE_ID, TRAIN_TYPE_ID, TRIP_DIRECTION_INBOUND } from '../../../types/vehicle-types';
+import { getFilteredVehicles, getVisibleVehicles } from './vehicles';
 
-import { getVisibleVehicles, getFilteredVehicles } from './vehicles';
-import { TRAIN_TYPE_ID, BUS_TYPE_ID, FERRY_TYPE_ID, TRIP_DIRECTION_INBOUND } from '../../../types/vehicle-types';
 
 const busNewZealandBus = {
     id: '13000',
@@ -191,6 +191,7 @@ const allFleet = {
         type: {
             type: 'Ferry',
         },
+        tag: '',
     },
     14000: {
         agency: {
@@ -199,6 +200,7 @@ const allFleet = {
         type: {
             type: 'Train',
         },
+        tag: '',
     },
     14100: {
         agency: {
@@ -207,6 +209,7 @@ const allFleet = {
         type: {
             type: 'Train',
         },
+        tag: '',
     },
     14200: {
         agency: {
@@ -215,6 +218,7 @@ const allFleet = {
         type: {
             type: 'Train',
         },
+        tag: '',
     },
     13000: {
         agency: {
@@ -223,6 +227,7 @@ const allFleet = {
         type: {
             type: 'Bus',
         },
+        tag: 'Smartrak',
     },
     13100: {
         agency: {
@@ -231,6 +236,7 @@ const allFleet = {
         type: {
             type: 'Bus',
         },
+        tag: 'Torutek',
     },
 };
 const allocations = {};
@@ -257,6 +263,7 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+                [],
             );
             const visibleVehicles = getVisibleVehicles.resultFunc(
                 filteredVehicles,
@@ -283,6 +290,7 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+                [],
             );
             const visibleVehicles = getVisibleVehicles.resultFunc(
                 filteredVehicles,
@@ -307,6 +315,7 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+                [],
             );
             const visibleVehicles = getVisibleVehicles.resultFunc(
                 filteredVehicles,
@@ -330,6 +339,7 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+                [],
             );
             const visibleVehicles = getVisibleVehicles.resultFunc(
                 filteredVehicles,
@@ -354,6 +364,7 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+                [],
             );
             const visibleVehicles = getVisibleVehicles.resultFunc(
                 filteredVehicles,
@@ -380,6 +391,7 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+                [],
             );
             const visibleVehicles = getVisibleVehicles.resultFunc(
                 filteredVehicles,
@@ -403,6 +415,7 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+                [],
             );
             const visibleVehicles = getVisibleVehicles.resultFunc(
                 filteredVehicles,
@@ -429,6 +442,7 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+                [],
             );
             const visibleVehicles = getVisibleVehicles.resultFunc(
                 filteredVehicles,
@@ -452,6 +466,7 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+                [],
             );
             const visibleVehicles = getVisibleVehicles.resultFunc(
                 filteredVehicles,
@@ -475,6 +490,7 @@ describe('Vehicles selectors', () => {
                 null,
                 [],
                 {},
+                [],
             );
             const visibleVehicles = getVisibleVehicles.resultFunc(
                 filteredVehicles,
@@ -496,6 +512,7 @@ describe('Vehicles selectors', () => {
                 true,
                 [],
                 {},
+                [],
             );
             expect(getVisibleVehicles.resultFunc(
                 filteredVehicles,
@@ -517,6 +534,7 @@ describe('Vehicles selectors', () => {
                 false,
                 [],
                 {},
+                [],
             );
             expect(getVisibleVehicles.resultFunc(
                 filteredVehicles,
@@ -539,6 +557,7 @@ describe('Vehicles selectors', () => {
                 true,
                 [],
                 {},
+                [],
             );
             expect(getVisibleVehicles.resultFunc(
                 filteredVehicles,
@@ -546,6 +565,49 @@ describe('Vehicles selectors', () => {
             )).to.eql({
                 [train.id]: train,
                 [trainNotInService.id]: trainNotInService,
+            });
+        });
+
+        it('should filter by vehicle tag', () => {
+            let filteredVehicles = getFilteredVehicles.resultFunc(
+                allVehicles,
+                allFleet,
+                allocations,
+                tripUpdates,
+                null,
+                null,
+                true,
+                true,
+                null,
+                [],
+                {},
+                ['Smartrak'],
+            );
+            expect(getVisibleVehicles.resultFunc(
+                filteredVehicles,
+                null,
+            )).to.eql({
+                [busNewZealandBus.id]: busNewZealandBus,
+            });
+            filteredVehicles = getFilteredVehicles.resultFunc(
+                allVehicles,
+                allFleet,
+                allocations,
+                tripUpdates,
+                null,
+                null,
+                true,
+                true,
+                null,
+                [],
+                {},
+                ['Torutek'],
+            );
+            expect(getVisibleVehicles.resultFunc(
+                filteredVehicles,
+                null,
+            )).to.eql({
+                [busRitchiesTransport.id]: busRitchiesTransport,
             });
         });
     });

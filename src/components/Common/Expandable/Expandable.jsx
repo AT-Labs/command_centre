@@ -45,3 +45,5 @@ Expandable.defaultProps = {
     className: '',
     children: [],
 };
+
+export default Expandable;

@@ -9,7 +9,7 @@ import { updateRealTimeDetailView } from '../../../../../redux/actions/navigatio
 import { formatRouteSearchResults } from '../../../../../redux/actions/search';
 import { getVehicleDetail, getVehicleFleetInfo } from '../../../../../redux/selectors/realtime/detail';
 import { getJoinedVehicleLabel } from '../../../../../redux/selectors/realtime/vehicles';
-import { getFleetVehicleAgencyName, getFleetVehicleType, getFleetVehicleLabel } from '../../../../../redux/selectors/static/fleet';
+import { getFleetVehicleAgencyName, getFleetVehicleType, getFleetVehicleLabel, getFleetVehicleTag } from '../../../../../redux/selectors/static/fleet';
 import { getAllocations } from '../../../../../redux/selectors/control/blocks';
 import { formatRealtimeDetailListItemKey } from '../../../../../utils/helpers';
 import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
@@ -51,6 +51,7 @@ const VehicleDetails = (props) => {
     const routeType = getFleetVehicleType(vehicleFleetInfo) || get(route, 'route_type');
     const routeName = get(route, 'route_short_name');
     const agencyName = getFleetVehicleAgencyName(vehicleFleetInfo) || get(route, 'agency_name');
+    const vehicleTag = getFleetVehicleTag(vehicleFleetInfo);
     return (
         <section className="vehicle-detail-view__vehicle-details">
             <h2 className="text-capitalize px-4 pt-3 border-bottom">
@@ -70,6 +71,7 @@ const VehicleDetails = (props) => {
                         )],
                         ['Description:', tripHeadsign || ' '],
                         ['Operator:', agencyName],
+                        ...(vehicleTag ? [['Tags:', vehicleTag]] : []),
                         ['Trip Start Time:', startTime],
                         ['Route ID:', routeId],
                         ['Trip ID:', tripId],
@@ -77,6 +79,7 @@ const VehicleDetails = (props) => {
                     ]) || [
                         ['Description:', 'Not In Service'],
                         ['Operator:', agencyName],
+                        ...(vehicleTag ? [['Tags:', vehicleTag]] : []),
                     ]).map(r => createDetailRow(...r))
                 }
             </dl>

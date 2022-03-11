@@ -17,6 +17,7 @@ export const INIT_STATE = {
         isShowingNIS: false,
         showingDelay: {},
         showingOccupancyLevels: [],
+        showingTags: [],
     },
 };
 

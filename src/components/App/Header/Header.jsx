@@ -13,6 +13,9 @@ import { IS_LOGIN_NOT_REQUIRED, logout } from '../../../auth';
 import { updateControlDetailView, updateMainView, updateSecondaryPanelView } from '../../../redux/actions/navigation';
 import { isNotificationsEmpty } from '../../../redux/selectors/control/notifications';
 import { getActiveControlDetailView, getActiveMainView, getActiveSecondaryPanelView } from '../../../redux/selectors/navigation';
+import { getStopMessagesPermissions } from '../../../redux/selectors/control/stopMessaging/stopMessages';
+import { getStopMessagesAndPermissions } from '../../../redux/actions/control/stopMessaging';
+import { isGlobalEditStopMessagesPermitted } from '../../../utils/user-permissions';
 import { getUserPermissions, getUserProfile } from '../../../redux/selectors/user';
 import VIEW_TYPE from '../../../types/view-types';
 import { IS_NOTIFICATIONS_ENABLED, IS_DISRUPTIONS_ENABLED, IS_TRIP_REPLAYS_ENABLED, IS_ANALYTICS_ENABLED } from '../../../utils/feature-toggles';
@@ -28,6 +31,8 @@ function Header(props) {
     const [isOpen, setIsOpen] = useState(false);
     const [isUserPopoverOpen, setIsUserPopoverOpen] = useState(false);
     const [isHelpModalVisible, setIsHelpModalVisible] = useState(false);
+
+    const isGlobalEditMessagesPermitted = IS_LOGIN_NOT_REQUIRED || isGlobalEditStopMessagesPermitted(props.stopMessagesPermissions);
 
     const handleUrlChange = (inputLocation) => {
         if (inputLocation.pathname === '/') {
@@ -49,6 +54,7 @@ function Header(props) {
     };
 
     useEffect(() => {
+        props.getStopMessagesAndPermissions();
         handleUrlChange(location);
         const removeBackListener = history.listen((currentLocation, action) => {
             if (action === 'POP') {
@@ -224,20 +230,21 @@ function Header(props) {
                     )}
                 </Nav>
                 <Nav className="header__toolbar ml-auto" navbar>
-                    <NavItem>
-                        <CustomButton
-                            className="header__btn header__data-management rounded-0 px-3"
-                            active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT }
-                            tabIndex="0"
-                            ariaLabel="Data Management"
-                            onClick={ () => {
-                                props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
-                                props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT);
-                            } }>
-                            <FcDataConfiguration size={ 32 } />
-                        </CustomButton>
-                    </NavItem>
-
+                    { isGlobalEditMessagesPermitted && (
+                        <NavItem>
+                            <CustomButton
+                                className="header__btn header__data-management rounded-0 px-3"
+                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT }
+                                tabIndex="0"
+                                ariaLabel="Data Management"
+                                onClick={ () => {
+                                    props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
+                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT);
+                                } }>
+                                <FcDataConfiguration size={ 32 } />
+                            </CustomButton>
+                        </NavItem>
+                    )}
                     <NavItem>
                         <CustomButton
                             className="header__btn header__dashboard rounded-0 px-3"
@@ -312,9 +319,11 @@ Header.propTypes = {
     updateMainView: PropTypes.func.isRequired,
     updateControlDetailView: PropTypes.func.isRequired,
     updateSecondaryPanelView: PropTypes.func.isRequired, // eslint-disable-line
+    getStopMessagesAndPermissions: PropTypes.func.isRequired,
     activeView: PropTypes.string.isRequired,
     controlActiveView: PropTypes.string,
     hasNotifications: PropTypes.bool, // eslint-disable-line
+    stopMessagesPermissions: PropTypes.array.isRequired,
     userProfile: PropTypes.shape({
         name: PropTypes.string.isRequired,
         userName: PropTypes.string.isRequired,
@@ -341,11 +350,13 @@ export default connect(
         userProfile: getUserProfile(state),
         userPermissions: getUserPermissions(state),
         hasNotifications: isNotificationsEmpty(state),
+        stopMessagesPermissions: getStopMessagesPermissions(state),
     }),
     {
         resetRealtimeToDefault,
         updateMainView,
         updateControlDetailView,
         updateSecondaryPanelView,
+        getStopMessagesAndPermissions,
     },
 )(Header);

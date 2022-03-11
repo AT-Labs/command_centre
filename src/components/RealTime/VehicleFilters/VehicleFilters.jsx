@@ -12,6 +12,7 @@ import VehicleFilterByOperator from './VehicleFilterByOperator';
 import VehicleFilterByRouteType from './VehicleFilterByRouteType';
 import VehicleFilterByDelay from './VehicleFilterByDelay/VehicleFilterByDelay';
 import VehicleFilterByOccupancy from './VehicleFilterByOccupancy';
+import VehicleFilterByTag from './VehicleFilterByTag';
 import './VehicleFilters.scss';
 
 class VehicleFilters extends React.PureComponent {
@@ -35,6 +36,7 @@ class VehicleFilters extends React.PureComponent {
         isShowingNIS: false,
         showingDelay: {},
         showingOccupancyLevels: [],
+        showingTags: [],
     });
 
     render() {
@@ -60,6 +62,8 @@ class VehicleFilters extends React.PureComponent {
                     <VehicleFilterByDelay />
                     <hr className="vehicle-filters__separator mt-2 mb-2" />
                     <VehicleFilterByOccupancy />
+                    <hr className="vehicle-filters__separator mt-2 mb-2" />
+                    <VehicleFilterByTag />
                     <hr className="vehicle-filters__separator mt-2 mb-2" />
                     <div className="text-right">
                         <Button

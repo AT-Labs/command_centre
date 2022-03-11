@@ -54,3 +54,5 @@ ExpandableSummary.defaultProps = {
     displayToggleButton: true,
     expandClassName: '',
 };
+
+export default ExpandableSummary;

@@ -76,6 +76,7 @@ const DisruptionDetailView = (props) => {
     const [endDate, setEndDate] = useState(disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '');
     const [disruptionOpenedTime] = useState(moment().second(0).millisecond(0));
     const [createNotification, setCreateNotification] = useState(false);
+    const [exemptAffectedTrips, setExemptAffectedTrips] = useState(disruption.exemptAffectedTrips);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqBy([...affectedRoutes, ...props.routes], route => route.routeId);
@@ -117,6 +118,7 @@ const DisruptionDetailView = (props) => {
         setEndTime(disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : '');
         setEndDate(disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '');
         setCreateNotification(disruption.createNotification);
+        setExemptAffectedTrips(disruption.exemptAffectedTrips);
     }, [
         disruption.header,
         disruption.cause,
@@ -128,6 +130,7 @@ const DisruptionDetailView = (props) => {
         disruption.endTime,
         disruption.endDate,
         disruption.createNotification,
+        disruption.exemptAffectedTrips,
     ]);
 
     const setDisruption = () => ({
@@ -143,6 +146,7 @@ const DisruptionDetailView = (props) => {
         startTime: momentFromDateTime(startDate, startTime),
         endTime: momentFromDateTime(endDate, endTime),
         createNotification,
+        exemptAffectedTrips,
     });
 
     const handleUpdateDisruption = () => updateDisruption(setDisruption());
@@ -392,10 +396,23 @@ const DisruptionDetailView = (props) => {
                 </div>
                 <div className="col-7">
                     <FormGroup className="pl-0 h-100 d-flex align-items-end justify-content-end">
-                        <div id="disruption-detail__create-noti" className="pr-2">
+                        {/* <div className="pr-2 disruption-detail__checkbox">
                             <Label className="font-size-md font-weight-bold">
                                 <Input
-                                    id="disruption-detail__create-noti-checkbox"
+                                    id="create-notification"
+                                    className="test"
+                                    type="checkbox"
+                                    disabled={ isResolved() }
+                                    onChange={ e => setExemptAffectedTrips(e.currentTarget.checked) }
+                                    checked={ exemptAffectedTrips }
+                                />
+                                <span className="pl-2">Exempt Affected Trips</span>
+                            </Label>
+                        </div> */}
+                        <div className="pr-2 disruption-detail__checkbox">
+                            <Label className="font-size-md font-weight-bold">
+                                <Input
+                                    id="create-notification"
                                     className="test"
                                     type="checkbox"
                                     disabled={ isResolved() || disruption.createNotification }

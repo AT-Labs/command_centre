@@ -54,6 +54,7 @@ const INIT_STATE = {
     description: '',
     url: '',
     createNotification: false,
+    exemptAffectedTrips: false,
 };
 
 class CreateDisruption extends React.Component {
@@ -123,7 +124,7 @@ class CreateDisruption extends React.Component {
         const isEntitiesEmpty = _.isEmpty(disruptionData.affectedEntities);
         const isPropsEmpty = _.some(_.omit(
             disruptionData,
-            ['endDate', 'endTime', 'mode', 'affectedEntities', 'url', 'createNotification'],
+            ['endDate', 'endTime', 'mode', 'affectedEntities', 'url', 'createNotification', 'exemptAffectedTrips'],
         ), _.isEmpty);
         return isEntitiesEmpty || isPropsEmpty;
     };

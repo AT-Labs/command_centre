@@ -34,3 +34,5 @@ ExpandableContent.defaultProps = {
     children: [],
     extendClassName: '',
 };
+
+export default ExpandableContent;
