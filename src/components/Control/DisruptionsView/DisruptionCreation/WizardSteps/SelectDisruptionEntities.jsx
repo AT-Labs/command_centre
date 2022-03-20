@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
-import { filter, isEmpty, uniqBy, uniq, pick, sortBy } from 'lodash-es';
+import { filter, isEmpty, uniqBy, uniq, pick, sortBy, forOwn, omitBy, pickBy, groupBy } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
+import { IconContext } from 'react-icons';
+import { FaExclamationTriangle } from 'react-icons/fa';
 import { EntityCheckbox } from './EntityCheckbox';
 import {
     getAffectedRoutes,
@@ -31,35 +33,31 @@ import Loader from '../../../../Common/Loader/Loader';
 import { Expandable, ExpandableContent, ExpandableSummary } from '../../../../Common/Expandable';
 import { search } from '../../../../../redux/actions/search';
 import { getSearchResults } from '../../../../../redux/selectors/search';
+import { getAllStops } from '../../../../../redux/selectors/static/stops';
+import { getStopGroupsIncludingDeleted } from '../../../../../redux/selectors/control/dataManagement/stopGroups';
+import { getStopGroupName } from '../../../../../utils/control/dataManagement';
+import CustomModal from '../../../../Common/CustomModal/CustomModal';
 
-const SelectDisruptionEntities = (props) => {
-    const addKeys = (routes = [], stops = []) => {
-        const routesModified = routes.map(route => ({
-            ...route,
-            valueKey: 'routeId',
-            labelKey: 'routeShortName',
-            type: 'route',
-        }));
-        const stopsModified = stops.map(stop => ({
-            ...stop,
-            valueKey: 'stopId',
-            labelKey: 'stopCode',
-            type: 'stop',
-        }));
-        return [...routesModified, ...stopsModified];
-    };
-
-    const isRouteType = type => type === 'route';
+export const SelectDisruptionEntities = (props) => {
+    const { ROUTE, STOP, STOP_GROUP } = SEARCH_RESULT_TYPE;
+    const isRouteType = type => type === ROUTE.type;
+    const isStopGroupType = type => type === STOP_GROUP.type;
     const [areEntitiesSelected, setAreEntitiesSelected] = useState(false);
-    const { ROUTE, STOP } = SEARCH_RESULT_TYPE;
     const [selectedEntities, setSelectedEntities] = useState([]);
     const showFooter = () => areEntitiesSelected || selectedEntities.length > 0;
     const isButtonDisabled = () => !showFooter() || props.isLoading;
-    const [expandedStops, setExpandedStops] = useState([]);
+    const [expandedStops, setExpandedStops] = useState({});
+    const [expandedGroups, setExpandedGroups] = useState({});
     const [editedRoutes, setEditedRoutes] = useState([]);
     const [loadedRoutesByStop, setLoadedRoutesByStop] = useState([]);
     const [isLoadingRoutesByStop, setIsLoadingRoutesByStop] = useState(false);
     const [stopCurrentlySearchingFor, setStopCurrentlySearchingFor] = useState(null);
+
+    const [affectedSingleStops, setAffectedSingleStops] = useState([]);
+    const [affectedStopGroups, setAffectedStopGroups] = useState({});
+    const maxNumberOfEntities = 200;
+    const [totalEntities, setTotalEntities] = useState(0);
+    const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
 
     const ENTITIES_TYPES = {
         SELECTED_ROUTES: 'selectedRoutes',
@@ -69,10 +67,46 @@ const SelectDisruptionEntities = (props) => {
         STOP_ID: 'stopId',
     };
 
+    const addKeys = (routes = [], stops = [], stopGroups = null) => {
+        const routesModified = routes.map(route => ({
+            ...route,
+            valueKey: 'routeId',
+            labelKey: 'routeShortName',
+            type: ROUTE.type,
+        }));
+        const stopsModified = stops.map(stop => ({
+            ...stop,
+            valueKey: 'stopId',
+            labelKey: 'stopCode',
+            type: STOP.type,
+        }));
+        const stopGroupsModified = [];
+        if (stopGroups) {
+            forOwn(stopGroups, (stopGroupStops, groupId) => {
+                stopGroupsModified.push({
+                    groupId: +groupId,
+                    groupName: getStopGroupName(props.stopGroups, groupId),
+                    category: {
+                        icon: '',
+                        label: 'Stop groups',
+                        type: STOP_GROUP.type,
+                    },
+                    valueKey: 'groupId',
+                    labelKey: 'groupName',
+                    stops: stopGroupStops,
+                    type: STOP_GROUP.type,
+                });
+            });
+        }
+        return [...routesModified, ...stopsModified, ...stopGroupsModified];
+    };
+
     const filterOnlyStopParams = stop => pick(stop, ['stopId', 'stopName', 'stopCode', 'locationType', 'stopLat', 'stopLon', 'parentStation',
-        'platformCode', 'text', 'category', 'icon', 'valueKey', 'labelKey', 'type']);
+        'platformCode', 'text', 'category', 'icon', 'valueKey', 'labelKey', 'type', 'groupId']);
 
     const saveStopsState = stops => props.updateAffectedStopsState(sortBy(stops, sortedStop => sortedStop.stopId));
+
+    const flattenStopGroups = stopGroups => Object.values(stopGroups).flat();
 
     const fetchStopDetails = (stop) => {
         if (!stopCurrentlySearchingFor) {
@@ -86,11 +120,10 @@ const SelectDisruptionEntities = (props) => {
         if (stopSelectedOnMap) {
             fetchStopDetails(stopSelectedOnMap);
         }
-        props.onDataUpdate('affectedEntities', selectedItems);
         setAreEntitiesSelected(selectedItems.length > 0);
 
         setSelectedEntities(selectedItems.map((item) => {
-            if (isRouteType(item.type) || !item.routeId) {
+            if (isRouteType(item.type) || !item.routeId || isStopGroupType(item.type)) {
                 return item;
             }
             return filterOnlyStopParams(item);
@@ -98,8 +131,20 @@ const SelectDisruptionEntities = (props) => {
     };
 
     useEffect(() => {
-        const newEntities = addKeys(props.affectedRoutes, props.affectedStops);
-        updateSelectedEntities(newEntities);
+        const singleStops = props.affectedStops.filter(entity => !entity.groupId);
+        const stopGroupStops = props.affectedStops.filter(entity => !!entity.groupId);
+        const stopGroups = groupBy(stopGroupStops, 'groupId');
+
+        setAffectedSingleStops(singleStops);
+        setAffectedStopGroups(stopGroups);
+
+        const allSingleEntities = addKeys(props.affectedRoutes, singleStops);
+        const stopGroupEntities = addKeys([], [], stopGroups);
+
+        props.onDataUpdate('affectedEntities', [...allSingleEntities, ...stopGroupStops]);
+        setTotalEntities(allSingleEntities.length + stopGroupStops.length);
+
+        updateSelectedEntities([...allSingleEntities, ...stopGroupEntities]);
     }, [props.affectedRoutes, props.affectedStops]);
 
     // componentDidMount
@@ -131,7 +176,7 @@ const SelectDisruptionEntities = (props) => {
 
         const foundStop = props.searchResults.stop.find(stop => stop.data.stop_id === stopCurrentlySearchingFor);
 
-        const affectedStopsToUpdate = [...props.affectedStops];
+        const affectedStopsToUpdate = [...affectedSingleStops, ...flattenStopGroups(affectedStopGroups)];
         const stopToUpdateIdx = affectedStopsToUpdate.findIndex(stop => stop.stopId === foundStop.data.stop_id);
 
         if (stopToUpdateIdx >= 0) {
@@ -151,8 +196,18 @@ const SelectDisruptionEntities = (props) => {
         props.deleteAffectedEntities();
     };
 
+    const removeNotFoundFromStopGroups = () => {
+        const filterStops = props.affectedStops.filter(stop => stop.stopCode !== 'Not Found');
+        if (filterStops.length !== props.affectedStops.length) {
+            saveStopsState(filterStops);
+        }
+    };
+
     const onContinue = () => {
-        if (!props.isEditMode) {
+        if (totalEntities > maxNumberOfEntities) {
+            setIsAlertModalOpen(true);
+        } else if (!props.isEditMode) {
+            removeNotFoundFromStopGroups();
             props.onStepUpdate(1);
             props.updateCurrentStep(2);
         } else {
@@ -162,12 +217,12 @@ const SelectDisruptionEntities = (props) => {
 
     const removeFromList = (items, entities, valueKey) => items.filter(item => !entities.find(entity => entity[valueKey] === item[valueKey]));
 
-    const addRemoveStops = (selectedStops) => {
+    const addRemoveStops = (affectedStops, selectedStops) => {
         // remove stops that have been deselected
-        let updatedStops = props.affectedStops.filter(affectedStop => selectedStops.findIndex(selectedStop => selectedStop.stopId === affectedStop.stopId) >= 0);
+        let updatedStops = affectedStops.filter(affectedStop => selectedStops.findIndex(selectedStop => selectedStop.stopId === affectedStop.stopId) >= 0);
 
         // find and add stops that can't be found in the currently selected list
-        const stopsToAdd = selectedStops.filter(selectedStop => props.affectedStops.findIndex(affectedStop => affectedStop.stopId === selectedStop.stopId) < 0);
+        const stopsToAdd = selectedStops.filter(selectedStop => affectedStops.findIndex(affectedStop => affectedStop.stopId === selectedStop.stopId) < 0);
 
         if (!isEmpty(stopsToAdd)) {
             updatedStops = [...updatedStops, ...stopsToAdd];
@@ -176,24 +231,81 @@ const SelectDisruptionEntities = (props) => {
         return updatedStops;
     };
 
-    const updateEntities = (selectedItems) => {
+    const addRemoveStopsByGroup = (currentStopGroups, selectedStopGroups) => {
+        // remove stops that have been deselected
+        const updatedStopGroups = omitBy(currentStopGroups, (value, key) => !selectedStopGroups[key]);
+
+        // find and add stops from stop groups that aren't in currently selected list
+        const stopGroupsToAdd = selectedStopGroups ? pickBy(selectedStopGroups, (value, key) => !currentStopGroups[key]) : {};
+
+        return { ...updatedStopGroups, ...stopGroupsToAdd };
+    };
+
+    const formatStop = (stop, text = null, category = null, icon = null) => ({
+        stopId: stop.stop_id,
+        stopName: stop.stop_name,
+        stopCode: stop.stop_code,
+        locationType: stop.location_type,
+        stopLat: stop.stop_lat,
+        stopLon: stop.stop_lon,
+        parentStation: stop.parent_station,
+        platformCode: stop.platform_code,
+        routeType: stop.route_type,
+        text: text ?? `${stop.stop_code} - ${stop.stop_name}`,
+        category,
+        icon,
+        valueKey: 'stopId',
+        labelKey: 'stopCode',
+        type: STOP.type,
+    });
+
+    const formatStopsWithGroup = (stops, groupId) => stops.map(stop => ({
+        ...formatStop(stop),
+        groupId,
+    }));
+
+    const formatStopsInStopGroup = (stopGroups) => {
+        const stops = [];
+        stopGroups.forEach((group) => {
+            if (!group.stops[0].value) {
+                stops.push(...group.stops);
+            } else {
+                const groupStops = group.stops.map((stop) => {
+                    let foundStop = props.stops[stop.value];
+
+                    if (!foundStop) {
+                        foundStop = {
+                            stop_id: `-${stop.value}`,
+                            text: `${stop.value}`,
+                            stop_name: `${stop.value}`,
+                            stop_code: 'Not Found',
+                        };
+                    }
+
+                    return foundStop;
+                });
+
+                stops.push(...formatStopsWithGroup(groupStops, group.groupId));
+            }
+        });
+
+        return groupBy(stops, 'groupId');
+    };
+
+    const onChange = (selectedItems) => {
         const stops = filter(selectedItems, { type: 'stop' });
         const routes = filter(selectedItems, { type: 'route' });
+        const stopGroups = filter(selectedItems, { type: 'stop-group' });
+        const stopGroupsWithFormattedStops = stopGroups?.length > 0 ? formatStopsInStopGroup(stopGroups) : {};
 
-        const allStops = addRemoveStops(stops);
-        saveStopsState(addKeys([], allStops));
+        const allStops = addRemoveStops(affectedSingleStops, stops);
+        const allStopGroups = addRemoveStopsByGroup(affectedStopGroups, stopGroupsWithFormattedStops);
+        saveStopsState([...addKeys([], allStops), ...flattenStopGroups(allStopGroups)]);
 
         if (routes.length !== props.affectedRoutes.length) {
             props.updateAffectedRoutesState(routes);
             props.getRoutesByShortName(routes);
         }
-    };
-
-    const onChange = (selectedItems) => {
-        updateEntities(selectedItems);
-        props.onDataUpdate('affectedEntities', selectedItems);
-        setAreEntitiesSelected(selectedItems.length > 0);
-        setSelectedEntities(selectedItems);
     };
 
     const removeItem = (entity) => {
@@ -211,20 +323,29 @@ const SelectDisruptionEntities = (props) => {
             props.updateAffectedRoutesState(updatedRoutes);
             props.getRoutesByShortName(updatedRoutes);
         } else {
-            const updatedStops = removeFromList(props.affectedStops, asEntities, ENTITIES_TYPES.STOP_ID);
-            saveStopsState(updatedStops);
+            const updatedStops = removeFromList(affectedSingleStops, asEntities, ENTITIES_TYPES.STOP_ID);
+            saveStopsState([...flattenStopGroups(affectedStopGroups), ...updatedStops]);
         }
     };
 
-    const toggleStop = (stop) => {
-        const expandedStopIdx = expandedStops.findIndex(stopId => stopId === stop.stopId);
+    const removeGroup = (groupId) => {
+        const updatedStopGroups = { ...affectedStopGroups };
+        delete updatedStopGroups[groupId];
+        saveStopsState([...affectedSingleStops, ...Object.values(updatedStopGroups).flat()]);
+    };
 
-        if (expandedStopIdx >= 0) {
-            setExpandedStops(expandedStops.filter(stopId => stopId !== stop.stopId));
+    const toggleExpandedItem = (itemIdToToggle, expandedItems, setExpandedItems) => {
+        const currentItems = { ...expandedItems };
+        if (!expandedItems[itemIdToToggle]) {
+            currentItems[itemIdToToggle] = true;
+            setExpandedItems(currentItems);
         } else {
-            setExpandedStops([...expandedStops, stop.stopId]);
+            setExpandedItems(delete currentItems[itemIdToToggle]);
         }
     };
+
+    const toggleExpandedStop = stop => toggleExpandedItem(stop.stopId, expandedStops, setExpandedStops);
+    const toggleExpandedGroup = group => toggleExpandedItem(group.groupId, expandedGroups, setExpandedGroups);
 
     const entityToItemTransformers = {
         [ROUTE.type]: entity => ({
@@ -240,22 +361,15 @@ const SelectDisruptionEntities = (props) => {
             labelKey: 'routeShortName',
             type: ROUTE.type,
         }),
-        [STOP.type]: entity => ({
-            stopId: entity.data.stop_id,
-            stopName: entity.data.stop_name,
-            stopCode: entity.data.stop_code,
-            locationType: entity.data.location_type,
-            stopLat: entity.data.stop_lat,
-            stopLon: entity.data.stop_lon,
-            parentStation: entity.data.parent_station,
-            platformCode: entity.data.platform_code,
-            routeType: entity.data.route_type,
-            text: entity.text,
+        [STOP.type]: entity => formatStop(entity.data, entity.text, entity.category, entity.icon),
+        [STOP_GROUP.type]: entity => ({
+            groupId: entity.data.id,
+            groupName: entity.data.title,
+            stops: entity.data.stops,
+            valueKey: 'groupId',
+            labelKey: 'groupName',
+            type: STOP_GROUP.type,
             category: entity.category,
-            icon: entity.icon,
-            valueKey: 'stopId',
-            labelKey: 'stopCode',
-            type: STOP.type,
         }),
     };
 
@@ -284,6 +398,14 @@ const SelectDisruptionEntities = (props) => {
                 parent_station: item.parentStation,
                 platform_code: item.platformCode,
                 route_type: item.routeType,
+            },
+            category: item.category,
+            icon: item.icon,
+        }),
+        [STOP_GROUP.type]: item => ({
+            text: item.groupName,
+            data: {
+                group_id: item.groupId,
             },
             category: item.category,
             icon: item.icon,
@@ -363,14 +485,14 @@ const SelectDisruptionEntities = (props) => {
             return [(<li key="-1"><Loader className="loader-disruptions loader-disruptions-list" /></li>)];
         }
 
-        const allSelected = routesByStop.every(route => props.affectedStops.findIndex(stops => stops.stopId === stop.stopId
+        const allSelected = routesByStop.every(route => affectedSingleStops.findIndex(stops => stops.stopId === stop.stopId
             && stops.routeId === route.routeId) >= 0);
 
         const routesByStopHTML = routesByStop.map(route => (
             <li key={ `${stop.stopId}-${route.routeId}` } className="select_entities pb-2">
                 <EntityCheckbox
                     id={ `routeByStop-${stop.stopId}-${route.routeId}` }
-                    checked={ props.affectedStops.findIndex(affectedStop => affectedStop.routeId === route.routeId && affectedStop.stopId === stop.stopId) >= 0 }
+                    checked={ affectedSingleStops.findIndex(affectedStop => affectedStop.routeId === route.routeId && affectedStop.stopId === stop.stopId) >= 0 }
                     onChange={ e => toggleRoutesByStop(stop, route, e.target.checked) }
                     label={ `Route ${route.routeShortName}` }
                 />
@@ -395,7 +517,74 @@ const SelectDisruptionEntities = (props) => {
         return [routesByStopHTML];
     };
 
-    const isStopActive = stop => expandedStops.findIndex(stopId => stopId === stop.stopId) >= 0;
+    const itemsSelectedText = () => {
+        let selectedText = '';
+
+        if (props.affectedRoutes.length > 0) {
+            selectedText = 'routes';
+        }
+
+        if (props.affectedStops.length > 0) {
+            if (selectedText.length > 0) {
+                selectedText += ' and stops';
+            } else {
+                selectedText = 'stops';
+            }
+        }
+        return selectedText;
+    };
+
+    const isStopActive = stop => !!expandedStops[stop.stopId];
+    const isGroupActive = group => !!expandedGroups[group.groupId];
+
+    const renderStopGroupStops = stops => stops.map(stop => (
+        <li key={ `${stop.groupId}-${stop.stopId}` } className="select_entities pb-2">
+            <EntityCheckbox
+                id={ `stopByGroup-${stop.groupId}-${stop.stopId}` }
+                checked
+                onChange={ null }
+                label={ `Stop ${stop.text}` }
+                disabled
+            />
+        </li>
+    ));
+
+    const renderStopGroups = stopGroups => (Object.values(stopGroups).map(stopGroupStops => (
+        <li className="selection-item border-0 card" key={ stopGroupStops[0].groupId }>
+            <Expandable
+                id={ stopGroupStops[0].groupId }
+                isActive={ isGroupActive(stopGroupStops[0]) }
+                onToggle={ () => toggleExpandedGroup(stopGroupStops[0]) }>
+                <ExpandableSummary
+                    expandClassName="selection-item-header card-header d-inline-flex w-100"
+                    displayToggleButton={ false }>
+                    <div>
+                        <Button
+                            className="btn cc-btn-link pt-0 pl-0"
+                            onClick={ () => toggleExpandedGroup(stopGroupStops[0]) }>
+                            { isGroupActive(stopGroupStops[0]) ? <IoIosArrowUp className="text-info" size={ 20 } /> : <IoIosArrowDown className="text-info" size={ 20 } />}
+                        </Button>
+                    </div>
+                    <div className="picklist__list-btn w-100 border-0 rounded-0 text-left">
+                        <Button
+                            className="cc-btn-link selection-item__button float-right p-0"
+                            onClick={ () => removeGroup(stopGroupStops[0].groupId) }>
+                            Remove
+                            <span className="pl-3">X</span>
+                        </Button>
+                        {`Stop Group - ${getStopGroupName(props.stopGroups, stopGroupStops[0].groupId)} (${stopGroupStops.length})`}
+                    </div>
+                </ExpandableSummary>
+                <ExpandableContent extendClassName="bg-white">
+                    {isGroupActive(stopGroupStops[0]) && (
+                        <ul className="selection-item-body card-body bg-white pb-0">
+                            { renderStopGroupStops(stopGroupStops) }
+                        </ul>
+                    )}
+                </ExpandableContent>
+            </Expandable>
+        </li>
+    )));
 
     return (
         <div className="select_disruption">
@@ -403,8 +592,8 @@ const SelectDisruptionEntities = (props) => {
                 isVerticalLayout
                 displayResults={ false }
                 height={ 100 }
-                leftPaneLabel="Search routes or stops"
-                leftPanePlaceholder="Enter a route or stop number"
+                leftPaneLabel="Search routes, stops, or stop groups"
+                leftPanePlaceholder="Enter a route, stop number, or stop group name"
                 onChange={ selectedItem => onChange(selectedItem) }
                 rightPanelShowSearch={ false }
                 rightPaneLabel="Selected routes and stops:"
@@ -416,7 +605,7 @@ const SelectDisruptionEntities = (props) => {
                 deselectRoutes={ !areEntitiesSelected }
                 selectedValues={ selectedEntities }
                 isLoading={ props.isLoading }
-                searchInCategory={ [ROUTE.type, STOP.type] }
+                searchInCategory={ [ROUTE.type, STOP.type, STOP_GROUP.type] }
                 entityToItemTransformers={ entityToItemTransformers }
                 itemToEntityTransformers={ itemToEntityTransformers }
             />
@@ -444,20 +633,20 @@ const SelectDisruptionEntities = (props) => {
                         ))
                     )}
 
-                    {!isEmpty(props.affectedStops) && (
-                        uniqBy(props.affectedStops, stop => stop.stopId).map(stop => (
+                    {!isEmpty(affectedSingleStops) && (
+                        uniqBy(affectedSingleStops, stop => stop.stopId).map(stop => (
                             <li className="selection-item border-0 card" key={ stop.stopId }>
                                 <Expandable
                                     id={ stop.stopId }
-                                    isActive={ expandedStops.findIndex(stopId => stopId === stop.stopId) >= 0 }
-                                    onToggle={ () => toggleStop(stop) }>
+                                    isActive={ isStopActive(stop) }
+                                    onToggle={ () => toggleExpandedStop(stop) }>
                                     <ExpandableSummary
                                         expandClassName="selection-item-header card-header d-inline-flex w-100"
                                         displayToggleButton={ false }>
                                         <div>
                                             <Button
                                                 className="btn cc-btn-link pt-0 pl-0"
-                                                onClick={ () => toggleStop(stop) }>
+                                                onClick={ () => toggleExpandedStop(stop) }>
                                                 { isStopActive(stop) ? <IoIosArrowUp className="text-info" size={ 20 } /> : <IoIosArrowDown className="text-info" size={ 20 } /> }
                                             </Button>
                                         </div>
@@ -482,6 +671,8 @@ const SelectDisruptionEntities = (props) => {
                             </li>
                         ))
                     )}
+
+                    {!isEmpty(affectedStopGroups) && renderStopGroups(affectedStopGroups) }
                 </ul>
             </div>
             { selectedEntities.length > 0 && (
@@ -496,6 +687,21 @@ const SelectDisruptionEntities = (props) => {
             { selectedEntities.length === 0 && (
                 <footer className="row justify-content-between position-fixed p-4 m-0 disruptions-creation__wizard-footer" />
             )}
+            <CustomModal
+                title="Log a Disruption"
+                okButton={ {
+                    label: 'OK',
+                    onClick: () => setIsAlertModalOpen(false),
+                    isDisabled: false,
+                    className: 'test',
+                } }
+                onClose={ () => setIsAlertModalOpen(false) }
+                isModalOpen={ isAlertModalOpen }>
+                <IconContext.Provider value={ { className: 'text-warning w-100 m-2' } }>
+                    <FaExclamationTriangle size={ 40 } />
+                </IconContext.Provider>
+                <p className="font-weight-light text-center mb-0">{`${totalEntities} ${itemsSelectedText()} have been selected. Please reduce the selection to less than the maximum allowed of ${maxNumberOfEntities}`}</p>
+            </CustomModal>
         </div>
     );
 };
@@ -518,6 +724,8 @@ SelectDisruptionEntities.propTypes = {
     onSubmitUpdate: PropTypes.func.isRequired,
     search: PropTypes.func.isRequired,
     searchResults: PropTypes.object.isRequired,
+    stops: PropTypes.object.isRequired,
+    stopGroups: PropTypes.object.isRequired,
 };
 
 SelectDisruptionEntities.defaultProps = {
@@ -533,6 +741,8 @@ export default connect(state => ({
     isEditMode: isEditEnabled(state),
     disruptionToEdit: getDisruptionToEdit(state),
     searchResults: getSearchResults(state),
+    stops: getAllStops(state),
+    stopGroups: getStopGroupsIncludingDeleted(state),
 }), {
     deleteAffectedEntities,
     updateCurrentStep,

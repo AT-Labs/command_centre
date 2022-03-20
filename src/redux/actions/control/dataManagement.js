@@ -1,3 +1,4 @@
+import _ from 'lodash-es';
 import ACTION_TYPE from '../../action-types';
 import STOP_MESSAGE_TYPE from '../../../types/stop-messages-types';
 import ERROR_TYPE from '../../../types/error-types';
@@ -9,10 +10,11 @@ export const updateDataManagementPageSettings = model => ({
     payload: model,
 });
 
-const loadStopGroups = stopGroups => ({
+const loadStopGroups = (stopGroups, stopGroupsIncludingDeleted) => ({
     type: ACTION_TYPE.FETCH_CONTROL_STOP_GROUPS,
     payload: {
         stopGroups,
+        stopGroupsIncludingDeleted,
     },
 });
 
@@ -30,7 +32,8 @@ export const getStopGroups = () => (dispatch) => {
             const filteredStopGroups = stopGroups.filter(
                 stopGroup => stopGroup.workflowState !== STOP_MESSAGE_TYPE.WORKFLOW_STATUS.DELETED,
             );
-            dispatch(loadStopGroups(filteredStopGroups));
+            const mappedStopGroups = _.keyBy(stopGroups, group => group.id);
+            dispatch(loadStopGroups(filteredStopGroups, mappedStopGroups));
             dispatch(updateLoadingStopGroupsState(false));
         })
         .catch((error) => {

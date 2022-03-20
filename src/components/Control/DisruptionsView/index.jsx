@@ -13,6 +13,7 @@ import { DISRUPTION_POLLING_INTERVAL } from '../../../constants/disruptions';
 import DisruptionsTable from './DisruptionsTable';
 import CreateDisruption from './DisruptionCreation/CreateDisruption/index';
 import Filters from './Filters/Filters';
+import { getStopGroups } from '../../../redux/actions/control/dataManagement';
 
 export class DisruptionsView extends React.Component {
     constructor(props) {
@@ -30,6 +31,7 @@ export class DisruptionsView extends React.Component {
 
     componentDidMount() {
         this.getDisruptions();
+        this.props.getStopGroups();
     }
 
     getDisruptions = () => {
@@ -103,10 +105,11 @@ DisruptionsView.propTypes = {
     updateEditMode: PropTypes.func.isRequired,
     updateAffectedRoutesState: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
+    getStopGroups: PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
     filteredDisruptions: getFilteredDisruptions(state),
     isCreateOpen: isDisruptionCreationOpen(state),
     isCreateAllowed: isDisruptionCreationAllowed(state),
-}), { getDisruptions, openCreateDisruption, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState })(DisruptionsView);
+}), { getDisruptions, openCreateDisruption, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState, getStopGroups })(DisruptionsView);

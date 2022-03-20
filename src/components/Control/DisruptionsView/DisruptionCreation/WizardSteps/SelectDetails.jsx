@@ -32,7 +32,7 @@ import Footer from './Footer';
 import AffectedEntities from '../../AffectedEntities';
 
 const SelectDetails = (props) => {
-    const { startDate, startTime, endDate, endTime, impact, cause, header, description, url, createNotification, exemptAffectedTrips } = props.data;
+    const { startDate, startTime, endDate, endTime, impact, cause, header, description, url, createNotification } = props.data;
     const { routes, stops } = props;
 
     const [modalOpenedTime] = useState(moment().second(0).millisecond(0));

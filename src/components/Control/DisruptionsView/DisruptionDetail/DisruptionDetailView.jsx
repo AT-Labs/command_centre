@@ -240,10 +240,10 @@ const DisruptionDetailView = (props) => {
                 <section className="position-relative w-50 d-flex disruption-detail__map">
                     <Map shouldOffsetForSidePanel={ false }
                         shapes={ !isLoading ? props.shapes : [] }
-                        stops={ !isLoading ? disruption.affectedEntities.filter(entity => entity.stopId) : [] }
+                        stops={ !isLoading ? disruption.affectedEntities.filter(entity => entity.stopId).slice(0, 10) : [] }
                         routeColors={ !isLoading ? props.routeColors : [] } />
                 </section>
-                <span className="map-note">Note: Only a max of ten routes will be displayed on the map.</span>
+                <span className="map-note">Note: Only a max of ten routes and ten stops will be displayed on the map.</span>
             </div>
             <div className="row mt-3">
                 <section className="col-3">

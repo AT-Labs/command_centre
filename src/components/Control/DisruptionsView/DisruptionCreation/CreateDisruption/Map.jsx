@@ -100,7 +100,8 @@ class Map extends React.Component {
                         <ShapeLayer
                             shapes={ this.props.shapes }
                             routeColors={ this.props.routeColors } />
-                        <StopsLayer />
+                        <StopsLayer
+                            stops={ this.props.stops } />
                     </LeafletMap>
                 </LeafletProvider>
             </>
@@ -115,6 +116,7 @@ Map.propTypes = {
     isLoading: PropTypes.bool,
     shapes: PropTypes.array,
     routeColors: PropTypes.array,
+    stops: PropTypes.array,
 };
 
 Map.defaultProps = {
@@ -122,6 +124,7 @@ Map.defaultProps = {
     isLoading: false,
     shapes: [],
     routeColors: [],
+    stops: [],
 };
 
 export default connect(state => ({

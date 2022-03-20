@@ -1,25 +1,41 @@
 import { expect } from 'chai';
-import { shallow } from 'enzyme';
+import { mount } from 'enzyme';
 import React from 'react';
+import _ from 'lodash-es';
+import { Provider } from 'react-redux';
 import { Button } from 'reactstrap';
 import sinon from 'sinon';
-import AffectedEntities from './AffectedEntities';
+import AffectedEntities  from './AffectedEntities';
+import configureMockStore from 'redux-mock-store';
 
 let sandbox;
 let wrapper;
+const mockStore = configureMockStore();
+let store;
 
 const componentPropsMock = {
     editLabel: 'Edit',
     editAction: () => {},
     isEditDisabled: true,
     affectedEntities: [],
+    stopGroups: [],
 };
 
-const setup = (customProps) => {
+const setup = (customProps, stopGroups = []) => {
     const props = componentPropsMock;
     Object.assign(props, customProps);
-    wrapper = shallow(<AffectedEntities { ...props } />);
-    return wrapper;
+    store = mockStore({ 
+        control: {
+            dataManagement: {      
+                stopGroupsIncludingDeleted: stopGroups, 
+            },
+        },
+    });
+
+    return mount(
+        <Provider store={ store }>
+            <AffectedEntities { ...props } />
+        </Provider>);
 };
 
 describe('<AffectedEntities />', () => {
@@ -49,5 +65,21 @@ describe('<AffectedEntities />', () => {
         ];
         wrapper = setup({ affectedEntities });
         expect(wrapper.find('ul').children()).to.have.lengthOf(4);
+    });
+
+    it('should display combined entities with stop groups', () => {
+        const affectedEntities = [
+            { routeId: 'route1', routeShortName: '1' },
+            { stopId: 'stop1', text: '1' },
+            { stopId: 'stop2', groupId: 1, text: '2', stopCode: '2' },
+            { stopId: 'stop3', groupId: 1, text: '3', stopCode: '3' }
+        ];
+        const stopGroups = _.keyBy([{ id: 1, title: 'stop group 1' }], group => group.id);
+        wrapper = setup({ affectedEntities }, stopGroups);
+
+        expect(wrapper.find('ul').children()).to.have.lengthOf(3);
+        const stopgroupDiv = wrapper.find('ul li').at(2).find('div');
+        expect(stopgroupDiv.at(0).text()).to.equal('Stop Group - stop group 1');
+        expect(stopgroupDiv.at(1).text()).to.equal('Stop 2, 3');
     });
 });

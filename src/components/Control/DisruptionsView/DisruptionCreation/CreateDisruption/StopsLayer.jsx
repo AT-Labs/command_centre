@@ -12,6 +12,7 @@ import { TRAIN_TYPE_ID } from '../../../../../types/vehicle-types';
 import { toCamelCaseKeys } from '../../../../../utils/control/disruptions';
 
 const FOCUS_ZOOM = 16;
+const maximumStopsToDisplay = 200;
 
 const StopsLayer = (props) => {
     const [zoomLevel, setZoomLevel] = useState(props.leafletMap.getZoom());
@@ -37,6 +38,8 @@ const StopsLayer = (props) => {
         return stopsInBoundary.filter(stop => !isChildTrainPlatform(stop));
     };
 
+    const getDisplayStops = () => (props.stops.length > 0 ? props.stops : props.affectedStops).slice(0, maximumStopsToDisplay);
+
     const handleStopOnClick = (stop) => {
         props.updateAffectedStopsState([...props.affectedStops, toCamelCaseKeys(stop)]);
     };
@@ -44,7 +47,7 @@ const StopsLayer = (props) => {
     return (
         <>
             <FeatureGroup>
-                {uniqBy(props.affectedStops, stop => stop.stopId).map(stop => (stop.stopLat
+                {uniqBy(getDisplayStops(), stop => stop.stopId).map(stop => (stop.stopLat
                     ? (
                         <IconMarker
                             key={ stop.stopId }
@@ -94,11 +97,13 @@ StopsLayer.propTypes = {
     stopDetail: PropTypes.object.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
     currentStep: PropTypes.number.isRequired,
+    stops: PropTypes.array,
 };
 
 StopsLayer.defaultProps = {
     childStops: {},
     affectedStops: [],
+    stops: [],
 };
 
 export default connect(state => ({

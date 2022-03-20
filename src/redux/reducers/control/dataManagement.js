@@ -8,12 +8,13 @@ export const INIT_STATE = {
         selectedIndex: 0,
     },
     stopGroups: [],
+    stopGroupsIncludingDeleted: [],
     isStopGroupsLoading: false,
 };
 
 const handlePageSettingsUpdate = (state, action) => ({ ...state, pageSettings: { ...state.pageSettings, ...action.payload } });
 const handleStopGroupsLoadingUpdate = (state, { payload: { isStopGroupsLoading } }) => ({ ...state, isStopGroupsLoading });
-const handleStopGroupsUpdate = (state, { payload: { stopGroups } }) => ({ ...state, stopGroups });
+const handleStopGroupsUpdate = (state, { payload: { stopGroups, stopGroupsIncludingDeleted } }) => ({ ...state, stopGroups, stopGroupsIncludingDeleted });
 
 export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_DATAMANAGEMENT_PAGESETTINGS]: handlePageSettingsUpdate,

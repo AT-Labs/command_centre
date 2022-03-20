@@ -1,12 +1,15 @@
 import PropTypes from 'prop-types';
 import React, { useState, useRef, useEffect } from 'react';
+import { connect } from 'react-redux';
 import { Button, Collapse } from 'reactstrap';
 import { isEmpty, groupBy } from 'lodash-es';
 import { MdEdit } from 'react-icons/md';
 import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
+import { getStopGroupsIncludingDeleted } from '../../../redux/selectors/control/dataManagement/stopGroups';
+import { getStopGroupName } from '../../../utils/control/dataManagement';
 import './AffectedEntities.scss';
 
-const AffectedEntities = (props) => {
+export const AffectedEntities = (props) => {
     const collapseRef = useRef(null);
     const [collapse, setCollapse] = useState(false);
     const [collapseInitialHeight, setInitialHeight] = useState(0);
@@ -31,27 +34,38 @@ const AffectedEntities = (props) => {
             ))
     );
 
-    const getCombinedAffectedStopsRoutes = () => {
-        const affectedEntitiesByStop = groupBy(props.affectedEntities.filter(entity => entity.stopId), 'stopId');
-        return Object.keys(affectedEntitiesByStop).map((stopId) => {
+    const groupByEntityRender = (groupById, groupTitle, groupText, childTitle, children) => (
+        <li key={ groupById }>
+            <div className="font-size-sm font-weight-bold">
+                {groupTitle}
+                {' '}
+                {groupText}
+            </div>
+            {children && (
+                <div className="font-size-sm">
+                    {childTitle}
+                    {' '}
+                    {children}
+                </div>
+            )}
+        </li>
+    );
+
+    const getCombinedAffectedStopsRoutesStopGroups = () => {
+        const affectedEntitiesByStop = groupBy(props.affectedEntities.filter(entity => entity.stopId && !entity.groupId), 'stopId');
+        const affectedEntitiesByStopGroup = groupBy(props.affectedEntities.filter(entity => entity.groupId), 'groupId');
+
+        const stopAndRoutesRender = Object.keys(affectedEntitiesByStop).map((stopId) => {
             const routes = affectedEntitiesByStop[stopId].filter(entity => entity.routeId).map(entity => entity.routeShortName).join(', ');
-            return (
-                <li key={ stopId }>
-                    <div className="font-size-sm font-weight-bold">
-                        Stop
-                        {' '}
-                        { affectedEntitiesByStop[stopId][0].text }
-                    </div>
-                    {routes && (
-                        <div className="font-size-sm">
-                            Route
-                            {' '}
-                            { routes }
-                        </div>
-                    )}
-                </li>
-            );
+            return groupByEntityRender(stopId, 'Stop', affectedEntitiesByStop[stopId][0].text, 'Route', routes);
         });
+
+        const stopGroupsRender = Object.keys(affectedEntitiesByStopGroup).map((groupId) => {
+            const stops = affectedEntitiesByStopGroup[groupId].map(stop => stop.stopCode).join(', ');
+            return groupByEntityRender(groupId, 'Stop Group -', getStopGroupName(props.stopGroups, +groupId), 'Stop', stops);
+        });
+
+        return [stopAndRoutesRender, stopGroupsRender];
     };
 
     const showViewMoreLessButton = () => {
@@ -82,7 +96,7 @@ const AffectedEntities = (props) => {
                 <Collapse innerRef={ collapseRef } isOpen={ collapse } className="w-100">
                     <ul className="p-0 m-0">
                         { getIndividualAffectedRoutes() }
-                        { getCombinedAffectedStopsRoutes() }
+                        { getCombinedAffectedStopsRoutesStopGroups() }
                     </ul>
                 </Collapse>
                 {showViewMoreLessButton() && (
@@ -105,6 +119,7 @@ AffectedEntities.propTypes = {
     editAction: PropTypes.func,
     isEditDisabled: PropTypes.bool,
     affectedEntities: PropTypes.array.isRequired,
+    stopGroups: PropTypes.object.isRequired,
 };
 
 AffectedEntities.defaultProps = {
@@ -113,4 +128,6 @@ AffectedEntities.defaultProps = {
     editAction: null,
 };
 
-export default AffectedEntities;
+export default connect(state => ({
+    stopGroups: getStopGroupsIncludingDeleted(state),
+}))(AffectedEntities);

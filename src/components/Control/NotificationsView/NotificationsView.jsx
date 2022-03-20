@@ -7,6 +7,8 @@ import {
     DataGridPro, GridToolbarExport, useGridApiRef, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton,
     GridToolbarDensitySelector,
 } from '@mui/x-data-grid-pro';
+import DateAdapter from '@mui/lab/AdapterMoment';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -29,7 +31,7 @@ import './Notifications.scss';
 
 export const NotificationsView = (props) => {
     const apiRef = useGridApiRef();
-    const dateFormat = 'DD/MM/YY HH:mm a';
+    const dateFormat = 'DD/MM/YY hh:mm a';
 
     const getActionsButtons = (params) => {
         const { row: { allData } } = params;
@@ -83,6 +85,7 @@ export const NotificationsView = (props) => {
             headerName: 'TRIP TIME',
             width: 250,
             type: 'dateTime',
+            valueFormatter: params => params.value.format(dateFormat),
         },
         {
             field: 'mode',
@@ -124,6 +127,7 @@ export const NotificationsView = (props) => {
             headerName: 'DATE CREATED',
             width: 200,
             type: 'dateTime',
+            valueFormatter: params => params.value.format(dateFormat),
         },
         {
             field: 'action',
@@ -206,10 +210,10 @@ export const NotificationsView = (props) => {
         trip_date_start_time: parseTime(
             notification.tripStartTime,
             notification.tripStartDate,
-        ).format(dateFormat),
+        ),
         severity: notification.severity,
         status: notification.status,
-        date_created: moment(notification.createdAt).format(dateFormat),
+        date_created: moment(notification.createdAt),
         goToRoutesView: props.goToRoutesView,
         dismissNotifictation: props.dismissNotification,
         allData: notification,
@@ -271,30 +275,32 @@ export const NotificationsView = (props) => {
                 <h1>Alerts</h1>
             </div>
             <div>
-                <DataGridPro
-                    components={ {
-                        Toolbar: CustomToolbar,
-                        NoRowsOverlay: getNoRowsOverlay,
-                        NoResultsOverlay: getNoResultsOverlay,
-                    } }
-                    apiRef={ apiRef }
-                    page={ props.notificationsDatagridConfig.page }
-                    pageSize={ props.notificationsDatagridConfig.pageSize }
-                    rowsPerPageOptions={ [15, 25, 50, 100] }
-                    onPageSizeChange={ newPageSize => props.updateNotificationsDatagridConfig({ pageSize: newPageSize }) }
-                    rows={ getPageData() }
-                    columns={ getColumns() }
-                    sortModel={ props.notificationsDatagridConfig.sortModel }
-                    onSortModelChange={ model => props.updateNotificationsDatagridConfig({ sortModel: model }) }
-                    filterModel={ props.notificationsDatagridConfig.filterModel }
-                    onFilterModelChange={ model => props.updateNotificationsDatagridConfig({ filterModel: model }) }
-                    density={ props.notificationsDatagridConfig.density }
-                    onPinnedColumnsChange={ model => props.updateNotificationsDatagridConfig({ pinnedColumns: model }) }
-                    pinnedColumns={ props.notificationsDatagridConfig.pinnedColumns }
-                    onPageChange={ page => props.updateNotificationsDatagridConfig({ page }) }
-                    pagination
-                    autoHeight
-                />
+                <LocalizationProvider dateAdapter={ DateAdapter }>
+                    <DataGridPro
+                        components={ {
+                            Toolbar: CustomToolbar,
+                            NoRowsOverlay: getNoRowsOverlay,
+                            NoResultsOverlay: getNoResultsOverlay,
+                        } }
+                        apiRef={ apiRef }
+                        page={ props.notificationsDatagridConfig.page }
+                        pageSize={ props.notificationsDatagridConfig.pageSize }
+                        rowsPerPageOptions={ [15, 25, 50, 100] }
+                        onPageSizeChange={ newPageSize => props.updateNotificationsDatagridConfig({ pageSize: newPageSize }) }
+                        rows={ getPageData() }
+                        columns={ getColumns() }
+                        sortModel={ props.notificationsDatagridConfig.sortModel }
+                        onSortModelChange={ model => props.updateNotificationsDatagridConfig({ sortModel: model }) }
+                        filterModel={ props.notificationsDatagridConfig.filterModel }
+                        onFilterModelChange={ model => props.updateNotificationsDatagridConfig({ filterModel: model }) }
+                        density={ props.notificationsDatagridConfig.density }
+                        onPinnedColumnsChange={ model => props.updateNotificationsDatagridConfig({ pinnedColumns: model }) }
+                        pinnedColumns={ props.notificationsDatagridConfig.pinnedColumns }
+                        onPageChange={ page => props.updateNotificationsDatagridConfig({ page }) }
+                        pagination
+                        autoHeight
+                    />
+                </LocalizationProvider>
             </div>
         </div>
     );
