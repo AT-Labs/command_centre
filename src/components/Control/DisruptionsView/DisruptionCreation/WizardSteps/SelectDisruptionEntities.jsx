@@ -415,7 +415,7 @@ export const SelectDisruptionEntities = (props) => {
     const createRouteWithStop = (stop, route) => ({ ...stop, ...route });
 
     const toggleRoutesByStop = (stop, route, isChecked) => {
-        let updatedStops = props.affectedStops;
+        let updatedStops = affectedSingleStops;
         const stopList = updatedStops.filter(updatedStop => updatedStop.stopId === stop.stopId);
 
         if (isChecked) {
@@ -443,7 +443,7 @@ export const SelectDisruptionEntities = (props) => {
                 updatedStops.splice(stopToRemoveIdx, 1);
             }
         }
-        saveStopsState(updatedStops);
+        saveStopsState([...flattenStopGroups(affectedStopGroups), ...updatedStops]);
     };
 
     const toggleAllRoutesByStop = (stop, routesByStop, isChecked) => {
