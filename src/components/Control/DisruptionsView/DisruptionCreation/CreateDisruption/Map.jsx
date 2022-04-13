@@ -79,7 +79,7 @@ class Map extends React.Component {
         return (
             <>
                 { isLoading && <Loader className="loader-disruptions position-fixed" />}
-                <LeafletProvider>
+                <LeafletProvider value="">
                     <LeafletMap
                         className="map flex-grow-1"
                         center={ MAP_DATA.centerLocation }

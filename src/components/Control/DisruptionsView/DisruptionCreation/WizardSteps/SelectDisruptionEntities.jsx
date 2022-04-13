@@ -233,10 +233,10 @@ export const SelectDisruptionEntities = (props) => {
 
     const addRemoveStopsByGroup = (currentStopGroups, selectedStopGroups) => {
         // remove stops that have been deselected
-        const updatedStopGroups = omitBy(currentStopGroups, (value, key) => !selectedStopGroups[key]);
+        const updatedStopGroups = omitBy(currentStopGroups, (_value, key) => !selectedStopGroups[key]);
 
         // find and add stops from stop groups that aren't in currently selected list
-        const stopGroupsToAdd = selectedStopGroups ? pickBy(selectedStopGroups, (value, key) => !currentStopGroups[key]) : {};
+        const stopGroupsToAdd = selectedStopGroups ? pickBy(selectedStopGroups, (_value, key) => !currentStopGroups[key]) : {};
 
         return { ...updatedStopGroups, ...stopGroupsToAdd };
     };
@@ -682,7 +682,7 @@ export const SelectDisruptionEntities = (props) => {
                     toggleDisruptionModals={ props.toggleDisruptionModals }
                     nextButtonValue={ props.isEditMode ? 'Save' : 'Continue' }
                     onContinue={ () => onContinue() }
-                    isSubmitEnabled={ isButtonDisabled() } />
+                    isSubmitDisabled={ isButtonDisabled() } />
             ) }
             { selectedEntities.length === 0 && (
                 <footer className="row justify-content-between position-fixed p-4 m-0 disruptions-creation__wizard-footer" />

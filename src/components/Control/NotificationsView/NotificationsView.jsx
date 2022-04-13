@@ -25,7 +25,7 @@ import { retrieveAgencies } from '../../../redux/actions/control/agencies';
 import VEHICLE_TYPE from '../../../types/vehicle-types';
 import { goToRoutesView } from '../../../redux/actions/control/link';
 import RenderCellExpand from './RenderCellExpand/RenderCellExpand';
-import Overlay from './Overlay/Overlay';
+import Overlay from '../../Common/Overlay/Overlay';
 
 import './Notifications.scss';
 

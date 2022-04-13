@@ -1,0 +1,32 @@
+@import '../../../../assets/styles/variables.scss';
+
+.weekday-picker {
+    & &__day.btn {
+        border-style: solid;
+        border-width: 1px;
+        border-color: black;
+        padding: .2em .6em;
+        border-radius: 0;
+        border-right: none;
+        background-color: white;
+    }
+
+    & &__day:first-child {
+        border-radius: 4px;
+        border-right: none;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    & &__day:last-child {
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 4px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    & &__day.btn.selected {
+        background-color: $at-shore;
+    }
+}

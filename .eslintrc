@@ -134,7 +134,9 @@
 					"**/*.test.jsx",
 					"**/*.spec.js",					
 					"**/mocha/**",
-					"**/webpack*"
+					"**/webpack*",
+					"**/jest/**",
+					"**/*.spec.jsx"
 				]
 			}
 		]

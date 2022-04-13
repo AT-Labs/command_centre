@@ -24,7 +24,7 @@ const Footer = props => (
         </div>
         <div className="col-4">
             <Button
-                disabled={ props.isSubmitEnabled }
+                disabled={ props.isSubmitDisabled }
                 className="btn cc-btn-primary btn-block continue"
                 onClick={ props.onContinue }>
                 { props.nextButtonValue }
@@ -37,12 +37,12 @@ Footer.propTypes = {
     toggleDisruptionModals: PropTypes.func.isRequired,
     onContinue: PropTypes.func.isRequired,
     onBack: PropTypes.func,
-    isSubmitEnabled: PropTypes.bool,
+    isSubmitDisabled: PropTypes.bool,
     nextButtonValue: PropTypes.string.isRequired,
 };
 
 Footer.defaultProps = {
-    isSubmitEnabled: false,
+    isSubmitDisabled: false,
     onBack: null,
 };
 

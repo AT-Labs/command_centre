@@ -13,8 +13,22 @@ Before you can build this project, you need the following dependencies:
 
 ## Unit test
 
+Previous unit tests were created using Mocha these are identified by **/*.test.js(x) files. 
+All new tests should be created using Jest due to the availability of extensions to assist tests. These are identified by **/*.spec.js(x) files.
+
+To run both mocha and jest tests:
 ```
 npm run test
+```
+
+To only run jest tests : 
+```
+npm run jest
+```
+
+To run a single set of jest tests use the 'describe' string, to run a single test use the 'it' string: 
+```
+npm run jest -- -t '<describeString>' | '<itString>'
 ```
 
 ## Integration test

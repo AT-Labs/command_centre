@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import moment from 'moment';
 import MockDate from 'mockdate';
-import { isEndDateValid, isEndTimeValid, getDatePickerOptions, transformIncidentNo } from './disruptions';
+import { isEndDateValid, isEndTimeValid, getDatePickerOptions, transformIncidentNo, isDurationValid } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 
 describe('isEndDateValid', () => {
@@ -36,10 +36,6 @@ describe('isEndTimeValid', () => {
     const now = moment();
     it('endTime and endDate are not set is valid', () => {
         expect(isEndTimeValid('', '', now, '20/07/2020', '18:00')).to.equal(true);
-    });
-
-    it('endDate is set then endTime needs to be set as well', () => {
-        expect(isEndTimeValid('20/07/2020', '', now, '20/07/2020', '18:00')).to.equal(false);
     });
 
     it('endDate is set then endTime needs to be in the right format', () => {
@@ -86,5 +82,28 @@ describe('transformIncidentNo', () => {
         const fakeIncident02 = 93822;
         expect(transformIncidentNo(fakeIncident01)).to.equal('DISR09384');
         expect(transformIncidentNo(fakeIncident02)).to.equal('DISR93822');
+    });
+});
+
+describe('isDurationValid', () => {
+    it('should be true, regardless of value, if not a recurrent disruption', () => {
+        expect(isDurationValid(null, false)).to.be.true;
+        expect(isDurationValid('-1', false)).to.be.true;
+    });
+
+    it('should be true for an integer between 1 and 24', () => {
+        for (let i = 1; i <= 24; i++) {
+            expect(isDurationValid(i.toString(), true)).to.be.true;
+        }
+    });
+
+    it('should be false for non integer', () => {
+        expect(isDurationValid('duration', true)).to.be.false;
+    });
+
+    it('should be false for negatives, zero or greater than 24', () => {
+        expect(isDurationValid('-1', true)).to.be.false;
+        expect(isDurationValid('0', true)).to.be.false;
+        expect(isDurationValid('25', true)).to.be.false;
     });
 });

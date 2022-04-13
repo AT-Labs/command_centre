@@ -9,6 +9,7 @@ import * as gtfsRealtime from '../../../../utils/transmitters/gtfs-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import ACTION_TYPE from '../../../action-types';
 import * as stopDetailActions from './stop';
+import { utcDateFormatWithoutTZ } from '../../../../utils/dateFormats';
 
 const mockStore = configureMockStore([thunk]);
 let store;
@@ -108,7 +109,7 @@ describe('Stop detail actions', () => {
     });
 
     context('fetchUpcomingVehicles()', () => {
-        const withinNextHalfHourMockTime = `${moment().utc().add(10, 'minutes').format('YYYY-MM-DDTHH:mm:ss')}.000Z`;
+        const withinNextHalfHourMockTime = `${moment().utc().add(10, 'minutes').format(utcDateFormatWithoutTZ)}.000Z`;
         const tenMinutesInFutureUnix = `${moment().utc().add(10, 'minutes').unix()}`;
         const upcomingMovements = [
             {
@@ -208,7 +209,7 @@ describe('Stop detail actions', () => {
     });
 
     context('fetchPastVehicles()', () => {
-        const withinPastHalfHourMockTime = `${moment().utc().subtract(10, 'minutes').format('YYYY-MM-DDTHH:mm:ss')}.000Z`;
+        const withinPastHalfHourMockTime = `${moment().utc().subtract(10, 'minutes').format(utcDateFormatWithoutTZ)}.000Z`;
         const tenMinutesInPastUnix = `${moment().utc().subtract(10, 'minutes').unix()}`;
 
         const pastVehicles = [

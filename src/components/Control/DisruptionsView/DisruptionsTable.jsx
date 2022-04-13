@@ -7,6 +7,8 @@ import { GiAlarmClock } from 'react-icons/gi';
 import { GoAlert } from 'react-icons/go';
 import { FaPaperclip } from 'react-icons/fa';
 import { RiMailCheckLine } from 'react-icons/ri';
+import { BsArrowRepeat } from 'react-icons/bs';
+
 import { updateActiveDisruptionId, updateCopyDisruptionState } from '../../../redux/actions/control/disruptions';
 import { getActiveDisruptionId } from '../../../redux/selectors/control/disruptions';
 import { PAGE_SIZE } from '../../../utils/control/disruptions';
@@ -22,6 +24,7 @@ import {
 import { LoadMore } from '../Common/LoadMore/LoadMore';
 import ControlTable from '../Common/ControlTable/ControlTable';
 import DisruptionDetail from './DisruptionDetail';
+
 import './style.scss';
 
 class DisruptionsTable extends React.Component {
@@ -107,25 +110,17 @@ class DisruptionsTable extends React.Component {
     }
 
     getDisruptionLabel = (disruption) => {
-        const { uploadedFiles, incidentNo, createNotification } = disruption;
-
-        if (uploadedFiles && uploadedFiles.length > 0) {
-            return (
-                <span>
-                    { incidentNo }
-                    <FaPaperclip size={ 12 } className="ml-1" />
-                    {' '}
-                    { createNotification && <RiMailCheckLine size={ 14 } className="ml-1" /> }
-                    {' '}
-                </span>
-            );
-        }
+        const { uploadedFiles, incidentNo, createNotification, recurrent } = disruption;
 
         return (
             <span>
                 { incidentNo }
+                { uploadedFiles && uploadedFiles.length > 0 && <FaPaperclip size={ 12 } className="ml-1" />}
                 {' '}
                 { createNotification && <RiMailCheckLine size={ 14 } className="ml-1" /> }
+                {' '}
+                { recurrent && <BsArrowRepeat size={ 14 } className="ml-1" /> }
+                {' '}
             </span>
         );
     };

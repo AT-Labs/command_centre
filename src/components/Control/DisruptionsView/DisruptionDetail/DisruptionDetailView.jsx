@@ -5,7 +5,10 @@ import React, { useState, useEffect } from 'react';
 import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap';
 import { toString, omit, some, isEmpty, uniqBy, uniqWith } from 'lodash-es';
 import { FaRegCalendarAlt } from 'react-icons/fa';
+import { BsArrowRepeat } from 'react-icons/bs';
 import Flatpickr from 'react-flatpickr';
+import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
+import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
 
 import { CAUSES, IMPACTS, STATUSES } from '../../../../types/disruptions-types';
 import {
@@ -27,6 +30,7 @@ import {
     LABEL_URL,
     TIME_FORMAT,
     URL_MAX_LENGTH,
+    LABEL_DURATION,
 } from '../../../../constants/disruptions';
 import {
     getRoutesByShortName,
@@ -51,15 +55,25 @@ import {
     isStartDateValid,
     isStartTimeValid,
     momentFromDateTime,
+    isDurationValid,
+    getRecurrenceDates,
+    recurrenceRadioOptions,
 } from '../../../../utils/control/disruptions';
+import { calculateActivePeriods, getRecurrenceText, parseRecurrencePattern, fetchEndDateFromRecurrence } from '../../../../utils/recurrence';
 import './styles.scss';
 import DisruptionSummaryModal from './DisruptionSummaryModal';
 import Map from '../DisruptionCreation/CreateDisruption/Map';
 import DiversionUpload from './DiversionUpload';
 import AffectedEntities from '../AffectedEntities';
+import WeekdayPicker from '../../Common/WeekdayPicker/WeekdayPicker';
+import { useDisruptionRecurrence } from '../../../../redux/selectors/appSettings';
+import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
+
+    const formatEndDateFromEndTime = disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '';
+    const fetchEndDate = () => (disruption.recurrent ? fetchEndDateFromRecurrence(disruption.recurrencePattern) : formatEndDateFromEndTime);
 
     const [now] = useState(moment().second(0).millisecond(0));
     const [cause, setCause] = useState(disruption.cause);
@@ -73,10 +87,16 @@ const DisruptionDetailView = (props) => {
     const [startTime, setStartTime] = useState(moment(disruption.startTime).format(TIME_FORMAT));
     const [startDate, setStartDate] = useState(moment(disruption.startTime).format(DATE_FORMAT));
     const [endTime, setEndTime] = useState(disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : '');
-    const [endDate, setEndDate] = useState(disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '');
+    const [endDate, setEndDate] = useState(fetchEndDate());
     const [disruptionOpenedTime] = useState(moment().second(0).millisecond(0));
     const [createNotification, setCreateNotification] = useState(false);
     const [exemptAffectedTrips, setExemptAffectedTrips] = useState(disruption.exemptAffectedTrips);
+    const [recurrent, setRecurrent] = useState(disruption.recurrent);
+    const [duration, setDuration] = useState(disruption.duration);
+    const [recurrencePattern, setRecurrencePattern] = useState(disruption.recurrencePattern);
+    const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
+    const [activePeriods, setActivePeriods] = useState(disruption.activePeriods);
+    const [isRecurrenceDirty, setIsRecurrenceDirty] = useState(false);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqBy([...affectedRoutes, ...props.routes], route => route.routeId);
@@ -108,6 +128,14 @@ const DisruptionDetailView = (props) => {
     }, [affectedEntitiesWithoutShape, disruption.affectedEntities]);
 
     useEffect(() => {
+        const recurrenceDates = getRecurrenceDates(startDate, startTime, endDate);
+        setRecurrencePattern({
+            ...recurrencePattern,
+            ...recurrenceDates,
+        });
+    }, [startDate, startTime, endDate]);
+
+    useEffect(() => {
         setHeader(disruption.header);
         setCause(disruption.cause);
         setImpact(disruption.impact);
@@ -116,9 +144,11 @@ const DisruptionDetailView = (props) => {
         setUrl(disruption.url);
         setMode(disruption.mode);
         setEndTime(disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : '');
-        setEndDate(disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '');
+        setEndDate(fetchEndDate());
         setCreateNotification(disruption.createNotification);
         setExemptAffectedTrips(disruption.exemptAffectedTrips);
+        setRecurrent(disruption.recurrent);
+        setDuration(disruption.duration);
     }, [
         disruption.header,
         disruption.cause,
@@ -131,7 +161,16 @@ const DisruptionDetailView = (props) => {
         disruption.endDate,
         disruption.createNotification,
         disruption.exemptAffectedTrips,
+        disruption.recurrent,
+        disruption.duration,
     ]);
+
+    useEffect(() => {
+        if (!isRecurrenceDirty) {
+            setRecurrencePattern(disruption.recurrencePattern);
+            setActivePeriods(disruption.activePeriods);
+        }
+    }, [disruption.activePeriods]);
 
     const setDisruption = () => ({
         ...disruption,
@@ -147,6 +186,9 @@ const DisruptionDetailView = (props) => {
         endTime: momentFromDateTime(endDate, endTime),
         createNotification,
         exemptAffectedTrips,
+        recurrent,
+        duration,
+        recurrencePattern,
     });
 
     const handleUpdateDisruption = () => updateDisruption(setDisruption());
@@ -171,6 +213,8 @@ const DisruptionDetailView = (props) => {
             setEndDate(moment().format(DATE_FORMAT));
             setEndTime(moment().format(TIME_FORMAT));
         }
+
+        setIsRecurrenceDirty(true);
     };
 
     const isResolved = () => status === STATUSES.RESOLVED;
@@ -228,6 +272,15 @@ const DisruptionDetailView = (props) => {
     const datePickerOptionsStartDate = getDatePickerOptions(isStartDateTimeDisabled() ? undefined : 'today');
     const datePickerOptionsEndDate = getDatePickerOptions(isEndDateTimeDisabled() ? undefined : minEndDate);
 
+    const durationValid = () => isDurationValid(duration, recurrent);
+
+    const displayActivePeriods = () => {
+        if (isRecurrenceDirty) {
+            setActivePeriods(calculateActivePeriods(recurrencePattern, duration, disruption.activePeriods, isResolved()));
+        }
+        setActivePeriodsModalOpen(true);
+    };
+
     return (
         <Form>
             <div className="row position-relative">
@@ -246,6 +299,11 @@ const DisruptionDetailView = (props) => {
                 <span className="map-note">Note: Only a max of ten routes and ten stops will be displayed on the map.</span>
             </div>
             <div className="row mt-3">
+                { props.isRecurrenceOn && (
+                    <section className="col-12">
+                        <RadioButtons { ...recurrenceRadioOptions(recurrent) } />
+                    </section>
+                )}
                 <section className="col-3">
                     <div className="mt-2 position-relative form-group">
                         <DisruptionLabelAndText id="disruption-detail__mode" label={ LABEL_MODE } text={ mode } />
@@ -270,7 +328,10 @@ const DisruptionDetailView = (props) => {
                             disabled={ isStartDateTimeDisabled() }
                             options={ datePickerOptionsStartDate }
                             placeholder="Select date"
-                            onChange={ date => setStartDate(moment(date[0]).format(DATE_FORMAT)) } />
+                            onChange={ (date) => {
+                                setStartDate(moment(date[0]).format(DATE_FORMAT));
+                                setIsRecurrenceDirty(true);
+                            } } />
                         <FaRegCalendarAlt
                             className="disruption-creation__wizard-select-details__icon position-absolute"
                             size={ 22 } />
@@ -291,11 +352,32 @@ const DisruptionDetailView = (props) => {
                                 if (date.length === 0) {
                                     setEndTime('');
                                 }
+                                setIsRecurrenceDirty(true);
                             } } />
                         <FaRegCalendarAlt
                             className="disruption-creation__wizard-select-details__icon position-absolute"
                             size={ 22 } />
                     </FormGroup>
+                    { recurrent && (
+                        <>
+                            <FormGroup>
+                                <WeekdayPicker
+                                    selectedWeekdays={ recurrencePattern.byweekday || [] }
+                                    onUpdate={ (byweekday) => {
+                                        setRecurrencePattern({ ...recurrencePattern, byweekday });
+                                        setIsRecurrenceDirty(true);
+                                    } }
+                                    disabled={ isResolved() }
+                                />
+                            </FormGroup>
+                            { !isEmpty(recurrencePattern.byweekday) && (
+                                <FormGroup>
+                                    <BsArrowRepeat size={ 22 } />
+                                    <span className="pl-1">{ getRecurrenceText(parseRecurrencePattern(recurrencePattern)) }</span>
+                                </FormGroup>
+                            )}
+                        </>
+                    )}
                 </section>
                 <section className="col-3">
                     <div className="mt-2 position-relative form-group">
@@ -321,23 +403,49 @@ const DisruptionDetailView = (props) => {
                             className="border border-dark"
                             value={ startTime }
                             disabled={ isStartDateTimeDisabled() }
-                            onChange={ event => setStartTime(event.target.value) }
+                            onChange={ (event) => {
+                                setStartTime(event.target.value);
+                                setIsRecurrenceDirty(true);
+                            } }
                             invalid={ !startTimeValid() }
                         />
                     </FormGroup>
-                    <FormGroup>
-                        <Label for="disruption-detail__end-time">
-                            <span className="font-size-md font-weight-bold">{LABEL_END_TIME}</span>
-                        </Label>
-                        <Input
-                            id="disruption-detail__end-time"
-                            className="border border-dark"
-                            value={ endTime }
-                            disabled={ isEndDateTimeDisabled() }
-                            onChange={ event => setEndTime(event.target.value) }
-                            invalid={ !endTimeValid() }
-                        />
-                    </FormGroup>
+                    { !recurrent && (
+                        <FormGroup>
+                            <Label for="disruption-detail__end-time">
+                                <span className="font-size-md font-weight-bold">{LABEL_END_TIME}</span>
+                            </Label>
+                            <Input
+                                id="disruption-detail__end-time"
+                                className="border border-dark"
+                                value={ endTime }
+                                disabled={ isEndDateTimeDisabled() }
+                                onChange={ event => setEndTime(event.target.value) }
+                                invalid={ !endTimeValid() }
+                            />
+                        </FormGroup>
+                    )}
+                    { recurrent && (
+                        <FormGroup>
+                            <Label for="disruption-creation__wizard-select-details__duration">
+                                <span className="font-size-md font-weight-bold">{LABEL_DURATION}</span>
+                            </Label>
+                            <Input
+                                id="disruption-creation__wizard-select-details__duration"
+                                className="border border-dark"
+                                value={ duration }
+                                onChange={ (event) => {
+                                    setDuration(event.target.value);
+                                    setIsRecurrenceDirty(true);
+                                } }
+                                invalid={ !durationValid() }
+                                type="number"
+                                min="1"
+                                max="24"
+                                disabled={ isResolved() }
+                            />
+                        </FormGroup>
+                    )}
                 </section>
                 <section className="col-6">
                     <FormGroup className="mt-2">
@@ -379,6 +487,11 @@ const DisruptionDetailView = (props) => {
                             maxLength={ DESCRIPTION_MAX_LENGTH }
                             rows={ 5 } />
                     </FormGroup>
+                    { recurrent && (
+                        <FormGroup>
+                            <Button className="cc-btn-primary" onClick={ () => displayActivePeriods() }>View all</Button>
+                        </FormGroup>
+                    )}
                 </section>
             </div>
 
@@ -425,7 +538,7 @@ const DisruptionDetailView = (props) => {
                         <Button
                             className="cc-btn-primary ml-3 mr-3"
                             onClick={ handleUpdateDisruption }
-                            disabled={ isUpdating || isSaveDisabled || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() }>
+                            disabled={ isUpdating || isSaveDisabled || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() || !durationValid() }>
                             Save Changes
                         </Button>
                         <Button
@@ -441,6 +554,12 @@ const DisruptionDetailView = (props) => {
                     </FormGroup>
                 </div>
             </div>
+            <CustomMuiDialog
+                title="Disruption Active Periods"
+                onClose={ () => setActivePeriodsModalOpen(false) }
+                isOpen={ activePeriodsModalOpen }>
+                <ActivePeriods activePeriods={ activePeriods } />
+            </CustomMuiDialog>
         </Form>
     );
 };
@@ -463,6 +582,7 @@ DisruptionDetailView.propTypes = {
     deleteDisruptionFile: PropTypes.func.isRequired,
     routes: PropTypes.array.isRequired,
     stops: PropTypes.array.isRequired,
+    isRecurrenceOn: PropTypes.bool.isRequired,
 };
 
 DisruptionDetailView.defaultProps = {
@@ -478,6 +598,7 @@ export default connect(state => ({
     routeColors: getRouteColors(state),
     routes: getAffectedRoutes(state),
     stops: getAffectedStops(state),
+    isRecurrenceOn: useDisruptionRecurrence(state),
 }), {
     getRoutesByShortName,
     openCreateDisruption,

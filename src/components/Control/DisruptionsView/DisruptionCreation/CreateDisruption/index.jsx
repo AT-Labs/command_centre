@@ -1,31 +1,13 @@
 /* eslint-disable no-param-reassign */
-import React from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash-es';
-import PropTypes from 'prop-types';
 import moment from 'moment';
-import { Button } from 'reactstrap';
-
-import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
-import '../styles.scss';
-
+import PropTypes from 'prop-types';
+import React from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
-import Map from './Map';
-import SidePanel from '../../../../Common/OffCanvasLayout/SidePanel/SidePanel';
-import Wizard from '../../../../Common/wizard/Wizard';
-import SelectDisruptionEntities from '../WizardSteps/SelectDisruptionEntities';
-import SelectDetails from '../WizardSteps/SelectDetails';
-import {
-    getDisruptionAction,
-    isDisruptionCreationOpen,
-    isDisruptionCancellationModalOpen,
-    getDisruptionStepCreation,
-    getAffectedStops,
-    getAffectedRoutes,
-    getShapes,
-    getRouteColors,
-    getDisruptionToEdit,
-} from '../../../../../redux/selectors/control/disruptions';
+import { connect } from 'react-redux';
+import { Button } from 'reactstrap';
+import { RRule } from 'rrule';
+import { DATE_FORMAT, TIME_FORMAT } from '../../../../../constants/disruptions';
 import {
     createDisruption,
     openCreateDisruption,
@@ -33,12 +15,29 @@ import {
     updateCurrentStep,
     updateDisruption,
 } from '../../../../../redux/actions/control/disruptions';
-import { buildSubmitBody, momentFromDateTime } from '../../../../../utils/control/disruptions';
-import { DEFAULT_IMPACT, DEFAULT_CAUSE, STATUSES } from '../../../../../types/disruptions-types';
-import { DATE_FORMAT, TIME_FORMAT } from '../../../../../constants/disruptions';
+import {
+    getAffectedRoutes,
+    getAffectedStops,
+    getDisruptionAction,
+    getDisruptionStepCreation,
+    getDisruptionToEdit,
+    getRouteColors,
+    getShapes,
+    isDisruptionCancellationModalOpen,
+    isDisruptionCreationOpen,
+} from '../../../../../redux/selectors/control/disruptions';
+import { DEFAULT_CAUSE, DEFAULT_IMPACT, STATUSES } from '../../../../../types/disruptions-types';
+import { buildSubmitBody, momentFromDateTime, getRecurrenceDates } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
-import Confirmation from '../WizardSteps/Confirmation';
+import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
+import SidePanel from '../../../../Common/OffCanvasLayout/SidePanel/SidePanel';
+import Wizard from '../../../../Common/wizard/Wizard';
+import '../styles.scss';
 import Cancellation from '../WizardSteps/Cancellation';
+import Confirmation from '../WizardSteps/Confirmation';
+import SelectDetails from '../WizardSteps/SelectDetails';
+import SelectDisruptionEntities from '../WizardSteps/SelectDisruptionEntities';
+import Map from './Map';
 
 const INIT_STATE = {
     startTime: '',
@@ -55,6 +54,9 @@ const INIT_STATE = {
     url: '',
     createNotification: false,
     exemptAffectedTrips: false,
+    recurrent: false,
+    duration: '',
+    recurrencePattern: { freq: RRule.WEEKLY },
 };
 
 class CreateDisruption extends React.Component {
@@ -81,10 +83,20 @@ class CreateDisruption extends React.Component {
     }
 
     updateData = (key, value) => {
+        const { disruptionData } = this.state;
+        let recurrenceDates;
+        if (['startDate', 'startTime', 'endDate'].includes(key)) {
+            const updatedDisruptionData = { ...disruptionData, [key]: value };
+            recurrenceDates = getRecurrenceDates(updatedDisruptionData.startDate, updatedDisruptionData.startTime, updatedDisruptionData.endDate);
+        }
         this.setState(prevState => ({
             disruptionData: {
                 ...prevState.disruptionData,
                 [key]: value,
+                ...(recurrenceDates && { recurrencePattern: {
+                    ...prevState.disruptionData.recurrencePattern,
+                    ...recurrenceDates,
+                } }),
             },
         }));
     };
@@ -120,15 +132,6 @@ class CreateDisruption extends React.Component {
         this.props.toggleDisruptionModals(type, isOpen);
     };
 
-    isSubmitDisabled = (disruptionData) => {
-        const isEntitiesEmpty = _.isEmpty(disruptionData.affectedEntities);
-        const isPropsEmpty = _.some(_.omit(
-            disruptionData,
-            ['endDate', 'endTime', 'mode', 'affectedEntities', 'url', 'createNotification', 'exemptAffectedTrips'],
-        ), _.isEmpty);
-        return isEntitiesEmpty || isPropsEmpty;
-    };
-
     render() {
         const { disruptionData, isConfirmationOpen } = this.state;
         return (
@@ -154,7 +157,6 @@ class CreateDisruption extends React.Component {
                             className="disruption-creation__wizard container p-0"
                             data={ disruptionData }
                             response={ this.props.action }
-                            isSubmitDisabled={ this.isSubmitDisabled(disruptionData) }
                             onDataUpdate={ this.updateData }
                             onSubmit={ this.onSubmit }>
                             <SelectDisruptionEntities

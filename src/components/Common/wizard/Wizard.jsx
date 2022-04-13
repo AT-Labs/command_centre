@@ -9,7 +9,6 @@ export default class Wizard extends Component {
         onSubmit: PropTypes.func.isRequired,
         onStepUpdate: PropTypes.func,
         onDataUpdate: PropTypes.func,
-        isSubmitDisabled: PropTypes.bool.isRequired,
         children: PropTypes.oneOfType([
             PropTypes.arrayOf(PropTypes.node),
             PropTypes.node,
@@ -44,14 +43,13 @@ export default class Wizard extends Component {
     };
 
     render() {
-        const { data, response, isSubmitDisabled, onSubmit } = this.props;
+        const { data, response, onSubmit } = this.props;
         const { activeStep, prevStep } = this.state;
         const childrenWithProps = React.Children.map(this.props.children, child => React.cloneElement(
             child,
             {
                 data,
                 response,
-                isSubmitDisabled,
                 onSubmit,
                 activeStep,
                 prevStep,

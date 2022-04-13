@@ -8,6 +8,7 @@ import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import ACTION_TYPE from '../../../action-types';
 import VEHICLE_OCCUPANCY_STATUS_TYPE from '../../../../types/vehicle-occupancy-status-types';
 import * as vehicleDetailActions from './vehicle';
+import { utcDateFormatWithoutTZ } from '../../../../utils/dateFormats';
 
 const mockStore = configureMockStore([thunk]);
 let store;
@@ -128,7 +129,7 @@ describe('Vehicle detail actions', () => {
     context('fetchUpcomingStops()', () => {
         afterEach(() => sandbox.restore());
 
-        const tenMinutesInFuture = `${moment().utc().add(10, 'minutes').format('YYYY-MM-DDTHH:mm:ss')}.000Z`;
+        const tenMinutesInFuture = `${moment().utc().add(10, 'minutes').format(utcDateFormatWithoutTZ)}.000Z`;
         const tenMinutesInFutureUnix = `${moment().utc().add(10, 'minutes').unix()}`;
 
         const allStops = [
@@ -221,7 +222,7 @@ describe('Vehicle detail actions', () => {
 
 
     context('fetchPastStops()', () => {
-        const tenMinutesInPast = `${moment().utc().subtract(10, 'minutes').format('YYYY-MM-DDTHH:mm:ss')}.000Z`;
+        const tenMinutesInPast = `${moment().utc().subtract(10, 'minutes').format(utcDateFormatWithoutTZ)}.000Z`;
         const tenMinutesInPastUnix = `${moment().utc().subtract(10, 'minutes').unix()}`;
         const createHistoryStop = (stopSequence = 7) => ({
             stop: {

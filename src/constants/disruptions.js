@@ -25,3 +25,10 @@ export const LABEL_CREATED_BY = 'Created By';
 export const LABEL_LAST_UPDATED_BY = 'Last Updated By';
 export const LABEL_CREATED_AT = 'Created At';
 export const LABEL_LAST_UPDATED_AT = 'Last Updated At';
+export const LABEL_FREQUENCY = 'Frequency';
+export const LABEL_DURATION = 'Duration (hours)';
+
+export const FREQUENCY_TYPE = {
+    ONCE: 'Once',
+    RECURRING: 'Recurring',
+};

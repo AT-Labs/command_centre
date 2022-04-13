@@ -130,12 +130,14 @@ DiversionUpload.propTypes = {
     disruption: PropTypes.object.isRequired,
     disabled: PropTypes.bool.isRequired,
     readonly: PropTypes.bool,
-    uploadDisruptionFiles: PropTypes.func.isRequired,
-    deleteDisruptionFile: PropTypes.func.isRequired,
+    uploadDisruptionFiles: PropTypes.func,
+    deleteDisruptionFile: PropTypes.func,
 };
 
 DiversionUpload.defaultProps = {
     readonly: false,
+    uploadDisruptionFiles: null,
+    deleteDisruptionFile: null,
 };
 
 export default DiversionUpload;

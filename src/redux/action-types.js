@@ -214,4 +214,6 @@ export default {
     OCCUPANCY_IS_LOADING: 'occupancy-is-loading',
     // Data Management
     UPDATE_CONTROL_DATAMANAGEMENT_PAGESETTINGS: 'update-control-data-management-pagesettings',
+    // Application Settings
+    UPDATE_APP_SETTINGS: 'update-application-settings',
 };

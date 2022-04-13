@@ -1,7 +1,7 @@
 import { isEmpty, camelCase, isObject, uniq, transform, isArray, omit } from 'lodash-es';
 import moment from 'moment';
 
-import { TIME_FORMAT, DATE_FORMAT } from '../../constants/disruptions';
+import { TIME_FORMAT, DATE_FORMAT, LABEL_FREQUENCY, FREQUENCY_TYPE } from '../../constants/disruptions';
 import VEHICLE_TYPES from '../../types/vehicle-types';
 
 export const PAGE_SIZE = 50;
@@ -13,11 +13,8 @@ export const isStartTimeValid = (startDate, startTime, openingTime) => startTime
     && moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`).isSameOrAfter(openingTime, 'minute');
 
 export const isEndTimeValid = (endDate, endTime, nowAsMoment, startDate, startTime) => {
-    if (isEmpty(endTime) && isEmpty(endDate)) {
+    if (isEmpty(endTime)) {
         return true;
-    }
-    if (isEmpty(endTime) && !isEmpty(endDate)) {
-        return false;
     }
 
     const endTimeMoment = moment(`${endDate}T${endTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`);
@@ -27,9 +24,13 @@ export const isEndTimeValid = (endDate, endTime, nowAsMoment, startDate, startTi
         && nowAsMoment.isSameOrBefore(endTimeMoment, 'minute');
 };
 
-export const isEndDateValid = (endDate, startDate) => {
-    if (isEmpty(endDate)) {
+export const isEndDateValid = (endDate, startDate, recurrent = false) => {
+    if (isEmpty(endDate) && !recurrent) {
         return true;
+    }
+
+    if (isEmpty(endDate) && recurrent) {
+        return false;
     }
 
     return moment(endDate, DATE_FORMAT, true).isValid()
@@ -39,6 +40,8 @@ export const isEndDateValid = (endDate, startDate) => {
 
 export const isStartDateValid = (startDate, openingTime) => moment(startDate, DATE_FORMAT, true).isValid()
     && moment(startDate, DATE_FORMAT).isSameOrAfter(openingTime, 'day');
+
+export const isDurationValid = (duration, recurrent) => !recurrent || (!isEmpty(duration) && (Number.isInteger(+duration) && +duration > 0 && +duration < 25));
 
 export const momentFromDateTime = (date, time) => {
     if (time && date) {
@@ -84,3 +87,21 @@ export const transformIncidentNo = (disruptionId) => {
     const paddedId = (pad + disruptionId).slice(-pad.length);
     return `DISR${paddedId}`;
 };
+
+export const getRecurrenceDates = (startDate, startTime, endDate) => {
+    const recurrenceDates = {};
+    if (startDate && startTime) {
+        recurrenceDates.dtstart = momentFromDateTime(startDate, startTime).tz('UTC', true).toDate();
+    }
+    if (endDate && startTime) {
+        recurrenceDates.until = momentFromDateTime(endDate, startTime).tz('UTC', true).toDate();
+    }
+    return recurrenceDates;
+};
+
+export const recurrenceRadioOptions = isRecurrent => ({
+    title: LABEL_FREQUENCY,
+    formGroupClass: 'disruption-creation__wizard-select-details-frequency',
+    checkedKey: isRecurrent ? '1' : '0',
+    keyValues: [{ key: '0', value: FREQUENCY_TYPE.ONCE }, { key: '1', value: FREQUENCY_TYPE.RECURRING }],
+});

@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { isEmpty, some } from 'lodash-es';
 import moment from 'moment';
-import { Form, FormGroup, Label, Input, FormFeedback } from 'reactstrap';
+import { Form, FormGroup, Label, Input, FormFeedback, Button } from 'reactstrap';
 import Flatpickr from 'react-flatpickr';
-import { FaRegCalendarAlt } from 'react-icons/fa';
+import { BsArrowRepeat } from 'react-icons/bs';
+import { FaRegCalendarAlt, FaExclamationTriangle } from 'react-icons/fa';
+import { IconContext } from 'react-icons';
 import { isUrlValid } from '../../../../../utils/helpers';
-import { isStartTimeValid, isStartDateValid, isEndDateValid, isEndTimeValid, getDatePickerOptions } from '../../../../../utils/control/disruptions';
+import { isStartTimeValid, isStartDateValid, isEndDateValid, isEndTimeValid, getDatePickerOptions, isDurationValid, recurrenceRadioOptions }
+    from '../../../../../utils/control/disruptions';
 import { toggleDisruptionModals, updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { DisruptionDetailSelect } from '../../DisruptionDetail/DisruptionDetailSelect';
 import { getAffectedRoutes, getAffectedStops } from '../../../../../redux/selectors/control/disruptions';
@@ -27,23 +31,46 @@ import {
     LABEL_START_DATE,
     DATE_FORMAT,
     LABEL_END_TIME, LABEL_END_DATE,
+    LABEL_DURATION,
 } from '../../../../../constants/disruptions';
 import Footer from './Footer';
 import AffectedEntities from '../../AffectedEntities';
+import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
+import CustomMuiDialog from '../../../../Common/CustomMuiDialog/CustomMuiDialog';
+import ActivePeriods from '../../../../Common/ActivePeriods/ActivePeriods';
+import CustomModal from '../../../../Common/CustomModal/CustomModal';
+import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText } from '../../../../../utils/recurrence';
+import { useDisruptionRecurrence } from '../../../../../redux/selectors/appSettings';
+import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 
-const SelectDetails = (props) => {
+export const SelectDetails = (props) => {
     const { startDate, startTime, endDate, endTime, impact, cause, header, description, url, createNotification } = props.data;
+    const { recurrent, duration, recurrencePattern } = props.data;
     const { routes, stops } = props;
 
     const [modalOpenedTime] = useState(moment().second(0).millisecond(0));
-
+    const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
+    const [activePeriods, setActivePeriods] = useState([]);
+    const [alertDialogMessage, setAlertDialogMessage] = useState(null);
+    const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+    const maxActivePeriodsCount = 100;
     const startTimeValid = () => isStartTimeValid(startDate, startTime, modalOpenedTime);
 
     const startDateValid = () => isStartDateValid(startDate, modalOpenedTime);
 
     const endTimeValid = () => isEndTimeValid(endDate, endTime, modalOpenedTime, startDate, startTime);
 
-    const endDateValid = () => isEndDateValid(endDate, startDate);
+    const endDateValid = () => isEndDateValid(endDate, startDate, recurrent);
+
+    const durationValid = () => isDurationValid(duration, recurrent);
+
+    const isRequiredPropsEmpty = () => {
+        const isEntitiesEmpty = isEmpty([...routes, ...stops]);
+        const isPropsEmpty = some([startTime, startDate, impact, cause, header, description], isEmpty);
+        const isEndTimeRequiredAndEmpty = !recurrent && !isEmpty(endDate) && isEmpty(endTime);
+        const isWeekdayRequiredAndEmpty = recurrent && isEmpty(recurrencePattern.byweekday);
+        return isEntitiesEmpty || isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
+    };
 
     const getOptionalLabel = label => (
         <>
@@ -57,17 +84,46 @@ const SelectDetails = (props) => {
 
     const endDateDatePickerOptions = getDatePickerOptions(startDate);
 
-    const isSubmitEnabled = props.isSubmitDisabled || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid();
+    const isDateTimeValid = () => startTimeValid() && startDateValid() && endDateValid() && durationValid();
+    const isViewAllDisabled = !isDateTimeValid() || isEmpty(recurrencePattern.byweekday);
+    const isSubmitDisabled = isRequiredPropsEmpty() || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() || !durationValid();
+
+    const activePeriodsValid = () => {
+        if (recurrent) {
+            let errorMessage;
+            const activePeriodsCount = generateActivePeriodsFromRecurrencePattern(recurrencePattern, duration).length;
+
+            if (activePeriodsCount === 0) {
+                errorMessage = 'No active periods will be created. Please check the recurrence selection.';
+            } else if (activePeriodsCount > maxActivePeriodsCount) {
+                errorMessage = `Number of active periods is larger than the maximum allowed of ${maxActivePeriodsCount}. Please change the recurrence selection to reduce this.`;
+            }
+
+            if (errorMessage) {
+                setAlertDialogMessage(errorMessage);
+                setIsAlertModalOpen(true);
+                return false;
+            }
+        }
+        return true;
+    };
 
     const onContinue = () => {
-        props.onStepUpdate(2);
-        props.updateCurrentStep(1);
-        props.onSubmit();
+        if (activePeriodsValid()) {
+            props.onStepUpdate(2);
+            props.updateCurrentStep(1);
+            props.onSubmit();
+        }
     };
 
     const onBack = () => {
         props.onStepUpdate(0);
         props.updateCurrentStep(1);
+    };
+
+    const displayActivePeriods = () => {
+        setActivePeriods(generateActivePeriodsFromRecurrencePattern(recurrencePattern, duration));
+        setActivePeriodsModalOpen(true);
     };
 
     return (
@@ -84,6 +140,15 @@ const SelectDetails = (props) => {
                 <div className="col-12">
                     <h3>Add disruption details</h3>
                 </div>
+                { props.isRecurrenceOn && (
+                    <div className="col-12">
+                        <RadioButtons
+                            { ...recurrenceRadioOptions(recurrent) }
+                            disabled={ false }
+                            onChange={ checkedButtonKey => props.onDataUpdate('recurrent', checkedButtonKey === '1') }
+                        />
+                    </div>
+                )}
                 <div className="col-6">
                     <FormGroup className="position-relative">
                         <Label for="disruption-creation__wizard-select-details__start-date">
@@ -102,7 +167,9 @@ const SelectDetails = (props) => {
                     </FormGroup>
                     <FormGroup className="position-relative">
                         <Label for="disruption-creation__wizard-select-details__end-date">
-                            <span className="font-size-md font-weight-bold">{getOptionalLabel(LABEL_END_DATE)}</span>
+                            <span className="font-size-md font-weight-bold">
+                                {!recurrent ? getOptionalLabel(LABEL_END_DATE) : LABEL_END_DATE}
+                            </span>
                         </Label>
                         <Flatpickr
                             id="disruption-creation__wizard-select-details__end-date"
@@ -119,13 +186,6 @@ const SelectDetails = (props) => {
                             className="disruption-creation__wizard-select-details__icon position-absolute"
                             size={ 22 } />
                     </FormGroup>
-                    <DisruptionDetailSelect
-                        id="disruption-creation__wizard-select-details__cause"
-                        className=""
-                        value={ cause }
-                        options={ CAUSES }
-                        label={ LABEL_CAUSE }
-                        onChange={ selectedItem => props.onDataUpdate('cause', selectedItem) } />
                 </div>
                 <div className="col-6">
                     <FormGroup>
@@ -140,18 +200,69 @@ const SelectDetails = (props) => {
                             invalid={ !startTimeValid() }
                         />
                     </FormGroup>
-                    <FormGroup>
-                        <Label for="disruption-creation__wizard-select-details__end-time">
-                            <span className="font-size-md font-weight-bold">{getOptionalLabel(LABEL_END_TIME)}</span>
-                        </Label>
-                        <Input
-                            id="disruption-creation__wizard-select-details__end-time"
-                            className="border border-dark"
-                            value={ endTime }
-                            onChange={ event => props.onDataUpdate('endTime', event.target.value) }
-                            invalid={ !endTimeValid() }
-                        />
-                    </FormGroup>
+                    { !recurrent && (
+                        <FormGroup>
+                            <Label for="disruption-creation__wizard-select-details__end-time">
+                                <span className="font-size-md font-weight-bold">{getOptionalLabel(LABEL_END_TIME)}</span>
+                            </Label>
+                            <Input
+                                id="disruption-creation__wizard-select-details__end-time"
+                                className="border border-dark"
+                                value={ endTime }
+                                onChange={ event => props.onDataUpdate('endTime', event.target.value) }
+                                invalid={ !endTimeValid() }
+                            />
+                        </FormGroup>
+                    )}
+                    { recurrent && (
+                        <FormGroup>
+                            <Label for="disruption-creation__wizard-select-details__duration">
+                                <span className="font-size-md font-weight-bold">{LABEL_DURATION}</span>
+                            </Label>
+                            <Input
+                                id="disruption-creation__wizard-select-details__duration"
+                                className="border border-dark"
+                                value={ duration }
+                                onChange={ event => props.onDataUpdate('duration', event.target.value) }
+                                invalid={ !durationValid() }
+                                type="number"
+                                min="1"
+                                max="24"
+                            />
+                        </FormGroup>
+                    )}
+                </div>
+                { recurrent && (
+                    <>
+                        <div className="col-6 text-center">
+                            <WeekdayPicker
+                                selectedWeekdays={ recurrencePattern.byweekday || [] }
+                                onUpdate={ byweekday => props.onDataUpdate('recurrencePattern', { ...recurrencePattern, byweekday }) }
+                            />
+                        </div>
+                        <div className="col-6 pb-3 text-center">
+                            <Button disabled={ isViewAllDisabled } className="showActivePeriods btn btn-secondary lh-1" onClick={ () => displayActivePeriods() }>
+                                View All
+                            </Button>
+                        </div>
+                        { !isEmpty(recurrencePattern.byweekday) && (
+                            <div className="col-12 mb-3">
+                                <BsArrowRepeat size={ 22 } />
+                                <span className="pl-1">{ getRecurrenceText(recurrencePattern) }</span>
+                            </div>
+                        )}
+                    </>
+                )}
+                <div className="col-6">
+                    <DisruptionDetailSelect
+                        id="disruption-creation__wizard-select-details__cause"
+                        className=""
+                        value={ cause }
+                        options={ CAUSES }
+                        label={ LABEL_CAUSE }
+                        onChange={ selectedItem => props.onDataUpdate('cause', selectedItem) } />
+                </div>
+                <div className="col-6">
                     <DisruptionDetailSelect
                         id="disruption-creation__wizard-select-details__impact"
                         className=""
@@ -239,10 +350,31 @@ const SelectDetails = (props) => {
                 updateCurrentStep={ props.updateCurrentStep }
                 onStepUpdate={ props.onStepUpdate }
                 toggleDisruptionModals={ props.toggleDisruptionModals }
-                isSubmitEnabled={ isSubmitEnabled }
+                isSubmitDisabled={ isSubmitDisabled }
                 nextButtonValue="Finish"
                 onContinue={ () => onContinue() }
                 onBack={ () => onBack() } />
+            <CustomMuiDialog
+                title="Disruption Active Periods"
+                onClose={ () => setActivePeriodsModalOpen(false) }
+                isOpen={ activePeriodsModalOpen }>
+                <ActivePeriods activePeriods={ activePeriods } />
+            </CustomMuiDialog>
+            <CustomModal
+                title="Log a Disruption"
+                okButton={ {
+                    label: 'OK',
+                    onClick: () => setIsAlertModalOpen(false),
+                    isDisabled: false,
+                    className: 'test',
+                } }
+                onClose={ () => setIsAlertModalOpen(false) }
+                isModalOpen={ isAlertModalOpen }>
+                <IconContext.Provider value={ { className: 'text-warning w-100 m-2' } }>
+                    <FaExclamationTriangle size={ 40 } />
+                </IconContext.Provider>
+                <p className="font-weight-light text-center mb-0">{ alertDialogMessage }</p>
+            </CustomModal>
         </div>
     );
 };
@@ -251,12 +383,12 @@ SelectDetails.propTypes = {
     data: PropTypes.object,
     onStepUpdate: PropTypes.func,
     onDataUpdate: PropTypes.func,
-    isSubmitDisabled: PropTypes.bool,
     onSubmit: PropTypes.func,
     toggleDisruptionModals: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func,
     stops: PropTypes.array,
     routes: PropTypes.array,
+    isRecurrenceOn: PropTypes.bool.isRequired,
 };
 
 SelectDetails.defaultProps = {
@@ -265,7 +397,6 @@ SelectDetails.defaultProps = {
     onDataUpdate: () => { },
     onSubmit: () => { },
     updateCurrentStep: () => { },
-    isSubmitDisabled: false,
     stops: [],
     routes: [],
 };
@@ -273,4 +404,5 @@ SelectDetails.defaultProps = {
 export default connect(state => ({
     stops: getAffectedStops(state),
     routes: getAffectedRoutes(state),
+    isRecurrenceOn: useDisruptionRecurrence(state),
 }), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);

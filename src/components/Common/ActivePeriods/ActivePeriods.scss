@@ -1,0 +1,12 @@
+.active-periods-view {
+    width: 100%;
+    height: 60vh;
+
+    p {
+        margin-block-start: 1em; // fix table pagination alignment
+    }
+}
+
+.MuiPopover-paper {
+    max-width: 50px !important; // fix rows per page pop up width
+}

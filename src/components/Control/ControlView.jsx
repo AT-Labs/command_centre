@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
 import { getActiveControlDetailView } from '../../redux/selectors/navigation';
@@ -15,6 +15,7 @@ import DisruptionsView from './DisruptionsView';
 import Notifications from './NotificationsView/NotificationsView';
 import TripReplaysView from './TripReplaysView/TripReplaysView';
 import DataManagement from './DataManagement/DataManagement';
+import { getApplicationSettings } from '../../redux/actions/appSettings';
 
 const ControlView = (props) => {
     const isBlocksView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.BLOCKS;
@@ -24,6 +25,10 @@ const ControlView = (props) => {
     const isDisruptionsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS;
     const isTripReplaysView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.TRIP_REPLAYS;
     const isDataManagementView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT;
+
+    useEffect(() => {
+        props.getApplicationSettings();
+    }, []);
 
     return (
         <OffCanvasLayout>
@@ -46,11 +51,14 @@ const ControlView = (props) => {
 
 ControlView.propTypes = {
     activeControlDetailView: PropTypes.string.isRequired,
+    getApplicationSettings: PropTypes.func.isRequired,
 };
 
 export default connect(
     state => ({
         activeControlDetailView: getActiveControlDetailView(state),
     }),
-    {},
+    {
+        getApplicationSettings,
+    },
 )(ControlView);
