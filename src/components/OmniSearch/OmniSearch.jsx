@@ -55,6 +55,7 @@ export class OmniSearch extends Component {
         value: PropTypes.string,
         onInputValueChange: PropTypes.func,
         onClearCallBack: PropTypes.func,
+        shouldRenderSuggestions: PropTypes.func,
         isDisabled: PropTypes.bool,
         inputId: PropTypes.string,
         updateSearchBarFocus: PropTypes.func.isRequired,
@@ -74,6 +75,7 @@ export class OmniSearch extends Component {
         value: '',
         onInputValueChange: null,
         onClearCallBack: null,
+        shouldRenderSuggestions: () => true,
         isDisabled: false,
         inputId: '',
         onResetCallBack: null,
@@ -127,6 +129,7 @@ export class OmniSearch extends Component {
                     multiSearch={ this.props.multiSearch }
                     label={ this.props.label }
                     selectedEntities={ this.props.selectedEntities }
+                    shouldRenderSuggestions={ this.props.shouldRenderSuggestions }
                     showTags={ this.props.showTags } />
             </div>
         );

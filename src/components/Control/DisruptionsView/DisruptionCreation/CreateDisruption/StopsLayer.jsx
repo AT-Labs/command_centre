@@ -47,10 +47,10 @@ const StopsLayer = (props) => {
     return (
         <>
             <FeatureGroup>
-                {uniqBy(getDisplayStops(), stop => stop.stopId).map(stop => (stop.stopLat
+                {uniqBy(getDisplayStops(), stop => stop.stopCode).map(stop => (stop.stopLat
                     ? (
                         <IconMarker
-                            key={ stop.stopId }
+                            key={ stop.stopCode }
                             location={ [stop.stopLat, stop.stopLon] }
                             imageName="bus-stop"
                             size={ 28 }>

@@ -5,7 +5,7 @@ import { LicenseInfo } from '@mui/x-data-grid-pro';
 
 import { getAuthUser } from '../../auth';
 import { startPollingSiteStatus } from '../../redux/actions/activity';
-import { startPollingNotifications } from '../../redux/actions/control/notifications';
+import { startPollingAlerts } from '../../redux/actions/control/alerts';
 import { startTrackingVehicleAllocations } from '../../redux/actions/control/blocks';
 import { getBuses, getFerries, getTrains } from '../../redux/actions/static/fleet';
 import { setCache } from '../../redux/actions/static/cache';
@@ -13,7 +13,7 @@ import {
     fetchBlocksViewPermission,
     fetchDisruptionsViewPermission,
     fetchTripReplaysViewPermission,
-    fetchNotificationsViewPermission,
+    fetchAlertsViewPermission,
     fetchRoutesViewPermission,
     fetchStopMessagingViewPermission,
     updateUserProfile,
@@ -21,7 +21,7 @@ import {
 import { hasPrerequisiteDataLoaded, isAnyError } from '../../redux/selectors/activity';
 import { getActiveMainView } from '../../redux/selectors/navigation';
 import VIEW_TYPE from '../../types/view-types';
-import { IS_NOTIFICATIONS_ENABLED, IS_DISRUPTIONS_ENABLED, IS_TRIP_REPLAYS_ENABLED } from '../../utils/feature-toggles';
+import { IS_ALERTS_ENABLED, IS_DISRUPTIONS_ENABLED, IS_TRIP_REPLAYS_ENABLED } from '../../utils/feature-toggles';
 import BrowserCompatibilityModal from '../Common/BrowserCompatibilityModal/BrowserCompatibilityModal';
 import MaskLoader from '../Common/Loader/MaskLoader';
 import ControlView from '../Control/ControlView';
@@ -71,9 +71,9 @@ function App(props) {
             if (IS_TRIP_REPLAYS_ENABLED) {
                 props.fetchTripReplaysViewPermission();
             }
-            if (IS_NOTIFICATIONS_ENABLED) {
-                props.fetchNotificationsViewPermission();
-                props.startPollingNotifications();
+            if (IS_ALERTS_ENABLED) {
+                props.fetchAlertsViewPermission();
+                props.startPollingAlerts();
             }
             props.startPollingSiteStatus();
             if (!window.Cypress) {
@@ -110,8 +110,8 @@ App.propTypes = {
     fetchBlocksViewPermission: PropTypes.func.isRequired,
     fetchStopMessagingViewPermission: PropTypes.func.isRequired,
     fetchDisruptionsViewPermission: PropTypes.func.isRequired,
-    fetchNotificationsViewPermission: PropTypes.func.isRequired,
-    startPollingNotifications: PropTypes.func.isRequired,
+    fetchAlertsViewPermission: PropTypes.func.isRequired,
+    startPollingAlerts: PropTypes.func.isRequired,
     fetchTripReplaysViewPermission: PropTypes.func.isRequired,
 };
 
@@ -130,8 +130,8 @@ export default connect(state => ({
     fetchBlocksViewPermission,
     fetchStopMessagingViewPermission,
     fetchDisruptionsViewPermission,
-    fetchNotificationsViewPermission,
-    startPollingNotifications,
+    fetchAlertsViewPermission,
+    startPollingAlerts,
     startTrackingVehicleAllocations,
     fetchTripReplaysViewPermission,
 })(App);

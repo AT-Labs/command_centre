@@ -28,6 +28,7 @@ export class Search extends Component {
         searchInCategory: PropTypes.oneOfType([PropTypes.string, PropTypes.array]).isRequired,
         value: PropTypes.string,
         onClearCallBack: PropTypes.func,
+        shouldRenderSuggestions: PropTypes.func,
         isDisabled: PropTypes.bool,
         id: PropTypes.string,
         inputId: PropTypes.string,
@@ -48,6 +49,7 @@ export class Search extends Component {
         value: '',
         onInputValueChange: null,
         onClearCallBack: null,
+        shouldRenderSuggestions: () => true,
         isDisabled: false,
         id: '',
         inputId: '',
@@ -232,7 +234,7 @@ export class Search extends Component {
                         theme={ this.props.customTheme }
                         id={ this.props.id || 'default' }
                         multiSection
-                        shouldRenderSuggestions={ () => true }
+                        shouldRenderSuggestions={ this.props.shouldRenderSuggestions }
                         suggestions={ this.getSuggestionsToDisplay() }
                         getSectionSuggestions={ this.getSectionSuggestions }
                         onSuggestionsFetchRequested={ this.onSuggestionsFetchRequested }

@@ -29,7 +29,6 @@ export const getTripReplayTrips = (searchFilters) => {
     const timeType = _.get(searchFilters, 'timeType') || TIME_TYPE.Scheduled;
     let endpoint = '';
 
-    // setup the endpoint
     const searchTermType = _.get(searchFilters, 'searchTerm.type');
     const searchTerm = _.get(searchFilters, 'searchTerm.id');
 
@@ -39,6 +38,9 @@ export const getTripReplayTrips = (searchFilters) => {
         break;
     case SEARCH_RESULT_TYPE.STOP.type:
         endpoint = `${REACT_APP_TRIP_REPLAY_API_URL}/stops/${searchTerm}/trips`;
+        break;
+    case SEARCH_RESULT_TYPE.TRIP.type:
+        endpoint = `${REACT_APP_TRIP_REPLAY_API_URL}/tripId/${searchTerm}/trips`;
         break;
     default:
         endpoint = `${REACT_APP_TRIP_REPLAY_API_URL}/vehicles/${searchTerm}/trips`;

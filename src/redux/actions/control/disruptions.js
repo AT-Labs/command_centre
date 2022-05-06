@@ -180,8 +180,8 @@ export const getRoutesByStop = stops => async (dispatch, getState) => {
         const missingCacheStopsToRoutes = {};
 
         stops.forEach((stop) => {
-            if (cachedStopsToRoutes[stop.stopId]) {
-                routesByStop[stop.stopId] = cachedStopsToRoutes[stop.stopId].map(route => ({ ...route, shapeWkt: cachedShapes[route.routeId] }));
+            if (cachedStopsToRoutes[stop.stopCode]) {
+                routesByStop[stop.stopCode] = cachedStopsToRoutes[stop.stopCode].map(route => ({ ...route, shapeWkt: cachedShapes[route.routeId] }));
                 return;
             }
             missingStops.push(stop);
@@ -191,10 +191,10 @@ export const getRoutesByStop = stops => async (dispatch, getState) => {
             .then((allStopsToRoutes) => {
                 allStopsToRoutes.forEach((routes, index) => {
                     const camelCaseRoutes = toCamelCaseKeys(uniqBy(routes, 'route_id'));
-                    routesByStop[missingStops[index].stopId] = camelCaseRoutes;
+                    routesByStop[missingStops[index].stopCode] = camelCaseRoutes;
                     camelCaseRoutes.forEach((route) => {
                         missingCacheShapes[route.routeId] = route.shapeWkt;
-                        missingCacheStopsToRoutes[missingStops[index].stopId] = (missingCacheStopsToRoutes[missingStops[index].stopId] || []).concat([{
+                        missingCacheStopsToRoutes[missingStops[index].stopCode] = (missingCacheStopsToRoutes[missingStops[index].stopCode] || []).concat([{
                             routeId: route.routeId,
                             routeLongName: route.routeLongName,
                             routeShortName: route.routeShortName,
@@ -209,8 +209,8 @@ export const getRoutesByStop = stops => async (dispatch, getState) => {
             })
             .finally(() => {
                 stops.forEach((stop) => {
-                    if (routesByStop[stop.stopId]) {
-                        routesByStop[stop.stopId] = routesByStop[stop.stopId].map(route => ({
+                    if (routesByStop[stop.stopCode]) {
+                        routesByStop[stop.stopCode] = routesByStop[stop.stopCode].map(route => ({
                             ...route,
                             routeColor: allRoutes[route.routeId] && allRoutes[route.routeId].route_color,
                         }));

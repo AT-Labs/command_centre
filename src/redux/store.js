@@ -5,7 +5,7 @@ import thunk from 'redux-thunk';
 import activity from './reducers/activity';
 import blocks from './reducers/control/blocks';
 import link from './reducers/control/link';
-import notifications from './reducers/control/notifications';
+import alerts from './reducers/control/alerts';
 import platforms from './reducers/control/platforms';
 import controlFilters from './reducers/control/routes/filters';
 import controlRoutes from './reducers/control/routes/routes';
@@ -62,7 +62,7 @@ export default createStore(
             agencies: agenciesWithDepots,
             blocks,
             stopMessaging,
-            notifications,
+            alerts,
             routes: combineReducers({
                 filters: controlFilters,
                 routes: controlRoutes,

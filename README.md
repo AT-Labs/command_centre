@@ -108,7 +108,7 @@ When the app starts, it loads the user from the cache or it forces to log in bef
 | REACT_APP_ACTIVE_DIRECTORY_TENANT             | string | Active directory tenant                         |
 | REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN      | string | 'true' to disable Active directory login        /
 | REACT_APP_ACTIVE_DIRECTORY_CLIENT_ID          | string | Active directory client ID                      |
-| REACT_APP_FEATURE_NOTIFICATIONS               | bool   | Turn on notifications                           |
+| REACT_APP_FEATURE_ALERTS                      | bool   | Turn on alerts                                  |
 | REACT_APP_FEATURE_DISRUPTIONS                 | bool   | Turn on disruptions                             |
 | REACT_APP_FEATURE_TRIP_REPLAYS                | bool   | Turn on trip replays                            |
 | REACT_APP_GOOGLE_TAG_MANAGER_ID               | string | Google Tag Manager ID                           |

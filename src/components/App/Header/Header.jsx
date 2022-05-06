@@ -11,14 +11,14 @@ import { Button, Collapse, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, Pop
 import atLogo from '../../../assets/img/at_logo.png';
 import { IS_LOGIN_NOT_REQUIRED, logout } from '../../../auth';
 import { updateControlDetailView, updateMainView, updateSecondaryPanelView } from '../../../redux/actions/navigation';
-import { isNotificationsEmpty } from '../../../redux/selectors/control/notifications';
+import { isAlertsEmpty } from '../../../redux/selectors/control/alerts';
 import { getActiveControlDetailView, getActiveMainView, getActiveSecondaryPanelView } from '../../../redux/selectors/navigation';
 import { getStopMessagesPermissions } from '../../../redux/selectors/control/stopMessaging/stopMessages';
 import { getStopMessagesAndPermissions } from '../../../redux/actions/control/stopMessaging';
 import { isGlobalEditStopMessagesPermitted } from '../../../utils/user-permissions';
 import { getUserPermissions, getUserProfile } from '../../../redux/selectors/user';
 import VIEW_TYPE from '../../../types/view-types';
-import { IS_NOTIFICATIONS_ENABLED, IS_DISRUPTIONS_ENABLED, IS_TRIP_REPLAYS_ENABLED, IS_ANALYTICS_ENABLED } from '../../../utils/feature-toggles';
+import { IS_ALERTS_ENABLED, IS_DISRUPTIONS_ENABLED, IS_TRIP_REPLAYS_ENABLED, IS_ANALYTICS_ENABLED } from '../../../utils/feature-toggles';
 import CustomButton from '../../Common/CustomButton/CustomButton';
 import Icon from '../../Common/Icon/Icon';
 import { HelpInformationModal } from '../HelpInformationModal/HelpInformationModal';
@@ -74,7 +74,7 @@ function Header(props) {
                 VIEW_TYPE.CONTROL_DETAIL.ROUTES,
                 VIEW_TYPE.CONTROL_DETAIL.STOP_MESSAGES,
                 VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
-                VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS,
+                VIEW_TYPE.CONTROL_DETAIL.ALERTS,
                 VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT,
             ].includes(props.controlActiveView)) {
             history.push(locationToPush);
@@ -207,21 +207,21 @@ function Header(props) {
                             </CustomButton>
                         </NavItem>
                     )}
-                    { (IS_NOTIFICATIONS_ENABLED && isViewPermitted('controlNotificationsView')) && (
+                    { (IS_ALERTS_ENABLED && isViewPermitted('controlAlertsView')) && (
                         <NavItem>
                             <CustomButton
-                                className="header__btn header__notifications rounded-0 px-3 position-relative"
-                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS }
+                                className="header__btn header__alerts rounded-0 px-3 position-relative"
+                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.ALERTS }
                                 tabIndex="0"
-                                ariaLabel="Notifications button"
+                                ariaLabel="Alerts button"
                                 onClick={ () => {
                                     props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
-                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS);
+                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.ALERTS);
                                 } }>
                                 ALERTS
                                 {' '}
-                                {!props.hasNotifications && (
-                                    <span style={ { height: 8, width: 8, marginLeft: 3 } } className="header__notifications-badge rounded-circle position-absolute bg-warning">
+                                {!props.hasAlerts && (
+                                    <span style={ { height: 8, width: 8, marginLeft: 3 } } className="header__alerts-badge rounded-circle position-absolute bg-warning">
                                         &nbsp;
                                     </span>
                                 )}
@@ -322,7 +322,7 @@ Header.propTypes = {
     getStopMessagesAndPermissions: PropTypes.func.isRequired,
     activeView: PropTypes.string.isRequired,
     controlActiveView: PropTypes.string,
-    hasNotifications: PropTypes.bool, // eslint-disable-line
+    hasAlerts: PropTypes.bool, // eslint-disable-line
     stopMessagesPermissions: PropTypes.array.isRequired,
     userProfile: PropTypes.shape({
         name: PropTypes.string.isRequired,
@@ -338,7 +338,7 @@ Header.propTypes = {
 };
 
 Header.defaultProps = {
-    hasNotifications: false,
+    hasAlerts: false,
     controlActiveView: '',
 };
 
@@ -349,7 +349,7 @@ export default connect(
         controlActiveView: getActiveControlDetailView(state),
         userProfile: getUserProfile(state),
         userPermissions: getUserPermissions(state),
-        hasNotifications: isNotificationsEmpty(state),
+        hasAlerts: isAlertsEmpty(state),
         stopMessagesPermissions: getStopMessagesPermissions(state),
     }),
     {

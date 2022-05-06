@@ -9,6 +9,11 @@ export default {
         icon: 'stop',
         label: 'Stops',
     },
+    TRIP: {
+        type: 'trip',
+        icon: '',
+        label: 'TripId',
+    },
     ROUTE: {
         type: 'route',
         icon: '',
@@ -34,8 +39,8 @@ export default {
         icon: '',
         label: 'Blocks',
     },
-    CONTROL_NOTIFICATIONS_ROUTES: {
-        type: 'control-notifications-routes',
+    CONTROL_ALERTS_ROUTES: {
+        type: 'control-alerts-routes',
         icon: '',
         label: 'Routes',
     },

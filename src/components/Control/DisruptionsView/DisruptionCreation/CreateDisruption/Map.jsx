@@ -40,7 +40,7 @@ class Map extends React.Component {
     // This approach skips the map on tab, forwards and backwards, and allows us to access all other elements without having to refactor
     // the whole structure, which might possibly be the other option.
     componentDidMount() {
-        document.querySelector('.map').addEventListener('keyup', this.skipMapOnTab);
+        document.querySelector('.map')?.addEventListener('keyup', this.skipMapOnTab);
     }
 
     skipMapOnTab = (event) => {

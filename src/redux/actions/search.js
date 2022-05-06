@@ -11,7 +11,7 @@ import { getAllStops } from '../selectors/static/stops';
 import { getRoutesForSearch as getControlRoutes } from '../selectors/control/routes/routes';
 import { getAllFleetBuses, getAllFleetTrains, getAllFleetFerries } from '../selectors/static/fleet';
 import { getRouteVariantsForSearch as getControlRouteVariants } from '../selectors/control/routes/routeVariants';
-import { getAllNotifications } from '../selectors/control/notifications';
+import { getAllAlerts } from '../selectors/control/alerts';
 import { getSearchTerms } from '../selectors/search';
 import { allStopGroupsWithTokens, mergedAllStopGroupsWithTokens } from '../selectors/control/dataManagement/stopGroups';
 import { getAllStopMessages } from '../selectors/control/stopMessaging/stopMessages';
@@ -198,26 +198,26 @@ export const searchControlRouteVariants = searchTerms => (dispatch, getState) =>
     });
 };
 
-const formatNotificationsRoutesSearchResults = routes => routes.map(route => ({
+const formatAlertsRoutesSearchResults = routes => routes.map(route => ({
     text: route.route_short_name,
     data: route,
-    category: SEARCH_RESULT_TYPE.CONTROL_NOTIFICATIONS_ROUTES,
+    category: SEARCH_RESULT_TYPE.CONTROL_ALERTS_ROUTES,
     icon: '',
 }));
 
-export const searchControlNotificationsRoutes = searchTerms => (dispatch, getState) => {
+export const searchControlAlertsRoutes = searchTerms => (dispatch, getState) => {
     const allRoutes = getAllRoutes(getState());
-    const allNotifications = getAllNotifications(getState());
-    const routesInNotificationsList = _.uniqBy(_.flatten(
-        allNotifications.map(
-            notification => _.filter(allRoutes, route => route.route_short_name === notification.routeShortName),
+    const allAlerts = getAllAlerts(getState());
+    const routesInAlertsList = _.uniqBy(_.flatten(
+        allAlerts.map(
+            alert => _.filter(allRoutes, route => route.route_short_name === alert.routeShortName),
         ),
     ), 'route_id');
-    const routes = _.filter(routesInNotificationsList, route => _.startsWith(route.route_short_name.toUpperCase(), searchTerms.toUpperCase()));
+    const routes = _.filter(routesInAlertsList, route => _.startsWith(route.route_short_name.toUpperCase(), searchTerms.toUpperCase()));
 
     dispatch({
-        type: ACTION_TYPE.UPDATE_CONTROL_NOTIFICATIONS_ROUTES_SEARCH_RESULTS,
-        payload: { [SEARCH_RESULT_TYPE.CONTROL_NOTIFICATIONS_ROUTES.type]: formatNotificationsRoutesSearchResults(routes) },
+        type: ACTION_TYPE.UPDATE_CONTROL_ALERTS_ROUTES_SEARCH_RESULTS,
+        payload: { [SEARCH_RESULT_TYPE.CONTROL_ALERTS_ROUTES.type]: formatAlertsRoutesSearchResults(routes) },
     });
 };
 
@@ -324,7 +324,7 @@ export const search = (searchTerms, searchInCategory) => (dispatch) => {
         [SEARCH_RESULT_TYPE.BLOCK.type, () => dispatch(searchBlocks(searchTerms))],
         [SEARCH_RESULT_TYPE.CONTROL_ROUTE.type, () => dispatch(searchControlRoutes(searchTerms))],
         [SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type, () => dispatch(searchControlRouteVariants(searchTerms))],
-        [SEARCH_RESULT_TYPE.CONTROL_NOTIFICATIONS_ROUTES.type, () => dispatch(searchControlNotificationsRoutes(searchTerms))],
+        [SEARCH_RESULT_TYPE.CONTROL_ALERTS_ROUTES.type, () => dispatch(searchControlAlertsRoutes(searchTerms))],
         [SEARCH_RESULT_TYPE.STOP_GROUP.type, () => dispatch(searchStopGroups(searchTerms))],
         [SEARCH_RESULT_TYPE.STOP_GROUP_MERGED.type, () => dispatch(searchMergedStopGroups(searchTerms))],
         [SEARCH_RESULT_TYPE.STOP_MESSAGE.type, () => dispatch(searchStopMessages(searchTerms))],

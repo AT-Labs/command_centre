@@ -18,7 +18,7 @@ export default {
         ADD_DISRUPTION: 'add',
         EDIT_DISRUPTION: 'edit',
     },
-    NOTIFICATIONS: {
-        DISMISS_NOTIFICATION: 'dismiss',
+    ALERTS: {
+        DISMISS_ALERT: 'dismiss',
     },
 };

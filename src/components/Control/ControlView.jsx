@@ -12,7 +12,7 @@ import OffCanvasLayout from '../Common/OffCanvasLayout/OffCanvasLayout';
 import SecondarySidePanel from '../Common/OffCanvasLayout/SecondarySidePanel/SecondarySidePanel';
 import StopMessagesView from './StopMessagingView/StopMessagesView';
 import DisruptionsView from './DisruptionsView';
-import Notifications from './NotificationsView/NotificationsView';
+import AlertsView from './Alerts/AlertsView';
 import TripReplaysView from './TripReplaysView/TripReplaysView';
 import DataManagement from './DataManagement/DataManagement';
 import { getApplicationSettings } from '../../redux/actions/appSettings';
@@ -21,7 +21,7 @@ const ControlView = (props) => {
     const isBlocksView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.BLOCKS;
     const isRoutesView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.ROUTES;
     const isStopMessagesView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.STOP_MESSAGES;
-    const isNotificationsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS;
+    const isAlertsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.ALERTS;
     const isDisruptionsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS;
     const isTripReplaysView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.TRIP_REPLAYS;
     const isDataManagementView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT;
@@ -38,7 +38,7 @@ const ControlView = (props) => {
                     { isBlocksView && <BlocksView /> }
                     { isRoutesView && <CommonView /> }
                     { isStopMessagesView && <StopMessagesView /> }
-                    { isNotificationsView && <Notifications /> }
+                    { isAlertsView && <AlertsView /> }
                     { isDisruptionsView && <DisruptionsView /> }
                     { isTripReplaysView && <TripReplaysView /> }
                     { isDataManagementView && <DataManagement /> }

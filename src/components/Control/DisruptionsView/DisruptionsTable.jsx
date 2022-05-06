@@ -69,7 +69,7 @@ class DisruptionsTable extends React.Component {
                 label: LABEL_AFFECTED_STOPS,
                 key: 'affectedEntities',
                 cols: 'col-1 table__column--ellipsis',
-                getContent: (disruption, key) => [...new Set(disruption[key].filter(entity => entity.stopId).map(({ stopCode }) => stopCode))].join(', '),
+                getContent: (disruption, key) => [...new Set(disruption[key].filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))].join(', '),
             },
             {
                 label: LABEL_CUSTOMER_IMPACT,

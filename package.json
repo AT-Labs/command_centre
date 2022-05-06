@@ -1,11 +1,12 @@
 {
   "name": "at_command_centre",
-  "version": "1.30.0",
+  "version": "1.31.0",
   "description": "Auckland Transport Command Centre",
   "license": "MIT",
   "private": true,
   "dependencies": {
     "@babel/polyfill": "^7.12.1",
+    "@cypress/code-coverage": "^3.9.12",
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.8.2",
     "@emotion/styled": "^11.8.1",
@@ -44,6 +45,7 @@
     "history": "^5.0.0",
     "in-view": "^0.6.1",
     "install": "^0.12.2",
+    "istanbul-instrumenter-loader": "^3.0.1",
     "jsdom": "^9.12.0",
     "leaflet": "^1.3.3",
     "leaflet-geometryutil": "^0.9.3",
@@ -158,16 +160,16 @@
     "build-local": "cross-env NODE_ENV=local BABEL_ENV=production node scripts/build.js",
     "eslint": "eslint src cypress/integration --ext=[.js,.jsx] --max-warnings=0",
     "stylelint": "stylelint \"**/*.scss\"",
-    "test": "cross-env NODE_ENV=test jest --detectOpenHandles --config ./config/jest/jest.config.js && mocha --config ./config/mocha/.mocharc.json --exit",
+    "test": "cross-env NODE_ENV=test jest --config ./config/jest/jest.config.js && mocha --config ./config/mocha/.mocharc.json --exit",
     "test:watch": "cross-env NODE_ENV=test mocha --config ./config/mocha/.mocharc.json --watch",
-    "test:coverage": "cross-env NODE_ENV=test nyc mocha --config ./config/mocha/.mocharc.json --exit && jest --detectOpenHandles --config ./config/jest/jest.config.js",
+    "test:coverage": "cross-env NODE_ENV=test nyc --report-dir ./test-reports/mocha mocha --config ./config/mocha/.mocharc.json --exit && jest --config ./config/jest/jest.config.js",
     "e2e": "start-server-and-test start:e2e http-get://localhost:3000 e2e:run",
     "e2e:run": "cypress run --browser electron",
     "e2e:spec": "cypress run --spec 'cypress/integration/vehicles.spec.js'",
     "e2e:browser": "cypress open --browser chrome",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "jest": "jest --detectOpenHandles --config ./config/jest/jest.config.js"
+    "jest": "jest --config ./config/jest/jest.config.js"
   },
   "babel": {
     "plugins": [

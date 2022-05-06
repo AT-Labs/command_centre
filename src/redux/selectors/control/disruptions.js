@@ -96,9 +96,9 @@ export const getFilteredDisruptions = createSelector(
             filteredDisruptions = filteredDisruptions.filter(({ affectedEntities }) => (
                 affectedEntities.find(entity => entity.routeId === get(selectedEntity, 'data.route_id'))
             ));
-        } else if (get(selectedEntity, 'data.stop_id')) {
+        } else if (get(selectedEntity, 'data.stop_code')) {
             filteredDisruptions = filteredDisruptions.filter(({ affectedEntities }) => (
-                affectedEntities.find(entity => entity.stopId === get(selectedEntity, 'data.stop_id'))
+                affectedEntities.find(entity => entity.stopCode === get(selectedEntity, 'data.stop_code'))
             ));
         }
 

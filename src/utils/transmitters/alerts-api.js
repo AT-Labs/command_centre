@@ -4,9 +4,9 @@ import { getViewPermission } from '../helpers';
 
 const { REACT_APP_ALERTS_API } = process.env;
 
-export const getNotificationsViewPermission = () => getViewPermission(`${REACT_APP_ALERTS_API}/view`);
+export const getAlertsViewPermission = () => getViewPermission(`${REACT_APP_ALERTS_API}/view`);
 
-export const getNotifications = (latestModifyAt) => {
+export const getAlerts = (latestModifyAt) => {
     const controller = new AbortController();
     const options = {
         method: 'GET',
@@ -32,7 +32,7 @@ export const getNotifications = (latestModifyAt) => {
     });
 };
 
-export const dismissNotification = id => fetchWithAuthHeader(
+export const dismissAlert = id => fetchWithAuthHeader(
     `${REACT_APP_ALERTS_API}/alerts/${id}`,
     { method: 'DELETE' },
 ).then(response => jsonResponseHandling(response));

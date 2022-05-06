@@ -100,7 +100,7 @@ const DisruptionDetailView = (props) => {
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqBy([...affectedRoutes, ...props.routes], route => route.routeId);
-        const uniqStops = uniqWith([...affectedStops, ...props.stops], (stopA, stopB) => stopA.stopId === stopB.stopId && stopA.routeId === stopB.routeId);
+        const uniqStops = uniqWith([...affectedStops, ...props.stops], (stopA, stopB) => stopA.stopCode === stopB.stopCode && stopA.routeId === stopB.routeId);
 
         return uniqRoutes.length !== affectedRoutes.length || uniqStops.length !== affectedStops.length
             || uniqRoutes.length !== props.routes.length || uniqStops.length !== props.stops.length;
@@ -112,8 +112,8 @@ const DisruptionDetailView = (props) => {
 
     const affectedEntitiesWithoutShape = toString(disruption.affectedEntities.map(entity => omit(entity, ['shapeWkt'])));
     useEffect(() => {
-        const affectedStops = disruption.affectedEntities.filter(entity => entity.stopId);
-        const affectedRoutes = disruption.affectedEntities.filter(entity => entity.routeId && isEmpty(entity.stopId));
+        const affectedStops = disruption.affectedEntities.filter(entity => entity.stopCode);
+        const affectedRoutes = disruption.affectedEntities.filter(entity => entity.routeId && isEmpty(entity.stopCode));
 
         if ((isEmpty(props.stops) && isEmpty(props.routes)) || haveRoutesOrStopsChanged(affectedRoutes, affectedStops)) {
             props.updateAffectedStopsState(affectedStops);
@@ -239,7 +239,7 @@ const DisruptionDetailView = (props) => {
         if (isEndDateTimeDisabled()) {
             return true;
         }
-        return isEndDateValid(endDate, startDate);
+        return isEndDateValid(endDate, startDate, recurrent);
     };
 
     const startDateValid = () => {
@@ -257,10 +257,14 @@ const DisruptionDetailView = (props) => {
         </>
     );
 
+    const durationValid = () => isDurationValid(duration, recurrent);
+    const isWeekdayRequiredButEmpty = recurrent && isEmpty(recurrencePattern.byweekday);
+    const isPropsEmpty = some([cause, impact, status, description, header], isEmpty) || isWeekdayRequiredButEmpty;
     const isUpdating = isRequesting && resultDisruptionId === disruption.disruptionId;
 
-    const isSaveDisabled = some([cause, impact, status, description, header], isEmpty)
-        || !isUrlValid(url);
+    const isViewAllDisabled = isWeekdayRequiredButEmpty || !startTimeValid() || !startDateValid() || !endDateValid() || !durationValid();
+    const isSaveDisabled = isUpdating || isPropsEmpty || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() || !durationValid();
+    const isDiversionUploadDisabled = isUpdating || isPropsEmpty || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid();
 
     const editRoutesAndStops = () => {
         props.updateEditMode(true);
@@ -271,8 +275,6 @@ const DisruptionDetailView = (props) => {
     const minEndDate = now.isAfter(disruption.startTime, 'day') ? now.format(DATE_FORMAT) : startDate;
     const datePickerOptionsStartDate = getDatePickerOptions(isStartDateTimeDisabled() ? undefined : 'today');
     const datePickerOptionsEndDate = getDatePickerOptions(isEndDateTimeDisabled() ? undefined : minEndDate);
-
-    const durationValid = () => isDurationValid(duration, recurrent);
 
     const displayActivePeriods = () => {
         if (isRecurrenceDirty) {
@@ -293,7 +295,7 @@ const DisruptionDetailView = (props) => {
                 <section className="position-relative w-50 d-flex disruption-detail__map">
                     <Map shouldOffsetForSidePanel={ false }
                         shapes={ !isLoading ? props.shapes : [] }
-                        stops={ !isLoading ? disruption.affectedEntities.filter(entity => entity.stopId).slice(0, 10) : [] }
+                        stops={ !isLoading ? disruption.affectedEntities.filter(entity => entity.stopCode).slice(0, 10) : [] }
                         routeColors={ !isLoading ? props.routeColors : [] } />
                 </section>
                 <span className="map-note">Note: Only a max of ten routes and ten stops will be displayed on the map.</span>
@@ -489,7 +491,7 @@ const DisruptionDetailView = (props) => {
                     </FormGroup>
                     { recurrent && (
                         <FormGroup>
-                            <Button className="cc-btn-primary" onClick={ () => displayActivePeriods() }>View all</Button>
+                            <Button disabled={ isViewAllDisabled } className="cc-btn-primary" onClick={ () => displayActivePeriods() }>View all</Button>
                         </FormGroup>
                     )}
                 </section>
@@ -497,7 +499,7 @@ const DisruptionDetailView = (props) => {
 
             <DiversionUpload
                 disruption={ disruption }
-                disabled={ isUpdating || isSaveDisabled || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() }
+                disabled={ isDiversionUploadDisabled }
                 uploadDisruptionFiles={ props.uploadDisruptionFiles }
                 deleteDisruptionFile={ props.deleteDisruptionFile }
             />
@@ -538,7 +540,7 @@ const DisruptionDetailView = (props) => {
                         <Button
                             className="cc-btn-primary ml-3 mr-3"
                             onClick={ handleUpdateDisruption }
-                            disabled={ isUpdating || isSaveDisabled || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() || !durationValid() }>
+                            disabled={ isSaveDisabled }>
                             Save Changes
                         </Button>
                         <Button

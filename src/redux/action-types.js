@@ -156,15 +156,15 @@ export default {
     UPDATE_USER_PROFILE: 'update-user-profile',
     UPDATE_USER_BLOCKS_PERMISSIONS: 'update-user-blocks-permissions',
     UPDATE_USER_ROUTES_PERMISSIONS: 'update-user-routes-permissions',
-    // Notifications:
-    FETCH_CONTROL_NOTIFICATIONS: 'fetch-control-notifications',
-    UPDATE_CONTROL_NOTIFICATIONS_ROUTES: 'update-control-notifications-routes',
-    UPDATE_CONTROL_NOTIFICATIONS_FILTERS: 'update-notifications-filters',
-    UPDATE_CONTROL_NOTIFICATIONS_ROUTES_SEARCH_RESULTS: 'update-control-notifications-search-results',
+    // Alerts:
+    FETCH_CONTROL_ALERTS: 'fetch-control-alerts',
+    UPDATE_CONTROL_ALERTS_ROUTES: 'update-control-alerts-routes',
+    UPDATE_CONTROL_ALERTS_FILTERS: 'update-alerts-filters',
+    UPDATE_CONTROL_ALERTS_ROUTES_SEARCH_RESULTS: 'update-control-alerts-search-results',
     UPDATE_USER_PERMISSIONS: 'update-user-permissions',
-    LOAD_CONTROL_NOTIFICATIONS_DATAGRID_FILTER_MODEL: 'load-control-notifications-datagrid-filter-model',
-    UPDATE_CONTROL_NOTIFICATIONS_DATAGRID_FILTER_MODEL: 'update-control-notifications-datagrid-filter-model',
-    UPDATE_CONTROL_NOTIFICATIONS_DATAGRID_CONFIG: 'update-control-notifications-datagrid-config',
+    LOAD_CONTROL_ALERTS_DATAGRID_FILTER_MODEL: 'load-control-alerts-datagrid-filter-model',
+    UPDATE_CONTROL_ALERTS_DATAGRID_FILTER_MODEL: 'update-control-alerts-datagrid-filter-model',
+    UPDATE_CONTROL_ALERTS_DATAGRID_CONFIG: 'update-control-alerts-datagrid-config',
 
     // Disruptions
     FETCH_CONTROL_DISRUPTIONS: 'fetch-control-disruptions',

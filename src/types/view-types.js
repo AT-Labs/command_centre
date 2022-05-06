@@ -13,14 +13,14 @@ export default {
         LIST: 'list-real-time-view',
     },
     SECONDARY_PANEL: {
-        NOTIFICATIONS: 'secondary-panel-notifications-view',
+        ALERTS: 'secondary-panel-alerts-view',
     },
     CONTROL_DETAIL: {
         BLOCKS: 'control-blocks-view',
         ROUTES: 'control-routes-view',
         STOP_MESSAGES: 'control-stop-messages-view',
         STOP_GROUPS: 'control-stop-groups-view',
-        NOTIFICATIONS: 'control-notifications',
+        ALERTS: 'control-alerts',
         DISRUPTIONS: 'control-disruptions',
         TRIP_REPLAYS: 'control-trip-replay',
         DATA_MANAGEMENT: 'control-data-management',

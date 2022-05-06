@@ -64,7 +64,7 @@ describe('<SelectDetails />', () => {
                     byweekday: [0],
                 }
             };
-            stops = [{ stopId: '105-474861ff' }];
+            stops = [{ stopCode: '105' }];
             routes = [{ routeId: 'AIR-221' }];
         });
 

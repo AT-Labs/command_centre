@@ -58,10 +58,10 @@ describe('<AffectedEntities />', () => {
     it('should display combined entities', () => {
         const affectedEntities = [
             { routeId: 'route1', routeShortName: '1' },
-            { stopId: 'stop1', text: '1' },
-            { stopId: 'stop2', routeId: 'route2', routeShortName: '2', text: '2' },
-            { stopId: 'stop3', routeId: 'route3', routeShortName: '3', text: '3' },
-            { stopId: 'stop3', routeId: 'route4', routeShortName: '4', text: '3' },
+            { stopId: 'stop1', stopCode: '1', text: '1' },
+            { stopId: 'stop2', stopCode: '2', routeId: 'route2', routeShortName: '2', text: '2' },
+            { stopId: 'stop3', stopCode: '3', routeId: 'route3', routeShortName: '3', text: '3' },
+            { stopId: 'stop3', stopCode: '3', routeId: 'route4', routeShortName: '4', text: '3' },
         ];
         wrapper = setup({ affectedEntities });
         expect(wrapper.find('ul').children()).to.have.lengthOf(4);
@@ -70,9 +70,9 @@ describe('<AffectedEntities />', () => {
     it('should display combined entities with stop groups', () => {
         const affectedEntities = [
             { routeId: 'route1', routeShortName: '1' },
-            { stopId: 'stop1', text: '1' },
-            { stopId: 'stop2', groupId: 1, text: '2', stopCode: '2' },
-            { stopId: 'stop3', groupId: 1, text: '3', stopCode: '3' }
+            { stopId: 'stop1', stopCode: '1', text: '1' },
+            { stopId: 'stop2', stopCode: '2', groupId: 1, text: '2' },
+            { stopId: 'stop3', stopCode: '3', groupId: 1, text: '3' }
         ];
         const stopGroups = _.keyBy([{ id: 1, title: 'stop group 1' }], group => group.id);
         wrapper = setup({ affectedEntities }, stopGroups);

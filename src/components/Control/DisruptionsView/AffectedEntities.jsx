@@ -22,7 +22,7 @@ export const AffectedEntities = (props) => {
 
     const getIndividualAffectedRoutes = () => (
         props.affectedEntities
-            .filter(entity => !isEmpty(entity.routeId) && isEmpty(entity.stopId))
+            .filter(entity => !isEmpty(entity.routeId) && isEmpty(entity.stopCode))
             .map(entity => (
                 <li key={ entity.routeId }>
                     <div className="font-size-sm font-weight-bold">
@@ -52,12 +52,12 @@ export const AffectedEntities = (props) => {
     );
 
     const getCombinedAffectedStopsRoutesStopGroups = () => {
-        const affectedEntitiesByStop = groupBy(props.affectedEntities.filter(entity => entity.stopId && !entity.groupId), 'stopId');
+        const affectedEntitiesByStop = groupBy(props.affectedEntities.filter(entity => entity.stopCode && !entity.groupId), 'stopCode');
         const affectedEntitiesByStopGroup = groupBy(props.affectedEntities.filter(entity => entity.groupId), 'groupId');
 
-        const stopAndRoutesRender = Object.keys(affectedEntitiesByStop).map((stopId) => {
-            const routes = affectedEntitiesByStop[stopId].filter(entity => entity.routeId).map(entity => entity.routeShortName).join(', ');
-            return groupByEntityRender(stopId, 'Stop', affectedEntitiesByStop[stopId][0].text, 'Route', routes);
+        const stopAndRoutesRender = Object.keys(affectedEntitiesByStop).map((stopCode) => {
+            const routes = affectedEntitiesByStop[stopCode].filter(entity => entity.routeId).map(entity => entity.routeShortName).join(', ');
+            return groupByEntityRender(stopCode, 'Stop', affectedEntitiesByStop[stopCode][0].text, 'Route', routes);
         });
 
         const stopGroupsRender = Object.keys(affectedEntitiesByStopGroup).map((groupId) => {

@@ -2,7 +2,7 @@ import _ from 'lodash-es';
 
 import USER_PERMISSIONS from '../types/user-permissions-types';
 
-const { ROUTES, BLOCKS, STOP_MESSAGING, NOTIFICATIONS } = USER_PERMISSIONS;
+const { ROUTES, BLOCKS, STOP_MESSAGING, ALERTS } = USER_PERMISSIONS;
 export const isGlobalActionPermitted = (permissions, action) => _.some(permissions, { _rel: action });
 const isContainingPermission = (instance, permission) => {
     const userPermissions = _.get(instance, '_links.permissions', []);
@@ -25,5 +25,5 @@ export const isIndividualEditBlockPermitted = block => isContainingPermission(bl
 export const isGlobalEditStopMessagesPermitted = permissions => isGlobalActionPermitted(permissions, STOP_MESSAGING.EDIT_STOP_MESSAGE);
 export const isIndividualEditStopMessagesPermitted = message => isContainingPermission(message, STOP_MESSAGING.EDIT_STOP_MESSAGE);
 
-// Notifications
-export const isNotificationDismissPermitted = _links => _.findIndex(_links.permissions, { _rel: NOTIFICATIONS.DISMISS_NOTIFICATION }) !== -1;
+// Alerts
+export const isAlertDismissPermitted = _links => _.findIndex(_links.permissions, { _rel: ALERTS.DISMISS_ALERT }) !== -1;

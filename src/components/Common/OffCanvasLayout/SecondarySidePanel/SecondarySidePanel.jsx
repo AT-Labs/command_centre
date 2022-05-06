@@ -7,9 +7,9 @@ import { Button, Alert } from 'reactstrap';
 import VIEW_TYPE from '../../../../types/view-types';
 import SidePanel from '../SidePanel/SidePanel';
 import { updateSecondaryPanelView, updateMainView, updateControlDetailView } from '../../../../redux/actions/navigation';
-import { getLatestActiveNotifications } from '../../../../redux/selectors/control/notifications';
+import { getLatestActiveAlerts } from '../../../../redux/selectors/control/alerts';
 import { getActiveSecondaryPanelView } from '../../../../redux/selectors/navigation';
-import Notification from '../../Notification/Notification';
+import AlertPanel from '../../AlertPanel/AlertPanel';
 import './SecondarySidePanel.scss';
 
 const PAGE_SIZE = 10;
@@ -20,35 +20,35 @@ export class SecondarySidePanel extends React.Component {
         updateSecondaryPanelView: PropTypes.func.isRequired,
         updateMainView: PropTypes.func.isRequired,
         updateControlDetailView: PropTypes.func.isRequired,
-        notifications: PropTypes.array,
+        alerts: PropTypes.array,
     };
 
     static defaultProps = {
-        notifications: [],
+        alerts: [],
     };
 
-    renderNotifications = notifications => notifications.map(notification => (
-        <Notification
-            key={ notification.id }
-            id={ notification.id }
-            customTitle={ notification.customTitle }
-            message={ notification.message }
-            routeVariantId={ notification.routeVariantId }
-            routeType={ notification.routeType }
-            routeShortName={ notification.routeShortName }
-            agencyId={ notification.agencyId }
-            tripStartDate={ notification.tripStartDate }
-            tripStartTime={ notification.tripStartTime }
-            goToRoutesView={ notification.goToRoutesView }
-            dismissNotification={ notification.dismissNotification }
+    renderAlerts = alerts => alerts.map(alert => (
+        <AlertPanel
+            key={ alert.id }
+            id={ alert.id }
+            customTitle={ alert.customTitle }
+            message={ alert.message }
+            routeVariantId={ alert.routeVariantId }
+            routeType={ alert.routeType }
+            routeShortName={ alert.routeShortName }
+            agencyId={ alert.agencyId }
+            tripStartDate={ alert.tripStartDate }
+            tripStartTime={ alert.tripStartTime }
+            goToRoutesView={ alert.goToRoutesView }
+            dismissAlert={ alert.dismissAlert }
             // eslint-disable-next-line no-underscore-dangle
-            links={ notification._links } />
+            links={ alert._links } />
     ));
 
     render() {
-        const { notifications, activeSecondaryPanelView } = this.props;
+        const { alerts, activeSecondaryPanelView } = this.props;
         const isSecondarySidePanelOpen = !_.isEmpty(activeSecondaryPanelView);
-        const activeNotificationsLength = notifications.length;
+        const activeAlertsLength = alerts.length;
         return (
             isSecondarySidePanelOpen && (
                 <SidePanel
@@ -60,7 +60,7 @@ export class SecondarySidePanel extends React.Component {
                     <div className="secondary-side-panel__header">
                         <div className="row">
                             <div className="col-10">
-                                <h4>{ `Notifications (${activeNotificationsLength})` }</h4>
+                                <h4>{ `Alerts (${activeAlertsLength})` }</h4>
                             </div>
                             <div className="col-2">
                                 <Button
@@ -73,22 +73,22 @@ export class SecondarySidePanel extends React.Component {
                         <div className="row py-2">
                             <div className="col-12">
                                 <Button
-                                    className="control-notifications-view__btn cc-btn-primary w-100"
+                                    className="control-alerts-view__btn cc-btn-primary w-100"
                                     tabIndex="0"
-                                    aria-label="View all notifications button"
+                                    aria-label="View all alerts button"
                                     onClick={ () => {
                                         this.props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
-                                        this.props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS);
+                                        this.props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.ALERTS);
                                         this.props.updateSecondaryPanelView('');
                                     } }>
-                                    View all notifications
+                                    View all alerts
                                 </Button>
                             </div>
                         </div>
                     </div>
                     <div className="secondary-side-panel__body">
-                        { this.renderNotifications(notifications) }
-                        { activeNotificationsLength > PAGE_SIZE && (<Alert color="" className="mt-1">Dismiss the alerts to view older notifications</Alert>) }
+                        { this.renderAlerts(alerts) }
+                        { activeAlertsLength > PAGE_SIZE && (<Alert color="" className="mt-1">Dismiss the alerts to view older alerts</Alert>) }
                     </div>
                 </SidePanel>
             )
@@ -99,7 +99,7 @@ export class SecondarySidePanel extends React.Component {
 export default connect(
     state => ({
         activeSecondaryPanelView: getActiveSecondaryPanelView(state),
-        notifications: getLatestActiveNotifications(state),
+        alerts: getLatestActiveAlerts(state),
     }),
     { updateSecondaryPanelView, updateMainView, updateControlDetailView },
 )(SecondarySidePanel);

@@ -38,8 +38,8 @@ const Readonly = (props) => {
 
     const affectedEntitiesWithoutShape = toString(disruption.affectedEntities.map(entity => omit(entity, ['shapeWkt'])));
     useEffect(() => {
-        const affectedStops = disruption.affectedEntities.filter(entity => entity.stopId);
-        const affectedRoutes = disruption.affectedEntities.filter(entity => entity.routeId && isEmpty(entity.stopId));
+        const affectedStops = disruption.affectedEntities.filter(entity => entity.stopCode);
+        const affectedRoutes = disruption.affectedEntities.filter(entity => entity.routeId && isEmpty(entity.stopCode));
 
         props.updateAffectedStopsState(affectedStops);
         props.updateAffectedRoutesState(affectedRoutes);
@@ -61,7 +61,7 @@ const Readonly = (props) => {
                 <section className="position-relative w-50 d-flex disruption-detail__map">
                     <Map shouldOffsetForSidePanel={ false }
                         shapes={ !isLoading ? props.shapes : [] }
-                        stops={ !isLoading ? disruption.affectedEntities.filter(entity => entity.stopId).slice(0, 10) : [] } />
+                        stops={ !isLoading ? disruption.affectedEntities.filter(entity => entity.stopCode).slice(0, 10) : [] } />
                 </section>
                 <span className="map-note">Note: Only a max of ten routes and ten stops will be displayed on the map.</span>
             </div>

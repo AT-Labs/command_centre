@@ -64,7 +64,7 @@ export const SelectDisruptionEntities = (props) => {
         SELECTED_STOPS: 'selectedStops',
         SELECTED_ROUTES_BY_STOPS: 'selectedRoutesByStops',
         ROUTE_ID: 'routeId',
-        STOP_ID: 'stopId',
+        STOP_CODE: 'stopCode',
     };
 
     const addKeys = (routes = [], stops = [], stopGroups = null) => {
@@ -76,7 +76,7 @@ export const SelectDisruptionEntities = (props) => {
         }));
         const stopsModified = stops.map(stop => ({
             ...stop,
-            valueKey: 'stopId',
+            valueKey: 'stopCode',
             labelKey: 'stopCode',
             type: STOP.type,
         }));
@@ -104,19 +104,19 @@ export const SelectDisruptionEntities = (props) => {
     const filterOnlyStopParams = stop => pick(stop, ['stopId', 'stopName', 'stopCode', 'locationType', 'stopLat', 'stopLon', 'parentStation',
         'platformCode', 'text', 'category', 'icon', 'valueKey', 'labelKey', 'type', 'groupId']);
 
-    const saveStopsState = stops => props.updateAffectedStopsState(sortBy(stops, sortedStop => sortedStop.stopId));
+    const saveStopsState = stops => props.updateAffectedStopsState(sortBy(stops, sortedStop => sortedStop.stopCode));
 
     const flattenStopGroups = stopGroups => Object.values(stopGroups).flat();
 
     const fetchStopDetails = (stop) => {
         if (!stopCurrentlySearchingFor) {
-            setStopCurrentlySearchingFor(stop.stopId);
+            setStopCurrentlySearchingFor(stop.stopCode);
             props.search(stop.stopCode, ['stop']);
         }
     };
 
     const updateSelectedEntities = (selectedItems) => {
-        const stopSelectedOnMap = selectedItems.find(entity => entity.stopId && !entity.text);
+        const stopSelectedOnMap = selectedItems.find(entity => entity.stopCode && !entity.text);
         if (stopSelectedOnMap) {
             fetchStopDetails(stopSelectedOnMap);
         }
@@ -168,16 +168,16 @@ export const SelectDisruptionEntities = (props) => {
         if (!stopCurrentlySearchingFor
             || !props.searchResults.stop
             || isEmpty(props.searchResults.stop)
-            || props.searchResults.stop.findIndex(stop => stop.data.stop_id === stopCurrentlySearchingFor) === -1) {
+            || props.searchResults.stop.findIndex(stop => stop.data.stop_code === stopCurrentlySearchingFor) === -1) {
             return;
         }
 
         setStopCurrentlySearchingFor(null);
 
-        const foundStop = props.searchResults.stop.find(stop => stop.data.stop_id === stopCurrentlySearchingFor);
+        const foundStop = props.searchResults.stop.find(stop => stop.data.stop_code === stopCurrentlySearchingFor);
 
         const affectedStopsToUpdate = [...affectedSingleStops, ...flattenStopGroups(affectedStopGroups)];
-        const stopToUpdateIdx = affectedStopsToUpdate.findIndex(stop => stop.stopId === foundStop.data.stop_id);
+        const stopToUpdateIdx = affectedStopsToUpdate.findIndex(stop => stop.stopCode === foundStop.data.stop_code);
 
         if (stopToUpdateIdx >= 0) {
             affectedStopsToUpdate[stopToUpdateIdx].category = foundStop.category;
@@ -219,10 +219,10 @@ export const SelectDisruptionEntities = (props) => {
 
     const addRemoveStops = (affectedStops, selectedStops) => {
         // remove stops that have been deselected
-        let updatedStops = affectedStops.filter(affectedStop => selectedStops.findIndex(selectedStop => selectedStop.stopId === affectedStop.stopId) >= 0);
+        let updatedStops = affectedStops.filter(affectedStop => selectedStops.findIndex(selectedStop => selectedStop.stopCode === affectedStop.stopCode) >= 0);
 
         // find and add stops that can't be found in the currently selected list
-        const stopsToAdd = selectedStops.filter(selectedStop => affectedStops.findIndex(affectedStop => affectedStop.stopId === selectedStop.stopId) < 0);
+        const stopsToAdd = selectedStops.filter(selectedStop => affectedStops.findIndex(affectedStop => affectedStop.stopCode === selectedStop.stopCode) < 0);
 
         if (!isEmpty(stopsToAdd)) {
             updatedStops = [...updatedStops, ...stopsToAdd];
@@ -254,7 +254,7 @@ export const SelectDisruptionEntities = (props) => {
         text: text ?? `${stop.stop_code} - ${stop.stop_name}`,
         category,
         icon,
-        valueKey: 'stopId',
+        valueKey: 'stopCode',
         labelKey: 'stopCode',
         type: STOP.type,
     });
@@ -323,7 +323,7 @@ export const SelectDisruptionEntities = (props) => {
             props.updateAffectedRoutesState(updatedRoutes);
             props.getRoutesByShortName(updatedRoutes);
         } else {
-            const updatedStops = removeFromList(affectedSingleStops, asEntities, ENTITIES_TYPES.STOP_ID);
+            const updatedStops = removeFromList(affectedSingleStops, asEntities, ENTITIES_TYPES.STOP_CODE);
             saveStopsState([...flattenStopGroups(affectedStopGroups), ...updatedStops]);
         }
     };
@@ -344,7 +344,7 @@ export const SelectDisruptionEntities = (props) => {
         }
     };
 
-    const toggleExpandedStop = stop => toggleExpandedItem(stop.stopId, expandedStops, setExpandedStops);
+    const toggleExpandedStop = stop => toggleExpandedItem(stop.stopCode, expandedStops, setExpandedStops);
     const toggleExpandedGroup = group => toggleExpandedItem(group.groupId, expandedGroups, setExpandedGroups);
 
     const entityToItemTransformers = {
@@ -416,13 +416,13 @@ export const SelectDisruptionEntities = (props) => {
 
     const toggleRoutesByStop = (stop, route, isChecked) => {
         let updatedStops = affectedSingleStops;
-        const stopList = updatedStops.filter(updatedStop => updatedStop.stopId === stop.stopId);
+        const stopList = updatedStops.filter(updatedStop => updatedStop.stopCode === stop.stopCode);
 
         if (isChecked) {
             // if current stop has no route then use this else create new
             if (stopList.length === 1 && stopList[0].routeId === undefined) {
                 const routeByStop = createRouteWithStop(stop, route);
-                updatedStops = updatedStops.filter(updatedStop => updatedStop.stopId !== stop.stopId);
+                updatedStops = updatedStops.filter(updatedStop => updatedStop.stopCode !== stop.stopCode);
                 updatedStops = [...updatedStops, routeByStop];
             } else {
                 updatedStops = [...updatedStops, createRouteWithStop(stop, route)];
@@ -431,13 +431,13 @@ export const SelectDisruptionEntities = (props) => {
             // remove route info if only one stop
             stopList[0].routeId = undefined;
             updatedStops = updatedStops.map((mappedStop) => {
-                if (mappedStop.stopId === stop.stopId) {
+                if (mappedStop.stopCode === stop.stopCode) {
                     return filterOnlyStopParams(mappedStop);
                 }
                 return mappedStop;
             });
         } else {
-            const stopToRemoveIdx = updatedStops.findIndex(updatedStop => updatedStop.stopId === stop.stopId && updatedStop.routeId === route.routeId);
+            const stopToRemoveIdx = updatedStops.findIndex(updatedStop => updatedStop.stopCode === stop.stopCode && updatedStop.routeId === route.routeId);
 
             if (stopToRemoveIdx >= 0) {
                 updatedStops.splice(stopToRemoveIdx, 1);
@@ -448,7 +448,7 @@ export const SelectDisruptionEntities = (props) => {
 
     const toggleAllRoutesByStop = (stop, routesByStop, isChecked) => {
         let updatedStops = props.affectedStops;
-        const stopList = updatedStops.filter(updatedStop => updatedStop.stopId === stop.stopId);
+        const stopList = updatedStops.filter(updatedStop => updatedStop.stopCode === stop.stopCode);
         const stopWithoutRoute = filterOnlyStopParams(stop);
 
         if (isChecked) {
@@ -458,24 +458,24 @@ export const SelectDisruptionEntities = (props) => {
                 updatedStops = [...updatedStops, ...stopsToAdd];
             }
         } else {
-            updatedStops = updatedStops.filter(updatedStop => updatedStop.stopId !== stop.stopId);
+            updatedStops = updatedStops.filter(updatedStop => updatedStop.stopCode !== stop.stopCode);
 
             // add back single stop without route info
             updatedStops = [...updatedStops, stopWithoutRoute];
         }
 
-        saveStopsState(sortBy(updatedStops, sortedStop => sortedStop.stopId));
+        saveStopsState(sortBy(updatedStops, sortedStop => sortedStop.stopCode));
     };
 
     const renderRoutesByStop = (stop) => {
-        const routesByStop = props.findRoutesByStop[stop.stopId];
+        const routesByStop = props.findRoutesByStop[stop.stopCode];
 
         if (isEmpty(routesByStop)) {
             if (isLoadingRoutesByStop) {
                 return [(<li key="-1"><Loader className="loader-disruptions loader-disruptions-list" /></li>)];
             }
 
-            if (loadedRoutesByStop.findIndex(loadedStop => loadedStop.stopId === stop.stopId) >= 0) {
+            if (loadedRoutesByStop.findIndex(loadedStop => loadedStop.stopCode === stop.stopCode) >= 0) {
                 return [(<li key="-1"><div>Routes not found</div></li>)];
             }
 
@@ -485,14 +485,14 @@ export const SelectDisruptionEntities = (props) => {
             return [(<li key="-1"><Loader className="loader-disruptions loader-disruptions-list" /></li>)];
         }
 
-        const allSelected = routesByStop.every(route => affectedSingleStops.findIndex(stops => stops.stopId === stop.stopId
+        const allSelected = routesByStop.every(route => affectedSingleStops.findIndex(stops => stops.stopCode === stop.stopCode
             && stops.routeId === route.routeId) >= 0);
 
         const routesByStopHTML = routesByStop.map(route => (
-            <li key={ `${stop.stopId}-${route.routeId}` } className="select_entities pb-2">
+            <li key={ `${stop.stopCode}-${route.routeId}` } className="select_entities pb-2">
                 <EntityCheckbox
-                    id={ `routeByStop-${stop.stopId}-${route.routeId}` }
-                    checked={ affectedSingleStops.findIndex(affectedStop => affectedStop.routeId === route.routeId && affectedStop.stopId === stop.stopId) >= 0 }
+                    id={ `routeByStop-${stop.stopCode}-${route.routeId}` }
+                    checked={ affectedSingleStops.findIndex(affectedStop => affectedStop.routeId === route.routeId && affectedStop.stopCode === stop.stopCode) >= 0 }
                     onChange={ e => toggleRoutesByStop(stop, route, e.target.checked) }
                     label={ `Route ${route.routeShortName}` }
                 />
@@ -503,7 +503,7 @@ export const SelectDisruptionEntities = (props) => {
             return [(
                 <li key="-1" className="select_entities pb-2">
                     <EntityCheckbox
-                        id={ `selectAll-${stop.stopId}` }
+                        id={ `selectAll-${stop.stopCode}` }
                         checked={ allSelected }
                         onChange={ e => toggleAllRoutesByStop(stop, routesByStop, e.target.checked) }
                         label="Select All"
@@ -534,13 +534,13 @@ export const SelectDisruptionEntities = (props) => {
         return selectedText;
     };
 
-    const isStopActive = stop => !!expandedStops[stop.stopId];
+    const isStopActive = stop => !!expandedStops[stop.stopCode];
     const isGroupActive = group => !!expandedGroups[group.groupId];
 
     const renderStopGroupStops = stops => stops.map(stop => (
-        <li key={ `${stop.groupId}-${stop.stopId}` } className="select_entities pb-2">
+        <li key={ `${stop.groupId}-${stop.stopCode}` } className="select_entities pb-2">
             <EntityCheckbox
-                id={ `stopByGroup-${stop.groupId}-${stop.stopId}` }
+                id={ `stopByGroup-${stop.groupId}-${stop.stopCode}` }
                 checked
                 onChange={ null }
                 label={ `Stop ${stop.text}` }
@@ -634,10 +634,10 @@ export const SelectDisruptionEntities = (props) => {
                     )}
 
                     {!isEmpty(affectedSingleStops) && (
-                        uniqBy(affectedSingleStops, stop => stop.stopId).map(stop => (
-                            <li className="selection-item border-0 card" key={ stop.stopId }>
+                        uniqBy(affectedSingleStops, stop => stop.stopCode).map(stop => (
+                            <li className="selection-item border-0 card" key={ stop.stopCode }>
                                 <Expandable
-                                    id={ stop.stopId }
+                                    id={ stop.stopCode }
                                     isActive={ isStopActive(stop) }
                                     onToggle={ () => toggleExpandedStop(stop) }>
                                     <ExpandableSummary

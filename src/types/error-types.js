@@ -28,7 +28,7 @@ export default {
     createStopGroup: 'Unable to create group, please try again',
     fetchAgencies: 'Agencies data unavailable, please try again.',
     fetchAgenciesEnabled: false,
-    fetchNotifications: 'Notifications data unavailable, please try again.',
+    fetchAlerts: 'Alerts data unavailable, please try again.',
     userPermissions: 'User permission details unavailable, please try again.',
     fetchFleetEnabled: true,
     fetchDisruptions: 'Unable to load disruptions, please try again',

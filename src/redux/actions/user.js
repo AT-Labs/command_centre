@@ -5,7 +5,7 @@ import * as BLOCK_MGT_API from '../../utils/transmitters/block-mgt-api';
 import * as STOP_MESSAGING_API from '../../utils/transmitters/stop-messaging-api';
 import * as DISRUPTION_MGT_API from '../../utils/transmitters/disruption-mgt-api';
 import * as TRIP_REPLAY_API from '../../utils/transmitters/trip-replay-api';
-import { getNotificationsViewPermission } from '../../utils/transmitters/notifications-api';
+import { getAlertsViewPermission } from '../../utils/transmitters/alerts-api';
 import { reportError } from './activity';
 
 export const updateUserProfile = user => (dispatch) => {
@@ -37,5 +37,5 @@ export const fetchRoutesViewPermission = () => fetchViewPermission('controlRoute
 export const fetchBlocksViewPermission = () => fetchViewPermission('controlBlocksView', BLOCK_MGT_API.getBlocksViewPermission);
 export const fetchStopMessagingViewPermission = () => fetchViewPermission('controlStopMessagingView', STOP_MESSAGING_API.getStopMessagingViewPermission);
 export const fetchDisruptionsViewPermission = () => fetchViewPermission('controlDisruptionsView', DISRUPTION_MGT_API.getDisruptionsViewPermission);
-export const fetchNotificationsViewPermission = () => fetchViewPermission('controlNotificationsView', getNotificationsViewPermission);
+export const fetchAlertsViewPermission = () => fetchViewPermission('controlAlertsView', getAlertsViewPermission);
 export const fetchTripReplaysViewPermission = () => fetchViewPermission('controlTripReplaysView', TRIP_REPLAY_API.getTripReplaysViewPermission);

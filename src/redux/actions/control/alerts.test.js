@@ -5,8 +5,8 @@ import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 import moment from 'moment-timezone';
 
-import { parseStartAndDateTime, getNotifications } from './notifications';
-import * as notificationsApi from '../../../utils/transmitters/notifications-api';
+import { parseStartAndDateTime, getAlerts } from './alerts';
+import * as alertsApi from '../../../utils/transmitters/alerts-api';
 import DATE_TYPE from '../../../types/date-types';
 import ACTION_TYPE from '../../action-types';
 
@@ -15,7 +15,7 @@ chai.use(sinonChai);
 const mockStore = configureMockStore([thunk]);
 const store = mockStore({});
 let sandbox;
-const mockNotifications = [
+const mockAlerts = [
     {
         id: 'MjAxOS0wNy0xMVQxM3wxMzozNTowMHxNaXNzZWR8MTI2MC0yOTUwMi00ODkwMC0yLVpLU2V4TQ==',
         createdAt: '2019-07-11T01:41:00.785Z',
@@ -55,11 +55,11 @@ const mockNotifications = [
     },
 ];
 const getDiffFromScheduleTimeInMins = (date) => {
-    const startDateAndTime = parseStartAndDateTime(date || mockNotifications[0].tripStartDate, mockNotifications[0].tripStartTime);
+    const startDateAndTime = parseStartAndDateTime(date || mockAlerts[0].tripStartDate, mockAlerts[0].tripStartTime);
     return moment.tz(DATE_TYPE.TIME_ZONE).diff(startDateAndTime, 'minutes');
 };
 
-describe('Notifications actions', () => {
+describe('Alerts actions', () => {
     beforeEach(() => {
         sandbox = sinon.createSandbox();
     });
@@ -72,52 +72,52 @@ describe('Notifications actions', () => {
     context('parseStartAndDateTime', () => {
         it('should return a properly parsed date', () => {
             const expectedDate = 'Wed Jul 10 2019 13:13:00 GMT+1200';
-            const parsedDate = parseStartAndDateTime(mockNotifications[0].tripStartDate, mockNotifications[0].tripStartTime).toString();
+            const parsedDate = parseStartAndDateTime(mockAlerts[0].tripStartDate, mockAlerts[0].tripStartTime).toString();
             expect(parsedDate).to.eql(expectedDate);
         });
     });
 
-    context('getNotificationMessage', () => {
+    context('getAlertMessage', () => {
         it('should return a properly formatted message', () => {
             const expectedMessage = `No vehicle has started scheduled trip 29502 - 13:13 for ${getDiffFromScheduleTimeInMins()} minutes from scheduled departure`;
             const tripStartDateKeptUpToDate = moment.tz(DATE_TYPE.TIME_ZONE).format('YYYYMMDD');
             const expectedResponse = [
                 {
-                    ...mockNotifications[0],
+                    ...mockAlerts[0],
                     tripStartDate: tripStartDateKeptUpToDate,
                     customMessage: expectedMessage,
                 },
             ];
-            const fakeGetNotifications = sandbox.fake.resolves(expectedResponse);
-            sandbox.stub(notificationsApi, 'getNotifications').callsFake(fakeGetNotifications);
+            const fakeGetAlerts = sandbox.fake.resolves(expectedResponse);
+            sandbox.stub(alertsApi, 'getAlerts').callsFake(fakeGetAlerts);
             expect(expectedResponse[0].customMessage).to.eql(expectedMessage);
         });
     });
 
-    context('getNotifications', () => {
-        it('should trigger the expected actions and return one notification given just one is within the last 12hs', async () => {
+    context('getAlerts', () => {
+        it('should trigger the expected actions and return one alert given just one is within the last 12hs', async () => {
             const tripStartDateKeptUpToDate = moment.tz(DATE_TYPE.TIME_ZONE).format('YYYYMMDD');
             const expectedResponse = [
                 {
-                    ...mockNotifications[0],
+                    ...mockAlerts[0],
                     tripStartDate: tripStartDateKeptUpToDate,
                     customMessage: `No vehicle has started scheduled trip 29502 - 13:13 for ${getDiffFromScheduleTimeInMins(tripStartDateKeptUpToDate)} minutes from scheduled departure`,
                 },
             ];
 
-            const fakeGetNotifications = sandbox.fake.resolves(expectedResponse);
-            sandbox.stub(notificationsApi, 'getNotifications').callsFake(fakeGetNotifications);
+            const fakeGetAlerts = sandbox.fake.resolves(expectedResponse);
+            sandbox.stub(alertsApi, 'getAlerts').callsFake(fakeGetAlerts);
 
             const expectedActions = [
                 {
-                    type: ACTION_TYPE.FETCH_CONTROL_NOTIFICATIONS,
+                    type: ACTION_TYPE.FETCH_CONTROL_ALERTS,
                     payload: {
-                        notifications: expectedResponse,
+                        alerts: expectedResponse,
                     },
                 },
             ];
 
-            await store.dispatch(getNotifications());
+            await store.dispatch(getAlerts());
             expect(store.getActions()).deep.equal(expectedActions);
         });
     });

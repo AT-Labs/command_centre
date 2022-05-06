@@ -136,7 +136,8 @@
 					"**/mocha/**",
 					"**/webpack*",
 					"**/jest/**",
-					"**/*.spec.jsx"
+					"**/*.spec.jsx",
+					"**/cypress/**"
 				]
 			}
 		]

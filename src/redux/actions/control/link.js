@@ -6,7 +6,7 @@ import { setActiveRoute } from './routes/routes';
 import { setActiveRouteVariant } from './routes/routeVariants';
 import { clearActiveTripInstanceId } from './routes/trip-instances';
 import { updateServiceDate } from './serviceDate';
-import { parseStartAndDateTime } from './notifications';
+import { parseStartAndDateTime } from './alerts';
 
 import { updateActiveDisruptionId } from './disruptions';
 

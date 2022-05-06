@@ -207,6 +207,16 @@ module.exports = {
                     },
                 ],
             },
+            {
+                test: /\.js$|\.jsx$/,
+                include: paths.appSrc,
+                use: {
+                    loader: 'istanbul-instrumenter-loader',
+                    options: { esModules: true },
+                },
+                enforce: 'post',
+                exclude: /node_modules|\.spec\.js$/,
+            },
             // ** STOP ** Are you adding a new loader?
             // Make sure to add the new loader(s) before the "file" loader.
         ],

@@ -16,10 +16,10 @@ import ReadMore from '@mui/icons-material/ReadMore';
 
 import { parseTime, getClosestTimeValueForFilter } from '../../../utils/helpers';
 import {
-    dismissNotification,
-    updateNotificationsDatagridConfig,
-} from '../../../redux/actions/control/notifications';
-import { getAllNotifications, getNotificationsDatagridConfig } from '../../../redux/selectors/control/notifications';
+    dismissAlert,
+    updateAlertsDatagridConfig,
+} from '../../../redux/actions/control/alerts';
+import { getAllAlerts, getAlertsDatagridConfig } from '../../../redux/selectors/control/alerts';
 import { getAgencies } from '../../../redux/selectors/control/agencies';
 import { retrieveAgencies } from '../../../redux/actions/control/agencies';
 import VEHICLE_TYPE from '../../../types/vehicle-types';
@@ -27,9 +27,9 @@ import { goToRoutesView } from '../../../redux/actions/control/link';
 import RenderCellExpand from './RenderCellExpand/RenderCellExpand';
 import Overlay from '../../Common/Overlay/Overlay';
 
-import './Notifications.scss';
+import './Alerts.scss';
 
-export const NotificationsView = (props) => {
+export const AlertsView = (props) => {
     const apiRef = useGridApiRef();
     const dateFormat = 'DD/MM/YY hh:mm a';
 
@@ -69,7 +69,7 @@ export const NotificationsView = (props) => {
                     <IconButton
                         color="error"
                         aria-label="delete"
-                        onClick={ () => props.dismissNotification(params.row.id) }
+                        onClick={ () => props.dismissAlert(params.row.id) }
                     >
                         <DeleteIcon />
                     </IconButton>
@@ -78,7 +78,7 @@ export const NotificationsView = (props) => {
         );
     };
 
-    const NOTIFICATIONS_COLUMNS = [
+    const ALERTS_COLUMNS = [
         { field: 'route', headerName: 'ROUTE', width: 150 },
         {
             field: 'trip_date_start_time',
@@ -146,7 +146,7 @@ export const NotificationsView = (props) => {
             density: gridApi.state.density.value,
             columns: gridApi.getAllColumns(),
         };
-        props.updateNotificationsDatagridConfig(data);
+        props.updateAlertsDatagridConfig(data);
     };
 
     React.useEffect(() => {
@@ -171,7 +171,7 @@ export const NotificationsView = (props) => {
 
     React.useEffect(() => {
         const stateChangeEvent = apiRef.current.subscribeEvent('stateChange', () => {
-            if (props.notificationsDatagridConfig.density !== apiRef.current.state.density.value) {
+            if (props.alertsDatagridConfig.density !== apiRef.current.state.density.value) {
                 dataGridSave(apiRef.current);
             }
         });
@@ -181,56 +181,56 @@ export const NotificationsView = (props) => {
         };
     });
 
-    const parseNotificationType = (type) => {
+    const parseAlertType = (type) => {
         if (type === 'Missed') return 'Missed Trip';
         if (type === 'Signon') return 'Incorrect Trip Sign On';
         return null;
     };
 
-    const enrichNotifications = () => {
-        const { notifications, operators } = props;
+    const enrichAlerts = () => {
+        const { alerts, operators } = props;
         return operators.length
-            ? notifications.map(notification => ({
-                ...notification,
+            ? alerts.map(alert => ({
+                ...alert,
                 operator: _.filter(
                     operators,
-                    ope => ope.agencyId === notification.agencyId,
+                    ope => ope.agencyId === alert.agencyId,
                 )[0].agencyName,
             }))
-            : notifications;
+            : alerts;
     };
 
-    const getPageData = () => enrichNotifications().map(notification => ({
-        id: notification.id,
-        route: notification.routeShortName,
-        mode: VEHICLE_TYPE[notification.routeType].type,
-        type: parseNotificationType(notification.type),
-        operator: notification.operator,
-        description: notification.message,
+    const getPageData = () => enrichAlerts().map(alert => ({
+        id: alert.id,
+        route: alert.routeShortName,
+        mode: VEHICLE_TYPE[alert.routeType].type,
+        type: parseAlertType(alert.type),
+        operator: alert.operator,
+        description: alert.message,
         trip_date_start_time: parseTime(
-            notification.tripStartTime,
-            notification.tripStartDate,
+            alert.tripStartTime,
+            alert.tripStartDate,
         ),
-        severity: notification.severity,
-        status: notification.status,
-        date_created: moment(notification.createdAt),
+        severity: alert.severity,
+        status: alert.status,
+        date_created: moment(alert.createdAt),
         goToRoutesView: props.goToRoutesView,
-        dismissNotifictation: props.dismissNotification,
-        allData: notification,
+        dismissNotifictation: props.dismissAlert,
+        allData: alert,
     }));
 
     const getColumns = () => {
-        if (props.notificationsDatagridConfig.columns.length > 0) return props.notificationsDatagridConfig.columns;
+        if (props.alertsDatagridConfig.columns.length > 0) return props.alertsDatagridConfig.columns;
 
-        const operatorColumn = NOTIFICATIONS_COLUMNS.find(
+        const operatorColumn = ALERTS_COLUMNS.find(
             column => column.field === 'operator',
         );
 
-        const operatorColIndex = NOTIFICATIONS_COLUMNS.findIndex(
+        const operatorColIndex = ALERTS_COLUMNS.findIndex(
             col => col.field === 'operator',
         );
 
-        NOTIFICATIONS_COLUMNS[operatorColIndex] = {
+        ALERTS_COLUMNS[operatorColIndex] = {
             ...operatorColumn,
             valueOptions: [
                 'AT Metro',
@@ -251,7 +251,7 @@ export const NotificationsView = (props) => {
             type: 'singleSelect',
         };
 
-        return NOTIFICATIONS_COLUMNS;
+        return ALERTS_COLUMNS;
     };
 
     const getNoRowsOverlay = () => <Overlay message="No alerts at this time." />;
@@ -270,7 +270,7 @@ export const NotificationsView = (props) => {
     );
 
     return (
-        <div className="control-notifications-view">
+        <div className="control-alerts-view">
             <div className="mb-3">
                 <h1>Alerts</h1>
             </div>
@@ -283,20 +283,20 @@ export const NotificationsView = (props) => {
                             NoResultsOverlay: getNoResultsOverlay,
                         } }
                         apiRef={ apiRef }
-                        page={ props.notificationsDatagridConfig.page }
-                        pageSize={ props.notificationsDatagridConfig.pageSize }
+                        page={ props.alertsDatagridConfig.page }
+                        pageSize={ props.alertsDatagridConfig.pageSize }
                         rowsPerPageOptions={ [15, 25, 50, 100] }
-                        onPageSizeChange={ newPageSize => props.updateNotificationsDatagridConfig({ pageSize: newPageSize }) }
+                        onPageSizeChange={ newPageSize => props.updateAlertsDatagridConfig({ pageSize: newPageSize }) }
                         rows={ getPageData() }
                         columns={ getColumns() }
-                        sortModel={ props.notificationsDatagridConfig.sortModel }
-                        onSortModelChange={ model => props.updateNotificationsDatagridConfig({ sortModel: model }) }
-                        filterModel={ props.notificationsDatagridConfig.filterModel }
-                        onFilterModelChange={ model => props.updateNotificationsDatagridConfig({ filterModel: model }) }
-                        density={ props.notificationsDatagridConfig.density }
-                        onPinnedColumnsChange={ model => props.updateNotificationsDatagridConfig({ pinnedColumns: model }) }
-                        pinnedColumns={ props.notificationsDatagridConfig.pinnedColumns }
-                        onPageChange={ page => props.updateNotificationsDatagridConfig({ page }) }
+                        sortModel={ props.alertsDatagridConfig.sortModel }
+                        onSortModelChange={ model => props.updateAlertsDatagridConfig({ sortModel: model }) }
+                        filterModel={ props.alertsDatagridConfig.filterModel }
+                        onFilterModelChange={ model => props.updateAlertsDatagridConfig({ filterModel: model }) }
+                        density={ props.alertsDatagridConfig.density }
+                        onPinnedColumnsChange={ model => props.updateAlertsDatagridConfig({ pinnedColumns: model }) }
+                        pinnedColumns={ props.alertsDatagridConfig.pinnedColumns }
+                        onPageChange={ page => props.updateAlertsDatagridConfig({ page }) }
                         pagination
                         autoHeight
                     />
@@ -306,30 +306,30 @@ export const NotificationsView = (props) => {
     );
 };
 
-NotificationsView.propTypes = {
-    dismissNotification: PropTypes.func.isRequired,
+AlertsView.propTypes = {
+    dismissAlert: PropTypes.func.isRequired,
     goToRoutesView: PropTypes.func.isRequired,
-    notifications: PropTypes.array,
+    alerts: PropTypes.array,
     operators: PropTypes.array.isRequired,
     retrieveAgencies: PropTypes.func.isRequired,
-    notificationsDatagridConfig: PropTypes.object.isRequired,
-    updateNotificationsDatagridConfig: PropTypes.func.isRequired,
+    alertsDatagridConfig: PropTypes.object.isRequired,
+    updateAlertsDatagridConfig: PropTypes.func.isRequired,
 };
 
-NotificationsView.defaultProps = {
-    notifications: [],
+AlertsView.defaultProps = {
+    alerts: [],
 };
 
 export default connect(
     state => ({
-        notifications: getAllNotifications(state),
+        alerts: getAllAlerts(state),
         operators: getAgencies(state),
-        notificationsDatagridConfig: getNotificationsDatagridConfig(state),
+        alertsDatagridConfig: getAlertsDatagridConfig(state),
     }),
     {
-        dismissNotification,
+        dismissAlert,
         goToRoutesView,
         retrieveAgencies,
-        updateNotificationsDatagridConfig,
+        updateAlertsDatagridConfig,
     },
-)(NotificationsView);
+)(AlertsView);

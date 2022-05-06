@@ -180,7 +180,7 @@ class CreateDisruption extends React.Component {
                 <Map
                     shouldOffsetForSidePanel
                     shapes={ this.props.shapes }
-                    stops={ _.uniqBy(this.props.stops, stop => stop.stopId) }
+                    stops={ _.uniqBy(this.props.stops, stop => stop.stopCode) }
                     routeColors={ this.props.routeColors } />
                 <Button
                     className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"

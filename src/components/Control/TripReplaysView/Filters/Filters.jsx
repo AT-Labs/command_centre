@@ -31,7 +31,6 @@ import { TIME_TYPE } from '../../../../constants/tripReplays';
 const OPTIONS = getTimePickerOptions(28);
 
 export const formatVehiclesSearchResults = (selectedOption, mode) => {
-    // setup the id & label
     let label;
     let id = _.get(selectedOption, 'data.id');
 
@@ -61,9 +60,13 @@ export const formatVehiclesSearchResults = (selectedOption, mode) => {
     });
 };
 
+const isTripId = value => (value.indexOf('-') > 0 && value.indexOf(' ') < 0);
+
 const Filters = (props) => {
     const { ROUTE, BUS, TRAIN, FERRY, STOP } = SEARCH_RESULT_TYPE;
     const { searchTerm, searchDate, startTime, endTime, timeType } = props;
+    const tripIdStatus = isTripId(searchTerm.label);
+
     const actionHandlers = {
         selection: {
             [SEARCH_RESULT_TYPE.BUS.type]: selectedOption => props.updateTripReplaySearchTerm(formatVehiclesSearchResults(selectedOption, SEARCH_RESULT_TYPE.BUS)),
@@ -78,6 +81,7 @@ const Filters = (props) => {
             [SEARCH_RESULT_TYPE.STOP.type]: _.noop,
             [SEARCH_RESULT_TYPE.TRAIN.type]: _.noop,
             [SEARCH_RESULT_TYPE.FERRY.type]: _.noop,
+            [SEARCH_RESULT_TYPE.TRIP.type]: _.noop,
         },
     };
 
@@ -89,15 +93,26 @@ const Filters = (props) => {
         dateFormat: 'Y-m-d',
     };
 
-    const handleOmniSearchTextChange = (text) => {
-        if (searchTerm && searchTerm.label && !_.isEqual(text, searchTerm.label)) {
-            props.resetTripReplaySearchTerm();
-        }
-    };
-
     const isTimeSelected = startTime !== '' && endTime !== '';
     const isTimeSelectedValid = isTimeSelected ? startTime < endTime : false;
     const isSubmitButtonDisabled = !searchTerm.label || !searchDate;
+
+    const updateSearchTermForTripId = (text) => {
+        const searchTermObj = {
+            type: SEARCH_RESULT_TYPE.TRIP.type,
+            id: text,
+            label: text,
+        };
+        props.updateTripReplaySearchTerm(searchTermObj);
+    };
+
+    const handleOmniSearchTextChange = (text) => {
+        if (isTripId) {
+            updateSearchTermForTripId(text);
+        } else if (searchTerm && searchTerm.label && !_.isEqual(text, searchTerm.label)) {
+            props.resetTripReplaySearchTerm();
+        }
+    };
 
     const getEndTimeOptions = () => {
         if (!startTime) return OPTIONS;
@@ -109,13 +124,15 @@ const Filters = (props) => {
         return _.filter(OPTIONS, option => option.value < endTime);
     };
 
+    const setShouldRenderSuggestions = () => !tripIdStatus;
+
     return (
         <section className="filters">
             <div className="p-4">
                 <h3>Historical playback</h3>
                 <div>
                     <h3 className="text-muted font-weight-normal">
-                        Search for a vehicle, route, or stop/platform/pier&apos;s history within a certain time.
+                        Search for a vehicle, trip, route, or stop/platform/pier&apos;s history within a certain time.
                     </h3>
                 </div>
             </div>
@@ -123,7 +140,7 @@ const Filters = (props) => {
                 <label // eslint-disable-line
                     htmlFor="vehicle-route-id"
                     className="font-size-md font-weight-bold filter-components">
-                    Vehicle, Route, Stop/Platform/Pier
+                    Vehicle, Trip, Route, Stop/Platform/Pier
                 </label>
                 <OmniSearch
                     theme={
@@ -134,12 +151,13 @@ const Filters = (props) => {
                     }
                     inputId="trip-replay-vehicle-route-stop-id"
                     value={ searchTerm.label }
-                    placeholder="Search for Vehicle, Route, Stop/Platform/Pier"
+                    placeholder="Search for Vehicle, Trip, Route, Stop/Platform/Pier"
                     isSelectedValueShown
                     searchInCategory={ [ROUTE.type, STOP.type, BUS.type, TRAIN.type, FERRY.type] }
                     selectionHandlers={ actionHandlers.selection }
                     onInputValueChange={ handleOmniSearchTextChange }
                     onClearCallBack={ props.resetTripReplaySearchTerm }
+                    shouldRenderSuggestions={ setShouldRenderSuggestions }
                     clearHandlers={ actionHandlers.clear } />
             </div>
             <div className="block py-3 px-4">
