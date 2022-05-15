@@ -62,6 +62,7 @@ const setup = (customProps) => {
                     affectedStops: [stop],
                     affectedRoutes: [],
                 },
+                activeStep: 1,
             },
             dataManagement: {
                 stopGroupsIncludingDeleted: {},

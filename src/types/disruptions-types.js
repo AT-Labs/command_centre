@@ -128,6 +128,11 @@ export const ACTION_RESULT = {
         resultMessage: `Disruption with disrupt number #${incidentNo} created successfully.`,
         resultCreateNotification: createNotification,
     }),
+    COPY_SUCCESS: (incidentNo, createNotification, sourceDisruptionID = false) => ({
+        resultStatus: ACTION_RESULT_TYPES.SUCCESS,
+        resultMessage: `Disruption #${incidentNo} copied from #${sourceDisruptionID}`,
+        resultCreateNotification: createNotification,
+    }),
     CREATE_ERROR: () => ({
         resultStatus: ACTION_RESULT_TYPES.ERROR,
         resultMessage: ERROR_TYPE.disruptionCreate,

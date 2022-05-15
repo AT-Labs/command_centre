@@ -8,8 +8,9 @@ import * as ccStatic from '../../../utils/transmitters/cc-static';
 import { toCamelCaseKeys } from '../../../utils/control/disruptions';
 import ACTION_TYPE from '../../action-types';
 import { setBannerError, modalStatus } from '../activity';
-import { getAffectedStops, getAffectedRoutes, getCachedShapes, getCachedStopsToRoutes } from '../../selectors/control/disruptions';
+import { getAffectedStops, getAffectedRoutes, getCachedShapes, getCachedStopsToRoutes, getSourceIncidentNo, getEditMode } from '../../selectors/control/disruptions';
 import { getAllRoutes } from '../../selectors/static/routes';
+import EDIT_TYPE from '../../../types/edit-types';
 
 const loadDisruptions = disruptions => ({
     type: ACTION_TYPE.FETCH_CONTROL_DISRUPTIONS,
@@ -148,12 +149,21 @@ export const updateActiveDisruptionId = activeDisruptionId => (dispatch) => {
     dispatch(clearDisruptionActionResult());
 };
 
-export const createDisruption = disruption => async (dispatch) => {
+export const createDisruption = disruption => async (dispatch, getState) => {
     let response;
+    const state = getState();
+    const sourceIncidentNo = getSourceIncidentNo(state);
+    const myEditMode = getEditMode(state);
+
     dispatch(updateRequestingDisruptionState(true));
     try {
         response = await disruptionsMgtApi.createDisruption(disruption);
-        dispatch(updateRequestingDisruptionResult(response.disruptionId, ACTION_RESULT.CREATE_SUCCESS(response.incidentNo, response.createNotification)));
+
+        if (myEditMode === EDIT_TYPE.COPY) {
+            dispatch(updateRequestingDisruptionResult(response.disruptionId, ACTION_RESULT.COPY_SUCCESS(response.incidentNo, response.createNotification, sourceIncidentNo)));
+        } else {
+            dispatch(updateRequestingDisruptionResult(response.disruptionId, ACTION_RESULT.CREATE_SUCCESS(response.incidentNo, response.createNotification)));
+        }
     } catch (error) {
         dispatch(updateRequestingDisruptionResult(null, ACTION_RESULT.CREATE_ERROR(error.code)));
     } finally {
@@ -232,6 +242,14 @@ const updateOpenCreateDisruption = isCreateEnabled => ({
     type: ACTION_TYPE.OPEN_CREATE_DISRUPTIONS,
     payload: {
         isCreateEnabled,
+    },
+});
+
+export const openCopyDisruption = (isCreateEnabled, sourceIncidentNo) => ({
+    type: ACTION_TYPE.OPEN_COPY_DISRUPTIONS,
+    payload: {
+        isCreateEnabled,
+        sourceIncidentNo,
     },
 });
 
@@ -355,10 +373,10 @@ export const updateCurrentStep = activeStep => ({
     },
 });
 
-export const updateEditMode = isEditMode => ({
+export const updateEditMode = editModeParam => ({
     type: ACTION_TYPE.UPDATE_EDIT_MODE,
     payload: {
-        isEditMode,
+        editMode: editModeParam,
     },
 });
 

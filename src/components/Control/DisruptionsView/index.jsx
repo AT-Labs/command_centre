@@ -14,6 +14,7 @@ import DisruptionsTable from './DisruptionsTable';
 import CreateDisruption from './DisruptionCreation/CreateDisruption/index';
 import Filters from './Filters/Filters';
 import { getStopGroups } from '../../../redux/actions/control/dataManagement';
+import EDIT_TYPE from '../../../types/edit-types';
 
 export class DisruptionsView extends React.Component {
     constructor(props) {
@@ -56,7 +57,7 @@ export class DisruptionsView extends React.Component {
                 className="cc-btn-primary disruption-creation__create"
                 onClick={ () => {
                     this.props.openCreateDisruption(true);
-                    this.props.updateEditMode(false);
+                    this.props.updateEditMode(EDIT_TYPE.CREATE);
                     this.props.updateAffectedRoutesState([]);
                     this.props.updateAffectedStopsState([]);
                 } }>

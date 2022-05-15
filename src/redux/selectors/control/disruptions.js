@@ -3,6 +3,7 @@ import { result, find, pick, isEmpty, flatMap, get, uniqBy } from 'lodash-es';
 import { createSelector } from 'reselect';
 import USER_PERMISSIONS from '../../../types/user-permissions-types';
 import { getJSONFromWKT } from '../../../utils/helpers';
+import EDIT_TYPE from '../../../types/edit-types';
 
 export const getDisruptionsState = state => result(state, 'control.disruptions');
 export const getAllDisruptions = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'disruptions'));
@@ -35,7 +36,9 @@ export const getCachedShapes = createSelector(getDisruptionsState, disruptionsSt
 export const getCachedStopsToRoutes = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'cachedStopsToRoutes'));
 
 export const getRoutesByStop = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'routesByStop'));
-export const isEditEnabled = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'isEditMode'));
+export const isEditEnabled = createSelector(getDisruptionsState, disruptionsState => disruptionsState.editMode === EDIT_TYPE.EDIT);
+export const getEditMode = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'editMode'));
+export const getSourceIncidentNo = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'sourceIncidentNo'));
 
 export const getAffectedStops = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'affectedEntities.affectedStops'));
 export const getAffectedRoutes = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'affectedEntities.affectedRoutes'));

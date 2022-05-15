@@ -35,6 +35,7 @@ import {
 import {
     getRoutesByShortName,
     openCreateDisruption,
+    openCopyDisruption,
     updateAffectedRoutesState,
     updateAffectedStopsState,
     updateEditMode,
@@ -68,6 +69,7 @@ import AffectedEntities from '../AffectedEntities';
 import WeekdayPicker from '../../Common/WeekdayPicker/WeekdayPicker';
 import { useDisruptionRecurrence } from '../../../../redux/selectors/appSettings';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
+import EDIT_TYPE from '../../../../types/edit-types';
 
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
@@ -82,6 +84,7 @@ const DisruptionDetailView = (props) => {
     const [description, setDescription] = useState(disruption.description);
     const [header, setHeader] = useState(disruption.header);
     const [url, setUrl] = useState(disruption.url);
+    const [incidentNo, setIncidentNo] = useState(disruption.incidentNo);
     const [mode, setMode] = useState(disruption.mode);
     const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
     const [startTime, setStartTime] = useState(moment(disruption.startTime).format(TIME_FORMAT));
@@ -136,6 +139,7 @@ const DisruptionDetailView = (props) => {
     }, [startDate, startTime, endDate]);
 
     useEffect(() => {
+        setIncidentNo(disruption.incidentNo);
         setHeader(disruption.header);
         setCause(disruption.cause);
         setImpact(disruption.impact);
@@ -150,6 +154,7 @@ const DisruptionDetailView = (props) => {
         setRecurrent(disruption.recurrent);
         setDuration(disruption.duration);
     }, [
+        disruption.incidentNo,
         disruption.header,
         disruption.cause,
         disruption.impact,
@@ -192,6 +197,13 @@ const DisruptionDetailView = (props) => {
     });
 
     const handleUpdateDisruption = () => updateDisruption(setDisruption());
+
+    const handleCopyDisruption = () => {
+        props.openCopyDisruption(true, incidentNo);
+
+        props.updateEditMode(EDIT_TYPE.COPY);
+        props.updateDisruptionToEdit(setDisruption());
+    };
 
     const setDisruptionStatus = (selectedStatus) => {
         setStatus(selectedStatus);
@@ -267,7 +279,7 @@ const DisruptionDetailView = (props) => {
     const isDiversionUploadDisabled = isUpdating || isPropsEmpty || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid();
 
     const editRoutesAndStops = () => {
-        props.updateEditMode(true);
+        props.updateEditMode(EDIT_TYPE.EDIT);
         props.openCreateDisruption(true);
         props.updateDisruptionToEdit(setDisruption());
     };
@@ -539,6 +551,21 @@ const DisruptionDetailView = (props) => {
                         </div>
                         <Button
                             className="cc-btn-primary ml-3 mr-3"
+                            onClick={ handleCopyDisruption }
+                            disabled={
+                                isUpdating
+                                || isSaveDisabled
+                                || !startTimeValid()
+                                || !startDateValid()
+                                || !endTimeValid()
+                                || !endDateValid()
+                                || !durationValid()
+                            }
+                        >
+                            Copy
+                        </Button>
+                        <Button
+                            className="cc-btn-primary ml-3 mr-3"
                             onClick={ handleUpdateDisruption }
                             disabled={ isSaveDisabled }>
                             Save Changes
@@ -576,6 +603,7 @@ DisruptionDetailView.propTypes = {
     isLoading: PropTypes.bool,
     routeColors: PropTypes.array,
     openCreateDisruption: PropTypes.func.isRequired,
+    openCopyDisruption: PropTypes.func.isRequired,
     updateAffectedRoutesState: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
     updateEditMode: PropTypes.func.isRequired,
@@ -604,6 +632,7 @@ export default connect(state => ({
 }), {
     getRoutesByShortName,
     openCreateDisruption,
+    openCopyDisruption,
     updateAffectedRoutesState,
     updateAffectedStopsState,
     updateEditMode,

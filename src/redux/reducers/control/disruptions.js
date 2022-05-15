@@ -1,4 +1,5 @@
 import { handleActions } from 'redux-actions';
+import EDIT_TYPE from '../../../types/edit-types';
 import ACTION_TYPE from '../../action-types';
 
 export const INIT_STATE = {
@@ -30,7 +31,8 @@ export const INIT_STATE = {
         isCopied: false,
     },
     shapes: [],
-    isEditMode: false,
+    editMode: EDIT_TYPE.CREATE,
+    sourceIncidentNo: null,
     filters: {
         selectedEntity: {},
         selectedStatus: '',
@@ -74,6 +76,7 @@ const handleCopyDisruptionsUpdate = (state, { payload: { isCopied } }) => ({
 });
 
 const handleOpenDisruptions = (state, { payload: { isCreateEnabled } }) => ({ ...state, isCreateEnabled });
+const handleOpenCopyDisruptions = (state, { payload: { isCreateEnabled, sourceIncidentNo } }) => ({ ...state, isCreateEnabled, sourceIncidentNo });
 const handleUpdateAffectedEntities = (state, { payload }) => ({ ...state, affectedEntities: { ...state.affectedEntities, ...payload } });
 const handleUpdateCachedShapes = (state, { payload }) => ({ ...state, cachedShapes: { ...state.cachedShapes, ...payload.shapes } });
 const handleUpdateCachedStopsToRoutes = (state, { payload }) => ({ ...state, cachedStopsToRoutes: { ...state.cachedStopsToRoutes, ...payload.stopsToRoutes } });
@@ -98,7 +101,7 @@ const handleAffectedEntities = (state, { payload: {
     routesByStop,
 });
 const handleResetState = () => ({ ...INIT_STATE });
-const handleUpdateEditMode = (state, { payload: { isEditMode } }) => ({ ...state, isEditMode });
+const handleUpdateEditMode = (state, { payload: { editMode } }) => ({ ...state, editMode });
 const handleDisruptionToEdit = (state, { payload: { disruptionToEdit } }) => ({ ...state, disruptionToEdit });
 const handleUpdateDisruptionFilters = (state, { payload: { filters } }) => ({ ...state, filters: { ...state.filters, ...filters } });
 
@@ -113,6 +116,7 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT]: handleDisruptionActionResultUpdate,
     [ACTION_TYPE.COPY_DISRUPTION]: handleCopyDisruptionsUpdate,
     [ACTION_TYPE.OPEN_CREATE_DISRUPTIONS]: handleOpenDisruptions,
+    [ACTION_TYPE.OPEN_COPY_DISRUPTIONS]: handleOpenCopyDisruptions,
     [ACTION_TYPE.UPDATE_AFFECTED_ENTITIES]: handleUpdateAffectedEntities,
     [ACTION_TYPE.UPDATE_CACHED_SHAPES]: handleUpdateCachedShapes,
     [ACTION_TYPE.UPDATE_CACHED_STOPS_TO_ROUTES]: handleUpdateCachedStopsToRoutes,

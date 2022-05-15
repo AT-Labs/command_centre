@@ -1,8 +1,8 @@
-/* eslint-disable no-param-reassign */
+import React from 'react';
+
 import _ from 'lodash-es';
 import moment from 'moment';
 import PropTypes from 'prop-types';
-import React from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
@@ -23,6 +23,7 @@ import {
     getDisruptionToEdit,
     getRouteColors,
     getShapes,
+    getEditMode,
     isDisruptionCancellationModalOpen,
     isDisruptionCreationOpen,
 } from '../../../../../redux/selectors/control/disruptions';
@@ -38,6 +39,8 @@ import Confirmation from '../WizardSteps/Confirmation';
 import SelectDetails from '../WizardSteps/SelectDetails';
 import SelectDisruptionEntities from '../WizardSteps/SelectDisruptionEntities';
 import Map from './Map';
+import { parseRecurrencePattern } from '../../../../../utils/recurrence';
+import EDIT_TYPE from '../../../../../types/edit-types';
 
 const INIT_STATE = {
     startTime: '',
@@ -59,7 +62,7 @@ const INIT_STATE = {
     recurrencePattern: { freq: RRule.WEEKLY },
 };
 
-class CreateDisruption extends React.Component {
+export class CreateDisruption extends React.Component {
     constructor(props) {
         super(props);
 
@@ -72,31 +75,58 @@ class CreateDisruption extends React.Component {
     componentDidMount() {
         this.props.updateCurrentStep(1);
         const now = moment();
-        this.setState({
-            disruptionData: {
-                ...INIT_STATE,
-                affectedEntities: [...this.props.routes, ...this.props.stops],
-                startTime: this.props.isCreateOpen ? now.format(TIME_FORMAT) : INIT_STATE.startTime,
-                startDate: now.format(DATE_FORMAT),
-            },
-        });
+
+        if (this.props.editMode === EDIT_TYPE.COPY) {
+            const copiedData = this.props.disruptionToEdit;
+            const { startTime, endTime } = this.props.disruptionToEdit;
+
+            copiedData.startDate = now.isSameOrAfter(startTime) ? now.format(DATE_FORMAT) : startTime.format(DATE_FORMAT);
+            copiedData.startTime = now.isSameOrAfter(startTime) ? now.format(TIME_FORMAT) : startTime.format(TIME_FORMAT);
+
+            copiedData.endDate = now.isSameOrAfter(endTime) ? null : endTime.format(DATE_FORMAT);
+            copiedData.endTime = now.isSameOrAfter(endTime) ? null : endTime.format(TIME_FORMAT);
+
+            this.setState({
+                disruptionData: {
+                    ...copiedData,
+                    disruptionId: null,
+                    recurrencePattern: this.props.disruptionToEdit.recurrent ? parseRecurrencePattern(this.props.disruptionToEdit.recurrencePattern) : { freq: RRule.WEEKLY },
+                    affectedEntities: [...this.props.routes, ...this.props.stops],
+                    status: STATUSES.NOT_STARTED,
+                },
+            });
+        } else {
+            this.setState({
+                disruptionData: {
+                    ...INIT_STATE,
+                    affectedEntities: [...this.props.routes, ...this.props.stops],
+                    startTime: this.props.isCreateOpen ? now.format(TIME_FORMAT) : INIT_STATE.startTime,
+                    startDate: now.format(DATE_FORMAT),
+                },
+            });
+        }
     }
 
     updateData = (key, value) => {
         const { disruptionData } = this.state;
         let recurrenceDates;
-        if (['startDate', 'startTime', 'endDate'].includes(key)) {
+        let recurrencePattern;
+
+        if (['startDate', 'startTime', 'endDate', 'recurrent'].includes(key)) {
             const updatedDisruptionData = { ...disruptionData, [key]: value };
             recurrenceDates = getRecurrenceDates(updatedDisruptionData.startDate, updatedDisruptionData.startTime, updatedDisruptionData.endDate);
+            recurrencePattern = disruptionData.recurrent ? parseRecurrencePattern(disruptionData.recurrencePattern) : { freq: RRule.WEEKLY };
         }
         this.setState(prevState => ({
             disruptionData: {
                 ...prevState.disruptionData,
                 [key]: value,
-                ...(recurrenceDates && { recurrencePattern: {
-                    ...prevState.disruptionData.recurrencePattern,
-                    ...recurrenceDates,
-                } }),
+                ...(recurrenceDates && {
+                    recurrencePattern: {
+                        ...recurrencePattern,
+                        ...recurrenceDates,
+                    },
+                }),
             },
         }));
     };
@@ -104,6 +134,7 @@ class CreateDisruption extends React.Component {
     onSubmit = () => {
         this.toggleModal('Confirmation', true);
         const { disruptionData } = this.state;
+
         const startDate = disruptionData.startDate ? disruptionData.startDate : moment(disruptionData.startTime).format(DATE_FORMAT);
         const startTimeMoment = momentFromDateTime(startDate, disruptionData.startTime);
 
@@ -134,6 +165,14 @@ class CreateDisruption extends React.Component {
 
     render() {
         const { disruptionData, isConfirmationOpen } = this.state;
+
+        const renderMainHeading = () => {
+            if (this.props.editMode === EDIT_TYPE.COPY) {
+                return <h2 className="pl-4 pr-4">{`Copy Disruption #${this.props.disruptionToEdit.incidentNo}`}</h2>;
+            }
+            return <h2 className="pl-4 pr-4">Create a new Disruption</h2>;
+        };
+
         return (
             <div className="sidepanel-control-component-view d-flex">
                 <SidePanel
@@ -152,7 +191,7 @@ class CreateDisruption extends React.Component {
                                 </li>
                             </ol>
                         </div>
-                        <h2 className="pl-4 pr-4">Create a new Disruption</h2>
+                        {renderMainHeading()}
                         <Wizard
                             className="disruption-creation__wizard container p-0"
                             data={ disruptionData }
@@ -204,6 +243,7 @@ CreateDisruption.propTypes = {
     stops: PropTypes.array,
     routes: PropTypes.array,
     shapes: PropTypes.array,
+    editMode: PropTypes.string,
     routeColors: PropTypes.array,
     updateDisruption: PropTypes.func.isRequired,
     disruptionToEdit: PropTypes.object,
@@ -217,6 +257,7 @@ CreateDisruption.defaultProps = {
     stops: [],
     routes: [],
     shapes: [],
+    editMode: EDIT_TYPE.CREATE,
     routeColors: [],
     disruptionToEdit: {},
 };
@@ -229,6 +270,7 @@ export default connect(state => ({
     stops: getAffectedStops(state),
     routes: getAffectedRoutes(state),
     shapes: getShapes(state),
+    editMode: getEditMode(state),
     routeColors: getRouteColors(state),
     disruptionToEdit: getDisruptionToEdit(state),
 }), { createDisruption, openCreateDisruption, toggleDisruptionModals, updateCurrentStep, updateDisruption })(CreateDisruption);
