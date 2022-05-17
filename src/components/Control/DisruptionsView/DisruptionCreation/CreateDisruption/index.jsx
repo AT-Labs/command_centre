@@ -86,11 +86,19 @@ export class CreateDisruption extends React.Component {
             copiedData.endDate = now.isSameOrAfter(endTime) ? null : endTime.format(DATE_FORMAT);
             copiedData.endTime = now.isSameOrAfter(endTime) ? null : endTime.format(TIME_FORMAT);
 
+            const recurrenceDates = getRecurrenceDates(copiedData.startDate, copiedData.startTime, copiedData.endDate);
+            const recurrencePattern = this.props.disruptionToEdit.recurrent ? parseRecurrencePattern(this.props.disruptionToEdit.recurrencePattern) : { freq: RRule.WEEKLY };
+
             this.setState({
                 disruptionData: {
                     ...copiedData,
                     disruptionId: null,
-                    recurrencePattern: this.props.disruptionToEdit.recurrent ? parseRecurrencePattern(this.props.disruptionToEdit.recurrencePattern) : { freq: RRule.WEEKLY },
+                    ...(recurrenceDates && {
+                        recurrencePattern: {
+                            ...recurrencePattern,
+                            ...recurrenceDates,
+                        },
+                    }),
                     affectedEntities: [...this.props.routes, ...this.props.stops],
                     status: STATUSES.NOT_STARTED,
                 },
