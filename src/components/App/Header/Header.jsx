@@ -24,6 +24,7 @@ import Icon from '../../Common/Icon/Icon';
 import { HelpInformationModal } from '../HelpInformationModal/HelpInformationModal';
 import { resetRealtimeToDefault } from '../../../redux/actions/realtime/common';
 import './Header.scss';
+import { useNotifications } from '../../../redux/selectors/appSettings';
 
 function Header(props) {
     const location = useLocation();
@@ -76,6 +77,7 @@ function Header(props) {
                 VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
                 VIEW_TYPE.CONTROL_DETAIL.ALERTS,
                 VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT,
+                VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS,
             ].includes(props.controlActiveView)) {
             history.push(locationToPush);
         }
@@ -228,6 +230,21 @@ function Header(props) {
                             </CustomButton>
                         </NavItem>
                     )}
+                    { props.useNotifications && (
+                        <NavItem>
+                            <CustomButton
+                                className="header__btn header__notifications rounded-0 px-3"
+                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS }
+                                tabIndex="0"
+                                ariaLabel="Notifications button"
+                                onClick={ () => {
+                                    props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
+                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS);
+                                } }>
+                                NOTIFICATIONS
+                            </CustomButton>
+                        </NavItem>
+                    )}
                 </Nav>
                 <Nav className="header__toolbar ml-auto" navbar>
                     { isGlobalEditMessagesPermitted && (
@@ -335,6 +352,7 @@ Header.propTypes = {
         controlStopMessagingView: PropTypes.bool.isRequired,
     }).isRequired,
     resetRealtimeToDefault: PropTypes.func.isRequired,
+    useNotifications: PropTypes.bool.isRequired,
 };
 
 Header.defaultProps = {
@@ -351,6 +369,7 @@ export default connect(
         userPermissions: getUserPermissions(state),
         hasAlerts: isAlertsEmpty(state),
         stopMessagesPermissions: getStopMessagesPermissions(state),
+        useNotifications: useNotifications(state),
     }),
     {
         resetRealtimeToDefault,

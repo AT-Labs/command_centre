@@ -1,0 +1,14 @@
+@import '../../../assets/styles/variables';
+
+.notificationCell {
+    position: relative;
+
+    svg {
+        fill: $at-green;
+        position: absolute;
+    }
+}
+
+.row-expired {
+    color: $at-light-gray;
+}
