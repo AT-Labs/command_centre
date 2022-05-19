@@ -1,0 +1,8 @@
+.customDataGrid {
+    width: 100%;
+    height: 80vh;
+
+    p {
+        margin-block-start: 1em; // fixes table pagination alignment
+    }
+}

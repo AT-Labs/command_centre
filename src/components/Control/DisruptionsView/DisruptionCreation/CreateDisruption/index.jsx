@@ -78,29 +78,16 @@ export class CreateDisruption extends React.Component {
 
         if (this.props.editMode === EDIT_TYPE.COPY) {
             const copiedData = this.props.disruptionToEdit;
+            const { startTime, endTime } = this.props.disruptionToEdit;
 
-            if (!moment.isMoment(copiedData.startTime)) {
-                const startDate = copiedData.startDate ? copiedData.startDate : moment(copiedData.startTime).format(DATE_FORMAT);
+            copiedData.startDate = now.isSameOrAfter(startTime) ? now.format(DATE_FORMAT) : startTime.format(DATE_FORMAT);
+            copiedData.startTime = now.isSameOrAfter(startTime) ? now.format(TIME_FORMAT) : startTime.format(TIME_FORMAT);
 
-                const startTimeMoment = momentFromDateTime(startDate, copiedData.startTime);
-                copiedData.startTime = startTimeMoment;
-            }
-
-            if (!moment.isMoment(copiedData.endTime)) {
-                const endDate = copiedData.endDate ? copiedData.endDate : moment(copiedData.endDate).format(DATE_FORMAT);
-                const endTimeMoment = momentFromDateTime(endDate, copiedData.endTime);
-
-                copiedData.endTime = endTimeMoment;
-            }
+            copiedData.endDate = now.isSameOrAfter(endTime) ? null : endTime.format(DATE_FORMAT);
+            copiedData.endTime = now.isSameOrAfter(endTime) ? null : endTime.format(TIME_FORMAT);
 
             const recurrenceDates = getRecurrenceDates(copiedData.startDate, copiedData.startTime, copiedData.endDate);
             const recurrencePattern = this.props.disruptionToEdit.recurrent ? parseRecurrencePattern(this.props.disruptionToEdit.recurrencePattern) : { freq: RRule.WEEKLY };
-
-            copiedData.startDate = now.isSameOrAfter(copiedData.startTime) ? now.format(DATE_FORMAT) : copiedData.startTime.format(DATE_FORMAT);
-            copiedData.startTime = now.isSameOrAfter(copiedData.startTime) ? now.format(TIME_FORMAT) : copiedData.startTime.format(TIME_FORMAT);
-
-            copiedData.endDate = now.isAfter(copiedData.endTime) ? '' : copiedData.endTime.format(DATE_FORMAT);
-            copiedData.endTime = now.isAfter(copiedData.endTime) ? '' : copiedData.endTime.format(TIME_FORMAT);
 
             this.setState({
                 disruptionData: {

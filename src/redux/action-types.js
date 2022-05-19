@@ -217,4 +217,9 @@ export default {
     UPDATE_CONTROL_DATAMANAGEMENT_PAGESETTINGS: 'update-control-data-management-pagesettings',
     // Application Settings
     UPDATE_APP_SETTINGS: 'update-application-settings',
+    // Notifications
+    FETCH_CONTROL_NOTIFICATIONS: 'fetch-control-notificaions',
+    UPDATE_CONTROL_NOTIFICATIONS_DATAGRID_CONFIG: 'update-control-notifications-datagrid-config',
+    UPDATE_CONTROL_NOTIFICATIONS_FILTER_COUNT: 'update-control-notifications-filter-count',
+    UPDATE_CONTROL_NOTIFICATIONS_LAST_FILTER: 'update-control-notifications-last-filter',
 };

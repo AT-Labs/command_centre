@@ -33,6 +33,7 @@ import ActivityIndicator from './ActivityIndicator';
 import './App.scss';
 import Header from './Header/Header';
 import ERROR_TYPE from '../../types/error-types';
+import { getApplicationSettings } from '../../redux/actions/appSettings';
 import 'flatpickr/dist/flatpickr.css';
 
 function App(props) {
@@ -80,6 +81,7 @@ function App(props) {
                 injectTracingSnippet();
             }
         });
+        props.getApplicationSettings();
     }, []);
 
     return (
@@ -113,6 +115,7 @@ App.propTypes = {
     fetchAlertsViewPermission: PropTypes.func.isRequired,
     startPollingAlerts: PropTypes.func.isRequired,
     fetchTripReplaysViewPermission: PropTypes.func.isRequired,
+    getApplicationSettings: PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
@@ -134,4 +137,5 @@ export default connect(state => ({
     startPollingAlerts,
     startTrackingVehicleAllocations,
     fetchTripReplaysViewPermission,
+    getApplicationSettings,
 })(App);

@@ -34,6 +34,7 @@ import analytics from './reducers/analytics/analytics';
 import routesMappings from './reducers/static/routesMappings';
 import dataManagement from './reducers/control/dataManagement';
 import appSettings from './reducers/appSettings';
+import notifications from './reducers/control/notifications';
 
 const middleware = [thunk];
 let composeEnhancers = compose;
@@ -80,6 +81,7 @@ export default createStore(
             platforms,
             disruptions,
             dataManagement,
+            notifications,
         }),
         analytics,
         activity,
