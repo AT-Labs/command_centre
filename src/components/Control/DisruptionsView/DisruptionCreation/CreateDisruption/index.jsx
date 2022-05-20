@@ -72,46 +72,62 @@ export class CreateDisruption extends React.Component {
         };
     }
 
-    componentDidMount() {
-        this.props.updateCurrentStep(1);
+    setupDataCopy = () => {
         const now = moment();
 
+        const copiedData = this.props.disruptionToEdit;
+
+        if (!moment.isMoment(copiedData.startTime)) {
+            const startDate = copiedData.startDate ? copiedData.startDate : moment(copiedData.startTime).format(DATE_FORMAT);
+            copiedData.startTime = momentFromDateTime(startDate, copiedData.startTime);
+        }
+
+        if (moment.isMoment(copiedData.endTime)) {
+            copiedData.endDate = now.isAfter(copiedData.endTime) ? '' : copiedData.endTime.format(DATE_FORMAT);
+            copiedData.endTime = now.isAfter(copiedData.endTime) ? '' : copiedData.endTime.format(TIME_FORMAT);
+        }
+
+        const recurrenceDates = getRecurrenceDates(copiedData.startDate, copiedData.startTime, copiedData.endDate);
+        const recurrencePattern = this.props.disruptionToEdit.recurrent ? parseRecurrencePattern(this.props.disruptionToEdit.recurrencePattern) : { freq: RRule.WEEKLY };
+
+        copiedData.startDate = now.isSameOrAfter(copiedData.startTime) ? now.format(DATE_FORMAT) : copiedData.startTime.format(DATE_FORMAT);
+        copiedData.startTime = now.isSameOrAfter(copiedData.startTime) ? now.format(TIME_FORMAT) : copiedData.startTime.format(TIME_FORMAT);
+
+        this.setState({
+            disruptionData: {
+                ...copiedData,
+                disruptionId: null,
+                ...(recurrenceDates && {
+                    recurrencePattern: {
+                        ...recurrencePattern,
+                        ...recurrenceDates,
+                    },
+                }),
+                affectedEntities: [...this.props.routes, ...this.props.stops],
+                status: STATUSES.NOT_STARTED,
+            },
+        });
+    };
+
+    setupData = () => {
+        const now = moment();
+        this.setState({
+            disruptionData: {
+                ...INIT_STATE,
+                affectedEntities: [...this.props.routes, ...this.props.stops],
+                startTime: this.props.isCreateOpen ? now.format(TIME_FORMAT) : INIT_STATE.startTime,
+                startDate: now.format(DATE_FORMAT),
+            },
+        });
+    };
+
+    componentDidMount() {
+        this.props.updateCurrentStep(1);
+
         if (this.props.editMode === EDIT_TYPE.COPY) {
-            const copiedData = this.props.disruptionToEdit;
-            const { startTime, endTime } = this.props.disruptionToEdit;
-
-            copiedData.startDate = now.isSameOrAfter(startTime) ? now.format(DATE_FORMAT) : startTime.format(DATE_FORMAT);
-            copiedData.startTime = now.isSameOrAfter(startTime) ? now.format(TIME_FORMAT) : startTime.format(TIME_FORMAT);
-
-            copiedData.endDate = now.isSameOrAfter(endTime) ? null : endTime.format(DATE_FORMAT);
-            copiedData.endTime = now.isSameOrAfter(endTime) ? null : endTime.format(TIME_FORMAT);
-
-            const recurrenceDates = getRecurrenceDates(copiedData.startDate, copiedData.startTime, copiedData.endDate);
-            const recurrencePattern = this.props.disruptionToEdit.recurrent ? parseRecurrencePattern(this.props.disruptionToEdit.recurrencePattern) : { freq: RRule.WEEKLY };
-
-            this.setState({
-                disruptionData: {
-                    ...copiedData,
-                    disruptionId: null,
-                    ...(recurrenceDates && {
-                        recurrencePattern: {
-                            ...recurrencePattern,
-                            ...recurrenceDates,
-                        },
-                    }),
-                    affectedEntities: [...this.props.routes, ...this.props.stops],
-                    status: STATUSES.NOT_STARTED,
-                },
-            });
+            this.setupDataCopy();
         } else {
-            this.setState({
-                disruptionData: {
-                    ...INIT_STATE,
-                    affectedEntities: [...this.props.routes, ...this.props.stops],
-                    startTime: this.props.isCreateOpen ? now.format(TIME_FORMAT) : INIT_STATE.startTime,
-                    startDate: now.format(DATE_FORMAT),
-                },
-            });
+            this.setupData();
         }
     }
 
