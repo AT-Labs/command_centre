@@ -14,6 +14,7 @@ export const INIT_STATE = {
         controlDisruptionsView: false,
         controlAlertsView: false,
         controlTripReplaysView: false,
+        controlNotificationsView: false,
     },
 };
 

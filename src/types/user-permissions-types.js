@@ -21,4 +21,8 @@ export default {
     ALERTS: {
         DISMISS_ALERT: 'dismiss',
     },
+    NOTIFICATIONS: {
+        EDIT_NOTIFICATION: 'edit',
+        VIEW_NOTIFICATION: 'view',
+    },
 };

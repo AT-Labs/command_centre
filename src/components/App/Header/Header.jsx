@@ -23,8 +23,8 @@ import CustomButton from '../../Common/CustomButton/CustomButton';
 import Icon from '../../Common/Icon/Icon';
 import { HelpInformationModal } from '../HelpInformationModal/HelpInformationModal';
 import { resetRealtimeToDefault } from '../../../redux/actions/realtime/common';
-import './Header.scss';
 import { useNotifications } from '../../../redux/selectors/appSettings';
+import './Header.scss';
 
 function Header(props) {
     const location = useLocation();
@@ -230,7 +230,7 @@ function Header(props) {
                             </CustomButton>
                         </NavItem>
                     )}
-                    { props.useNotifications && (
+                    { props.useNotifications && isViewPermitted('controlNotificationsView') && (
                         <NavItem>
                             <CustomButton
                                 className="header__btn header__notifications rounded-0 px-3"

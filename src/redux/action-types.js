@@ -222,4 +222,5 @@ export default {
     UPDATE_CONTROL_NOTIFICATIONS_DATAGRID_CONFIG: 'update-control-notifications-datagrid-config',
     UPDATE_CONTROL_NOTIFICATIONS_FILTER_COUNT: 'update-control-notifications-filter-count',
     UPDATE_CONTROL_NOTIFICATIONS_LAST_FILTER: 'update-control-notifications-last-filter',
+    UPDATE_CONTROL_NOTIFICATIONS_PERMISSIONS: 'update-control-notifications-permissions',
 };

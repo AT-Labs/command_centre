@@ -26,6 +26,13 @@ const updateLastFilterRequest = filterObject => ({
     },
 });
 
+const updateNotificationsPermissions = permissions => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_NOTIFICATIONS_PERMISSIONS,
+    payload: {
+        permissions,
+    },
+});
+
 const parseOperatorValue = (operatorToParse) => {
     switch (operatorToParse) {
     case 'is':
@@ -95,9 +102,11 @@ export const filterNotifications = forceLoad => (dispatch, getState) => {
     if (forceLoad || !lastFilterRequest || !isEqual(filterRequest, lastFilterRequest)) {
         notificationsApi.getNotifications(filterRequest)
             .then((result) => {
+                const { items, totalResults, _links } = result;
                 dispatch(updateLastFilterRequest(filterRequest));
-                dispatch(totalFilterCount(result.totalResults));
-                dispatch(loadNotifications(result.items));
+                dispatch(updateNotificationsPermissions(_links));
+                dispatch(totalFilterCount(totalResults));
+                dispatch(loadNotifications(items));
             })
             .catch(() => {
                 dispatch(setBannerError('An error occurred requesting Notification data.'));

@@ -17,6 +17,7 @@ import {
     fetchRoutesViewPermission,
     fetchStopMessagingViewPermission,
     updateUserProfile,
+    fetchNotificationsViewPermission,
 } from '../../redux/actions/user';
 import { hasPrerequisiteDataLoaded, isAnyError } from '../../redux/selectors/activity';
 import { getActiveMainView } from '../../redux/selectors/navigation';
@@ -66,6 +67,7 @@ function App(props) {
             props.fetchRoutesViewPermission();
             props.fetchStopMessagingViewPermission();
             props.startTrackingVehicleAllocations();
+            props.fetchNotificationsViewPermission();
             if (IS_DISRUPTIONS_ENABLED) {
                 props.fetchDisruptionsViewPermission();
             }
@@ -115,6 +117,7 @@ App.propTypes = {
     fetchAlertsViewPermission: PropTypes.func.isRequired,
     startPollingAlerts: PropTypes.func.isRequired,
     fetchTripReplaysViewPermission: PropTypes.func.isRequired,
+    fetchNotificationsViewPermission: PropTypes.func.isRequired,
     getApplicationSettings: PropTypes.func.isRequired,
 };
 
@@ -137,5 +140,6 @@ export default connect(state => ({
     startPollingAlerts,
     startTrackingVehicleAllocations,
     fetchTripReplaysViewPermission,
+    fetchNotificationsViewPermission,
     getApplicationSettings,
 })(App);

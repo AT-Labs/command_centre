@@ -120,6 +120,7 @@ export const NotificationsView = (props) => {
                 rowCount={ props.rowCount }
                 serverSideData
                 getRowClassName={ setExpiredClassName }
+                detailPanelHeight={ 400 }
             />
         </div>
     );
