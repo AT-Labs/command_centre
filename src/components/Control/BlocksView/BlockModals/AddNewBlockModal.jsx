@@ -25,11 +25,13 @@ export class AddNewBlockModal extends React.Component {
         blocks: PropTypes.array.isRequired,
         error: PropTypes.object,
         isLoading: PropTypes.bool,
+        date: PropTypes.string,
     };
 
     static defaultProps = {
         error: {},
         isLoading: false,
+        date: moment(),
     };
 
     constructor() {
@@ -52,7 +54,7 @@ export class AddNewBlockModal extends React.Component {
     addOperationalBlockRun = () => {
         if (!this.props.error.addBlock) {
             const { operationalBlockId } = this.state;
-            const operationalBlockRun = { operationalBlockId, serviceDate: moment().format(SERVICE_DATE_FORMAT), operationalTrips: [] };
+            const operationalBlockRun = { operationalBlockId, serviceDate: moment(this.props.date).format(SERVICE_DATE_FORMAT), operationalTrips: [] };
             this.props.addOperationalBlockRun(operationalBlockRun)
                 .then(() => this.toggleModal());
         }

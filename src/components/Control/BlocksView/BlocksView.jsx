@@ -182,6 +182,8 @@ export class BlocksView extends React.Component {
 
     isToday = date => moment.tz(date, DATE_TYPE.TIME_ZONE).isSame(moment(), 'day');
 
+    isTomorrow = date => moment.tz(date, DATE_TYPE.TIME_ZONE).isSame(moment().add(1, 'day'), 'day');
+
     isRowActive = (block) => {
         const { activeBlocksIds } = this.props;
         return !!activeBlocksIds.find(activeBlock => activeBlock === block.operationalBlockId);
@@ -240,7 +242,8 @@ export class BlocksView extends React.Component {
                             } } />
                     </div>
                     <div className="col-9 d-flex justify-content-end align-items-center">
-                        { isGlobalAddBlockPermitted && this.isToday(this.props.serviceDate) && <AddNewBlockModal /> }
+                        { isGlobalAddBlockPermitted && (this.isToday(this.props.serviceDate) || this.isTomorrow(this.props.serviceDate))
+                        && <AddNewBlockModal date={ this.props.serviceDate } /> }
                     </div>
                 </div>
                 <ControlTable
