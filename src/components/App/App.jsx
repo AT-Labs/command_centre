@@ -6,6 +6,7 @@ import { LicenseInfo } from '@mui/x-data-grid-pro';
 import { getAuthUser } from '../../auth';
 import { startPollingSiteStatus } from '../../redux/actions/activity';
 import { startPollingAlerts } from '../../redux/actions/control/alerts';
+import { getFleets } from '../../redux/actions/control/fleets';
 import { startTrackingVehicleAllocations } from '../../redux/actions/control/blocks';
 import { getBuses, getFerries, getTrains } from '../../redux/actions/static/fleet';
 import { setCache } from '../../redux/actions/static/cache';
@@ -14,6 +15,7 @@ import {
     fetchDisruptionsViewPermission,
     fetchTripReplaysViewPermission,
     fetchAlertsViewPermission,
+    fetchFleetsViewPermission,
     fetchRoutesViewPermission,
     fetchStopMessagingViewPermission,
     updateUserProfile,
@@ -22,7 +24,7 @@ import {
 import { hasPrerequisiteDataLoaded, isAnyError } from '../../redux/selectors/activity';
 import { getActiveMainView } from '../../redux/selectors/navigation';
 import VIEW_TYPE from '../../types/view-types';
-import { IS_ALERTS_ENABLED, IS_DISRUPTIONS_ENABLED, IS_TRIP_REPLAYS_ENABLED } from '../../utils/feature-toggles';
+import { IS_ALERTS_ENABLED, IS_DISRUPTIONS_ENABLED, IS_TRIP_REPLAYS_ENABLED, IS_FLEETS_ENABLED } from '../../utils/feature-toggles';
 import BrowserCompatibilityModal from '../Common/BrowserCompatibilityModal/BrowserCompatibilityModal';
 import MaskLoader from '../Common/Loader/MaskLoader';
 import ControlView from '../Control/ControlView';
@@ -78,6 +80,10 @@ function App(props) {
                 props.fetchAlertsViewPermission();
                 props.startPollingAlerts();
             }
+            if (IS_FLEETS_ENABLED) {
+                props.fetchFleetsViewPermission();
+                props.getFleets();
+            }
             props.startPollingSiteStatus();
             if (!window.Cypress) {
                 injectTracingSnippet();
@@ -115,7 +121,9 @@ App.propTypes = {
     fetchStopMessagingViewPermission: PropTypes.func.isRequired,
     fetchDisruptionsViewPermission: PropTypes.func.isRequired,
     fetchAlertsViewPermission: PropTypes.func.isRequired,
+    fetchFleetsViewPermission: PropTypes.func.isRequired,
     startPollingAlerts: PropTypes.func.isRequired,
+    getFleets: PropTypes.func.isRequired,
     fetchTripReplaysViewPermission: PropTypes.func.isRequired,
     fetchNotificationsViewPermission: PropTypes.func.isRequired,
     getApplicationSettings: PropTypes.func.isRequired,
@@ -137,7 +145,9 @@ export default connect(state => ({
     fetchStopMessagingViewPermission,
     fetchDisruptionsViewPermission,
     fetchAlertsViewPermission,
+    fetchFleetsViewPermission,
     startPollingAlerts,
+    getFleets,
     startTrackingVehicleAllocations,
     fetchTripReplaysViewPermission,
     fetchNotificationsViewPermission,

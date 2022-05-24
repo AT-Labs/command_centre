@@ -13,6 +13,7 @@ import SecondarySidePanel from '../Common/OffCanvasLayout/SecondarySidePanel/Sec
 import StopMessagesView from './StopMessagingView/StopMessagesView';
 import DisruptionsView from './DisruptionsView';
 import AlertsView from './Alerts/AlertsView';
+import FleetsView from './Fleets/FleetsView';
 import TripReplaysView from './TripReplaysView/TripReplaysView';
 import DataManagement from './DataManagement/DataManagement';
 import NotificationsView from './Notifications/NotificationsView';
@@ -22,6 +23,7 @@ const ControlView = (props) => {
     const isRoutesView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.ROUTES;
     const isStopMessagesView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.STOP_MESSAGES;
     const isAlertsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.ALERTS;
+    const isFleetsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.FLEETS;
     const isDisruptionsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS;
     const isTripReplaysView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.TRIP_REPLAYS;
     const isDataManagementView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT;
@@ -36,6 +38,7 @@ const ControlView = (props) => {
                     { isRoutesView && <CommonView /> }
                     { isStopMessagesView && <StopMessagesView /> }
                     { isAlertsView && <AlertsView /> }
+                    { isFleetsView && <FleetsView /> }
                     { isDisruptionsView && <DisruptionsView /> }
                     { isTripReplaysView && <TripReplaysView /> }
                     { isDataManagementView && <DataManagement /> }

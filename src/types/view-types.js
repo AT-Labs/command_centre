@@ -21,6 +21,7 @@ export default {
         STOP_MESSAGES: 'control-stop-messages-view',
         STOP_GROUPS: 'control-stop-groups-view',
         ALERTS: 'control-alerts',
+        FLEETS: 'control-fleets',
         DISRUPTIONS: 'control-disruptions',
         TRIP_REPLAYS: 'control-trip-replay',
         DATA_MANAGEMENT: 'control-data-management',

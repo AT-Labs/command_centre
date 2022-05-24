@@ -18,7 +18,7 @@ import { getStopMessagesAndPermissions } from '../../../redux/actions/control/st
 import { isGlobalEditStopMessagesPermitted } from '../../../utils/user-permissions';
 import { getUserPermissions, getUserProfile } from '../../../redux/selectors/user';
 import VIEW_TYPE from '../../../types/view-types';
-import { IS_ALERTS_ENABLED, IS_DISRUPTIONS_ENABLED, IS_TRIP_REPLAYS_ENABLED, IS_ANALYTICS_ENABLED } from '../../../utils/feature-toggles';
+import { IS_ALERTS_ENABLED, IS_DISRUPTIONS_ENABLED, IS_TRIP_REPLAYS_ENABLED, IS_ANALYTICS_ENABLED, IS_FLEETS_ENABLED } from '../../../utils/feature-toggles';
 import CustomButton from '../../Common/CustomButton/CustomButton';
 import Icon from '../../Common/Icon/Icon';
 import { HelpInformationModal } from '../HelpInformationModal/HelpInformationModal';
@@ -76,6 +76,7 @@ function Header(props) {
                 VIEW_TYPE.CONTROL_DETAIL.STOP_MESSAGES,
                 VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
                 VIEW_TYPE.CONTROL_DETAIL.ALERTS,
+                VIEW_TYPE.CONTROL_DETAIL.FLEETS,
                 VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT,
                 VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS,
             ].includes(props.controlActiveView)) {
@@ -212,7 +213,7 @@ function Header(props) {
                     { (IS_ALERTS_ENABLED && isViewPermitted('controlAlertsView')) && (
                         <NavItem>
                             <CustomButton
-                                className="header__btn header__alerts rounded-0 px-3 position-relative"
+                                className="header__btn header__alerts rounded-0 px-3"
                                 active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.ALERTS }
                                 tabIndex="0"
                                 ariaLabel="Alerts button"
@@ -242,6 +243,21 @@ function Header(props) {
                                     props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS);
                                 } }>
                                 NOTIFICATIONS
+                            </CustomButton>
+                        </NavItem>
+                    )}
+                    { (IS_FLEETS_ENABLED && isViewPermitted('controlFleetsView')) && (
+                        <NavItem>
+                            <CustomButton
+                                className="header__btn header__fleets rounded-0 px-3 position-relative"
+                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.FLEETS }
+                                tabIndex="0"
+                                ariaLabel="Fleets button"
+                                onClick={ () => {
+                                    props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
+                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.FLEETS);
+                                } }>
+                                FLEETS
                             </CustomButton>
                         </NavItem>
                     )}

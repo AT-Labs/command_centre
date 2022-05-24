@@ -156,6 +156,10 @@ export default {
     UPDATE_USER_PROFILE: 'update-user-profile',
     UPDATE_USER_BLOCKS_PERMISSIONS: 'update-user-blocks-permissions',
     UPDATE_USER_ROUTES_PERMISSIONS: 'update-user-routes-permissions',
+    // Fleets:
+    FETCH_CONTROL_FLEETS: 'fetch-control-fleets',
+    UPDATE_CONTROL_FLEETS_DATAGRID_CONFIG: 'update-control-fleets-datagrid-config',
+
     // Alerts:
     FETCH_CONTROL_ALERTS: 'fetch-control-alerts',
     UPDATE_CONTROL_ALERTS_ROUTES: 'update-control-alerts-routes',

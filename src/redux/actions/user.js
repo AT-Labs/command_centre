@@ -7,6 +7,7 @@ import * as DISRUPTION_MGT_API from '../../utils/transmitters/disruption-mgt-api
 import * as TRIP_REPLAY_API from '../../utils/transmitters/trip-replay-api';
 import * as NOTIFICATIONS_API from '../../utils/transmitters/notifications-api';
 import { getAlertsViewPermission } from '../../utils/transmitters/alerts-api';
+import { getFleetsViewPermission } from '../../utils/transmitters/fleets-api';
 import { reportError } from './activity';
 
 export const updateUserProfile = user => (dispatch) => {
@@ -40,4 +41,5 @@ export const fetchStopMessagingViewPermission = () => fetchViewPermission('contr
 export const fetchDisruptionsViewPermission = () => fetchViewPermission('controlDisruptionsView', DISRUPTION_MGT_API.getDisruptionsViewPermission);
 export const fetchAlertsViewPermission = () => fetchViewPermission('controlAlertsView', getAlertsViewPermission);
 export const fetchTripReplaysViewPermission = () => fetchViewPermission('controlTripReplaysView', TRIP_REPLAY_API.getTripReplaysViewPermission);
+export const fetchFleetsViewPermission = () => fetchViewPermission('controlFleetsView', getFleetsViewPermission);
 export const fetchNotificationsViewPermission = () => fetchViewPermission('controlNotificationsView', NOTIFICATIONS_API.getNotificationsViewPermission);
