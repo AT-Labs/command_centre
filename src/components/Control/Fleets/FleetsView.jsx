@@ -7,7 +7,7 @@ import {
     updateFleetsDatagridConfig,
 } from '../../../redux/actions/control/fleets';
 import { getAllFleets, getFleetsDatagridConfig } from '../../../redux/selectors/control/fleets';
-import { dateTimeFormat } from '../../../utils/dateFormats';
+import { dateTimeFormat } from '../../../utils/dateUtils';
 
 export const FleetsView = (props) => {
     const { fleets } = props;

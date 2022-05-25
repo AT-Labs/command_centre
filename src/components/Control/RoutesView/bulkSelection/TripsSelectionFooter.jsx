@@ -21,8 +21,10 @@ const SelectionToolsFooter = (props) => {
     const [activeModal, setActiveModal] = useState(updateTripsStatusModalTypes.CANCEL_MODAL);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const { selectedTrips, actionLoadingStatesByTripId, bulkUpdateConfirmationMessages } = props;
-    const lastConfirmationMessages = _.last(bulkUpdateConfirmationMessages);
+    const { selectedTrips, actionLoadingStatesByTripId, actionResults } = props;
+
+    const bulkUpdateConfirmationMessages = getBulkUpdateMessagesByType(actionResults, selectedTrips, CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES.bulkStatusUpdate);
+    const lastBulkConfirmationMessage = _.last(bulkUpdateConfirmationMessages);
 
     const handleModalOnToggle = (activeModalName) => {
         setIsModalOpen(!isModalOpen);
@@ -50,12 +52,12 @@ const SelectionToolsFooter = (props) => {
                             autoDismiss
                             timeout={ 5000 }
                             isDismissible={ false }
-                            key={ lastConfirmationMessages.id }
+                            key={ lastBulkConfirmationMessage.id }
                             onClose={ () => props.removeBulkUpdateMessages(CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES.bulkStatusUpdate) }
                             message={ {
-                                id: lastConfirmationMessages.id,
-                                type: lastConfirmationMessages.type,
-                                body: `${bulkUpdateConfirmationMessages.length} ${lastConfirmationMessages.body}`,
+                                id: lastBulkConfirmationMessage.id,
+                                type: lastBulkConfirmationMessage.type,
+                                body: `${bulkUpdateConfirmationMessages.length} ${lastBulkConfirmationMessage.body}`,
                             } } />
                     </div>
                 )
@@ -98,6 +100,7 @@ const SelectionToolsFooter = (props) => {
                 className="update-trip-status-modal"
                 activeModal={ activeModal }
                 isModalOpen={ isModalOpen }
+                selectedTrips={ selectedTrips }
                 onClose={ handleModalOnToggle } />
         </Footer>
     );
@@ -106,23 +109,16 @@ const SelectionToolsFooter = (props) => {
 SelectionToolsFooter.propTypes = {
     selectedTrips: PropTypes.object.isRequired,
     deselectAllTrips: PropTypes.func.isRequired,
-    bulkUpdateConfirmationMessages: PropTypes.array,
     removeBulkUpdateMessages: PropTypes.func.isRequired,
     actionLoadingStatesByTripId: PropTypes.object.isRequired,
+    actionResults: PropTypes.array.isRequired,
 };
 
 SelectionToolsFooter.defaultProps = {
-    bulkUpdateConfirmationMessages: [],
 };
 
 export default connect(state => ({
     selectedTrips: getSelectedTripInstances(state),
     actionResults: getTripInstancesActionResults(state),
     actionLoadingStatesByTripId: getTripInstancesActionLoading(state),
-    bulkUpdateConfirmationMessages: getBulkUpdateMessagesByType(
-        state.control.routes.tripInstances.actionResults,
-        state.control.routes.tripInstances.selected,
-        CONFIRMATION_MESSAGE_TYPE,
-        MESSAGE_ACTION_TYPES.bulkStatusUpdate,
-    ),
 }), { deselectAllTrips, removeBulkUpdateMessages })(SelectionToolsFooter);

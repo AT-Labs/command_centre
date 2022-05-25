@@ -8,7 +8,7 @@ import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import ACTION_TYPE from '../../../action-types';
 import VEHICLE_OCCUPANCY_STATUS_TYPE from '../../../../types/vehicle-occupancy-status-types';
 import * as vehicleDetailActions from './vehicle';
-import { utcDateFormatWithoutTZ } from '../../../../utils/dateFormats';
+import { utcDateFormatWithoutTZ } from '../../../../utils/dateUtils';
 
 const mockStore = configureMockStore([thunk]);
 let store;

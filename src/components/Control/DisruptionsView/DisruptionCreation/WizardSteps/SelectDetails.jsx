@@ -9,7 +9,7 @@ import { BsArrowRepeat } from 'react-icons/bs';
 import { FaRegCalendarAlt, FaExclamationTriangle } from 'react-icons/fa';
 import { IconContext } from 'react-icons';
 import { isUrlValid } from '../../../../../utils/helpers';
-import { isStartTimeValid, isStartDateValid, isEndDateValid, isEndTimeValid, getDatePickerOptions, isDurationValid, recurrenceRadioOptions }
+import { isStartTimeValid, isStartDateValid, isEndDateValid, isEndTimeValid, isDurationValid, recurrenceRadioOptions }
     from '../../../../../utils/control/disruptions';
 import { toggleDisruptionModals, updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { DisruptionDetailSelect } from '../../DisruptionDetail/DisruptionDetailSelect';
@@ -42,6 +42,7 @@ import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText } from '../../../../../utils/recurrence';
 import { useDisruptionRecurrence } from '../../../../../redux/selectors/appSettings';
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
+import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 
 export const SelectDetails = (props) => {
     const { startDate, startTime, endDate, endTime, impact, cause, header, description, url, createNotification } = props.data;

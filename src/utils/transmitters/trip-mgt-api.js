@@ -241,3 +241,18 @@ export const moveTotStop = (options) => {
         authToken: getAuthToken(),
     }).then(response => _.result(response, 'data.moveToStop', {}));
 };
+
+export const recurringUpdateTripStatus = (variables) => {
+    const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/recurring-operations`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(variables),
+        },
+    ).then(response => jsonResponseHandling(response));
+};

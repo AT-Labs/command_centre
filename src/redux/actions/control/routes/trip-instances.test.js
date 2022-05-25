@@ -275,7 +275,7 @@ describe('Trip instances actions', () => {
 
     it('updates trip status', async () => {
         const fakeUpdateTripStatus = sandbox.fake.resolves(mockTrip);
-        sandbox.stub(tripMgtApi, 'updateTripStatus').callsFake(fakeUpdateTripStatus);
+        sandbox.stub(tripMgtApi, 'recurringUpdateTripStatus').callsFake(fakeUpdateTripStatus);
 
         const options = {
             tripId: mockTrip.tripId,

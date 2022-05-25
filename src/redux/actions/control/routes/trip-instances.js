@@ -15,6 +15,7 @@ import { getServiceDate } from '../../../selectors/control/serviceDate';
 import { getRouteFilters } from '../../../selectors/control/routes/filters';
 import { SERVICE_DATE_FORMAT } from '../../../../utils/control/routes';
 import { BLOCKS_SERVICE_DATE_FORMAT } from '../../../../utils/control/blocks';
+import { DATE_FORMAT_DDMMYYYY } from '../../../../utils/dateUtils';
 import { StopStatus } from '../../../../components/Control/RoutesView/Types';
 
 const loadTripInstances = (tripInstances, timestamp) => ({
@@ -206,7 +207,7 @@ const handleTripInstanceCreated = (action, dispatch, data) => {
 };
 
 export const updateTripInstanceStatus = (options, successMessage, actionType, errorMessage) => (dispatch, getState) => handleTripInstanceUpdate(
-    () => TRIP_MGT_API.updateTripStatus(options),
+    () => TRIP_MGT_API.recurringUpdateTripStatus(options),
     { ...options, successMessage, actionType, errorMessage },
     dispatch,
     getState,
@@ -273,7 +274,7 @@ export const fetchAndUpdateSelectedTrips = () => (dispatch, getState) => {
         .catch(() => ErrorType.tripsFetch && dispatch(setBannerError(ErrorType.tripsFetch)));
 };
 
-export const collectTripsDataAndUpdateTripsStatus = (selectedTrips, tripStatus, successMessage, errorMessage) => async (dispatch) => {
+export const collectTripsDataAndUpdateTripsStatus = (selectedTrips, tripStatus, successMessage, errorMessage, recurrenceSetting) => async (dispatch) => {
     const tripUpdateCalls = _.map(selectedTrips, trip => dispatch(updateTripInstanceStatus(
         {
             tripStatus,
@@ -281,12 +282,16 @@ export const collectTripsDataAndUpdateTripsStatus = (selectedTrips, tripStatus, 
             routeType: trip.routeType,
             startTime: trip.startTime,
             serviceDate: trip.serviceDate,
+            routeVariantId: trip.routeVariantId,
+            cancelFrom: moment(recurrenceSetting.startDate, DATE_FORMAT_DDMMYYYY),
+            cancelTo: recurrenceSetting.endDate ? moment(recurrenceSetting.endDate, DATE_FORMAT_DDMMYYYY) : undefined,
+            dayPattern: JSON.stringify(recurrenceSetting.selectedWeekdays),
+            isRecurringOperation: recurrenceSetting.isRecurringOperation,
         },
         successMessage,
         MESSAGE_ACTION_TYPES.bulkStatusUpdate,
         errorMessage,
     )));
-
     await Promise.all(tripUpdateCalls);
     return dispatch(fetchAndUpdateSelectedTrips());
 };

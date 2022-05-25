@@ -9,7 +9,7 @@ import * as gtfsRealtime from '../../../../utils/transmitters/gtfs-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import ACTION_TYPE from '../../../action-types';
 import * as stopDetailActions from './stop';
-import { utcDateFormatWithoutTZ } from '../../../../utils/dateFormats';
+import { utcDateFormatWithoutTZ } from '../../../../utils/dateUtils';
 
 const mockStore = configureMockStore([thunk]);
 let store;

@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
 import { goToBlocksView } from '../../../redux/actions/control/link';
 import {
-    clearTripInstanceActionResult, copyTrip, moveTripToNextStop, updateTripInstanceDelay, updateTripInstanceStatus,
+    clearTripInstanceActionResult, copyTrip, moveTripToNextStop, updateTripInstanceDelay,
 } from '../../../redux/actions/control/routes/trip-instances';
 import { getAgencies } from '../../../redux/selectors/control/agencies';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
@@ -27,7 +27,8 @@ import Stops from '../Common/Stops/Stops';
 import TripDetails from '../Common/Trip/TripDetails';
 import CopyTripModal from './Modals/CopyTripModal';
 import SetTripDelayModal from './Modals/SetTripDelayModal';
-import { AgencyType, TripInstanceType } from './Types';
+import UpdateTripStatusModal from './Modals/UpdateTripStatusModal';
+import { AgencyType, TripInstanceType, updateTripsStatusModalTypes } from './Types';
 import StopSelectionMessages from './bulkSelection/StopSelectionMessages';
 
 export class TripView extends React.Component {
@@ -42,7 +43,6 @@ export class TripView extends React.Component {
         isControlBlockViewPermitted: PropTypes.bool.isRequired,
         agencies: PropTypes.arrayOf(AgencyType),
         actionLoadingStatesByTripId: PropTypes.object.isRequired,
-        updateTripInstanceStatus: PropTypes.func.isRequired,
         clearTripInstanceActionResult: PropTypes.func.isRequired,
         updateTripInstanceDelay: PropTypes.func.isRequired,
         copyTrip: PropTypes.func.isRequired,
@@ -61,8 +61,8 @@ export class TripView extends React.Component {
         super(props);
 
         this.state = {
-            isCancelTripModalOpen: false,
-            isReinstateTripModalOpen: false,
+            isSetTripStatusModalOpen: false,
+            tripStatusModalType: updateTripsStatusModalTypes.CANCEL_MODAL,
             isSetTripDelayModalOpen: false,
             isRemoveTripDelayModalOpen: false,
             isCopyTripModalOpen: false,
@@ -130,7 +130,10 @@ export class TripView extends React.Component {
             buttonBarConfig.push({
                 label: 'Cancel trip',
                 icon: <FaTimesCircle className="text-danger" />,
-                action: () => this.setState({ isCancelTripModalOpen: true }),
+                action: () => {
+                    this.setState({ isSetTripStatusModalOpen: true });
+                    this.setState({ tripStatusModalType: updateTripsStatusModalTypes.CANCEL_MODAL });
+                },
             });
         }
 
@@ -138,7 +141,10 @@ export class TripView extends React.Component {
             buttonBarConfig.push({
                 label: 'Reinstate trip',
                 icon: <FaCheckCircle className="text-success" />,
-                action: () => this.setState({ isReinstateTripModalOpen: true }),
+                action: () => {
+                    this.setState({ isSetTripStatusModalOpen: true });
+                    this.setState({ tripStatusModalType: updateTripsStatusModalTypes.REINSTATE_MODAL });
+                },
             });
         }
 
@@ -189,20 +195,20 @@ export class TripView extends React.Component {
 
     render() {
         const { tripInstance, actionResults, actionLoadingStatesByTripId } = this.props;
-        const { bulkStatusUpdate, bulkStopStatusUpdate } = MESSAGE_ACTION_TYPES;
+        const { bulkStopStatusUpdate } = MESSAGE_ACTION_TYPES;
         const { tripId } = tripInstance;
         const tripInstanceId = getTripInstanceId(tripInstance);
         const buttonBarConfig = this.getButtonBarConfig(tripInstance);
         const tripActionResults = _.filter(actionResults, item => item.tripId === tripInstanceId);
         const isTripActionLoading = actionLoadingStatesByTripId[tripInstanceId] || false;
-        const isBulkSelectionMessage = _.some(tripActionResults, { actionType: bulkStopStatusUpdate }) || _.some(tripActionResults, { actionType: bulkStatusUpdate });
+        const isBulkStopSelectionMessage = _.some(tripActionResults, { actionType: bulkStopStatusUpdate });
 
         return (
             <div className="trip-view">
                 { buttonBarConfig.length !== 0 && <ButtonBar buttons={ buttonBarConfig } isLoading={ isTripActionLoading } /> }
 
                 {
-                    !isBulkSelectionMessage
+                    !isBulkStopSelectionMessage
                         ? tripActionResults.map(message => (
                             <Message
                                 key={ message.id }
@@ -216,47 +222,14 @@ export class TripView extends React.Component {
 
                 <Stops tripInstance={ tripInstance } />
 
-                <ConfirmationModal
-                    title="Cancel trip"
-                    message={ `Are you sure you wish to cancel trip ${tripId}?` }
-                    isOpen={ this.state.isCancelTripModalOpen }
-                    onClose={ () => this.setState({ isCancelTripModalOpen: false }) }
-                    onAction={ () => {
-                        this.props.updateTripInstanceStatus(
-                            {
-                                tripId: tripInstance.tripId,
-                                serviceDate: tripInstance.serviceDate,
-                                startTime: tripInstance.startTime,
-                                tripStatus: TRIP_STATUS_TYPES.cancelled,
-                                routeType: tripInstance.routeType,
-                            },
-                            `Trip ${tripId} has been cancelled`,
-                            MESSAGE_ACTION_TYPES.statusUpdate,
-                        );
-                        this.setState({ isCancelTripModalOpen: false });
-                    } }
-                />
-
-                <ConfirmationModal
-                    title="Reinstate trip"
-                    message={ `Are you sure you wish to reinstate trip ${tripId}?` }
-                    isOpen={ this.state.isReinstateTripModalOpen }
-                    onClose={ () => this.setState({ isReinstateTripModalOpen: false }) }
-                    onAction={ () => {
-                        this.props.updateTripInstanceStatus(
-                            {
-                                tripId: tripInstance.tripId,
-                                serviceDate: tripInstance.serviceDate,
-                                startTime: tripInstance.startTime,
-                                tripStatus: TRIP_STATUS_TYPES.notStarted,
-                                routeType: tripInstance.routeType,
-                            },
-                            `Trip ${tripId} has been reinstated`,
-                            MESSAGE_ACTION_TYPES.statusUpdate,
-                        );
-                        this.setState({ isReinstateTripModalOpen: false });
-                    } }
-                />
+                <UpdateTripStatusModal
+                    className="update-trip-status-modal"
+                    selectedTrips={ { [tripInstanceId]: tripInstance } }
+                    activeModal={ this.state.tripStatusModalType }
+                    isModalOpen={ this.state.isSetTripStatusModalOpen }
+                    onClose={ () => {
+                        this.setState({ isSetTripStatusModalOpen: false });
+                    } } />
 
                 <SetTripDelayModal
                     tripInstance={ tripInstance }
@@ -335,4 +308,4 @@ export default connect(state => ({
     serviceDate: getServiceDate(state),
     isControlBlockViewPermitted: getControlBlockViewPermission(state),
     vehicleAllocations: getAllocations(state),
-}), { updateTripInstanceStatus, clearTripInstanceActionResult, updateTripInstanceDelay, goToBlocksView, copyTrip, moveTripToNextStop })(TripView);
+}), { clearTripInstanceActionResult, updateTripInstanceDelay, goToBlocksView, copyTrip, moveTripToNextStop })(TripView);

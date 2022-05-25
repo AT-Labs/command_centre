@@ -1,7 +1,7 @@
 import { RRule } from 'rrule';
 import moment from 'moment-timezone';
 import DATE_TYPE from '../types/date-types';
-import { utcDateFormatWithoutTZ } from './dateFormats';
+import { utcDateFormatWithoutTZ, DATE_FORMAT_MMMDDYYYY, DATE_FORMAT_DDMMYYYY } from './dateUtils';
 
 const parseWeekDays = weekdays => weekdays.map((day) => {
     switch (+day) {
@@ -23,6 +23,15 @@ const parseWeekDays = weekdays => weekdays.map((day) => {
         return day;
     }
 });
+
+export const getWeekDaysAsString = weekday => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][weekday] || '';
+
+export const getRecurringTextWithFrom = (prefix, { startDate, selectedWeekdays, endDate }) => {
+    const from = `from ${moment(startDate, DATE_FORMAT_DDMMYYYY).format(DATE_FORMAT_MMMDDYYYY)}`;
+    const recurrence = selectedWeekdays.length === 7 ? 'everyday' : `on ${selectedWeekdays.map(weekday => getWeekDaysAsString(weekday)).join(' ,')}`;
+    const until = endDate ? `until ${moment(endDate, DATE_FORMAT_DDMMYYYY).format(DATE_FORMAT_MMMDDYYYY)}` : '';
+    return `${prefix} ${recurrence} ${from} ${until}`;
+};
 
 export const getRecurrenceText = (recurrencePattern) => {
     if (!recurrencePattern) {

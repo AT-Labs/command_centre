@@ -50,7 +50,6 @@ import DisruptionLabelAndText from './DisruptionLabelAndText';
 import { isUrlValid } from '../../../../utils/helpers';
 import {
     formatCreatedUpdatedTime,
-    getDatePickerOptions,
     isEndDateValid,
     isEndTimeValid,
     isStartDateValid,
@@ -70,6 +69,7 @@ import WeekdayPicker from '../../Common/WeekdayPicker/WeekdayPicker';
 import { useDisruptionRecurrence } from '../../../../redux/selectors/appSettings';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 import EDIT_TYPE from '../../../../types/edit-types';
+import { getDatePickerOptions } from '../../../../utils/dateUtils';
 
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;

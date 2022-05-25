@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 import DATE_TYPE from '../types/date-types';
-import { utcDateFormatWithoutTZ } from './dateFormats';
+import { utcDateFormatWithoutTZ } from './dateUtils';
 import { calculateActivePeriods } from './recurrence';
 
 const activePeriodsNotStarted = [

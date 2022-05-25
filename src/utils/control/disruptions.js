@@ -1,7 +1,8 @@
 import { isEmpty, camelCase, isObject, uniq, transform, isArray, omit } from 'lodash-es';
 import moment from 'moment';
 
-import { TIME_FORMAT, DATE_FORMAT, LABEL_FREQUENCY, FREQUENCY_TYPE } from '../../constants/disruptions';
+import { TIME_FORMAT, LABEL_FREQUENCY, FREQUENCY_TYPE } from '../../constants/disruptions';
+import { DATE_FORMAT_DDMMYYYY as DATE_FORMAT } from '../dateUtils';
 import VEHICLE_TYPES from '../../types/vehicle-types';
 
 export const PAGE_SIZE = 50;
@@ -48,18 +49,6 @@ export const momentFromDateTime = (date, time) => {
         return moment(`${date}T${time}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`);
     }
     return undefined;
-};
-
-export const getDatePickerOptions = (minimumDate) => {
-    let minDate = minimumDate;
-    if (minimumDate && minimumDate !== 'today') {
-        minDate = moment(minimumDate, DATE_FORMAT).valueOf();
-    }
-    return {
-        enableTime: false,
-        minDate,
-        dateFormat: 'd/m/Y',
-    };
 };
 
 export const buildSubmitBody = (disruption, routes, stops) => {

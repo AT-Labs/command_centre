@@ -4,9 +4,10 @@ import PropTypes from 'prop-types';
 import Message from '../../../Common/Message/Message';
 import CancelReinstateTripsModalTable from './UpdateTripStatusModalTable';
 import ConfirmationModalBody from '../../../Common/ConfirmationModal/ConfirmationModalBody';
+import RecurrentTripCancellation from './RecurrentTripCancellation';
 
 const UpdateTripStatusModalContent = (props) => {
-    const { className, confirmationMessage, errorMessage, shouldErrorAlertBeShown, selectedTrips } = props;
+    const { className, confirmationMessage, errorMessage, shouldErrorAlertBeShown, selectedTrips, recurringProps } = props;
 
     return (
         <>
@@ -16,6 +17,11 @@ const UpdateTripStatusModalContent = (props) => {
             <div className="update-trip-status-modal__table-wrapper mb-3">
                 <CancelReinstateTripsModalTable selectedTrips={ selectedTrips } />
             </div>
+            {
+                recurringProps.showRecurring && (
+                    <RecurrentTripCancellation setting={ recurringProps.setting } onChange={ recurringProps.onChange } />
+                )
+            }
             {
                 shouldErrorAlertBeShown && (
                     <Message
@@ -38,6 +44,7 @@ UpdateTripStatusModalContent.propTypes = {
     confirmationMessage: PropTypes.string,
     selectedTrips: PropTypes.object.isRequired,
     shouldErrorAlertBeShown: PropTypes.bool.isRequired,
+    recurringProps: PropTypes.object.isRequired,
 };
 
 UpdateTripStatusModalContent.defaultProps = {

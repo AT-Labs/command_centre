@@ -12,7 +12,7 @@ import NotificationsDetailView from './NotificationsDetailView';
 import { transformIncidentNo } from '../../../utils/control/disruptions';
 import { NOTIFICATION_CONDITION, NOTIFICATION_STATUS } from '../../../types/notification-types';
 import { sourceIdDataGridOperator } from './sourceIdDataGridOperator';
-import { dateTimeFormat } from '../../../utils/dateFormats';
+import { dateTimeFormat } from '../../../utils/dateUtils';
 
 import './NotificationsView.scss';
 

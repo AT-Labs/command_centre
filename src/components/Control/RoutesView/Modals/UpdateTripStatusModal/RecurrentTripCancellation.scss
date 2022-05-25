@@ -1,0 +1,10 @@
+@import '../../../../../assets/styles/variables';
+
+.recurrent-trip-cancellation {
+    &__icon {
+        color: $at-shore;
+        right: 20px;
+        top: 40px;
+        z-index: 0;
+    }
+}
