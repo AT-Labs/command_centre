@@ -257,7 +257,7 @@ function Header(props) {
                                     props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
                                     props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.FLEETS);
                                 } }>
-                                FLEETS
+                                FLEET
                             </CustomButton>
                         </NavItem>
                     )}
