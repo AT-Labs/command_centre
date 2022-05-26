@@ -523,10 +523,10 @@ const DisruptionDetailView = (props) => {
                 </div>
                 <div className="col-7">
                     <FormGroup className="pl-0 h-100 d-flex align-items-end justify-content-end">
-                        {/* <div className="pr-2 disruption-detail__checkbox">
+                        <div className="pr-2 disruption-detail__checkbox">
                             <Label className="font-size-md font-weight-bold">
                                 <Input
-                                    id="create-notification"
+                                    id="exempt-affected-trips"
                                     className="test"
                                     type="checkbox"
                                     disabled={ isResolved() }
@@ -535,7 +535,7 @@ const DisruptionDetailView = (props) => {
                                 />
                                 <span className="pl-2">Exempt Affected Trips</span>
                             </Label>
-                        </div> */}
+                        </div>
                         <div className="pr-2 disruption-detail__checkbox">
                             <Label className="font-size-md font-weight-bold">
                                 <Input

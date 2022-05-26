@@ -45,7 +45,7 @@ import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 
 export const SelectDetails = (props) => {
-    const { startDate, startTime, endDate, endTime, impact, cause, header, description, url, createNotification } = props.data;
+    const { startDate, startTime, endDate, endTime, impact, cause, header, description, url, createNotification, exemptAffectedTrips } = props.data;
     const { recurrent, duration, recurrencePattern } = props.data;
     const { routes, stops } = props;
 
@@ -334,7 +334,7 @@ export const SelectDetails = (props) => {
                             <span className="pl-2">Draft Stop Message</span>
                         </Label>
                     </FormGroup>
-                    {/* <FormGroup className="disruption-creation__checkbox">
+                    <FormGroup className="disruption-creation__checkbox">
                         <Label>
                             <Input
                                 type="checkbox"
@@ -344,7 +344,7 @@ export const SelectDetails = (props) => {
                             />
                             <span className="pl-2">Exempt Affected Trips</span>
                         </Label>
-                    </FormGroup> */}
+                    </FormGroup>
                 </div>
             </Form>
             <Footer
