@@ -5,13 +5,14 @@ import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 
 import {
-    fetchTripInstances, clearActiveTripInstanceId, updateActiveTripInstanceId,
+    fetchTripInstances, clearActiveTripInstanceId, updateActiveTripInstanceId, collectTripsDataAndUpdateTripsStatus,
     updateTripInstanceStatus, updateTripInstanceStopStatus, updateTripInstanceStopPlatform, updateTripInstanceDelay,
 } from './trip-instances';
 import * as tripMgtApi from '../../../../utils/transmitters/trip-mgt-api';
 import * as blockMgtApi from '../../../../utils/transmitters/block-mgt-api';
 import ACTION_TYPE from '../../../action-types';
 import { CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES } from '../../../../types/message-types';
+import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
 import { getTripInstanceId } from '../../../../utils/helpers';
 
 chai.use(sinonChai);
@@ -316,6 +317,62 @@ describe('Trip instances actions', () => {
         expect(store.getActions()).to.eql(expectedActions);
     });
 
+    it('collect trips data and update trips status', async () => {
+        const fakeUpdateTripStatus = sandbox.fake.resolves(mockTrip);
+        sandbox.stub(tripMgtApi, 'recurringUpdateTripStatus').callsFake(fakeUpdateTripStatus);
+        const fakeGetTrips = sandbox.fake.resolves(mockTrips);
+        sandbox.stub(tripMgtApi, 'getTrips').callsFake(fakeGetTrips);
+        const operateTrips = {
+            [mockTrip.tripId]:{
+            tripId: mockTrip.tripId,
+            serviceDate: '20190608',
+            startTime: '10:00:00',
+            tripStatus: mockTrip.status,
+            routeType: mockTrip.routeType,
+        }};
+        const selectedTrips = operateTrips;
+        const recurrenceSetting = {
+            startDate: '08/06/2019',
+            selectedWeekdays: [1],
+            isRecurringOperation: true,
+        };
+        const successMessage = 'success';
+        const errorMessage = 'error';
+        const tripInstanceId = getTripInstanceId(mockTrip);
+
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
+                payload: { tripId: tripInstanceId, isLoading: true },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCE_ENTRY,
+                payload: { tripInstance: mockTrip },
+            },
+            {
+                type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
+                payload: {
+                    actionType: MESSAGE_ACTION_TYPES.bulkStatusUpdate,
+                    id: 'actionResult2',
+                    body: successMessage,
+                    type: CONFIRMATION_MESSAGE_TYPE,
+                    tripId: tripInstanceId,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
+                payload: { tripId: tripInstanceId, isLoading: false },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_SELECTED_TRIPS,
+                payload: { selectedTripsUpdate: [mockTrip]},
+            },
+        ];
+
+        await store.dispatch(collectTripsDataAndUpdateTripsStatus(operateTrips, TRIP_STATUS_TYPES.cancelled, successMessage, errorMessage, recurrenceSetting, selectedTrips));
+        expect(store.getActions()).to.eql(expectedActions);
+    });
+
     it('updates stop status', async () => {
         const fakeUpdateStopStatus = sandbox.fake.resolves(mockTrip);
         sandbox.stub(tripMgtApi, 'updateStopStatus').callsFake(fakeUpdateStopStatus);
@@ -341,7 +398,7 @@ describe('Trip instances actions', () => {
                 type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
                 payload: {
                     actionType: MESSAGE_ACTION_TYPES.bulkStopStatusUpdate,
-                    id: 'actionResult2',
+                    id: 'actionResult3',
                     body: successMessage,
                     type: CONFIRMATION_MESSAGE_TYPE,
                     tripId: tripInstanceId,
@@ -382,7 +439,7 @@ describe('Trip instances actions', () => {
                 type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
                 payload: {
                     actionType: MESSAGE_ACTION_TYPES.tripDelayUpdate,
-                    id: 'actionResult3',
+                    id: 'actionResult4',
                     body: successMessage,
                     type: CONFIRMATION_MESSAGE_TYPE,
                     tripId: tripInstanceId,
@@ -419,7 +476,7 @@ describe('Trip instances actions', () => {
                 type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
                 payload: {
                     actionType: MESSAGE_ACTION_TYPES.stopPlatformUpdate,
-                    id: 'actionResult4',
+                    id: 'actionResult5',
                     body: successMessage,
                     type: CONFIRMATION_MESSAGE_TYPE,
                     tripId: tripInstanceId,

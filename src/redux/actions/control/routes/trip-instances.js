@@ -259,23 +259,21 @@ const updateSelectedTrips = selectedTripsUpdate => ({
     payload: { selectedTripsUpdate },
 });
 
-export const fetchAndUpdateSelectedTrips = () => (dispatch, getState) => {
+export const fetchAndUpdateSelectedTrips = selectedTripInstances => (dispatch, getState) => {
     const state = getState();
-    const selectedTripInstances = getSelectedTripInstances(state);
     const tripsArgs = {
         serviceDate: moment(getServiceDate(state)).format(SERVICE_DATE_FORMAT),
         tripIds: _.map(selectedTripInstances, trip => trip.tripId),
     };
     const startTimeOfSelectedTrips = _.map(selectedTripInstances, trip => `${trip.tripId}-${trip.startTime}`);
-
     TRIP_MGT_API.getTrips(tripsArgs)
         .then(({ tripInstances }) => tripInstances.filter(tripInstance => startTimeOfSelectedTrips.includes(`${tripInstance.tripId}-${tripInstance.startTime}`)))
         .then(tripInstances => dispatch(updateSelectedTrips(tripInstances)))
         .catch(() => ErrorType.tripsFetch && dispatch(setBannerError(ErrorType.tripsFetch)));
 };
 
-export const collectTripsDataAndUpdateTripsStatus = (selectedTrips, tripStatus, successMessage, errorMessage, recurrenceSetting) => async (dispatch) => {
-    const tripUpdateCalls = _.map(selectedTrips, trip => dispatch(updateTripInstanceStatus(
+export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, successMessage, errorMessage, recurrenceSetting, selectedTrips) => async (dispatch) => {
+    const tripUpdateCalls = _.map(operateTrips, trip => dispatch(updateTripInstanceStatus(
         {
             tripStatus,
             tripId: trip.tripId,
@@ -293,7 +291,9 @@ export const collectTripsDataAndUpdateTripsStatus = (selectedTrips, tripStatus, 
         errorMessage,
     )));
     await Promise.all(tripUpdateCalls);
-    return dispatch(fetchAndUpdateSelectedTrips());
+    if (_.values(selectedTrips).length > 0) {
+        await dispatch(fetchAndUpdateSelectedTrips(selectedTrips));
+    }
 };
 
 export const removeBulkUpdateMessages = type => (dispatch, getState) => {
@@ -417,4 +417,9 @@ export const selectStops = (tripInstance, stop) => (dispatch, getState) => {
 
 export const clearSelectedStops = () => ({
     type: ACTION_TYPE.CLEAR_CONTROL_SELECTED_STOPS,
+});
+
+export const setTripStatusModalOrigin = origin => ({
+    type: ACTION_TYPE.SET_TRIP_STATUS_MODAL_ORIGIN,
+    payload: { origin },
 });

@@ -83,3 +83,8 @@ export const updateStopsModalTypes = {
     REINSTATE: 'reinstate',
     MOVE_SERVICE: 'move-service',
 };
+
+export const updateTripsStatusModalOrigins = {
+    FOOTER: 'footer',
+    TRIP_VIEW: 'trip-view',
+};

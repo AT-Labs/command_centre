@@ -41,3 +41,5 @@ export const getBulkUpdateErrorMessagesForStops = createSelector(
     getTripInstancesActionResults,
     actionResults => actionResults.filter(action => action.actionType === MESSAGE_ACTION_TYPES.bulkStopStatusUpdate && action.type === ERROR_MESSAGE_TYPE),
 );
+
+export const getTripStatusModalOriginState = createSelector(getTripsState, tripInstancesState => _.result(tripInstancesState, 'tripStatusModalOrigin'));

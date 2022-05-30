@@ -7,13 +7,13 @@ import { IoIosCloseCircle, IoMdCheckmarkCircle } from 'react-icons/io';
 
 import Message from '../../Common/Message/Message';
 import Footer from '../../../Common/Footer/Footer';
-import { updateTripsStatusModalTypes } from '../Types';
+import { updateTripsStatusModalTypes, updateTripsStatusModalOrigins } from '../Types';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
 import UpdateTripStatusModal from '../Modals/UpdateTripStatusModal';
 import { MESSAGE_ACTION_TYPES, CONFIRMATION_MESSAGE_TYPE } from '../../../../types/message-types';
-import { deselectAllTrips, removeBulkUpdateMessages } from '../../../../redux/actions/control/routes/trip-instances';
+import { deselectAllTrips, removeBulkUpdateMessages, setTripStatusModalOrigin } from '../../../../redux/actions/control/routes/trip-instances';
 import {
-    getSelectedTripInstances, getTripInstancesActionResults, getTripInstancesActionLoading, getBulkUpdateMessagesByType,
+    getSelectedTripInstances, getTripInstancesActionResults, getTripInstancesActionLoading, getBulkUpdateMessagesByType, getTripStatusModalOriginState,
 } from '../../../../redux/selectors/control/routes/trip-instances';
 import './styles.scss';
 
@@ -21,7 +21,7 @@ const SelectionToolsFooter = (props) => {
     const [activeModal, setActiveModal] = useState(updateTripsStatusModalTypes.CANCEL_MODAL);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const { selectedTrips, actionLoadingStatesByTripId, actionResults } = props;
+    const { selectedTrips, actionLoadingStatesByTripId, actionResults, tripStatusModalOrigin } = props;
 
     const bulkUpdateConfirmationMessages = getBulkUpdateMessagesByType(actionResults, selectedTrips, CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES.bulkStatusUpdate);
     const lastBulkConfirmationMessage = _.last(bulkUpdateConfirmationMessages);
@@ -29,6 +29,7 @@ const SelectionToolsFooter = (props) => {
     const handleModalOnToggle = (activeModalName) => {
         setIsModalOpen(!isModalOpen);
         setActiveModal(activeModalName);
+        if (activeModalName) props.setTripStatusModalOrigin(updateTripsStatusModalOrigins.FOOTER);
         if (!isModalOpen) props.removeBulkUpdateMessages(CONFIRMATION_MESSAGE_TYPE);
     };
 
@@ -43,7 +44,8 @@ const SelectionToolsFooter = (props) => {
     return (
         <Footer className="selection-tools-footer fixed-bottom border-top">
             {
-                !isModalOpen
+                tripStatusModalOrigin === updateTripsStatusModalOrigins.FOOTER
+                && !isModalOpen
                 && bulkUpdateConfirmationMessages.length > 0
                 && !_.some(actionLoadingStatesByTripId, Boolean)
                 && (
@@ -100,7 +102,7 @@ const SelectionToolsFooter = (props) => {
                 className="update-trip-status-modal"
                 activeModal={ activeModal }
                 isModalOpen={ isModalOpen }
-                selectedTrips={ selectedTrips }
+                operateTrips={ selectedTrips }
                 onClose={ handleModalOnToggle } />
         </Footer>
     );
@@ -112,13 +114,17 @@ SelectionToolsFooter.propTypes = {
     removeBulkUpdateMessages: PropTypes.func.isRequired,
     actionLoadingStatesByTripId: PropTypes.object.isRequired,
     actionResults: PropTypes.array.isRequired,
+    tripStatusModalOrigin: PropTypes.string,
+    setTripStatusModalOrigin: PropTypes.func.isRequired,
 };
 
 SelectionToolsFooter.defaultProps = {
+    tripStatusModalOrigin: null,
 };
 
 export default connect(state => ({
     selectedTrips: getSelectedTripInstances(state),
     actionResults: getTripInstancesActionResults(state),
     actionLoadingStatesByTripId: getTripInstancesActionLoading(state),
-}), { deselectAllTrips, removeBulkUpdateMessages })(SelectionToolsFooter);
+    tripStatusModalOrigin: getTripStatusModalOriginState(state),
+}), { deselectAllTrips, removeBulkUpdateMessages, setTripStatusModalOrigin })(SelectionToolsFooter);

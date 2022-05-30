@@ -145,6 +145,7 @@ export default {
     UPDATE_CONTROL_SELECTED_STOPS_BY_TRIP: 'update-control-selected-stops-by-trip',
     UPDATE_CONTROL_SELECTED_STOPS_UPDATING: 'update-control-selected-stops-updating',
     CLEAR_CONTROL_SELECTED_STOPS: 'clear-control-selected-stops',
+    SET_TRIP_STATUS_MODAL_ORIGIN: 'set-trip-status-modal-origin',
     // Control: Cross Link
     UPDATE_TRIP_CROSS_LINK: 'update-trip-cross-link',
     CLEAR_TRIP_CROSS_LINK: 'clear-trip-cross-link',

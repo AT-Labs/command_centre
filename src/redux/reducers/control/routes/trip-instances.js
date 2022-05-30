@@ -17,6 +17,7 @@ export const INIT_STATE = {
     selected: {},
     selectedStops: {},
     areSelectedStopsUpdating: false,
+    tripStatusModalOrigin: null,
 };
 
 const handleTripInstancesUpdate = (state, { payload: { tripInstances, timestamp } }) => {
@@ -210,6 +211,8 @@ const handleSelectedStopsLoadingUpdate = (state, { payload: { areSelectedStopsUp
 
 const handleClearSelectedStops = state => ({ ...state, selectedStops: {} });
 
+const handleSetTripStatusModalOrigin = (state, { payload: { origin } }) => ({ ...state, tripStatusModalOrigin: origin });
+
 export default handleActions({
     [ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES]: handleTripInstancesUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LOADING]: handleLoadingUpdate,
@@ -230,4 +233,5 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_SELECTED_STOPS_BY_TRIP]: handleUpdateSelectedStops,
     [ACTION_TYPE.UPDATE_CONTROL_SELECTED_STOPS_UPDATING]: handleSelectedStopsLoadingUpdate,
     [ACTION_TYPE.CLEAR_CONTROL_SELECTED_STOPS]: handleClearSelectedStops,
+    [ACTION_TYPE.SET_TRIP_STATUS_MODAL_ORIGIN]: handleSetTripStatusModalOrigin,
 }, INIT_STATE);

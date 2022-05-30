@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import _ from 'lodash-es';
 import moment from 'moment';
 import PropTypes from 'prop-types';
@@ -13,6 +13,13 @@ import './RecurrentTripCancellation.scss';
 
 const RecurrentTripCancellation = (props) => {
     const { startDate, endDate, selectedWeekdays } = props.setting;
+    const { startDatePickerMinimumDate, endDatePickerMinimumDate } = props.options;
+
+    useEffect(() => {
+        if (startDate && endDate && moment(startDate, DATE_FORMAT_DDMMYYYY).isAfter(moment(endDate, DATE_FORMAT_DDMMYYYY))) {
+            props.onChange({ endDate: '' });
+        }
+    }, [startDate, endDate]);
 
     const handleStartDateUpdate = (inputStartDate) => {
         props.onChange({ startDate: inputStartDate });
@@ -26,8 +33,8 @@ const RecurrentTripCancellation = (props) => {
         props.onChange({ selectedWeekdays: inputSelectedWeekdays });
     };
 
-    const datePickerOptions = getDatePickerOptions('today');
-    const endDateDatePickerOptions = getDatePickerOptions(startDate);
+    const datePickerOptions = getDatePickerOptions(startDatePickerMinimumDate);
+    const endDateDatePickerOptions = getDatePickerOptions(endDatePickerMinimumDate);
 
     return (
         <>
@@ -42,7 +49,7 @@ const RecurrentTripCancellation = (props) => {
                         value={ startDate }
                         options={ datePickerOptions }
                         placeholder="Select date"
-                        onChange={ date => handleStartDateUpdate(moment(date[0]).format(DATE_FORMAT_DDMMYYYY)) } />
+                        onChange={ date => handleStartDateUpdate(date[0] ? moment(date[0]).format(DATE_FORMAT_DDMMYYYY) : '') } />
                     <FaRegCalendarAlt
                         className="recurrent-trip-cancellation__icon position-absolute"
                         size={ 22 } />
@@ -57,7 +64,7 @@ const RecurrentTripCancellation = (props) => {
                         value={ endDate }
                         options={ endDateDatePickerOptions }
                         placeholder="Select date"
-                        onChange={ date => handleEndDateUpdate(moment(date[0]).format(DATE_FORMAT_DDMMYYYY)) } />
+                        onChange={ date => handleEndDateUpdate(date[0] ? moment(date[0]).format(DATE_FORMAT_DDMMYYYY) : '') } />
                     <FaRegCalendarAlt
                         className="recurrent-trip-cancellation__icon position-absolute"
                         size={ 22 } />
@@ -87,6 +94,10 @@ RecurrentTripCancellation.propTypes = {
         startDate: PropTypes.string.isRequired,
         endDate: PropTypes.string,
         selectedWeekdays: PropTypes.array.isRequired,
+    }).isRequired,
+    options: PropTypes.shape({
+        startDatePickerMinimumDate: PropTypes.string.isRequired,
+        endDatePickerMinimumDate: PropTypes.string.isRequired,
     }).isRequired,
 };
 

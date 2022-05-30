@@ -7,11 +7,11 @@ import { connect } from 'react-redux';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
 import { goToBlocksView } from '../../../redux/actions/control/link';
 import {
-    clearTripInstanceActionResult, copyTrip, moveTripToNextStop, updateTripInstanceDelay,
+    clearTripInstanceActionResult, copyTrip, moveTripToNextStop, updateTripInstanceDelay, setTripStatusModalOrigin,
 } from '../../../redux/actions/control/routes/trip-instances';
 import { getAgencies } from '../../../redux/selectors/control/agencies';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
-import { getTripInstancesActionLoading, getTripInstancesActionResults } from '../../../redux/selectors/control/routes/trip-instances';
+import { getTripInstancesActionLoading, getTripInstancesActionResults, getTripStatusModalOriginState } from '../../../redux/selectors/control/routes/trip-instances';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import { getControlBlockViewPermission } from '../../../redux/selectors/user';
 import MESSAGE_TYPES, { MESSAGE_ACTION_TYPES } from '../../../types/message-types';
@@ -28,7 +28,7 @@ import TripDetails from '../Common/Trip/TripDetails';
 import CopyTripModal from './Modals/CopyTripModal';
 import SetTripDelayModal from './Modals/SetTripDelayModal';
 import UpdateTripStatusModal from './Modals/UpdateTripStatusModal';
-import { AgencyType, TripInstanceType, updateTripsStatusModalTypes } from './Types';
+import { AgencyType, TripInstanceType, updateTripsStatusModalOrigins, updateTripsStatusModalTypes } from './Types';
 import StopSelectionMessages from './bulkSelection/StopSelectionMessages';
 
 export class TripView extends React.Component {
@@ -50,11 +50,14 @@ export class TripView extends React.Component {
         goToBlocksView: PropTypes.func.isRequired,
         serviceDate: PropTypes.string.isRequired,
         vehicleAllocations: PropTypes.object.isRequired,
+        tripStatusModalOrigin: PropTypes.string,
+        setTripStatusModalOrigin: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
         actionResults: [],
         agencies: [],
+        tripStatusModalOrigin: null,
     };
 
     constructor(props) {
@@ -133,6 +136,7 @@ export class TripView extends React.Component {
                 action: () => {
                     this.setState({ isSetTripStatusModalOpen: true });
                     this.setState({ tripStatusModalType: updateTripsStatusModalTypes.CANCEL_MODAL });
+                    this.props.setTripStatusModalOrigin(updateTripsStatusModalOrigins.TRIP_VIEW);
                 },
             });
         }
@@ -144,6 +148,7 @@ export class TripView extends React.Component {
                 action: () => {
                     this.setState({ isSetTripStatusModalOpen: true });
                     this.setState({ tripStatusModalType: updateTripsStatusModalTypes.REINSTATE_MODAL });
+                    this.props.setTripStatusModalOrigin(updateTripsStatusModalOrigins.TRIP_VIEW);
                 },
             });
         }
@@ -194,7 +199,7 @@ export class TripView extends React.Component {
     };
 
     render() {
-        const { tripInstance, actionResults, actionLoadingStatesByTripId } = this.props;
+        const { tripInstance, actionResults, actionLoadingStatesByTripId, tripStatusModalOrigin } = this.props;
         const { bulkStopStatusUpdate } = MESSAGE_ACTION_TYPES;
         const { tripId } = tripInstance;
         const tripInstanceId = getTripInstanceId(tripInstance);
@@ -207,15 +212,15 @@ export class TripView extends React.Component {
             <div className="trip-view">
                 { buttonBarConfig.length !== 0 && <ButtonBar buttons={ buttonBarConfig } isLoading={ isTripActionLoading } /> }
 
+                { isBulkStopSelectionMessage && <StopSelectionMessages tripInstance={ tripInstance } /> }
+
                 {
-                    !isBulkStopSelectionMessage
-                        ? tripActionResults.map(message => (
-                            <Message
-                                key={ message.id }
-                                message={ message }
-                                onClose={ () => this.props.clearTripInstanceActionResult(message.id) } />
-                        ))
-                        : <StopSelectionMessages tripInstance={ tripInstance } />
+                    !isBulkStopSelectionMessage && tripStatusModalOrigin !== updateTripsStatusModalOrigins.FOOTER && tripActionResults.map(message => (
+                        <Message
+                            key={ message.id }
+                            message={ message }
+                            onClose={ () => this.props.clearTripInstanceActionResult(message.id) } />
+                    ))
                 }
 
                 <TripDetails data={ this.getTripDetailsData(tripInstance) } />
@@ -224,7 +229,7 @@ export class TripView extends React.Component {
 
                 <UpdateTripStatusModal
                     className="update-trip-status-modal"
-                    selectedTrips={ { [tripInstanceId]: tripInstance } }
+                    operateTrips={ { [tripInstanceId]: tripInstance } }
                     activeModal={ this.state.tripStatusModalType }
                     isModalOpen={ this.state.isSetTripStatusModalOpen }
                     onClose={ () => {
@@ -308,4 +313,5 @@ export default connect(state => ({
     serviceDate: getServiceDate(state),
     isControlBlockViewPermitted: getControlBlockViewPermission(state),
     vehicleAllocations: getAllocations(state),
-}), { clearTripInstanceActionResult, updateTripInstanceDelay, goToBlocksView, copyTrip, moveTripToNextStop })(TripView);
+    tripStatusModalOrigin: getTripStatusModalOriginState(state),
+}), { clearTripInstanceActionResult, updateTripInstanceDelay, goToBlocksView, copyTrip, moveTripToNextStop, setTripStatusModalOrigin })(TripView);

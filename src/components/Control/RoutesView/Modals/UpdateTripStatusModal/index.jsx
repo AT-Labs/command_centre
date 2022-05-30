@@ -5,19 +5,26 @@ import { connect } from 'react-redux';
 import React, { useState, useEffect } from 'react';
 import { Button } from 'reactstrap';
 
-import { updateTripsStatusModalTypes } from '../../Types';
+import { updateTripsStatusModalTypes, updateTripsStatusModalOrigins } from '../../Types';
 import UpdateStatusModalsBtn from '../UpdateStatusModalsBtn';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import TRIP_STATUS_TYPES from '../../../../../types/trip-status-types';
 import { getRecurringTextWithFrom } from '../../../../../utils/recurrence';
 import UpdateTripStatusModalContent from './UpdateTripStatusModalContent';
 import { ERROR_MESSAGE_TYPE, CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES } from '../../../../../types/message-types';
-import { fetchAndUpdateSelectedTrips, collectTripsDataAndUpdateTripsStatus, removeBulkUpdateMessages } from '../../../../../redux/actions/control/routes/trip-instances';
+import {
+    fetchAndUpdateSelectedTrips,
+    collectTripsDataAndUpdateTripsStatus,
+    removeBulkUpdateMessages,
+} from '../../../../../redux/actions/control/routes/trip-instances';
 import {
     getTripInstancesActionResults,
     getTripInstancesActionLoading,
     getBulkUpdateMessagesByType,
+    getSelectedTripInstances,
+    getTripStatusModalOriginState,
 } from '../../../../../redux/selectors/control/routes/trip-instances';
+import { getServiceDate } from '../../../../../redux/selectors/control/serviceDate';
 import { DATE_FORMAT_DDMMYYYY } from '../../../../../utils/dateUtils';
 import './styles.scss';
 
@@ -25,21 +32,22 @@ const UpdateTripStatusModal = (props) => {
     const [hasModalBeenInit, setHasModalBeenInit] = useState(false);
     const [shouldErrorAlertBeShown, setShouldErrorAlertBeShown] = useState(false);
     const [recurrenceSetting, setRecurrenceSetting] = useState({
-        startDate: moment().format(DATE_FORMAT_DDMMYYYY),
-        endDate: '',
-        selectedWeekdays: [0, 1, 2, 3, 4, 5, 6],
+        startDate: moment(props.serviceDate).format(DATE_FORMAT_DDMMYYYY),
+        endDate: moment(props.serviceDate).format(DATE_FORMAT_DDMMYYYY),
+        selectedWeekdays: [moment(props.serviceDate).isoWeekday() - 1],
     });
 
     const { cancelled, notStarted } = TRIP_STATUS_TYPES;
     const { CANCEL_MODAL, REINSTATE_MODAL } = updateTripsStatusModalTypes;
-    const { className, activeModal, isModalOpen, selectedTrips, actionLoadingStatesByTripId, actionResults } = props;
+    const { className, activeModal, isModalOpen, operateTrips, selectedTrips, actionLoadingStatesByTripId, actionResults, origin } = props;
+    const hasSelectedTrips = _.values(selectedTrips).length > 0;
 
-    const bulkUpdateErrorMessages = getBulkUpdateMessagesByType(actionResults, selectedTrips, ERROR_MESSAGE_TYPE, MESSAGE_ACTION_TYPES.bulkStatusUpdate);
-    const bulkUpdateConfirmationMessages = getBulkUpdateMessagesByType(actionResults, selectedTrips, CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES.bulkStatusUpdate);
+    const bulkUpdateErrorMessages = getBulkUpdateMessagesByType(actionResults, operateTrips, ERROR_MESSAGE_TYPE, MESSAGE_ACTION_TYPES.bulkStatusUpdate);
+    const bulkUpdateConfirmationMessages = getBulkUpdateMessagesByType(actionResults, operateTrips, CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES.bulkStatusUpdate);
     const areTripsUpdating = _.some(actionLoadingStatesByTripId, Boolean);
-    const filterSelectedTripsByModalType = status => ((activeModal === CANCEL_MODAL && status !== cancelled) || (activeModal === REINSTATE_MODAL && status === cancelled));
-    const selectedTripsByModalType = _.pickBy(selectedTrips, trip => filterSelectedTripsByModalType(trip.status));
-    const modalPropsKey = `${activeModal || CANCEL_MODAL}${_.values(selectedTripsByModalType).length > 1 ? '' : 'Single'}`;
+    const filterOperateTripsByModalType = status => ((activeModal === CANCEL_MODAL && status !== cancelled) || (activeModal === REINSTATE_MODAL && status === cancelled));
+    const operateTripsByModalType = _.pickBy(operateTrips, trip => filterOperateTripsByModalType(trip.status));
+    const modalPropsKey = `${activeModal || CANCEL_MODAL}${_.values(operateTripsByModalType).length > 1 ? '' : 'Single'}`;
 
     const modalProps = {
         cancel: {
@@ -54,7 +62,7 @@ const UpdateTripStatusModal = (props) => {
             className: 'reinstate-modal',
             title: 'Reinstate multiple trips',
             errorMessage: 'trips fail to be updated',
-            successMessage: 'Successfully reinstated trips',
+            successMessage: 'successfully reinstated trips',
             confirmationMessage: 'Are you sure you want to reinstate the following trips?',
             mainButtonLabel: 'Reinstate trips',
             recurringReinstateButtonLabel: 'Reinstate trips and remove recurring cancellations',
@@ -63,7 +71,7 @@ const UpdateTripStatusModal = (props) => {
             className: 'cancel-modal',
             title: 'Cancel trip',
             errorMessage: 'trip fail to be updated',
-            successMessage: getRecurringTextWithFrom('successfully cancelled trip', recurrenceSetting),
+            successMessage: getRecurringTextWithFrom(`${origin === updateTripsStatusModalOrigins.FOOTER ? 'successfully' : 'Successfully'} cancelled trip`, recurrenceSetting),
             confirmationMessage: 'Are you sure you want to cancel the following trip?',
             mainButtonLabel: 'Cancel trip',
         },
@@ -71,7 +79,7 @@ const UpdateTripStatusModal = (props) => {
             className: 'reinstate-modal',
             title: 'Reinstate trip',
             errorMessage: 'trip fail to be updated',
-            successMessage: 'successfully reinstated trip',
+            successMessage: `${origin === updateTripsStatusModalOrigins.FOOTER ? 'successfully' : 'Successfully'} reinstated trip`,
             confirmationMessage: 'Are you sure you want to reinstate the following trip?',
             mainButtonLabel: 'Reinstate trip',
             recurringReinstateButtonLabel: 'Reinstate trip and remove recurring cancellations',
@@ -83,7 +91,7 @@ const UpdateTripStatusModal = (props) => {
     const updateTripsStatus = (isRecurringOperation) => {
         const tripStatus = activeModal === CANCEL_MODAL ? cancelled : notStarted;
         props.collectTripsDataAndUpdateTripsStatus(
-            selectedTripsByModalType,
+            operateTripsByModalType,
             tripStatus,
             activeModalProps.successMessage,
             activeModalProps.errorMessage,
@@ -91,15 +99,18 @@ const UpdateTripStatusModal = (props) => {
                 isRecurringOperation,
                 ...recurrenceSetting,
             },
+            selectedTrips,
         );
     };
+
+    const isRecurrenceSettingValid = recurrenceSetting.startDate && recurrenceSetting.selectedWeekdays.length;
 
     const generateModalFooter = (activeModalType, mainButtonLabel, recurringReinstateButtonLabel) => (
         <>
             <Button
                 className={ `${className}__ok-button cc-btn-primary w-100` }
                 onClick={ () => updateTripsStatus(activeModalType === CANCEL_MODAL) }
-                disabled={ areTripsUpdating }>
+                disabled={ areTripsUpdating || !isRecurrenceSettingValid }>
                 <UpdateStatusModalsBtn label={ mainButtonLabel } isLoading={ areTripsUpdating } />
             </Button>
             {activeModalType === REINSTATE_MODAL && (
@@ -117,7 +128,7 @@ const UpdateTripStatusModal = (props) => {
     );
 
     const onModalInit = () => {
-        props.fetchAndUpdateSelectedTrips();
+        props.fetchAndUpdateSelectedTrips(selectedTrips);
         setHasModalBeenInit(true);
     };
 
@@ -128,7 +139,7 @@ const UpdateTripStatusModal = (props) => {
     };
 
     useEffect(() => { // eslint-disable-line
-        if (!hasModalBeenInit) onModalInit();
+        if (!hasModalBeenInit && hasSelectedTrips) onModalInit();
 
         if (isModalOpen) {
             if (bulkUpdateErrorMessages.length) setShouldErrorAlertBeShown(true);
@@ -147,7 +158,7 @@ const UpdateTripStatusModal = (props) => {
             customFooter={ generateModalFooter(activeModal, activeModalProps.mainButtonLabel, activeModalProps.recurringReinstateButtonLabel) }>
             <UpdateTripStatusModalContent
                 className={ className }
-                selectedTrips={ selectedTripsByModalType }
+                selectedTrips={ operateTripsByModalType }
                 shouldErrorAlertBeShown={ shouldErrorAlertBeShown }
                 confirmationMessage={ activeModalProps.confirmationMessage }
                 errorMessage={ `${bulkUpdateErrorMessages.length} ${activeModalProps.errorMessage}` }
@@ -155,6 +166,10 @@ const UpdateTripStatusModal = (props) => {
                     showRecurring: activeModal === CANCEL_MODAL,
                     onChange: setting => setRecurrenceSetting(prev => ({ ...prev, ...setting })),
                     setting: recurrenceSetting,
+                    options: {
+                        startDatePickerMinimumDate: moment(props.serviceDate).format(DATE_FORMAT_DDMMYYYY),
+                        endDatePickerMinimumDate: recurrenceSetting.startDate,
+                    },
                 } }
             />
         </CustomModal>
@@ -166,23 +181,31 @@ UpdateTripStatusModal.propTypes = {
     onClose: PropTypes.func.isRequired,
     isModalOpen: PropTypes.bool.isRequired,
     activeModal: PropTypes.string.isRequired,
-    selectedTrips: PropTypes.object.isRequired,
+    selectedTrips: PropTypes.object,
+    operateTrips: PropTypes.object.isRequired,
     actionResults: PropTypes.array,
     removeBulkUpdateMessages: PropTypes.func.isRequired,
     fetchAndUpdateSelectedTrips: PropTypes.func.isRequired,
     actionLoadingStatesByTripId: PropTypes.object.isRequired,
     collectTripsDataAndUpdateTripsStatus: PropTypes.func.isRequired,
+    serviceDate: PropTypes.string.isRequired,
+    origin: PropTypes.string,
 };
 
 UpdateTripStatusModal.defaultProps = {
     className: '',
     actionResults: [],
+    selectedTrips: {},
+    origin: updateTripsStatusModalOrigins.FOOTER,
 };
 
 export default connect(
     state => ({
         actionLoadingStatesByTripId: getTripInstancesActionLoading(state),
         actionResults: getTripInstancesActionResults(state),
+        serviceDate: getServiceDate(state),
+        selectedTrips: getSelectedTripInstances(state),
+        origin: getTripStatusModalOriginState(state),
     }),
     { fetchAndUpdateSelectedTrips, collectTripsDataAndUpdateTripsStatus, removeBulkUpdateMessages },
 )(UpdateTripStatusModal);

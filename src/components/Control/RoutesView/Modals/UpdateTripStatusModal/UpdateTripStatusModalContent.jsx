@@ -19,7 +19,7 @@ const UpdateTripStatusModalContent = (props) => {
             </div>
             {
                 recurringProps.showRecurring && (
-                    <RecurrentTripCancellation setting={ recurringProps.setting } onChange={ recurringProps.onChange } />
+                    <RecurrentTripCancellation setting={ recurringProps.setting } options={ recurringProps.options } onChange={ recurringProps.onChange } />
                 )
             }
             {

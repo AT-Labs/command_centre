@@ -40,6 +40,10 @@ describe('<RecurrentTripCancellation />', () => {
                     endDate: '',
                     selectedWeekdays: [0, 1, 2, 3, 4, 5, 6],
                 },
+                options: {
+                    startDatePickerMinimumDate: '01/03/2022',
+                    endDatePickerMinimumDate: '01/03/2022',
+                },
             },
         );
 
@@ -66,10 +70,22 @@ describe('<RecurrentTripCancellation />', () => {
 
         const startDateInput = wrapper.find('#recurrent-trip-cancellation__start-date');
         act(() => {
+            startDateInput.at(0).props().onChange([]);
+        });
+
+        expect(lastChange.startDate).to.equal('');
+        act(() => {
             startDateInput.at(0).props().onChange([moment('02/03/2022', DATE_FORMAT_DDMMYYYY).toDate()]);
         });
 
+        expect(lastChange.startDate).to.equal('02/03/2022');
+
         const endDateInput = wrapper.find('#recurrent-trip-cancellation__end-date');
+        act(() => {
+            endDateInput.at(0).props().onChange([]);
+        });
+
+        expect(lastChange.endDate).to.equal('');
         act(() => {
             endDateInput.at(0).props().onChange([moment('03/03/2022', DATE_FORMAT_DDMMYYYY).toDate()]);
         });
@@ -80,5 +96,23 @@ describe('<RecurrentTripCancellation />', () => {
             weekdayPicker.at(0).props().onUpdate([0]);
         });
         assert.deepEqual(lastChange.selectedWeekdays, [0]);
+    });
+
+    it('Should reset endDate to blank if startDate is after endDate', () => {
+        wrapper = setup(
+            {
+                setting: {
+                    startDate: '02/03/2022',
+                    endDate: '01/03/2022',
+                    selectedWeekdays: [0, 1, 2, 3, 4, 5, 6],
+                },
+                options: {
+                    startDatePickerMinimumDate: '01/03/2022',
+                    endDatePickerMinimumDate: '01/03/2022',
+                },
+            },
+        );
+
+        expect(lastChange.endDate).to.equal('');
     });
 });
