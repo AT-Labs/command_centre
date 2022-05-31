@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
     DataGridPro, GridToolbarExport, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton,
@@ -9,9 +9,11 @@ import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import Overlay from '../Overlay/Overlay';
 
 import './CustomDataGrid.scss';
+import { DENSITY } from '../../../types/data-grid-types';
 
 export const CustomDataGrid = (props) => {
     const apiRef = useGridApiRef();
+    const [selectedRows, setSelectedRows] = useState([]);
 
     const CustomToolbar = toolbarProps => (
         <GridToolbarContainer { ...toolbarProps }>
@@ -51,6 +53,34 @@ export const CustomDataGrid = (props) => {
         };
         props.updateDatagridConfig(data);
     };
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+    const getRowHeight = () => (props.datagridConfig?.density ? DENSITY[props.datagridConfig.density] : DENSITY.standard);
+
+    const calculateScroll = rowIdx => rowIdx * getRowHeight();
+    const calculatePageIdx = rowIdx => Math.floor(rowIdx / props.datagridConfig.pageSize);
+
+    const displaySelectedDetail = (rowsToSelect, overridePageIdx = false) => {
+        const idx = apiRef.current.getSortedRowIds().findIndex(rowId => rowId === rowsToSelect[0]);
+        const pageIdx = calculatePageIdx(idx);
+
+        setTimeout(() => setSelectedRows(rowsToSelect));
+
+        if (overridePageIdx || pageIdx === props.datagridConfig.page) {
+            apiRef.current.setPage(pageIdx);
+            setTimeout(() => apiRef.current.scroll({ top: calculateScroll(idx - (pageIdx * props.datagridConfig.pageSize)) }));
+        }
+    };
+
+    React.useEffect(() => {
+        if (isInitialLoad && props.dataSource.length > 0 && props.expandedDetailPanels) {
+            setTimeout(() => displaySelectedDetail(props.expandedDetailPanels, false));
+
+            setIsInitialLoad(false);
+        } else if (props.expandedDetailPanels && props.expandedDetailPanels.length > 0 && (!selectedRows || !selectedRows.includes(props.expandedDetailPanels[0]))) {
+            setTimeout(() => displaySelectedDetail(props.expandedDetailPanels, true));
+        }
+    }, [props.dataSource, props.expandedDetailPanels]);
 
     React.useEffect(() => {
         const columnVisChangeEvent = apiRef.current.subscribeEvent('columnVisibilityChange', () => {
@@ -84,12 +114,34 @@ export const CustomDataGrid = (props) => {
         };
     });
 
-    const getDetailPanelHeight = React.useCallback(() => props.detailPanelHeight, [props.detailPanelHeight]);
+    const addServerSideProps = () => (props.serverSideData ? {
+        rowCount: props.rowCount,
+        filterMode: 'server',
+        paginationMode: 'server',
+        sortingMode: 'server',
+    } : {});
+
+    const expandedRowIdsChanged = (ids) => {
+        let updatedIds = ids;
+
+        if (!props.multipleDetailPanelOpen) {
+            if (ids.length > 1) {
+                updatedIds = [ids[1]];
+            }
+            if (ids.length === 0) {
+                updatedIds = [];
+            }
+        }
+
+        setSelectedRows(updatedIds);
+        props.onRowExpanded(updatedIds);
+    };
 
     return (
-        <div className="customDataGrid">
+        <div className={ `customDataGrid ${props.gridClassNames}` }>
             <LocalizationProvider dateAdapter={ DateAdapter }>
                 <DataGridPro
+                    { ...addServerSideProps() }
                     components={ {
                         Toolbar: props.toolbar ?? CustomToolbar,
                         NoRowsOverlay: getNoRowsOverlay,
@@ -117,14 +169,13 @@ export const CustomDataGrid = (props) => {
                     onPageChange={ page => props.updateDatagridConfig({ page }) }
                     pagination
                     getDetailPanelContent={ props.getDetailPanelContent }
-                    getDetailPanelHeight={ getDetailPanelHeight }
+                    getDetailPanelHeight={ ({ row }) => (props.calculateDetailPanelHeight ? props.calculateDetailPanelHeight(row) : props.detailPanelHeight) }
                     disableSelectionOnClick={ props.disableSelectionOnClick }
                     getRowId={ props.getRowId }
-                    filterMode={ props.serverSideData ? 'server' : 'client' }
-                    paginationMode={ props.serverSideData ? 'server' : 'client' }
-                    sortingMode={ props.serverSideData ? 'server' : 'client' }
-                    rowCount={ props.rowCount }
                     getRowClassName={ params => props.getRowClassName(params) }
+                    disableVirtualization={ !!props.getDetailPanelContent }
+                    onDetailPanelExpandedRowIdsChange={ ids => expandedRowIdsChanged(ids) }
+                    detailPanelExpandedRowIds={ selectedRows }
                 />
             </LocalizationProvider>
         </div>
@@ -138,12 +189,17 @@ CustomDataGrid.propTypes = {
     columns: PropTypes.array,
     toolbar: PropTypes.object,
     getDetailPanelContent: PropTypes.func,
+    calculateDetailPanelHeight: PropTypes.func,
     detailPanelHeight: PropTypes.number,
     disableSelectionOnClick: PropTypes.bool,
     getRowId: PropTypes.func,
     rowCount: PropTypes.number,
     serverSideData: PropTypes.bool,
     getRowClassName: PropTypes.func,
+    gridClassNames: PropTypes.string,
+    multipleDetailPanelOpen: PropTypes.bool,
+    expandedDetailPanels: PropTypes.array,
+    onRowExpanded: PropTypes.func,
 };
 
 CustomDataGrid.defaultProps = {
@@ -153,11 +209,16 @@ CustomDataGrid.defaultProps = {
     toolbar: null,
     getDetailPanelContent: null,
     detailPanelHeight: 300,
+    calculateDetailPanelHeight: null,
     disableSelectionOnClick: true,
     getRowId: null,
-    rowCount: 0,
+    rowCount: null,
     serverSideData: false,
     getRowClassName: () => '',
+    gridClassNames: 'vh-80',
+    multipleDetailPanelOpen: false,
+    expandedDetailPanels: [],
+    onRowExpanded: () => null,
 };
 
 export default CustomDataGrid;

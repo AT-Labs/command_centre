@@ -40,6 +40,16 @@ export const INIT_STATE = {
         selectedEndDate: null,
         selectedImpact: null,
     },
+    datagridConfig: {
+        columns: [],
+        page: 0,
+        pageSize: 15,
+        sortModel: [],
+        density: 'standard',
+        routeSelection: '',
+        filterModel: { items: [], linkOperator: 'and' },
+        pinnedColumns: { right: ['__detail_panel_toggle__'] },
+    },
 };
 
 const handleDisruptionsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });
@@ -105,6 +115,8 @@ const handleUpdateEditMode = (state, { payload: { editMode } }) => ({ ...state, 
 const handleDisruptionToEdit = (state, { payload: { disruptionToEdit } }) => ({ ...state, disruptionToEdit });
 const handleUpdateDisruptionFilters = (state, { payload: { filters } }) => ({ ...state, filters: { ...state.filters, ...filters } });
 
+const handleDatagridConfig = (state, action) => ({ ...state, datagridConfig: { ...state.datagridConfig, ...action.payload } });
+
 export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_PERMISSIONS]: handleDisruptionsPermissionsUpdate,
     [ACTION_TYPE.UPDATE_DISRUPTIONS_REVERSE_GEOCODE_LOADING_STATE]: handleDisruptionsReverseGeocodeLoadingUpdate,
@@ -129,4 +141,5 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_EDIT_MODE]: handleUpdateEditMode,
     [ACTION_TYPE.UPDATE_DISRUPTION_TO_EDIT]: handleDisruptionToEdit,
     [ACTION_TYPE.UPDATE_DISRUPTION_FILTERS]: handleUpdateDisruptionFilters,
+    [ACTION_TYPE.UPDATE_DISRUPTION_DATAGRID_CONFIG]: handleDatagridConfig,
 }, INIT_STATE);

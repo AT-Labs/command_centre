@@ -102,10 +102,6 @@
     }
 }
 
-.table__column--ellipsis {
-    display: -webkit-box;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
+.MuiDataGrid-detailPanel {
+    overflow: auto;
 }

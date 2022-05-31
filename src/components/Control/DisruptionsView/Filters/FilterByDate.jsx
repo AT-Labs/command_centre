@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
-import { FormGroup, Label } from 'reactstrap';
+import { Label } from 'reactstrap';
 import Flatpickr from 'react-flatpickr';
 import Icon from '../../../Common/Icon/Icon';
 
@@ -17,8 +17,8 @@ const FilterByDate = (props) => {
     };
 
     return (
-        <FormGroup>
-            <Label>{ props.label }</Label>
+        <>
+            {props.label && (<Label>{ props.label }</Label>)}
             <div className="position-relative">
                 <Flatpickr
                     className="form-control cc-form-control"
@@ -45,7 +45,7 @@ const FilterByDate = (props) => {
                     </button>
                 ) }
             </div>
-        </FormGroup>
+        </>
     );
 };
 

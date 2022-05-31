@@ -5,6 +5,8 @@ export const FERRY_TYPE_ID = 4;
 export const TRIP_DIRECTION_OUTBOUND = 1;
 export const TRIP_DIRECTION_INBOUND = 0;
 
+export const VEHICLE_TYPES = ['Bus', 'Train', 'Ferry'];
+
 export default {
     [TRAIN_TYPE_ID]: {
         type: 'Train',

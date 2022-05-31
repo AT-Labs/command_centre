@@ -2,15 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { noop } from 'lodash-es';
-import { getSelectedEndDateFilter, getSelectedEntityFilter, getSelectedImpactFilter,
-    getSelectedStartDateFilter, getSelectedStatusFilter } from '../../../../redux/selectors/control/disruptions';
+import { getSelectedEndDateFilter, getSelectedEntityFilter, getSelectedStartDateFilter } from '../../../../redux/selectors/control/disruptions';
 import { updateDisruptionFilters } from '../../../../redux/actions/control/disruptions';
 import SearchFilter from '../../Common/Filters/SearchFilter/SearchFilter';
-import StandardFilter from '../../Common/Filters/StandardFilter';
 import FilterByDate from './FilterByDate';
-import FilterByImpact from './FilterByImpact';
 import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
-import { STATUSES, IMPACTS } from '../../../../types/disruptions-types';
 import './Filters.scss';
 
 const Filters = (props) => {
@@ -28,7 +24,7 @@ const Filters = (props) => {
     };
 
     return (
-        <section className="disruption-filters row">
+        <section className="disruption-filters row pb-3">
             <div className="search-filter col-3">
                 <SearchFilter
                     value={ props.selectedEntity.text }
@@ -39,23 +35,15 @@ const Filters = (props) => {
                     onClearCallBack={ () => props.updateDisruptionFilters({ selectedEntity: Filters.defaultProps.selectedEntity }) }
                 />
             </div>
-            <div className="status-filter col-2">
-                <StandardFilter
-                    placeholder="Select status"
-                    options={ Object.values(STATUSES) }
-                    selectedOption={ props.selectedStatus }
-                    onSelection={ selectedOption => props.updateDisruptionFilters({ selectedStatus: selectedOption.value }) }
-                    updateOnPropsValueChange />
-            </div>
+            <div className="dates-filter-label col-1 pr-0 pt-2">Active between:</div>
             <div className="dates-filter col-2">
                 <FilterByDate
                     selectedDate={ props.selectedStartDate }
                     maxDate={ props.selectedEndDate }
-                    onChange={ date => props.updateDisruptionFilters({ selectedStartDate: date && date[0] }) }
-                    label="Active between:" />
+                    onChange={ date => props.updateDisruptionFilters({ selectedStartDate: date && date[0] }) } />
             </div>
             <div className="dates-filter__separator col-pixel-width-100" />
-            <div className="dates-filter col-2 pt-2">
+            <div className="dates-filter col-2">
                 <FilterByDate
                     selectedDate={ props.selectedEndDate }
                     minDate={ props.selectedStartDate }
@@ -66,41 +54,28 @@ const Filters = (props) => {
                         props.updateDisruptionFilters({ selectedEndDate: date && date[0] });
                     } } />
             </div>
-            <div className="status-filter col-2">
-                <FilterByImpact
-                    placeholder="Select effect"
-                    options={ IMPACTS }
-                    selectedOption={ props.selectedImpact }
-                    onSelection={ selectedOption => props.updateDisruptionFilters({ selectedImpact: selectedOption.value }) }
-                    updateOnPropsValueChange />
-            </div>
         </section>
     );
 };
 
 Filters.propTypes = {
     selectedEntity: PropTypes.object,
-    selectedStatus: PropTypes.string,
     selectedStartDate: PropTypes.object,
     selectedEndDate: PropTypes.object,
-    selectedImpact: PropTypes.string,
     updateDisruptionFilters: PropTypes.func.isRequired,
 };
 
 Filters.defaultProps = {
     selectedEntity: {},
-    selectedStatus: '',
     selectedStartDate: null,
     selectedEndDate: null,
-    selectedImpact: null,
+
 };
 
 export default connect(state => ({
     selectedEntity: getSelectedEntityFilter(state),
-    selectedStatus: getSelectedStatusFilter(state),
     selectedStartDate: getSelectedStartDateFilter(state),
     selectedEndDate: getSelectedEndDateFilter(state),
-    selectedImpact: getSelectedImpactFilter(state),
 }), {
     updateDisruptionFilters,
 })(Filters);

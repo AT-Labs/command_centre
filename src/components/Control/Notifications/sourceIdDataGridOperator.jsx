@@ -3,10 +3,12 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import { FormControl, Input, InputAdornment, InputLabel } from '@mui/material';
 
+const prefixString = 'DISR';
+
 function SourceIdInputValue(props) {
     const { item, applyValue, focusElementRef } = props;
     const value = item.value?.id ?? '';
-    const prefixString = 'DISR';
+
     const controlRef = React.useRef(null);
     React.useImperativeHandle(focusElementRef, () => ({
         focus: () => {
@@ -66,8 +68,12 @@ export const sourceIdDataGridOperator = [
     {
         label: 'Equals',
         value: '==',
-        getApplyFilterFn: () => {
-            throw Error('sourceIdDataGridOperator is not implemented for client side');
+        getApplyFilterFn: (filterItem) => {
+            if (!filterItem.columnField || !filterItem.value || !filterItem.operatorValue) {
+                return null;
+            }
+
+            return params => params.row.disruptionId === parseInt(filterItem.value.id, 10);
         },
         InputComponent: SourceIdInputValue,
         InputComponentProps: { type: 'number' },

@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useState } from 'react';
+import { RiZoomInFill, RiZoomOutFill } from 'react-icons/ri';
 import { connect } from 'react-redux';
+import { Button } from 'reactstrap';
 import { clearDisruptionActionResult, updateDisruption, updateCopyDisruptionState,
     uploadDisruptionFiles, deleteDisruptionFile } from '../../../../redux/actions/control/disruptions';
 import { getDisruptionAction, isDisruptionUpdateAllowed } from '../../../../redux/selectors/control/disruptions';
@@ -11,7 +13,7 @@ import Readonly from './Readonly';
 
 const DisruptionExpandedDetail = (props) => {
     const { disruption, resultStatus, resultMessage, resultDisruptionId, resultCreateNotification, isCopied } = props;
-
+    const [toggleMagnify, setToggleMagnify] = useState(false);
     let message = resultMessage;
 
     if (resultCreateNotification) {
@@ -21,6 +23,11 @@ const DisruptionExpandedDetail = (props) => {
     if (isDisruptionUpdateAllowed(disruption)) {
         return (
             <>
+                <Button className={ `cc-btn-primary detailPanel-magnify-button ${toggleMagnify ? 'magnify' : ''}` } onClick={ () => setToggleMagnify(!toggleMagnify) }>
+                    {toggleMagnify
+                        ? <RiZoomOutFill size={ 30 } color="black" />
+                        : <RiZoomInFill size={ 30 } color="black" />}
+                </Button>
                 {resultStatus && resultDisruptionId === disruption.disruptionId && (
                     <Message
                         message={ {
@@ -41,7 +48,7 @@ const DisruptionExpandedDetail = (props) => {
                         onClose={ () => props.clearDisruptionActionResult() }
                     />
                 )}
-                <DisruptionDetailView { ...props } />
+                <DisruptionDetailView className={ toggleMagnify ? 'magnify' : '' } { ...props } />
             </>
         );
     }

@@ -131,3 +131,5 @@ export const getFilteredDisruptions = createSelector(
         return filteredDisruptions;
     },
 );
+
+export const getDisruptionsDatagridConfig = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'datagridConfig'));

@@ -10,11 +10,13 @@ import {
     getFilteredDisruptions,
 } from '../../../redux/selectors/control/disruptions';
 import { DISRUPTION_POLLING_INTERVAL } from '../../../constants/disruptions';
-import DisruptionsTable from './DisruptionsTable';
 import CreateDisruption from './DisruptionCreation/CreateDisruption/index';
 import Filters from './Filters/Filters';
 import { getStopGroups } from '../../../redux/actions/control/dataManagement';
 import EDIT_TYPE from '../../../types/edit-types';
+import DisruptionsDataGrid from './DisruptionsDataGrid';
+
+import './style.scss';
 
 export class DisruptionsView extends React.Component {
     constructor(props) {
@@ -87,7 +89,7 @@ export class DisruptionsView extends React.Component {
                                     <Filters />
                                 </div>
                             </div>
-                            <DisruptionsTable
+                            <DisruptionsDataGrid
                                 disruptions={ filteredDisruptions } />
                         </div>
                     )}

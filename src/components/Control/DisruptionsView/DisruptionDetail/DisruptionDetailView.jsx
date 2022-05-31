@@ -296,8 +296,8 @@ const DisruptionDetailView = (props) => {
     };
 
     return (
-        <Form>
-            <div className="row position-relative">
+        <Form className={ props.className }>
+            <div className={ `row position-relative ${props.className === 'magnify' ? 'mr-0' : ''}` }>
                 <AffectedEntities
                     editLabel="Edit routes and stops"
                     editAction={ editRoutesAndStops }
@@ -613,6 +613,7 @@ DisruptionDetailView.propTypes = {
     routes: PropTypes.array.isRequired,
     stops: PropTypes.array.isRequired,
     isRecurrenceOn: PropTypes.bool.isRequired,
+    className: PropTypes.string,
 };
 
 DisruptionDetailView.defaultProps = {
@@ -620,6 +621,7 @@ DisruptionDetailView.defaultProps = {
     isLoading: false,
     resultDisruptionId: null,
     routeColors: [],
+    className: '',
 };
 
 export default connect(state => ({

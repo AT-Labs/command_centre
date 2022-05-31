@@ -127,7 +127,7 @@ export const updateDisruption = disruption => async (dispatch) => {
         dispatch(updateRequestingDisruptionState(false, disruptionId));
     }
 
-    await dispatch(getDisruptions(false));
+    await dispatch(getDisruptions());
 };
 
 export const clearDisruptionActionResult = () => ({
@@ -172,7 +172,7 @@ export const createDisruption = disruption => async (dispatch, getState) => {
         dispatch(updateAffectedRoutesState([]));
     }
 
-    await dispatch(getDisruptions(false));
+    await dispatch(getDisruptions());
 };
 
 export const getRoutesByStop = stops => async (dispatch, getState) => {
@@ -423,3 +423,8 @@ export const deleteDisruptionFile = (disruption, fileId) => async (dispatch) => 
 
     await dispatch(getDisruptions());
 };
+
+export const updateDisruptionsDatagridConfig = dataGridConfig => ({
+    type: ACTION_TYPE.UPDATE_DISRUPTION_DATAGRID_CONFIG,
+    payload: dataGridConfig,
+});

@@ -196,6 +196,7 @@ export default {
     UPDATE_EDIT_MODE: 'update-edit-mode',
     UPDATE_DISRUPTION_TO_EDIT: 'update-disruption-to-edit',
     UPDATE_DISRUPTION_FILTERS: 'update-disruption-filters',
+    UPDATE_DISRUPTION_DATAGRID_CONFIG: 'update-disruption-datagrid-config',
     // TripReplays
     UPDATE_CONTROL_TRIP_REPLAYS_LOADING: 'update-control-trip-replays-loading',
     UPDATE_CONTROL_TRIP_REPLAYS_CURRENT_TRIP_DETAIL: 'update-control-trip-replays-current-trip-detail',
