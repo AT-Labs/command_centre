@@ -89,7 +89,7 @@ export const FleetsView = (props) => {
     return (
         <div className="control-fleets-view">
             <div className="mb-3">
-                <h1>Fleets</h1>
+                <h1>Fleet</h1>
             </div>
             <CustomDataGrid
                 columns={ FLEETS_COLUMNS }

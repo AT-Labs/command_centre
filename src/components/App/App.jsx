@@ -37,6 +37,7 @@ import './App.scss';
 import Header from './Header/Header';
 import ERROR_TYPE from '../../types/error-types';
 import { getApplicationSettings } from '../../redux/actions/appSettings';
+import { useNotifications } from '../../redux/selectors/appSettings';
 import 'flatpickr/dist/flatpickr.css';
 
 function App(props) {
@@ -69,7 +70,9 @@ function App(props) {
             props.fetchRoutesViewPermission();
             props.fetchStopMessagingViewPermission();
             props.startTrackingVehicleAllocations();
-            props.fetchNotificationsViewPermission();
+            if (props.useNotifications) {
+                props.fetchNotificationsViewPermission();
+            }
             if (IS_DISRUPTIONS_ENABLED) {
                 props.fetchDisruptionsViewPermission();
             }
@@ -91,6 +94,12 @@ function App(props) {
         });
         props.getApplicationSettings();
     }, []);
+
+    useEffect(() => {
+        if (props.useNotifications) {
+            props.fetchNotificationsViewPermission();
+        }
+    }, [props.useNotifications]);
 
     return (
         <div className="app">
@@ -127,12 +136,14 @@ App.propTypes = {
     fetchTripReplaysViewPermission: PropTypes.func.isRequired,
     fetchNotificationsViewPermission: PropTypes.func.isRequired,
     getApplicationSettings: PropTypes.func.isRequired,
+    useNotifications: PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({
     hasError: isAnyError(state),
     isInitLoading: !hasPrerequisiteDataLoaded(state),
     activeMainView: getActiveMainView(state),
+    useNotifications: useNotifications(state),
 }), {
     setCache,
     startPollingSiteStatus,
