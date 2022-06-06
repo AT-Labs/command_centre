@@ -66,6 +66,9 @@ const defaultStates = {
             },
         },
     },
+    appSettings: {
+        useRecurringCancellations: 'true',
+    },
 };
 
 const setup = (customProps, customStates) => {

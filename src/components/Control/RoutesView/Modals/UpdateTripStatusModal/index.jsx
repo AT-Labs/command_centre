@@ -26,6 +26,7 @@ import {
 } from '../../../../../redux/selectors/control/routes/trip-instances';
 import { getServiceDate } from '../../../../../redux/selectors/control/serviceDate';
 import { DATE_FORMAT_DDMMYYYY } from '../../../../../utils/dateUtils';
+import { useRecurringCancellations } from '../../../../../redux/selectors/appSettings';
 import './styles.scss';
 
 const UpdateTripStatusModal = (props) => {
@@ -109,11 +110,11 @@ const UpdateTripStatusModal = (props) => {
         <>
             <Button
                 className={ `${className}__ok-button cc-btn-primary w-100` }
-                onClick={ () => updateTripsStatus(activeModalType === CANCEL_MODAL) }
+                onClick={ () => updateTripsStatus(props.useRecurringCancellations && activeModalType === CANCEL_MODAL) }
                 disabled={ areTripsUpdating || !isRecurrenceSettingValid }>
                 <UpdateStatusModalsBtn label={ mainButtonLabel } isLoading={ areTripsUpdating } />
             </Button>
-            {activeModalType === REINSTATE_MODAL && (
+            { props.useRecurringCancellations && activeModalType === REINSTATE_MODAL && (
                 <>
                     <span className="w-100 text-center">or</span>
                     <Button
@@ -163,7 +164,7 @@ const UpdateTripStatusModal = (props) => {
                 confirmationMessage={ activeModalProps.confirmationMessage }
                 errorMessage={ `${bulkUpdateErrorMessages.length} ${activeModalProps.errorMessage}` }
                 recurringProps={ {
-                    showRecurring: activeModal === CANCEL_MODAL,
+                    showRecurring: props.useRecurringCancellations && activeModal === CANCEL_MODAL,
                     onChange: setting => setRecurrenceSetting(prev => ({ ...prev, ...setting })),
                     setting: recurrenceSetting,
                     options: {
@@ -190,6 +191,7 @@ UpdateTripStatusModal.propTypes = {
     collectTripsDataAndUpdateTripsStatus: PropTypes.func.isRequired,
     serviceDate: PropTypes.string.isRequired,
     origin: PropTypes.string,
+    useRecurringCancellations: PropTypes.bool.isRequired,
 };
 
 UpdateTripStatusModal.defaultProps = {
@@ -206,6 +208,7 @@ export default connect(
         serviceDate: getServiceDate(state),
         selectedTrips: getSelectedTripInstances(state),
         origin: getTripStatusModalOriginState(state),
+        useRecurringCancellations: useRecurringCancellations(state),
     }),
     { fetchAndUpdateSelectedTrips, collectTripsDataAndUpdateTripsStatus, removeBulkUpdateMessages },
 )(UpdateTripStatusModal);
