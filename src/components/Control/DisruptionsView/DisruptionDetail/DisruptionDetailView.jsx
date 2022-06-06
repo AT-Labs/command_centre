@@ -523,34 +523,36 @@ const DisruptionDetailView = (props) => {
                 </div>
                 <div className="col-7">
                     <FormGroup className="pl-0 h-100 d-flex align-items-end justify-content-end">
-                        <div className="pr-2 disruption-detail__checkbox">
-                            <Label className="font-size-md font-weight-bold">
-                                <Input
-                                    id="exempt-affected-trips"
-                                    className="test"
-                                    type="checkbox"
-                                    disabled={ isResolved() }
-                                    onChange={ e => setExemptAffectedTrips(e.currentTarget.checked) }
-                                    checked={ exemptAffectedTrips }
-                                />
-                                <span className="pl-2">Exempt Affected Trips</span>
-                            </Label>
-                        </div>
-                        <div className="pr-2 disruption-detail__checkbox">
-                            <Label className="font-size-md font-weight-bold">
-                                <Input
-                                    id="create-notification"
-                                    className="test"
-                                    type="checkbox"
-                                    disabled={ isResolved() || disruption.createNotification }
-                                    onChange={ e => setCreateNotification(e.currentTarget.checked) }
-                                    checked={ createNotification }
-                                />
-                                <span className="pl-2">Draft Stop Message</span>
-                            </Label>
+                        <div className="row">
+                            <div className="offset-4 col-8 pr-2 disruption-detail__checkbox">
+                                <Label className="font-size-md font-weight-bold">
+                                    <Input
+                                        id="create-notification"
+                                        type="checkbox"
+                                        className="position-relative"
+                                        disabled={ isResolved() || disruption.createNotification }
+                                        onChange={ e => setCreateNotification(e.currentTarget.checked) }
+                                        checked={ createNotification }
+                                    />
+                                    <span className="pl-2 align-text-bottom">Draft Stop Message</span>
+                                </Label>
+                            </div>
+                            <div className="offset-4 col-8 pr-2 disruption-detail__checkbox">
+                                <Label className="font-size-md font-weight-bold">
+                                    <Input
+                                        id="exempt-affected-trips"
+                                        className="position-relative"
+                                        type="checkbox"
+                                        disabled={ isResolved() }
+                                        onChange={ e => setExemptAffectedTrips(e.currentTarget.checked) }
+                                        checked={ exemptAffectedTrips }
+                                    />
+                                    <span className="pl-2 align-text-bottom">Exempt Affected Trips</span>
+                                </Label>
+                            </div>
                         </div>
                         <Button
-                            className="cc-btn-primary ml-3 mr-3"
+                            className="cc-btn-primary ml-1 mr-1 mb-2"
                             onClick={ handleCopyDisruption }
                             disabled={
                                 isUpdating
@@ -565,13 +567,13 @@ const DisruptionDetailView = (props) => {
                             Copy
                         </Button>
                         <Button
-                            className="cc-btn-primary ml-3 mr-3"
+                            className="cc-btn-primary ml-1 mr-1 mb-2"
                             onClick={ handleUpdateDisruption }
                             disabled={ isSaveDisabled }>
                             Save Changes
                         </Button>
                         <Button
-                            className="control-messaging-view__stop-groups-btn cc-btn-secondary ml-3"
+                            className="control-messaging-view__stop-groups-btn cc-btn-primary ml-1 mb-2"
                             onClick={ () => setDisruptionsDetailsModalOpen(true) }>
                             Show Summary
                         </Button>
