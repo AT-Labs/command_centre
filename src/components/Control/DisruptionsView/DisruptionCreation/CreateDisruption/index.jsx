@@ -27,7 +27,7 @@ import {
     isDisruptionCancellationModalOpen,
     isDisruptionCreationOpen,
 } from '../../../../../redux/selectors/control/disruptions';
-import { DEFAULT_CAUSE, DEFAULT_IMPACT, STATUSES } from '../../../../../types/disruptions-types';
+import { DEFAULT_CAUSE, DEFAULT_IMPACT, STATUSES, DISRUPTION_TYPE } from '../../../../../types/disruptions-types';
 import { buildSubmitBody, momentFromDateTime, getRecurrenceDates } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
@@ -60,6 +60,7 @@ const INIT_STATE = {
     recurrent: false,
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
+    disruptionType: DISRUPTION_TYPE.ROUTES,
 };
 
 export class CreateDisruption extends React.Component {
@@ -93,6 +94,8 @@ export class CreateDisruption extends React.Component {
         copiedData.startDate = now.isSameOrAfter(copiedData.startTime) ? now.format(DATE_FORMAT) : copiedData.startTime.format(DATE_FORMAT);
         copiedData.startTime = now.isSameOrAfter(copiedData.startTime) ? now.format(TIME_FORMAT) : copiedData.startTime.format(TIME_FORMAT);
 
+        const disruptionType = _.isEmpty(this.props.routes) && !_.isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
+
         this.setState({
             disruptionData: {
                 ...copiedData,
@@ -105,18 +108,21 @@ export class CreateDisruption extends React.Component {
                 }),
                 affectedEntities: [...this.props.routes, ...this.props.stops],
                 status: STATUSES.NOT_STARTED,
+                disruptionType,
             },
         });
     };
 
     setupData = () => {
         const now = moment();
+        const disruptionType = _.isEmpty(this.props.routes) && !_.isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
         this.setState({
             disruptionData: {
                 ...INIT_STATE,
                 affectedEntities: [...this.props.routes, ...this.props.stops],
                 startTime: this.props.isCreateOpen ? now.format(TIME_FORMAT) : INIT_STATE.startTime,
                 startDate: now.format(DATE_FORMAT),
+                disruptionType,
             },
         });
     };

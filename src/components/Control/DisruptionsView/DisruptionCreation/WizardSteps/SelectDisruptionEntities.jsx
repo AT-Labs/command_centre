@@ -16,6 +16,7 @@ import {
     getDisruptionToEdit,
 } from '../../../../../redux/selectors/control/disruptions';
 import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
+import { DISRUPTION_TYPE } from '../../../../../types/disruptions-types';
 import PickList from '../../../../Common/PickList/PickList';
 import {
     deleteAffectedEntities,
@@ -37,6 +38,8 @@ import { getAllStops } from '../../../../../redux/selectors/static/stops';
 import { getStopGroupsIncludingDeleted } from '../../../../../redux/selectors/control/dataManagement/stopGroups';
 import { getStopGroupName } from '../../../../../utils/control/dataManagement';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
+import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
+import ConfirmationModal from '../../../Common/ConfirmationModal/ConfirmationModal';
 
 export const SelectDisruptionEntities = (props) => {
     const { ROUTE, STOP, STOP_GROUP } = SEARCH_RESULT_TYPE;
@@ -58,6 +61,7 @@ export const SelectDisruptionEntities = (props) => {
     const maxNumberOfEntities = 200;
     const [totalEntities, setTotalEntities] = useState(0);
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+    const [isDisruptionTypeAlertModalOpen, setIsDisruptionTypeAlertModalOpen] = useState(false);
 
     const ENTITIES_TYPES = {
         SELECTED_ROUTES: 'selectedRoutes',
@@ -586,14 +590,58 @@ export const SelectDisruptionEntities = (props) => {
         </li>
     )));
 
+    const disruptionTypeParams = {
+        Routes: {
+            label: 'Search routes',
+            placeholder: 'Enter a route',
+            searchCategory: [ROUTE.type],
+        },
+        Stops: {
+            label: 'Search stops',
+            placeholder: 'Enter a stop or stop group',
+            searchCategory: [STOP.type, STOP_GROUP.type],
+        },
+    };
+
+    const toggleDisruptionType = () => {
+        if (props.data.disruptionType === DISRUPTION_TYPE.ROUTES) {
+            props.onDataUpdate('disruptionType', DISRUPTION_TYPE.STOPS);
+        } else {
+            props.onDataUpdate('disruptionType', DISRUPTION_TYPE.ROUTES);
+        }
+    };
+
     return (
         <div className="select_disruption">
+            <RadioButtons
+                formGroupClass="disruption-creation__disruption-type"
+                checkedKey={ props.data.disruptionType === DISRUPTION_TYPE.ROUTES ? '0' : '1' }
+                keyValues={ [{ key: '0', value: DISRUPTION_TYPE.ROUTES }, { key: '1', value: DISRUPTION_TYPE.STOPS }] }
+                disabled={ false }
+                onChange={ () => {
+                    if (selectedEntities.length > 0) {
+                        setIsDisruptionTypeAlertModalOpen(true);
+                    } else {
+                        toggleDisruptionType();
+                    }
+                } }
+            />
+            <ConfirmationModal
+                title="Change Disruption Type"
+                message="By making this change, all routes and stops will be removed. Do you wish to continue?"
+                isOpen={ isDisruptionTypeAlertModalOpen }
+                onClose={ () => setIsDisruptionTypeAlertModalOpen(false) }
+                onAction={ () => {
+                    toggleDisruptionType();
+                    deselectAllEntities();
+                    setIsDisruptionTypeAlertModalOpen(false);
+                } } />
             <PickList
                 isVerticalLayout
                 displayResults={ false }
                 height={ 100 }
-                leftPaneLabel="Search routes, stops, or stop groups"
-                leftPanePlaceholder="Enter a route, stop number, or stop group name"
+                leftPaneLabel={ disruptionTypeParams[props.data.disruptionType].label }
+                leftPanePlaceholder={ disruptionTypeParams[props.data.disruptionType].placeholder }
                 onChange={ selectedItem => onChange(selectedItem) }
                 rightPanelShowSearch={ false }
                 rightPaneLabel="Selected routes and stops:"
@@ -605,7 +653,7 @@ export const SelectDisruptionEntities = (props) => {
                 deselectRoutes={ !areEntitiesSelected }
                 selectedValues={ selectedEntities }
                 isLoading={ props.isLoading }
-                searchInCategory={ [ROUTE.type, STOP.type, STOP_GROUP.type] }
+                searchInCategory={ disruptionTypeParams[props.data.disruptionType].searchCategory }
                 entityToItemTransformers={ entityToItemTransformers }
                 itemToEntityTransformers={ itemToEntityTransformers }
             />
@@ -726,11 +774,13 @@ SelectDisruptionEntities.propTypes = {
     searchResults: PropTypes.object.isRequired,
     stops: PropTypes.object.isRequired,
     stopGroups: PropTypes.object.isRequired,
+    data: PropTypes.object,
 };
 
 SelectDisruptionEntities.defaultProps = {
     isLoading: false,
     isEditMode: false,
+    data: {},
 };
 
 export default connect(state => ({

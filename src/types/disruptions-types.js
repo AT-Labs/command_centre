@@ -138,3 +138,8 @@ export const ACTION_RESULT = {
         resultMessage: ERROR_TYPE.disruptionCreate,
     }),
 };
+
+export const DISRUPTION_TYPE = {
+    ROUTES: 'Routes',
+    STOPS: 'Stops',
+};

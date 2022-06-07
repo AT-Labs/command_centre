@@ -19,6 +19,7 @@ const defaultState = {
     searchResults: {},
     stops: {},
     stopGroups: [],
+    data: { disruptionType: 'Routes' },
 };
 
 const stopGroups = _.keyBy([{
