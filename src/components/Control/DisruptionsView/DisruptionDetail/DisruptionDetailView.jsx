@@ -70,9 +70,12 @@ import { useDisruptionRecurrence } from '../../../../redux/selectors/appSettings
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 import EDIT_TYPE from '../../../../types/edit-types';
 import { getDatePickerOptions } from '../../../../utils/dateUtils';
+import ConfirmationModal from '../../Common/ConfirmationModal/ConfirmationModal';
+import { confirmationModalTypes } from '../types';
 
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
+    const { NONE, EDIT, COPY } = confirmationModalTypes;
 
     const formatEndDateFromEndTime = disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '';
     const fetchEndDate = () => (disruption.recurrent ? fetchEndDateFromRecurrence(disruption.recurrencePattern) : formatEndDateFromEndTime);
@@ -100,6 +103,7 @@ const DisruptionDetailView = (props) => {
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [activePeriods, setActivePeriods] = useState(disruption.activePeriods);
     const [isRecurrenceDirty, setIsRecurrenceDirty] = useState(false);
+    const [isAlertModalOpen, setIsAlertModalOpen] = useState(NONE);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqBy([...affectedRoutes, ...props.routes], route => route.routeId);
@@ -295,12 +299,52 @@ const DisruptionDetailView = (props) => {
         setActivePeriodsModalOpen(true);
     };
 
+    const confirmationModalProps = {
+        [NONE]: {
+            title: 'title',
+            message: 'message',
+            isOpen: false,
+            onClose: () => { setIsAlertModalOpen(NONE); },
+            onAction: () => { setIsAlertModalOpen(NONE); },
+        },
+        [EDIT]: {
+            title: 'Edit disruption',
+            message: 'By confirming this action this disruption will be set as a Stop-based disruption and all routes added previously will be lost.',
+            isOpen: true,
+            onClose: () => { setIsAlertModalOpen(NONE); },
+            onAction: () => {
+                setIsAlertModalOpen(NONE);
+                props.updateAffectedRoutesState([]);
+                editRoutesAndStops();
+            },
+        },
+        [COPY]: {
+            title: 'Copy disruption',
+            message: 'By confirming this action this disruption will be set as a Stop-based disruption and all routes added previously will be lost.',
+            isOpen: true,
+            onClose: () => { setIsAlertModalOpen(NONE); },
+            onAction: () => {
+                setIsAlertModalOpen(NONE);
+                props.updateAffectedRoutesState([]);
+                handleCopyDisruption();
+            },
+        },
+    };
+
+    const activeConfirmationModalProps = confirmationModalProps[isAlertModalOpen];
+
     return (
         <Form className={ props.className }>
             <div className={ `row position-relative ${props.className === 'magnify' ? 'mr-0' : ''}` }>
                 <AffectedEntities
                     editLabel="Edit routes and stops"
-                    editAction={ editRoutesAndStops }
+                    editAction={ () => {
+                        if (!isEmpty(props.stops) && !isEmpty(props.routes)) {
+                            setIsAlertModalOpen(EDIT);
+                        } else {
+                            editRoutesAndStops();
+                        }
+                    } }
                     isEditDisabled={ isRequesting || isLoading || isResolved() }
                     affectedEntities={ disruption.affectedEntities }
                 />
@@ -553,7 +597,13 @@ const DisruptionDetailView = (props) => {
                         </div>
                         <Button
                             className="cc-btn-primary ml-1 mr-1 mb-2"
-                            onClick={ handleCopyDisruption }
+                            onClick={ () => {
+                                if (!isEmpty(props.stops) && !isEmpty(props.routes)) {
+                                    setIsAlertModalOpen(COPY);
+                                } else {
+                                    handleCopyDisruption();
+                                }
+                            } }
                             disabled={
                                 isUpdating
                                 || isSaveDisabled
@@ -591,6 +641,12 @@ const DisruptionDetailView = (props) => {
                 isOpen={ activePeriodsModalOpen }>
                 <ActivePeriods activePeriods={ activePeriods } />
             </CustomMuiDialog>
+            <ConfirmationModal
+                title={ activeConfirmationModalProps.title }
+                message={ activeConfirmationModalProps.message }
+                isOpen={ activeConfirmationModalProps.isOpen }
+                onClose={ activeConfirmationModalProps.onClose }
+                onAction={ activeConfirmationModalProps.onAction } />
         </Form>
     );
 };
