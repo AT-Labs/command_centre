@@ -18,6 +18,14 @@ export const FleetsView = (props) => {
         return '';
     };
 
+    const slfFlag = (value) => {
+        if (value) {
+            const str = value.toString();
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+        return '';
+    };
+
     const FLEETS_COLUMNS = [
         { field: 'type', headerName: 'TYPE', width: 100 },
         { field: 'operator_code', headerName: 'OPERATOR CODE', width: 150 },
@@ -58,19 +66,19 @@ export const FleetsView = (props) => {
         operator_code: fleet.agency.agencyId,
         operator_name: fleet.agency.agencyName,
         depot: fleet.agency.depot.name,
-        rapid_vehicle_number: fleet.id,
+        rapid_vehicle_number: fleet.vehicle || '',
         vehicle_id: fleet.eod.vehicleId,
         fleet_number: fleet.label,
         registration_number: fleet.registration,
         ptom_vehicle_type: fleet.type.subtype,
-        mmsi: fleet.id,
-        callSign: fleet.registration,
+        mmsi: fleet.mmsi || '',
+        callSign: fleet.callsign || '',
         make_model: fleet.type.makeModel,
         seating_capacity: fleet.capacity.seating,
         standing_capacity: fleet.capacity.standing,
         total_capacity: fleet.capacity.total,
         wheel_chair_flag: fleet.attributes.wheelchair,
-        slf_flag: fleet.loweringFloor,
+        slf_flag: slfFlag(fleet.attributes.loweringFloor),
         beId: fleet.eod.beId,
         activated_machineid: fleet.eod.activated.machineId || '',
         activated_actionlist: fleet.eod.activated.actionlist || '',
