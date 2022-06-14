@@ -11,7 +11,7 @@ import './AffectedEntities.scss';
 
 export const AffectedEntities = (props) => {
     const collapseRef = useRef(null);
-    const [collapse, setCollapse] = useState(false);
+    const [collapse, setCollapse] = useState();
     const [collapseInitialHeight, setInitialHeight] = useState(0);
 
     useEffect(() => {
@@ -74,25 +74,29 @@ export const AffectedEntities = (props) => {
     };
 
     return (
-        <section className="disruption__affected-entities">
-            <div className="p-3">
-                <div className="row">
-                    <div className="col-6">
-                        <h3>Affected routes and stops</h3>
-                    </div>
-                    {!props.isEditDisabled && (
-                        <div className="col-6 text-right">
-                            <Button
-                                className="btn cc-btn-link pr-0 font-weight-bold"
-                                onClick={ props.editAction }
-                                disabled={ props.isEditDisabled }>
-                                { props.editLabel }
-                                <MdEdit size={ 20 } color="black" className="ml-1" />
-                            </Button>
+        <section className={ `disruption__affected-entities ${props.className}` }>
+            <div className="p-3 w-100">
+                {props.showHeader && (
+                    <>
+                        <div className="row">
+                            <div className="col-6">
+                                <h3>Affected routes and stops</h3>
+                            </div>
+                            {!props.isEditDisabled && (
+                                <div className="col-6 text-right">
+                                    <Button
+                                        className="btn cc-btn-link pr-0 font-weight-bold"
+                                        onClick={ props.editAction }
+                                        disabled={ props.isEditDisabled }>
+                                        { props.editLabel }
+                                        <MdEdit size={ 20 } color="black" className="ml-1" />
+                                    </Button>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
-                <hr />
+                        <hr />
+                    </>
+                )}
                 <Collapse innerRef={ collapseRef } isOpen={ collapse } className="w-100">
                     <ul className="p-0 m-0">
                         { getIndividualAffectedRoutes() }
@@ -120,12 +124,16 @@ AffectedEntities.propTypes = {
     isEditDisabled: PropTypes.bool,
     affectedEntities: PropTypes.array.isRequired,
     stopGroups: PropTypes.object.isRequired,
+    showHeader: PropTypes.bool,
+    className: PropTypes.string,
 };
 
 AffectedEntities.defaultProps = {
     isEditDisabled: false,
     editLabel: 'Edit',
     editAction: null,
+    showHeader: true,
+    className: '',
 };
 
 export default connect(state => ({

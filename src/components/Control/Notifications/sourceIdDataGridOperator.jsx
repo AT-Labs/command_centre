@@ -19,7 +19,7 @@ function SourceIdInputValue(props) {
     }));
 
     const handleFilterChange = (event) => {
-        applyValue({ ...item, value: { id: event.target.value, source: 'DIS' } });
+        applyValue({ ...item, value: { id: event.target.value, source: 'DISR' } });
     };
 
     return (

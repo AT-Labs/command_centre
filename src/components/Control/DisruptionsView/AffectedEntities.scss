@@ -4,7 +4,6 @@
     background-color: $at-bk-gray;
     background-clip: content-box;
     flex: 0 0 50%;
-    max-width: 50%;
     padding: 0 15px 0 15px;
 
     & hr {
@@ -25,5 +24,15 @@
     & .collapsing {
         height: 17rem !important;
         transition: height .35s ease;
+    }
+
+    & .small {
+        & .collapse:not(.show) {
+            height: 10rem;
+        }
+
+        & .collapsing {
+            height: 10rem !important;
+        }
     }
 }

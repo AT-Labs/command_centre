@@ -13,6 +13,7 @@ import { transformIncidentNo } from '../../../utils/control/disruptions';
 import { NOTIFICATION_CONDITION, NOTIFICATION_STATUS } from '../../../types/notification-types';
 import { sourceIdDataGridOperator } from './sourceIdDataGridOperator';
 import { dateTimeFormat } from '../../../utils/dateUtils';
+import { getStopGroups } from '../../../redux/actions/control/dataManagement';
 
 import './NotificationsView.scss';
 
@@ -95,6 +96,7 @@ export const NotificationsView = (props) => {
     };
 
     useEffect(() => {
+        props.getStopGroups();
         getNotifications();
     }, [], () => { if (loadingTimer) clearTimeout(loadingTimer); });
 
@@ -108,7 +110,7 @@ export const NotificationsView = (props) => {
     return (
         <div className="control-notifications-view">
             <div className="mb-3">
-                <h1>Notifications</h1>
+                <h1>Notifications - Service Alerts</h1>
             </div>
             <CustomDataGrid
                 columns={ GRID_COLUMNS }
@@ -120,7 +122,7 @@ export const NotificationsView = (props) => {
                 rowCount={ props.rowCount }
                 serverSideData
                 getRowClassName={ setExpiredClassName }
-                detailPanelHeight={ 400 }
+                detailPanelHeight={ 450 }
             />
         </div>
     );
@@ -132,6 +134,7 @@ NotificationsView.propTypes = {
     filterNotifications: PropTypes.func.isRequired,
     notifications: PropTypes.array.isRequired,
     rowCount: PropTypes.number.isRequired,
+    getStopGroups: PropTypes.func.isRequired,
 };
 
 NotificationsView.defaultProps = {
@@ -146,5 +149,6 @@ export default connect(
     {
         updateNotificationsDatagridConfig,
         filterNotifications,
+        getStopGroups,
     },
 )(NotificationsView);

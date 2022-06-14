@@ -11,7 +11,12 @@ export const INIT_STATE = {
         sortModel: [],
         density: 'standard',
         routeSelection: '',
-        filterModel: { items: [], linkOperator: 'and' },
+        filterModel: { items: [{
+            columnField: 'status',
+            operatorValue: 'is',
+            value: 'in-progress',
+        }],
+        linkOperator: 'and' },
         pinnedColumns: { right: ['action'] },
     },
     totalFilterCount: 0,
