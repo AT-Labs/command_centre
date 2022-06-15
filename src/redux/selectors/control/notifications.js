@@ -8,5 +8,6 @@ export const getAllNotifications = createSelector(getNotificationsState, notific
 export const getNotificationsDatagridConfig = createSelector(getNotificationsState, notificationsState => _.result(notificationsState, 'datagridConfig'));
 export const getNotificationsFilterCount = createSelector(getNotificationsState, notificationsState => _.result(notificationsState, 'totalFilterCount'));
 export const getLastFilterRequest = createSelector(getNotificationsState, notificationsState => _.result(notificationsState, 'lastFilterRequest'));
+export const getNotificationAction = createSelector(getNotificationsState, ({ action }) => action);
 
 export const isNotificationUpdateAllowed = notification => !!_.find(_.result(notification, '_links.permissions'), { _rel: USER_PERMISSIONS.NOTIFICATIONS.EDIT_NOTIFICATION });

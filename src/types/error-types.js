@@ -40,4 +40,7 @@ export default {
     tripsFetch: false,
     fetchTripReplayEnabled: false,
     fetchTripReplayMessage: 'Failed to load trip replay, please try again',
+    notificationUpdate: (disruptionId, version) => `Failed to update notification for Disruption ${disruptionId} version ${version}`,
+    notificationPublish: (disruptionId, version) => `Failed to publish notification for Disruption ${disruptionId} version ${version}`,
+    notificationDelete: (disruptionId, version) => `Failed to delete notification for Disruption ${disruptionId} version ${version}`,
 };

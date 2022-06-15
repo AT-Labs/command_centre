@@ -22,6 +22,12 @@ export const INIT_STATE = {
     totalFilterCount: 0,
     lastFilterRequest: null,
     permissions: [],
+    action: {
+        resultNotificationId: null,
+        isRequesting: false,
+        resultStatus: null,
+        resultMessage: null,
+    },
 };
 
 const handleNotificationsUpdate = (state, { payload: { notifications } }) => ({ ...state, notifications });
@@ -34,10 +40,31 @@ const handleNotificationsLastFilterUpdate = (state, { payload: { lastFilterReque
 
 const handleUpdateNotificationsPermissions = (state, { payload: { permissions } }) => ({ ...state, permissions });
 
+const handleNotificationActionRequestingUpdate = (state, { payload: { isRequesting, resultNotificationId = state.action.resultNotificationId } }) => ({
+    ...state,
+    action: {
+        ...state.action,
+        isRequesting,
+        resultNotificationId,
+    },
+});
+
+const handleNotificationActionResultUpdate = (state, { payload: { resultNotificationId, resultMessage, resultStatus } }) => ({
+    ...state,
+    action: {
+        ...state.action,
+        resultMessage,
+        resultStatus,
+        resultNotificationId,
+    },
+});
+
 export default handleActions({
     [ACTION_TYPE.FETCH_CONTROL_NOTIFICATIONS]: handleNotificationsUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_NOTIFICATIONS_DATAGRID_CONFIG]: handleDatagridConfig,
     [ACTION_TYPE.UPDATE_CONTROL_NOTIFICATIONS_FILTER_COUNT]: handleNotificationsFilterCountUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_NOTIFICATIONS_LAST_FILTER]: handleNotificationsLastFilterUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_NOTIFICATIONS_PERMISSIONS]: handleUpdateNotificationsPermissions,
+    [ACTION_TYPE.UPDATE_CONTROL_NOTIFICATION_ACTION_REQUESTING]: handleNotificationActionRequestingUpdate,
+    [ACTION_TYPE.UPDATE_CONTROL_NOTIFICATION_ACTION_RESULT]: handleNotificationActionResultUpdate,
 }, INIT_STATE);

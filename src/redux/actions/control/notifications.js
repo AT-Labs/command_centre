@@ -4,6 +4,8 @@ import ACTION_TYPE from '../../action-types';
 import { setBannerError } from '../activity';
 import * as notificationsApi from '../../../utils/transmitters/notifications-api';
 import { getLastFilterRequest, getNotificationsDatagridConfig } from '../../selectors/control/notifications';
+import { ACTION_RESULT } from '../../../types/notification-types';
+import { transformIncidentNo } from '../../../utils/control/disruptions';
 
 const loadNotifications = notifications => ({
     type: ACTION_TYPE.FETCH_CONTROL_NOTIFICATIONS,
@@ -120,4 +122,74 @@ export const updateNotificationsDatagridConfig = dataGridConfig => (dispatch) =>
         payload: dataGridConfig,
     });
     dispatch(filterNotifications());
+};
+
+const updateRequestingNotificationState = (isRequesting, resultNotificationId) => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_NOTIFICATION_ACTION_REQUESTING,
+    payload: {
+        isRequesting,
+        resultNotificationId,
+    },
+});
+
+export const updateRequestingNotificationResult = (resultNotificationId, { resultStatus, resultMessage }) => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_NOTIFICATION_ACTION_RESULT,
+    payload: {
+        resultNotificationId,
+        resultStatus,
+        resultMessage,
+    },
+});
+
+export const clearNotificationActionResult = () => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_NOTIFICATION_ACTION_RESULT,
+    payload: {
+        resultNotificationId: null,
+        resultStatus: null,
+        resultMessage: null,
+    },
+});
+
+const notificationApiActions = (notification, apiMethod, successResult, errorResult) => async (dispatch) => {
+    const id = notification.notificationContentId;
+    const incidentNo = transformIncidentNo(notification.source.identifier);
+    dispatch(updateRequestingNotificationState(true, id));
+
+    try {
+        await apiMethod(id);
+        dispatch(updateRequestingNotificationResult(id, successResult(incidentNo, notification.source.version)));
+        dispatch(filterNotifications(true));
+    } catch (error) {
+        dispatch(updateRequestingNotificationResult(id, errorResult(incidentNo, notification.source.version)));
+    } finally {
+        dispatch(updateRequestingNotificationState(false, id));
+    }
+};
+
+export const updateNotification = notificationUpdate => (dispatch) => {
+    const { notification, name, content } = notificationUpdate;
+    dispatch(notificationApiActions(
+        notification,
+        id => notificationsApi.updateNotification(id, name, content),
+        ACTION_RESULT.UPDATE_SUCCESS,
+        ACTION_RESULT.UPDATE_ERROR,
+    ));
+};
+
+export const deleteNotification = notification => (dispatch) => {
+    dispatch(notificationApiActions(
+        notification,
+        id => notificationsApi.deleteNotification(id),
+        ACTION_RESULT.DELETE_SUCCESS,
+        ACTION_RESULT.DELETE_ERROR,
+    ));
+};
+
+export const publishNotification = notification => (dispatch) => {
+    dispatch(notificationApiActions(
+        notification,
+        id => notificationsApi.publishNotification(id),
+        ACTION_RESULT.PUBLISH_SUCCESS,
+        ACTION_RESULT.PUBLISH_ERROR,
+    ));
 };

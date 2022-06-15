@@ -74,7 +74,7 @@ export const AffectedEntities = (props) => {
     };
 
     return (
-        <section className={ `disruption__affected-entities ${props.className}` }>
+        <section className={ `disruption__affected-entities ${props.heightSmall ? 'small' : ''} ${props.className}` }>
             <div className="p-3 w-100">
                 {props.showHeader && (
                     <>
@@ -126,6 +126,7 @@ AffectedEntities.propTypes = {
     stopGroups: PropTypes.object.isRequired,
     showHeader: PropTypes.bool,
     className: PropTypes.string,
+    heightSmall: PropTypes.bool,
 };
 
 AffectedEntities.defaultProps = {
@@ -134,6 +135,7 @@ AffectedEntities.defaultProps = {
     editAction: null,
     showHeader: true,
     className: '',
+    heightSmall: false,
 };
 
 export default connect(state => ({
