@@ -101,6 +101,7 @@ class Map extends React.Component {
                             shapes={ this.props.shapes }
                             routeColors={ this.props.routeColors } />
                         <StopsLayer
+                            disruptionType={ this.props.disruptionType }
                             stops={ this.props.stops } />
                     </LeafletMap>
                 </LeafletProvider>
@@ -117,6 +118,7 @@ Map.propTypes = {
     shapes: PropTypes.array,
     routeColors: PropTypes.array,
     stops: PropTypes.array,
+    disruptionType: PropTypes.string.isRequired,
 };
 
 Map.defaultProps = {

@@ -4,12 +4,14 @@ import PropTypes from 'prop-types';
 import { CircleMarker, FeatureGroup, LeafletConsumer, Tooltip } from 'react-leaflet';
 import { filter, uniqBy } from 'lodash-es';
 import IconMarker from '../../../../Common/IconMarker/IconMarker';
+import AlertMessage from '../../../../Common/AlertMessage/AlertMessage';
 import { getStopDetail } from '../../../../../redux/selectors/realtime/detail';
 import { getChildStops, getStopLatLng } from '../../../../../redux/selectors/static/stops';
 import { getAffectedStops, getDisruptionStepCreation } from '../../../../../redux/selectors/control/disruptions';
 import { updateAffectedStopsState } from '../../../../../redux/actions/control/disruptions';
 import { TRAIN_TYPE_ID } from '../../../../../types/vehicle-types';
 import { toCamelCaseKeys } from '../../../../../utils/control/disruptions';
+import { DISRUPTION_TYPE, ALERT_TYPES } from '../../../../../types/disruptions-types';
 
 const FOCUS_ZOOM = 16;
 const maximumStopsToDisplay = 200;
@@ -17,6 +19,7 @@ const maximumStopsToDisplay = 200;
 const StopsLayer = (props) => {
     const [zoomLevel, setZoomLevel] = useState(props.leafletMap.getZoom());
     const [bounds, setBounds] = useState(props.leafletMap.getBounds());
+    const [showAlert, setShowAlert] = useState(false);
 
     useEffect(() => {
         props.leafletMap.on('zoomend', ({ sourceTarget }) => {
@@ -41,6 +44,10 @@ const StopsLayer = (props) => {
     const getDisplayStops = () => (props.stops.length > 0 ? props.stops : props.affectedStops).slice(0, maximumStopsToDisplay);
 
     const handleStopOnClick = (stop) => {
+        if (props.disruptionType === DISRUPTION_TYPE.ROUTES) {
+            setShowAlert(true);
+            return;
+        }
         props.updateAffectedStopsState([...props.affectedStops, toCamelCaseKeys(stop)]);
     };
 
@@ -86,6 +93,15 @@ const StopsLayer = (props) => {
                             ) : null)) }
                     </FeatureGroup>
                 )}
+            {showAlert && (
+                <AlertMessage
+                    autoDismiss
+                    message={ {
+                        ...ALERT_TYPES.STOP_SELECTION_DISABLED_ERROR(),
+                    } }
+                    onClose={ () => setShowAlert(false) }
+                />
+            )}
         </>
     );
 };
@@ -98,6 +114,7 @@ StopsLayer.propTypes = {
     updateAffectedStopsState: PropTypes.func.isRequired,
     currentStep: PropTypes.number.isRequired,
     stops: PropTypes.array,
+    disruptionType: PropTypes.string.isRequired,
 };
 
 StopsLayer.defaultProps = {

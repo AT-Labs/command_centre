@@ -1,4 +1,5 @@
 import ERROR_TYPE from './error-types';
+import { ALERT_ERROR_MESSAGE_TYPE } from './message-types';
 
 export const STATUSES = {
     NOT_STARTED: 'not-started',
@@ -142,4 +143,11 @@ export const ACTION_RESULT = {
 export const DISRUPTION_TYPE = {
     ROUTES: 'Routes',
     STOPS: 'Stops',
+};
+
+export const ALERT_TYPES = {
+    STOP_SELECTION_DISABLED_ERROR: () => ({
+        type: ALERT_ERROR_MESSAGE_TYPE,
+        body: 'It is not possible to add stops to a route-based disruption via the map.',
+    }),
 };

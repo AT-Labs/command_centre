@@ -250,7 +250,8 @@ export class CreateDisruption extends React.Component {
                     shouldOffsetForSidePanel
                     shapes={ this.props.shapes }
                     stops={ _.uniqBy(this.props.stops, stop => stop.stopCode) }
-                    routeColors={ this.props.routeColors } />
+                    routeColors={ this.props.routeColors }
+                    disruptionType={ disruptionData.disruptionType } />
                 <Button
                     className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
                     onClick={ () => this.toggleModal('Cancellation', true) }>
