@@ -6,7 +6,7 @@ export const NOTIFICATION_CONDITION = {
 };
 
 export const NOTIFICATION_STATUS = {
-    cancelled: 'cancelled',
+    overwritten: 'overwritten',
     inProgress: 'in-progress',
 };
 
