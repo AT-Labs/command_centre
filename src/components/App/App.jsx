@@ -40,7 +40,7 @@ import { getApplicationSettings } from '../../redux/actions/appSettings';
 import { useNotifications } from '../../redux/selectors/appSettings';
 import 'flatpickr/dist/flatpickr.css';
 
-function App(props) {
+export function App(props) {
     const mainViews = {
         [VIEW_TYPE.MAIN.REAL_TIME]: <RealTimeView />,
         [VIEW_TYPE.MAIN.CONTROL]: <ControlView />,

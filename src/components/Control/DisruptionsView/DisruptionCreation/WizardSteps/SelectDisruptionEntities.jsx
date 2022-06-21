@@ -147,7 +147,6 @@ export const SelectDisruptionEntities = (props) => {
 
         props.onDataUpdate('affectedEntities', [...allSingleEntities, ...stopGroupStops]);
         setTotalEntities(allSingleEntities.length + stopGroupStops.length);
-
         updateSelectedEntities([...allSingleEntities, ...stopGroupEntities]);
     }, [props.affectedRoutes, props.affectedStops]);
 
@@ -484,7 +483,6 @@ export const SelectDisruptionEntities = (props) => {
             }
 
             setIsLoadingRoutesByStop(true);
-
             setLoadedRoutesByStop(uniq([...loadedRoutesByStop, stop]));
             return [(<li key="-1"><Loader className="loader-disruptions loader-disruptions-list" /></li>)];
         }

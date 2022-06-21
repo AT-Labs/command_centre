@@ -31,6 +31,27 @@ To run a single set of jest tests use the 'describe' string, to run a single tes
 npm run jest -- -t '<describeString>' | '<itString>'
 ```
 
+## Testing functional component hooks
+
+It doesn’t trigger the hooks when testing with enzyme.shallow, we need mock up the hooks.
+
+For useEffect and useLayoutEffect, could use the library `jest-react-hooks-shallow`, it's already configured for jest, to enable the useEffect, could wrap the test cases into withHooks
+```
+it(‘Description, () => {
+  withHooks(() => {
+    // test statements
+  });
+});
+```
+
+For other hooks, could mock the hook by jest:
+```
+jest.mock('react', () => ({
+  ...jest.requireActual('react'),
+  useRef: jest.fn(),
+}));
+```
+
 ## Integration test
 
 We use [Cypress](https://www.cypress.io/) to implement the integration test. Run the test environment with the following commands.
