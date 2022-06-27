@@ -72,9 +72,8 @@ export const toCamelCaseKeys = entities => transformKeysToCamelCase(entities);
 
 export const transformIncidentNo = (disruptionId) => {
     if (!disruptionId) return null;
-    const pad = '00000';
-    const paddedId = (pad + disruptionId).slice(-pad.length);
-    return `DISR${paddedId}`;
+
+    return `DISR${disruptionId.toString().padStart(6, '0')}`;
 };
 
 export const getRecurrenceDates = (startDate, startTime, endDate) => {

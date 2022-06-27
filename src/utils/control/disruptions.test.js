@@ -70,9 +70,9 @@ describe('transformIncidentNo', () => {
 
     it('Should return a correct transformed incident No.', () => {
         const fakeIncident01 = 9384;
-        const fakeIncident02 = 93822;
-        expect(transformIncidentNo(fakeIncident01)).to.equal('DISR09384');
-        expect(transformIncidentNo(fakeIncident02)).to.equal('DISR93822');
+        const fakeIncident02 = 193822;
+        expect(transformIncidentNo(fakeIncident01)).to.equal('DISR009384');
+        expect(transformIncidentNo(fakeIncident02)).to.equal('DISR193822');
     });
 });
 
