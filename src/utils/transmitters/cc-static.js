@@ -5,6 +5,11 @@ const CC_STATIC_QUERY_URL = process.env.REACT_APP_CC_STATIC_QUERY_URL;
 const GTFS_STATIC_QUERY_URL = process.env.REACT_APP_GTFS_STATIC_QUERY_URL;
 const REALTIME_HEALTH_API = process.env.REACT_APP_REALTIME_HEALTH_API;
 
+export const getStopsByRoute = routeId => fetch(
+    `${CC_STATIC_QUERY_URL}/gtfs/route/${routeId}/stops`,
+    { method: 'GET' },
+).then(response => jsonResponseHandling(response));
+
 export const getRoutesByStop = stopCode => fetch(
     `${CC_STATIC_QUERY_URL}/shapes?stop_code=${stopCode}`,
     { method: 'GET' },

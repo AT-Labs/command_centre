@@ -9,6 +9,8 @@ export const getDisruptionsState = state => result(state, 'control.disruptions')
 export const getAllDisruptions = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'disruptions'));
 export const getDisruptionsPermissions = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'permissions'));
 export const getDisruptionsLoadingState = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'isLoading'));
+export const getDisruptionsLoadingStopsByRouteState = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'isLoadingStopsByRoute'));
+export const getDisruptionsLoadingRoutesByStopState = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'isLoadingRoutesByStop'));
 
 export const getSelectedEntityFilter = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'filters.selectedEntity'));
 export const getSelectedStatusFilter = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'filters.selectedStatus'));
@@ -33,8 +35,10 @@ export const getDisruptionActionResult = createSelector(getDisruptionAction, act
 export const getDisruptionStepCreation = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'activeStep'));
 
 export const getCachedShapes = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'cachedShapes'));
+export const getCachedRoutesToStops = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'cachedRoutesToStops'));
 export const getCachedStopsToRoutes = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'cachedStopsToRoutes'));
 
+export const getStopsByRoute = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'stopsByRoute'));
 export const getRoutesByStop = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'routesByStop'));
 export const isEditEnabled = createSelector(getDisruptionsState, disruptionsState => disruptionsState.editMode === EDIT_TYPE.EDIT);
 export const getEditMode = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'editMode'));

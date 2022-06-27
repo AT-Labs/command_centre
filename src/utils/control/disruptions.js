@@ -54,7 +54,20 @@ export const momentFromDateTime = (date, time) => {
 export const buildSubmitBody = (disruption, routes, stops) => {
     const modes = [...routes.map(route => VEHICLE_TYPES[route.routeType].type),
         ...stops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType].type)];
-    const routesToRequest = routes.map(({ routeId, routeShortName, routeType }) => ({ routeId, routeShortName, routeType }));
+    const routesToRequest = routes.map(({ routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon }) => ({
+        routeId,
+        routeShortName,
+        routeType,
+        type,
+        ...(stopCode !== undefined && {
+            directionId,
+            stopId,
+            stopCode,
+            stopName,
+            stopLat,
+            stopLon,
+        }),
+    }));
     const stopsToRequest = stops.map(entity => omit(entity, ['shapeWkt']));
     return {
         ...disruption,

@@ -10,7 +10,9 @@ import { EntityCheckbox } from './EntityCheckbox';
 import {
     getAffectedRoutes,
     getAffectedStops,
-    getDisruptionsLoadingState,
+    getDisruptionsLoadingStopsByRouteState,
+    getDisruptionsLoadingRoutesByStopState,
+    getStopsByRoute as findStopsByRoute,
     getRoutesByStop as findRoutesByStop,
     isEditEnabled,
     getDisruptionToEdit,
@@ -21,6 +23,7 @@ import PickList from '../../../../Common/PickList/PickList';
 import {
     deleteAffectedEntities,
     updateCurrentStep,
+    getStopsByRoute,
     getRoutesByStop,
     updateAffectedStopsState,
     getRoutesByShortName,
@@ -40,6 +43,7 @@ import { getStopGroupName } from '../../../../../utils/control/dataManagement';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import ConfirmationModal from '../../../Common/ConfirmationModal/ConfirmationModal';
+import { DIRECTIONS } from '../../types';
 
 export const SelectDisruptionEntities = (props) => {
     const { ROUTE, STOP, STOP_GROUP } = SEARCH_RESULT_TYPE;
@@ -48,11 +52,15 @@ export const SelectDisruptionEntities = (props) => {
     const [areEntitiesSelected, setAreEntitiesSelected] = useState(false);
     const [selectedEntities, setSelectedEntities] = useState([]);
     const showFooter = () => areEntitiesSelected || selectedEntities.length > 0;
-    const isButtonDisabled = () => !showFooter() || props.isLoading;
+    const isButtonDisabled = () => !showFooter() || props.isLoadingStopsByRoute || props.isLoadingRoutesByStop;
+    const [expandedRoutes, setExpandedRoutes] = useState({});
     const [expandedStops, setExpandedStops] = useState({});
     const [expandedGroups, setExpandedGroups] = useState({});
+    const [expandedRouteDirections, setExpandedRouteDirections] = useState({});
     const [editedRoutes, setEditedRoutes] = useState([]);
+    const [loadedStopsByRoute, setLoadedStopsByRoute] = useState([]);
     const [loadedRoutesByStop, setLoadedRoutesByStop] = useState([]);
+    const [isLoadingStopsByRoute, setIsLoadingStopsByRoute] = useState(false);
     const [isLoadingRoutesByStop, setIsLoadingRoutesByStop] = useState(false);
     const [stopCurrentlySearchingFor, setStopCurrentlySearchingFor] = useState(null);
 
@@ -105,6 +113,8 @@ export const SelectDisruptionEntities = (props) => {
         return [...routesModified, ...stopsModified, ...stopGroupsModified];
     };
 
+    const filterOnlyRouteParams = route => pick(route, ['routeId', 'routeShortName', 'routeType', 'routeColor', 'shapeWkt', 'agencyId', 'agencyName',
+        'text', 'category', 'icon', 'valueKey', 'labelKey', 'type']);
     const filterOnlyStopParams = stop => pick(stop, ['stopId', 'stopName', 'stopCode', 'locationType', 'stopLat', 'stopLon', 'parentStation',
         'platformCode', 'text', 'category', 'icon', 'valueKey', 'labelKey', 'type', 'groupId']);
 
@@ -157,6 +167,16 @@ export const SelectDisruptionEntities = (props) => {
         }
     }, []);
 
+    // loadedStopsByRoute are updated when a route is expanded - this triggers a JIT fetch of all stops for the routes
+    useEffect(() => {
+        props.getStopsByRoute(loadedStopsByRoute);
+    }, [loadedStopsByRoute]);
+
+    // after getStopsByRoute has completed and findStopsByRoute has been updated ensure loading render is turned off
+    useEffect(() => {
+        setIsLoadingStopsByRoute(false);
+    }, [props.findStopsByRoute]);
+
     // loadedRoutesByStop are updated when a stop is expanded - this triggers a JIT fetch of all routes for the stops
     useEffect(() => {
         props.getRoutesByStop(loadedRoutesByStop);
@@ -195,6 +215,7 @@ export const SelectDisruptionEntities = (props) => {
     const deselectAllEntities = () => {
         setAreEntitiesSelected(false);
         setSelectedEntities([]);
+        setLoadedStopsByRoute([]);
         setLoadedRoutesByStop([]);
         props.deleteAffectedEntities();
     };
@@ -343,12 +364,20 @@ export const SelectDisruptionEntities = (props) => {
             currentItems[itemIdToToggle] = true;
             setExpandedItems(currentItems);
         } else {
-            setExpandedItems(delete currentItems[itemIdToToggle]);
+            delete currentItems[itemIdToToggle];
+            setExpandedItems(currentItems);
         }
     };
 
+    const toggleExpandedRoute = route => toggleExpandedItem(route.routeId, expandedRoutes, setExpandedRoutes);
     const toggleExpandedStop = stop => toggleExpandedItem(stop.stopCode, expandedStops, setExpandedStops);
     const toggleExpandedGroup = group => toggleExpandedItem(group.groupId, expandedGroups, setExpandedGroups);
+    const toggleExpandedRouteDirection = (route, direction) => toggleExpandedItem(`${route.routeId}-${direction}`, expandedRouteDirections, setExpandedRouteDirections);
+
+    const isRouteActive = route => !!expandedRoutes[route.routeId];
+    const isStopActive = stop => !!expandedStops[stop.stopCode];
+    const isGroupActive = group => !!expandedGroups[group.groupId];
+    const isRouteDirectionActive = (route, direction) => !!expandedRouteDirections[`${route.routeId}-${direction}`];
 
     const entityToItemTransformers = {
         [ROUTE.type]: entity => ({
@@ -415,7 +444,39 @@ export const SelectDisruptionEntities = (props) => {
         }),
     };
 
+    const createStopWithRoute = (stop, route) => ({ ...route, ...stop });
     const createRouteWithStop = (stop, route) => ({ ...stop, ...route });
+
+    const toggleStopsByRoute = (route, stop, isChecked) => {
+        let updatedRoutes = props.affectedRoutes;
+        const routeList = updatedRoutes.filter(updatedRoute => updatedRoute.routeId === route.routeId);
+
+        if (isChecked) {
+            // if current route has no stop then use this else create new
+            if (routeList.length === 1 && routeList[0].stopCode === undefined) {
+                const stopByRoute = createStopWithRoute(stop, route);
+                updatedRoutes = updatedRoutes.filter(updatedRoute => updatedRoute.routeId !== route.routeId);
+                updatedRoutes = [...updatedRoutes, stopByRoute];
+            } else {
+                updatedRoutes = [...updatedRoutes, createStopWithRoute(stop, route)];
+            }
+        } else if (routeList.length === 1) {
+            // remove stop info if only one route
+            updatedRoutes = updatedRoutes.map((mappedRoute) => {
+                if (mappedRoute.routeId === route.routeId) {
+                    return filterOnlyRouteParams(mappedRoute);
+                }
+                return mappedRoute;
+            });
+        } else {
+            const routeToRemoveIdx = updatedRoutes.findIndex(updatedRoute => updatedRoute.stopCode === stop.stopCode && updatedRoute.routeId === route.routeId);
+
+            if (routeToRemoveIdx >= 0) {
+                updatedRoutes.splice(routeToRemoveIdx, 1);
+            }
+        }
+        props.updateAffectedRoutesState([...updatedRoutes]);
+    };
 
     const toggleRoutesByStop = (stop, route, isChecked) => {
         let updatedStops = affectedSingleStops;
@@ -449,6 +510,27 @@ export const SelectDisruptionEntities = (props) => {
         saveStopsState([...flattenStopGroups(affectedStopGroups), ...updatedStops]);
     };
 
+    const toggleAllStopsByRouteDirection = (route, direction, stopsByRouteDirection, isChecked) => {
+        let updatedRoutes = props.affectedRoutes;
+        const routeList = updatedRoutes.filter(updatedRoute => updatedRoute.routeId === route.routeId);
+        const routeWithoutStop = filterOnlyRouteParams(route);
+
+        if (isChecked) {
+            const uncheckedStops = stopsByRouteDirection.filter(stop => `${stop.directionId}` === `${direction}` && !routeList.some(routeItem => routeItem.stopCode === stop.stopCode));
+            if (!isEmpty(uncheckedStops)) {
+                const stopsToAdd = uncheckedStops.map(stop => createStopWithRoute(routeWithoutStop, stop));
+                updatedRoutes = [...updatedRoutes, ...stopsToAdd];
+            }
+        } else {
+            updatedRoutes = updatedRoutes.filter(updatedRoute => updatedRoute.routeId !== route.routeId || `${updatedRoute.directionId}` !== `${direction}`);
+
+            // add back single route without stop info
+            updatedRoutes = [...updatedRoutes, routeWithoutStop];
+        }
+
+        props.updateAffectedRoutesState(updatedRoutes);
+    };
+
     const toggleAllRoutesByStop = (stop, routesByStop, isChecked) => {
         let updatedStops = props.affectedStops;
         const stopList = updatedStops.filter(updatedStop => updatedStop.stopCode === stop.stopCode);
@@ -468,6 +550,104 @@ export const SelectDisruptionEntities = (props) => {
         }
 
         saveStopsState(sortBy(updatedStops, sortedStop => sortedStop.stopCode));
+    };
+
+    const renderStopsCheckboxByRouteDirection = (route, direction) => {
+        const stopsByRoute = props.findStopsByRoute[route.routeId];
+        const stopsByRouteDirection = stopsByRoute.filter(stop => `${stop.directionId}` === `${direction}`);
+
+        const allSelected = stopsByRouteDirection.every(stop => props.affectedRoutes.some(routes => routes.stopCode === stop.stopCode
+            && routes.routeId === route.routeId));
+
+        let stopsByRouteDirectionHTML = stopsByRouteDirection.map(stop => (
+            <li key={ `${route.routeId}-${stop.stopCode}-${direction}` } className="select_entities pb-2">
+                <EntityCheckbox
+                    id={ `stopByRoute-${route.routeId}-${stop.stopCode}-${direction}` }
+                    checked={ props.affectedRoutes.some(affectedRoute => (
+                        affectedRoute.routeId === route.routeId && affectedRoute.stopCode === stop.stopCode)) }
+                    onChange={ e => toggleStopsByRoute(route, stop, e.target.checked) }
+                    label={ `${stop.stopCode} - ${stop.stopName}` }
+                />
+            </li>
+        ));
+
+        if (stopsByRouteDirection.length > 1) {
+            stopsByRouteDirectionHTML = [
+                (
+                    <li key="-1" className="select_entities pb-2">
+                        <EntityCheckbox
+                            id={ `selectAll-${route.routeId}` }
+                            checked={ allSelected }
+                            onChange={ e => toggleAllStopsByRouteDirection(route, direction, stopsByRouteDirection, e.target.checked) }
+                            label="Select All"
+                        />
+                    </li>
+                ),
+                ...stopsByRouteDirectionHTML,
+            ];
+        }
+
+        return stopsByRouteDirectionHTML;
+    };
+
+    const renderStopsByRouteDirection = (route, direction) => {
+        const directionText = DIRECTIONS[direction];
+
+        return (
+            <Expandable
+                id={ `${route.routeId}-${direction}` }
+                key={ `${route.routeId}-${direction}` }
+                isActive={ isRouteDirectionActive(route, direction) }
+                onToggle={ () => toggleExpandedRouteDirection(route, direction) }
+                className="border-0">
+                <ExpandableSummary
+                    expandClassName="selection-item-header card-header d-inline-flex w-100 border-0"
+                    displayToggleButton={ false }>
+                    <div>
+                        <Button
+                            className="btn cc-btn-link pt-0 pl-0"
+                            onClick={ () => toggleExpandedRouteDirection(route, direction) }>
+                            { isRouteDirectionActive(route, direction)
+                                ? <IoIosArrowUp className="text-info" size={ 20 } />
+                                : <IoIosArrowDown className="text-info" size={ 20 } /> }
+                        </Button>
+                    </div>
+                    <div className="picklist__list-btn w-100 border-0 rounded-0 text-left font-weight-normal">
+                        { `Direction: ${directionText}` }
+                    </div>
+                </ExpandableSummary>
+                <ExpandableContent extendClassName="bg-white border-0">
+                    {isRouteDirectionActive(route, direction) && (
+                        <ul className="selection-item-body card-body bg-white pb-0">
+                            { renderStopsCheckboxByRouteDirection(route, direction) }
+                        </ul>
+                    )}
+                </ExpandableContent>
+            </Expandable>
+        );
+    };
+
+    const renderStopsByRoute = (route) => {
+        const stopsByRoute = props.findStopsByRoute[route.routeId];
+
+        if (isEmpty(stopsByRoute)) {
+            if (isLoadingStopsByRoute) {
+                return [(<li key="-1"><Loader className="loader-disruptions loader-disruptions-list" /></li>)];
+            }
+
+            if (loadedStopsByRoute.findIndex(loadedRoute => loadedRoute.routeId === route.routeId) >= 0) {
+                return [(<li key="-1"><div>Stops not found</div></li>)];
+            }
+
+            setIsLoadingStopsByRoute(true);
+
+            setLoadedStopsByRoute(uniq([...loadedStopsByRoute, route]));
+            return [(<li key="-1"><Loader className="loader-disruptions loader-disruptions-list" /></li>)];
+        }
+
+        return Object.keys(DIRECTIONS)
+            .filter(direction => stopsByRoute.some(stop => `${stop.directionId}` === `${direction}`))
+            .map(direction => renderStopsByRouteDirection(route, direction));
     };
 
     const renderRoutesByStop = (stop) => {
@@ -535,9 +715,6 @@ export const SelectDisruptionEntities = (props) => {
         }
         return selectedText;
     };
-
-    const isStopActive = stop => !!expandedStops[stop.stopCode];
-    const isGroupActive = group => !!expandedGroups[group.groupId];
 
     const renderStopGroupStops = stops => stops.map(stop => (
         <li key={ `${stop.groupId}-${stop.stopCode}` } className="select_entities pb-2">
@@ -612,6 +789,7 @@ export const SelectDisruptionEntities = (props) => {
     return (
         <div className="select_disruption">
             <RadioButtons
+                title=""
                 formGroupClass="disruption-creation__disruption-type"
                 checkedKey={ props.data.disruptionType === DISRUPTION_TYPE.ROUTES ? '0' : '1' }
                 keyValues={ [{ key: '0', value: DISRUPTION_TYPE.ROUTES }, { key: '1', value: DISRUPTION_TYPE.STOPS }] }
@@ -650,7 +828,7 @@ export const SelectDisruptionEntities = (props) => {
                 secondPaneHeight="auto"
                 deselectRoutes={ !areEntitiesSelected }
                 selectedValues={ selectedEntities }
-                isLoading={ props.isLoading }
+                isLoading={ props.isLoadingStopsByRoute || props.isLoadingRoutesByStop }
                 searchInCategory={ disruptionTypeParams[props.data.disruptionType].searchCategory }
                 entityToItemTransformers={ entityToItemTransformers }
                 itemToEntityTransformers={ itemToEntityTransformers }
@@ -663,18 +841,40 @@ export const SelectDisruptionEntities = (props) => {
             <div className="selection-container h-100">
                 <ul className="p-0">
                     {!isEmpty(props.affectedRoutes) && (
-                        props.affectedRoutes.map(route => (
+                        uniqBy(props.affectedRoutes, route => route.routeId).map(route => (
                             <li className="selection-item border-0 card" key={ route.routeId }>
-                                <div className="selection-item-header card-header">
-                                    <div className="toggle-button-space" />
-                                    { `Route ${route.routeShortName}` }
-                                    <Button
-                                        className="cc-btn-link selection-item__button float-right p-0"
-                                        onClick={ () => removeItem(route) }>
-                                        Remove
-                                        <span className="pl-3">X</span>
-                                    </Button>
-                                </div>
+                                <Expandable
+                                    id={ route.routeId }
+                                    isActive={ isRouteActive(route) }
+                                    onToggle={ () => toggleExpandedRoute(route) }>
+                                    <ExpandableSummary
+                                        expandClassName="selection-item-header card-header d-inline-flex w-100"
+                                        displayToggleButton={ false }>
+                                        <div>
+                                            <Button
+                                                className="btn cc-btn-link pt-0 pl-0"
+                                                onClick={ () => toggleExpandedRoute(route) }>
+                                                { isRouteActive(route) ? <IoIosArrowUp className="text-info" size={ 20 } /> : <IoIosArrowDown className="text-info" size={ 20 } /> }
+                                            </Button>
+                                        </div>
+                                        <div className="picklist__list-btn w-100 border-0 rounded-0 text-left">
+                                            <Button
+                                                className="cc-btn-link selection-item__button float-right p-0"
+                                                onClick={ () => removeItem(route) }>
+                                                Remove
+                                                <span className="pl-3">X</span>
+                                            </Button>
+                                            { `Route ${route.routeShortName}` }
+                                        </div>
+                                    </ExpandableSummary>
+                                    <ExpandableContent extendClassName="bg-white">
+                                        {isRouteActive(route) && (
+                                            <ul className="selection-item-body card-body bg-white pb-0 pt-0">
+                                                { renderStopsByRoute(route) }
+                                            </ul>
+                                        )}
+                                    </ExpandableContent>
+                                </Expandable>
                             </li>
                         ))
                     )}
@@ -757,6 +957,8 @@ SelectDisruptionEntities.propTypes = {
     onDataUpdate: PropTypes.func.isRequired,
     deleteAffectedEntities: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func.isRequired,
+    getStopsByRoute: PropTypes.func.isRequired,
+    findStopsByRoute: PropTypes.object.isRequired,
     getRoutesByStop: PropTypes.func.isRequired,
     findRoutesByStop: PropTypes.object.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
@@ -764,7 +966,8 @@ SelectDisruptionEntities.propTypes = {
     getRoutesByShortName: PropTypes.func.isRequired,
     affectedRoutes: PropTypes.array.isRequired,
     affectedStops: PropTypes.array.isRequired,
-    isLoading: PropTypes.bool,
+    isLoadingStopsByRoute: PropTypes.bool,
+    isLoadingRoutesByStop: PropTypes.bool,
     isEditMode: PropTypes.bool,
     toggleDisruptionModals: PropTypes.func.isRequired,
     onSubmitUpdate: PropTypes.func.isRequired,
@@ -776,7 +979,8 @@ SelectDisruptionEntities.propTypes = {
 };
 
 SelectDisruptionEntities.defaultProps = {
-    isLoading: false,
+    isLoadingStopsByRoute: false,
+    isLoadingRoutesByStop: false,
     isEditMode: false,
     data: {},
 };
@@ -784,7 +988,9 @@ SelectDisruptionEntities.defaultProps = {
 export default connect(state => ({
     affectedStops: getAffectedStops(state),
     affectedRoutes: getAffectedRoutes(state),
-    isLoading: getDisruptionsLoadingState(state),
+    isLoadingStopsByRoute: getDisruptionsLoadingStopsByRouteState(state),
+    isLoadingRoutesByStop: getDisruptionsLoadingRoutesByStopState(state),
+    findStopsByRoute: findStopsByRoute(state),
     findRoutesByStop: findRoutesByStop(state),
     isEditMode: isEditEnabled(state),
     disruptionToEdit: getDisruptionToEdit(state),
@@ -794,6 +1000,7 @@ export default connect(state => ({
 }), {
     deleteAffectedEntities,
     updateCurrentStep,
+    getStopsByRoute,
     getRoutesByStop,
     updateAffectedStopsState,
     getRoutesByShortName,

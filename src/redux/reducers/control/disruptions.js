@@ -7,15 +7,19 @@ export const INIT_STATE = {
     permissions: [],
     disruptions: [],
     cachedShapes: {},
+    cachedRoutesToStops: {},
     cachedStopsToRoutes: {},
     disruptionToEdit: {},
     affectedEntities: {
         affectedRoutes: [],
         affectedStops: [],
     },
+    stopsByRoute: {},
     routesByStop: {},
     isCreateEnabled: false,
     isLoading: false,
+    isLoadingStopsByRoute: false,
+    isLoadingRoutesByStop: false,
     isConfirmationOpen: false,
     isCancellationOpen: false,
     isDisruptionsReverseGeocodeLoading: false,
@@ -53,6 +57,8 @@ export const INIT_STATE = {
 };
 
 const handleDisruptionsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });
+const handleDisruptionsLoadingStopsByRouteUpdate = (state, { payload: { isLoadingStopsByRoute } }) => ({ ...state, isLoadingStopsByRoute });
+const handleDisruptionsLoadingRoutesByStopUpdate = (state, { payload: { isLoadingRoutesByStop } }) => ({ ...state, isLoadingRoutesByStop });
 const handleDisruptionsReverseGeocodeLoadingUpdate = (state, { payload: { isDisruptionsReverseGeocodeLoading } }) => ({ ...state, isDisruptionsReverseGeocodeLoading });
 const handleDisruptionsRoutesLoadingUpdate = (state, { payload: { isDisruptionsRoutesLoading } }) => ({ ...state, isDisruptionsRoutesLoading });
 const handleUpdateActiveDisruptionId = (state, { payload: { activeDisruptionId } }) => ({ ...state, activeDisruptionId });
@@ -89,6 +95,7 @@ const handleOpenDisruptions = (state, { payload: { isCreateEnabled } }) => ({ ..
 const handleOpenCopyDisruptions = (state, { payload: { isCreateEnabled, sourceIncidentNo } }) => ({ ...state, isCreateEnabled, sourceIncidentNo });
 const handleUpdateAffectedEntities = (state, { payload }) => ({ ...state, affectedEntities: { ...state.affectedEntities, ...payload } });
 const handleUpdateCachedShapes = (state, { payload }) => ({ ...state, cachedShapes: { ...state.cachedShapes, ...payload.shapes } });
+const handleUpdateCachedRoutesToStops = (state, { payload }) => ({ ...state, cachedRoutesToStops: { ...state.cachedRoutesToStops, ...payload.routesToStops } });
 const handleUpdateCachedStopsToRoutes = (state, { payload }) => ({ ...state, cachedStopsToRoutes: { ...state.cachedStopsToRoutes, ...payload.stopsToRoutes } });
 
 const handleShowRoutes = (state, { payload: { showSelectedRoutes } }) => ({ ...state, showSelectedRoutes });
@@ -97,7 +104,8 @@ const handleDisruptionModal = (state, { payload: { type, isOpen } }) => ({
     [type]: isOpen,
 });
 const handleUpdateCurrentStep = (state, { payload: { activeStep } }) => ({ ...state, activeStep });
-const handleUpdateRoutesByStop = (state, { payload: { routesByStop, isLoading } }) => ({ ...state, routesByStop, isLoading });
+const handleUpdateStopsByRoute = (state, { payload: { stopsByRoute, isLoadingStopsByRoute } }) => ({ ...state, stopsByRoute, isLoadingStopsByRoute });
+const handleUpdateRoutesByStop = (state, { payload: { routesByStop, isLoadingRoutesByStop } }) => ({ ...state, routesByStop, isLoadingRoutesByStop });
 const handleAffectedEntities = (state, { payload: {
     showSelectedRoutes,
     affectedEntities,
@@ -123,6 +131,8 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_DISRUPTIONS_ROUTES_LOADING_STATE]: handleDisruptionsRoutesLoadingUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_ACTIVE_DISRUPTION_ID]: handleUpdateActiveDisruptionId,
     [ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_LOADING]: handleDisruptionsLoadingUpdate,
+    [ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_LOADING_STOPS_BY_ROUTE]: handleDisruptionsLoadingStopsByRouteUpdate,
+    [ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_LOADING_ROUTES_BY_STOP]: handleDisruptionsLoadingRoutesByStopUpdate,
     [ACTION_TYPE.FETCH_CONTROL_DISRUPTIONS]: handleDisruptionsUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_REQUESTING]: handleDisruptionActionRequestingUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT]: handleDisruptionActionResultUpdate,
@@ -131,10 +141,12 @@ export default handleActions({
     [ACTION_TYPE.OPEN_COPY_DISRUPTIONS]: handleOpenCopyDisruptions,
     [ACTION_TYPE.UPDATE_AFFECTED_ENTITIES]: handleUpdateAffectedEntities,
     [ACTION_TYPE.UPDATE_CACHED_SHAPES]: handleUpdateCachedShapes,
+    [ACTION_TYPE.UPDATE_CACHED_ROUTES_TO_STOPS]: handleUpdateCachedRoutesToStops,
     [ACTION_TYPE.UPDATE_CACHED_STOPS_TO_ROUTES]: handleUpdateCachedStopsToRoutes,
     [ACTION_TYPE.SHOW_SELECTED_ROUTES]: handleShowRoutes,
     [ACTION_TYPE.SET_DISRUPTIONS_MODAL_STATUS]: handleDisruptionModal,
     [ACTION_TYPE.UPDATE_CURRENT_STEP]: handleUpdateCurrentStep,
+    [ACTION_TYPE.UPDATE_STOPS_BY_ROUTE]: handleUpdateStopsByRoute,
     [ACTION_TYPE.UPDATE_ROUTES_BY_STOP]: handleUpdateRoutesByStop,
     [ACTION_TYPE.DELETE_AFFECTED_ENTITIES]: handleAffectedEntities,
     [ACTION_TYPE.RESET_STATE]: handleResetState,

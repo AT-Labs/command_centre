@@ -14,6 +14,7 @@ const defaultState = {
     affectedRoutes: [],
     isLoading: false,
     findRoutesByStop: {},
+    findStopsByRoute: {},
     isEditMode: true,
     disruptionToEdit: null,
     searchResults: {},
@@ -31,6 +32,7 @@ const defaultState = {
     deleteAffectedEntities: jest.fn(),
     updateCurrentStep: jest.fn(),
     getRoutesByStop: jest.fn(),
+    getStopsByRoute: jest.fn(),
 };
 
 const stopGroups = _.keyBy([{
@@ -124,6 +126,12 @@ const routes = [{
     routeId: 'INN-202',
     routeShortName: 'INN',
     routeType: 3,
+    type: 'route',
+}, {
+    routeId: 'OUT-202',
+    routeShortName: 'OUT',
+    routeType: 3,
+    type: 'route',
 }];
 
 function setup(customProps) {
@@ -135,8 +143,8 @@ function setup(customProps) {
 }
 
 const findSelectionItems = () => wrapper.find('.selection-container .selection-item');
-const findRouteItemHeaderText = selectedItem => selectedItem.find('.selection-item-header').text();
-const findStopItemHeaderText = selectedItem => selectedItem.find('.selection-item .picklist__list-btn').text();
+const findItemHeaderText = selectedItem => selectedItem.find('.selection-item .picklist__list-btn').text();
+const getStopByRoute = stop => _.pick(stop, ['stopId', 'stopCode', 'stopName', 'stopLat', 'stopLon']);
 
 describe('<SelectDisruptionEntities />', () => {
     beforeEach(() => {
@@ -182,8 +190,9 @@ describe('<SelectDisruptionEntities />', () => {
 
                 const selectedItems = findSelectionItems();
 
-                expect(selectedItems.length).toEqual(1);
-                expect(findRouteItemHeaderText(selectedItems.at(0))).toContain('Route INN');
+                expect(selectedItems.length).toEqual(2);
+                expect(findItemHeaderText(selectedItems.at(0))).toContain('Route INN');
+                expect(findItemHeaderText(selectedItems.at(1))).toContain('Route OUT');
             });
         });
 
@@ -194,8 +203,8 @@ describe('<SelectDisruptionEntities />', () => {
                 const selectedItems = findSelectionItems();
 
                 expect(selectedItems.length).toEqual(2);
-                expect(findStopItemHeaderText(selectedItems.at(0))).toContain('Stop 111 - Test Stop 1');
-                expect(findStopItemHeaderText(selectedItems.at(1))).toContain('Stop 222 - Test Stop 2');
+                expect(findItemHeaderText(selectedItems.at(0))).toContain('Stop 111 - Test Stop 1');
+                expect(findItemHeaderText(selectedItems.at(1))).toContain('Stop 222 - Test Stop 2');
             });
         });
 
@@ -208,7 +217,7 @@ describe('<SelectDisruptionEntities />', () => {
 
                 const selectedItems = findSelectionItems();
                 expect(selectedItems.length).toEqual(1);
-                expect(findStopItemHeaderText(selectedItems.at(0))).toContain('Stop Group - Stop Group 1');
+                expect(findItemHeaderText(selectedItems.at(0))).toContain('Stop Group - Stop Group 1');
             });
         });
 
@@ -235,7 +244,7 @@ describe('<SelectDisruptionEntities />', () => {
             withHooks(() => {
                 setup({
                     affectedStops: stops,
-                    findRoutesByStop: { [stops[0].stopCode]: routes },
+                    findRoutesByStop: { [stops[0].stopCode]: [routes[0]] },
                 });
 
                 findSelectionItems().at(0).find('ExpandableSummary>div>Button').at(0)
@@ -277,11 +286,89 @@ describe('<SelectDisruptionEntities />', () => {
             });
         });
 
-        it('should display Loader if is loading', async () => {
+        it('should display Loader if it is loading routes by stop', async () => {
             withHooks(() => {
                 setup({
                     affectedStops: stops,
                     findRoutesByStop: {},
+                });
+                const selectedItems = findSelectionItems();
+                selectedItems.at(0).find('ExpandableSummary>div>Button').at(0).simulate('click');
+                wrapper.update();
+
+                const loader = findSelectionItems().at(0).find('.loader-disruptions-list');
+                expect(loader.length).toEqual(1);
+            });
+        });
+
+        it.each([
+            ['Direction: Inbound/Anticlockwise', 0, '111 - Test Stop 1'],
+            ['Direction: Outbound/Clockwise', 1, '222 - Test Stop 2'],
+        ])('should display or hide stops when route and %s is toggled', (directionText, directionIndex, stopText) => {
+            withHooks(() => {
+                setup({
+                    affectedRoutes: routes,
+                    findStopsByRoute: {
+                        [routes[0].routeId]: [
+                            { ...stops[0], directionId: 0 },
+                            { ...stops[1], directionId: 1 },
+                        ],
+                    },
+                });
+
+                findSelectionItems().at(0).find('ExpandableSummary>div>Button').at(0)
+                    .simulate('click');
+                wrapper.update();
+                const selectedDirection = findSelectionItems().at(0).find('ExpandableContent>ul>Expandable>ExpandableSummary').at(directionIndex);
+                expect(selectedDirection.find('div.picklist__list-btn').text()).toContain(directionText);
+                selectedDirection.find('div>Button').simulate('click');
+                wrapper.update();
+
+                let routesCheckbox = findSelectionItems().at(0).find('.select_entities EntityCheckbox');
+                expect(routesCheckbox.length).toEqual(1);
+                expect(routesCheckbox.at(0).prop('label')).toEqual(stopText);
+
+                selectedDirection.find('div>Button').simulate('click');
+                wrapper.update();
+                findSelectionItems().at(0).find('ExpandableSummary>div>Button').at(0)
+                    .simulate('click');
+                wrapper.update();
+
+                routesCheckbox = findSelectionItems().at(0).find('.select_entities EntityCheckbox');
+                expect(routesCheckbox.length).toEqual(0);
+            });
+        });
+
+        it('should display Select All when route and direction is expanded and there are more than 1 stops', () => {
+            withHooks(() => {
+                setup({
+                    affectedRoutes: routes,
+                    findStopsByRoute: {
+                        [routes[0].routeId]: [
+                            { ...stops[0], directionId: 0 },
+                            { ...stops[1], directionId: 0 },
+                        ],
+                    },
+                });
+
+                const selectedItems = findSelectionItems();
+                selectedItems.at(0).find('ExpandableSummary>div>Button').at(0).simulate('click');
+                wrapper.update();
+                const selectedDirection = findSelectionItems().at(0).find('ExpandableContent>ul>Expandable>ExpandableSummary').at(0);
+                selectedDirection.find('div>Button').simulate('click');
+                wrapper.update();
+
+                const stopsCheckbox = findSelectionItems().at(0).find('.select_entities EntityCheckbox');
+                expect(stopsCheckbox.length).toEqual(3);
+                expect(stopsCheckbox.at(0).prop('label')).toEqual('Select All');
+            });
+        });
+
+        it('should display Loader if it is loading stops by route', async () => {
+            withHooks(() => {
+                setup({
+                    affectedRoutes: routes,
+                    findStopsByRoute: {},
                 });
                 const selectedItems = findSelectionItems();
                 selectedItems.at(0).find('ExpandableSummary>div>Button').at(0).simulate('click');
@@ -389,7 +476,7 @@ describe('<SelectDisruptionEntities />', () => {
             withHooks(() => {
                 setup({
                     affectedStops: stops,
-                    findRoutesByStop: { [stops[0].stopCode]: routes },
+                    findRoutesByStop: { [stops[0].stopCode]: [routes[0]] },
                 });
 
                 findSelectionItems().at(0).find('ExpandableSummary>div>Button').at(0)
@@ -436,6 +523,92 @@ describe('<SelectDisruptionEntities />', () => {
                     expect.objectContaining(testRoute1),
                     expect.objectContaining(testRoute2),
                 ]));
+            });
+        });
+
+        it.each([
+            [
+                routes,
+                1,
+                true,
+                [
+                    { ...getStopByRoute(stops[0]), directionId: 0, ...routes[0] },
+                    routes[1],
+                ],
+            ],
+            [
+                [{ ...getStopByRoute(stops[0]), directionId: 0, ...routes[0] }, routes[1]],
+                1,
+                false,
+                routes,
+            ],
+            [
+                [{ ...getStopByRoute(stops[0]), directionId: 0, ...routes[0] }, routes[1]],
+                2,
+                true,
+                [
+                    { ...getStopByRoute(stops[0]), directionId: 0, ...routes[0] },
+                    { ...getStopByRoute(stops[1]), directionId: 0, ...routes[0] },
+                    routes[1],
+                ],
+            ],
+            [
+                [
+                    { ...getStopByRoute(stops[0]), directionId: 0, ...routes[0] },
+                    { ...getStopByRoute(stops[1]), directionId: 0, ...routes[0] },
+                    routes[1],
+                ],
+                2,
+                false,
+                [{ ...getStopByRoute(stops[0]), directionId: 0, ...routes[0] }, routes[1]],
+            ],
+            [
+                routes,
+                0,
+                true,
+                [
+                    { ...getStopByRoute(stops[0]), directionId: 0, ...routes[0] },
+                    { ...getStopByRoute(stops[1]), directionId: 0, ...routes[0] },
+                    routes[1],
+                ],
+            ],
+            [
+                [
+                    { ...getStopByRoute(stops[0]), directionId: 0, ...routes[0] },
+                    { ...getStopByRoute(stops[1]), directionId: 0, ...routes[0] },
+                    routes[1],
+                ],
+                0,
+                false,
+                routes,
+            ],
+        ])('should update selected route with/without stop '
+        + 'when route and direction is expanded and a stop is checked/unchecked', (affectedRoutes, checkedStopIndex, checked, expectedAffectedRoutes) => {
+            withHooks(() => {
+                const stopsByRoute = stops.map(stop => getStopByRoute(stop));
+                setup({
+                    affectedRoutes,
+                    findStopsByRoute: {
+                        [routes[0].routeId]: [
+                            { ...stopsByRoute[0], directionId: 0 },
+                            { ...stopsByRoute[1], directionId: 0 },
+                        ],
+                    },
+                });
+
+                findSelectionItems().at(0).find('ExpandableSummary>div>Button').at(0)
+                    .simulate('click');
+                wrapper.update();
+                const selectedDirection = findSelectionItems().at(0).find('ExpandableContent>ul>Expandable>ExpandableSummary').at(0);
+                selectedDirection.find('div>Button').simulate('click');
+                wrapper.update();
+
+                const stopCheckbox = findSelectionItems().at(0).find('.select_entities EntityCheckbox').at(checkedStopIndex);
+                stopCheckbox.renderProp('onChange')({ target: { checked } });
+                wrapper.update();
+                expect(defaultState.updateAffectedRoutesState).toHaveBeenLastCalledWith(
+                    expect.arrayContaining(expectedAffectedRoutes),
+                );
             });
         });
     });

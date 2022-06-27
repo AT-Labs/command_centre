@@ -8,6 +8,7 @@ import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { getStopGroupsIncludingDeleted } from '../../../redux/selectors/control/dataManagement/stopGroups';
 import { getStopGroupName } from '../../../utils/control/dataManagement';
 import './AffectedEntities.scss';
+import { DIRECTIONS } from './types';
 
 export const AffectedEntities = (props) => {
     const collapseRef = useRef(null);
@@ -20,52 +21,48 @@ export const AffectedEntities = (props) => {
 
     const toggle = () => setCollapse(!collapse);
 
-    const getIndividualAffectedRoutes = () => (
-        props.affectedEntities
-            .filter(entity => !isEmpty(entity.routeId) && isEmpty(entity.stopCode))
-            .map(entity => (
-                <li key={ entity.routeId }>
-                    <div className="font-size-sm font-weight-bold">
-                        Route
-                        {' '}
-                        { entity.routeShortName }
-                    </div>
-                </li>
-            ))
-    );
-
-    const groupByEntityRender = (groupById, groupTitle, groupText, childTitle, children) => (
+    const groupByEntityRender = (groupById, groupTitle, groupText, children) => (
         <li key={ groupById }>
             <div className="font-size-sm font-weight-bold">
                 {groupTitle}
                 {' '}
                 {groupText}
             </div>
-            {children && (
-                <div className="font-size-sm">
-                    {childTitle}
+            { !isEmpty(children) && children.map(({ title, body }) => (
+                <div className="font-size-sm" key={ title }>
+                    {title}
                     {' '}
-                    {children}
+                    {body}
                 </div>
-            )}
+            )) }
         </li>
     );
 
     const getCombinedAffectedStopsRoutesStopGroups = () => {
-        const affectedEntitiesByStop = groupBy(props.affectedEntities.filter(entity => entity.stopCode && !entity.groupId), 'stopCode');
+        const affectedEntitiesByRoute = groupBy(props.affectedEntities.filter(entity => entity.type === 'route'), 'routeId');
+        const affectedEntitiesByStop = groupBy(props.affectedEntities.filter(entity => entity.type === 'stop' && !entity.groupId), 'stopCode');
         const affectedEntitiesByStopGroup = groupBy(props.affectedEntities.filter(entity => entity.groupId), 'groupId');
 
-        const stopAndRoutesRender = Object.keys(affectedEntitiesByStop).map((stopCode) => {
+        const routesRender = Object.keys(affectedEntitiesByRoute).map((routeId) => {
+            const stopsByDirection = groupBy(affectedEntitiesByRoute[routeId].filter(route => route.directionId !== undefined), 'directionId');
+            const children = Object.keys(stopsByDirection).map(directionId => ({
+                title: `Stops ${DIRECTIONS[directionId]}:`,
+                body: stopsByDirection[directionId].map(entity => entity.stopCode).join(', '),
+            }));
+            return groupByEntityRender(routeId, 'Route', affectedEntitiesByRoute[routeId][0].routeShortName, children);
+        });
+
+        const stopsRender = Object.keys(affectedEntitiesByStop).map((stopCode) => {
             const routes = affectedEntitiesByStop[stopCode].filter(entity => entity.routeId).map(entity => entity.routeShortName).join(', ');
-            return groupByEntityRender(stopCode, 'Stop', affectedEntitiesByStop[stopCode][0].text, 'Route', routes);
+            return groupByEntityRender(stopCode, 'Stop', affectedEntitiesByStop[stopCode][0].text, [{ title: 'Route', body: routes }]);
         });
 
         const stopGroupsRender = Object.keys(affectedEntitiesByStopGroup).map((groupId) => {
             const stops = affectedEntitiesByStopGroup[groupId].map(stop => stop.stopCode).join(', ');
-            return groupByEntityRender(groupId, 'Stop Group -', getStopGroupName(props.stopGroups, +groupId), 'Stop', stops);
+            return groupByEntityRender(groupId, 'Stop Group -', getStopGroupName(props.stopGroups, +groupId), [{ title: 'Stop', body: stops }]);
         });
 
-        return [stopAndRoutesRender, stopGroupsRender];
+        return [routesRender, stopsRender, stopGroupsRender];
     };
 
     const showViewMoreLessButton = () => {
@@ -99,7 +96,6 @@ export const AffectedEntities = (props) => {
                 )}
                 <Collapse innerRef={ collapseRef } isOpen={ collapse } className="w-100">
                     <ul className="p-0 m-0">
-                        { getIndividualAffectedRoutes() }
                         { getCombinedAffectedStopsRoutesStopGroups() }
                     </ul>
                 </Collapse>
