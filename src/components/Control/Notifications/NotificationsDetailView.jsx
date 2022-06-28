@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
 import { BsArrowRepeat } from 'react-icons/bs';
-import moment from 'moment';
 import { connect } from 'react-redux';
 import { isEmpty } from 'lodash-es';
 import { LABEL_TITLE, LABEL_DESCRIPTION, LABEL_CAUSE, LABEL_EFFECT, LABEL_AFFECTED_ENTITIES } from '../../../constants/notifications';
@@ -68,8 +67,7 @@ export const NotificationsDetailView = (props) => {
         }
     }, [notification]);
 
-    const isExpired = props.notification.endTime && moment.unix(props.notification.endTime).isBefore(moment());
-    const canEdit = props.notification.condition === NOTIFICATION_CONDITION.draft && props.notification.status === NOTIFICATION_STATUS.inProgress && !isExpired;
+    const canEdit = props.notification.condition === NOTIFICATION_CONDITION.draft && props.notification.status === NOTIFICATION_STATUS.inProgress;
     const canSaveorPublish = canEdit && !isEmpty(description) && !isEmpty(title);
 
     const saveNotification = () => props.updateNotification({ notification: props.notification, name: title, content: description });
@@ -87,7 +85,7 @@ export const NotificationsDetailView = (props) => {
                 </div>
             )}
             { !fetchingNotification && !fetchFailed && (
-                <Form>
+                <Form className="notification-detail">
                     <div className="row mt-3">
                         <section className="col-4">
                             <FormGroup className="mt-2">

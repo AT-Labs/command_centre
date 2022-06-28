@@ -105,7 +105,7 @@ export const NotificationsView = (props) => {
         [],
     );
 
-    const setExpiredClassName = params => (params.row.endTime && moment.unix(params.row.endTime).isBefore(moment()) ? 'row-expired' : '');
+    const setOverwrittenClassName = params => (params.row.status === NOTIFICATION_STATUS.overwritten ? 'row-overwritten' : '');
 
     return (
         <div className="control-notifications-view">
@@ -121,7 +121,7 @@ export const NotificationsView = (props) => {
                 getRowId={ row => row.notificationContentId }
                 rowCount={ props.rowCount }
                 serverSideData
-                getRowClassName={ setExpiredClassName }
+                getRowClassName={ setOverwrittenClassName }
                 detailPanelHeight={ 470 }
             />
         </div>
