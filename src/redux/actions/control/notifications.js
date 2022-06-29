@@ -6,6 +6,7 @@ import * as notificationsApi from '../../../utils/transmitters/notifications-api
 import { getLastFilterRequest, getNotificationsDatagridConfig } from '../../selectors/control/notifications';
 import { ACTION_RESULT } from '../../../types/notification-types';
 import { transformIncidentNo } from '../../../utils/control/disruptions';
+import ERROR_TYPE from '../../../types/error-types';
 
 const loadNotifications = notifications => ({
     type: ACTION_TYPE.FETCH_CONTROL_NOTIFICATIONS,
@@ -102,7 +103,7 @@ export const filterNotifications = forceLoad => (dispatch, getState) => {
     const filterRequest = getFilterObject(datagridConfig);
 
     if (forceLoad || !lastFilterRequest || !isEqual(filterRequest, lastFilterRequest)) {
-        notificationsApi.getNotifications(filterRequest)
+        return notificationsApi.getNotifications(filterRequest)
             .then((result) => {
                 const { items, totalResults, _links } = result;
                 dispatch(updateLastFilterRequest(filterRequest));
@@ -111,9 +112,13 @@ export const filterNotifications = forceLoad => (dispatch, getState) => {
                 dispatch(loadNotifications(items));
             })
             .catch(() => {
-                dispatch(setBannerError('An error occurred requesting Notification data.'));
+                if (ERROR_TYPE.fetchNotificationsEnabled) {
+                    return dispatch(setBannerError(ERROR_TYPE.fetchNotifications));
+                }
+                return Promise.resolve();
             });
     }
+    return Promise.resolve();
 };
 
 export const updateNotificationsDatagridConfig = dataGridConfig => (dispatch) => {
