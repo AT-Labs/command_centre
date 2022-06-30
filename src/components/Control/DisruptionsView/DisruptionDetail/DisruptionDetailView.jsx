@@ -106,7 +106,7 @@ const DisruptionDetailView = (props) => {
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(NONE);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
-        const uniqRoutes = uniqBy([...affectedRoutes, ...props.routes], route => route.routeId);
+        const uniqRoutes = uniqWith([...affectedRoutes, ...props.routes], (routeA, routeB) => routeA.routeId === routeB.routeId && routeA.stopCode === routeB.stopCode);
         const uniqStops = uniqWith([...affectedStops, ...props.stops], (stopA, stopB) => stopA.stopCode === stopB.stopCode && stopA.routeId === stopB.routeId);
 
         return uniqRoutes.length !== affectedRoutes.length || uniqStops.length !== affectedStops.length
@@ -119,8 +119,8 @@ const DisruptionDetailView = (props) => {
 
     const affectedEntitiesWithoutShape = toString(disruption.affectedEntities.map(entity => omit(entity, ['shapeWkt'])));
     useEffect(() => {
-        const affectedStops = disruption.affectedEntities.filter(entity => entity.stopCode);
-        const affectedRoutes = disruption.affectedEntities.filter(entity => entity.routeId && isEmpty(entity.stopCode));
+        const affectedStops = disruption.affectedEntities.filter(entity => entity.type === 'stop');
+        const affectedRoutes = disruption.affectedEntities.filter(entity => entity.type === 'route' || (entity.routeId && isEmpty(entity.stopCode)));
 
         if ((isEmpty(props.stops) && isEmpty(props.routes)) || haveRoutesOrStopsChanged(affectedRoutes, affectedStops)) {
             props.updateAffectedStopsState(affectedStops);

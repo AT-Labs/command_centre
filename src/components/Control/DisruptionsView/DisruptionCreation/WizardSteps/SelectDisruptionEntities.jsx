@@ -519,13 +519,18 @@ export const SelectDisruptionEntities = (props) => {
             const uncheckedStops = stopsByRouteDirection.filter(stop => `${stop.directionId}` === `${direction}` && !routeList.some(routeItem => routeItem.stopCode === stop.stopCode));
             if (!isEmpty(uncheckedStops)) {
                 const stopsToAdd = uncheckedStops.map(stop => createStopWithRoute(routeWithoutStop, stop));
+                if (routeList.length === 1 && routeList[0].stopCode === undefined) {
+                    updatedRoutes = updatedRoutes.filter(updatedRoute => updatedRoute.routeId !== route.routeId);
+                }
                 updatedRoutes = [...updatedRoutes, ...stopsToAdd];
             }
         } else {
-            updatedRoutes = updatedRoutes.filter(updatedRoute => updatedRoute.routeId !== route.routeId || `${updatedRoute.directionId}` !== `${direction}`);
+            updatedRoutes = updatedRoutes.filter(updatedRoute => updatedRoute.routeId !== route.routeId || (updatedRoute.directionId && `${updatedRoute.directionId}` !== `${direction}`));
 
             // add back single route without stop info
-            updatedRoutes = [...updatedRoutes, routeWithoutStop];
+            if (!updatedRoutes.some(updatedRoute => updatedRoute.routeId === route.routeId)) {
+                updatedRoutes = [...updatedRoutes, routeWithoutStop];
+            }
         }
 
         props.updateAffectedRoutesState(updatedRoutes);
@@ -540,6 +545,9 @@ export const SelectDisruptionEntities = (props) => {
             const uncheckedRoutes = routesByStop.filter(route => stopList.findIndex(stopItem => stopItem.routeId === route.routeId) < 0);
             if (!isEmpty(uncheckedRoutes)) {
                 const stopsToAdd = uncheckedRoutes.map(route => createRouteWithStop(stopWithoutRoute, route));
+                if (stopList.length === 1 && stopList[0].routeId === undefined) {
+                    updatedStops = updatedStops.filter(updatedStop => updatedStop.stopCode !== stop.stopCode);
+                }
                 updatedStops = [...updatedStops, ...stopsToAdd];
             }
         } else {

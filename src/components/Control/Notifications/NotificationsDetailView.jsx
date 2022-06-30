@@ -49,6 +49,8 @@ export const NotificationsDetailView = (props) => {
                     setRecurrencePattern(data.recurrencePattern);
                     setRecurrent(data.recurrent);
                     setActivePeriods(data.activePeriods);
+                    const entities = getAndParseInformedEntities(data.informedEntities);
+                    setInformedEntities(entities);
                 });
 
             const getRenderedContentPromise = () => getRenderedContent(notification.notificationContentId)
@@ -56,7 +58,6 @@ export const NotificationsDetailView = (props) => {
                     const { items } = data;
                     setTitle(getTitle(items));
                     setDescription(getDescription(items));
-                    setInformedEntities(getAndParseInformedEntities(items));
                 });
 
             Promise.all([getNotificationPromise(), getRenderedContentPromise()])

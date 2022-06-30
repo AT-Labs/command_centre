@@ -10,15 +10,16 @@ export const getDescription = (items) => {
     return '';
 };
 
-export const getAndParseInformedEntities = (items) => {
-    const infos = items.find(element => element.name === 'title');
-    if (infos) {
-        return infos.informedEntities.map((element) => {
-            if (element.stopCode) {
-                return { ...element, text: element.stopCode };
-            }
-            return element;
-        });
-    }
-    return [];
-};
+export const getAndParseInformedEntities = informedEntities => (
+    informedEntities.map((informedEntity) => {
+        const { informedEntityType, stops, routes, ...entity } = informedEntity;
+        if (informedEntityType === 'route') {
+            return stops.length
+                ? stops.map(({ informedEntityType: _i, routes: _r, ...stop }) => ({ ...stop, text: stop.stopCode, ...entity, type: 'route' }))
+                : { ...entity, type: 'route' };
+        }
+        return routes.length
+            ? routes.map(({ informedEntityType: _i, stops: _s, ...route }) => ({ ...route, ...entity, text: entity.stopCode, type: 'stop' }))
+            : { ...entity, text: entity.stopCode, type: 'stop' };
+    }).flat()
+);

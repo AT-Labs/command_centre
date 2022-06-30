@@ -39,7 +39,7 @@ export const AffectedEntities = (props) => {
     );
 
     const getCombinedAffectedStopsRoutesStopGroups = () => {
-        const affectedEntitiesByRoute = groupBy(props.affectedEntities.filter(entity => entity.type === 'route'), 'routeId');
+        const affectedEntitiesByRoute = groupBy(props.affectedEntities.filter(entity => entity.type === 'route' || (entity.routeId && isEmpty(entity.stopCode))), 'routeId');
         const affectedEntitiesByStop = groupBy(props.affectedEntities.filter(entity => entity.type === 'stop' && !entity.groupId), 'stopCode');
         const affectedEntitiesByStopGroup = groupBy(props.affectedEntities.filter(entity => entity.groupId), 'groupId');
 
@@ -54,7 +54,7 @@ export const AffectedEntities = (props) => {
 
         const stopsRender = Object.keys(affectedEntitiesByStop).map((stopCode) => {
             const routes = affectedEntitiesByStop[stopCode].filter(entity => entity.routeId).map(entity => entity.routeShortName).join(', ');
-            return groupByEntityRender(stopCode, 'Stop', affectedEntitiesByStop[stopCode][0].text, [{ title: 'Route', body: routes }]);
+            return groupByEntityRender(stopCode, 'Stop', affectedEntitiesByStop[stopCode][0].text, routes ? [{ title: 'Route', body: routes }] : []);
         });
 
         const stopGroupsRender = Object.keys(affectedEntitiesByStopGroup).map((groupId) => {

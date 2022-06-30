@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { getTitle, getDescription } from './notifications';
+import { getTitle, getDescription, getAndParseInformedEntities } from './notifications';
 
 const data = {
     items: [
@@ -175,5 +175,138 @@ describe('getDescription', () => {
 
     it('test if the function return an empty string if the description is not valid.', () => {
         expect(getDescription(wrongData.items)).to.equal('');
+    });
+});
+
+describe('getAndParseInformedEntities', () => {
+    it('should return route affected entity when informedEntityType is route with no stops', () => {
+        const informedEntities = [{
+            informedEntityType: 'route',
+            stops: [],
+            routeId: 'AIR-221',
+            routeShortName: 'AIR',
+            routeType: 3,
+        }];
+        expect(getAndParseInformedEntities(informedEntities)).to.deep.equal([{
+            routeId: 'AIR-221',
+            routeShortName: 'AIR',
+            routeType: 3,
+            type: 'route',
+        }]);
+    });
+
+    it('should return route affected entity when informedEntityType is route with stops', () => {
+        const informedEntities = [{
+            informedEntityType: 'route',
+            stops: [
+                {
+                    informedEntityType: 'stop',
+                    routes: [],
+                    stopId: '6925-157d9f39',
+                    stopCode: '6925',
+                    stopName: 'Ronwood Avenue/Hayman Park',
+                },
+                {
+                    informedEntityType: 'stop',
+                    routes: [],
+                    stopId: '1791-5e1a78f6',
+                    stopCode: '1791',
+                    stopName: 'Stop A Puhinui',
+                },
+            ],
+            routeId: 'AIR-221',
+            routeShortName: 'AIR',
+            routeType: 3,
+        }];
+        expect(getAndParseInformedEntities(informedEntities)).to.deep.equal([
+            {
+                routeId: 'AIR-221',
+                routeShortName: 'AIR',
+                routeType: 3,
+                stopId: '6925-157d9f39',
+                stopCode: '6925',
+                stopName: 'Ronwood Avenue/Hayman Park',
+                text: '6925',
+                type: 'route',
+            },
+            {
+                routeId: 'AIR-221',
+                routeShortName: 'AIR',
+                routeType: 3,
+                stopId: '1791-5e1a78f6',
+                stopCode: '1791',
+                stopName: 'Stop A Puhinui',
+                text: '1791',
+                type: 'route',
+            },
+        ]);
+    });
+
+    it('should return stop affected entity when informedEntityType is stop with no routes', () => {
+        const informedEntities = [
+            {
+                informedEntityType: 'stop',
+                routes: [],
+                stopId: '8018-e3724964',
+                stopCode: '8018',
+                stopName: 'Pt Chevalier Road/Pt Chevalier Shops',
+            },
+        ];
+        expect(getAndParseInformedEntities(informedEntities)).to.deep.equal([{
+            stopId: '8018-e3724964',
+            stopCode: '8018',
+            stopName: 'Pt Chevalier Road/Pt Chevalier Shops',
+            text: '8018',
+            type: 'stop',
+        }]);
+    });
+
+    it('should return stop affected entity when informedEntityType is stop with routes', () => {
+        const informedEntities = [
+            {
+                informedEntityType: 'stop',
+                routes: [
+                    {
+                        informedEntityType: 'route',
+                        stops: [],
+                        routeId: '66-206',
+                        routeShortName: '66',
+                        routeType: 3,
+                    },
+                    {
+                        informedEntityType: 'route',
+                        stops: [],
+                        routeId: '650-202',
+                        routeShortName: '650',
+                        routeType: 3,
+                    },
+                ],
+                stopId: '8018-e3724964',
+                stopCode: '8018',
+                stopName: 'Pt Chevalier Road/Pt Chevalier Shops',
+            },
+        ];
+        expect(getAndParseInformedEntities(informedEntities)).to.deep.equal([
+            {
+                stopId: '8018-e3724964',
+                stopCode: '8018',
+                stopName: 'Pt Chevalier Road/Pt Chevalier Shops',
+                text: '8018',
+                routeId: '66-206',
+                routeShortName: '66',
+                routeType: 3,
+                type: 'stop',
+            },
+            {
+                stopId: '8018-e3724964',
+                stopCode: '8018',
+                stopName: 'Pt Chevalier Road/Pt Chevalier Shops',
+                text: '8018',
+                routeId: '650-202',
+                routeShortName: '650',
+                routeType: 3,
+                type: 'stop',
+            },
+        ]);
     });
 });
