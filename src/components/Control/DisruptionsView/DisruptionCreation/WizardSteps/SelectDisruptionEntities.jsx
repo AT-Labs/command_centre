@@ -525,7 +525,7 @@ export const SelectDisruptionEntities = (props) => {
                 updatedRoutes = [...updatedRoutes, ...stopsToAdd];
             }
         } else {
-            updatedRoutes = updatedRoutes.filter(updatedRoute => updatedRoute.routeId !== route.routeId || (updatedRoute.directionId && `${updatedRoute.directionId}` !== `${direction}`));
+            updatedRoutes = updatedRoutes.filter(updatedRoute => updatedRoute.routeId !== route.routeId || `${updatedRoute.directionId}` !== `${direction}`);
 
             // add back single route without stop info
             if (!updatedRoutes.some(updatedRoute => updatedRoute.routeId === route.routeId)) {

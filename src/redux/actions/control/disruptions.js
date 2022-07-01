@@ -240,7 +240,7 @@ export const getStopsByRoute = routes => async (dispatch, getState) => {
                         stopLat: allStops[stop.stop_code].stop_lat,
                         stopLon: allStops[stop.stop_code].stop_lon,
                     }));
-                    const camelCaseStops = toCamelCaseKeys(uniqBy(stopsWithCoordinates, 'stop_code'));
+                    const camelCaseStops = toCamelCaseKeys(stopsWithCoordinates);
                     stopsByRoute[missingRoutes[index].routeId] = camelCaseStops;
                     missingCacheRoutesToStops[missingRoutes[index].routeId] = camelCaseStops;
                 });
