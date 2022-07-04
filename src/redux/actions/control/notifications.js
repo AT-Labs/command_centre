@@ -4,9 +4,15 @@ import ACTION_TYPE from '../../action-types';
 import { setBannerError } from '../activity';
 import * as notificationsApi from '../../../utils/transmitters/notifications-api';
 import { getLastFilterRequest, getNotificationsDatagridConfig } from '../../selectors/control/notifications';
-import { ACTION_RESULT } from '../../../types/notification-types';
+import { ACTION_RESULT, ACTION_RESULT_TYPES } from '../../../types/notification-types';
 import { transformIncidentNo } from '../../../utils/control/disruptions';
 import ERROR_TYPE from '../../../types/error-types';
+
+export const NOTIFICATION_REQUEST_ACTION = {
+    UPDATE: 'update',
+    DELETE: 'delete',
+    PUBLISH: 'publish',
+};
 
 const loadNotifications = notifications => ({
     type: ACTION_TYPE.FETCH_CONTROL_NOTIFICATIONS,
@@ -137,12 +143,13 @@ const updateRequestingNotificationState = (isRequesting, resultNotificationId) =
     },
 });
 
-export const updateRequestingNotificationResult = (resultNotificationId, { resultStatus, resultMessage }) => ({
+export const updateRequestingNotificationResult = (resultNotificationId, { resultStatus, resultMessage }, resultAction) => ({
     type: ACTION_TYPE.UPDATE_CONTROL_NOTIFICATION_ACTION_RESULT,
     payload: {
         resultNotificationId,
         resultStatus,
         resultMessage,
+        resultAction,
     },
 });
 
@@ -152,32 +159,39 @@ export const clearNotificationActionResult = () => ({
         resultNotificationId: null,
         resultStatus: null,
         resultMessage: null,
+        resultAction: null,
     },
 });
 
-const notificationApiActions = (notification, apiMethod, successResult, errorResult) => async (dispatch) => {
+const notificationApiActions = (notification, apiMethod, successResult, errorResult, requestAction) => async (dispatch) => {
     const id = notification.notificationContentId;
     const incidentNo = transformIncidentNo(notification.source.identifier);
     dispatch(updateRequestingNotificationState(true, id));
 
     try {
         await apiMethod(id);
-        dispatch(updateRequestingNotificationResult(id, successResult(incidentNo, notification.source.version)));
+
+        dispatch(updateRequestingNotificationResult(id, successResult(incidentNo, notification.source.version), requestAction));
         dispatch(filterNotifications(true));
+
+        return ACTION_RESULT_TYPES.SUCCESS;
     } catch (error) {
-        dispatch(updateRequestingNotificationResult(id, errorResult(incidentNo, notification.source.version)));
+        dispatch(updateRequestingNotificationResult(id, errorResult(incidentNo, notification.source.version), requestAction));
+
+        return ACTION_RESULT_TYPES.ERROR;
     } finally {
         dispatch(updateRequestingNotificationState(false, id));
     }
 };
 
-export const updateNotification = notificationUpdate => (dispatch) => {
-    const { notification, name, content } = notificationUpdate;
-    dispatch(notificationApiActions(
+export const updateNotification = notificationUpdate => async (dispatch) => {
+    const { notification, title, description } = notificationUpdate;
+    return dispatch(notificationApiActions(
         notification,
-        id => notificationsApi.updateNotification(id, name, content),
+        id => notificationsApi.updateNotification(id, title, description),
         ACTION_RESULT.UPDATE_SUCCESS,
         ACTION_RESULT.UPDATE_ERROR,
+        NOTIFICATION_REQUEST_ACTION.UPDATE,
     ));
 };
 
@@ -187,6 +201,7 @@ export const deleteNotification = notification => (dispatch) => {
         id => notificationsApi.deleteNotification(id),
         ACTION_RESULT.DELETE_SUCCESS,
         ACTION_RESULT.DELETE_ERROR,
+        NOTIFICATION_REQUEST_ACTION.DELETE,
     ));
 };
 
@@ -196,5 +211,18 @@ export const publishNotification = notification => (dispatch) => {
         id => notificationsApi.publishNotification(id),
         ACTION_RESULT.PUBLISH_SUCCESS,
         ACTION_RESULT.PUBLISH_ERROR,
+        NOTIFICATION_REQUEST_ACTION.PUBLISH,
     ));
+};
+
+export const saveAndPublishNotification = (notification, title = null, description = null) => async (dispatch) => {
+    let updateResult = null;
+
+    if (title || description) {
+        updateResult = await dispatch(updateNotification({ notification, title, description }));
+    }
+
+    if (!updateResult || updateResult === ACTION_RESULT_TYPES.SUCCESS) {
+        dispatch(publishNotification(notification));
+    }
 };

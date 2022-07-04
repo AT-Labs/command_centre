@@ -27,6 +27,7 @@ export const INIT_STATE = {
         isRequesting: false,
         resultStatus: null,
         resultMessage: null,
+        resultAction: null,
     },
 };
 
@@ -49,13 +50,14 @@ const handleNotificationActionRequestingUpdate = (state, { payload: { isRequesti
     },
 });
 
-const handleNotificationActionResultUpdate = (state, { payload: { resultNotificationId, resultMessage, resultStatus } }) => ({
+const handleNotificationActionResultUpdate = (state, { payload: { resultNotificationId, resultMessage, resultStatus, resultAction } }) => ({
     ...state,
     action: {
         ...state.action,
         resultMessage,
         resultStatus,
         resultNotificationId,
+        resultAction,
     },
 });
 

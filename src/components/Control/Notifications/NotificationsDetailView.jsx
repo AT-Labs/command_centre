@@ -6,7 +6,8 @@ import { connect } from 'react-redux';
 import { isEmpty } from 'lodash-es';
 import { LABEL_TITLE, LABEL_DESCRIPTION, LABEL_CAUSE, LABEL_EFFECT, LABEL_AFFECTED_ENTITIES } from '../../../constants/notifications';
 import { getNotificationAction, isNotificationUpdateAllowed } from '../../../redux/selectors/control/notifications';
-import { updateNotification, clearNotificationActionResult, deleteNotification, publishNotification } from '../../../redux/actions/control/notifications';
+import { updateNotification, clearNotificationActionResult, deleteNotification, saveAndPublishNotification,
+    NOTIFICATION_REQUEST_ACTION } from '../../../redux/actions/control/notifications';
 import { getNotification, getRenderedContent } from '../../../utils/transmitters/notifications-api';
 import Loader from '../../Common/Loader/Loader';
 import CustomMuiDialog from '../../Common/CustomMuiDialog/CustomMuiDialog';
@@ -16,7 +17,7 @@ import { getTitle, getDescription, getAndParseInformedEntities } from '../../../
 import { CAUSES, IMPACTS } from '../../../types/disruptions-types';
 import AffectedEntities from '../DisruptionsView/AffectedEntities';
 import AlertMessage from '../../Common/AlertMessage/AlertMessage';
-import { NOTIFICATION_CONDITION, NOTIFICATION_STATUS } from '../../../types/notification-types';
+import { ACTION_RESULT_TYPES, NOTIFICATION_CONDITION, NOTIFICATION_STATUS } from '../../../types/notification-types';
 
 export const NotificationsDetailView = (props) => {
     const { notification } = props;
@@ -35,8 +36,18 @@ export const NotificationsDetailView = (props) => {
     const [fetchingNotification, setFetchingNotification] = useState(true);
     const [fetchFailed, setFetchFailed] = useState(false);
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
+    const [isDirty, setIsDirty] = useState(false);
+    const [originalDescription, setOriginalDescription] = useState('');
+    const [originalTitle, setOriginalTitle] = useState('');
+    const [actionType, setActionType] = useState(null);
 
     const canEditField = () => isNotificationUpdateAllowed(props.notification);
+
+    const isSuccessfulUpdate = () => actionType === NOTIFICATION_REQUEST_ACTION.UPDATE && props.resultStatus === ACTION_RESULT_TYPES.SUCCESS;
+    const isSuccessfulUpdateAndPublish = () => actionType === NOTIFICATION_REQUEST_ACTION.PUBLISH && props.resultStatus === ACTION_RESULT_TYPES.SUCCESS;
+    const isFailedPublishButSuccessfulUpdate = () => actionType === NOTIFICATION_REQUEST_ACTION.PUBLISH
+        && props.resultStatus === ACTION_RESULT_TYPES.ERROR
+        && props.resultAction !== NOTIFICATION_REQUEST_ACTION.UPDATE;
 
     useEffect(() => {
         if (notification.notificationContentId !== currentId) {
@@ -56,8 +67,13 @@ export const NotificationsDetailView = (props) => {
             const getRenderedContentPromise = () => getRenderedContent(notification.notificationContentId)
                 .then((data) => {
                     const { items } = data;
-                    setTitle(getTitle(items));
-                    setDescription(getDescription(items));
+                    const renderedTitle = getTitle(items);
+                    setOriginalTitle(renderedTitle);
+                    setTitle(renderedTitle);
+
+                    const renderedDescription = getDescription(items);
+                    setOriginalDescription(renderedDescription);
+                    setDescription(renderedDescription);
                 });
 
             Promise.all([getNotificationPromise(), getRenderedContentPromise()])
@@ -68,10 +84,20 @@ export const NotificationsDetailView = (props) => {
         }
     }, [notification]);
 
+    useEffect(() => {
+        if (props.resultStatus && (isSuccessfulUpdate() || isSuccessfulUpdateAndPublish() || isFailedPublishButSuccessfulUpdate())) {
+            setOriginalDescription(description);
+            setOriginalTitle(title);
+            setIsDirty(false);
+        }
+    }, [props.resultStatus]);
+
     const canEdit = props.notification.condition === NOTIFICATION_CONDITION.draft && props.notification.status === NOTIFICATION_STATUS.inProgress;
     const canSaveorPublish = canEdit && !isEmpty(description) && !isEmpty(title);
 
-    const saveNotification = () => props.updateNotification({ notification: props.notification, name: title, content: description });
+    const saveNotification = () => props.updateNotification({ notification: props.notification, title, description });
+
+    const calculateIsDirty = (updatedTitle, updatedDescription) => setIsDirty(updatedTitle !== originalTitle || updatedDescription !== originalDescription);
 
     return (
         <div className="p-3 h-100">
@@ -133,7 +159,10 @@ export const NotificationsDetailView = (props) => {
                                     className="border border-dark"
                                     value={ title }
                                     disabled={ !canEditField() || !canEdit }
-                                    onChange={ e => setTitle(e.currentTarget.value) }
+                                    onChange={ (e) => {
+                                        calculateIsDirty(e.currentTarget.value, description);
+                                        setTitle(e.currentTarget.value);
+                                    } }
                                 />
                             </FormGroup>
                             <FormGroup>
@@ -145,7 +174,10 @@ export const NotificationsDetailView = (props) => {
                                     type="textarea"
                                     disabled={ !canEditField() || !canEdit }
                                     value={ description }
-                                    onChange={ e => setDescription(e.currentTarget.value) }
+                                    onChange={ (e) => {
+                                        calculateIsDirty(title, e.currentTarget.value);
+                                        setDescription(e.currentTarget.value);
+                                    } }
                                     rows={ 5 }
                                 />
                             </FormGroup>
@@ -173,7 +205,10 @@ export const NotificationsDetailView = (props) => {
                                                 id="delete"
                                                 className="ml-3 mr-3"
                                                 disabled={ !canEdit || props.isRequesting }
-                                                onClick={ () => props.deleteNotification(props.notification) }
+                                                onClick={ () => {
+                                                    setActionType(NOTIFICATION_REQUEST_ACTION.DELETE);
+                                                    props.deleteNotification(props.notification);
+                                                } }
                                             >
                                                 Delete
                                             </Button>
@@ -181,17 +216,26 @@ export const NotificationsDetailView = (props) => {
                                                 id="save-changes"
                                                 className="ml-3 mr-3"
                                                 disabled={ !canSaveorPublish || props.isRequesting }
-                                                onClick={ () => saveNotification() }
-                                            >
+                                                onClick={ () => {
+                                                    setActionType(NOTIFICATION_REQUEST_ACTION.UPDATE);
+                                                    saveNotification();
+                                                } }>
                                                 Save Changes
                                             </Button>
                                             <Button
                                                 id="publish"
                                                 className="cc-btn-primary ml-3"
                                                 disabled={ !canSaveorPublish || props.isRequesting }
-                                                onClick={ () => props.publishNotification(props.notification) }
+                                                onClick={ () => {
+                                                    setActionType(NOTIFICATION_REQUEST_ACTION.PUBLISH);
+                                                    props.saveAndPublishNotification(
+                                                        props.notification,
+                                                        isDirty ? title : null,
+                                                        isDirty ? description : null,
+                                                    );
+                                                } }
                                             >
-                                                Publish
+                                                { isDirty ? 'Save and Publish' : 'Publish' }
                                             </Button>
                                         </>
                                     ) }
@@ -226,10 +270,11 @@ NotificationsDetailView.propTypes = {
     resultStatus: PropTypes.string,
     resultMessage: PropTypes.string,
     resultNotificationId: PropTypes.string,
+    resultAction: PropTypes.string,
     isRequesting: PropTypes.bool,
     updateNotification: PropTypes.func.isRequired,
     deleteNotification: PropTypes.func.isRequired,
-    publishNotification: PropTypes.func.isRequired,
+    saveAndPublishNotification: PropTypes.func.isRequired,
     clearNotificationActionResult: PropTypes.func.isRequired,
 };
 
@@ -238,6 +283,7 @@ NotificationsDetailView.defaultProps = {
     resultMessage: null,
     isRequesting: false,
     resultNotificationId: null,
+    resultAction: null,
 };
 
 export default connect(state => ({
@@ -245,6 +291,6 @@ export default connect(state => ({
 }), {
     updateNotification,
     deleteNotification,
-    publishNotification,
+    saveAndPublishNotification,
     clearNotificationActionResult,
 })(NotificationsDetailView);
