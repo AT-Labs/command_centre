@@ -469,7 +469,7 @@ export const SelectDisruptionEntities = (props) => {
                 return mappedRoute;
             });
         } else {
-            const routeToRemoveIdx = updatedRoutes.findIndex(updatedRoute => updatedRoute.stopCode === stop.stopCode && updatedRoute.routeId === route.routeId);
+            const routeToRemoveIdx = updatedRoutes.findIndex(updatedRoute => updatedRoute.stopCode === stop.stopCode && updatedRoute.routeId === route.routeId && `${updatedRoute.directionId}` === `${stop.directionId}`);
 
             if (routeToRemoveIdx >= 0) {
                 updatedRoutes.splice(routeToRemoveIdx, 1);
@@ -516,7 +516,7 @@ export const SelectDisruptionEntities = (props) => {
         const routeWithoutStop = filterOnlyRouteParams(route);
 
         if (isChecked) {
-            const uncheckedStops = stopsByRouteDirection.filter(stop => `${stop.directionId}` === `${direction}` && !routeList.some(routeItem => routeItem.stopCode === stop.stopCode));
+            const uncheckedStops = stopsByRouteDirection.filter(stop => `${stop.directionId}` === `${direction}` && !routeList.some(routeItem => routeItem.stopCode === stop.stopCode && `${routeItem.directionId}` === `${stop.directionId}`));
             if (!isEmpty(uncheckedStops)) {
                 const stopsToAdd = uncheckedStops.map(stop => createStopWithRoute(routeWithoutStop, stop));
                 if (routeList.length === 1 && routeList[0].stopCode === undefined) {
@@ -572,7 +572,7 @@ export const SelectDisruptionEntities = (props) => {
                 <EntityCheckbox
                     id={ `stopByRoute-${route.routeId}-${stop.stopCode}-${direction}` }
                     checked={ props.affectedRoutes.some(affectedRoute => (
-                        affectedRoute.routeId === route.routeId && affectedRoute.stopCode === stop.stopCode)) }
+                        affectedRoute.routeId === route.routeId && affectedRoute.stopCode === stop.stopCode && `${affectedRoute.directionId}` === `${direction}`)) }
                     onChange={ e => toggleStopsByRoute(route, stop, e.target.checked) }
                     label={ `${stop.stopCode} - ${stop.stopName}` }
                 />
