@@ -32,7 +32,7 @@ const componentPropsMock = {
 };
 
 const setup = (customProps) => {
-    const props = componentPropsMock;
+    const props = { ...componentPropsMock };
     Object.assign(props, customProps);
     store = mockStore({
         control: {
@@ -66,6 +66,8 @@ const setup = (customProps) => {
         },
     });
 
+    store.dispatch = jest.fn();
+
     return mount(
         <Provider store={ store }>
             <LeafletMap
@@ -92,5 +94,33 @@ describe('<StopsLayer />', () => {
         expect(wrapper.find(AlertMessage)).toHaveLength(0);
         wrapper.find('#testButton').simulate('click');
         expect(wrapper.find(AlertMessage)).toHaveLength(0);
+    });
+
+    it('should add stop entity with correct type', () => {
+        wrapper = setup({ disruptionType: 'Stops' });
+        expect(wrapper.find(AlertMessage)).toHaveLength(0);
+        wrapper.find('#testButton').simulate('click');
+        expect(wrapper.find(AlertMessage)).toHaveLength(0);
+        wrapper.update();
+
+        const expectedAffectedStopEntity = [{
+            stopId: '1-1026',
+            stopName: '10 Portman Rd',
+            stopCode: '1026',
+            locationType: 0,
+            stopLat: -36.85210183300703,
+            stopLon: 174.7631907463074,
+            parentStation: '1-31496',
+            platformCode: '1026',
+            routeType: 3,
+            parentStopCode: '31496',
+            tokens: ['10', 'portman', 'rd', '1026'],
+            valueKey: 'stopCode',
+            labelKey: 'stopCode',
+            type: 'stop',
+        }];
+
+        expect(store.dispatch.mock.calls[0][0].type).toEqual('update-affected-entities');
+        expect(store.dispatch.mock.calls[0][0].payload.affectedStops).toEqual(expectedAffectedStopEntity);
     });
 });

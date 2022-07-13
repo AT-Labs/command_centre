@@ -5,6 +5,7 @@ import { CircleMarker, FeatureGroup, LeafletConsumer, Tooltip } from 'react-leaf
 import { filter, uniqBy } from 'lodash-es';
 import IconMarker from '../../../../Common/IconMarker/IconMarker';
 import AlertMessage from '../../../../Common/AlertMessage/AlertMessage';
+import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
 import { getStopDetail } from '../../../../../redux/selectors/realtime/detail';
 import { getChildStops, getStopLatLng } from '../../../../../redux/selectors/static/stops';
 import { getAffectedStops, getDisruptionStepCreation } from '../../../../../redux/selectors/control/disruptions';
@@ -48,7 +49,13 @@ const StopsLayer = (props) => {
             setShowAlert(true);
             return;
         }
-        props.updateAffectedStopsState([...props.affectedStops, toCamelCaseKeys(stop)]);
+
+        props.updateAffectedStopsState([...props.affectedStops, toCamelCaseKeys(stop)].map(stopEntity => ({
+            ...stopEntity,
+            valueKey: 'stopCode',
+            labelKey: 'stopCode',
+            type: SEARCH_RESULT_TYPE.STOP.type,
+        })));
     };
 
     return (
