@@ -5,9 +5,11 @@ import Message from '../../../Common/Message/Message';
 import CancelReinstateTripsModalTable from './UpdateTripStatusModalTable';
 import ConfirmationModalBody from '../../../Common/ConfirmationModal/ConfirmationModalBody';
 import RecurrentTripCancellation from './RecurrentTripCancellation';
+import { isTripReccuringUpdateAllowed } from '../../../../../redux/selectors/control/routes/trip-instances';
 
 const UpdateTripStatusModalContent = (props) => {
     const { className, confirmationMessage, errorMessage, shouldErrorAlertBeShown, selectedTrips, recurringProps } = props;
+    const canEditRecurringField = isTripReccuringUpdateAllowed(selectedTrips[Object.keys(selectedTrips)[0]]);
 
     return (
         <>
@@ -19,7 +21,12 @@ const UpdateTripStatusModalContent = (props) => {
             </div>
             {
                 recurringProps.showRecurring && (
-                    <RecurrentTripCancellation setting={ recurringProps.setting } options={ recurringProps.options } onChange={ recurringProps.onChange } />
+                    <RecurrentTripCancellation
+                        setting={ recurringProps.setting }
+                        options={ recurringProps.options }
+                        onChange={ recurringProps.onChange }
+                        allowUpdate={ canEditRecurringField }
+                    />
                 )
             }
             {

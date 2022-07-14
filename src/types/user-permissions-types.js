@@ -6,6 +6,8 @@ export default {
         SKIP_STOP: 'skip',
         CHANGE_STOP: 'change',
         ADVANCER: 'advancer',
+        VIEW_TRIP: 'view',
+        RECURRENT_CANCEL: 'recurrent_cancel',
     },
     BLOCKS: {
         ADD_BLOCK: 'add',

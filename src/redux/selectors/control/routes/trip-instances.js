@@ -43,3 +43,5 @@ export const getBulkUpdateErrorMessagesForStops = createSelector(
 );
 
 export const getTripStatusModalOriginState = createSelector(getTripsState, tripInstancesState => _.result(tripInstancesState, 'tripStatusModalOrigin'));
+
+export const isTripReccuringUpdateAllowed = trip => !!_.find(_.result(trip, '_links.permissions'), { _rel: USER_PERMISSIONS.ROUTES.RECURRENT_CANCEL });

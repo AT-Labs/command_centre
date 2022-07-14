@@ -14,6 +14,7 @@ import './RecurrentTripCancellation.scss';
 const RecurrentTripCancellation = (props) => {
     const { startDate, endDate, selectedWeekdays } = props.setting;
     const { startDatePickerMinimumDate, endDatePickerMinimumDate } = props.options;
+    const { allowUpdate } = props;
 
     useEffect(() => {
         if (startDate && endDate && moment(startDate, DATE_FORMAT_DDMMYYYY).isAfter(moment(endDate, DATE_FORMAT_DDMMYYYY))) {
@@ -49,7 +50,8 @@ const RecurrentTripCancellation = (props) => {
                         value={ startDate }
                         options={ datePickerOptions }
                         placeholder="Select date"
-                        onChange={ date => handleStartDateUpdate(date[0] ? moment(date[0]).format(DATE_FORMAT_DDMMYYYY) : '') } />
+                        onChange={ date => handleStartDateUpdate(date[0] ? moment(date[0]).format(DATE_FORMAT_DDMMYYYY) : '') }
+                        disabled={ !allowUpdate } />
                     <FaRegCalendarAlt
                         className="recurrent-trip-cancellation__icon position-absolute"
                         size={ 22 } />
@@ -64,7 +66,8 @@ const RecurrentTripCancellation = (props) => {
                         value={ endDate }
                         options={ endDateDatePickerOptions }
                         placeholder="Select date"
-                        onChange={ date => handleEndDateUpdate(date[0] ? moment(date[0]).format(DATE_FORMAT_DDMMYYYY) : '') } />
+                        onChange={ date => handleEndDateUpdate(date[0] ? moment(date[0]).format(DATE_FORMAT_DDMMYYYY) : '') }
+                        disabled={ !allowUpdate } />
                     <FaRegCalendarAlt
                         className="recurrent-trip-cancellation__icon position-absolute"
                         size={ 22 } />
@@ -75,6 +78,7 @@ const RecurrentTripCancellation = (props) => {
                     <WeekdayPicker
                         selectedWeekdays={ selectedWeekdays }
                         onUpdate={ weekdays => handleWeekdaysUpdate(weekdays) }
+                        disabled={ !allowUpdate }
                     />
                 </FormGroup>
                 {!_.isEmpty(selectedWeekdays) && startDate && (
@@ -99,12 +103,14 @@ RecurrentTripCancellation.propTypes = {
         startDatePickerMinimumDate: PropTypes.string.isRequired,
         endDatePickerMinimumDate: PropTypes.string.isRequired,
     }).isRequired,
+    allowUpdate: PropTypes.bool,
 };
 
 RecurrentTripCancellation.defaultProps = {
     onChange: () => {
         // do nothing
     },
+    allowUpdate: false,
 };
 
 export default RecurrentTripCancellation;
