@@ -23,6 +23,7 @@ import {
     getBulkUpdateMessagesByType,
     getSelectedTripInstances,
     getTripStatusModalOriginState,
+    isTripReccuringUpdateAllowed,
 } from '../../../../../redux/selectors/control/routes/trip-instances';
 import { getServiceDate } from '../../../../../redux/selectors/control/serviceDate';
 import { DATE_FORMAT_DDMMYYYY } from '../../../../../utils/dateUtils';
@@ -105,6 +106,7 @@ const UpdateTripStatusModal = (props) => {
     };
 
     const isRecurrenceSettingValid = recurrenceSetting.startDate && recurrenceSetting.selectedWeekdays.length;
+    const canEditRecurringField = isTripReccuringUpdateAllowed(operateTripsByModalType[Object.keys(operateTripsByModalType)[0]]);
 
     const generateModalFooter = (activeModalType, mainButtonLabel, recurringReinstateButtonLabel) => (
         <>
@@ -120,7 +122,7 @@ const UpdateTripStatusModal = (props) => {
                     <Button
                         className={ `${className}__extend-button cc-btn-primary w-100` }
                         onClick={ () => updateTripsStatus(true) }
-                        disabled={ areTripsUpdating }>
+                        disabled={ areTripsUpdating || !canEditRecurringField }>
                         <UpdateStatusModalsBtn label={ recurringReinstateButtonLabel } isLoading={ areTripsUpdating } />
                     </Button>
                 </>

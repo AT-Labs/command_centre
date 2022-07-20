@@ -104,6 +104,21 @@ describe('<UpdateTripStatusModal />', () => {
             expect(wrapper.find(RecurrentTripCancellation).length).toEqual(0);
             expect(findElementByText(wrapper, 'button', 'Reinstate trips').length).toEqual(1);
             expect(findElementByText(wrapper, 'button', 'Reinstate trips and remove recurring cancellations').length).toEqual(1);
+            expect(findElementByText(wrapper, 'button', 'Reinstate trips and remove recurring cancellations').prop('disabled')).toEqual(true);
+        });
+
+        it('Should only enable the button (remove recurring cancellations) when there is required permission', () => {
+            wrapper = setup({
+                activeModal: updateTripsStatusModalTypes.REINSTATE_MODAL,
+                operateTrips: {
+                    [trip1.tripId]: { ...trip1, status: TRIP_STATUS_TYPES.cancelled, _links: { permissions: [{ _rel: 'recurrent_cancel' }] } },
+                    [trip2.tripId]: { ...trip2, status: TRIP_STATUS_TYPES.cancelled, _links: { permissions: [{ _rel: 'recurrent_cancel' }] } },
+                },
+            });
+            expect(wrapper.find(RecurrentTripCancellation).length).toEqual(0);
+            const removingRecurringButton = findElementByText(wrapper, 'button', 'Reinstate trips and remove recurring cancellations');
+            expect(removingRecurringButton.length).toEqual(1);
+            expect(removingRecurringButton.prop('disabled')).toEqual(false);
         });
 
         it('Should display singlular when there is only one input trip', () => {
@@ -171,7 +186,10 @@ describe('<UpdateTripStatusModal />', () => {
         });
 
         it('Should fire updateTripsStatus with not_started status and true recurring operation when the user click Reinstate trip and remove recurring cancellations', () => {
-            wrapper = setup({ activeModal: updateTripsStatusModalTypes.REINSTATE_MODAL, operateTrips: { [trip1.tripId]: trip1 } });
+            wrapper = setup({
+                activeModal: updateTripsStatusModalTypes.REINSTATE_MODAL,
+                operateTrips: { [trip1.tripId]: { ...trip1, status: TRIP_STATUS_TYPES.cancelled, _links: { permissions: [{ _rel: 'recurrent_cancel' }] } } },
+            });
             clickButtonAndCheck(wrapper, 'Reinstate trip and remove recurring cancellations', TRIP_STATUS_TYPES.notStarted, true);
         });
     });
