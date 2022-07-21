@@ -175,8 +175,16 @@ describe('<UpdateTripStatusModal />', () => {
             );
         };
 
-        it('Should fire updateTripsStatus with cancel status and true recurring operation when modal type is cancel', () => {
+        it('Should fire updateTripsStatus with cancel status and false recurring operation when modal type is cancel and the trip is without recurrent_cancel permission', () => {
             wrapper = setup({ activeModal: updateTripsStatusModalTypes.CANCEL_MODAL, operateTrips: { [trip1.tripId]: trip1 } });
+            clickButtonAndCheck(wrapper, 'Cancel trip', TRIP_STATUS_TYPES.cancelled, false);
+        });
+
+        it('Should fire updateTripsStatus with cancel status and true recurring operation when modal type is cancel and with recurrent_cancel permission', () => {
+            wrapper = setup({
+                activeModal: updateTripsStatusModalTypes.CANCEL_MODAL,
+                operateTrips: { [trip1.tripId]: { ...trip1, _links: { permissions: [{ _rel: 'recurrent_cancel' }] } } },
+            });
             clickButtonAndCheck(wrapper, 'Cancel trip', TRIP_STATUS_TYPES.cancelled, true);
         });
 

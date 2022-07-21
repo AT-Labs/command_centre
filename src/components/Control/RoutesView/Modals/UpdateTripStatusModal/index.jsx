@@ -112,7 +112,7 @@ const UpdateTripStatusModal = (props) => {
         <>
             <Button
                 className={ `${className}__ok-button cc-btn-primary w-100` }
-                onClick={ () => updateTripsStatus(props.useRecurringCancellations && activeModalType === CANCEL_MODAL) }
+                onClick={ () => updateTripsStatus(props.useRecurringCancellations && activeModalType === CANCEL_MODAL && canEditRecurringField) }
                 disabled={ areTripsUpdating || !isRecurrenceSettingValid }>
                 <UpdateStatusModalsBtn label={ mainButtonLabel } isLoading={ areTripsUpdating } />
             </Button>
