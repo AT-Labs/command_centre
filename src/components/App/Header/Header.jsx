@@ -150,21 +150,6 @@ function Header(props) {
                             </CustomButton>
                         </NavItem>
                     )}
-                    { isViewPermitted('controlStopMessagingView') && (
-                        <NavItem>
-                            <CustomButton
-                                className="header__btn header__messaging rounded-0 px-3"
-                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.STOP_MESSAGES }
-                                tabIndex="0"
-                                ariaLabel="Messaging section button"
-                                onClick={ () => {
-                                    props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
-                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.STOP_MESSAGES);
-                                } }>
-                                MESSAGING
-                            </CustomButton>
-                        </NavItem>
-                    )}
                     { (IS_DISRUPTIONS_ENABLED && isViewPermitted('controlDisruptionsView')) && (
                         <NavItem>
                             <CustomButton
@@ -180,6 +165,36 @@ function Header(props) {
                             </CustomButton>
                         </NavItem>
                     )}
+                    { isViewPermitted('controlStopMessagingView') && (
+                        <NavItem>
+                            <CustomButton
+                                className="header__btn header__messaging rounded-0 px-3"
+                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.STOP_MESSAGES }
+                                tabIndex="0"
+                                ariaLabel="Messaging section button"
+                                onClick={ () => {
+                                    props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
+                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.STOP_MESSAGES);
+                                } }>
+                                MESSAGING
+                            </CustomButton>
+                        </NavItem>
+                    )}
+                    { props.useNotifications && isViewPermitted('controlNotificationsView') && (
+                        <NavItem>
+                            <CustomButton
+                                className="header__btn header__notifications rounded-0 px-3"
+                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS }
+                                tabIndex="0"
+                                ariaLabel="Notifications button"
+                                onClick={ () => {
+                                    props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
+                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS);
+                                } }>
+                                NOTIFICATIONS
+                            </CustomButton>
+                        </NavItem>
+                    )}
                     { (IS_TRIP_REPLAYS_ENABLED && isViewPermitted('controlTripReplaysView')) && (
                         <NavItem>
                             <CustomButton
@@ -191,7 +206,22 @@ function Header(props) {
                                     props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
                                     props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.TRIP_REPLAYS);
                                 } }>
-                                TRIP REPLAYS
+                                REPLAY
+                            </CustomButton>
+                        </NavItem>
+                    )}
+                    { (IS_FLEETS_ENABLED && isViewPermitted('controlFleetsView')) && (
+                        <NavItem>
+                            <CustomButton
+                                className="header__btn header__fleets rounded-0 px-3 position-relative"
+                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.FLEETS }
+                                tabIndex="0"
+                                ariaLabel="Fleets button"
+                                onClick={ () => {
+                                    props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
+                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.FLEETS);
+                                } }>
+                                FLEET
                             </CustomButton>
                         </NavItem>
                     )}
@@ -228,36 +258,6 @@ function Header(props) {
                                         &nbsp;
                                     </span>
                                 )}
-                            </CustomButton>
-                        </NavItem>
-                    )}
-                    { props.useNotifications && isViewPermitted('controlNotificationsView') && (
-                        <NavItem>
-                            <CustomButton
-                                className="header__btn header__notifications rounded-0 px-3"
-                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS }
-                                tabIndex="0"
-                                ariaLabel="Notifications button"
-                                onClick={ () => {
-                                    props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
-                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS);
-                                } }>
-                                NOTIFICATIONS
-                            </CustomButton>
-                        </NavItem>
-                    )}
-                    { (IS_FLEETS_ENABLED && isViewPermitted('controlFleetsView')) && (
-                        <NavItem>
-                            <CustomButton
-                                className="header__btn header__fleets rounded-0 px-3 position-relative"
-                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.FLEETS }
-                                tabIndex="0"
-                                ariaLabel="Fleets button"
-                                onClick={ () => {
-                                    props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
-                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.FLEETS);
-                                } }>
-                                FLEET
                             </CustomButton>
                         </NavItem>
                     )}
