@@ -1,5 +1,4 @@
 {
-    "useDisruptionRecurrence": "false",
     "useNotifications": "false",
     "useRecurringCancellations": "false"
 }

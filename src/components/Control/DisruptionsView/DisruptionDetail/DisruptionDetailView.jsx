@@ -66,7 +66,6 @@ import Map from '../DisruptionCreation/CreateDisruption/Map';
 import DiversionUpload from './DiversionUpload';
 import AffectedEntities from '../AffectedEntities';
 import WeekdayPicker from '../../Common/WeekdayPicker/WeekdayPicker';
-import { useDisruptionRecurrence } from '../../../../redux/selectors/appSettings';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 import EDIT_TYPE from '../../../../types/edit-types';
 import { getDatePickerOptions } from '../../../../utils/dateUtils';
@@ -357,11 +356,9 @@ const DisruptionDetailView = (props) => {
                 <span className="map-note">Note: Only a max of ten routes and ten stops will be displayed on the map.</span>
             </div>
             <div className="row mt-3">
-                { props.isRecurrenceOn && (
-                    <section className="col-12">
-                        <RadioButtons { ...recurrenceRadioOptions(recurrent) } />
-                    </section>
-                )}
+                <section className="col-12">
+                    <RadioButtons { ...recurrenceRadioOptions(recurrent) } />
+                </section>
                 <section className="col-3">
                     <div className="mt-2 position-relative form-group">
                         <DisruptionLabelAndText id="disruption-detail__mode" label={ LABEL_MODE } text={ mode } />
@@ -670,7 +667,6 @@ DisruptionDetailView.propTypes = {
     deleteDisruptionFile: PropTypes.func.isRequired,
     routes: PropTypes.array.isRequired,
     stops: PropTypes.array.isRequired,
-    isRecurrenceOn: PropTypes.bool.isRequired,
     className: PropTypes.string,
 };
 
@@ -688,7 +684,6 @@ export default connect(state => ({
     routeColors: getRouteColors(state),
     routes: getAffectedRoutes(state),
     stops: getAffectedStops(state),
-    isRecurrenceOn: useDisruptionRecurrence(state),
 }), {
     getRoutesByShortName,
     openCreateDisruption,

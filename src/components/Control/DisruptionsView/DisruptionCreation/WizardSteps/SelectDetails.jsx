@@ -40,7 +40,6 @@ import CustomMuiDialog from '../../../../Common/CustomMuiDialog/CustomMuiDialog'
 import ActivePeriods from '../../../../Common/ActivePeriods/ActivePeriods';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText } from '../../../../../utils/recurrence';
-import { useDisruptionRecurrence } from '../../../../../redux/selectors/appSettings';
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 
@@ -141,15 +140,13 @@ export const SelectDetails = (props) => {
                 <div className="col-12">
                     <h3>Add disruption details</h3>
                 </div>
-                { props.isRecurrenceOn && (
-                    <div className="col-12">
-                        <RadioButtons
-                            { ...recurrenceRadioOptions(recurrent) }
-                            disabled={ false }
-                            onChange={ checkedButtonKey => props.onDataUpdate('recurrent', checkedButtonKey === '1') }
-                        />
-                    </div>
-                )}
+                <div className="col-12">
+                    <RadioButtons
+                        { ...recurrenceRadioOptions(recurrent) }
+                        disabled={ false }
+                        onChange={ checkedButtonKey => props.onDataUpdate('recurrent', checkedButtonKey === '1') }
+                    />
+                </div>
                 <div className="col-6">
                     <FormGroup className="position-relative">
                         <Label for="disruption-creation__wizard-select-details__start-date">
@@ -389,7 +386,6 @@ SelectDetails.propTypes = {
     updateCurrentStep: PropTypes.func,
     stops: PropTypes.array,
     routes: PropTypes.array,
-    isRecurrenceOn: PropTypes.bool.isRequired,
 };
 
 SelectDetails.defaultProps = {
@@ -405,5 +401,4 @@ SelectDetails.defaultProps = {
 export default connect(state => ({
     stops: getAffectedStops(state),
     routes: getAffectedRoutes(state),
-    isRecurrenceOn: useDisruptionRecurrence(state),
 }), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);

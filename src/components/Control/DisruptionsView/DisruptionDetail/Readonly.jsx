@@ -28,7 +28,6 @@ import AffectedEntities from '../AffectedEntities';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
 import WeekdayPicker from '../../Common/WeekdayPicker/WeekdayPicker';
-import { useDisruptionRecurrence } from '../../../../redux/selectors/appSettings';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 
 const Readonly = (props) => {
@@ -66,11 +65,9 @@ const Readonly = (props) => {
                 <span className="map-note">Note: Only a max of ten routes and ten stops will be displayed on the map.</span>
             </div>
             <div className="row mt-3">
-                { props.isRecurrenceOn && (
-                    <section className="col-12">
-                        <RadioButtons { ...recurrenceRadioOptions(disruption.recurrent) } />
-                    </section>
-                )}
+                <section className="col-12">
+                    <RadioButtons { ...recurrenceRadioOptions(disruption.recurrent) } />
+                </section>
                 <section className="col-3">
                     <div className="mt-2 position-relative form-group">
                         <DisruptionLabelAndText label={ LABEL_MODE } id="disruption-detail__mode" text={ disruption.mode } />
@@ -201,7 +198,6 @@ Readonly.propTypes = {
     updateAffectedStopsState: PropTypes.func.isRequired,
     shapes: PropTypes.array,
     isLoading: PropTypes.bool,
-    isRecurrenceOn: PropTypes.bool.isRequired,
 };
 
 Readonly.defaultProps = {
@@ -212,7 +208,6 @@ Readonly.defaultProps = {
 export default connect(state => ({
     shapes: getShapes(state),
     isLoading: getDisruptionsLoadingState(state),
-    isRecurrenceOn: useDisruptionRecurrence(state),
 }), {
     getRoutesByShortName,
     updateAffectedRoutesState,
