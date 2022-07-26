@@ -23,6 +23,11 @@ import {
     updateTripReplayTimeType,
     search,
 } from '../../../../redux/actions/control/tripReplays/filters';
+
+import {
+    searchVehicleReplay,
+} from '../../../../redux/actions/control/vehicleReplay';
+
 import ControlSearch from '../../Common/ControlSearch/ControlSearch';
 import { getTimePickerOptions } from '../../../../utils/helpers';
 import './Filters.scss';
@@ -122,6 +127,13 @@ const Filters = (props) => {
     const getStartTimeOptions = () => {
         if (!endTime) return OPTIONS;
         return _.filter(OPTIONS, option => option.value < endTime);
+    };
+
+    const refinedSearch = () => {
+        if ((searchTerm.type === BUS.type) || (searchTerm.type === TRAIN.type) || (searchTerm.type === FERRY.type)) {
+            props.searchVehicleReplay();
+        }
+        props.search();
     };
 
     const setShouldRenderSuggestions = () => !tripIdStatus;
@@ -253,7 +265,7 @@ const Filters = (props) => {
             <div className="block px-4 py-2">
                 <Button
                     className="cc-btn-primary w-100"
-                    onClick={ () => props.search() }
+                    onClick={ refinedSearch }
                     disabled={ isSubmitButtonDisabled }>
                     Search
                 </Button>
@@ -279,6 +291,7 @@ Filters.propTypes = {
     endTime: PropTypes.string.isRequired,
     timeType: PropTypes.string.isRequired,
     search: PropTypes.func.isRequired,
+    searchVehicleReplay: PropTypes.func.isRequired,
 };
 
 Filters.defaultProps = {
@@ -292,6 +305,7 @@ export default connect(state => ({
     endTime: getTripReplayEndTimeFilter(state),
     timeType: getTripReplayTimeTypeFilter(state),
 }), {
+    searchVehicleReplay,
     search,
     updateTripReplaySearchTerm,
     resetTripReplaySearchTerm,

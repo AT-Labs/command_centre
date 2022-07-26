@@ -12,7 +12,7 @@ const mockStore = configureMockStore([thunk]);
 let store;
 let sandbox;
 
-describe('Agencies actions', () => {
+describe('Fleet actions', () => {
     beforeEach(() => {
         store = mockStore({});
         sandbox = sinon.createSandbox();

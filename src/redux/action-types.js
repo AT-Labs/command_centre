@@ -216,6 +216,8 @@ export default {
     FETCH_CONTROL_TRIP_REPLAYS_TRIPS: 'update-control-trip-replay-trips',
     CLEAR_CONTROL_TRIP_REPLAYS_TRIPS: 'clear-control-trip-replay-trips',
     DISPLAY_CONTROL_TRIP_REPLAYS_SINGLE_TRIP: 'display-control-trip-replays-single-trip',
+    // VehicleReplays
+    FETCH_CONTROL_VEHICLE_REPLAYS: 'update-control-vehicle-replay',
     // Analytics
     SET_ID_MAPPINGS: 'set-id-mappings',
     SET_OCCUPANCY: 'set-occupancy',

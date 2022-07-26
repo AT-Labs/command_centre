@@ -32,3 +32,63 @@
         }
     }
 }
+
+.searchQuery {
+    display: flex;
+    margin-left: 0;
+}
+
+.tripId {
+    background-color: $at-bk-gray;
+
+    & > .font-size-md {
+        font-size: $font-size-base;
+        color: $at-gray;
+    }
+}
+
+.card {
+    display: flex !important;
+    flex: 1 !important;
+    flex-direction: row !important;
+    border-radius: 0 !important;
+}
+
+.card:hover {
+    background-color: #F3F4F5;
+}
+
+.cardBody {
+    display: flex !important;
+    padding: 1rem !important;
+}
+
+.status {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.time {
+    display: flex;
+    flex: auto;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.divider {
+    height: .5rem;
+    background-color: $at-bk-gray;
+}
+
+.cardBody > .time > dd {
+    margin-bottom: auto;
+}
+
+.tab {
+    font-weight: bold !important;
+}
+
+.totalResult {
+    border-bottom: 1px solid rgba(0, 0, 0, .12);
+}

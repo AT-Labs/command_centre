@@ -3,10 +3,15 @@ import React, { PureComponent } from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import dateTypes from '../../../../types/date-types';
+import Icon from '../../../Common/Icon/Icon';
 import { getColumns } from './columns';
+import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import AutoRefreshTable from '../../../Common/AutoRefreshTable/AutoRefreshTable';
-import { selectTrip } from '../../../../redux/actions/control/tripReplays/currentTrip';
 import { isTripCanceled } from '../../../../utils/control/tripReplays';
+import { selectTrip } from '../../../../redux/actions/control/tripReplays/currentTrip';
+import VehicleStatusView from './VehicleStatusView';
+import Loader from '../../../Common/Loader/Loader';
+import Tab from './Tab';
 import './SearchResultsList.scss';
 
 class SearchResultsList extends PureComponent {
@@ -14,6 +19,7 @@ class SearchResultsList extends PureComponent {
         trips: PropTypes.array,
         hasMore: PropTypes.bool,
         totalResults: PropTypes.number,
+        vehicleReplaysTotalStatus: PropTypes.number,
         searchParams: PropTypes.shape({
             searchTerm: PropTypes.object.isRequired,
             date: PropTypes.string.isRequired,
@@ -27,6 +33,7 @@ class SearchResultsList extends PureComponent {
     static defaultProps = {
         hasMore: false,
         totalResults: 0,
+        vehicleReplaysTotalStatus: 0,
         trips: null,
     };
 
@@ -40,11 +47,14 @@ class SearchResultsList extends PureComponent {
     };
 
     render() {
-        const { trips, hasMore, totalResults, searchParams: { searchTerm, date, startTime, endTime } } = this.props;
+        const { trips, hasMore, totalResults, vehicleReplaysTotalStatus, searchParams: { searchTerm, date, startTime, endTime } } = this.props;
         const { type, label } = searchTerm;
+        const { BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
+        const vehicles = [BUS.type, TRAIN.type, FERRY.type];
+        const title = label.split('-');
 
-        return (
-            <section className="trip-progress flex-grow-1 overflow-y-auto">
+        const renderHeader = () => (
+            <div>
                 <p className="text-muted font-weight-normal mb-3 ml-3">
                     Showing results
                     for
@@ -64,15 +74,28 @@ class SearchResultsList extends PureComponent {
                     {' '}
                     {moment(date).tz(dateTypes.TIME_ZONE).format('Do MMMM Y')}
                 </p>
-
                 <h2 className="mx-3 mt-4 mb-0">Select a trip</h2>
+            </div>
+        );
+
+        const renderResults = () => (
+            <div>
+                <div className="totalResult px-4 mt-3 mb-3">
+                    <dd>
+                        Showing
+                        {' '}
+                        { trips.length }
+                        {' '}
+                        trips
+                    </dd>
+                </div>
                 <AutoRefreshTable
                     rows={ trips }
                     fetchRows={ () => {
                         // noop
                     } }
                     columns={ getColumns(type) }
-                    className="trip-progress__past-stops-table pb-0 pt-3"
+                    className="trip-progress__past-stops-table pb-0"
                     emptyMessage="No trips found, please try again."
                     onRowClick={ trip => this.props.selectTrip(trip) }
                     hover
@@ -84,15 +107,97 @@ class SearchResultsList extends PureComponent {
                 { hasMore && (
                     <div className="text-muted p-4">
                         Showing
-                        {trips ? trips.length : 0}
+                        {' '}
+                        {trips.length}
                         {' '}
                         of
+                        {' '}
                         {totalResults}
                         {' '}
                         results. Please refine your search.
                     </div>
                 )}
+            </div>
+        );
 
+        const renderMain = () => {
+            if (trips === null) {
+                return (
+                    <section className="auto-refresh-table">
+                        <h4 className="px-4">
+                            <Loader className="my-3" />
+                        </h4>
+                    </section>
+                );
+            }
+
+            if (vehicles.includes(type) && trips.length === 0) {
+                // no tab just vehicle detail display
+                return (
+                    <div>
+                        <div className="px-4">
+                            <dd>{`Showing ${vehicleReplaysTotalStatus} statuses`}</dd>
+                        </div>
+                        <VehicleStatusView />
+                    </div>
+                );
+            }
+
+            if (vehicles.includes(type) && trips.length > 0) {
+                // return tab
+                return (
+                    <Tab
+                        renderTripView={ renderResults }
+                    />
+                );
+            }
+            return renderResults();
+        };
+
+        const renderVehicleHeader = () => (
+            <div className="px-4">
+                <div className="searchQuery">
+                    <div className="icon">
+                        <Icon icon={ type } />
+                    </div>
+
+                    <h2 className="text-capitalize ml-2">
+                        {`Vehicle ${title[0]}`}
+                    </h2>
+                </div>
+
+                <div className="searchQuery mb-3">
+                    <div className="searchQuery">
+                        <dt className="font-size-md mr-1">
+                            Date:
+                        </dt>
+                        <dd>{ `${moment(date).format('dddd')}, ${moment(date).tz(dateTypes.TIME_ZONE).format('Do MMMM Y')}` }</dd>
+                    </div>
+                    {startTime && (
+                        <div className="searchQuery">
+                            <dt className="font-size-md ml-3 mr-1">Start time: </dt>
+                            <dd>{`${startTime}`}</dd>
+                        </div>
+                    )}
+                    {endTime && (
+                        <div className="searchQuery">
+                            <dt className="font-size-md ml-3 mr-1">End time: </dt>
+                            <dd>{`${endTime}`}</dd>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+
+        return (
+            <section className="trip-progress flex-grow-1 overflow-y-auto">
+                { (vehicles.includes(type)) ? (
+                    renderVehicleHeader()
+                ) : (
+                    renderHeader()
+                )}
+
+                { renderMain() }
             </section>
         );
     }

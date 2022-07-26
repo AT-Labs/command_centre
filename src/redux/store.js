@@ -29,6 +29,7 @@ import stops from './reducers/static/stops';
 import user from './reducers/user';
 import controlTripReplayFilters from './reducers/control/tripReplays/filters';
 import controlTripReplayView from './reducers/control/tripReplays/tripReplayView';
+import vehicleReplay from './reducers/control/vehicleReplay';
 import currentTrip from './reducers/control/tripReplays/currentTrip';
 import tripReplaysMap from './reducers/control/tripReplays/map';
 import analytics from './reducers/analytics/analytics';
@@ -84,6 +85,7 @@ export default createStore(
             disruptions,
             dataManagement,
             notifications,
+            vehicleReplay,
         }),
         analytics,
         activity,
