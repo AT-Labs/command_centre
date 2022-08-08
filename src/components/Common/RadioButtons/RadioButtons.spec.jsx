@@ -25,7 +25,7 @@ describe('<RadioButtons />', () => {
             wrapper = setup({
                 title: 'Test Title',
                 checkedKey: '0',
-                keyValues: [{ key: '0', value: 'first option' }, { key: '1', value: 'second option' }],
+                itemOptions: [{ key: '0', value: 'first option' }, { key: '1', value: 'second option' }],
                 disabled: true,
             });
         });
@@ -39,8 +39,8 @@ describe('<RadioButtons />', () => {
         it('Should have 2 option elements with correct labels and 2 inputs', () => {
             expect(wrapper.find('label span').length).toEqual(3);
             expect(wrapper.find('input[type="radio"]').length).toEqual(2);
-            expect(wrapper.find('label span').at(1).text()).toEqual(mockProps.keyValues[0].value);
-            expect(wrapper.find('label span').at(2).text()).toEqual(mockProps.keyValues[1].value);
+            expect(wrapper.find('label span').at(1).text()).toEqual(mockProps.itemOptions[0].value);
+            expect(wrapper.find('label span').at(2).text()).toEqual(mockProps.itemOptions[1].value);
         });
 
         it('Should have the correct option checked', () => {
@@ -54,12 +54,34 @@ describe('<RadioButtons />', () => {
         });
     });
 
+    describe('Check rendered elements - disabled items', () => {
+        it('Should be disabled if the item set to disabled', () => {
+            wrapper = setup({
+                checkedKey: '0',
+                itemOptions: [{ key: '0', value: 'first option' }, { key: '1', value: 'second option', disabled: true }],
+                disabled: false,
+            });
+            expect(wrapper.find('input[type="radio"]').at(0).props().disabled).toBeFalsy();
+            expect(wrapper.find('input[type="radio"]').at(1).props().disabled).toBeTruthy();
+        });
+
+        it('Should be disabled if the the whole group set to disabled no matter the item options', () => {
+            wrapper = setup({
+                checkedKey: '0',
+                itemOptions: [{ key: '0', value: 'first option' }, { key: '1', value: 'second option', disabled: true }],
+                disabled: true,
+            });
+            expect(wrapper.find('input[type="radio"]').at(0).props().disabled).toBeTruthy();
+            expect(wrapper.find('input[type="radio"]').at(1).props().disabled).toBeTruthy();
+        });
+    });
+
     describe('Check function of enabled elements', () => {
         beforeEach(() => {
             wrapper = setup({
                 title: 'Test Title',
                 checkedKey: '0',
-                keyValues: [{ key: '0', value: 'first option' }, { key: '1', value: 'second option' }],
+                itemOptions: [{ key: '0', value: 'first option' }, { key: '1', value: 'second option' }],
                 disabled: false,
             });
         });

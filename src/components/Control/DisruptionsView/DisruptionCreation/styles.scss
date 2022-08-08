@@ -22,6 +22,10 @@
             width: 20px;
             top: 100%;
         }
+
+        & .sidepanel-primary-panel {
+            width: $side-panel-width;
+        }
     }
 
     .disruption-creation__sidepanel {
@@ -285,5 +289,15 @@ button.continue {
 .disruption-creation__disruption-type {
     & label:nth-of-type(2) {
         margin-left: 1.5rem !important;
+    }
+}
+
+.disruptions-sidepanel-with-workarounds {
+    & .sidepanel-primary-panel {
+        width: $side-panel-width-large !important;
+    }
+
+    footer {
+        width: $side-panel-width-large;
     }
 }

@@ -27,11 +27,69 @@ const env = getClientEnvironment(publicUrl);
 // This is the development configuration.
 // It is focused on developer experience and fast rebuilds.
 // The production configuration is different and lives in a separate file.
+
+const modulePluginsForDev = [
+
+    new StyleLintPlugin({
+        emitErrors: false,
+    }),
+    new ESLintWebpackPlugin({
+        emitWarning: true,
+        fix: false,
+    }),
+    // Makes some environment variables available in index.html.
+    // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
+    // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    // In development, this will be an empty string.
+    new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
+    // Generates an `index.html` file with the <script> injected.
+    new HtmlWebpackPlugin({
+        inject: true,
+        template: paths.appHtml,
+        filename: 'index.html',
+    }),
+    // Add module names to factory functions so they appear in browser profiler.
+    new webpack.NamedModulesPlugin(),
+    // Makes some environment variables available to the JS code, for example:
+    // if (process.env.NODE_ENV === 'development') { ... }. See `./env.js`.
+    new webpack.DefinePlugin(env.stringified),
+    // This is necessary to emit hot updates (currently CSS only):
+    new webpack.HotModuleReplacementPlugin(),
+    // Watcher doesn't work well if you mistype casing in a path so we use
+    // a plugin that prints an error when you attempt to do this.
+    // See https://github.com/facebookincubator/create-react-app/issues/240
+    new CaseSensitivePathsPlugin(),
+    // If you require a missing module and then `npm install` it, you still have
+    // to restart the development server for Webpack to discover it. This plugin
+    // makes the discovery automatic so you don't have to restart.
+    // See https://github.com/facebookincubator/create-react-app/issues/186
+    new WatchMissingNodeModulesPlugin(paths.appNodeModules),
+    // Moment.js is an extremely popular library that bundles large locale files
+    // by default due to how Webpack interprets its code. This is a practical
+    // solution that requires the user to opt into importing specific locales.
+    // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
+    // You can remove this if you don't use Moment.js:
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+];
+
+const modulePluginsForE2E = [
+    new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
+    new HtmlWebpackPlugin({
+        inject: true,
+        template: paths.appHtml,
+        filename: 'index.html',
+    }),
+    new webpack.NamedModulesPlugin(),
+    new webpack.DefinePlugin(env.stringified),
+    new CaseSensitivePathsPlugin(),
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+];
+
 module.exports = {
     mode: 'development',
     // You may want 'eval' instead if you prefer to see the compiled output in DevTools.
     // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
-    devtool: 'cheap-module-source-map',
+    devtool: process.env.E2E ? false : 'cheap-module-source-map',
     watchOptions: {
         ignored: ignoredFiles(paths.appSrc),
     },
@@ -43,24 +101,9 @@ module.exports = {
     // The first two entry points enable "hot" CSS and auto-refreshes for JS.
     entry: {
         main: [
-            // We ship a few polyfills by default:
             require.resolve('./polyfills'),
-            // Include an alternative client for WebpackDevServer. A client's job is to
-            // connect to WebpackDevServer by a socket and get notified about changes.
-            // When you save a file, the client will either apply hot updates (in case
-            // of CSS changes), or refresh the page (in case of JS changes). When you
-            // make a syntax error, this client will display a syntax error overlay.
-            // Note: instead of the default WebpackDevServer client, we use a custom one
-            // to bring better experience for Create React App users. You can replace
-            // the line below with these two lines if you prefer the stock client:
-            // require.resolve('webpack-dev-server/client') + '?/',
-            // require.resolve('webpack/hot/dev-server'),
             require.resolve('react-dev-utils/webpackHotDevClient'),
-            // Finally, this is your app's code:
             paths.appIndexJs,
-            // We include the app code last so that if there is a runtime error during
-            // initialization, it doesn't blow up the WebpackDevServer client, and
-            // changing JS code would still trigger a refresh.
         ],
         app: [paths.appMainJs],
     },
@@ -221,48 +264,7 @@ module.exports = {
             // Make sure to add the new loader(s) before the "file" loader.
         ],
     },
-    plugins: [
-        new StyleLintPlugin({
-            emitErrors: false,
-        }),
-        new ESLintWebpackPlugin({
-            emitWarning: true,
-            fix: false,
-        }),
-        // Makes some environment variables available in index.html.
-        // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
-        // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-        // In development, this will be an empty string.
-        new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
-        // Generates an `index.html` file with the <script> injected.
-        new HtmlWebpackPlugin({
-            inject: true,
-            template: paths.appHtml,
-            filename: 'index.html',
-        }),
-        // Add module names to factory functions so they appear in browser profiler.
-        new webpack.NamedModulesPlugin(),
-        // Makes some environment variables available to the JS code, for example:
-        // if (process.env.NODE_ENV === 'development') { ... }. See `./env.js`.
-        new webpack.DefinePlugin(env.stringified),
-        // This is necessary to emit hot updates (currently CSS only):
-        new webpack.HotModuleReplacementPlugin(),
-        // Watcher doesn't work well if you mistype casing in a path so we use
-        // a plugin that prints an error when you attempt to do this.
-        // See https://github.com/facebookincubator/create-react-app/issues/240
-        new CaseSensitivePathsPlugin(),
-        // If you require a missing module and then `npm install` it, you still have
-        // to restart the development server for Webpack to discover it. This plugin
-        // makes the discovery automatic so you don't have to restart.
-        // See https://github.com/facebookincubator/create-react-app/issues/186
-        new WatchMissingNodeModulesPlugin(paths.appNodeModules),
-        // Moment.js is an extremely popular library that bundles large locale files
-        // by default due to how Webpack interprets its code. This is a practical
-        // solution that requires the user to opt into importing specific locales.
-        // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
-        // You can remove this if you don't use Moment.js:
-        new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-    ],
+    plugins: process.env.E2E ? modulePluginsForE2E : modulePluginsForDev,
     // Some libraries import Node modules but don't use them in the browser.
     // Tell Webpack to provide empty mocks for them so importing them works.
     node: {

@@ -1,4 +1,5 @@
 {
     "useNotifications": "false",
-    "useRecurringCancellations": "false"
+    "useRecurringCancellations": "false",
+    "useWorkarounds": "false"
 }

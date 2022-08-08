@@ -45,7 +45,7 @@ export default class Wizard extends Component {
     render() {
         const { data, response, onSubmit } = this.props;
         const { activeStep, prevStep } = this.state;
-        const childrenWithProps = React.Children.map(this.props.children, child => React.cloneElement(
+        const childrenWithProps = React.Children.map(this.props.children.filter(child => !!child), child => React.cloneElement(
             child,
             {
                 data,

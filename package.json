@@ -58,6 +58,7 @@
     "moment-timezone": "^0.5.28",
     "object-assign": "4.1.1",
     "plotly.js": "^1.58.4",
+    "pluralize": "^8.0.0",
     "promise": "8.0.1",
     "prop-types": "^15.8.0",
     "raw-loader": "^0.5.1",
@@ -154,7 +155,7 @@
   },
   "scripts": {
     "start": "node scripts/start.js",
-    "start:e2e": "cross-env NODE_ENV=test REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN=true node scripts/start.js",
+    "start:e2e": "cross-env NODE_ENV=test REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN=true E2E=true node scripts/start.js",
     "build-prod": "cross-env NODE_ENV=production BABEL_ENV=production node scripts/build.js",
     "build-preprod": "cross-env NODE_ENV=preprod BABEL_ENV=production node scripts/build.js",
     "build-test": "cross-env NODE_ENV=test BABEL_ENV=production node scripts/build.js",

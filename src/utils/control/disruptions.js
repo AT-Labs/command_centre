@@ -1,6 +1,5 @@
 import { isEmpty, camelCase, isObject, uniq, transform, isArray, omit } from 'lodash-es';
 import moment from 'moment';
-
 import { TIME_FORMAT, LABEL_FREQUENCY, FREQUENCY_TYPE } from '../../constants/disruptions';
 import { DATE_FORMAT_DDMMYYYY as DATE_FORMAT } from '../dateUtils';
 import VEHICLE_TYPES from '../../types/vehicle-types';
@@ -104,5 +103,5 @@ export const recurrenceRadioOptions = isRecurrent => ({
     title: LABEL_FREQUENCY,
     formGroupClass: 'disruption-creation__wizard-select-details-frequency',
     checkedKey: isRecurrent ? '1' : '0',
-    keyValues: [{ key: '0', value: FREQUENCY_TYPE.ONCE }, { key: '1', value: FREQUENCY_TYPE.RECURRING }],
+    itemOptions: [{ key: '0', value: FREQUENCY_TYPE.ONCE }, { key: '1', value: FREQUENCY_TYPE.RECURRING }],
 });

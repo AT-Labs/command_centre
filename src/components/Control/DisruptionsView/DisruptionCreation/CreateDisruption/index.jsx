@@ -27,6 +27,7 @@ import {
     isDisruptionCancellationModalOpen,
     isDisruptionCreationOpen,
 } from '../../../../../redux/selectors/control/disruptions';
+import { useWorkarounds } from '../../../../../redux/selectors/appSettings';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT, STATUSES, DISRUPTION_TYPE } from '../../../../../types/disruptions-types';
 import { buildSubmitBody, momentFromDateTime, getRecurrenceDates } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
@@ -38,6 +39,7 @@ import Cancellation from '../WizardSteps/Cancellation';
 import Confirmation from '../WizardSteps/Confirmation';
 import SelectDetails from '../WizardSteps/SelectDetails';
 import SelectDisruptionEntities from '../WizardSteps/SelectDisruptionEntities';
+import Workarounds from '../WizardSteps/Workarounds';
 import Map from './Map';
 import { parseRecurrencePattern } from '../../../../../utils/recurrence';
 import EDIT_TYPE from '../../../../../types/edit-types';
@@ -204,7 +206,7 @@ export class CreateDisruption extends React.Component {
         };
 
         return (
-            <div className="sidepanel-control-component-view d-flex">
+            <div className={ `sidepanel-control-component-view d-flex ${this.props.useWorkarounds && 'disruptions-sidepanel-with-workarounds'}` }>
                 <SidePanel
                     isOpen
                     isActive
@@ -219,6 +221,11 @@ export class CreateDisruption extends React.Component {
                                 <li className={ this.props.activeStep === 2 ? 'active' : '' }>
                                     Enter Details
                                 </li>
+                                { this.props.useWorkarounds && (
+                                    <li className={ this.props.activeStep === 3 ? 'active' : '' }>
+                                        Add Workarounds
+                                    </li>
+                                )}
                             </ol>
                         </div>
                         {renderMainHeading()}
@@ -231,6 +238,7 @@ export class CreateDisruption extends React.Component {
                             <SelectDisruptionEntities
                                 onSubmitUpdate={ this.onSubmitUpdate } />
                             <SelectDetails />
+                            { this.props.useWorkarounds && <Workarounds />}
                         </Wizard>
                         <CustomModal
                             className="disruption-creation__modal"
@@ -279,6 +287,7 @@ CreateDisruption.propTypes = {
     updateDisruption: PropTypes.func.isRequired,
     disruptionToEdit: PropTypes.object,
     openCreateDisruption: PropTypes.func.isRequired,
+    useWorkarounds: PropTypes.bool.isRequired,
 };
 
 CreateDisruption.defaultProps = {
@@ -304,4 +313,5 @@ export default connect(state => ({
     editMode: getEditMode(state),
     routeColors: getRouteColors(state),
     disruptionToEdit: getDisruptionToEdit(state),
+    useWorkarounds: useWorkarounds(state),
 }), { createDisruption, openCreateDisruption, toggleDisruptionModals, updateCurrentStep, updateDisruption })(CreateDisruption);

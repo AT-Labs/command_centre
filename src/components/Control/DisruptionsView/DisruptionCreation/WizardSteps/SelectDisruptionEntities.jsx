@@ -39,14 +39,16 @@ import { search } from '../../../../../redux/actions/search';
 import { getSearchResults } from '../../../../../redux/selectors/search';
 import { getAllStops } from '../../../../../redux/selectors/static/stops';
 import { getStopGroupsIncludingDeleted } from '../../../../../redux/selectors/control/dataManagement/stopGroups';
+import { useWorkarounds } from '../../../../../redux/selectors/appSettings';
 import { getStopGroupName } from '../../../../../utils/control/dataManagement';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import ConfirmationModal from '../../../Common/ConfirmationModal/ConfirmationModal';
-import { DIRECTIONS } from '../../types';
+import { DIRECTIONS, confirmationModalTypes } from '../../types';
 
 export const SelectDisruptionEntities = (props) => {
     const { ROUTE, STOP, STOP_GROUP } = SEARCH_RESULT_TYPE;
+    const { NONE, CHANGE_DISRUPTION_TYPE, REMOVE_SELECTED_ENTITY, RESET_SELECTED_ENTITIES } = confirmationModalTypes;
     const isRouteType = type => type === ROUTE.type;
     const isStopGroupType = type => type === STOP_GROUP.type;
     const [areEntitiesSelected, setAreEntitiesSelected] = useState(false);
@@ -69,7 +71,10 @@ export const SelectDisruptionEntities = (props) => {
     const maxNumberOfEntities = 200;
     const [totalEntities, setTotalEntities] = useState(0);
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
-    const [isDisruptionTypeAlertModalOpen, setIsDisruptionTypeAlertModalOpen] = useState(false);
+    const [confirmationModalType, setConfirmationModalType] = useState(NONE);
+
+    const entityPropsWaitToRemoveInitState = { entity: undefined, entityType: undefined };
+    const [entityPropsWaitToRemove, setEntityPropsWaitToRemove] = useState(entityPropsWaitToRemoveInitState);
 
     const ENTITIES_TYPES = {
         SELECTED_ROUTES: 'selectedRoutes',
@@ -755,7 +760,14 @@ export const SelectDisruptionEntities = (props) => {
                     <div className="picklist__list-btn w-100 border-0 rounded-0 text-left">
                         <Button
                             className="cc-btn-link selection-item__button float-right p-0"
-                            onClick={ () => removeGroup(stopGroupStops[0].groupId) }>
+                            onClick={ () => {
+                                if (props.useWorkarounds) {
+                                    setConfirmationModalType(REMOVE_SELECTED_ENTITY);
+                                    setEntityPropsWaitToRemove({ entity: stopGroupStops[0].groupId, entityType: STOP_GROUP });
+                                } else {
+                                    removeGroup(stopGroupStops[0].groupId);
+                                }
+                            } }>
                             Remove
                             <span className="pl-3">X</span>
                         </Button>
@@ -794,32 +806,71 @@ export const SelectDisruptionEntities = (props) => {
         }
     };
 
+    const confirmationModalProps = {
+        [NONE]: {
+            title: '',
+            message: '',
+            isOpen: false,
+            onClose: () => { setConfirmationModalType(NONE); },
+            onAction: () => { setConfirmationModalType(NONE); },
+        },
+        [CHANGE_DISRUPTION_TYPE]: {
+            title: 'Change Disruption Type',
+            message: 'By making this change, all routes and stops will be removed. Do you wish to continue?',
+            isOpen: true,
+            onClose: () => { setConfirmationModalType(NONE); },
+            onAction: () => {
+                toggleDisruptionType();
+                deselectAllEntities();
+                setConfirmationModalType(NONE);
+            },
+        },
+        [REMOVE_SELECTED_ENTITY]: {
+            title: 'Remove selected entity',
+            message: 'By removing a stop or route, the workarounds added for it will be lost. Do you wish to continue?',
+            isOpen: true,
+            onClose: () => { setConfirmationModalType(NONE); },
+            onAction: () => {
+                const { entity, entityType } = entityPropsWaitToRemove;
+                if (entityType === STOP_GROUP) {
+                    removeGroup(entity);
+                } else {
+                    removeItem(entity);
+                }
+                setEntityPropsWaitToRemove(entityPropsWaitToRemoveInitState);
+                setConfirmationModalType(NONE);
+            },
+        },
+        [RESET_SELECTED_ENTITIES]: {
+            title: 'Reset all selected entities',
+            message: 'By reseting selected entities, all workarounds added for them will be lost. Do you wish to continue?',
+            isOpen: true,
+            onClose: () => { setConfirmationModalType(NONE); },
+            onAction: () => {
+                deselectAllEntities();
+                setConfirmationModalType(NONE);
+            },
+        },
+    };
+
+    const activeConfirmationModalProps = confirmationModalProps[confirmationModalType];
+
     return (
         <div className="select_disruption">
             <RadioButtons
                 title=""
                 formGroupClass="disruption-creation__disruption-type"
                 checkedKey={ props.data.disruptionType === DISRUPTION_TYPE.ROUTES ? '0' : '1' }
-                keyValues={ [{ key: '0', value: DISRUPTION_TYPE.ROUTES }, { key: '1', value: DISRUPTION_TYPE.STOPS }] }
+                itemOptions={ [{ key: '0', value: DISRUPTION_TYPE.ROUTES }, { key: '1', value: DISRUPTION_TYPE.STOPS }] }
                 disabled={ false }
                 onChange={ () => {
                     if (selectedEntities.length > 0) {
-                        setIsDisruptionTypeAlertModalOpen(true);
+                        setConfirmationModalType(CHANGE_DISRUPTION_TYPE);
                     } else {
                         toggleDisruptionType();
                     }
                 } }
             />
-            <ConfirmationModal
-                title="Change Disruption Type"
-                message="By making this change, all routes and stops will be removed. Do you wish to continue?"
-                isOpen={ isDisruptionTypeAlertModalOpen }
-                onClose={ () => setIsDisruptionTypeAlertModalOpen(false) }
-                onAction={ () => {
-                    toggleDisruptionType();
-                    deselectAllEntities();
-                    setIsDisruptionTypeAlertModalOpen(false);
-                } } />
             <PickList
                 isVerticalLayout
                 displayResults={ false }
@@ -843,7 +894,10 @@ export const SelectDisruptionEntities = (props) => {
             />
             { selectedEntities.length > 0 && (
                 <div className="card-header pt-0 pb-3 bg-transparent">
-                    <ResetButton className="search__reset p-0" onClick={ deselectAllEntities } />
+                    <ResetButton
+                        className="search__reset p-0"
+                        onClick={ () => (props.useWorkarounds ? setConfirmationModalType(RESET_SELECTED_ENTITIES) : deselectAllEntities()) }
+                    />
                 </div>
             )}
             <div className="selection-container h-100">
@@ -868,7 +922,14 @@ export const SelectDisruptionEntities = (props) => {
                                         <div className="picklist__list-btn w-100 border-0 rounded-0 text-left">
                                             <Button
                                                 className="cc-btn-link selection-item__button float-right p-0"
-                                                onClick={ () => removeItem(route) }>
+                                                onClick={ () => {
+                                                    if (props.useWorkarounds) {
+                                                        setConfirmationModalType(REMOVE_SELECTED_ENTITY);
+                                                        setEntityPropsWaitToRemove({ entity: route, entityType: ROUTE });
+                                                    } else {
+                                                        removeItem(route);
+                                                    }
+                                                } }>
                                                 Remove
                                                 <span className="pl-3">X</span>
                                             </Button>
@@ -907,7 +968,14 @@ export const SelectDisruptionEntities = (props) => {
                                         <div className="picklist__list-btn w-100 border-0 rounded-0 text-left">
                                             <Button
                                                 className="cc-btn-link selection-item__button float-right p-0"
-                                                onClick={ () => removeItem(stop) }>
+                                                onClick={ () => {
+                                                    if (props.useWorkarounds) {
+                                                        setConfirmationModalType(REMOVE_SELECTED_ENTITY);
+                                                        setEntityPropsWaitToRemove({ entity: stop, entityType: STOP });
+                                                    } else {
+                                                        removeItem(stop);
+                                                    }
+                                                } }>
                                                 Remove
                                                 <span className="pl-3">X</span>
                                             </Button>
@@ -956,6 +1024,12 @@ export const SelectDisruptionEntities = (props) => {
                 </IconContext.Provider>
                 <p className="font-weight-light text-center mb-0">{`${totalEntities} ${itemsSelectedText()} have been selected. Please reduce the selection to less than the maximum allowed of ${maxNumberOfEntities}`}</p>
             </CustomModal>
+            <ConfirmationModal
+                title={ activeConfirmationModalProps.title }
+                message={ activeConfirmationModalProps.message }
+                isOpen={ activeConfirmationModalProps.isOpen }
+                onClose={ activeConfirmationModalProps.onClose }
+                onAction={ activeConfirmationModalProps.onAction } />
         </div>
     );
 };
@@ -984,6 +1058,7 @@ SelectDisruptionEntities.propTypes = {
     stops: PropTypes.object.isRequired,
     stopGroups: PropTypes.object.isRequired,
     data: PropTypes.object,
+    useWorkarounds: PropTypes.bool.isRequired,
 };
 
 SelectDisruptionEntities.defaultProps = {
@@ -1005,6 +1080,7 @@ export default connect(state => ({
     searchResults: getSearchResults(state),
     stops: getAllStops(state),
     stopGroups: getStopGroupsIncludingDeleted(state),
+    useWorkarounds: useWorkarounds(state),
 }), {
     deleteAffectedEntities,
     updateCurrentStep,

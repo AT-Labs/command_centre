@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { FormGroup, Label, Input } from 'reactstrap';
 
 const RadioButtons = (props) => {
-    const radioButtons = () => props.keyValues.map(button => (
+    const radioButtons = () => props.itemOptions.map(button => (
         <Label key={ button.key } className="ml-5 mb-0">
             <Input
                 type="radio"
@@ -12,7 +12,7 @@ const RadioButtons = (props) => {
                     if (checked) props.onChange(button.key);
                 } }
                 checked={ props.checkedKey === button.key }
-                disabled={ props.disabled }
+                disabled={ props.disabled || button.disabled }
             />
             <span className="pl-4">{button.value}</span>
         </Label>
@@ -29,15 +29,16 @@ const RadioButtons = (props) => {
 };
 
 RadioButtons.propTypes = {
-    title: PropTypes.string.isRequired,
+    title: PropTypes.string,
     checkedKey: PropTypes.string.isRequired,
     onChange: PropTypes.func,
-    keyValues: PropTypes.array.isRequired,
+    itemOptions: PropTypes.array.isRequired,
     formGroupClass: PropTypes.string,
     disabled: PropTypes.bool,
 };
 
 RadioButtons.defaultProps = {
+    title: '',
     formGroupClass: '',
     disabled: true,
     onChange: null,

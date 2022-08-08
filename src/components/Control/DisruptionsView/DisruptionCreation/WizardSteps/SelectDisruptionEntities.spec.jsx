@@ -5,6 +5,7 @@ import { shallow } from 'enzyme';
 import { withHooks } from 'jest-react-hooks-shallow';
 import Footer from './Footer';
 import { SelectDisruptionEntities } from './SelectDisruptionEntities';
+import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
 
 let wrapper;
 let sandbox;
@@ -381,18 +382,116 @@ describe('<SelectDisruptionEntities />', () => {
     });
 
     describe('After page rendered', () => {
-        it('should fire remove from list when Remove is clicked', () => {
+        describe('Remove "X" is clicked', () => {
+            const cases = [
+                {
+                    caseDescription: 'useWorkarounds off: should fire remove stop group from list when Remove is clicked',
+                    useWorkarounds: false,
+                    entityType: SEARCH_RESULT_TYPE.STOP_GROUP,
+                    props: {
+                        affectedStops: stops,
+                        findRoutesByStop: { [stops[0].stopCode]: routes },
+                    },
+                    expectedResult: [stops[1]],
+                },
+                {
+                    caseDescription: 'useWorkarounds off: should fire remove stop from list when Remove is clicked',
+                    useWorkarounds: false,
+                    entityType: SEARCH_RESULT_TYPE.STOP,
+                    props: {
+                        affectedStops: stopsFromStopGroup,
+                        stopGroups,
+                    },
+                    expectedResult: [],
+                },
+                {
+                    caseDescription: 'useWorkarounds off: should fire remove route from list when Remove is clicked',
+                    useWorkarounds: false,
+                    entityType: SEARCH_RESULT_TYPE.ROUTE,
+                    props: {
+                        affectedRoutes: routes,
+                    },
+                    expectedResult: [routes[1]],
+                },
+                {
+                    caseDescription: 'useWorkarounds on: should should popup and then fire remove stop group from list when Remove is clicked',
+                    useWorkarounds: true,
+                    entityType: SEARCH_RESULT_TYPE.STOP_GROUP,
+                    props: {
+                        affectedStops: stops,
+                        findRoutesByStop: { [stops[0].stopCode]: routes },
+                    },
+                    expectedResult: [stops[1]],
+                },
+                {
+                    caseDescription: 'useWorkarounds on: should should popup and then fire remove stop from list when Remove is clicked',
+                    useWorkarounds: true,
+                    entityType: SEARCH_RESULT_TYPE.STOP,
+                    props: {
+                        affectedStops: stopsFromStopGroup,
+                        stopGroups,
+                    },
+                    expectedResult: [],
+                },
+                {
+                    caseDescription: 'useWorkarounds on: should should popup and then fire remove route from list when Remove is clicked',
+                    useWorkarounds: true,
+                    entityType: SEARCH_RESULT_TYPE.ROUTE,
+                    props: {
+                        affectedRoutes: routes,
+                    },
+                    expectedResult: [routes[1]],
+                },
+            ];
+            it.each(cases)('$caseDescription', ({ useWorkarounds, entityType, props, expectedResult }) => {
+                withHooks(() => {
+                    setup({ ...props, useWorkarounds });
+
+                    const selectedItems = findSelectionItems();
+                    selectedItems.at(0).find('ExpandableSummary>div>Button').at(1).simulate('click');
+                    wrapper.update();
+
+                    if (useWorkarounds) {
+                        const removeEntityPopupSelector = '[title="Remove selected entity"]';
+                        expect(wrapper.find(removeEntityPopupSelector).prop('isOpen')).toEqual(true);
+                        wrapper.find(removeEntityPopupSelector).renderProp('onAction')();
+                    }
+                    const functionExpectToBeCalled = entityType === SEARCH_RESULT_TYPE.ROUTE ? defaultState.updateAffectedRoutesState : defaultState.updateAffectedStopsState;
+                    expect(functionExpectToBeCalled).toHaveBeenCalledWith(expectedResult);
+                });
+            });
+        });
+
+        it('with useWorkarounds off: should fire reset the list when Reset is clicked', () => {
             withHooks(() => {
                 setup({
                     affectedStops: stops,
                     findRoutesByStop: { [stops[0].stopCode]: routes },
                 });
 
-                const selectedItems = findSelectionItems();
-                selectedItems.at(0).find('ExpandableSummary>div>Button').at(1).simulate('click');
+                wrapper.find('ResetButton').renderProp('onClick')();
                 wrapper.update();
 
-                expect(defaultState.updateAffectedStopsState).toHaveBeenCalledWith([stops[1]]);
+                expect(defaultState.deleteAffectedEntities).toHaveBeenCalled();
+            });
+        });
+
+        it('with useWorkarounds on: should popup reset alert when Reset is clicked', () => {
+            withHooks(() => {
+                setup({
+                    affectedStops: stops,
+                    findRoutesByStop: { [stops[0].stopCode]: routes },
+                    useWorkarounds: true,
+                });
+
+                wrapper.find('ResetButton').renderProp('onClick')();
+                wrapper.update();
+
+                const resetEntityPopupSelector = '[title="Reset all selected entities"]';
+                expect(wrapper.find(resetEntityPopupSelector).prop('isOpen')).toEqual(true);
+
+                wrapper.find(resetEntityPopupSelector).renderProp('onAction')();
+                expect(defaultState.deleteAffectedEntities).toHaveBeenCalled();
             });
         });
 
@@ -442,11 +541,10 @@ describe('<SelectDisruptionEntities />', () => {
                 wrapper.find('RadioButtons').renderProp('onChange')();
                 wrapper.update();
 
-                expect(wrapper.find('ConfirmationModal').prop('isOpen')).toEqual(true);
-                expect(wrapper.find('ConfirmationModal').prop('message')).toEqual('By making this change, all routes and stops will be removed. Do you wish to continue?');
-
-                wrapper.find('ConfirmationModal').renderProp('onClose')();
-                expect(wrapper.find('ConfirmationModal').prop('isOpen')).toEqual(false);
+                const changeDisruptionTypePopupSelector = '[title="Change Disruption Type"]';
+                expect(wrapper.find(changeDisruptionTypePopupSelector).prop('isOpen')).toEqual(true);
+                wrapper.find(changeDisruptionTypePopupSelector).renderProp('onClose')();
+                expect(wrapper.find(changeDisruptionTypePopupSelector)).toHaveLength(0);
             });
         });
 
@@ -456,7 +554,7 @@ describe('<SelectDisruptionEntities />', () => {
                 wrapper.find('RadioButtons').renderProp('onChange')();
                 wrapper.update();
 
-                wrapper.find('ConfirmationModal').renderProp('onAction')();
+                wrapper.find('[title="Change Disruption Type"]').renderProp('onAction')();
                 wrapper.update();
                 expect(defaultState.onDataUpdate).toHaveBeenCalledWith('disruptionType', 'Stops');
                 expect(defaultState.deleteAffectedEntities).toHaveBeenCalledWith();

@@ -14,6 +14,7 @@ import { isStartTimeValid, isStartDateValid, isEndDateValid, isEndTimeValid, isD
 import { toggleDisruptionModals, updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { DisruptionDetailSelect } from '../../DisruptionDetail/DisruptionDetailSelect';
 import { getAffectedRoutes, getAffectedStops } from '../../../../../redux/selectors/control/disruptions';
+import { useWorkarounds } from '../../../../../redux/selectors/appSettings';
 import {
     CAUSES,
     IMPACTS,
@@ -110,9 +111,14 @@ export const SelectDetails = (props) => {
 
     const onContinue = () => {
         if (activePeriodsValid()) {
-            props.onStepUpdate(2);
-            props.updateCurrentStep(1);
-            props.onSubmit();
+            if (props.useWorkarounds) {
+                props.onStepUpdate(2);
+                props.updateCurrentStep(3);
+            } else {
+                props.onStepUpdate(2);
+                props.updateCurrentStep(1);
+                props.onSubmit();
+            }
         }
     };
 
@@ -349,7 +355,7 @@ export const SelectDetails = (props) => {
                 onStepUpdate={ props.onStepUpdate }
                 toggleDisruptionModals={ props.toggleDisruptionModals }
                 isSubmitDisabled={ isSubmitDisabled }
-                nextButtonValue="Finish"
+                nextButtonValue={ props.useWorkarounds ? 'Continue' : 'Finish' }
                 onContinue={ () => onContinue() }
                 onBack={ () => onBack() } />
             <CustomMuiDialog
@@ -364,7 +370,6 @@ export const SelectDetails = (props) => {
                     label: 'OK',
                     onClick: () => setIsAlertModalOpen(false),
                     isDisabled: false,
-                    className: 'test',
                 } }
                 onClose={ () => setIsAlertModalOpen(false) }
                 isModalOpen={ isAlertModalOpen }>
@@ -386,6 +391,7 @@ SelectDetails.propTypes = {
     updateCurrentStep: PropTypes.func,
     stops: PropTypes.array,
     routes: PropTypes.array,
+    useWorkarounds: PropTypes.bool.isRequired,
 };
 
 SelectDetails.defaultProps = {
@@ -401,4 +407,5 @@ SelectDetails.defaultProps = {
 export default connect(state => ({
     stops: getAffectedStops(state),
     routes: getAffectedRoutes(state),
+    useWorkarounds: useWorkarounds(state),
 }), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);

@@ -151,3 +151,9 @@ export const ALERT_TYPES = {
         body: 'It is not possible to add stops to a route-based disruption via the map.',
     }),
 };
+
+export const WORKAROUND_TYPES = {
+    all: { key: 'all', value: 'Workaround for all' },
+    route: { key: 'route', value: 'Workaround by Route' },
+    stop: { key: 'stop', value: 'Workaround by Stop' },
+};
