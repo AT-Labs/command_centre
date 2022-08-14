@@ -1,22 +1,18 @@
 const path = require('path');
-const fs = require('fs');
 const webpack = require('webpack');
+const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
 const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const pkg = require('../package');
 const paths = require('./paths');
 const getClientEnvironment = require('./env');
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
 const publicPath = '/';
-// Some apps do not use client-side routing with pushState.
-// For these, "homepage" can be set to "." to enable relative asset paths.
-const shouldUseRelativeAssetPaths = publicPath === './';
 // Source maps are resource heavy and can cause out of memory issue for large source files.
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
 // `publicUrl` is just like `publicPath`, but we will provide it to our app
@@ -25,7 +21,6 @@ const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
 const publicUrl = publicPath.slice(0, -1);
 // Get environment variables to inject into our app.
 const env = getClientEnvironment(publicUrl);
-fs.writeFileSync(`${paths.appPublic}/version.txt`, pkg.version);
 // Assert this just to be safe.
 // Development builds of React are slow and not intended for production.
 // if (env.stringified['process.env'].NODE_ENV !== '"production"') {
@@ -33,7 +28,7 @@ fs.writeFileSync(`${paths.appPublic}/version.txt`, pkg.version);
 // }
 
 // Note: defined here because it will be used more than once.
-const cssFilename = `static/css/[name].${pkg.version}.css`;
+const cssFilename = 'static/css/[name].[contenthash].css';
 
 // This is the production configuration.
 // It compiles slowly and is focused on producing a fast and minimal bundle.
@@ -66,7 +61,7 @@ module.exports = {
         // Generated JS file names (with nested folders).
         // There will be one main bundle, and one file per asynchronous chunk.
         // We don't currently advertise code splitting but Webpack supports it.
-        filename: `static/js/[name].${pkg.version}.js`,
+        filename: 'static/js/[name].[contenthash].js',
         // We inferred the "public path" (such as / or /my-project) from homepage.
         publicPath,
         // Point sourcemap entries to original disk location (format as URL on Windows)
@@ -196,6 +191,9 @@ module.exports = {
     // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
     // In production, it will be an empty string unless you specify "homepage"
     // in `package.json`, in which case it will be the pathname of that URL.
+        new WebpackManifestPlugin({
+            fileName: 'asset-manifest.json',
+        }),
         new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
         // Generates an `index.html` file with the <script> injected.
         new HtmlWebpackPlugin({

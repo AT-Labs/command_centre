@@ -90,7 +90,7 @@ class RealTimeMap extends React.Component {
 
     render() {
         return (
-            <LeafletProvider>
+            <LeafletProvider value="">
                 <LeafletMap
                     className="map flex-grow-1"
                     center={ MAP_DATA.centerLocation }

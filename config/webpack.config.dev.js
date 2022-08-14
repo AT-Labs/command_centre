@@ -1,5 +1,4 @@
 const path = require('path');
-const fs = require('fs');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
@@ -10,10 +9,8 @@ const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const ESLintWebpackPlugin = require('eslint-webpack-plugin');
 const ignoredFiles = require('react-dev-utils/ignoredFiles');
 const getClientEnvironment = require('./env');
-const pkg = require('../package');
 const paths = require('./paths');
 
-fs.writeFileSync(`${paths.appPublic}/version.txt`, pkg.version);
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.
 const publicPath = '/';
@@ -113,7 +110,7 @@ module.exports = {
         // This does not produce a real file. It's just the virtual path that is
         // served by WebpackDevServer in development. This is the JS bundle
         // containing code from all our entry points, and the Webpack runtime.
-        filename: `static/js/[name].${pkg.version}.js`,
+        filename: 'static/js/[name].js',
         // This is the URL that app is served from. We use "/" in development.
         publicPath,
         path: path.resolve(__dirname, './dist'),

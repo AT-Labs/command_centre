@@ -8,7 +8,6 @@ test-reports
 cypress/screenshots
 .scannerwork
 .nyc_output
-public/version.txt
 # ide
 .idea
 *.iml
