@@ -69,24 +69,11 @@ const modulePluginsForDev = [
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
 ];
 
-const modulePluginsForE2E = [
-    new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
-    new HtmlWebpackPlugin({
-        inject: true,
-        template: paths.appHtml,
-        filename: 'index.html',
-    }),
-    new webpack.NamedModulesPlugin(),
-    new webpack.DefinePlugin(env.stringified),
-    new CaseSensitivePathsPlugin(),
-    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-];
-
 module.exports = {
     mode: 'development',
     // You may want 'eval' instead if you prefer to see the compiled output in DevTools.
     // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
-    devtool: process.env.E2E ? false : 'cheap-module-source-map',
+    devtool: 'cheap-module-source-map',
     watchOptions: {
         ignored: ignoredFiles(paths.appSrc),
     },
@@ -261,7 +248,7 @@ module.exports = {
             // Make sure to add the new loader(s) before the "file" loader.
         ],
     },
-    plugins: process.env.E2E ? modulePluginsForE2E : modulePluginsForDev,
+    plugins: modulePluginsForDev,
     // Some libraries import Node modules but don't use them in the browser.
     // Tell Webpack to provide empty mocks for them so importing them works.
     node: {

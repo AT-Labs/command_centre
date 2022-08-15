@@ -155,7 +155,7 @@
   },
   "scripts": {
     "start": "node scripts/start.js",
-    "start:e2e": "cross-env NODE_ENV=test REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN=true E2E=true node scripts/start.js",
+    "start:e2e": "cross-env NODE_ENV=test REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN=true node scripts/start.js",
     "build-prod": "NODE_OPTIONS=\"--max-old-space-size=4096\" cross-env NODE_ENV=production BABEL_ENV=production node scripts/build.js",
     "build-preprod": "NODE_OPTIONS=\"--max-old-space-size=4096\" cross-env NODE_ENV=preprod BABEL_ENV=production node scripts/build.js",
     "build-test": "NODE_OPTIONS=\"--max-old-space-size=4096\" cross-env NODE_ENV=test BABEL_ENV=production node scripts/build.js",
