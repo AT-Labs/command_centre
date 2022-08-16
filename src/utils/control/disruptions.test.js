@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import moment from 'moment';
 import MockDate from 'mockdate';
-import { isEndDateValid, isEndTimeValid, transformIncidentNo, isDurationValid } from './disruptions';
+import { isEndDateValid, isEndTimeValid, transformIncidentNo, isDurationValid, buildSubmitBody } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 
 describe('isEndDateValid', () => {
@@ -96,5 +96,23 @@ describe('isDurationValid', () => {
         expect(isDurationValid('-1', true)).to.be.false;
         expect(isDurationValid('0', true)).to.be.false;
         expect(isDurationValid('25', true)).to.be.false;
+    });
+});
+
+describe('buildSubmitBody', () => {
+    it('should include workarounds when passed', () => {
+        const workarounds = [{"type": "all", "workaround": "workaround"}];
+        expect(buildSubmitBody({}, [], [], workarounds)).to.deep.equal({
+            affectedEntities: [],
+            mode: "",
+            workarounds,
+        });
+    });
+
+    it('should not include workarounds when not passed', () => {
+        expect(buildSubmitBody({}, [], [])).to.deep.equal({
+            affectedEntities: [],
+            mode: "",
+        });
     });
 });

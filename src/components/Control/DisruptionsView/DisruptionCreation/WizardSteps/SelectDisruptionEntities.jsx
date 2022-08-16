@@ -239,6 +239,9 @@ export const SelectDisruptionEntities = (props) => {
             removeNotFoundFromStopGroups();
             props.onStepUpdate(1);
             props.updateCurrentStep(2);
+        } else if (props.useWorkarounds) {
+            props.onStepUpdate(2);
+            props.updateCurrentStep(3);
         } else {
             props.onSubmitUpdate();
         }
@@ -1002,7 +1005,7 @@ export const SelectDisruptionEntities = (props) => {
                     updateCurrentStep={ props.updateCurrentStep }
                     onStepUpdate={ props.onStepUpdate }
                     toggleDisruptionModals={ props.toggleDisruptionModals }
-                    nextButtonValue={ props.isEditMode ? 'Save' : 'Continue' }
+                    nextButtonValue={ props.isEditMode && !props.useWorkarounds ? 'Save' : 'Continue' }
                     onContinue={ () => onContinue() }
                     isSubmitDisabled={ isButtonDisabled() } />
             ) }

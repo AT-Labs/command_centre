@@ -28,7 +28,7 @@ import {
     isDisruptionCreationOpen,
 } from '../../../../../redux/selectors/control/disruptions';
 import { useWorkarounds } from '../../../../../redux/selectors/appSettings';
-import { DEFAULT_CAUSE, DEFAULT_IMPACT, STATUSES, DISRUPTION_TYPE } from '../../../../../types/disruptions-types';
+import { DEFAULT_CAUSE, DEFAULT_IMPACT, STATUSES, DISRUPTION_TYPE, DISRUPTION_CREATION_STEPS } from '../../../../../types/disruptions-types';
 import { buildSubmitBody, momentFromDateTime, getRecurrenceDates } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
@@ -115,6 +115,18 @@ export class CreateDisruption extends React.Component {
         });
     };
 
+    setupDataEdit = () => {
+        const { workarounds } = this.props.disruptionToEdit;
+        const disruptionType = _.isEmpty(this.props.routes) && !_.isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
+        this.setState({
+            disruptionData: {
+                ...INIT_STATE,
+                disruptionType,
+                workarounds,
+            },
+        });
+    };
+
     setupData = () => {
         const now = moment();
         const disruptionType = _.isEmpty(this.props.routes) && !_.isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
@@ -134,6 +146,8 @@ export class CreateDisruption extends React.Component {
 
         if (this.props.editMode === EDIT_TYPE.COPY) {
             this.setupDataCopy();
+        } else if (this.props.editMode === EDIT_TYPE.EDIT) {
+            this.setupDataEdit();
         } else {
             this.setupData();
         }
@@ -179,11 +193,12 @@ export class CreateDisruption extends React.Component {
             endTime: endTimeMoment,
             startTime: startTimeMoment,
         };
-        this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops));
+        this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds));
     };
 
     onSubmitUpdate = () => {
-        const disruptionRequest = buildSubmitBody(this.props.disruptionToEdit, this.props.routes, this.props.stops);
+        const { disruptionData } = this.state;
+        const disruptionRequest = buildSubmitBody(this.props.disruptionToEdit, this.props.routes, this.props.stops, disruptionData.workarounds);
         this.props.updateDisruption(disruptionRequest);
         this.props.openCreateDisruption(false);
         this.props.toggleDisruptionModals('isConfirmationOpen', true);
@@ -199,10 +214,49 @@ export class CreateDisruption extends React.Component {
         const { disruptionData, isConfirmationOpen } = this.state;
 
         const renderMainHeading = () => {
-            if (this.props.editMode === EDIT_TYPE.COPY) {
-                return <h2 className="pl-4 pr-4">{`Copy Disruption #${this.props.disruptionToEdit.incidentNo}`}</h2>;
-            }
-            return <h2 className="pl-4 pr-4">Create a new Disruption</h2>;
+            const titleByMode = {
+                [EDIT_TYPE.CREATE]: 'Create a new Disruption',
+                [EDIT_TYPE.COPY]: `Copy Disruption #${this.props.disruptionToEdit.incidentNo}`,
+                [EDIT_TYPE.EDIT]: 'Edit Disruption',
+            };
+            return <h2 className="pl-4 pr-4">{titleByMode[this.props.editMode]}</h2>;
+        };
+
+        const renderSteps = () => {
+            const steps = {
+                [DISRUPTION_CREATION_STEPS.SEARCH_ROUTES_STOPS]: (
+                    <li key="1" className={ `position-relative ${this.props.activeStep === 1 ? 'active' : ''}` }>
+                        Search routes or stops
+                    </li>
+                ),
+                [DISRUPTION_CREATION_STEPS.ENTER_DETAILS]: (
+                    <li key="2" className={ this.props.activeStep === 2 ? 'active' : '' }>
+                        Enter Details
+                    </li>
+                ),
+                [DISRUPTION_CREATION_STEPS.ADD_WORKAROUNDS]: (
+                    <li key="3" className={ this.props.activeStep === 3 ? 'active' : '' }>
+                        Add Workarounds
+                    </li>
+                ),
+            };
+
+            return (
+                <div className="disruption-creation__steps p-4">
+                    <ol>
+                        { this.props.editMode !== EDIT_TYPE.EDIT && ([
+                            steps[DISRUPTION_CREATION_STEPS.SEARCH_ROUTES_STOPS],
+                            steps[DISRUPTION_CREATION_STEPS.ENTER_DETAILS],
+                            ...(this.props.useWorkarounds ? [steps[DISRUPTION_CREATION_STEPS.ADD_WORKAROUNDS]] : []),
+                        ])}
+                        { this.props.editMode === EDIT_TYPE.EDIT && ([
+                            steps[DISRUPTION_CREATION_STEPS.SEARCH_ROUTES_STOPS],
+                            ...(this.props.useWorkarounds ? [steps[DISRUPTION_CREATION_STEPS.ADD_WORKAROUNDS]] : []),
+                            ...(!this.props.useWorkarounds ? [steps[DISRUPTION_CREATION_STEPS.ENTER_DETAILS]] : []),
+                        ])}
+                    </ol>
+                </div>
+            );
         };
 
         return (
@@ -213,21 +267,7 @@ export class CreateDisruption extends React.Component {
                     className="sidepanel-primary-panel disruption-creation__sidepanel side-panel__scroll-size"
                     toggleButton={ false }>
                     <div className="disruption-creation__container h-100">
-                        <div className="disruption-creation__steps p-4">
-                            <ol>
-                                <li className={ `position-relative ${this.props.activeStep === 1 ? 'active' : ''}` }>
-                                    Search routes or stops
-                                </li>
-                                <li className={ this.props.activeStep === 2 ? 'active' : '' }>
-                                    Enter Details
-                                </li>
-                                { this.props.useWorkarounds && (
-                                    <li className={ this.props.activeStep === 3 ? 'active' : '' }>
-                                        Add Workarounds
-                                    </li>
-                                )}
-                            </ol>
-                        </div>
+                        {renderSteps()}
                         {renderMainHeading()}
                         <Wizard
                             className="disruption-creation__wizard container p-0"
@@ -238,7 +278,10 @@ export class CreateDisruption extends React.Component {
                             <SelectDisruptionEntities
                                 onSubmitUpdate={ this.onSubmitUpdate } />
                             <SelectDetails />
-                            { this.props.useWorkarounds && <Workarounds />}
+                            { this.props.useWorkarounds && (
+                                <Workarounds
+                                    onSubmitUpdate={ this.onSubmitUpdate } />
+                            )}
                         </Wizard>
                         <CustomModal
                             className="disruption-creation__modal"

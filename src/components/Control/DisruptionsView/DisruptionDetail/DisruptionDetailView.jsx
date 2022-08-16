@@ -43,6 +43,7 @@ import {
     uploadDisruptionFiles,
     deleteDisruptionFile,
 } from '../../../../redux/actions/control/disruptions';
+import { useWorkarounds } from '../../../../redux/selectors/appSettings';
 import { getShapes, getDisruptionsLoadingState, getRouteColors, getAffectedRoutes, getAffectedStops } from '../../../../redux/selectors/control/disruptions';
 import DetailLoader from '../../../Common/Loader/DetailLoader';
 import { DisruptionDetailSelect } from './DisruptionDetailSelect';
@@ -336,7 +337,7 @@ const DisruptionDetailView = (props) => {
         <Form className={ props.className }>
             <div className={ `row position-relative ${props.className === 'magnify' ? 'mr-0' : ''}` }>
                 <AffectedEntities
-                    editLabel="Edit routes and stops"
+                    editLabel={ props.useWorkarounds ? 'Edit routes, stops and workarounds' : 'Edit routes and stops' }
                     editAction={ () => {
                         if (!isEmpty(props.stops) && !isEmpty(props.routes)) {
                             setIsAlertModalOpen(EDIT);
@@ -668,6 +669,7 @@ DisruptionDetailView.propTypes = {
     routes: PropTypes.array.isRequired,
     stops: PropTypes.array.isRequired,
     className: PropTypes.string,
+    useWorkarounds: PropTypes.bool.isRequired,
 };
 
 DisruptionDetailView.defaultProps = {
@@ -684,6 +686,7 @@ export default connect(state => ({
     routeColors: getRouteColors(state),
     routes: getAffectedRoutes(state),
     stops: getAffectedStops(state),
+    useWorkarounds: useWorkarounds(state),
 }), {
     getRoutesByShortName,
     openCreateDisruption,

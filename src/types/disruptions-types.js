@@ -157,3 +157,9 @@ export const WORKAROUND_TYPES = {
     route: { key: 'route', value: 'Workaround by Route' },
     stop: { key: 'stop', value: 'Workaround by Stop' },
 };
+
+export const DISRUPTION_CREATION_STEPS = {
+    SEARCH_ROUTES_STOPS: 'Search routes or stops',
+    ENTER_DETAILS: 'Enter Details',
+    ADD_WORKAROUNDS: 'Add Workarounds',
+};
