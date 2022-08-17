@@ -100,13 +100,14 @@ VehiclePositionTooltip.propTypes = {
     position: PropTypes.object.isRequired,
     vehicleInfo: PropTypes.object.isRequired,
     tripInfo: PropTypes.object.isRequired,
-    routeInfo: PropTypes.object.isRequired,
+    routeInfo: PropTypes.object,
     stops: PropTypes.array.isRequired,
     operatorCode: PropTypes.string,
 };
 
 VehiclePositionTooltip.defaultProps = {
     operatorCode: '',
+    routeInfo: null,
 };
 
 export default connect(state => ({

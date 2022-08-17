@@ -1,11 +1,14 @@
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import { connect } from 'react-redux';
 import VehicleStatusView from './VehicleStatusView';
-import { getVehicleReplaysTotalResults } from '../../../../redux/selectors/control/vehicleReplay';
+import { getVehicleReplaysTotalResults } from '../../../../redux/selectors/control/vehicleReplays/vehicleReplay';
+import { getAllVehicleReplayEvents } from '../../../../redux/actions/control/vehicleReplays/currentVehicleReplay';
+import { clearCurrentTrip } from '../../../../redux/actions/control/tripReplays/currentTrip';
+import { getTripReplayRedirected } from '../../../../redux/selectors/control/tripReplays/tripReplayView';
 
 const TabPanel = (props) => {
     const { children, value, index, ...other } = props;
@@ -43,7 +46,21 @@ function a11yProps(index) {
 }
 
 const ReplaySubTab = (props) => {
+    const { handleMouseEnter, handleMouseLeave, handleMouseClick } = props;
     const [value, setValue] = React.useState(0);
+
+    useEffect(() => {
+        if (value === 1) {
+            props.clearCurrentTrip();
+            props.getAllVehicleReplayEvents();
+        }
+    }, [value]);
+
+    useEffect(() => {
+        if (props.isRedirected) {
+            setValue(1);
+        }
+    }, []);
 
     const handleChange = (_event, newValue) => {
         setValue(newValue);
@@ -53,8 +70,8 @@ const ReplaySubTab = (props) => {
         <section>
             <Box sx={ { borderBottom: 1, borderColor: 'divider' } }>
                 <Tabs value={ value } onChange={ handleChange } aria-label="replay tab" variant="fullWidth">
-                    <Tab label="Trip View" { ...a11yProps(0) } className="tab" />
-                    <Tab label="Vehicle View" { ...a11yProps(1) } className="tab" />
+                    <Tab label="Trip View" { ...a11yProps(0) } className="replay-tab" />
+                    <Tab label="Vehicle View" { ...a11yProps(1) } className="replay-tab" />
                 </Tabs>
             </Box>
             <TabPanel value={ value } index={ 0 }>
@@ -70,7 +87,10 @@ const ReplaySubTab = (props) => {
                         statuses
                     </dd>
                 </div>
-                <VehicleStatusView />
+                <VehicleStatusView
+                    handleMouseEnter={ handleMouseEnter }
+                    handleMouseLeave={ handleMouseLeave }
+                    handleMouseClick={ handleMouseClick } />
             </TabPanel>
         </section>
     );
@@ -79,14 +99,26 @@ const ReplaySubTab = (props) => {
 ReplaySubTab.propTypes = {
     vehicleReplaysTotalStatus: PropTypes.number,
     renderTripView: PropTypes.func.isRequired,
+    handleMouseEnter: PropTypes.func.isRequired,
+    handleMouseLeave: PropTypes.func.isRequired,
+    handleMouseClick: PropTypes.func.isRequired,
+    getAllVehicleReplayEvents: PropTypes.func.isRequired,
+    clearCurrentTrip: PropTypes.func.isRequired,
+    isRedirected: PropTypes.bool,
 };
 
 ReplaySubTab.defaultProps = {
     vehicleReplaysTotalStatus: 0,
+    isRedirected: false,
 };
 
 export default connect(
     state => ({
         vehicleReplaysTotalStatus: getVehicleReplaysTotalResults(state),
+        isRedirected: getTripReplayRedirected(state),
     }),
+    {
+        getAllVehicleReplayEvents,
+        clearCurrentTrip,
+    },
 )(ReplaySubTab);

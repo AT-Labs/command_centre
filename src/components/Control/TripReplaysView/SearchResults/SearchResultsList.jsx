@@ -7,6 +7,7 @@ import Icon from '../../../Common/Icon/Icon';
 import { getColumns } from './columns';
 import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import AutoRefreshTable from '../../../Common/AutoRefreshTable/AutoRefreshTable';
+import { getVehicleReplaysTotalResults } from '../../../../redux/selectors/control/vehicleReplays/vehicleReplay';
 import { isTripCanceled } from '../../../../utils/control/tripReplays';
 import { selectTrip } from '../../../../redux/actions/control/tripReplays/currentTrip';
 import VehicleStatusView from './VehicleStatusView';
@@ -19,6 +20,9 @@ class SearchResultsList extends PureComponent {
         trips: PropTypes.array,
         hasMore: PropTypes.bool,
         totalResults: PropTypes.number,
+        handleMouseEnter: PropTypes.func.isRequired,
+        handleMouseLeave: PropTypes.func.isRequired,
+        handleMouseClick: PropTypes.func.isRequired,
         vehicleReplaysTotalStatus: PropTypes.number,
         searchParams: PropTypes.shape({
             searchTerm: PropTypes.object.isRequired,
@@ -47,7 +51,8 @@ class SearchResultsList extends PureComponent {
     };
 
     render() {
-        const { trips, hasMore, totalResults, vehicleReplaysTotalStatus, searchParams: { searchTerm, date, startTime, endTime } } = this.props;
+        const { trips, hasMore, totalResults, vehicleReplaysTotalStatus, searchParams: { searchTerm, date, startTime, endTime },
+            handleMouseEnter, handleMouseLeave, handleMouseClick } = this.props;
         const { type, label } = searchTerm;
         const { BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
         const vehicles = [BUS.type, TRAIN.type, FERRY.type];
@@ -80,7 +85,7 @@ class SearchResultsList extends PureComponent {
 
         const renderResults = () => (
             <div>
-                <div className="totalResult px-4 mt-3 mb-3">
+                <div className="total-result px-3 mt-3 mb-3">
                     <dd>
                         Showing
                         {' '}
@@ -138,7 +143,10 @@ class SearchResultsList extends PureComponent {
                         <div className="px-4">
                             <dd>{`Showing ${vehicleReplaysTotalStatus} statuses`}</dd>
                         </div>
-                        <VehicleStatusView />
+                        <VehicleStatusView
+                            handleMouseEnter={ handleMouseEnter }
+                            handleMouseLeave={ handleMouseLeave }
+                            handleMouseClick={ handleMouseClick } />
                     </div>
                 );
             }
@@ -148,6 +156,9 @@ class SearchResultsList extends PureComponent {
                 return (
                     <Tab
                         renderTripView={ renderResults }
+                        handleMouseEnter={ handleMouseEnter }
+                        handleMouseLeave={ handleMouseLeave }
+                        handleMouseClick={ handleMouseClick }
                     />
                 );
             }
@@ -156,7 +167,7 @@ class SearchResultsList extends PureComponent {
 
         const renderVehicleHeader = () => (
             <div className="px-4">
-                <div className="searchQuery">
+                <div className="search-query">
                     <div className="icon">
                         <Icon icon={ type } />
                     </div>
@@ -166,21 +177,21 @@ class SearchResultsList extends PureComponent {
                     </h2>
                 </div>
 
-                <div className="searchQuery mb-3">
-                    <div className="searchQuery">
+                <div className="search-query mb-3">
+                    <div className="search-query">
                         <dt className="font-size-md mr-1">
                             Date:
                         </dt>
                         <dd>{ `${moment(date).format('dddd')}, ${moment(date).tz(dateTypes.TIME_ZONE).format('Do MMMM Y')}` }</dd>
                     </div>
                     {startTime && (
-                        <div className="searchQuery">
+                        <div className="search-query">
                             <dt className="font-size-md ml-3 mr-1">Start time: </dt>
                             <dd>{`${startTime}`}</dd>
                         </div>
                     )}
                     {endTime && (
-                        <div className="searchQuery">
+                        <div className="search-query">
                             <dt className="font-size-md ml-3 mr-1">End time: </dt>
                             <dd>{`${endTime}`}</dd>
                         </div>
@@ -204,7 +215,9 @@ class SearchResultsList extends PureComponent {
 }
 
 export default connect(
-    () => ({}),
+    state => ({
+        vehicleReplaysTotalStatus: getVehicleReplaysTotalResults(state),
+    }),
     {
         selectTrip,
     },

@@ -4,7 +4,9 @@ import ACTION_TYPE from '../../../action-types';
 import ERROR_TYPE from '../../../../types/error-types';
 import { setBannerError } from '../../activity';
 import { updateTripReplayDisplaySingleTrip } from './tripReplayView';
+import { updatePrevTripValue } from './prevFilterValue';
 import { getAllRoutes } from '../../../selectors/static/routes';
+import { clearVehicleReplayCurrentReplayDetail } from '../vehicleReplays/currentVehicleReplay';
 
 const updateTripReplayCurrentTripDetail = detail => ({
     type: ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_CURRENT_TRIP_DETAIL,
@@ -28,6 +30,8 @@ export const clearCurrentTrip = () => ({
 });
 
 export const selectTrip = trip => (dispatch, getState) => {
+    dispatch(clearVehicleReplayCurrentReplayDetail());
+    dispatch(updatePrevTripValue(trip));
     dispatch(updateLoadingTripReplayState(true));
     // update current trip detail with the existing information passed from list
     dispatch(updateTripReplayCurrentTripDetail(trip));

@@ -29,9 +29,11 @@ import stops from './reducers/static/stops';
 import user from './reducers/user';
 import controlTripReplayFilters from './reducers/control/tripReplays/filters';
 import controlTripReplayView from './reducers/control/tripReplays/tripReplayView';
-import vehicleReplay from './reducers/control/vehicleReplay';
+import vehicleReplay from './reducers/control/vehicleReplays/vehicleReplay';
 import currentTrip from './reducers/control/tripReplays/currentTrip';
+import prevFilterValue from './reducers/control/tripReplays/prevFilterValue';
 import tripReplaysMap from './reducers/control/tripReplays/map';
+import currentVehicleReplay from './reducers/control/vehicleReplays/currentVehicleReplay';
 import analytics from './reducers/analytics/analytics';
 import routesMappings from './reducers/static/routesMappings';
 import dataManagement from './reducers/control/dataManagement';
@@ -77,7 +79,12 @@ export default createStore(
                 filters: controlTripReplayFilters,
                 tripReplaysView: controlTripReplayView,
                 currentTrip,
+                prevFilterValue,
                 map: tripReplaysMap,
+            }),
+            vehicleReplays: combineReducers({
+                currentVehicleReplay,
+                vehicleReplay,
             }),
             link,
             serviceDate,

@@ -1,5 +1,5 @@
 import { handleActions } from 'redux-actions';
-import ACTION_TYPE from '../../action-types';
+import ACTION_TYPE from '../../../action-types';
 
 export const INIT_STATE = {
     trips: null,

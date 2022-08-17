@@ -5,6 +5,13 @@ import ERROR_TYPE from '../../../../types/error-types';
 import { setBannerError } from '../../activity';
 import { updateTripReplayDisplayFilters, updateTrips } from './tripReplayView';
 import { getTripReplayFilters } from '../../../selectors/control/tripReplays/filters';
+import { getTripReplayRedirected } from '../../../selectors/control/tripReplays/tripReplayView';
+import { getPreviousTripReplayFilterValues } from '../../../selectors/control/tripReplays/prevFilterValue';
+
+export const updateTripReplayFilterData = filterData => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_FILTER_DATA,
+    payload: { ...filterData },
+});
 
 export const updateTripReplaySearchTerm = searchTerm => ({
     type: ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_SEARCH_TERM,
@@ -63,8 +70,13 @@ export const handleSearchDateChange = searchDate => (dispatch) => {
 };
 
 export const search = () => (dispatch, getState) => {
+    let filters;
     dispatch(updateTripReplayDisplayFilters(false));
-    const filters = getTripReplayFilters(getState());
+    if (getTripReplayRedirected(getState())) {
+        filters = getPreviousTripReplayFilterValues(getState());
+    } else {
+        filters = getTripReplayFilters(getState());
+    }
     return TRIP_REPLAY_API.getTripReplayTrips(filters)
         .then((response) => {
             const { trips, hasMore, totalResults } = response;

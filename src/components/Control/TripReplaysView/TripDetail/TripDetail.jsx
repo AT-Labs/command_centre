@@ -11,6 +11,7 @@ import {
     getTripStatus,
     getOperationalEvents,
 } from '../../../../redux/selectors/control/tripReplays/currentTrip';
+import { navigateToVehicleTab } from '../../../../redux/actions/control/tripReplays/prevFilterValue';
 import { search } from '../../../../redux/actions/search';
 import { getSearchResults } from '../../../../redux/selectors/search';
 import KeyEventList from './KeyEventList';
@@ -22,6 +23,7 @@ import { updateControlDetailView, updateMainView } from '../../../../redux/actio
 import VIEW_TYPE from '../../../../types/view-types';
 import { updateDisruptionFilters } from '../../../../redux/actions/control/disruptions';
 import Icon from '../../../Common/Icon/Icon';
+import './TripDetail.scss';
 
 const renderDate = date => (date && moment(date).format('dddd, DD MMMM YYYY'));
 
@@ -45,9 +47,8 @@ const renderStartAndEndTime = (startTime, endTime) => {
 };
 
 function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, vehiclePositions, operationalEvents,
-    navigate, updateView, updateFilters, searchRoutes, searchResults }) {
+    navigate, updateView, updateFilters, searchRoutes, searchResults, navigateToVehicleReplayTab }) {
     const { route: routeInfo, tripSignOn, tripStart } = summary;
-
     const endTime = !isEmpty(stops)
         ? parseInt(get(stops[stops.length - 1], 'arrival.time', get(maxBy(vehiclePositions, 'timestamp'), 'timestamp')), 10)
         : null;
@@ -123,6 +124,19 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
                     <br />
                     { renderStartAndEndTime(tripSignOn, endTime) }
                 </p>
+                <div
+                    className="tripVehicleLabel"
+                    tabIndex={ 0 }
+                    role="button"
+                    onClick={ () => navigateToVehicleReplayTab(summary) }
+                    onKeyDown={ () => navigateToVehicleReplayTab(summary) }>
+                    <p className="font-size-sm font-weight-light mt-0 mb-0">
+                        Vehicle:&nbsp;
+                    </p>
+                    <p className="font-size-sm font-weight-light mt-0 mb-0">
+                        <u>{summary.vehicleLabel}</u>
+                    </p>
+                </div>
                 { isCopyTrip(summary) && <TripUpdateTag type={ TRIP_UPDATE_TYPE.COPY_TRIP } /> }
                 { tripHasDisruption(summary) && (
                     <button
@@ -164,6 +178,7 @@ TripDetail.propTypes = {
     updateFilters: PropTypes.func.isRequired,
     searchRoutes: PropTypes.func.isRequired,
     searchResults: PropTypes.object.isRequired,
+    navigateToVehicleReplayTab: PropTypes.func.isRequired,
 };
 
 TripDetail.defaultProps = {
@@ -185,4 +200,5 @@ export default connect(state => ({
     updateView: updateMainView,
     navigate: updateControlDetailView,
     searchRoutes: search,
+    navigateToVehicleReplayTab: navigateToVehicleTab,
 })(TripDetail);

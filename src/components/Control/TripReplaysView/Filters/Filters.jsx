@@ -26,7 +26,7 @@ import {
 
 import {
     searchVehicleReplay,
-} from '../../../../redux/actions/control/vehicleReplay';
+} from '../../../../redux/actions/control/vehicleReplays/vehicleReplay';
 
 import ControlSearch from '../../Common/ControlSearch/ControlSearch';
 import { getTimePickerOptions } from '../../../../utils/helpers';

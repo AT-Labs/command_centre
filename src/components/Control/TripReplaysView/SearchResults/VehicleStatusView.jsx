@@ -1,5 +1,5 @@
 import * as React from 'react';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { CardBody, Card } from 'reactstrap';
@@ -8,12 +8,13 @@ import { TbEngine, TbEngineOff } from 'react-icons/tb';
 import { BiLogIn, BiLogOut } from 'react-icons/bi';
 import { FaDoorOpen, FaDoorClosed } from 'react-icons/fa';
 import { MdKeyboardArrowRight } from 'react-icons/md';
+import DATE_TYPE from '../../../../types/date-types';
 import { getTripReplayTotalResults } from '../../../../redux/selectors/control/tripReplays/tripReplayView';
 import Loader from '../../../Common/Loader/Loader';
-import { getVehicleReplays } from '../../../../redux/selectors/control/vehicleReplay';
+import { getVehicleReplays } from '../../../../redux/selectors/control/vehicleReplays/vehicleReplay';
 
 const VehicleStatusView = (props) => {
-    const { vehicleReplays, totalTripResults } = props;
+    const { vehicleReplays, totalTripResults, handleMouseEnter, handleMouseLeave, handleMouseClick } = props;
 
     const Icons = {
         signOn: BiLogIn,
@@ -28,7 +29,7 @@ const VehicleStatusView = (props) => {
         stoppingLightOff: BsFillLightbulbOffFill,
     };
 
-    const Title = {
+    const Titles = {
         signOn: 'Sign On',
         signOff: 'Sign Off',
         keyOn: 'Key On',
@@ -41,19 +42,31 @@ const VehicleStatusView = (props) => {
         stoppingLightOff: 'Stopping Light Off',
     };
 
-    const getTime = timestamp => moment(timestamp).format('H:mm:ss');
+    const getTime = timestamp => moment.unix(timestamp).tz(DATE_TYPE.TIME_ZONE).format('HH:mm:ss');
+
+    const onClick = (event) => {
+        handleMouseClick(event);
+    };
 
     const renderVehicleStatusView = (event) => {
         // no trip but got status
         const IconName = Icons[event.type];
         return (
-            <Card className="card" key={ event.id }>
-                <CardBody className="cardBody">
-                    <div className="status ml-3">
+            <Card
+                className="vehicle-status-card"
+                id={ event.id }
+                key={ event.id }
+                onClick={ () => onClick(event) }
+                onKeyDown={ () => handleMouseClick(event) }
+                onMouseEnter={ () => handleMouseEnter(event) }
+                onMouseLeave={ () => handleMouseLeave() }
+            >
+                <CardBody className="vehicle-status-card-body">
+                    <div className="display-status ml-3">
                         <IconName size={ 24 } />
-                        <dt className="font-size-md ml-3">{Title[event.type]}</dt>
+                        <dt className="font-size-md ml-3">{Titles[event.type]}</dt>
                     </div>
-                    <div className="time mr-3">
+                    <div className="vehicle-status-time mr-3">
                         <dd>{getTime(event.timestamp)}</dd>
                         <MdKeyboardArrowRight size={ 24 } className="ml-3" />
                     </div>
@@ -65,7 +78,7 @@ const VehicleStatusView = (props) => {
     const renderTripId = trip => (
         // got trip and got status
         <div key={ trip.id }>
-            <div className="tripId">
+            <div className="vehicle-status-tripId">
                 <dt className="font-size-md px-4 pt-1 pb-1">{trip.id}</dt>
             </div>
             {trip.event.map(event => (
@@ -96,7 +109,7 @@ const VehicleStatusView = (props) => {
                         ))}
                     </div>
                 )}
-                <div className="divider" />
+                <div className="vehicle-status-divider" />
             </div>
         );
     };
@@ -120,6 +133,9 @@ const VehicleStatusView = (props) => {
 VehicleStatusView.propTypes = {
     totalTripResults: PropTypes.number,
     vehicleReplays: PropTypes.object,
+    handleMouseEnter: PropTypes.func.isRequired,
+    handleMouseLeave: PropTypes.func.isRequired,
+    handleMouseClick: PropTypes.func.isRequired,
 };
 
 VehicleStatusView.defaultProps = {
@@ -132,5 +148,4 @@ export default connect(
         totalTripResults: getTripReplayTotalResults(state),
         vehicleReplays: getVehicleReplays(state),
     }),
-    {},
 )(VehicleStatusView);

@@ -33,62 +33,64 @@
     }
 }
 
-.searchQuery {
-    display: flex;
-    margin-left: 0;
-}
-
-.tripId {
-    background-color: $at-bk-gray;
-
-    & > .font-size-md {
-        font-size: $font-size-base;
-        color: $at-gray;
+.trip-progress {
+    .search-query {
+        display: flex;
+        margin-left: 0;
     }
-}
 
-.card {
-    display: flex !important;
-    flex: 1 !important;
-    flex-direction: row !important;
-    border-radius: 0 !important;
-}
+    .vehicle-status-tripId {
+        background-color: $at-bk-gray;
 
-.card:hover {
-    background-color: #F3F4F5;
-}
+        & > .font-size-md {
+            font-size: $font-size-base;
+            color: $at-gray;
+        }
+    }
 
-.cardBody {
-    display: flex !important;
-    padding: 1rem !important;
-}
+    .vehicle-status-card {
+        display: flex !important;
+        flex: 1 !important;
+        flex-direction: row !important;
+        border-radius: 0 !important;
 
-.status {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-}
+        &:hover {
+            background-color: #F3F4F5;
+        }
+    }
 
-.time {
-    display: flex;
-    flex: auto;
-    justify-content: flex-end;
-    align-items: center;
-}
+    .vehicle-status-card-body {
+        display: flex !important;
+        padding: 1rem !important;
 
-.divider {
-    height: .5rem;
-    background-color: $at-bk-gray;
-}
+        & > .display-status {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
 
-.cardBody > .time > dd {
-    margin-bottom: auto;
-}
+        & > .vehicle-status-time {
+            display: flex;
+            flex: auto;
+            justify-content: flex-end;
+            align-items: center;
 
-.tab {
-    font-weight: bold !important;
-}
+            & > dd {
+                margin-bottom: auto;
+            }
+        }
+    }
 
-.totalResult {
-    border-bottom: 1px solid rgba(0, 0, 0, .12);
+    .vehicle-status-divider {
+        height: .5rem;
+        background-color: $at-bk-gray;
+    }
+
+    .replay-tab {
+        font-weight: bold !important;
+    }
+
+    .total-result {
+        border-bottom: 1px solid rgba(0, 0, 0, .12);
+    }
 }

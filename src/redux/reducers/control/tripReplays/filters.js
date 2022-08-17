@@ -22,6 +22,7 @@ const handleTripReplaySearchDateUpdate = (state, { payload: { searchDate } }) =>
 const handleTripReplayStartTimeUpdate = (state, { payload: { startTime } }) => ({ ...state, startTime });
 const handleTripReplayEndTimeUpdate = (state, { payload: { endTime } }) => ({ ...state, endTime });
 const handleTripReplayTimeTypeUpdate = (state, { payload: { timeType } }) => ({ ...state, timeType });
+const handleTripReplayFilterData = (state, { payload }) => ({ ...state, ...payload });
 const handleTripReplayClearDate = (state, { payload }) => ({ ...state, ...payload });
 
 export default handleActions({
@@ -31,5 +32,6 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_START_TIME]: handleTripReplayStartTimeUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_END_TIME]: handleTripReplayEndTimeUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_TIME_TYPE]: handleTripReplayTimeTypeUpdate,
+    [ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_FILTER_DATA]: handleTripReplayFilterData,
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_CLEAR_DATE]: handleTripReplayClearDate,
 }, INIT_STATE);

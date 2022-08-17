@@ -2,11 +2,9 @@ import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import sinon from 'sinon';
 import { expect } from 'chai';
-
-
-import ACTION_TYPE from '../../action-types';
+import ACTION_TYPE from '../../../action-types';
 import { searchVehicleReplay } from './vehicleReplay';
-import * as vehicleReplayApi from '../../../utils/transmitters/vehicle-replay-api';
+import * as vehicleReplayApi from '../../../../utils/transmitters/vehicle-replay-api';
 
 const mockStore = configureMockStore([thunk]);
 let store;

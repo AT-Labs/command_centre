@@ -205,6 +205,7 @@ export default {
     UPDATE_CONTROL_TRIP_REPLAYS_LOADING: 'update-control-trip-replays-loading',
     UPDATE_CONTROL_TRIP_REPLAYS_CURRENT_TRIP_DETAIL: 'update-control-trip-replays-current-trip-detail',
     CLEAR_CONTROL_TRIP_REPLAY_CURRENT_TRIP: 'clear-control-trip-replay-current-trip',
+    UPDATE_CONTROL_TRIP_REPLAYS_FILTER_DATA: 'update-control-trip-replay-filter-data',
     UPDATE_CONTROL_TRIP_REPLAYS_SEARCH_TERM: 'update-control-trip-replay-search-term',
     RESET_CONTROL_TRIP_REPLAYS_SEARCH_TERM: 'reset-control-trip-replay-search-term',
     UPDATE_CONTROL_TRIP_REPLAYS_SEARCH_DATE: 'update-control-trip-replay-search-date',
@@ -216,8 +217,14 @@ export default {
     FETCH_CONTROL_TRIP_REPLAYS_TRIPS: 'update-control-trip-replay-trips',
     CLEAR_CONTROL_TRIP_REPLAYS_TRIPS: 'clear-control-trip-replay-trips',
     DISPLAY_CONTROL_TRIP_REPLAYS_SINGLE_TRIP: 'display-control-trip-replays-single-trip',
+    REDIRECT_CONTROL_TRIP_REPLAYS: 'redirect-control-trip-replays',
+    UPDATE_CONTROL_TRIP_REPLAYS_PREVIOUS_FILTER_VALUES: 'update-control-trip-replays-previous-filter-values',
+    UPDATE_CONTROL_TRIP_REPLAYS_PREVIOUS_TRIP_DETAIL: 'update-control-trip-replays-previous-trip-detail',
     // VehicleReplays
     FETCH_CONTROL_VEHICLE_REPLAYS: 'update-control-vehicle-replay',
+    CLEAR_CONTROL_VEHICLE_REPLAYS_CURRENT_REPLAY_DETAIL: 'clear-control-vehicle-replays-current-replay-detail',
+    UPDATE_CONTROL_VEHICLE_REPLAYS_EVENTS: 'update-control-vehicle-replays-events',
+    UPDATE_CONTROL_VEHICLE_FIRST_REPLAY_EVENT: 'update-control-vehicle-first-replay-event',
     // Analytics
     SET_ID_MAPPINGS: 'set-id-mappings',
     SET_OCCUPANCY: 'set-occupancy',

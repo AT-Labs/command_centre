@@ -1,6 +1,7 @@
 import _ from 'lodash-es';
 import { createSelector } from 'reselect';
 import { getJsonFromWkt } from '../../../../utils/control/tripReplays';
+import { getFleetState } from '../../static/fleet';
 
 export const getCurrentTripState = state => _.result(state, 'control.tripReplays.currentTrip');
 
@@ -10,6 +11,8 @@ export const getShape = createSelector(getRouteInfo, (route) => {
     return _.isEmpty(shape) ? [] : getJsonFromWkt(shape);
 });
 export const getRouteColor = createSelector(getRouteInfo, route => _.result(route, 'routeColor'));
+
+export const getFleetByVehicleId = createSelector(getFleetState, getCurrentTripState, (allFleetState, currentTrip) => allFleetState[currentTrip.vehicleId]);
 
 export const getVehiclePositions = createSelector(getCurrentTripState, (tripDetail) => {
     const vehiclePositions = _.result(tripDetail, 'vehicleEvents');

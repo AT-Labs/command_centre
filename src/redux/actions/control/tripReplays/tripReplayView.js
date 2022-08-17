@@ -14,6 +14,13 @@ export const updateTripReplayDisplaySingleTrip = isSingleTripDisplayed => ({
     },
 });
 
+export const updateTripReplayRedirected = isRedirected => ({
+    type: ACTION_TYPE.REDIRECT_CONTROL_TRIP_REPLAYS,
+    payload: {
+        isRedirected,
+    },
+});
+
 export const updateTrips = (trips, hasMore, totalResults) => ({
     type: ACTION_TYPE.FETCH_CONTROL_TRIP_REPLAYS_TRIPS,
     payload: {

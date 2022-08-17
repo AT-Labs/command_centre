@@ -1,8 +1,8 @@
-import ACTION_TYPE from '../../action-types';
-import ERROR_TYPE from '../../../types/error-types';
-import * as VEHICLE_REPLAY_API from '../../../utils/transmitters/vehicle-replay-api';
-import { getTripReplayFilters } from '../../selectors/control/tripReplays/filters';
-import { setBannerError } from '../activity';
+import ACTION_TYPE from '../../../action-types';
+import ERROR_TYPE from '../../../../types/error-types';
+import * as VEHICLE_REPLAY_API from '../../../../utils/transmitters/vehicle-replay-api';
+import { getTripReplayFilters } from '../../../selectors/control/tripReplays/filters';
+import { setBannerError } from '../../activity';
 
 const vechicleReplays = (trips, totalStatus) => ({
     type: ACTION_TYPE.FETCH_CONTROL_VEHICLE_REPLAYS,

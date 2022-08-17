@@ -8,19 +8,29 @@ import { Alert } from 'reactstrap';
 import Filters from './Filters/Filters';
 import { getTripReplayFilters } from '../../../redux/selectors/control/tripReplays/filters';
 import { getTripInfo } from '../../../redux/selectors/control/tripReplays/currentTrip';
+import { getPreviousTripReplayFilterValues, getPreviousTripReplayTripValues } from '../../../redux/selectors/control/tripReplays/prevFilterValue';
 import {
     getTripReplayHasMore,
     getTripReplayShouldDisplayFilters,
     getTripReplaySingleTripDisplayed, getTripReplayTotalResults,
     getTripReplayTrips,
+    getTripReplayRedirected,
 } from '../../../redux/selectors/control/tripReplays/tripReplayView';
 import '../../Common/OffCanvasLayout/OffCanvasLayout.scss';
 import TripSearchResultsList from './SearchResults/SearchResultsList';
 import SidePanel from '../../Common/OffCanvasLayout/SidePanel/SidePanel';
 import HistoricalMap from './Map/Map';
 import TripDetail from './TripDetail/TripDetail';
-import { clearTrips, updateTripReplayDisplayFilters, updateTripReplayDisplaySingleTrip } from '../../../redux/actions/control/tripReplays/tripReplayView';
+import { clearVehicleReplayCurrentReplayDetail } from '../../../redux/actions/control/vehicleReplays/currentVehicleReplay';
+import { getFirstEventPosition } from '../../../redux/selectors/control/vehicleReplays/currentVehicleReplay';
 import {
+    clearTrips,
+    updateTripReplayDisplayFilters,
+    updateTripReplayDisplaySingleTrip,
+    updateTripReplayRedirected,
+} from '../../../redux/actions/control/tripReplays/tripReplayView';
+import {
+    updateTripReplayFilterData,
     resetTripReplaySearchTerm,
     updateTripReplaySearchTerm,
     updateTripReplayStartTime,
@@ -39,7 +49,7 @@ const TripReplaysView = (props) => {
     const history = useHistory();
     const location = useLocation();
 
-    const { searchFilters, trips, totalResults, hasMore, isSingleTripDisplayed } = props;
+    const { searchFilters, trips, totalResults, hasMore, isSingleTripDisplayed, selectedTripRedirect, prevFilterValues, firstEventPosition } = props;
     const { searchTerm, searchDate, startTime, endTime, timeType } = searchFilters;
     const [hoveredKeyEvent, setHoveredKeyEvent] = useState();
     const [selectedKeyEventDetail, setSelectedKeyEventDetail] = useState();
@@ -163,6 +173,12 @@ const TripReplaysView = (props) => {
     }, [timeType]);
 
     useEffect(() => {
+        if (firstEventPosition) {
+            setSelectedKeyEventLatLng([firstEventPosition.position.latitude, firstEventPosition.position.longitude]);
+        }
+    }, [firstEventPosition]);
+
+    useEffect(() => {
         const today = moment().format(SERVICE_DATE_FORMAT);
         const dueDate = moment('15/08/2021', SERVICE_DATE_FORMAT);
         setShouldShowMissingDataNotification(today <= dueDate && !shouldNotificationBeClosed);
@@ -179,12 +195,24 @@ const TripReplaysView = (props) => {
     };
 
     const handleMouseClick = (keyEventDetail) => {
-        setSelectedKeyEventLatLng(keyEventDetail.latlon);
         setSelectedKeyEventId(keyEventDetail.id);
         setSelectedKeyEventDetail(keyEventDetail);
         setTimeout(() => {
             forceUpdate();
         }, []);
+    };
+
+    const handleMouseClickTripReplay = (keyEventDetail) => {
+        setSelectedKeyEventLatLng(keyEventDetail.latlon);
+        handleMouseClick(keyEventDetail);
+    };
+
+    const handleMouseClickVehicleReplay = (keyEventDetail) => {
+        props.clearCurrentTrip();
+        if (keyEventDetail.position.latitude !== null) {
+            setSelectedKeyEventLatLng([keyEventDetail.position.latitude, keyEventDetail.position.longitude]);
+        }
+        handleMouseClick(keyEventDetail);
     };
 
     const clearSelectedKeyEvent = (shouldClearSelectedKeyEvent) => {
@@ -205,7 +233,7 @@ const TripReplaysView = (props) => {
                 <TripDetail
                     handleMouseEnter={ handleMouseEnter }
                     handleMouseLeave={ handleMouseLeave }
-                    handleMouseClick={ handleMouseClick } />
+                    handleMouseClick={ handleMouseClickTripReplay } />
             );
         }
         return (
@@ -220,6 +248,9 @@ const TripReplaysView = (props) => {
                     endTime,
                     timeType,
                 } }
+                handleMouseEnter={ handleMouseEnter }
+                handleMouseLeave={ handleMouseLeave }
+                handleMouseClick={ handleMouseClickVehicleReplay }
             />
         );
     };
@@ -232,12 +263,19 @@ const TripReplaysView = (props) => {
     };
 
     const backClick = () => {
-        if (props.isSingleTripDisplayed) {
+        if (props.isRedirected) {
+            props.updateTripReplayDisplaySingleTrip(true);
+            props.selectTrip(selectedTripRedirect);
+            props.search();
+            props.updateTripReplayFilterData(prevFilterValues);
+            props.updateTripReplayRedirected(false);
+        } else if (props.isSingleTripDisplayed) {
             props.updateTripReplayDisplaySingleTrip(false);
         } else {
             props.updateTripReplayDisplayFilters(true);
             props.clearTrips();
             props.clearCurrentTrip();
+            props.clearVehicleReplayCurrentReplayDetail();
         }
     };
 
@@ -260,7 +298,8 @@ const TripReplaysView = (props) => {
                 selectedKeyEvent={ selectedKeyEventDetail }
                 handlePopupClose={ handlePopupClose }
                 clearSelectedKeyEvent={ clearSelectedKeyEvent }
-                center={ selectedKeyEventLatLng } />
+                center={ selectedKeyEventLatLng }
+            />
             <Alert
                 color="warning position-fixed"
                 toggle={ toggleNotification }
@@ -285,7 +324,9 @@ TripReplaysView.propTypes = {
     hasMore: PropTypes.bool.isRequired,
     isFiltersViewDisplayed: PropTypes.bool.isRequired,
     isSingleTripDisplayed: PropTypes.bool.isRequired,
+    isRedirected: PropTypes.bool.isRequired,
     clearTrips: PropTypes.func.isRequired,
+    clearVehicleReplayCurrentReplayDetail: PropTypes.func.isRequired,
     updateTripReplayDisplayFilters: PropTypes.func.isRequired,
     updateTripReplayDisplaySingleTrip: PropTypes.func.isRequired,
     clearCurrentTrip: PropTypes.func.isRequired,
@@ -296,13 +337,21 @@ TripReplaysView.propTypes = {
     updateTripReplayStartTime: PropTypes.func.isRequired,
     updateTripReplayEndTime: PropTypes.func.isRequired,
     updateTripReplayTimeType: PropTypes.func.isRequired,
+    updateTripReplayRedirected: PropTypes.func.isRequired,
     search: PropTypes.func.isRequired,
     selectTrip: PropTypes.func.isRequired,
+    firstEventPosition: PropTypes.object,
+    selectedTripRedirect: PropTypes.object,
+    updateTripReplayFilterData: PropTypes.func.isRequired,
+    prevFilterValues: PropTypes.object,
 };
 
 TripReplaysView.defaultProps = {
     trips: null,
     currentTrip: null,
+    firstEventPosition: null,
+    selectedTripRedirect: null,
+    prevFilterValues: null,
 };
 
 export default connect(
@@ -310,14 +359,19 @@ export default connect(
         searchFilters: getTripReplayFilters(state),
         isFiltersViewDisplayed: getTripReplayShouldDisplayFilters(state),
         isSingleTripDisplayed: getTripReplaySingleTripDisplayed(state),
+        isRedirected: getTripReplayRedirected(state),
         trips: getTripReplayTrips(state),
         totalResults: getTripReplayTotalResults(state),
         hasMore: getTripReplayHasMore(state),
         currentTrip: getTripInfo(state),
+        firstEventPosition: getFirstEventPosition(state),
+        selectedTripRedirect: getPreviousTripReplayTripValues(state),
+        prevFilterValues: getPreviousTripReplayFilterValues(state),
     }),
     {
         updateTripReplayDisplayFilters,
         updateTripReplayDisplaySingleTrip,
+        clearVehicleReplayCurrentReplayDetail,
         clearTrips,
         clearCurrentTrip,
         search,
@@ -328,5 +382,7 @@ export default connect(
         updateTripReplayEndTime,
         updateTripReplayTimeType,
         selectTrip,
+        updateTripReplayRedirected,
+        updateTripReplayFilterData,
     },
 )(TripReplaysView);

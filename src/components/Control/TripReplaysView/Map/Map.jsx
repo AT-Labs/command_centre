@@ -7,9 +7,11 @@ import {
 } from 'react-leaflet';
 import { getBoundsToFit } from '../../../../redux/selectors/control/tripReplays/map';
 import { getRouteColor, getShape, getStops } from '../../../../redux/selectors/control/tripReplays/currentTrip';
+import { getEventPosition } from '../../../../redux/selectors/control/vehicleReplays/currentVehicleReplay';
 import SelectedAddressMarker from '../../../RealTime/RealTimeMap/SelectedAddressMarker/SelectedAddressMarker';
 import RouteLayer from './RouteLayer/RouteLayer';
 import StopsLayer from './StopsLayer/StopsLayer';
+import VehicleReplayStatusLayer from './VehicleReplayStatusLayer/VehicleReplayStatusLayer';
 import StopThresholdsLayer from './StopThresholdsLayer/StopThresholdsLayer';
 import VehiclePositionsLayer from './VehiclePositionsLayer/VehiclePositionsLayer';
 import { MAP_DATA } from '../../../../types/map-types';
@@ -26,6 +28,7 @@ class Map extends React.Component {
             boundsToFit: [],
             shape: [],
             stops: [],
+            eventPositions: null,
             vehiclePositions: [],
         };
 
@@ -80,7 +83,7 @@ class Map extends React.Component {
     handleZoom = () => this.setState({ needBoundsFit: false });
 
     render() {
-        const { shape, stops, routeColor } = this.props;
+        const { shape, stops, routeColor, eventPositions } = this.props;
         return (
             <LeafletProvider>
                 <LeafletMap
@@ -109,6 +112,12 @@ class Map extends React.Component {
                         selectedKeyEventId={ this.props.selectedKeyEventId }
                         hoveredKeyEvent={ this.props.hoveredKeyEvent }
                         clearSelectedKeyEvent={ this.props.clearSelectedKeyEvent } />
+                    <VehicleReplayStatusLayer
+                        eventPositions={ eventPositions }
+                        selectedKeyEvent={ this.props.selectedKeyEvent }
+                        selectedKeyEventId={ this.props.selectedKeyEventId }
+                        hoveredKeyEvent={ this.props.hoveredKeyEvent }
+                        clearSelectedKeyEvent={ this.props.clearSelectedKeyEvent } />
                     <VehiclePositionsLayer
                         selectedKeyEvent={ this.props.selectedKeyEvent }
                         selectedKeyEventId={ this.props.selectedKeyEventId }
@@ -125,6 +134,7 @@ Map.propTypes = {
     boundsToFit: PropTypes.array.isRequired,
     shape: PropTypes.array.isRequired,
     stops: PropTypes.array.isRequired,
+    eventPositions: PropTypes.array,
     selectedKeyEventId: PropTypes.string,
     selectedKeyEvent: PropTypes.object,
     hoveredKeyEvent: PropTypes.string,
@@ -136,6 +146,7 @@ Map.propTypes = {
 
 Map.defaultProps = {
     selectedKeyEventId: null,
+    eventPositions: null,
     selectedKeyEvent: null,
     hoveredKeyEvent: null,
     center: null,
@@ -146,5 +157,6 @@ export default connect(state => ({
     boundsToFit: getBoundsToFit(state),
     shape: getShape(state),
     stops: getStops(state),
+    eventPositions: getEventPosition(state),
     routeColor: getRouteColor(state),
 }), null, null, { forwardRef: true })(Map);
