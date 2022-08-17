@@ -43,7 +43,7 @@ export const WorkaroundsForm = (props) => {
     const renderWorkaroundItems = () => {
         const workaroundOptions = generateWorkaroundsUIOptions(affectedEntities, allWorkarounds[checkedWorkaroundType], disruptionType, checkedWorkaroundType);
         return workaroundOptions.map(workaroundOption => (
-            <WorkaroundInput { ...workaroundOption } onWorkaroundUpdate={ handleWorkaroundUpdate } />
+            <WorkaroundInput { ...workaroundOption } onWorkaroundUpdate={ handleWorkaroundUpdate } disabled={ props.readOnly } />
         ));
     };
 
@@ -53,7 +53,7 @@ export const WorkaroundsForm = (props) => {
                 itemOptions={ workaroundTypesRadioOptions }
                 checkedKey={ checkedWorkaroundType }
                 formGroupClass="workaround-types"
-                disabled={ false }
+                disabled={ props.readOnly }
                 onChange={ handleWorkaroundTypeChange }
             />
             <div>
@@ -70,6 +70,7 @@ WorkaroundsForm.propTypes = {
         workarounds: PropTypes.array,
     }),
     onDataUpdate: PropTypes.func,
+    readOnly: PropTypes.bool,
 };
 
 WorkaroundsForm.defaultProps = {
@@ -79,6 +80,7 @@ WorkaroundsForm.defaultProps = {
         workarounds: [],
     },
     onDataUpdate: () => { /**/ },
+    readOnly: false,
 };
 
 export default WorkaroundsForm;

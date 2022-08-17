@@ -29,11 +29,13 @@ import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
 import WeekdayPicker from '../../Common/WeekdayPicker/WeekdayPicker';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
+import WorkaroundsDisplay from '../Workaround/WorkaroundsDisplay';
 
 const Readonly = (props) => {
     const { disruption, isLoading } = props;
 
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
+    const [isViewWorkaroundsModalOpen, setIsViewWorkaroundsModalOpen] = useState(false);
 
     const affectedEntitiesWithoutShape = toString(disruption.affectedEntities.map(entity => omit(entity, ['shapeWkt'])));
     useEffect(() => {
@@ -56,6 +58,8 @@ const Readonly = (props) => {
                 <AffectedEntities
                     isEditDisabled
                     affectedEntities={ disruption.affectedEntities }
+                    showViewWorkaroundsButton
+                    viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                 />
                 <section className="position-relative w-50 d-flex disruption-detail__map">
                     <Map shouldOffsetForSidePanel={ false }
@@ -186,6 +190,12 @@ const Readonly = (props) => {
                 onClose={ () => setActivePeriodsModalOpen(false) }
                 isOpen={ activePeriodsModalOpen }>
                 <ActivePeriods activePeriods={ disruption.activePeriods } />
+            </CustomMuiDialog>
+            <CustomMuiDialog
+                title={ `Workarounds for Disruption #${disruption.incidentNo}` }
+                onClose={ () => setIsViewWorkaroundsModalOpen(false) }
+                isOpen={ isViewWorkaroundsModalOpen }>
+                <WorkaroundsDisplay disruption={ disruption } />
             </CustomMuiDialog>
         </Form>
     );

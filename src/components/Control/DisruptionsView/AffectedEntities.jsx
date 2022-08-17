@@ -3,9 +3,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Button, Collapse } from 'reactstrap';
 import { isEmpty, groupBy } from 'lodash-es';
-import { MdEdit } from 'react-icons/md';
+import { MdEdit, MdEast } from 'react-icons/md';
 import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { getStopGroupsIncludingDeleted } from '../../../redux/selectors/control/dataManagement/stopGroups';
+import { useWorkarounds } from '../../../redux/selectors/appSettings';
 import { getStopGroupName } from '../../../utils/control/dataManagement';
 import './AffectedEntities.scss';
 import { DIRECTIONS } from './types';
@@ -79,17 +80,33 @@ export const AffectedEntities = (props) => {
                             <div className="col-6">
                                 <h3>Affected routes and stops</h3>
                             </div>
-                            {!props.isEditDisabled && (
-                                <div className="col-6 text-right">
-                                    <Button
-                                        className="btn cc-btn-link pr-0 font-weight-bold"
-                                        onClick={ props.editAction }
-                                        disabled={ props.isEditDisabled }>
-                                        { props.editLabel }
-                                        <MdEdit size={ 20 } color="black" className="ml-1" />
-                                    </Button>
-                                </div>
-                            )}
+                            <div className="col-6 text-right">
+                                {!props.isEditDisabled && (
+                                    <div>
+                                        <Button
+                                            className="btn cc-btn-link pr-0 font-weight-bold"
+                                            id="edit-routes-and-stops-btn"
+                                            onClick={ props.editAction }
+                                            disabled={ props.isEditDisabled }>
+                                            { props.editLabel }
+                                            <MdEdit size={ 20 } color="black" className="ml-1" />
+                                        </Button>
+                                    </div>
+                                )}
+                                {props.useWorkarounds && props.showViewWorkaroundsButton && (
+                                    <div>
+                                        <Button
+                                            className="btn cc-btn-link pr-0 font-weight-bold"
+                                            id="view-workarounds-btn"
+                                            onClick={ props.viewWorkaroundsAction }
+                                        >
+                                            View workarounds
+                                            <MdEast size={ 20 } color="black" className="ml-1" />
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+
                         </div>
                         <hr />
                     </>
@@ -123,6 +140,9 @@ AffectedEntities.propTypes = {
     showHeader: PropTypes.bool,
     className: PropTypes.string,
     heightSmall: PropTypes.bool,
+    showViewWorkaroundsButton: PropTypes.bool,
+    viewWorkaroundsAction: PropTypes.func,
+    useWorkarounds: PropTypes.bool.isRequired,
 };
 
 AffectedEntities.defaultProps = {
@@ -132,8 +152,11 @@ AffectedEntities.defaultProps = {
     showHeader: true,
     className: '',
     heightSmall: false,
+    showViewWorkaroundsButton: false,
+    viewWorkaroundsAction: null,
 };
 
 export default connect(state => ({
     stopGroups: getStopGroupsIncludingDeleted(state),
+    useWorkarounds: useWorkarounds(state),
 }))(AffectedEntities);

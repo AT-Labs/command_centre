@@ -5,7 +5,7 @@ import { FormGroup, Label, Input } from 'reactstrap';
 import { WORKAROUND_TYPES } from '../../../../types/disruptions-types';
 
 const WorkaroundInput = (props) => {
-    const { label, workaroundText, helperText, workaroundKey, workaroundType, entities } = props;
+    const { label, workaroundText, helperText, workaroundKey, workaroundType, entities, disabled } = props;
     const handleWorkaroundUpdate = (event) => {
         const generatedWorkarounds = [];
         if (!isEmpty(event.target.value)) {
@@ -32,6 +32,7 @@ const WorkaroundInput = (props) => {
                         className="border border-dark"
                         value={ workaroundText }
                         onChange={ handleWorkaroundUpdate }
+                        disabled={ disabled }
                     />
                     <p className="text-muted"><small>{helperText}</small></p>
                 </div>
@@ -48,11 +49,13 @@ WorkaroundInput.propTypes = {
     helperText: PropTypes.string.isRequired,
     workaroundKey: PropTypes.string.isRequired,
     entities: PropTypes.array,
+    disabled: PropTypes.bool,
 };
 
 WorkaroundInput.defaultProps = {
     onWorkaroundUpdate: () => { /**/ },
     entities: [],
+    disabled: false,
 };
 
 export default WorkaroundInput;

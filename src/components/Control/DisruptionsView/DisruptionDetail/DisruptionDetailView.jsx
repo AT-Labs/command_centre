@@ -9,7 +9,6 @@ import { BsArrowRepeat } from 'react-icons/bs';
 import Flatpickr from 'react-flatpickr';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
-
 import { CAUSES, IMPACTS, STATUSES } from '../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
@@ -72,6 +71,7 @@ import EDIT_TYPE from '../../../../types/edit-types';
 import { getDatePickerOptions } from '../../../../utils/dateUtils';
 import ConfirmationModal from '../../Common/ConfirmationModal/ConfirmationModal';
 import { confirmationModalTypes } from '../types';
+import WorkaroundsDisplay from '../Workaround/WorkaroundsDisplay';
 
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
@@ -104,6 +104,7 @@ const DisruptionDetailView = (props) => {
     const [activePeriods, setActivePeriods] = useState(disruption.activePeriods);
     const [isRecurrenceDirty, setIsRecurrenceDirty] = useState(false);
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(NONE);
+    const [isViewWorkaroundsModalOpen, setIsViewWorkaroundsModalOpen] = useState(false);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqWith([...affectedRoutes, ...props.routes], (routeA, routeB) => routeA.routeId === routeB.routeId && routeA.stopCode === routeB.stopCode);
@@ -347,6 +348,8 @@ const DisruptionDetailView = (props) => {
                     } }
                     isEditDisabled={ isRequesting || isLoading || isResolved() }
                     affectedEntities={ disruption.affectedEntities }
+                    showViewWorkaroundsButton
+                    viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                 />
                 <section className="position-relative w-50 d-flex disruption-detail__map">
                     <Map shouldOffsetForSidePanel={ false }
@@ -645,6 +648,12 @@ const DisruptionDetailView = (props) => {
                 isOpen={ activeConfirmationModalProps.isOpen }
                 onClose={ activeConfirmationModalProps.onClose }
                 onAction={ activeConfirmationModalProps.onAction } />
+            <CustomMuiDialog
+                title={ `Workarounds for Disruption #${disruption.incidentNo}` }
+                onClose={ () => setIsViewWorkaroundsModalOpen(false) }
+                isOpen={ isViewWorkaroundsModalOpen }>
+                <WorkaroundsDisplay disruption={ disruption } />
+            </CustomMuiDialog>
         </Form>
     );
 };
