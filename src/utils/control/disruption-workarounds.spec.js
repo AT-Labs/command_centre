@@ -4,6 +4,7 @@ import {
     updateWorkaroundsByAffectedEntities,
     generateWorkaroundsUIOptions,
     getFirstWorkaroundTextInTheSameGroup,
+    getWorkaroundsAsText,
 } from './disruption-workarounds';
 import { DISRUPTION_TYPE, WORKAROUND_TYPES } from '../../types/disruptions-types';
 
@@ -448,5 +449,74 @@ describe('generateWorkaroundsUIOptions', () => {
         const workaroundOptions = generateWorkaroundsUIOptions(affectedEntities, existingWorkarounds, disruptionType, workaroundType);
         expect(workaroundOptions.length).toEqual(expectResult.length);
         workaroundOptions.forEach((workaroundOption, index) => expect(workaroundOption).toEqual(expect.objectContaining(expectResult[index])));
+    });
+});
+
+describe('getWorkaroundsAsText', () => {
+    test('should return a workaround as text(all)', () => {
+        const workaround = [
+            {
+                type: 'all',
+                workaround: 'Workaround for all',
+            },
+        ];
+        expect(getWorkaroundsAsText(workaround)).toEqual('Workaround for all');
+    });
+    test('should return a route workaround as text', () => {
+        const workaroundOne = [
+            {
+                type: 'route',
+                stopCode: '4981',
+                workaround: 'Workaround to stop 4981',
+                routeShortName: 'NX1',
+            },
+        ];
+
+        const workaroundTwo = [
+            {
+                type: 'route',
+                workaround: 'Workaround for NX1',
+                routeShortName: 'NX1',
+            },
+            {
+                type: 'route',
+                workaround: 'Workaround for NX2',
+                routeShortName: 'NX2',
+            },
+        ];
+
+        const workaroundThree = [
+            {
+                type: 'route',
+                workaround: 'Applies to stop 4981 for route NX2',
+                routeShortName: 'NX2',
+            },
+            {
+                type: 'route',
+                workaround: ' Applies to route N10',
+                routeShortName: 'N10',
+            },
+        ];
+
+        expect(getWorkaroundsAsText(workaroundOne)).toEqual('[NX1]Workaround to stop 4981');
+        expect(getWorkaroundsAsText(workaroundTwo)).toEqual('[NX1]Workaround for NX1; [NX2]Workaround for NX2');
+        expect(getWorkaroundsAsText(workaroundThree)).toEqual('[NX2]Applies to stop 4981 for route NX2; [N10] Applies to route N10');
+    });
+    test('should return a stop workaround as text', () => {
+        const workaround = [
+            {
+                type: 'stop',
+                workaround: 'Workaround for NX1',
+                routeShortName: 'NX1',
+                stopCode: 'Stop 404',
+            },
+            {
+                type: 'stop',
+                workaround: 'Workaround for NX2',
+                routeShortName: 'NX2',
+                stopCode: 'Stop 123',
+            },
+        ];
+        expect(getWorkaroundsAsText(workaround)).toEqual('[Stop 404]Workaround for NX1; [Stop 123]Workaround for NX2');
     });
 });

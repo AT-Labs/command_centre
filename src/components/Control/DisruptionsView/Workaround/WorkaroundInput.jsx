@@ -22,11 +22,13 @@ const WorkaroundInput = (props) => {
 
     return (
         <FormGroup>
-            <div className="row m-2">
-                <Label for={ `disruption-workaround-${workaroundKey}` } className="col-3 text-center font-size-md align-self-center">
-                    {label}
-                </Label>
-                <div className="col-9">
+            <div className="row m-2 flex-column">
+                <div className="col">
+                    <Label for={ `disruption-workaround-${workaroundKey}` } className="font-size-md align-self-center">
+                        {label}
+                    </Label>
+                </div>
+                <div className="col">
                     <Input
                         id={ `disruption-workaround-${workaroundKey}` }
                         className="border border-dark"

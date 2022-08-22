@@ -27,6 +27,7 @@ export const LABEL_CREATED_AT = 'Created At';
 export const LABEL_LAST_UPDATED_AT = 'Last Updated At';
 export const LABEL_FREQUENCY = 'Frequency';
 export const LABEL_DURATION = 'Duration (hours)';
+export const LABEL_WORKAROUNDS = 'Workarounds';
 
 export const FREQUENCY_TYPE = {
     ONCE: 'Once',

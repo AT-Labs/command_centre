@@ -126,3 +126,19 @@ export const generateWorkaroundsUIOptions = (affectedEntities, existingWorkaroun
     }
     return workaroundItems;
 };
+
+export const getWorkaroundsAsText = (workarounds) => {
+    const parseWorkaround = (workaroundInstance) => {
+        let key = null;
+        if (workaroundInstance.type === 'route') {
+            key = workaroundInstance.routeShortName;
+        } else if (workaroundInstance.type === 'stop') {
+            key = workaroundInstance.stopCode;
+        }
+        if (key) {
+            return `[${key}]${workaroundInstance.workaround}`;
+        }
+        return workaroundInstance.workaround;
+    };
+    return workarounds.map(workaround => parseWorkaround(workaround)).join('; ');
+};

@@ -194,7 +194,8 @@ const Readonly = (props) => {
             <CustomMuiDialog
                 title={ `Workarounds for Disruption #${disruption.incidentNo}` }
                 onClose={ () => setIsViewWorkaroundsModalOpen(false) }
-                isOpen={ isViewWorkaroundsModalOpen }>
+                isOpen={ isViewWorkaroundsModalOpen }
+                maxWidth="md">
                 <WorkaroundsDisplay disruption={ disruption } />
             </CustomMuiDialog>
         </Form>

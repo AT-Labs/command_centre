@@ -651,7 +651,9 @@ const DisruptionDetailView = (props) => {
             <CustomMuiDialog
                 title={ `Workarounds for Disruption #${disruption.incidentNo}` }
                 onClose={ () => setIsViewWorkaroundsModalOpen(false) }
-                isOpen={ isViewWorkaroundsModalOpen }>
+                isOpen={ isViewWorkaroundsModalOpen }
+                maxWidth="md"
+                isCloseButtonFullWidth={ false }>
                 <WorkaroundsDisplay disruption={ disruption } />
             </CustomMuiDialog>
         </Form>

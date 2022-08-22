@@ -20,9 +20,11 @@ const RadioButtons = (props) => {
 
     return (
         <FormGroup className={ props.formGroupClass }>
-            <Label className="mb-0">
-                <span className="font-size-md font-weight-bold">{props.title}</span>
-            </Label>
+            {props.title && (
+                <Label className="mb-0">
+                    <span className="font-size-md font-weight-bold">{props.title}</span>
+                </Label>
+            )}
             { radioButtons() }
         </FormGroup>
     );

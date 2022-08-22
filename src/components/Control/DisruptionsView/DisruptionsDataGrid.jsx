@@ -16,7 +16,7 @@ import {
     LABEL_CAUSE, LABEL_CREATED_AT, LABEL_CREATED_BY, LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_DISRUPTION, LABEL_END_TIME,
     LABEL_HEADER,
     LABEL_LAST_UPDATED_AT,
-    LABEL_MODE, LABEL_START_TIME, LABEL_STATUS,
+    LABEL_MODE, LABEL_START_TIME, LABEL_STATUS, LABEL_WORKAROUNDS,
 } from '../../../constants/disruptions';
 import { dateTimeFormat } from '../../../utils/dateUtils';
 import { CAUSES, DEFAULT_CAUSE, DEFAULT_IMPACT, IMPACTS, STATUSES } from '../../../types/disruptions-types';
@@ -26,6 +26,8 @@ import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOpera
 
 import './DisruptionsDataGrid.scss';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
+import { useWorkarounds } from '../../../redux/selectors/appSettings';
+import { getWorkaroundsAsText } from '../../../utils/control/disruption-workarounds';
 
 const getDisruptionLabel = (disruption) => {
     const { uploadedFiles, incidentNo, createNotification, recurrent } = disruption;
@@ -184,6 +186,18 @@ export const DisruptionsDataGrid = (props) => {
         props.updateCopyDisruptionState(false);
     };
 
+    if (props.useWorkarounds) {
+        const workaroundsColumnInfos = {
+            field: 'workarounds',
+            headerName: LABEL_WORKAROUNDS,
+            width: 150,
+            valueGetter: params => getWorkaroundsAsText(params.value),
+            type: 'string',
+            renderCell: RenderCellExpand,
+        };
+        GRID_COLUMNS.splice(8, 0, workaroundsColumnInfos);
+    }
+
     return (
         <div>
             <CustomDataGrid
@@ -205,10 +219,10 @@ DisruptionsDataGrid.propTypes = {
     datagridConfig: PropTypes.object.isRequired,
     disruptions: PropTypes.array,
     updateDisruptionsDatagridConfig: PropTypes.func.isRequired,
-
     activeDisruptionId: PropTypes.number,
     updateActiveDisruptionId: PropTypes.func.isRequired,
     updateCopyDisruptionState: PropTypes.func.isRequired,
+    useWorkarounds: PropTypes.bool.isRequired,
 };
 
 DisruptionsDataGrid.defaultProps = {
@@ -220,6 +234,7 @@ export default connect(
     state => ({
         datagridConfig: getDisruptionsDatagridConfig(state),
         activeDisruptionId: getActiveDisruptionId(state),
+        useWorkarounds: useWorkarounds(state),
     }),
     {
         updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState,
