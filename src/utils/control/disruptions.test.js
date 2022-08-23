@@ -1,8 +1,9 @@
 import { expect } from 'chai';
 import moment from 'moment';
 import MockDate from 'mockdate';
-import { isEndDateValid, isEndTimeValid, transformIncidentNo, isDurationValid, buildSubmitBody } from './disruptions';
+import { isEndDateValid, isEndTimeValid, isStartDateValid, isStartTimeValid, transformIncidentNo, isDurationValid, buildSubmitBody, getStatusOptions } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
+import { STATUSES } from '../../types/disruptions-types';
 
 describe('isEndDateValid', () => {
     it('endDate is optional', () => {
@@ -25,9 +26,15 @@ describe('isEndDateValid', () => {
         MockDate.reset();
     });
 
-    it('endDate after the startDate but before now should be invalid', () => {
+    it('endDate after the startDate but before now for non recurrent should be valid', () => {
         MockDate.set(moment('07/22/2020').toDate());
-        expect(isEndDateValid('21/07/2020', '20/07/2020')).to.equal(false);
+        expect(isEndDateValid('21/07/2020', '20/07/2020', false)).to.equal(true);
+        MockDate.reset();
+    });
+
+    it('endDate after the startDate but before now for recurrent should be invalid', () => {
+        MockDate.set(moment('07/22/2020').toDate());
+        expect(isEndDateValid('21/07/2020', '20/07/2020', true)).to.equal(false);
         MockDate.reset();
     });
 });
@@ -35,29 +42,75 @@ describe('isEndDateValid', () => {
 describe('isEndTimeValid', () => {
     const now = moment();
     it('endTime and endDate are not set is valid', () => {
-        expect(isEndTimeValid('', '', now, '20/07/2020', '18:00')).to.equal(true);
+        expect(isEndTimeValid('', '', '20/07/2020', '18:00')).to.equal(true);
     });
 
     it('endDate is set then endTime needs to be in the right format', () => {
-        expect(isEndTimeValid('20/08/2020', '1243', now, '20/07/2020', '18:00')).to.equal(false);
+        expect(isEndTimeValid('20/08/2020', '1243', '20/07/2020', '18:00')).to.equal(false);
     });
 
     it('endTime after startTime and after now should be valid', () => {
         const endDate = now.format(DATE_FORMAT);
         const endTime = now.clone().add(5, 'minutes').format(TIME_FORMAT);
-        expect(isEndTimeValid(endDate, endTime, now, '21/07/2020', '12:00')).to.equal(true);
+        expect(isEndTimeValid(endDate, endTime, '21/07/2020', '12:00')).to.equal(true);
     });
 
     it('endTime after startTime and equal to now should be valid', () => {
         const endDate = now.format(DATE_FORMAT);
         const endTime = now.format(TIME_FORMAT);
-        expect(isEndTimeValid(endDate, endTime, now, '21/07/2020', '12:00')).to.equal(true);
+        expect(isEndTimeValid(endDate, endTime, '21/07/2020', '12:00')).to.equal(true);
     });
 
-    it('endTime after startTime and before now should not be valid', () => {
+    it('endTime after startTime and before now should be valid', () => {
         const endDate = now.format(DATE_FORMAT);
         const endTime = now.clone().subtract(2, 'minutes').format(TIME_FORMAT);
-        expect(isEndTimeValid(endDate, endTime, now, '21/07/2020', '12:00')).to.equal(false);
+        expect(isEndTimeValid(endDate, endTime, '21/07/2020', '12:00')).to.equal(true);
+    });
+});
+
+describe('isStartDateValid', () => {
+    const now = moment('2020-07-20T00:00:00');
+    it('startDate should be in the correct format', () => {
+        expect(isStartDateValid('20200721', now)).to.equal(false);
+    });
+
+    it('startDate for recurrent after now should be valid', () => {
+        expect(isStartDateValid('21/07/2020', now, true)).to.equal(true);
+    });
+
+    it('startDate for recurrent before now should be invalid', () => {
+        expect(isStartDateValid('19/07/2020', now, true)).to.equal(false);
+    });
+
+    it('startDate for non recurrent after now should be valid', () => {
+        expect(isStartDateValid('21/07/2020', now, false)).to.equal(true);
+    });
+
+    it('startDate for non recurrent before now should be valid', () => {
+        expect(isStartDateValid('19/07/2020', now, false)).to.equal(true);
+    });
+});
+
+describe('isStartTimeValid', () => {
+    const now = moment('2020-07-20T12:00:00');
+    it('startTime should be in the correct format', () => {
+        expect(isStartTimeValid('20/07/2020', '1500', now)).to.equal(false);
+    });
+
+    it('startTime for recurrent after now should be valid', () => {
+        expect(isStartTimeValid('20/07/2020', '15:00', now, true)).to.equal(true);
+    });
+
+    it('startTime for recurrent before now should be invalid', () => {
+        expect(isStartTimeValid('20/07/2020', '09:00', now, true)).to.equal(false);
+    });
+
+    it('startTime for non recurrent after now should be valid', () => {
+        expect(isStartTimeValid('20/07/2020', '15:00', now, false)).to.equal(true);
+    });
+
+    it('startTime for non recurrent before now should be valid', () => {
+        expect(isStartTimeValid('20/07/2020', '09:00', now, false)).to.equal(true);
     });
 });
 
@@ -114,5 +167,21 @@ describe('buildSubmitBody', () => {
             affectedEntities: [],
             mode: "",
         });
+    });
+});
+
+describe('getStatusOptions', () => {
+    const now = moment('2020-07-20T00:00:00');
+    it('should return not-started and resolved when start time is in the future', () => {
+        expect(getStatusOptions('20/07/2020', '01:00', now)).to.deep.equal([STATUSES.NOT_STARTED, STATUSES.RESOLVED]);
+    });
+
+    it('should return in-progress and resolved when start time is in the past or present', () => {
+        expect(getStatusOptions('20/07/2020', '00:00', now)).to.deep.equal([STATUSES.IN_PROGRESS, STATUSES.RESOLVED]);
+        expect(getStatusOptions('19/07/2020', '23:00', now)).to.deep.equal([STATUSES.IN_PROGRESS, STATUSES.RESOLVED]);
+    });
+
+    it('should return not-started, in-progress and resolved when start time is not valid', () => {
+        expect(getStatusOptions('20-07-2020', '0000', now)).to.deep.equal([STATUSES.NOT_STARTED, STATUSES.IN_PROGRESS, STATUSES.RESOLVED]);
     });
 });

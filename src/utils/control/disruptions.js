@@ -3,16 +3,17 @@ import moment from 'moment';
 import { TIME_FORMAT, LABEL_FREQUENCY, FREQUENCY_TYPE } from '../../constants/disruptions';
 import { DATE_FORMAT_DDMMYYYY as DATE_FORMAT } from '../dateUtils';
 import VEHICLE_TYPES from '../../types/vehicle-types';
+import { STATUSES } from '../../types/disruptions-types';
 
 export const PAGE_SIZE = 50;
 
 export const formatCreatedUpdatedTime = time => moment(time).format(`${DATE_FORMAT} ${TIME_FORMAT}`);
 
-export const isStartTimeValid = (startDate, startTime, openingTime) => startTime !== '24:00'
+export const isStartTimeValid = (startDate, startTime, openingTime, recurrent = false) => startTime !== '24:00'
     && moment(startTime, TIME_FORMAT, true).isValid()
-    && moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`).isSameOrAfter(openingTime, 'minute');
+    && (!recurrent || moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`).isSameOrAfter(openingTime, 'minute'));
 
-export const isEndTimeValid = (endDate, endTime, nowAsMoment, startDate, startTime) => {
+export const isEndTimeValid = (endDate, endTime, startDate, startTime) => {
     if (isEmpty(endTime)) {
         return true;
     }
@@ -20,8 +21,7 @@ export const isEndTimeValid = (endDate, endTime, nowAsMoment, startDate, startTi
     const endTimeMoment = moment(`${endDate}T${endTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`);
 
     return moment(endTime, TIME_FORMAT, true).isValid()
-        && moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`).isSameOrBefore(endTimeMoment, 'minute')
-        && nowAsMoment.isSameOrBefore(endTimeMoment, 'minute');
+        && moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`).isSameOrBefore(endTimeMoment, 'minute');
 };
 
 export const isEndDateValid = (endDate, startDate, recurrent = false) => {
@@ -35,11 +35,11 @@ export const isEndDateValid = (endDate, startDate, recurrent = false) => {
 
     return moment(endDate, DATE_FORMAT, true).isValid()
         && moment(endDate, DATE_FORMAT).isSameOrAfter(moment(startDate, DATE_FORMAT), 'day')
-        && moment(endDate, DATE_FORMAT).isSameOrAfter(moment(), 'day');
+        && (!recurrent || moment(endDate, DATE_FORMAT).isSameOrAfter(moment(), 'day'));
 };
 
-export const isStartDateValid = (startDate, openingTime) => moment(startDate, DATE_FORMAT, true).isValid()
-    && moment(startDate, DATE_FORMAT).isSameOrAfter(openingTime, 'day');
+export const isStartDateValid = (startDate, openingTime, recurrent = false) => moment(startDate, DATE_FORMAT, true).isValid()
+    && (!recurrent || moment(startDate, DATE_FORMAT).isSameOrAfter(openingTime, 'day'));
 
 export const isDurationValid = (duration, recurrent) => !recurrent || (!isEmpty(duration) && (Number.isInteger(+duration) && +duration > 0 && +duration < 25));
 
@@ -106,3 +106,14 @@ export const recurrenceRadioOptions = isRecurrent => ({
     checkedKey: isRecurrent ? '1' : '0',
     itemOptions: [{ key: '0', value: FREQUENCY_TYPE.ONCE }, { key: '1', value: FREQUENCY_TYPE.RECURRING }],
 });
+
+export const getStatusOptions = (startDate, startTime, now) => {
+    const startDateTime = moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`, true);
+    if (!startDateTime || !startDateTime.isValid()) {
+        return Object.values(STATUSES);
+    }
+    if (startDateTime.isAfter(now)) {
+        return Object.values(STATUSES).filter(s => s !== STATUSES.IN_PROGRESS);
+    }
+    return Object.values(STATUSES).filter(s => s !== STATUSES.NOT_STARTED);
+};

@@ -58,6 +58,7 @@ import {
     isDurationValid,
     getRecurrenceDates,
     recurrenceRadioOptions,
+    getStatusOptions,
 } from '../../../../utils/control/disruptions';
 import { calculateActivePeriods, getRecurrenceText, parseRecurrencePattern, fetchEndDateFromRecurrence } from '../../../../utils/recurrence';
 import './styles.scss';
@@ -94,7 +95,6 @@ const DisruptionDetailView = (props) => {
     const [startDate, setStartDate] = useState(moment(disruption.startTime).format(DATE_FORMAT));
     const [endTime, setEndTime] = useState(disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : '');
     const [endDate, setEndDate] = useState(fetchEndDate());
-    const [disruptionOpenedTime] = useState(moment().second(0).millisecond(0));
     const [createNotification, setCreateNotification] = useState(false);
     const [exemptAffectedTrips, setExemptAffectedTrips] = useState(disruption.exemptAffectedTrips);
     const [recurrent, setRecurrent] = useState(disruption.recurrent);
@@ -141,6 +141,15 @@ const DisruptionDetailView = (props) => {
             ...recurrencePattern,
             ...recurrenceDates,
         });
+
+        const startDateTime = momentFromDateTime(startDate, startTime, now);
+        if (startDateTime && startDateTime.isValid() && status !== STATUSES.RESOLVED) {
+            if (startDateTime.isAfter(now) && status === STATUSES.IN_PROGRESS) {
+                setStatus(STATUSES.NOT_STARTED);
+            } else if (startDateTime.isSameOrBefore(now) && status === STATUSES.NOT_STARTED) {
+                setStatus(STATUSES.IN_PROGRESS);
+            }
+        }
     }, [startDate, startTime, endDate]);
 
     useEffect(() => {
@@ -152,6 +161,8 @@ const DisruptionDetailView = (props) => {
         setDescription(disruption.description);
         setUrl(disruption.url);
         setMode(disruption.mode);
+        setStartTime(moment(disruption.startTime).format(TIME_FORMAT));
+        setStartDate(moment(disruption.startTime).format(DATE_FORMAT));
         setEndTime(disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : '');
         setEndDate(fetchEndDate());
         setCreateNotification(disruption.createNotification);
@@ -167,6 +178,7 @@ const DisruptionDetailView = (props) => {
         disruption.description,
         disruption.url,
         disruption.mode,
+        disruption.startTime,
         disruption.endTime,
         disruption.endDate,
         disruption.createNotification,
@@ -236,20 +248,20 @@ const DisruptionDetailView = (props) => {
 
     const isResolved = () => status === STATUSES.RESOLVED;
     const isEndDateTimeDisabled = () => status === STATUSES.RESOLVED;
-    const isStartDateTimeDisabled = () => status !== STATUSES.NOT_STARTED;
+    const isStartDateTimeDisabled = () => (recurrent ? status !== STATUSES.NOT_STARTED : false);
 
     const startTimeValid = () => {
         if (isStartDateTimeDisabled()) {
             return true;
         }
-        return isStartTimeValid(startDate, startTime, disruptionOpenedTime);
+        return isStartTimeValid(startDate, startTime, now, recurrent);
     };
 
     const endTimeValid = () => {
         if (isEndDateTimeDisabled()) {
             return true;
         }
-        return isEndTimeValid(endDate, endTime, now, startDate, startTime);
+        return isEndTimeValid(endDate, endTime, startDate, startTime);
     };
 
     const endDateValid = () => {
@@ -263,7 +275,7 @@ const DisruptionDetailView = (props) => {
         if (isStartDateTimeDisabled()) {
             return true;
         }
-        return isStartDateValid(startDate, disruptionOpenedTime);
+        return isStartDateValid(startDate, now, recurrent);
     };
 
     const getOptionalLabel = label => (
@@ -289,9 +301,14 @@ const DisruptionDetailView = (props) => {
         props.updateDisruptionToEdit(setDisruption());
     };
 
-    const minEndDate = now.isAfter(disruption.startTime, 'day') ? now.format(DATE_FORMAT) : startDate;
-    const datePickerOptionsStartDate = getDatePickerOptions(isStartDateTimeDisabled() ? undefined : 'today');
-    const datePickerOptionsEndDate = getDatePickerOptions(isEndDateTimeDisabled() ? undefined : minEndDate);
+    const minEndDate = () => {
+        if (!recurrent) {
+            return startDate;
+        }
+        return now.isAfter(disruption.startTime, 'day') ? now.format(DATE_FORMAT) : startDate;
+    };
+    const datePickerOptionsStartDate = getDatePickerOptions(isStartDateTimeDisabled() || !recurrent ? undefined : 'today');
+    const datePickerOptionsEndDate = getDatePickerOptions(isEndDateTimeDisabled() ? undefined : minEndDate());
 
     const displayActivePeriods = () => {
         if (isRecurrenceDirty) {
@@ -442,7 +459,7 @@ const DisruptionDetailView = (props) => {
                     <div className="mt-2 position-relative form-group">
                         <DisruptionDetailSelect id="disruption-detail__status"
                             value={ status }
-                            options={ disruption.status === STATUSES.NOT_STARTED ? Object.values(STATUSES) : Object.values(STATUSES).filter(s => s !== STATUSES.NOT_STARTED) }
+                            options={ getStatusOptions(startDate, startTime, now) }
                             label={ LABEL_STATUS }
                             onChange={ setDisruptionStatus } />
                     </div>

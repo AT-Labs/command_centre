@@ -55,11 +55,11 @@ export const SelectDetails = (props) => {
     const [alertDialogMessage, setAlertDialogMessage] = useState(null);
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
     const maxActivePeriodsCount = 100;
-    const startTimeValid = () => isStartTimeValid(startDate, startTime, modalOpenedTime);
+    const startTimeValid = () => isStartTimeValid(startDate, startTime, modalOpenedTime, recurrent);
 
-    const startDateValid = () => isStartDateValid(startDate, modalOpenedTime);
+    const startDateValid = () => isStartDateValid(startDate, modalOpenedTime, recurrent);
 
-    const endTimeValid = () => isEndTimeValid(endDate, endTime, modalOpenedTime, startDate, startTime);
+    const endTimeValid = () => isEndTimeValid(endDate, endTime, startDate, startTime);
 
     const endDateValid = () => isEndDateValid(endDate, startDate, recurrent);
 
@@ -81,7 +81,7 @@ export const SelectDetails = (props) => {
         </>
     );
 
-    const datePickerOptions = getDatePickerOptions('today');
+    const datePickerOptions = recurrent ? getDatePickerOptions('today') : getDatePickerOptions();
 
     const endDateDatePickerOptions = getDatePickerOptions(startDate);
 
