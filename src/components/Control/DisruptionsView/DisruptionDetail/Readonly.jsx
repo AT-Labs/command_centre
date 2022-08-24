@@ -29,7 +29,7 @@ import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
 import WeekdayPicker from '../../Common/WeekdayPicker/WeekdayPicker';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
-import WorkaroundsDisplay from '../Workaround/WorkaroundsDisplay';
+import { ViewWorkaroundsModal } from './ViewWorkaroundsModal';
 
 const Readonly = (props) => {
     const { disruption, isLoading } = props;
@@ -191,13 +191,11 @@ const Readonly = (props) => {
                 isOpen={ activePeriodsModalOpen }>
                 <ActivePeriods activePeriods={ disruption.activePeriods } />
             </CustomMuiDialog>
-            <CustomMuiDialog
-                title={ `Workarounds for Disruption #${disruption.incidentNo}` }
+            <ViewWorkaroundsModal
+                disruption={ disruption }
                 onClose={ () => setIsViewWorkaroundsModalOpen(false) }
                 isOpen={ isViewWorkaroundsModalOpen }
-                maxWidth="md">
-                <WorkaroundsDisplay disruption={ disruption } />
-            </CustomMuiDialog>
+            />
         </Form>
     );
 };

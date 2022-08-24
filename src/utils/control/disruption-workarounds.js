@@ -140,5 +140,6 @@ export const getWorkaroundsAsText = (workarounds) => {
         }
         return workaroundInstance.workaround;
     };
-    return workarounds.map(workaround => parseWorkaround(workaround)).join('; ');
+    const workaroundsAsText = workarounds.map(workaround => parseWorkaround(workaround));
+    return [...new Set(workaroundsAsText)].join('; ');
 };

@@ -488,19 +488,19 @@ describe('getWorkaroundsAsText', () => {
         const workaroundThree = [
             {
                 type: 'route',
-                workaround: 'Applies to stop 4981 for route NX2',
-                routeShortName: 'NX2',
+                workaround: 'Applies to route N10',
+                routeShortName: 'N10',
             },
             {
                 type: 'route',
-                workaround: ' Applies to route N10',
+                workaround: 'Applies to route N10',
                 routeShortName: 'N10',
             },
         ];
 
         expect(getWorkaroundsAsText(workaroundOne)).toEqual('[NX1]Workaround to stop 4981');
         expect(getWorkaroundsAsText(workaroundTwo)).toEqual('[NX1]Workaround for NX1; [NX2]Workaround for NX2');
-        expect(getWorkaroundsAsText(workaroundThree)).toEqual('[NX2]Applies to stop 4981 for route NX2; [N10] Applies to route N10');
+        expect(getWorkaroundsAsText(workaroundThree)).toEqual('[N10]Applies to route N10');
     });
     test('should return a stop workaround as text', () => {
         const workaround = [

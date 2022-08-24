@@ -72,7 +72,7 @@ import EDIT_TYPE from '../../../../types/edit-types';
 import { getDatePickerOptions } from '../../../../utils/dateUtils';
 import ConfirmationModal from '../../Common/ConfirmationModal/ConfirmationModal';
 import { confirmationModalTypes } from '../types';
-import WorkaroundsDisplay from '../Workaround/WorkaroundsDisplay';
+import { ViewWorkaroundsModal } from './ViewWorkaroundsModal';
 
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
@@ -665,14 +665,11 @@ const DisruptionDetailView = (props) => {
                 isOpen={ activeConfirmationModalProps.isOpen }
                 onClose={ activeConfirmationModalProps.onClose }
                 onAction={ activeConfirmationModalProps.onAction } />
-            <CustomMuiDialog
-                title={ `Workarounds for Disruption #${disruption.incidentNo}` }
+            <ViewWorkaroundsModal
+                disruption={ disruption }
                 onClose={ () => setIsViewWorkaroundsModalOpen(false) }
                 isOpen={ isViewWorkaroundsModalOpen }
-                maxWidth="md"
-                isCloseButtonFullWidth={ false }>
-                <WorkaroundsDisplay disruption={ disruption } />
-            </CustomMuiDialog>
+            />
         </Form>
     );
 };

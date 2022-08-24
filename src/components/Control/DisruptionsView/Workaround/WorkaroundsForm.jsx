@@ -48,16 +48,18 @@ export const WorkaroundsForm = (props) => {
     };
 
     return (
-        <div className="">
+        <div>
             <RadioButtons
                 itemOptions={ workaroundTypesRadioOptions }
                 checkedKey={ checkedWorkaroundType }
-                formGroupClass="workaround-types d-flex justify-content-around"
+                formGroupClass="workaround-types d-flex justify-content-center my-2"
                 disabled={ props.readOnly }
                 onChange={ handleWorkaroundTypeChange }
             />
-            <div>
-                { renderWorkaroundItems() }
+            <div className="row">
+                <div className="col-md-8 offset-md-2">
+                    { renderWorkaroundItems() }
+                </div>
             </div>
         </div>
     );
