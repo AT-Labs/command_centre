@@ -248,7 +248,7 @@ const DisruptionDetailView = (props) => {
 
     const isResolved = () => status === STATUSES.RESOLVED;
     const isEndDateTimeDisabled = () => status === STATUSES.RESOLVED;
-    const isStartDateTimeDisabled = () => (recurrent ? status !== STATUSES.NOT_STARTED : false);
+    const isStartDateTimeDisabled = () => (recurrent ? status !== STATUSES.NOT_STARTED : status === STATUSES.RESOLVED);
 
     const startTimeValid = () => {
         if (isStartDateTimeDisabled()) {
