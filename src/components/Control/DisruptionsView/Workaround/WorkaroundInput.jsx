@@ -1,8 +1,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import { isEmpty } from 'lodash-es';
-import { FormGroup, Label, Input } from 'reactstrap';
+import { FormGroup, Label } from 'reactstrap';
+import { TextField } from '@mui/material';
 import { WORKAROUND_TYPES } from '../../../../types/disruptions-types';
+
+import './styles.scss';
 
 const WorkaroundInput = (props) => {
     const { label, workaroundText, helperText, workaroundKey, workaroundType, entities, disabled } = props;
@@ -22,21 +25,26 @@ const WorkaroundInput = (props) => {
 
     return (
         <FormGroup>
-            <div className="row m-2 flex-column">
+            <div className="row m-2 flex-column workaround-input">
                 <div className="col">
                     <Label for={ `disruption-workaround-${workaroundKey}` } className="font-size-md align-self-center">
                         {label}
                     </Label>
                 </div>
                 <div className="col">
-                    <Input
+                    <TextField
                         id={ `disruption-workaround-${workaroundKey}` }
-                        className="border border-dark"
                         value={ workaroundText }
                         onChange={ handleWorkaroundUpdate }
                         disabled={ disabled }
+                        helperText={ helperText }
+                        variant="filled"
+                        size="small"
+                        hiddenLabel
+                        fullWidth
+                        multiline
+                        InputProps={ { disableUnderline: true } }
                     />
-                    <p className="text-muted"><small>{helperText}</small></p>
                 </div>
             </div>
         </FormGroup>

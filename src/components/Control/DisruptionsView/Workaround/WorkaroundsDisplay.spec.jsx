@@ -82,9 +82,7 @@ const defaultState = {
 
 function setup(customProps) {
     const props = { ...defaultState };
-
     Object.assign(props, customProps);
-
     wrapper = shallow(<WorkaroundsDisplay { ...props } />);
 }
 
@@ -93,22 +91,12 @@ describe('<WorkaroundsDisplay />', () => {
         wrapper = null;
         jest.resetAllMocks();
     });
-
     describe('render', () => {
         it('Should render', () => {
             setup();
             expect(wrapper.exists()).equal(true);
         });
     });
-
-    describe('Workarounds exist', () => {
-        it('Check that the workarounds are displayed', () => {
-            setup();
-            expect(wrapper.find('Fragment').render().find('input[type="radio"]')).length(3);
-            expect(wrapper.find('Fragment').render().find('input[type="text"]')).length(2);
-        });
-    });
-
     describe('Workarounds is empty', () => {
         it('Check that the empty workarounds message are displayed', () => {
             setup({ disruption: { ...defaultState.disruption, workarounds: [] } });
