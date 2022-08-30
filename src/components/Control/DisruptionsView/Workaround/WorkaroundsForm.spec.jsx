@@ -67,7 +67,7 @@ describe('<WorkaroundsForm />', () => {
 
         it('Should fire data update with all workaround when input text is updated', () => {
             setup();
-            const input = wrapper.find('WorkaroundInput').shallow().find('ForwardRef(TextField)');
+            const input = wrapper.find('WorkaroundInput').shallow().find('Styled(ForwardRef(TextField))');
             input.renderProp('onChange')({ target: { value: 'workaround text' } });
             expect(defaultState.onDataUpdate).toHaveBeenCalledWith(
                 'workarounds',
@@ -83,7 +83,7 @@ describe('<WorkaroundsForm />', () => {
             const radioButtons = wrapper.find('RadioButtons').shallow().find('[type="radio"]');
             radioButtons.at(1).renderProp('onChange')(true);
 
-            const input = wrapper.find('WorkaroundInput').at(2).shallow().find('ForwardRef(TextField)');
+            const input = wrapper.find('WorkaroundInput').at(2).shallow().find('Styled(ForwardRef(TextField))');
             input.renderProp('onChange')({ target: { value: 'workaround text' } });
             expect(defaultState.onDataUpdate).toHaveBeenCalledWith('workarounds', [{
                 type: 'route',

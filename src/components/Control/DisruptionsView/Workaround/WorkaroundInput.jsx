@@ -3,12 +3,30 @@ import React from 'react';
 import { isEmpty } from 'lodash-es';
 import { FormGroup, Label } from 'reactstrap';
 import { TextField } from '@mui/material';
+import { styled } from '@mui/material/styles';
+
 import { WORKAROUND_TYPES } from '../../../../types/disruptions-types';
 
 import './styles.scss';
 
+const CustomTextField = styled(TextField)({
+    '& .MuiFilledInput-root': {
+        background: '#fff',
+        '&:hover': {
+            backgroundColor: 'transparent',
+        },
+        '&.Mui-focused': {
+            backgroundColor: 'transparent',
+        },
+        '&.Mui-disabled': {
+            backgroundColor: '#e9ecef',
+        },
+    },
+});
+
 const WorkaroundInput = (props) => {
     const { label, workaroundText, helperText, workaroundKey, workaroundType, entities, disabled } = props;
+
     const handleWorkaroundUpdate = (event) => {
         const generatedWorkarounds = [];
         if (!isEmpty(event.target.value)) {
@@ -32,7 +50,7 @@ const WorkaroundInput = (props) => {
                     </Label>
                 </div>
                 <div className="col">
-                    <TextField
+                    <CustomTextField
                         id={ `disruption-workaround-${workaroundKey}` }
                         value={ workaroundText }
                         onChange={ handleWorkaroundUpdate }
