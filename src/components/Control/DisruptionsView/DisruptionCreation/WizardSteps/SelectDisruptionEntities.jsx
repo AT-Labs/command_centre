@@ -764,7 +764,7 @@ export const SelectDisruptionEntities = (props) => {
                         <Button
                             className="cc-btn-link selection-item__button float-right p-0"
                             onClick={ () => {
-                                if (props.useWorkarounds) {
+                                if (props.useWorkarounds && props.data.workarounds && props.data.workarounds.length > 0) {
                                     setConfirmationModalType(REMOVE_SELECTED_ENTITY);
                                     setEntityPropsWaitToRemove({ entity: stopGroupStops[0].groupId, entityType: STOP_GROUP });
                                 } else {
@@ -926,7 +926,7 @@ export const SelectDisruptionEntities = (props) => {
                                             <Button
                                                 className="cc-btn-link selection-item__button float-right p-0"
                                                 onClick={ () => {
-                                                    if (props.useWorkarounds) {
+                                                    if (props.useWorkarounds && props.data.workarounds && props.data.workarounds.length > 0) {
                                                         setConfirmationModalType(REMOVE_SELECTED_ENTITY);
                                                         setEntityPropsWaitToRemove({ entity: route, entityType: ROUTE });
                                                     } else {
@@ -972,7 +972,7 @@ export const SelectDisruptionEntities = (props) => {
                                             <Button
                                                 className="cc-btn-link selection-item__button float-right p-0"
                                                 onClick={ () => {
-                                                    if (props.useWorkarounds) {
+                                                    if (props.useWorkarounds && props.data.workarounds && props.data.workarounds.length > 0) {
                                                         setConfirmationModalType(REMOVE_SELECTED_ENTITY);
                                                         setEntityPropsWaitToRemove({ entity: stop, entityType: STOP });
                                                     } else {

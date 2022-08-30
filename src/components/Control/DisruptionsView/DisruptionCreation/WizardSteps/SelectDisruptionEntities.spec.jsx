@@ -451,7 +451,7 @@ describe('<SelectDisruptionEntities />', () => {
                     selectedItems.at(0).find('ExpandableSummary>div>Button').at(1).simulate('click');
                     wrapper.update();
 
-                    if (useWorkarounds) {
+                    if (useWorkarounds && props.workarounds && props.workarounds.length > 0) {
                         const removeEntityPopupSelector = '[title="Remove selected entity"]';
                         expect(wrapper.find(removeEntityPopupSelector).prop('isOpen')).toEqual(true);
                         wrapper.find(removeEntityPopupSelector).renderProp('onAction')();
