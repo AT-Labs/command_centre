@@ -82,7 +82,11 @@ const UpdateTripStatusModal = (props) => {
             title: 'Reinstate trip',
             errorMessage: 'trip fail to be updated',
             successMessage: `${origin === updateTripsStatusModalOrigins.FOOTER ? 'successfully' : 'Successfully'} reinstated trip`,
-            confirmationMessage: 'Are you sure you want to reinstate the following trip?',
+            confirmationMessage: ['Are you sure you want to reinstate the following trip? ', <br />,
+                `Future trips scheduled to be cancelled on a recurring basis will continue to be cancelled. 
+                To reinstate all related trips, please select the option ‘Reinstate 
+                and remove recurring cancellations’ or edit the recurrence pattern`,
+            ],
             mainButtonLabel: 'Reinstate trip',
             recurringReinstateButtonLabel: 'Reinstate trip and remove recurring cancellations',
         },
