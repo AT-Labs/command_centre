@@ -8,6 +8,13 @@ import TRIP_STATUS_TYPES from '../../types/trip-status-types';
 
 const { REACT_APP_TRIP_MGT_QUERY_URL } = process.env;
 
+export const getRecurringCancellations = () => fetchWithAuthHeader(
+    `${REACT_APP_TRIP_MGT_QUERY_URL}/recurring-operations`,
+    {
+        method: 'GET',
+    },
+).then(response => jsonResponseHandling(response));
+
 export const getAgencies = () => fetchWithAuthHeader(
     `${REACT_APP_TRIP_MGT_QUERY_URL}/agencies`,
     {

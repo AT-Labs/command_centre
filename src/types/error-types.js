@@ -40,6 +40,7 @@ export default {
     fetchPlatforms: false,
     fetchBlock: false,
     tripsFetch: false,
+    fetchRecurringCancellations: 'Failed to load recurring cancellations, please try again',
     fetchTripReplayEnabled: false,
     fetchTripReplayMessage: 'Failed to load trip replay, please try again',
     fetchVehicleReplayMessage: 'Failed to load vehicle replay, please try again',

@@ -16,6 +16,22 @@
         }
     }
 
+    .header-dropdown {
+        font-family: inherit;
+        &.dropdown-menu {
+            border-radius: 0 0 .25rem .25rem !important;
+            margin: -.05rem 0 0 !important;
+        }
+        .header-dropdown-item {
+            color: white;
+
+            &:hover,
+            &.active {
+                background-color: tint($at-ocean, 90%) !important;
+            }
+        }
+    }
+
     .header__toolbar {
         .header__alerts-badge {
             top: 15px;
@@ -46,5 +62,9 @@
         svg > g {
             fill: $secondary;
         }
+    }
+
+    .dropdown > .nav-link {
+        padding: 0 !important;
     }
 }

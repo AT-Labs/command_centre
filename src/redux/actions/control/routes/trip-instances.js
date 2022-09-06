@@ -34,7 +34,9 @@ export const setActiveTripInstanceId = activeTripInstanceId => ({
 });
 
 export const updateActiveTripInstanceId = activeTripInstanceId => (dispatch) => {
-    dispatch(setActiveTripInstanceId(activeTripInstanceId));
+    if (activeTripInstanceId) {
+        dispatch(setActiveTripInstanceId(activeTripInstanceId));
+    }
 };
 
 export const clearActiveTripInstanceId = () => (dispatch) => {

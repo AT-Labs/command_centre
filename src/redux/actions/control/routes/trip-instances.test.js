@@ -226,7 +226,7 @@ describe('Trip instances actions', () => {
                 link: {
                     routeVariantId: '00001',
                     routeType: 3,
-                    startTime: '06:00:00',
+                    startTime: '10:00:00',
                     routeShortName: '1',
                 },
                 routes: {

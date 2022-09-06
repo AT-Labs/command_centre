@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import { IoIosStats } from 'react-icons/io';
 import { FcDataConfiguration } from 'react-icons/fc';
-
 import { MdPerson } from 'react-icons/md';
 import { connect } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
-import { Button, Collapse, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, Popover, PopoverBody, PopoverHeader } from 'reactstrap';
+import { Button, Collapse, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, Popover, PopoverBody, PopoverHeader,
+    Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import atLogo from '../../../assets/img/at_logo.png';
 import { IS_LOGIN_NOT_REQUIRED, logout } from '../../../auth';
 import { updateControlDetailView, updateMainView, updateSecondaryPanelView } from '../../../redux/actions/navigation';
@@ -32,8 +32,18 @@ function Header(props) {
     const [isOpen, setIsOpen] = useState(false);
     const [isUserPopoverOpen, setIsUserPopoverOpen] = useState(false);
     const [isHelpModalVisible, setIsHelpModalVisible] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [isDropdownHovered, setDropdownHovered] = useState(false);
 
     const isGlobalEditMessagesPermitted = IS_LOGIN_NOT_REQUIRED || isGlobalEditStopMessagesPermitted(props.stopMessagesPermissions);
+
+    const toggle = () => {
+        setDropdownOpen(prevState => !prevState);
+    };
+
+    const dropDownHovered = () => {
+        setDropdownHovered(prevState => !prevState);
+    };
 
     const handleUrlChange = (inputLocation) => {
         if (inputLocation.pathname === '/') {
@@ -77,6 +87,7 @@ function Header(props) {
                 VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
                 VIEW_TYPE.CONTROL_DETAIL.ALERTS,
                 VIEW_TYPE.CONTROL_DETAIL.FLEETS,
+                VIEW_TYPE.CONTROL_DETAIL.RECURRING_CANCELLATIONS,
                 VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT,
                 VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS,
             ].includes(props.controlActiveView)) {
@@ -93,6 +104,14 @@ function Header(props) {
 
     const { activeView, controlActiveView, userProfile, userPermissions } = props;
     const isViewPermitted = view => IS_LOGIN_NOT_REQUIRED || _.get(userPermissions, view, false);
+
+    const isRouteTabActive = () => {
+        if (activeView === VIEW_TYPE.MAIN.CONTROL
+            && (controlActiveView === VIEW_TYPE.CONTROL_DETAIL.ROUTES || controlActiveView === VIEW_TYPE.CONTROL_DETAIL.RECURRING_CANCELLATIONS)) {
+            return true;
+        }
+        return isDropdownHovered;
+    };
 
     return (
         <Navbar className="header bg-primary p-0 fixed-top" expand="md" dark>
@@ -136,19 +155,45 @@ function Header(props) {
                         </NavItem>
                     )}
                     { isViewPermitted('controlRoutesView') && (
-                        <NavItem>
-                            <CustomButton
-                                className="header__btn header__routes rounded-0 px-3"
-                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.ROUTES }
-                                tabIndex="0"
-                                ariaLabel="Routes section button"
-                                onClick={ () => {
-                                    props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
-                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.ROUTES);
-                                } }>
-                                ROUTES & TRIPS
-                            </CustomButton>
-                        </NavItem>
+                        <div
+                            onMouseEnter={ () => setDropdownOpen(true) }
+                            onMouseLeave={ () => setDropdownOpen(false) }
+                        >
+                            <Dropdown
+                                nav
+                                toggle={ toggle }
+                                isOpen={ dropdownOpen }>
+                                <DropdownToggle nav>
+                                    <CustomButton
+                                        className="header__btn header__routes rounded-0 px-3"
+                                        active={ isRouteTabActive() }
+                                        tabIndex="0"
+                                        ariaLabel="Routes section button"
+                                        onClick={ () => {
+                                            props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
+                                            props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.ROUTES);
+                                        } }>
+                                        ROUTES & TRIPS
+                                    </CustomButton>
+                                </DropdownToggle>
+                                <DropdownMenu
+                                    className="header-dropdown bg-primary"
+                                >
+                                    <DropdownItem
+                                        className="header-dropdown-item"
+                                        onMouseEnter={ () => dropDownHovered() }
+                                        onMouseLeave={ () => dropDownHovered() }
+                                        onClick={ () => {
+                                            props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
+                                            props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.RECURRING_CANCELLATIONS);
+                                            setDropdownHovered(false);
+                                        } }
+                                    >
+                                        Recurring Cancellations
+                                    </DropdownItem>
+                                </DropdownMenu>
+                            </Dropdown>
+                        </div>
                     )}
                     { (IS_DISRUPTIONS_ENABLED && isViewPermitted('controlDisruptionsView')) && (
                         <NavItem>

@@ -24,6 +24,31 @@ const parseWeekDays = weekdays => weekdays.map((day) => {
     }
 });
 
+export const displayRecurrentDays = (recurrence) => {
+    let emptyString = '';
+    const Day = {
+        0: 'M',
+        1: 'Tu',
+        2: 'W',
+        3: 'Th',
+        4: 'F',
+        5: 'Sa',
+        6: 'Su',
+    };
+    const stringToArray = recurrence.substring(1, recurrence.length - 1);
+    const recurrenceArray = stringToArray.split(',');
+
+    recurrenceArray.forEach((day, index) => {
+        if (index === 0) {
+            emptyString += Day[day];
+        } else {
+            emptyString += `, ${Day[day]}`;
+        }
+    });
+
+    return emptyString;
+};
+
 export const getWeekDaysAsString = weekday => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][weekday] || '';
 
 export const getRecurringTextWithFrom = (prefix, { startDate, selectedWeekdays, endDate }) => {

@@ -18,7 +18,7 @@ export default {
     CONTROL_DETAIL: {
         BLOCKS: 'control-blocks-view',
         ROUTES: 'control-routes-view',
-        STOP_MESSAGES: 'control-stop-messages-view',
+        RECURRING_CANCELLATIONS: 'control-recurring-cancellations-view',
         STOP_GROUPS: 'control-stop-groups-view',
         ALERTS: 'control-alerts',
         FLEETS: 'control-fleets',

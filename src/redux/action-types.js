@@ -116,6 +116,9 @@ export default {
     UPDATE_CONTROL_ROUTES_LOADING: 'update-control-routes-loading',
     UPDATE_CONTROL_ACTIVE_ROUTE: 'update-control-active-route',
     UPDATE_CONTROL_ROUTES_SEARCH_RESULTS: 'update-control-routes-search-results',
+    // Control: recurring cancellations
+    FETCH_RECURRING_CANCELLATIONS: 'fetch-recurring-cancellations',
+    UPDATE_CONTROL_RECURRING_CANCELLATIONS_DATAGRID_CONFIG: 'update-control-recurring-cancellations-datagrid-config',
     // Control: route variants
     UPDATE_CONTROL_ROUTE_VARIANTS: 'update-control-route-variants',
     CLEAR_CONTROL_ROUTE_VARIANTS: 'clear-control-route-variants',

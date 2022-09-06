@@ -148,8 +148,8 @@ Filters.propTypes = {
     mergeRouteFilters: PropTypes.func.isRequired,
     agencyId: PropTypes.string.isRequired,
     depotIds: PropTypes.array.isRequired,
-    routeType: PropTypes.number.isRequired,
-    routeShortName: PropTypes.string.isRequired,
+    routeType: PropTypes.number,
+    routeShortName: PropTypes.string,
     routeVariantId: PropTypes.string.isRequired,
     clearSelectedStops: PropTypes.func.isRequired,
     sorting: PropTypes.object.isRequired,
@@ -159,6 +159,8 @@ Filters.propTypes = {
 
 Filters.defaultProps = {
     status: '',
+    routeType: null,
+    routeShortName: null,
 };
 
 export default connect(

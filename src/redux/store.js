@@ -12,6 +12,7 @@ import controlFilters from './reducers/control/routes/filters';
 import controlRoutes from './reducers/control/routes/routes';
 import controlRouteVariants from './reducers/control/routes/routeVariants';
 import controlTripInstances from './reducers/control/routes/trip-instances';
+import controlRecurringCancellations from './reducers/control/routes/recurringCancellations';
 import serviceDate from './reducers/control/serviceDate';
 import stopMessaging from './reducers/control/stopMessaging';
 import disruptions from './reducers/control/disruptions';
@@ -74,6 +75,7 @@ export default createStore(
                 routes: controlRoutes,
                 routeVariants: controlRouteVariants,
                 tripInstances: controlTripInstances,
+                recurringCancellations: controlRecurringCancellations,
             }),
             tripReplays: combineReducers({
                 filters: controlTripReplayFilters,

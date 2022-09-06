@@ -7,6 +7,7 @@ import VIEW_TYPE from '../../types/view-types';
 import ErrorBanner from './ErrorBanner/ErrorBanner';
 import BlocksView from './BlocksView/BlocksView';
 import CommonView from './RoutesView/CommonView';
+import RecurringCancellationsView from './RoutesView/recurringCancellations/RecurringCancellationsView';
 import Main from '../Common/OffCanvasLayout/Main/Main';
 import OffCanvasLayout from '../Common/OffCanvasLayout/OffCanvasLayout';
 import SecondarySidePanel from '../Common/OffCanvasLayout/SecondarySidePanel/SecondarySidePanel';
@@ -28,6 +29,7 @@ const ControlView = (props) => {
     const isTripReplaysView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.TRIP_REPLAYS;
     const isDataManagementView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT;
     const isNotificationsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS;
+    const isRecurringCancellationsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.RECURRING_CANCELLATIONS;
 
     return (
         <OffCanvasLayout>
@@ -36,6 +38,7 @@ const ControlView = (props) => {
                 <div className={ classNames({ 'p-4': (!isTripReplaysView && !isDisruptionsView) }) }>
                     { isBlocksView && <BlocksView /> }
                     { isRoutesView && <CommonView /> }
+                    { isRecurringCancellationsView && <RecurringCancellationsView /> }
                     { isStopMessagesView && <StopMessagesView /> }
                     { isAlertsView && <AlertsView /> }
                     { isFleetsView && <FleetsView /> }

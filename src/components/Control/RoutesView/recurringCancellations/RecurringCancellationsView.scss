@@ -1,0 +1,7 @@
+@import '../../../../assets/styles/variables';
+
+.recurring-cancellations-view {
+    p {
+        margin-block-start: 1em; // fixes table pagination alignment
+    }
+}
