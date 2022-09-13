@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { getTitle, getDescription, getAndParseInformedEntities } from './notifications';
+import { getTitle, getDescription, getAndParseInformedEntities, flatInformedEntities } from './notifications';
 
 const data = {
     items: [
@@ -308,5 +308,169 @@ describe('getAndParseInformedEntities', () => {
                 type: 'stop',
             },
         ]);
+    });
+});
+
+describe('flatInformedEntities', () => {
+    it('test case when routes under stops', () => {
+        const informedEntities = [
+            {
+                informedEntityType: 'stop',
+                routes: [
+                    {
+                        informedEntityType: 'route',
+                        stops: [],
+                        routeId: 'S088-217',
+                        routeShortName: '088',
+                        routeType: 3,
+                    },
+                    {
+                        informedEntityType: 'route',
+                        stops: [],
+                        routeId: '502-217',
+                        routeShortName: '502',
+                        routeType: 3,
+                    },
+                ],
+                stopId: '1121-095b53b3',
+                stopCode: '1121',
+                stopName: '2 O\'Brien Road',
+            },
+        ];
+        const expected = [
+            {
+                informedEntityType: 'stop',
+                routes: [
+                    {
+                        informedEntityType: 'route',
+                        routeId: 'S088-217',
+                        routeShortName: '088',
+                        routeType: 3,
+                        stops: [],
+                    },
+                    {
+                        informedEntityType: 'route',
+                        routeId: '502-217',
+                        routeShortName: '502',
+                        routeType: 3,
+                        stops: [],
+                    },
+                ],
+                stopCode: '1121',
+                stopId: '1121-095b53b3',
+                stopName: '2 O\'Brien Road',
+            },
+            {
+                informedEntityType: 'route',
+                routeId: 'S088-217',
+                routeShortName: '088',
+                routeType: 3,
+                stops: [],
+            },
+            {
+                informedEntityType: 'route',
+                routeId: '502-217',
+                routeShortName: '502',
+                routeType: 3,
+                stops: [],
+            },
+        ];
+        expect(flatInformedEntities(informedEntities)).to.deep.equal(expected);
+    });
+
+    it('test case when stops under routes', () => {
+        const informedEntities = [
+            {
+                informedEntityType: 'route',
+                stops: [
+                    {
+                        informedEntityType: 'stop',
+                        routes: [],
+                        stopId: '9329-e7f6fe12',
+                        stopCode: '9329',
+                        stopName: 'Swanson Train Station 2',
+                        directionId: 0,
+                    },
+                    {
+                        informedEntityType: 'stop',
+                        routes: [],
+                        stopId: '9328-f6f84eac',
+                        stopCode: '9328',
+                        stopName: 'Swanson Train Station 1',
+                        directionId: 0,
+                    },
+                    {
+                        informedEntityType: 'stop',
+                        routes: [],
+                        stopId: '9322-6bc7f9b8',
+                        stopCode: '9322',
+                        stopName: 'Henderson Train Station 1',
+                        directionId: 0,
+                    },
+                ],
+                routeId: 'WEST-201',
+                routeShortName: 'WEST',
+                routeType: 2,
+            },
+        ];
+        const expected = [
+            {
+                informedEntityType: 'route',
+                routeId: 'WEST-201',
+                routeShortName: 'WEST',
+                routeType: 2,
+                stops: [
+                    {
+                        directionId: 0,
+                        informedEntityType: 'stop',
+                        routes: [],
+                        stopCode: '9329',
+                        stopId: '9329-e7f6fe12',
+                        stopName: 'Swanson Train Station 2',
+                    },
+                    {
+                        directionId: 0,
+                        informedEntityType: 'stop',
+                        routes: [],
+                        stopCode: '9328',
+                        stopId: '9328-f6f84eac',
+                        stopName: 'Swanson Train Station 1',
+                    },
+                    {
+                        directionId: 0,
+                        informedEntityType: 'stop',
+                        routes: [],
+                        stopCode: '9322',
+                        stopId: '9322-6bc7f9b8',
+                        stopName: 'Henderson Train Station 1',
+                    },
+                ],
+            },
+            {
+                directionId: 0,
+                informedEntityType: 'stop',
+                routes: [],
+                stopCode: '9329',
+                stopId: '9329-e7f6fe12',
+                stopName: 'Swanson Train Station 2',
+            },
+            {
+                directionId: 0,
+                informedEntityType: 'stop',
+                routes: [],
+                stopCode: '9328',
+                stopId: '9328-f6f84eac',
+                stopName: 'Swanson Train Station 1',
+            },
+            {
+                directionId: 0,
+                informedEntityType: 'stop',
+                routes: [],
+                stopCode: '9322',
+                stopId: '9322-6bc7f9b8',
+                stopName: 'Henderson Train Station 1',
+            },
+        ];
+        expect(flatInformedEntities(informedEntities)).to.deep.equal(expected);
     });
 });

@@ -23,3 +23,17 @@ export const getAndParseInformedEntities = informedEntities => (
             : { ...entity, text: entity.stopCode, type: 'stop' };
     }).flat()
 );
+
+export const flatInformedEntities = (informedEntities) => {
+    const result = [];
+    informedEntities.forEach((entity) => {
+        result.push(entity);
+        entity.routes?.forEach((routeChild) => {
+            result.push(routeChild);
+        });
+        entity.stops?.forEach((stopChild) => {
+            result.push(stopChild);
+        });
+    });
+    return result;
+};

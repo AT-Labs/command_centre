@@ -14,6 +14,9 @@ import { NOTIFICATION_CONDITION, NOTIFICATION_STATUS } from '../../../types/noti
 import { sourceIdDataGridOperator } from './sourceIdDataGridOperator';
 import { dateTimeFormat } from '../../../utils/dateUtils';
 import { getStopGroups } from '../../../redux/actions/control/dataManagement';
+import { CAUSES, DEFAULT_CAUSE } from '../../../types/disruptions-types';
+import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
+import { flatInformedEntities } from '../../../utils/control/notifications';
 
 import './NotificationsView.scss';
 
@@ -47,6 +50,37 @@ export const NotificationsView = (props) => {
             headerAlign: 'center',
             type: 'number',
             filterOperators: getGridNumericOperators().filter(operator => operator.value === '='),
+        },
+        {
+            field: 'sourceTitle',
+            headerName: 'SOURCE TITLE',
+            width: 150,
+            valueGetter: params => params.row.source.title,
+            renderCell: RenderCellExpand,
+        },
+        {
+            field: 'affectedRoutes',
+            headerName: 'AFFECTED ROUTES',
+            width: 150,
+            valueGetter: params => [
+                ...new Set(flatInformedEntities(params.row.informedEntities).filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))].join(', '),
+            renderCell: RenderCellExpand,
+        },
+        {
+            field: 'affectedStops',
+            headerName: 'AFFECTED STOPS',
+            width: 150,
+            valueGetter: params => [...new Set(flatInformedEntities(params.row.informedEntities).filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))].join(', '),
+            renderCell: RenderCellExpand,
+        },
+        {
+            field: 'cause',
+            headerName: 'CAUSE',
+            width: 150,
+            flex: 1,
+            type: 'singleSelect',
+            valueGetter: params => (CAUSES.find(cause => cause.value === params.value) || DEFAULT_CAUSE).label,
+            valueOptions: CAUSES.slice(1, CAUSES.length).map(cause => cause.label),
         },
         {
             field: 'startTime',
