@@ -57,7 +57,7 @@ export const WorkaroundsForm = (props) => {
                 onChange={ handleWorkaroundTypeChange }
             />
             <div className="row">
-                <div className="col-md-8 offset-md-2">
+                <div className="col">
                     { renderWorkaroundItems() }
                 </div>
             </div>

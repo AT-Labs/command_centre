@@ -237,6 +237,7 @@ export class CreateDisruption extends React.Component {
                 [DISRUPTION_CREATION_STEPS.ADD_WORKAROUNDS]: (
                     <li key="3" className={ this.props.activeStep === 3 ? 'active' : '' }>
                         Add Workarounds
+                        <div className="text-muted optional-text">(Optional)</div>
                     </li>
                 ),
             };
