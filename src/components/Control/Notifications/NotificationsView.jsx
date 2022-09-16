@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import moment from 'moment-timezone';
 import { GoCheck } from 'react-icons/go';
-import { getGridDateOperators, getGridNumericOperators } from '@mui/x-data-grid-pro';
+import { getGridDateOperators, getGridNumericOperators, getGridStringOperators } from '@mui/x-data-grid-pro';
 import DATE_TYPE from '../../../types/date-types';
 import { getAllNotifications, getNotificationsDatagridConfig, getNotificationsFilterCount } from '../../../redux/selectors/control/notifications';
 import { updateNotificationsDatagridConfig, filterNotifications } from '../../../redux/actions/control/notifications';
@@ -55,23 +55,31 @@ export const NotificationsView = (props) => {
             field: 'sourceTitle',
             headerName: 'SOURCE TITLE',
             width: 150,
+            type: 'string',
             valueGetter: params => params.row.source.title,
             renderCell: RenderCellExpand,
+            filterOperators: getGridStringOperators().filter(
+                operator => operator.value === 'equals' || operator.value === 'contains',
+            ),
         },
         {
             field: 'affectedRoutes',
             headerName: 'AFFECTED ROUTES',
             width: 150,
+            type: 'string',
             valueGetter: params => [
                 ...new Set(flatInformedEntities(params.row.informedEntities).filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))].join(', '),
             renderCell: RenderCellExpand,
+            filterOperators: getGridStringOperators().filter(operator => operator.value === 'equals'),
         },
         {
             field: 'affectedStops',
             headerName: 'AFFECTED STOPS',
             width: 150,
+            type: 'string',
             valueGetter: params => [...new Set(flatInformedEntities(params.row.informedEntities).filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))].join(', '),
             renderCell: RenderCellExpand,
+            filterOperators: getGridStringOperators().filter(operator => operator.value === 'equals'),
         },
         {
             field: 'cause',
