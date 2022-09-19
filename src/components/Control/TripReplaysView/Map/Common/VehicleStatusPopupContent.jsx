@@ -6,6 +6,7 @@ import { BsKeyFill, BsKey, BsFillLightbulbFill, BsFillLightbulbOffFill } from 'r
 import { TbEngine, TbEngineOff } from 'react-icons/tb';
 import { BiLogIn, BiLogOut } from 'react-icons/bi';
 import { FaDoorOpen, FaDoorClosed } from 'react-icons/fa';
+import DATE_TYPE from '../../../../../types/date-types';
 
 function VehicleStatusPopupContent({ eventDetail }) {
     const Icons = {
@@ -35,7 +36,7 @@ function VehicleStatusPopupContent({ eventDetail }) {
     };
 
     const tripDate = moment(eventDetail.tripDate).format('YYYY-MM-DD');
-    const eventTime = moment(eventDetail.timestamp).format('HH:mm:ss');
+    const eventTime = moment.unix(eventDetail.timestamp).tz(DATE_TYPE.TIME_ZONE).format('HH:mm:ss');
     const IconName = Icons[eventDetail.type];
 
     const getTime = (time) => {
