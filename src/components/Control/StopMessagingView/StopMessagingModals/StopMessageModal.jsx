@@ -253,7 +253,7 @@ export class StopMessageModal extends React.Component {
         const isSaveButtonDisabled = _.isEmpty(stopsAndGroups)
             || message === ''
             || !_.isNull(error.createStopMessage)
-            || isMaxCharactersLengthExceeded
+            || (isMaxCharactersLengthExceeded && status === STOP_MESSAGE_TYPE.STATUS.ACTIVE.toLowerCase())
             || !isStartTimeSelected
             || !isEndTimeValid
             || !isTimeSelectedValid
@@ -317,10 +317,10 @@ export class StopMessageModal extends React.Component {
                             onChange={ event => this.onFormFieldsChange('message', event.target.value) } />
                         {
                             isMaxCharactersLengthExceeded && (
-                                <div className="message-modal__textarea-alert cc-modal-field-alert d-flex align-items-end text-danger">
-                                    <IoIosWarning size={ 20 } className="mr-1" />
+                                <div className={ `message-modal__textarea-alert cc-modal-field-alert d-flex align-items-center mt-1 ${status === STOP_MESSAGE_TYPE.STATUS.DRAFT.toLowerCase() ? 'text-warning' : 'text-danger'}` }>
+                                    <IoIosWarning size={ 32 } className="m-2" />
                                     <span>
-                                        {`Your message is ${message.length - MAX_CHARACTERS} characters too long`}
+                                        {`Your message is ${message.length - MAX_CHARACTERS} characters longer than the maximum limit accepted. To be able to save a stop message with Active status, the message should have up to ${MAX_CHARACTERS} characters.`}
                                     </span>
                                 </div>
                             )
