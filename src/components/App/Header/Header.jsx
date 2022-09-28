@@ -23,7 +23,7 @@ import CustomButton from '../../Common/CustomButton/CustomButton';
 import Icon from '../../Common/Icon/Icon';
 import { HelpInformationModal } from '../HelpInformationModal/HelpInformationModal';
 import { resetRealtimeToDefault } from '../../../redux/actions/realtime/common';
-import { useNotifications } from '../../../redux/selectors/appSettings';
+import { useNotifications, useRecurringCancellationsGridView } from '../../../redux/selectors/appSettings';
 import './Header.scss';
 
 function Header(props) {
@@ -176,22 +176,24 @@ function Header(props) {
                                         ROUTES & TRIPS
                                     </CustomButton>
                                 </DropdownToggle>
-                                <DropdownMenu
-                                    className="header-dropdown bg-primary"
-                                >
-                                    <DropdownItem
-                                        className="header-dropdown-item"
-                                        onMouseEnter={ () => dropDownHovered() }
-                                        onMouseLeave={ () => dropDownHovered() }
-                                        onClick={ () => {
-                                            props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
-                                            props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.RECURRING_CANCELLATIONS);
-                                            setDropdownHovered(false);
-                                        } }
+                                { props.useRecurringCancellationsGridView && (
+                                    <DropdownMenu
+                                        className="header-dropdown bg-primary"
                                     >
-                                        Recurring Cancellations
-                                    </DropdownItem>
-                                </DropdownMenu>
+                                        <DropdownItem
+                                            className="header-dropdown-item"
+                                            onMouseEnter={ () => dropDownHovered() }
+                                            onMouseLeave={ () => dropDownHovered() }
+                                            onClick={ () => {
+                                                props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
+                                                props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.RECURRING_CANCELLATIONS);
+                                                setDropdownHovered(false);
+                                            } }
+                                        >
+                                            Recurring Cancellations
+                                        </DropdownItem>
+                                    </DropdownMenu>
+                                )}
                             </Dropdown>
                         </div>
                     )}
@@ -414,6 +416,7 @@ Header.propTypes = {
     }).isRequired,
     resetRealtimeToDefault: PropTypes.func.isRequired,
     useNotifications: PropTypes.bool.isRequired,
+    useRecurringCancellationsGridView: PropTypes.bool.isRequired,
 };
 
 Header.defaultProps = {
@@ -431,6 +434,7 @@ export default connect(
         hasAlerts: isAlertsEmpty(state),
         stopMessagesPermissions: getStopMessagesPermissions(state),
         useNotifications: useNotifications(state),
+        useRecurringCancellationsGridView: useRecurringCancellationsGridView(state),
     }),
     {
         resetRealtimeToDefault,
