@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import moment from 'moment-timezone';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -10,11 +10,16 @@ import { FaDoorOpen, FaDoorClosed } from 'react-icons/fa';
 import { MdKeyboardArrowRight } from 'react-icons/md';
 import DATE_TYPE from '../../../../types/date-types';
 import { getTripReplayTotalResults } from '../../../../redux/selectors/control/tripReplays/tripReplayView';
+import { getAllVehicleReplayEvents } from '../../../../redux/actions/control/vehicleReplays/currentVehicleReplay';
 import Loader from '../../../Common/Loader/Loader';
 import { getVehicleReplays } from '../../../../redux/selectors/control/vehicleReplays/vehicleReplay';
 
 const VehicleStatusView = (props) => {
     const { vehicleReplays, totalTripResults, handleMouseEnter, handleMouseLeave, handleMouseClick } = props;
+
+    useEffect(() => {
+        props.getAllVehicleReplayEvents();
+    }, []);
 
     const Icons = {
         signOn: BiLogIn,
@@ -136,6 +141,7 @@ VehicleStatusView.propTypes = {
     handleMouseEnter: PropTypes.func.isRequired,
     handleMouseLeave: PropTypes.func.isRequired,
     handleMouseClick: PropTypes.func.isRequired,
+    getAllVehicleReplayEvents: PropTypes.func.isRequired,
 };
 
 VehicleStatusView.defaultProps = {
@@ -148,4 +154,7 @@ export default connect(
         totalTripResults: getTripReplayTotalResults(state),
         vehicleReplays: getVehicleReplays(state),
     }),
+    {
+        getAllVehicleReplayEvents,
+    },
 )(VehicleStatusView);

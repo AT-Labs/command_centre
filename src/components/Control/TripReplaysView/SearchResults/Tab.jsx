@@ -52,7 +52,6 @@ const ReplaySubTab = (props) => {
     useEffect(() => {
         if (value === 1) {
             props.clearCurrentTrip();
-            props.getAllVehicleReplayEvents();
         }
     }, [value]);
 

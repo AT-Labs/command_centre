@@ -29,6 +29,9 @@ export const getAllVehicleReplayEvents = () => (dispatch, getState) => {
     const filters = getTripReplayFilters(getState());
     return VEHICLE_REPLAY_API.getVehicleReplay(filters)
         .then((response) => {
+            if (response.length === 0) {
+                return;
+            }
             const trips = response[0].trip;
             const events = [];
             trips.forEach((trip) => {

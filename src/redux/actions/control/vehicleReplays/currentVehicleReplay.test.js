@@ -88,4 +88,13 @@ describe('Current vehicle replay actions', () => {
         expect(store.getActions()).to.eql(expectedActions);
     });
 
+    it('Should not dispatch any vehicle status events', async () => {
+        const mockVehicleReplayData = []
+
+        const getvehicleReplay = sandbox.stub(vehicleReplayApi, 'getVehicleReplay').resolves(mockVehicleReplayData);
+        await store.dispatch(getAllVehicleReplayEvents());
+        sandbox.assert.calledOnce(getvehicleReplay);
+        expect(store.getActions()).to.eql([]);
+    });
+
 });
