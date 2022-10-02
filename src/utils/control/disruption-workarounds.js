@@ -127,7 +127,7 @@ export const generateWorkaroundsUIOptions = (affectedEntities, existingWorkaroun
     return workaroundItems;
 };
 
-export const getWorkaroundsAsText = (workarounds) => {
+export const getWorkaroundsAsText = (workarounds, separator = '; ') => {
     const parseWorkaround = (workaroundInstance) => {
         let key = null;
         if (workaroundInstance.type === 'route') {
@@ -141,5 +141,5 @@ export const getWorkaroundsAsText = (workarounds) => {
         return workaroundInstance.workaround;
     };
     const workaroundsAsText = workarounds.map(workaround => parseWorkaround(workaround));
-    return [...new Set(workaroundsAsText)].join('; ');
+    return [...new Set(workaroundsAsText)].join(separator);
 };

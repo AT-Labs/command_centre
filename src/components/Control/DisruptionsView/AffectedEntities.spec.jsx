@@ -51,19 +51,6 @@ describe('<AffectedEntities />', () => {
         expect(wrapper.find(Button).contains('Edit')).toBeFalsy();
     });
 
-    it('should show collapse arrow button if scrollHeight > clientHeight', () => {
-        mockUseRef({ current: { scrollHeight: 110, clientHeight: 100 } });
-        const affectedEntities = [
-            { routeId: 'route1', routeShortName: '1' },
-            { stopId: 'stop1', stopCode: '1', text: '1' },
-            { stopId: 'stop2', stopCode: '2', routeId: 'route2', routeShortName: '2', text: '2' },
-            { stopId: 'stop3', stopCode: '3', routeId: 'route3', routeShortName: '3', text: '3' },
-            { stopId: 'stop3', stopCode: '3', routeId: 'route4', routeShortName: '4', text: '3' },
-        ];
-        wrapper = setup({ affectedEntities });
-        expect(wrapper.find(Button).contains('View more')).toBeTruthy();
-    });
-
     it('should display combined entities', () => {
         const affectedEntities = [
             { routeId: 'route1', routeShortName: '1', type: 'route' },

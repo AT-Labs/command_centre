@@ -14,25 +14,4 @@
     & li {
         margin-top: 10px;
     }
-
-    & .collapse:not(.show) {
-        display: block;
-        height: 17rem;
-        overflow: hidden;
-    }
-
-    & .collapsing {
-        height: 17rem !important;
-        transition: height .35s ease;
-    }
-
-    &.small {
-        & .collapse:not(.show) {
-            height: 10rem;
-        }
-
-        & .collapsing {
-            height: 10rem !important;
-        }
-    }
 }

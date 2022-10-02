@@ -3,6 +3,7 @@ import { shallow } from 'enzyme';
 import { expect } from 'chai';
 
 import WorkaroundsDisplay from './WorkaroundsDisplay';
+import { DISRUPTIONS_MESSAGE_TYPE } from '../../../../types/disruptions-types';
 
 let wrapper;
 
@@ -100,7 +101,7 @@ describe('<WorkaroundsDisplay />', () => {
     describe('Workarounds is empty', () => {
         it('Check that the empty workarounds message are displayed', () => {
             setup({ disruption: { ...defaultState.disruption, workarounds: [] } });
-            expect(wrapper.find('Fragment').render().find('span').html()).equal('No workarounds added for this disruption.');
+            expect(wrapper.find('Fragment').render().find('span').html()).equal(DISRUPTIONS_MESSAGE_TYPE.noWorkaroundsMessage);
         });
     });
 });

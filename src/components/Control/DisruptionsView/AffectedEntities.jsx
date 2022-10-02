@@ -1,27 +1,17 @@
 import PropTypes from 'prop-types';
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
-import { Button, Collapse } from 'reactstrap';
+import { Button } from 'reactstrap';
 import { isEmpty, groupBy } from 'lodash-es';
 import { MdEdit, MdEast } from 'react-icons/md';
-import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { getStopGroupsIncludingDeleted } from '../../../redux/selectors/control/dataManagement/stopGroups';
 import { useWorkarounds } from '../../../redux/selectors/appSettings';
 import { getStopGroupName } from '../../../utils/control/dataManagement';
 import './AffectedEntities.scss';
 import { DIRECTIONS } from './types';
+import CustomCollapse from '../../Common/CustomCollapse/CustomCollapse';
 
 export const AffectedEntities = (props) => {
-    const collapseRef = useRef(null);
-    const [collapse, setCollapse] = useState();
-    const [collapseInitialHeight, setInitialHeight] = useState(0);
-
-    useEffect(() => {
-        setInitialHeight(collapseRef.current.clientHeight);
-    }, []);
-
-    const toggle = () => setCollapse(!collapse);
-
     const groupByEntityRender = (groupById, groupTitle, groupText, children) => (
         <li key={ groupById }>
             <div className="font-size-sm font-weight-bold">
@@ -66,11 +56,6 @@ export const AffectedEntities = (props) => {
         return [routesRender, stopsRender, stopGroupsRender];
     };
 
-    const showViewMoreLessButton = () => {
-        const collapseNode = collapseRef.current;
-        return collapseNode && collapseNode.scrollHeight > collapseInitialHeight;
-    };
-
     return (
         <section className={ `disruption__affected-entities ${props.heightSmall ? 'small' : ''} ${props.className}` }>
             <div className="p-3 w-100">
@@ -111,21 +96,11 @@ export const AffectedEntities = (props) => {
                         <hr />
                     </>
                 )}
-                <Collapse innerRef={ collapseRef } isOpen={ collapse } className="w-100">
+                <CustomCollapse height="small" className="w-100">
                     <ul className="p-0 m-0">
                         { getCombinedAffectedStopsRoutesStopGroups() }
                     </ul>
-                </Collapse>
-                {showViewMoreLessButton() && (
-                    <Button
-                        className="btn cc-btn-link pl-0 pt-3 font-weight-bold"
-                        onClick={ toggle }>
-                        {collapse ? 'View less' : 'View more'}
-                        {collapse
-                            ? <IoIosArrowUp size={ 20 } color="black" className="ml-1" />
-                            : <IoIosArrowDown size={ 20 } color="black" className="ml-1" />}
-                    </Button>
-                )}
+                </CustomCollapse>
             </div>
         </section>
     );
