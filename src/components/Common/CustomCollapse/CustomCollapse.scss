@@ -24,11 +24,11 @@
 
     &.tiny {
         & .collapse:not(.show) {
-            height: 4rem;
+            height: 7.5rem;
         }
 
         & .collapsing {
-            height: 4rem !important;
+            height: 7.5rem !important;
         }
     }
 }
