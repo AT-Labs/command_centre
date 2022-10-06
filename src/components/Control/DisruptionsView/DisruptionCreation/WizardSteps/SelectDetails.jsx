@@ -21,13 +21,11 @@ import {
 } from '../../../../../types/disruptions-types';
 import {
     URL_MAX_LENGTH,
-    DESCRIPTION_MAX_LENGTH,
     HEADER_MAX_LENGTH,
     LABEL_START_TIME,
     LABEL_CUSTOMER_IMPACT,
     LABEL_CAUSE,
     LABEL_HEADER,
-    LABEL_DESCRIPTION,
     LABEL_URL,
     LABEL_START_DATE,
     DATE_FORMAT,
@@ -45,7 +43,7 @@ import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 
 export const SelectDetails = (props) => {
-    const { startDate, startTime, endDate, endTime, impact, cause, header, description, url, createNotification, exemptAffectedTrips } = props.data;
+    const { startDate, startTime, endDate, endTime, impact, cause, header, url, createNotification, exemptAffectedTrips } = props.data;
     const { recurrent, duration, recurrencePattern } = props.data;
     const { routes, stops } = props;
 
@@ -67,7 +65,7 @@ export const SelectDetails = (props) => {
 
     const isRequiredPropsEmpty = () => {
         const isEntitiesEmpty = isEmpty([...routes, ...stops]);
-        const isPropsEmpty = some([startTime, startDate, impact, cause, header, description], isEmpty);
+        const isPropsEmpty = some([startTime, startDate, impact, cause, header], isEmpty);
         const isEndTimeRequiredAndEmpty = !recurrent && !isEmpty(endDate) && isEmpty(endTime);
         const isWeekdayRequiredAndEmpty = recurrent && isEmpty(recurrencePattern.byweekday);
         return isEntitiesEmpty || isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
@@ -287,23 +285,6 @@ export const SelectDetails = (props) => {
                             maxLength={ HEADER_MAX_LENGTH }
                             onChange={ event => props.onDataUpdate('header', event.target.value) }
                             value={ header }
-                        />
-                    </FormGroup>
-                </div>
-                <div className="col-12">
-                    <FormGroup>
-                        <Label for="disruption-creation__wizard-select-details__description">
-                            <span className="font-size-md font-weight-bold">{LABEL_DESCRIPTION}</span>
-                        </Label>
-                        <Input
-                            id="disruption-creation__wizard-select-details__description"
-                            className="w-100 border border-dark"
-                            placeholder="Description of the message"
-                            type="textarea"
-                            rows="5"
-                            maxLength={ DESCRIPTION_MAX_LENGTH }
-                            value={ description }
-                            onChange={ event => props.onDataUpdate('description', event.target.value) }
                         />
                     </FormGroup>
                 </div>

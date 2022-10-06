@@ -12,12 +12,10 @@ import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
 import { CAUSES, IMPACTS, STATUSES } from '../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
-    DESCRIPTION_MAX_LENGTH,
     HEADER_MAX_LENGTH,
     LABEL_CAUSE,
     LABEL_CREATED_BY,
     LABEL_CUSTOMER_IMPACT,
-    LABEL_DESCRIPTION,
     LABEL_END_DATE,
     LABEL_END_TIME,
     LABEL_HEADER,
@@ -85,7 +83,6 @@ const DisruptionDetailView = (props) => {
     const [cause, setCause] = useState(disruption.cause);
     const [impact, setImpact] = useState(disruption.impact);
     const [status, setStatus] = useState(disruption.status);
-    const [description, setDescription] = useState(disruption.description);
     const [header, setHeader] = useState(disruption.header);
     const [url, setUrl] = useState(disruption.url);
     const [incidentNo, setIncidentNo] = useState(disruption.incidentNo);
@@ -158,7 +155,6 @@ const DisruptionDetailView = (props) => {
         setCause(disruption.cause);
         setImpact(disruption.impact);
         setStatus(disruption.status);
-        setDescription(disruption.description);
         setUrl(disruption.url);
         setMode(disruption.mode);
         setStartTime(moment(disruption.startTime).format(TIME_FORMAT));
@@ -199,7 +195,6 @@ const DisruptionDetailView = (props) => {
         cause,
         impact,
         status,
-        description,
         header,
         url,
         mode,
@@ -288,7 +283,7 @@ const DisruptionDetailView = (props) => {
 
     const durationValid = () => isDurationValid(duration, recurrent);
     const isWeekdayRequiredButEmpty = recurrent && isEmpty(recurrencePattern.byweekday);
-    const isPropsEmpty = some([cause, impact, status, description, header], isEmpty) || isWeekdayRequiredButEmpty;
+    const isPropsEmpty = some([cause, impact, status, header], isEmpty) || isWeekdayRequiredButEmpty;
     const isUpdating = isRequesting && resultDisruptionId === disruption.disruptionId;
 
     const isViewAllDisabled = isWeekdayRequiredButEmpty || !startTimeValid() || !startDateValid() || !endDateValid() || !durationValid();
@@ -549,19 +544,6 @@ const DisruptionDetailView = (props) => {
                             invalid={ !isUrlValid(url) }
                         />
                         <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for="disruption-detail__description">
-                            <span className="font-size-md font-weight-bold">{LABEL_DESCRIPTION}</span>
-                        </Label>
-                        <Input id="disruption-detail__description"
-                            className="textarea-no-resize border border-dark"
-                            type="textarea"
-                            disabled={ isResolved() }
-                            value={ description }
-                            onChange={ e => setDescription(e.currentTarget.value) }
-                            maxLength={ DESCRIPTION_MAX_LENGTH }
-                            rows={ 5 } />
                     </FormGroup>
                     { recurrent && (
                         <FormGroup>

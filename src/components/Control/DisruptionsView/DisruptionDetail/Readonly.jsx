@@ -10,7 +10,7 @@ import { getShapes, getDisruptionsLoadingState } from '../../../../redux/selecto
 import {
     DATE_FORMAT,
     LABEL_CAUSE, LABEL_CREATED_BY,
-    LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_DURATION, LABEL_END_DATE, LABEL_END_TIME, LABEL_HEADER, LABEL_LAST_UPDATED_BY,
+    LABEL_CUSTOMER_IMPACT, LABEL_DURATION, LABEL_END_DATE, LABEL_END_TIME, LABEL_HEADER, LABEL_LAST_UPDATED_BY,
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME, LABEL_STATUS, LABEL_URL,
     TIME_FORMAT,
 } from '../../../../constants/disruptions';
@@ -154,17 +154,6 @@ const Readonly = (props) => {
                         </Label>
                         <Input id="disruption-detail__url"
                             defaultValue={ disruption.url }
-                            disabled />
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for="disruption-detail__description">
-                            <span className="font-size-md font-weight-bold">{LABEL_DESCRIPTION}</span>
-                        </Label>
-                        <Input id="disruption-detail__description"
-                            className="textarea-no-resize"
-                            type="textarea"
-                            value={ disruption.description }
-                            rows={ 4 }
                             disabled />
                     </FormGroup>
                     { disruption.recurrent && (

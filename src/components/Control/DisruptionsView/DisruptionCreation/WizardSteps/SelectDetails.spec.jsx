@@ -110,13 +110,6 @@ describe('<SelectDetails />', () => {
             expect(footer.prop('isSubmitDisabled')).toEqual(true);
         });
 
-        it('should be disabled when description is empty', () => {
-            data.description = '';
-            wrapper = setup({ data, stops, routes });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
         it('should be disabled when disruption is recurrent and end date is empty', () => {
             data.recurrent = true;
             data.endDate = '';
