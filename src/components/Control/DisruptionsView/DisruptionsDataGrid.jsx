@@ -16,7 +16,7 @@ import {
     LABEL_CAUSE, LABEL_CREATED_AT, LABEL_CREATED_BY, LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_DISRUPTION, LABEL_END_TIME,
     LABEL_HEADER,
     LABEL_LAST_UPDATED_AT,
-    LABEL_MODE, LABEL_START_TIME, LABEL_STATUS, LABEL_WORKAROUNDS,
+    LABEL_MODE, LABEL_START_TIME, LABEL_STATUS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
 } from '../../../constants/disruptions';
 import { dateTimeFormat } from '../../../utils/dateUtils';
 import { CAUSES, DEFAULT_CAUSE, DEFAULT_IMPACT, IMPACTS, STATUSES } from '../../../types/disruptions-types';
@@ -166,6 +166,14 @@ export const DisruptionsDataGrid = (props) => {
             width: 200,
             type: 'string',
             hide: true,
+            renderCell: RenderCellExpand,
+        },
+        {
+            field: 'notes',
+            headerName: LABEL_DISRUPTION_NOTES,
+            width: 200,
+            hide: true,
+            valueGetter: params => (params.value ? [...params.value].reverse().map(note => note.description).join('; \n') : ''),
             renderCell: RenderCellExpand,
         },
     ];

@@ -28,6 +28,9 @@ import {
     TIME_FORMAT,
     URL_MAX_LENGTH,
     LABEL_DURATION,
+    LABEL_DISRUPTION_NOTES,
+    DESCRIPTION_NOTE_MAX_LENGTH,
+    LABEL_LAST_NOTE,
 } from '../../../../constants/disruptions';
 import {
     getRoutesByShortName,
@@ -71,6 +74,7 @@ import { getDatePickerOptions } from '../../../../utils/dateUtils';
 import ConfirmationModal from '../../Common/ConfirmationModal/ConfirmationModal';
 import { confirmationModalTypes } from '../types';
 import { ViewWorkaroundsModal } from './ViewWorkaroundsModal';
+import { LastNoteView } from './LastNoteView';
 
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
@@ -99,9 +103,12 @@ const DisruptionDetailView = (props) => {
     const [recurrencePattern, setRecurrencePattern] = useState(disruption.recurrencePattern);
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [activePeriods, setActivePeriods] = useState(disruption.activePeriods);
+    const [notes, setNotes] = useState(disruption.notes);
     const [isRecurrenceDirty, setIsRecurrenceDirty] = useState(false);
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(NONE);
     const [isViewWorkaroundsModalOpen, setIsViewWorkaroundsModalOpen] = useState(false);
+    const [descriptionNote, setDescriptionNote] = useState('');
+    const [lastNote, setLastNote] = useState();
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqWith([...affectedRoutes, ...props.routes], (routeA, routeB) => routeA.routeId === routeB.routeId && routeA.stopCode === routeB.stopCode);
@@ -165,6 +172,8 @@ const DisruptionDetailView = (props) => {
         setExemptAffectedTrips(disruption.exemptAffectedTrips);
         setRecurrent(disruption.recurrent);
         setDuration(disruption.duration);
+        setNotes(disruption.notes);
+        setLastNote();
     }, [
         disruption.incidentNo,
         disruption.header,
@@ -206,7 +215,16 @@ const DisruptionDetailView = (props) => {
         recurrent,
         duration,
         recurrencePattern,
+        notes: [...notes, { description: descriptionNote }],
     });
+
+    useEffect(() => {
+        setDescriptionNote('');
+        const { notes: disruptionNotes } = disruption;
+        if (disruptionNotes.length > 0) {
+            setLastNote(disruptionNotes[disruptionNotes.length - 1]);
+        }
+    }, [disruption.lastUpdatedTime, lastNote]);
 
     const handleUpdateDisruption = () => updateDisruption(setDisruption());
 
@@ -545,6 +563,22 @@ const DisruptionDetailView = (props) => {
                         />
                         <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
                     </FormGroup>
+                    <FormGroup>
+                        <Label for="disruption-detail__notes">
+                            <span className="font-size-md font-weight-bold">
+                                {LABEL_DISRUPTION_NOTES}
+                                {' '}
+                                <span className="text-muted font-size-sm font-weight-light">Optional. To view all notes, select `Show Summary`</span>
+                            </span>
+                        </Label>
+                        <Input id="disruption-detail__notes"
+                            className="textarea-no-resize border border-dark"
+                            type="textarea"
+                            value={ descriptionNote }
+                            onChange={ e => setDescriptionNote(e.currentTarget.value) }
+                            maxLength={ DESCRIPTION_NOTE_MAX_LENGTH }
+                            rows={ 5 } />
+                    </FormGroup>
                     { recurrent && (
                         <FormGroup>
                             <Button disabled={ isViewAllDisabled } className="cc-btn-primary" onClick={ () => displayActivePeriods() }>View all</Button>
@@ -562,6 +596,7 @@ const DisruptionDetailView = (props) => {
 
             <div className="row">
                 <div className="col-5 disruption-detail__contributors">
+                    <LastNoteView label={ LABEL_LAST_NOTE } note={ lastNote } />
                     <DisruptionLabelAndText id="disruption-detail__created-by" label={ LABEL_CREATED_BY } text={ `${disruption.createdBy}, ${formatCreatedUpdatedTime(disruption.createdTime)}` } />
                     <DisruptionLabelAndText id="disruption-detail__last-updated" label={ LABEL_LAST_UPDATED_BY } text={ `${disruption.lastUpdatedBy}, ${formatCreatedUpdatedTime(disruption.lastUpdatedTime)}` } />
                 </div>

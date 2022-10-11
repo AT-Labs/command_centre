@@ -53,6 +53,10 @@
     td:last-of-type {
         white-space: pre-line;
     }
+
+    .notes-tbody tr:nth-child(1) td {
+        border-top: none;
+    }
 }
 
 .map-note {

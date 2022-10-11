@@ -12,7 +12,7 @@ import {
     LABEL_CAUSE, LABEL_CREATED_BY,
     LABEL_CUSTOMER_IMPACT, LABEL_DURATION, LABEL_END_DATE, LABEL_END_TIME, LABEL_HEADER, LABEL_LAST_UPDATED_BY,
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME, LABEL_STATUS, LABEL_URL,
-    TIME_FORMAT,
+    TIME_FORMAT, LABEL_LAST_NOTE,
 } from '../../../../constants/disruptions';
 import {
     getRoutesByShortName,
@@ -30,12 +30,14 @@ import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
 import WeekdayPicker from '../../Common/WeekdayPicker/WeekdayPicker';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 import { ViewWorkaroundsModal } from './ViewWorkaroundsModal';
+import { LastNoteView } from './LastNoteView';
 
 const Readonly = (props) => {
     const { disruption, isLoading } = props;
 
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [isViewWorkaroundsModalOpen, setIsViewWorkaroundsModalOpen] = useState(false);
+    const [lastNote, setLastNote] = useState();
 
     const affectedEntitiesWithoutShape = toString(disruption.affectedEntities.map(entity => omit(entity, ['shapeWkt'])));
     useEffect(() => {
@@ -51,6 +53,13 @@ const Readonly = (props) => {
             props.getRoutesByShortName(routesToGet.slice(0, 10));
         }
     }, [affectedEntitiesWithoutShape]);
+
+    useEffect(() => {
+        const { notes } = disruption;
+        if (notes.length > 0) {
+            setLastNote(notes[notes.length - 1]);
+        }
+    }, [disruption, lastNote]);
 
     return (
         <Form>
@@ -170,6 +179,7 @@ const Readonly = (props) => {
             />
             <div className="row">
                 <div className="col-5 disruption-detail__contributors">
+                    <LastNoteView label={ LABEL_LAST_NOTE } note={ lastNote } />
                     <DisruptionLabelAndText id="disruption-detail__created-by" label={ LABEL_CREATED_BY } text={ `${disruption.createdBy}, ${formatCreatedUpdatedTime(disruption.createdTime)}` } />
                     <DisruptionLabelAndText id="disruption-detail__last-updated" label={ LABEL_LAST_UPDATED_BY } text={ `${disruption.lastUpdatedBy}, ${formatCreatedUpdatedTime(disruption.lastUpdatedTime)}` } />
                 </div>

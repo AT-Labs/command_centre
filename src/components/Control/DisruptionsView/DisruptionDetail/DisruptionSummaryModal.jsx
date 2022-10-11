@@ -9,7 +9,7 @@ import {
     LABEL_CAUSE, LABEL_CREATED_AT, LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_END_DATE, LABEL_END_TIME,
     LABEL_HEADER, LABEL_LAST_UPDATED_AT,
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME,
-    LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_CREATED_BY, LABEL_LAST_UPDATED_BY, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS,
+    LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_CREATED_BY, LABEL_LAST_UPDATED_BY, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
 } from '../../../../constants/disruptions';
 import { CAUSES, IMPACTS, DISRUPTIONS_MESSAGE_TYPE } from '../../../../types/disruptions-types';
 import { formatCreatedUpdatedTime } from '../../../../utils/control/disruptions';
@@ -17,12 +17,33 @@ import CustomModal from '../../../Common/CustomModal/CustomModal';
 import { getWorkaroundsAsText } from '../../../../utils/control/disruption-workarounds';
 import CustomCollapse from '../../../Common/CustomCollapse/CustomCollapse';
 
+const generateDisruptionNotes = (notes) => {
+    if (Array.isArray(notes) && notes.length > 0) {
+        return (
+            <Table className="table">
+                <tbody className="notes-tbody">
+                    {[...notes].reverse().map(note => (
+                        <tr key={ note.id } className="row d-block">
+                            <td className="col-3">{formatCreatedUpdatedTime(note.createdTime)}</td>
+                            <td className="col-3">{note.createdBy}</td>
+                            <td className="col-6">{note.description}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </Table>
+        );
+    }
+    return <span>No notes added to this disruption</span>;
+};
+
 const createLine = (label, value) => (value && (
     <tr className="row">
         <td className="col-4">{label}</td>
         <td className="col text-break">
             {label === LABEL_WORKAROUNDS && value.length === 0 ? DISRUPTIONS_MESSAGE_TYPE.noWorkaroundsMessage : null }
-            {label === LABEL_WORKAROUNDS ? <CustomCollapse height="tiny" className="bg-white">{getWorkaroundsAsText(value, '; \n')}</CustomCollapse> : value }
+            {label === LABEL_WORKAROUNDS ? <CustomCollapse height="tiny" className="bg-white">{getWorkaroundsAsText(value, '; \n')}</CustomCollapse> : null }
+            {label === LABEL_DISRUPTION_NOTES ? generateDisruptionNotes(value) : null }
+            {(label !== LABEL_DISRUPTION_NOTES && label !== LABEL_WORKAROUNDS) ? value : null }
         </td>
     </tr>
 ));
@@ -58,6 +79,7 @@ const DisruptionSummaryModal = (props) => {
                     {createLine(LABEL_CREATED_BY, props.disruption.createdBy)}
                     {createLine(LABEL_LAST_UPDATED_AT, formatCreatedUpdatedTime(props.disruption.lastUpdatedTime))}
                     {createLine(LABEL_LAST_UPDATED_BY, props.disruption.lastUpdatedBy)}
+                    {createLine(LABEL_DISRUPTION_NOTES, props.disruption.notes)}
                     {createLine(LABEL_WORKAROUNDS, props.disruption.workarounds)}
                 </tbody>
             </Table>

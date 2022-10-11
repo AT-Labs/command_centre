@@ -47,6 +47,14 @@ const baseDisruption = {
     },
     activePeriods: [{ startTime: 1328227200, endTime: 1328486400 }],
     affectedEntities: [stop],
+    notes: [
+        {
+            id: '9d1ae55b-67ca-413c-9f18-69a0d7e579f7',
+            createdBy: 'jonathan.nenba@propellerhead.co.nz',
+            createdTime: '2022-10-05T14:03:58.340Z',
+            description: 'test the disruption notes feature',
+        },
+    ],
 };
 
 const cache = createCache({ key: 'blah' });

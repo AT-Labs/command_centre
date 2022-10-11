@@ -192,6 +192,7 @@ export class CreateDisruption extends React.Component {
             ...disruptionData,
             endTime: endTimeMoment,
             startTime: startTimeMoment,
+            notes: [],
         };
         this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds));
     };

@@ -1,5 +1,6 @@
 export const DISRUPTION_POLLING_INTERVAL = 10000;
 export const DESCRIPTION_MAX_LENGTH = 5000;
+export const DESCRIPTION_NOTE_MAX_LENGTH = 5000;
 export const HEADER_MAX_LENGTH = 150;
 export const URL_MAX_LENGTH = 250;
 export const TIME_FORMAT = 'HH:mm';
@@ -28,6 +29,8 @@ export const LABEL_LAST_UPDATED_AT = 'Last Updated At';
 export const LABEL_FREQUENCY = 'Frequency';
 export const LABEL_DURATION = 'Duration (hours)';
 export const LABEL_WORKAROUNDS = 'Workarounds';
+export const LABEL_DISRUPTION_NOTES = 'Disruption Notes';
+export const LABEL_LAST_NOTE = 'Last Note';
 
 export const FREQUENCY_TYPE = {
     ONCE: 'Once',
