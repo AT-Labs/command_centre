@@ -7,7 +7,7 @@ import * as search from './search';
 import ACTION_TYPE from '../action-types';
 import SEARCH_RESULT_TYPE from '../../types/search-result-types';
 import VEHICLE_TYPE from '../../types/vehicle-types';
-import * as publicApi from '../../utils/transmitters/public-api';
+import * as mapbox from '../../utils/transmitters/mapbox';
 import * as selectorSearch from '../selectors/search';
 import * as stops from '../selectors/static/stops';
 import * as routes from '../selectors/static/routes';
@@ -289,7 +289,7 @@ describe('Search actions', () => {
                 },
             ];
             const fakeAddresses = Promise.resolve(addresses);
-            const searchAddresses = sandbox.stub(publicApi, 'searchAddresses').resolves(fakeAddresses);
+            const searchAddresses = sandbox.stub(mapbox, 'searchAddresses').resolves(fakeAddresses);
 
             sandbox.stub(selectorSearch, 'getSearchTerms').returns('48 Va');
 
@@ -313,7 +313,7 @@ describe('Search actions', () => {
                 },
             ];
             const fakeAddresses = Promise.resolve('response');
-            const searchAddresses = sandbox.stub(publicApi, 'searchAddresses').resolves(fakeAddresses);
+            const searchAddresses = sandbox.stub(mapbox, 'searchAddresses').resolves(fakeAddresses);
 
             const getSearchTerms = sandbox.stub(selectorSearch, 'getSearchTerms').returns('48 Va');
             const reportError = sandbox.stub(activity, 'reportError').returns(expectedActions[4]);

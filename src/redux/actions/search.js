@@ -2,7 +2,7 @@
 import _ from 'lodash-es';
 import SEARCH_RESULT_TYPE from '../../types/search-result-types';
 import VEHICLE_TYPE from '../../types/vehicle-types';
-import * as publicApi from '../../utils/transmitters/public-api';
+import * as mapbox from '../../utils/transmitters/mapbox';
 import ACTION_TYPE from '../action-types';
 import ERROR_TYPE from '../../types/error-types';
 import { getAllBlocks } from '../selectors/control/blocks';
@@ -45,7 +45,7 @@ export const updateSearchBarFocus = isFocus => ({
 const formatAddressSearchResults = addressEntries => addressEntries.map((entry) => {
     const { address } = entry;
     return {
-        text: address.split('\n')[0],
+        text: address,
         data: entry,
         category: SEARCH_RESULT_TYPE.ADDRESS,
         icon: SEARCH_RESULT_TYPE.ADDRESS.icon,
@@ -56,7 +56,7 @@ export const searchAddresses = searchTerms => (dispatch, getState) => {
     dispatch(updateSearchLoading(true));
     dispatch(updateSearchTerms(searchTerms));
 
-    return publicApi.searchAddresses(searchTerms)
+    return mapbox.searchAddresses(searchTerms)
         .then((addresses) => {
             dispatch(updateSearchLoading(false));
             if (getSearchTerms(getState()) !== searchTerms) return;

@@ -13,7 +13,7 @@ Before you can build this project, you need the following dependencies:
 
 ## Unit test
 
-Previous unit tests were created using Mocha these are identified by **/*.test.js(x) files. 
+Previous unit tests were created using Mocha these are identified by **/*.test.js(x) files.
 All new tests should be created using Jest due to the availability of extensions to assist tests. These are identified by **/*.spec.js(x) files.
 
 To run both mocha and jest tests:
@@ -21,12 +21,12 @@ To run both mocha and jest tests:
 npm run test
 ```
 
-To only run jest tests : 
+To only run jest tests :
 ```
 npm run jest
 ```
 
-To run a single set of jest tests use the 'describe' string, to run a single test use the 'it' string: 
+To run a single set of jest tests use the 'describe' string, to run a single test use the 'it' string:
 ```
 npm run jest -- -t '<describeString>' | '<itString>'
 ```
@@ -101,16 +101,15 @@ Firstly, follow [this instruction](https://docs.microsoft.com/en-us/azure/archit
 To run in different environments set NODE_ENV before running.
 
 All the configuration to get the user's role is done in [`index.jsx`](./src/index.jsx). Make sure `REACT_APP_ACTIVE_DIRECTORY_CLIENT_ID` is your Azure App one.
-If you want to ban login, set `REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN` to be `'true'`;  
+If you want to ban login, set `REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN` to be `'true'`;
 When the app starts, it loads the user from the cache or it forces to log in before starting. Then you can check the user's role with  `authContext.getCachedUser().profile.roles.includes("USER_ROLE")`.
 
 
 ### Environment Variables
-| Variable                                      |Type| Description                                         |
-|-----------------------------------------------|----|-----------------------------------------------------|
+| Variable                                      |Type    | Description                                     |
+|-----------------------------------------------|--------|-------------------------------------------------|
 | REACT_APP_AT_FLEET_API_URL                    | string | Fleet API URL                                   |
-| REACT_APP_AT_PUBLIC_API_URL                   | string | AT public API URL                               |
-| REACT_APP_AT_PUBLIC_API_KEY                   | string | AT public API access key                        |
+| REACT_APP_MAPBOX_ACCESS_TOKEN                 | string | Mapbox access token
 | REACT_APP_GTFS_REALTIME_SUBSCRIPTIONS_URL     | string | GTFS realtime WebSocket subscription URL        |
 | REACT_APP_GTFS_REALTIME_SUBSCRIPTIONS_KEY     | string | GTFS realtime WebSocket subscription access key |
 | REACT_APP_GTFS_REALTIME_QUERY_URL             | string | GTFS realtime API URL                           |

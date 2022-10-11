@@ -8,5 +8,5 @@ export const jsonResponseHandling = async (response) => {
     const errorResponse = await response.json().catch(() => {
         throw Object.create({ code: response.status, message: response.statusText });
     });
-    throw Object.create({ code: errorResponse.code, message: errorResponse.error });
+    throw Object.create({ code: errorResponse.code || response.status, message: errorResponse.error || errorResponse.message });
 };
