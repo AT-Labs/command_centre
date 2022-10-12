@@ -27,4 +27,7 @@ export default {
         EDIT_NOTIFICATION: 'edit',
         VIEW_NOTIFICATION: 'view',
     },
+    RECURRING_CANCELLATIONS: {
+        UPDATE_RECURRING_CANCELLATIONS: 'recurrent_cancel',
+    },
 };

@@ -118,7 +118,13 @@ export default {
     UPDATE_CONTROL_ROUTES_SEARCH_RESULTS: 'update-control-routes-search-results',
     // Control: recurring cancellations
     FETCH_RECURRING_CANCELLATIONS: 'fetch-recurring-cancellations',
+    FETCH_RECURRING_CANCELLATIONS_PERMISSIONS: 'fetch-recurring-cancellations-permissions',
     UPDATE_CONTROL_RECURRING_CANCELLATIONS_DATAGRID_CONFIG: 'update-control-recurring-cancellations-datagrid-config',
+    UPDATE_CONTROL_RECURRING_CANCELLATIONS_LOADING: 'update-control-recurring-cancellations-loading',
+    UPDATE_CONTROL_RECURRING_CANCELLATIONS_IS_LOADING: 'update-control-recurring-cancellations-is-loading',
+    UPDATE_CONTROL_RECURRING_CANCELLATIONS_MESSAGE: 'update-control-recurring-cancellations-message',
+    CLEAR_CONTROL_RECURRING_CANCELLATIONS_MESSAGE: 'clear-control-recurring-cancellations-message',
+    CLEAR_CONTROL_RECURRING_CANCELLATIONS_VALIDATION: 'clear-control-recurring-cancellations-validation',
     // Control: route variants
     UPDATE_CONTROL_ROUTE_VARIANTS: 'update-control-route-variants',
     CLEAR_CONTROL_ROUTE_VARIANTS: 'clear-control-route-variants',

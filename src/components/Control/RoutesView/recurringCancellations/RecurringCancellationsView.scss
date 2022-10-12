@@ -4,4 +4,39 @@
     p {
         margin-block-start: 1em; // fixes table pagination alignment
     }
+
+    & .recurring-cancellations-view__header {
+        display: flex;
+        justify-content: space-between;
+
+        & .recurring-cancellations__create-button {
+            color: white !important;
+            font-weight: 500 !important;
+        }
+    }
+}
+
+.route-variant-route-operator {
+    .omni-search .search__clear {
+        top: 6px;
+    }
+
+    .omni-search .search__alert {
+        top: 12px;
+        right: 12px;
+    }
+
+    #recurrent-trip-cancellation__start-time {
+        color: #495057;
+        font-weight: 100;
+        &::placeholder {
+            color: #495057;
+            font-weight: 100;
+        }
+    }
+
+    .invalid-input .form-control:focus {
+        border-color: #DC3545 !important;
+        box-shadow: 0 0 0 .2rem rgba(220, 53, 69, .25) !important;
+    }
 }

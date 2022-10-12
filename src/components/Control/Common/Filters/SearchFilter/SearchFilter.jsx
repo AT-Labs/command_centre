@@ -7,6 +7,7 @@ import './SearchFilter.scss';
 
 const SearchFilter = (props) => {
     const handleInputValueChange = (value) => {
+        props.onHandleInputValueChange(value);
         if (!value) props.onClearCallBack();
     };
 
@@ -20,6 +21,8 @@ const SearchFilter = (props) => {
             selectionHandlers={ { ...props.selectionHandlers } }
             clearHandlers={ { ...props.clearHandlers } }
             onClearCallBack={ props.onClearCallBack }
+            isDisabled={ props.isDisabled }
+            isValid={ props.isValid }
             onInputValueChange={ handleInputValueChange } />
     );
 };
@@ -31,11 +34,17 @@ SearchFilter.propTypes = {
     placeholder: PropTypes.string,
     searchInCategory: PropTypes.array.isRequired,
     onClearCallBack: PropTypes.func.isRequired,
+    onHandleInputValueChange: PropTypes.func,
+    isDisabled: PropTypes.bool,
+    isValid: PropTypes.bool,
 };
 
 SearchFilter.defaultProps = {
     placeholder: '',
     value: '',
+    isDisabled: false,
+    isValid: true,
+    onHandleInputValueChange: () => {},
 };
 
 export default SearchFilter;

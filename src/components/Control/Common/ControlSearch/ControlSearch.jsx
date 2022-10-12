@@ -153,7 +153,7 @@ class ControlSearch extends React.Component {
     renderInputComponent = inputProps => (
         <>
             <input { ...inputProps } />
-            { this.props.shouldShowArrow && (
+            { !this.props.disabled && this.props.shouldShowArrow && (
                 <IoIosArrowDown
                     className="control-search__icon control-search__icon--down text-info"
                     size={ 20 }
@@ -161,7 +161,7 @@ class ControlSearch extends React.Component {
                     role="button"
                     aria-label="Show search results" />
             )}
-            {this.state.value && this.props.withClearButton && (
+            { !this.props.disabled && this.state.value && this.props.withClearButton && (
                 <IoMdClose
                     className={ `control-search__icon control-search__icon--clear text-secondary ${this.props.shouldShowArrow ? 'mr-4' : ''}` }
                     size={ 20 }

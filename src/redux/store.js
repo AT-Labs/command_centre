@@ -8,6 +8,7 @@ import link from './reducers/control/link';
 import alerts from './reducers/control/alerts';
 import fleets from './reducers/control/fleets';
 import platforms from './reducers/control/platforms';
+import addRecurringCancellations from './reducers/control/routes/addRecurringCancellations';
 import controlFilters from './reducers/control/routes/filters';
 import controlRoutes from './reducers/control/routes/routes';
 import controlRouteVariants from './reducers/control/routes/routeVariants';
@@ -71,6 +72,7 @@ export default createStore(
             alerts,
             fleets,
             routes: combineReducers({
+                addRecurringCancellations,
                 filters: controlFilters,
                 routes: controlRoutes,
                 routeVariants: controlRouteVariants,

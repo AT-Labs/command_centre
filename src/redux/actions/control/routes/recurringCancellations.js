@@ -10,10 +10,19 @@ const loadRecurringCancellations = recurringCancellations => ({
     },
 });
 
+const loadRecurringCancellationPermisssions = permissions => ({
+    type: ACTION_TYPE.FETCH_RECURRING_CANCELLATIONS_PERMISSIONS,
+    payload: {
+        permissions,
+    },
+});
+
 export const retrieveRecurringCancellations = () => (dispatch) => {
     TRIP_MGT_API.getRecurringCancellations()
-        .then((recurringCancellations) => {
+        .then((response) => {
+            const { recurringCancellations, _links: { permissions } } = response;
             dispatch(loadRecurringCancellations(recurringCancellations));
+            dispatch(loadRecurringCancellationPermisssions(permissions));
         })
         .catch(() => {
             if (ERROR_TYPE.fetchRecurringCancellations) {

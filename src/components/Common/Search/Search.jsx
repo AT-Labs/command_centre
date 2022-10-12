@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Autosuggest from 'react-autosuggest';
 import { debounce, isEmpty } from 'lodash-es';
-
+import { BsExclamationCircle } from 'react-icons/bs';
 import Icon from '../Icon/Icon';
 import SearchResultItem from './SearchResultItem';
 import { SearchResultsShape } from './Shapes';
@@ -39,6 +39,7 @@ export class Search extends Component {
         label: PropTypes.string,
         selectedEntities: PropTypes.object,
         showTags: PropTypes.bool,
+        isValid: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -61,6 +62,7 @@ export class Search extends Component {
         onUnselection: null,
         selectedEntities: {},
         showTags: true,
+        isValid: true,
     };
 
     static NO_RESULTS = 'No Results';
@@ -277,9 +279,10 @@ export class Search extends Component {
                         controlShouldRenderValue={ this.props.showTags } />
                 ) }
                 { this.props.isIconVisible && <Icon className="search__icon position-absolute" icon="search" /> }
-                { this.state.value && !this.props.isLoading && !this.props.multiSearch
+                { this.props.isValid && !this.props.isDisabled && this.state.value && !this.props.isLoading && !this.props.multiSearch
                 && <SearchClearButton onClick={ this.handleClearButtonClick } /> }
                 { this.props.isLoading && !this.props.multiSearch && <SearchLoader /> }
+                { !this.props.isValid && <BsExclamationCircle className="search__alert position-absolute" size={ 16 } color="#dc3545" />}
             </section>
         );
     }

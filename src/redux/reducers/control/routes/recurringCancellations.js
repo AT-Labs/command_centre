@@ -17,14 +17,17 @@ export const INIT_STATE = {
         filterModel: { items: [], linkOperator: 'and' },
         pinnedColumns: { right: ['action'] },
     },
+    permissions: [],
 };
 
 const handleRecurringCancellationsUpdate = (state, { payload: { recurringCancellations } }) => ({ ...state, recurringCancellations });
 const handleRecurringCancellationsDatagridConfig = (state, action) => (
     { ...state, recurringCancellationsDatagridConfig: { ...state.recurringCancellationsDatagridConfig, ...action.payload } }
 );
+const handleRecurringCancellationPermissions = (state, { payload: { permissions } }) => ({ ...state, permissions });
 
 export default handleActions({
     [ACTION_TYPE.FETCH_RECURRING_CANCELLATIONS]: handleRecurringCancellationsUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_RECURRING_CANCELLATIONS_DATAGRID_CONFIG]: handleRecurringCancellationsDatagridConfig,
+    [ACTION_TYPE.FETCH_RECURRING_CANCELLATIONS_PERMISSIONS]: handleRecurringCancellationPermissions,
 }, INIT_STATE);

@@ -64,6 +64,7 @@ export class OmniSearch extends Component {
         label: PropTypes.string,
         selectedEntities: PropTypes.object,
         showTags: PropTypes.bool,
+        isValid: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -83,6 +84,7 @@ export class OmniSearch extends Component {
         label: '',
         selectedEntities: {},
         showTags: true,
+        isValid: true,
     };
 
     handleSelect = (selectedItem) => {
@@ -130,6 +132,7 @@ export class OmniSearch extends Component {
                     label={ this.props.label }
                     selectedEntities={ this.props.selectedEntities }
                     shouldRenderSuggestions={ this.props.shouldRenderSuggestions }
+                    isValid={ this.props.isValid }
                     showTags={ this.props.showTags } />
             </div>
         );

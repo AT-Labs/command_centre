@@ -22,34 +22,64 @@ describe('Recurring cancellations actions', () => {
     });
 
     it('Should dispatch recurring cancellations fetch action', async () => {
-        const mockRecurringCancellationsData = [
-            {
-                routeVariantId: '810105',
-                startTime: '14:41:00',
-                cancelFrom: '2022-05-26T12:00:00.000Z',
-                cancelTo: '2022-05-25T12:00:00.000Z',
-                dayPattern: '[0,1,2,3,4,5,6]',
+        const mockRecurringCancellationsData = {
+            recurringCancellations: [
+                {
+                    routeVariantId: '86501',
+                    startTime: '13:30:00',
+                    cancelFrom: '2022-05-18T00:00:00.000Z',
+                    cancelTo: null,
+                    dayPattern: '[0,1,2,3,4,5,6]',
+                    agencyId: null,
+                    routeShortName: null,
+                },
+                {
+                    routeVariantId: '810105',
+                    startTime: '14:01:00',
+                    cancelFrom: '2022-05-18T00:00:00.000Z',
+                    cancelTo: null,
+                    dayPattern: '[0,1,2,3,4,5,6]',
+                    agencyId: null,
+                    routeShortName: null,
+                },
+                {
+                    routeVariantId: '820164',
+                    startTime: '14:32:00',
+                    cancelFrom: '2022-05-18T00:00:00.000Z',
+                    cancelTo: null,
+                    dayPattern: '[0,1,2,3,4,5,6]',
+                    agencyId: null,
+                    routeShortName: null,
+                },
+            ],
+            _links: {
+                permissions: [
+                    {
+                        _rel: 'cancel',
+                    },
+                    {
+                        _rel: 'view',
+                    },
+                    {
+                        _rel: 'recurrent_cancel',
+                    },
+                ],
             },
-            {
-                routeVariantId: '850076',
-                startTime: '14:38:00',
-                cancelFrom: '2022-05-26T12:00:00.000Z',
-                cancelTo: '2022-05-25T12:00:00.000Z',
-                dayPattern: '[0,1,2,3,4,5,6]',
-            },
-            {
-                routeVariantId: '850029',
-                startTime: '14:35:00',
-                cancelFrom: '2022-05-26T12:00:00.000Z',
-                cancelTo: null,
-                dayPattern: '[0,1,2,3,4,5,6]',
-            },
-        ];
+        };
+
+        const { recurringCancellations, _links: { permissions } } = mockRecurringCancellationsData;
+
         const expectedActions = [
             {
                 type: ACTION_TYPE.FETCH_RECURRING_CANCELLATIONS,
                 payload: {
-                    recurringCancellations: mockRecurringCancellationsData,
+                    recurringCancellations,
+                },
+            },
+            {
+                type: ACTION_TYPE.FETCH_RECURRING_CANCELLATIONS_PERMISSIONS,
+                payload: {
+                    permissions,
                 },
             },
         ];

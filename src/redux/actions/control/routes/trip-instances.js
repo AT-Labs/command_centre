@@ -287,6 +287,8 @@ export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, s
             cancelTo: recurrenceSetting.endDate ? moment(recurrenceSetting.endDate, DATE_FORMAT_DDMMYYYY) : undefined,
             dayPattern: JSON.stringify(recurrenceSetting.selectedWeekdays),
             isRecurringOperation: recurrenceSetting.isRecurringOperation,
+            agencyId: trip.agencyId,
+            routeShortName: trip.routeShortName,
         },
         successMessage,
         MESSAGE_ACTION_TYPES.bulkStatusUpdate,
