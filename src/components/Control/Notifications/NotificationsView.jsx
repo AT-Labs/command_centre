@@ -71,6 +71,7 @@ export const NotificationsView = (props) => {
                 ...new Set(flatInformedEntities(params.row.informedEntities).filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))].join(', '),
             renderCell: RenderCellExpand,
             filterOperators: getGridStringOperators().filter(operator => operator.value === 'equals'),
+            sortable: false,
         },
         {
             field: 'affectedStops',
@@ -80,6 +81,7 @@ export const NotificationsView = (props) => {
             valueGetter: params => [...new Set(flatInformedEntities(params.row.informedEntities).filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))].join(', '),
             renderCell: RenderCellExpand,
             filterOperators: getGridStringOperators().filter(operator => operator.value === 'equals'),
+            sortable: false,
         },
         {
             field: 'cause',
