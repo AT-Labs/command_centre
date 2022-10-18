@@ -17,11 +17,11 @@ export const getColumns = (searchType) => {
         header: 'Route',
         headerClassName: 'font-size-sm alignment',
         cellClassName: 'font-size-sm',
-        formatter: ({ route: { shortName, description }, ...trip }) => (
+        formatter: ({ routeShortName, tripHeadsign, ...trip }) => (
             <>
                 <div className="d-inline-flex">
                     <span>
-                        { `${shortName}: ${description}` }
+                        { `${routeShortName}: ${tripHeadsign}` }
                         { isTripCanceled(trip) && (
                             <>
                                 <br />

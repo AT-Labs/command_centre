@@ -5,12 +5,13 @@ import { getFleetState } from '../../static/fleet';
 
 export const getCurrentTripState = state => _.result(state, 'control.tripReplays.currentTrip');
 
-export const getRouteInfo = createSelector(getCurrentTripState, tripDetail => _.result(tripDetail, 'route'));
-export const getShape = createSelector(getRouteInfo, (route) => {
-    const shape = _.result(route, 'shape');
+export const getShape = createSelector(getCurrentTripState, (tripDetail) => {
+    const shape = _.result(tripDetail, 'shape');
     return _.isEmpty(shape) ? [] : getJsonFromWkt(shape);
 });
-export const getRouteColor = createSelector(getRouteInfo, route => _.result(route, 'routeColor'));
+
+export const getRouteShortName = createSelector(getCurrentTripState, tripDetail => _.result(tripDetail, 'routeShortName'));
+export const getRouteColor = createSelector(getCurrentTripState, tripDetail => _.result(tripDetail, 'route.routeColor'));
 
 export const getFleetByVehicleId = createSelector(getFleetState, getCurrentTripState, (allFleetState, currentTrip) => allFleetState[currentTrip.vehicleId]);
 

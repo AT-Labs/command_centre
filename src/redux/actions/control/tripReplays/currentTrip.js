@@ -38,7 +38,7 @@ export const selectTrip = trip => (dispatch, getState) => {
     return tripReplayApi.getTripById(trip.id)
         .then((tripDetail) => {
             const allRoutes = getAllRoutes(getState());
-            const routeColor = get(find(allRoutes, { route_short_name: get(tripDetail, 'route.shortName') }), 'route_color');
+            const routeColor = get(find(allRoutes, { route_short_name: get(tripDetail, 'routeShortName') }), 'route_color');
             const tripDetailWithRouteColor = { ...tripDetail, route: { ...tripDetail.route, routeColor } };
             // enrich current trip detail with data fetched from backend
             dispatch(updateTripReplayCurrentTripDetail(tripDetailWithRouteColor));

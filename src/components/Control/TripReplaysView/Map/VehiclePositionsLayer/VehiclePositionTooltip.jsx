@@ -6,7 +6,7 @@ import _ from 'lodash-es';
 import moment from 'moment';
 import {
     getOperatorCode,
-    getRouteInfo, getStops,
+    getRouteShortName, getStops,
     getTripInfo,
     getVehicleInfo,
 } from '../../../../../redux/selectors/control/tripReplays/currentTrip';
@@ -44,7 +44,7 @@ const getKeyEventTitle = (vehiclePosition, tripInfo, stops) => {
     return null;
 };
 
-function VehiclePositionTooltip({ position, routeInfo, tripInfo, vehicleInfo, operatorCode, stops }) {
+function VehiclePositionTooltip({ position, routeShortName, tripInfo, vehicleInfo, operatorCode, stops }) {
     const title = getKeyEventTitle(position, tripInfo, stops);
     return (
         <Tooltip>
@@ -61,9 +61,9 @@ function VehiclePositionTooltip({ position, routeInfo, tripInfo, vehicleInfo, op
             <br />
             { `Status: ${position.nis ? <b className="text--nis">NIS</b> : 'In Service'}` }
             <br />
-            { routeInfo && (
+            { routeShortName && (
                 <>
-                    { `Route: ${routeInfo.shortName}` }
+                    { `Route: ${routeShortName}` }
                     <br />
                 </>
             ) }
@@ -100,20 +100,20 @@ VehiclePositionTooltip.propTypes = {
     position: PropTypes.object.isRequired,
     vehicleInfo: PropTypes.object.isRequired,
     tripInfo: PropTypes.object.isRequired,
-    routeInfo: PropTypes.object,
+    routeShortName: PropTypes.string,
     stops: PropTypes.array.isRequired,
     operatorCode: PropTypes.string,
 };
 
 VehiclePositionTooltip.defaultProps = {
     operatorCode: '',
-    routeInfo: null,
+    routeShortName: '',
 };
 
 export default connect(state => ({
     vehicleInfo: getVehicleInfo(state),
     tripInfo: getTripInfo(state),
-    routeInfo: getRouteInfo(state),
+    routeShortName: getRouteShortName(state),
     stops: getStops(state),
     operatorCode: getOperatorCode(state),
 }))(props => (

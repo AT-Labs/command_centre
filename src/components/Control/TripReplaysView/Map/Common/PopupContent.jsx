@@ -92,7 +92,7 @@ function PopupContent({ selectedKeyEvent, currentTrip, coordinates, scheduledTim
                 <div className="col pb-2">
                     <b>Route:</b>
                     {' '}
-                    { _.get(currentTrip, 'route.shortName') }
+                    { _.get(currentTrip, 'routeShortName') }
                 </div>
             </div>
             <div className="row">

@@ -48,7 +48,7 @@ const renderStartAndEndTime = (startTime, endTime) => {
 
 function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, vehiclePositions, operationalEvents,
     navigate, updateView, updateFilters, searchRoutes, searchResults, navigateToVehicleReplayTab }) {
-    const { route: routeInfo, tripSignOn, tripStart } = summary;
+    const { routeShortName, tripHeadsign, tripSignOn, tripStart } = summary;
     const endTime = !isEmpty(stops)
         ? parseInt(get(stops[stops.length - 1], 'arrival.time', get(maxBy(vehiclePositions, 'timestamp'), 'timestamp')), 10)
         : null;
@@ -111,13 +111,13 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
     const navigateToDisruption = () => {
         // searchResults useEffect will navigate
         setIsNavigatingToDisruption(true);
-        searchRoutes(routeInfo.shortName, ['route']);
+        searchRoutes(routeShortName, ['route']);
     };
 
     return (
         <section className="flex-grow-1 overflow-y-auto">
             <div className="pl-3 pr-3 pb-3 border-bottom">
-                <h3>{`${routeInfo.shortName}: ${routeInfo.description}`}</h3>
+                <h3>{`${routeShortName}: ${tripHeadsign}`}</h3>
                 { isTripMissed(summary) && <TripUpdateTag type={ TRIP_UPDATE_TYPE.MISSED } /> }
                 <p className="font-size-sm font-weight-light mt-0 mb-0">
                     { renderDate(tripStart) }
