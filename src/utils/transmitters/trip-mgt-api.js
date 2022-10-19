@@ -263,3 +263,17 @@ export const recurringUpdateTripStatus = (variables) => {
         },
     ).then(response => jsonResponseHandling(response));
 };
+
+export const recurringDeleteTripStatus = (recurringCancellationId) => {
+    const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/recurring-operations/${recurringCancellationId}`;
+
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: 'DELETE',
+            headers: {
+                Accept: 'application/json',
+            },
+        },
+    ).then(response => jsonResponseHandling(response));
+};

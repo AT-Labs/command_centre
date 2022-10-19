@@ -4,6 +4,9 @@ import { connect } from 'react-redux';
 import _ from 'lodash-es';
 import moment from 'moment-timezone';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import ReadMore from '@mui/icons-material/ReadMore';
 import Message from '../../Common/Message/Message';
 import AddRecurringCancellationModal from './AddRecurringCancellationModal';
@@ -28,10 +31,35 @@ import './RecurringCancellationsView.scss';
 export const RecurringCancellationsView = (props) => {
     const { recurringCancellations } = props;
     const [isOpen, setIsOpen] = useState(false);
+    const [actionState, setActionState] = useState({
+        isEdit: false,
+        isDelete: false,
+    });
+    const [rowData, setRowData] = useState(null);
     const [operatorsList, setOperatorsList] = useState([]);
 
+    const onNewCancellationModalOpen = () => {
+        setActionState({
+            isEdit: false,
+            isDelete: false,
+        });
+        setIsOpen(true);
+    };
+
+    const openEditModal = (allData) => {
+        setActionState({ isEdit: true, isDelete: false });
+        setRowData(allData);
+        setIsOpen(true);
+    };
+
+    const openDeleteModal = (allData) => {
+        setActionState({ isEdit: false, isDelete: true });
+        setRowData(allData);
+        setIsOpen(true);
+    };
+
     const getActionsButtons = (params) => {
-        const { row: { routeVariantId, startTime } } = params;
+        const { row: { routeVariantId, startTime, allData } } = params;
 
         const trip = {
             routeVariantId,
@@ -55,14 +83,38 @@ export const RecurringCancellationsView = (props) => {
 
         return (
             <>
-                <Button
-                    size="small"
-                    variant="contained"
-                    endIcon={ <ReadMore /> }
-                    onClick={ () => props.goToRoutesView(trip, filter) }
-                >
-                    View Trip
-                </Button>
+                <div>
+                    <Button
+                        size="small"
+                        variant="contained"
+                        endIcon={ <ReadMore /> }
+                        onClick={ () => props.goToRoutesView(trip, filter) }
+                    >
+                        View Trip
+                    </Button>
+                </div>
+                { props.isRecurringCancellationUpdateAllowed && (
+                    <>
+                        <div id="recurring-cancellation-edit-button">
+                            <IconButton
+                                color="default"
+                                aria-label="edit"
+                                onClick={ () => openEditModal(allData) }
+                            >
+                                <EditIcon />
+                            </IconButton>
+                        </div>
+                        <div id="recurring-cancellation-delete-button">
+                            <IconButton
+                                color="error"
+                                aria-label="delete"
+                                onClick={ () => openDeleteModal(allData) }
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        </div>
+                    </>
+                )}
             </>
         );
     };
@@ -106,14 +158,10 @@ export const RecurringCancellationsView = (props) => {
         {
             field: 'action',
             headerName: 'ACTION',
-            width: 150,
+            width: 200,
             renderCell: getActionsButtons,
         },
     ];
-
-    useEffect(() => {
-        props.retrieveRecurringCancellations();
-    }, []);
 
     useEffect(() => {
         props.retrieveRecurringCancellations();
@@ -183,13 +231,15 @@ export const RecurringCancellationsView = (props) => {
                         <Button
                             id="add-new-recurring-cancellation-button"
                             className="cc-btn-primary"
-                            onClick={ () => setIsOpen(true) }>
+                            onClick={ () => onNewCancellationModalOpen() }>
                             Add new cancellation schedule
                         </Button>
                     </div>
                 )}
             </div>
             <AddRecurringCancellationModal
+                actionState={ actionState }
+                rowData={ rowData }
                 className="update-recurring-cancellation-modal"
                 permission={ props.isRecurringCancellationUpdateAllowed }
                 isModalOpen={ isOpen }

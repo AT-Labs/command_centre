@@ -13,7 +13,10 @@ const ConfirmationModal = props => (
 );
 
 ConfirmationModal.propTypes = {
-    message: PropTypes.string.isRequired,
+    message: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.array,
+    ]).isRequired,
 };
 
 export default ConfirmationModal;

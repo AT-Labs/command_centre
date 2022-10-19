@@ -1,7 +1,7 @@
 import moment from 'moment';
 import ACTION_TYPE from '../../../action-types';
 import { DATE_FORMAT_DDMMYYYY } from '../../../../utils/dateUtils';
-import { recurringUpdateTripStatus } from '../../../../utils/transmitters/trip-mgt-api';
+import { recurringUpdateTripStatus, recurringDeleteTripStatus } from '../../../../utils/transmitters/trip-mgt-api';
 import { getAddRecurringCancellationValidationField } from '../../../selectors/control/routes/addRecurringCancellations';
 import { ERROR_MESSAGE_TYPE, CONFIRMATION_MESSAGE_TYPE } from '../../../../types/message-types';
 
@@ -39,18 +39,25 @@ export const updateValidationOfInputField = (isRouteVariantValid, isStartTimeVal
     },
 });
 
-export const saveRecurringCancellationInDatabase = addRecurringCancellationData => (dispatch) => {
-    const { startTime } = addRecurringCancellationData;
+const formatRecurringCancellationData = (recurringCancellationData) => {
+    const { startTime, id } = recurringCancellationData;
     const formattedStartTime = startTime.match('^(([0-2][0-9])):[0-5][0-9]$') ? `${startTime}:00` : startTime;
+
     const savingRecurringCancellationData = {
+        id,
         startTime: formattedStartTime,
-        routeVariantId: addRecurringCancellationData.routeVariant,
-        cancelFrom: moment(addRecurringCancellationData.startDate, DATE_FORMAT_DDMMYYYY),
-        cancelTo: moment(addRecurringCancellationData.endDate, DATE_FORMAT_DDMMYYYY),
-        dayPattern: JSON.stringify(addRecurringCancellationData.selectedWeekdays),
-        routeShortName: addRecurringCancellationData.route,
-        agencyId: addRecurringCancellationData.operator,
+        routeVariantId: recurringCancellationData.routeVariant,
+        cancelFrom: moment(recurringCancellationData.startDate, DATE_FORMAT_DDMMYYYY),
+        cancelTo: moment(recurringCancellationData.endDate, DATE_FORMAT_DDMMYYYY),
+        dayPattern: JSON.stringify(recurringCancellationData.selectedWeekdays),
+        routeShortName: recurringCancellationData.route,
+        agencyId: recurringCancellationData.operator,
     };
+    return savingRecurringCancellationData;
+};
+
+export const saveRecurringCancellationInDatabase = addRecurringCancellationData => (dispatch) => {
+    const savingRecurringCancellationData = formatRecurringCancellationData(addRecurringCancellationData);
 
     dispatch(updateRecurringCancellationIsLoading(true));
     return recurringUpdateTripStatus(savingRecurringCancellationData)
@@ -63,6 +70,21 @@ export const saveRecurringCancellationInDatabase = addRecurringCancellationData 
         .catch(() => {
             dispatch(updateRecurringCancellationIsLoading(false));
             dispatch(updateStatusMessage('', ERROR_MESSAGE_TYPE, 'Recurring cancellation failed to be saved'));
+        });
+};
+
+export const deleteRecurringCancellationInDatabase = deleteRecurringCancellationId => (dispatch) => {
+    dispatch(updateRecurringCancellationIsLoading(true));
+    return recurringDeleteTripStatus(deleteRecurringCancellationId)
+        .then((response) => {
+            if (response) {
+                dispatch(updateRecurringCancellationIsLoading(false));
+                dispatch(updateStatusMessage(deleteRecurringCancellationId, CONFIRMATION_MESSAGE_TYPE, 'Recurring cancellation successfully deleted in database'));
+            }
+        })
+        .catch(() => {
+            dispatch(updateRecurringCancellationIsLoading(false));
+            dispatch(updateStatusMessage('', ERROR_MESSAGE_TYPE, 'Recurring cancellation failed to be deleted'));
         });
 };
 

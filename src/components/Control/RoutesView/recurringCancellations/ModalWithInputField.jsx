@@ -4,12 +4,21 @@ import RecurrentTripCancellation from '../Modals/UpdateTripStatusModal/Recurrent
 import ModalWithAdditionalInputField from './ModalWithAdditionalInputField';
 
 const ModalWithInputField = (props) => {
-    const { recurringProps, allowUpdate } = props;
+    const { recurringProps, allowUpdate, isEdit } = props;
+    const checkAllowUpdate = () => {
+        if (allowUpdate && isEdit) {
+            return false;
+        }
+
+        return allowUpdate;
+    };
+
     return (
         <>
             <ModalWithAdditionalInputField
                 setting={ recurringProps.setting }
                 onChange={ recurringProps.onChange }
+                allowUpdate={ checkAllowUpdate() }
             />
             <RecurrentTripCancellation
                 setting={ recurringProps.setting }
@@ -24,6 +33,7 @@ const ModalWithInputField = (props) => {
 ModalWithInputField.propTypes = {
     recurringProps: PropTypes.object.isRequired,
     allowUpdate: PropTypes.bool.isRequired,
+    isEdit: PropTypes.bool.isRequired,
 };
 
 export default ModalWithInputField;

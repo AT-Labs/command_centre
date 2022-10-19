@@ -9,11 +9,11 @@ import SearchFilter from '../../Common/Filters/SearchFilter/SearchFilter';
 import FilterByOperator from '../../Common/Filters/FilterByOperator';
 import { getSearchResults } from '../../../../redux/selectors/search';
 import { checkValidityOfInputField } from '../../../../redux/actions/control/routes/addRecurringCancellations';
-import { TIME_FORMAT_HHMM } from '../../../../utils/dateUtils';
+import { TIME_FORMAT_HHMM, TIME_FORMAT_HHMMSS } from '../../../../utils/dateUtils';
 import './RecurringCancellationsView.scss';
 
 const ModalWithAdditionalInputField = (props) => {
-    const { searchResults } = props;
+    const { allowUpdate, searchResults } = props;
     const { routeVariant, startTime, route, operator } = props.setting;
     const [isOperatorAndRouteDisabled, setIsOperatorAndRouteDisabled] = useState(false);
     const [isRouteVariantValid, setIsRouteVariantValid] = useState(false);
@@ -29,7 +29,7 @@ const ModalWithAdditionalInputField = (props) => {
         }
     };
 
-    const startTimeValid = () => _.isEmpty(startTime) || moment(startTime, TIME_FORMAT_HHMM, true).isValid();
+    const startTimeValid = () => _.isEmpty(startTime) || (moment(startTime, TIME_FORMAT_HHMM, true).isValid() || moment(startTime, TIME_FORMAT_HHMMSS, true).isValid());
 
     const routeValid = (value) => {
         if (!_.isEmpty(value) && value.length > 10) {
@@ -43,8 +43,10 @@ const ModalWithAdditionalInputField = (props) => {
 
     const enableAndClearOperatorAndRoute = () => {
         setIsOperatorAndRouteDisabled(false);
-        props.onChange({ route: '' });
-        props.onChange({ operator: '' });
+        if (isOperatorAndRouteDisabled) {
+            props.onChange({ route: '' });
+            props.onChange({ operator: '' });
+        }
     };
 
     const routeVariantIdActionHandler = {
@@ -102,7 +104,7 @@ const ModalWithAdditionalInputField = (props) => {
 
     const handleInputValueChangeStartTime = (value) => {
         props.onChange({ startTime: value });
-        if (!_.isEmpty(value) && moment(value, TIME_FORMAT_HHMM, true).isValid()) {
+        if (!_.isEmpty(value) && (moment(value, TIME_FORMAT_HHMMSS, true).isValid() || moment(value, TIME_FORMAT_HHMM, true).isValid())) {
             props.checkValidityOfInputField({ isStartTimeValid: true });
         } else {
             props.checkValidityOfInputField({ isStartTimeValid: false });
@@ -117,6 +119,7 @@ const ModalWithAdditionalInputField = (props) => {
                         <span className="font-size-md font-weight-bold">Route Variant</span>
                     </Label>
                     <SearchFilter
+                        isDisabled={ !allowUpdate }
                         value={ routeVariant }
                         placeholder="Search route variant"
                         searchInCategory={ [SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type] }
@@ -132,6 +135,7 @@ const ModalWithAdditionalInputField = (props) => {
                             <span className="font-size-md font-weight-bold">Start Time</span>
                         </Label>
                         <Input
+                            disabled={ !allowUpdate }
                             className="border border-dark"
                             placeholder="Enter start time"
                             id="recurrent-trip-cancellation__start-time"
@@ -145,9 +149,9 @@ const ModalWithAdditionalInputField = (props) => {
             <div className="row mb-n3">
                 <FormGroup id="recurrent-trip-cancellation__operator" className="position-relative col-6">
                     <FilterByOperator
-                        id="control-filters-operators-search"
+                        id={ allowUpdate ? 'control-filters-operators-search' : 'display-control-filters-operators-search-only' }
                         selectedOption={ operator }
-                        isDisabled={ isOperatorAndRouteDisabled }
+                        isDisabled={ !allowUpdate || isOperatorAndRouteDisabled }
                         onSelection={ selectedOption => props.onChange({ operator: selectedOption.value }) } />
                 </FormGroup>
                 <FormGroup id="recurrent-trip-cancellation__route" className={ isRouteValid ? 'position-relative col-6 invalid-input' : 'position-relative col-6' }>
@@ -155,11 +159,11 @@ const ModalWithAdditionalInputField = (props) => {
                         <span className="font-size-md font-weight-bold">Route</span>
                     </Label>
                     <SearchFilter
+                        isDisabled={ !allowUpdate || isOperatorAndRouteDisabled }
                         value={ route }
                         placeholder="Search for a route"
                         searchInCategory={ [SEARCH_RESULT_TYPE.CONTROL_ROUTE.type] }
                         selectionHandlers={ routeActionHandler.selection }
-                        isDisabled={ isOperatorAndRouteDisabled }
                         onHandleInputValueChange={ handleInputValueChangeRoute }
                         clearHandlers={ routeActionHandler.clear }
                         isValid={ !isRouteValid }
@@ -172,6 +176,7 @@ const ModalWithAdditionalInputField = (props) => {
 
 ModalWithAdditionalInputField.propTypes = {
     onChange: PropTypes.func,
+    allowUpdate: PropTypes.bool.isRequired,
     setting: PropTypes.shape({
         startTime: PropTypes.string.isRequired,
         routeVariant: PropTypes.string.isRequired,
