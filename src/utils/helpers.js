@@ -67,16 +67,15 @@ export const getTripInstanceId = trip => `${trip.tripId}-${trip.serviceDate}-${t
 export const getStopKey = stop => `${stop.stopId}-${stop.stopSequence}-${stop.departureTime || stop.arrivalTime}`;
 
 const browserDetection = () => {
-    const isIE = /* @cc_on!@ */false || !!document.documentMode;
+    const { userAgent } = navigator;
     const browsers = {
-        firefox: !!window.InstallTrigger,
-        safari: !!window.ApplePaySession,
-        opera: (!!window.opr && !!window.opr.addons) || !!window.opera || (navigator.userAgent.indexOf(' OPR/') >= 0),
-        chrome: !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime),
-        IE: isIE,
-        Edge: !isIE && !!window.StyleMedia,
+        chrome: !!userAgent.match(/chrome|chromium|crios/i),
+        firefox: !!userAgent.match(/firefox|fxios/i),
+        safari: !!userAgent.match(/safari/i),
+        opera: !!userAgent.match(/opr\//i),
+        Edge: !!userAgent.match(/edg/i),
+        IE: !!userAgent.indexOf('MSIE ') || !!userAgent.indexOf('Trident/'),
     };
-
     return Object.keys(browsers).find(key => browsers[key] === true);
 };
 
