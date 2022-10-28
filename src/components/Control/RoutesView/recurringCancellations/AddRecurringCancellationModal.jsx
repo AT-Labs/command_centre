@@ -19,7 +19,7 @@ import { saveRecurringCancellationInDatabase, deleteRecurringCancellationInDatab
 import { DATE_FORMAT_DDMMYYYY } from '../../../../utils/dateUtils';
 
 const AddRecurringCancellationModal = (props) => {
-    const { className, isModalOpen, permission, rowData, isInputFieldValidationSuccess } = props;
+    const { className, isModalOpen, permission, rowData, isInputFieldValidationSuccess, multipleRowData } = props;
     const { isEdit, isDelete } = props.actionState;
     const loadingState = props.isLoading;
     const recurrenceSettingInitialState = {
@@ -108,7 +108,7 @@ const AddRecurringCancellationModal = (props) => {
                 To manually reinstate those trips, check Routes & Trips.`,
             ],
             mainButtonLabel: 'Delete recurring cancellation',
-            onClick: () => props.deleteRecurringCancellationInDatabase(rowData.id),
+            onClick: () => props.deleteRecurringCancellationInDatabase(_.isEmpty(multipleRowData) ? rowData.id : multipleRowData),
             disabled: props.isLoading,
         },
     };
@@ -147,8 +147,8 @@ const AddRecurringCancellationModal = (props) => {
                         onChange: setting => setRecurrenceSetting(prev => ({ ...prev, ...setting })),
                         setting: recurrenceSetting,
                         options: {
-                            startDatePickerMinimumDate: _.isNull(recurrenceSetting.startDate) ? moment().format(DATE_FORMAT_DDMMYYYY) : recurrenceSetting.startDate,
-                            endDatePickerMinimumDate: _.isNull(recurrenceSetting.startDate) ? recurrenceSetting.startDate : recurrenceSetting.endDate,
+                            startDatePickerMinimumDate: moment(rowData?.cancelFrom).format(DATE_FORMAT_DDMMYYYY),
+                            endDatePickerMinimumDate: recurrenceSetting.startDate,
                         },
                     } }
                 />
@@ -169,6 +169,7 @@ AddRecurringCancellationModal.propTypes = {
     rowData: PropTypes.object,
     actionState: PropTypes.object.isRequired,
     isInputFieldValidationSuccess: PropTypes.bool.isRequired,
+    multipleRowData: PropTypes.array.isRequired,
 };
 
 AddRecurringCancellationModal.defaultProps = {

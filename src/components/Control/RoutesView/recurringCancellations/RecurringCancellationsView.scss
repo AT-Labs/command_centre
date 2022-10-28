@@ -40,3 +40,17 @@
         box-shadow: 0 0 0 .2rem rgba(220, 53, 69, .25) !important;
     }
 }
+
+.recurring-cancellation-selection-footer {
+    .recurring-cancellation-selection-footer__btn-deselect {
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .recurring-cancellation-selection-footer__btn-cancel {
+        > svg {
+            color: $danger;
+        }
+    }
+}

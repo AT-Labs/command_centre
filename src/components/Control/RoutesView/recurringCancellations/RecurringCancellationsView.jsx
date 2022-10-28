@@ -8,8 +8,9 @@ import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ReadMore from '@mui/icons-material/ReadMore';
-import Message from '../../Common/Message/Message';
+import AlertMessage from '../../../Common/AlertMessage/AlertMessage';
 import AddRecurringCancellationModal from './AddRecurringCancellationModal';
+import RecurringCancellationFooter from './RecurringCancellationFooter';
 import CustomDataGrid from '../../../Common/CustomDataGrid/CustomDataGrid';
 import { retrieveRecurringCancellations, updateRecurringCancellationsDatagridConfig } from '../../../../redux/actions/control/routes/recurringCancellations';
 import { clearStatusMessage } from '../../../../redux/actions/control/routes/addRecurringCancellations';
@@ -36,6 +37,8 @@ export const RecurringCancellationsView = (props) => {
         isDelete: false,
     });
     const [rowData, setRowData] = useState(null);
+    const [multipleRowData, setMultipleRowRowData] = useState([]);
+    const [selectedRow, setSelectedRow] = React.useState([]);
     const [operatorsList, setOperatorsList] = useState([]);
 
     const onNewCancellationModalOpen = () => {
@@ -56,6 +59,16 @@ export const RecurringCancellationsView = (props) => {
         setActionState({ isEdit: false, isDelete: true });
         setRowData(allData);
         setIsOpen(true);
+    };
+
+    const openDeleteModalforCheckBox = (allData) => {
+        setMultipleRowRowData(allData);
+        setActionState({ isEdit: false, isDelete: true });
+        setIsOpen(true);
+    };
+
+    const deselectAllRecurringCancellations = () => {
+        setSelectedRow([]);
     };
 
     const getActionsButtons = (params) => {
@@ -220,6 +233,14 @@ export const RecurringCancellationsView = (props) => {
         return RECURRING_CANCELLATION_COLUMNS;
     };
 
+    const renderCustomFooter = () => (
+        <RecurringCancellationFooter
+            selectedRow={ selectedRow }
+            deselectAllRecurringCancellations={ () => deselectAllRecurringCancellations() }
+            onClick={ () => openDeleteModalforCheckBox(selectedRow) }
+        />
+    );
+
     return (
         <div className="recurring-cancellations-view">
             <div className="recurring-cancellations-view__header mb-3">
@@ -240,6 +261,7 @@ export const RecurringCancellationsView = (props) => {
             <AddRecurringCancellationModal
                 actionState={ actionState }
                 rowData={ rowData }
+                multipleRowData={ multipleRowData }
                 className="update-recurring-cancellation-modal"
                 permission={ props.isRecurringCancellationUpdateAllowed }
                 isModalOpen={ isOpen }
@@ -250,7 +272,7 @@ export const RecurringCancellationsView = (props) => {
                 <div className="fixed-bottom">
                     <>
                         {!_.isNull(props.recurringCancellationMessage.recurringCancellationId) && (
-                            <Message
+                            <AlertMessage
                                 message={ {
                                     id: `${props.recurringCancellationMessage.recurringCancellationId}`,
                                     type: props.recurringCancellationMessage.resultStatus,
@@ -268,6 +290,10 @@ export const RecurringCancellationsView = (props) => {
                     updateDatagridConfig={ config => props.updateRecurringCancellationsDatagridConfig(config) }
                     getRowId={ row => row.id }
                     rowCount={ recurringCancellations.length }
+                    onChangeSelectedData={ x => setSelectedRow([...x]) }
+                    selectedRow={ selectedRow }
+                    checkboxSelection={ props.isRecurringCancellationUpdateAllowed }
+                    customFooter={ renderCustomFooter }
                 />
             </div>
         </div>

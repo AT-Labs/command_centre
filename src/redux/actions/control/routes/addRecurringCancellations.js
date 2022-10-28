@@ -3,7 +3,7 @@ import ACTION_TYPE from '../../../action-types';
 import { DATE_FORMAT_DDMMYYYY } from '../../../../utils/dateUtils';
 import { recurringUpdateTripStatus, recurringDeleteTripStatus } from '../../../../utils/transmitters/trip-mgt-api';
 import { getAddRecurringCancellationValidationField } from '../../../selectors/control/routes/addRecurringCancellations';
-import { ERROR_MESSAGE_TYPE, CONFIRMATION_MESSAGE_TYPE } from '../../../../types/message-types';
+import { ALERT_ERROR_MESSAGE_TYPE, CONFIRMATION_MESSAGE_TYPE, ALERT_MESSAGE_TYPE } from '../../../../types/message-types';
 
 export const updateRecurringCancellationIsLoading = isLoading => ({
     type: ACTION_TYPE.UPDATE_CONTROL_RECURRING_CANCELLATIONS_IS_LOADING,
@@ -64,27 +64,42 @@ export const saveRecurringCancellationInDatabase = addRecurringCancellationData 
         .then((response) => {
             if (response) {
                 dispatch(updateRecurringCancellationIsLoading(false));
-                dispatch(updateStatusMessage(response.id, CONFIRMATION_MESSAGE_TYPE, 'Recurring cancellation successfully saved'));
+                dispatch(updateStatusMessage('', CONFIRMATION_MESSAGE_TYPE, 'Recurring cancellation successfully saved'));
             }
         })
         .catch(() => {
             dispatch(updateRecurringCancellationIsLoading(false));
-            dispatch(updateStatusMessage('', ERROR_MESSAGE_TYPE, 'Recurring cancellation failed to be saved'));
+            dispatch(updateStatusMessage('', ALERT_ERROR_MESSAGE_TYPE, 'Recurring cancellation failed to be saved'));
         });
 };
 
-export const deleteRecurringCancellationInDatabase = deleteRecurringCancellationId => (dispatch) => {
+export const deleteRecurringCancellationInDatabase = deleteRecurringCancellationData => (dispatch) => {
     dispatch(updateRecurringCancellationIsLoading(true));
-    return recurringDeleteTripStatus(deleteRecurringCancellationId)
+    let recurringCancellationIdToBeDeleted;
+    let totalNUmberOfRecurringCancellationToBeDeleted;
+    if (Array.isArray(deleteRecurringCancellationData)) {
+        recurringCancellationIdToBeDeleted = deleteRecurringCancellationData.join(',');
+        totalNUmberOfRecurringCancellationToBeDeleted = deleteRecurringCancellationData.length;
+    } else {
+        recurringCancellationIdToBeDeleted = deleteRecurringCancellationData;
+        totalNUmberOfRecurringCancellationToBeDeleted = 1;
+    }
+
+    recurringDeleteTripStatus(recurringCancellationIdToBeDeleted)
         .then((response) => {
             if (response) {
                 dispatch(updateRecurringCancellationIsLoading(false));
-                dispatch(updateStatusMessage(deleteRecurringCancellationId, CONFIRMATION_MESSAGE_TYPE, 'Recurring cancellation successfully deleted in database'));
+                const responseMessage = `Recurring cancellation ${response.affected}/${totalNUmberOfRecurringCancellationToBeDeleted} successfully deleted in database`;
+                if (response.affected !== totalNUmberOfRecurringCancellationToBeDeleted) {
+                    dispatch(updateStatusMessage('', ALERT_MESSAGE_TYPE, responseMessage));
+                } else {
+                    dispatch(updateStatusMessage('', CONFIRMATION_MESSAGE_TYPE, responseMessage));
+                }
             }
         })
         .catch(() => {
             dispatch(updateRecurringCancellationIsLoading(false));
-            dispatch(updateStatusMessage('', ERROR_MESSAGE_TYPE, 'Recurring cancellation failed to be deleted'));
+            dispatch(updateStatusMessage('', ALERT_ERROR_MESSAGE_TYPE, 'Recurring cancellation failed to be deleted'));
         });
 };
 

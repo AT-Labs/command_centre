@@ -11,7 +11,7 @@ const mockStore = configureMockStore([thunk]);
 const store = mockStore({});
 let sandbox;
 
-const mockResponse = {
+const mockResponseForAdd = {
     id: 1,
     routeVariantId: '30901',
     startTime: '12:13:00',
@@ -20,6 +20,10 @@ const mockResponse = {
     cancelTo: '2022-08-25T16:00:00.000Z',
     agencyId: 'GBT',
     routeShortName: '309',
+};
+
+const mockResponseForDelete = {
+    affected: 1,
 };
 
 const expectedActions = [
@@ -40,12 +44,12 @@ const expectedActions = [
 const expectedMessage = {
     type: ACTION_TYPE.UPDATE_CONTROL_RECURRING_CANCELLATIONS_MESSAGE,
     payload: {
-        recurringCancellationId: mockResponse.id,
+        recurringCancellationId: '',
         resultStatus: CONFIRMATION_MESSAGE_TYPE,
     },
 };
 
-const mockApiCall = (action) => {
+const mockApiCall = (action, mockResponse) => {
     const fakeUpdateTripStatus = sandbox.fake.resolves(mockResponse);
     sandbox.stub(TRIP_MGT_API, action).callsFake(fakeUpdateTripStatus);
 };
@@ -80,7 +84,7 @@ describe('Add recurring cancellation', () => {
     });
 
     it('Update message and loading state when add', async () => {
-        mockApiCall('recurringUpdateTripStatus');
+        mockApiCall('recurringUpdateTripStatus', mockResponseForAdd);
 
         await store.dispatch(saveRecurringCancellationInDatabase(mockData));
         expect(store.getActions()).toEqual(addRecurringExpectedActions);
@@ -106,14 +110,43 @@ describe('Delete recurring cancellation', () => {
         ...expectedMessage,
         payload: {
             ...expectedMessage.payload,
-            resultMessage: 'Recurring cancellation successfully deleted in database',
+            resultMessage: 'Recurring cancellation 1/1 successfully deleted in database',
         },
     });
 
     it('Update message and loading state when delete', async () => {
-        mockApiCall('recurringDeleteTripStatus');
+        mockApiCall('recurringDeleteTripStatus', mockResponseForDelete);
 
         await store.dispatch(deleteRecurringCancellationInDatabase(mockData.id));
+        expect(store.getActions()).toEqual(deleteRecurringExpectedActions);
+    });
+});
+
+describe('Delete multiple recurring cancellation', () => {
+    beforeEach(() => {
+        sandbox = sinon.createSandbox();
+    });
+
+    afterEach(() => {
+        sandbox.restore();
+        store.clearActions();
+    });
+
+    const mockData = [123];
+
+    const deleteRecurringExpectedActions = [...expectedActions];
+    deleteRecurringExpectedActions.push({
+        ...expectedMessage,
+        payload: {
+            ...expectedMessage.payload,
+            resultMessage: 'Recurring cancellation 1/1 successfully deleted in database',
+        },
+    });
+
+    it('Update message and loading state when delete', async () => {
+        mockApiCall('recurringDeleteTripStatus', mockResponseForDelete);
+
+        await store.dispatch(deleteRecurringCancellationInDatabase(mockData));
         expect(store.getActions()).toEqual(deleteRecurringExpectedActions);
     });
 });

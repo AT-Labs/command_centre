@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import _ from 'lodash-es';
 import PropTypes from 'prop-types';
 import {
     DataGridPro, GridToolbarExport, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton,
-    GridToolbarDensitySelector, useGridApiRef, GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridLinkOperator,
+    GridToolbarDensitySelector, useGridApiRef, GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridLinkOperator, GridFooterContainer, GridFooter,
 } from '@mui/x-data-grid-pro';
 import DateAdapter from '@mui/lab/AdapterMoment';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
@@ -137,6 +138,13 @@ export const CustomDataGrid = (props) => {
         props.onRowExpanded(updatedIds);
     };
 
+    const CustomFooter = () => (
+        <GridFooterContainer>
+            { props.customFooter() }
+            <GridFooter />
+        </GridFooterContainer>
+    );
+
     return (
         <div className={ `customDataGrid ${props.gridClassNames}` }>
             <LocalizationProvider dateAdapter={ DateAdapter }>
@@ -146,6 +154,7 @@ export const CustomDataGrid = (props) => {
                         Toolbar: props.toolbar ?? CustomToolbar,
                         NoRowsOverlay: getNoRowsOverlay,
                         NoResultsOverlay: getNoResultsOverlay,
+                        Footer: _.size(props.selectedRow) > 0 ? CustomFooter : undefined,
                     } }
                     componentsProps={ {
                         filterPanel: {
@@ -176,6 +185,10 @@ export const CustomDataGrid = (props) => {
                     disableVirtualization={ !!props.getDetailPanelContent }
                     onDetailPanelExpandedRowIdsChange={ ids => expandedRowIdsChanged(ids) }
                     detailPanelExpandedRowIds={ selectedRows }
+                    checkboxSelection={ props.checkboxSelection }
+                    onSelectionModelChange={ newSelectionModel => props.onChangeSelectedData(newSelectionModel) }
+                    selectionModel={ props.selectedRow }
+                    hideFooterSelectedRowCount
                 />
             </LocalizationProvider>
         </div>
@@ -200,6 +213,10 @@ CustomDataGrid.propTypes = {
     multipleDetailPanelOpen: PropTypes.bool,
     expandedDetailPanels: PropTypes.array,
     onRowExpanded: PropTypes.func,
+    checkboxSelection: PropTypes.bool,
+    onChangeSelectedData: PropTypes.func,
+    selectedRow: PropTypes.array.isRequired,
+    customFooter: PropTypes.func,
 };
 
 CustomDataGrid.defaultProps = {
@@ -219,6 +236,9 @@ CustomDataGrid.defaultProps = {
     multipleDetailPanelOpen: false,
     expandedDetailPanels: [],
     onRowExpanded: () => null,
+    checkboxSelection: false,
+    onChangeSelectedData: () => null,
+    customFooter: () => null,
 };
 
 export default CustomDataGrid;
