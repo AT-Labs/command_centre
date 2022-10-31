@@ -50,7 +50,7 @@ export const momentFromDateTime = (date, time) => {
     return undefined;
 };
 
-export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
+export const buildSubmitBody = (disruption, routes, stops, workarounds, passengerCount) => {
     const modes = [...routes.map(route => VEHICLE_TYPES[route.routeType].type),
         ...stops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType].type)];
     const routesToRequest = routes.map(({ routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon }) => ({
@@ -73,6 +73,7 @@ export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
         mode: uniq(modes).join(', '),
         affectedEntities: [...routesToRequest, ...stopsToRequest],
         ...(workarounds && { workarounds }),
+        ...(passengerCount && { passengerCount }),
     };
 };
 
