@@ -277,3 +277,23 @@ export const recurringDeleteTripStatus = (recurringCancellationId) => {
         },
     ).then(response => jsonResponseHandling(response));
 };
+
+export const recurringCancellationUploadFile = (variables) => {
+    const { operator, csvFile } = variables;
+    const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/recurring-operations-upload`;
+
+    const formData = new FormData();
+    formData.append('file', csvFile);
+    formData.append('operator', operator);
+
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+            },
+            body: formData,
+        },
+    ).then(response => jsonResponseHandling(response));
+};

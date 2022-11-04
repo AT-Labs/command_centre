@@ -15,13 +15,22 @@ import {
 } from '../../../../redux/selectors/control/routes/addRecurringCancellations';
 import { fetchRoutes } from '../../../../redux/actions/control/routes/routes';
 import { getServiceDate } from '../../../../redux/selectors/control/serviceDate';
-import { saveRecurringCancellationInDatabase, deleteRecurringCancellationInDatabase } from '../../../../redux/actions/control/routes/addRecurringCancellations';
+import {
+    saveRecurringCancellationInDatabase,
+    deleteRecurringCancellationInDatabase,
+    uploadFileRecurringCancellation,
+} from '../../../../redux/actions/control/routes/addRecurringCancellations';
 import { DATE_FORMAT_DDMMYYYY } from '../../../../utils/dateUtils';
 
 const AddRecurringCancellationModal = (props) => {
     const { className, isModalOpen, permission, rowData, isInputFieldValidationSuccess, multipleRowData } = props;
-    const { isEdit, isDelete } = props.actionState;
+    const { isEdit, isDelete, isUploadFile } = props.actionState;
     const loadingState = props.isLoading;
+    const recurrenceFileUploadInitialState = {
+        csvFile: '',
+        operator: '',
+    };
+    const [recurrenceFileSetting, setRecurrenceFileSetting] = useState(recurrenceFileUploadInitialState);
     const recurrenceSettingInitialState = {
         startDate: moment().format(DATE_FORMAT_DDMMYYYY),
         endDate: moment().format(DATE_FORMAT_DDMMYYYY),
@@ -55,6 +64,7 @@ const AddRecurringCancellationModal = (props) => {
 
     const resetToInitialValue = () => {
         props.onClose();
+        setRecurrenceFileSetting(recurrenceFileUploadInitialState);
         setRecurrenceSetting(recurrenceSettingInitialState);
     };
 
@@ -70,6 +80,9 @@ const AddRecurringCancellationModal = (props) => {
         }
         if (isEdit) {
             return 'editRecurringCancellation';
+        }
+        if (isUploadFile) {
+            return 'uploadFileRecurringCancellation';
         }
         return 'addRecurringCancellation';
     };
@@ -111,6 +124,13 @@ const AddRecurringCancellationModal = (props) => {
             onClick: () => props.deleteRecurringCancellationInDatabase(_.isEmpty(multipleRowData) ? rowData.id : multipleRowData),
             disabled: props.isLoading,
         },
+        uploadFileRecurringCancellation: {
+            className: 'upload-file-modal',
+            title: 'Upload file',
+            mainButtonLabel: 'Upload file',
+            onClick: () => props.uploadFileRecurringCancellation(recurrenceFileSetting),
+            disabled: !(!_.isEmpty(recurrenceFileSetting.operator) && !_.isNull(recurrenceFileSetting)),
+        },
     };
 
     const activeModalProps = modalProps[modalPropsKey()];
@@ -140,6 +160,7 @@ const AddRecurringCancellationModal = (props) => {
                 </div>
             ) : (
                 <ModalWithInputField
+                    isUploadFile={ isUploadFile }
                     isEdit={ isEdit }
                     className={ className }
                     allowUpdate={ permission }
@@ -150,6 +171,10 @@ const AddRecurringCancellationModal = (props) => {
                             startDatePickerMinimumDate: moment(rowData?.cancelFrom).format(DATE_FORMAT_DDMMYYYY),
                             endDatePickerMinimumDate: recurrenceSetting.startDate,
                         },
+                    } }
+                    recurringFileProps={ {
+                        onChange: setting => setRecurrenceFileSetting(prev => ({ ...prev, ...setting })),
+                        setting: recurrenceFileSetting,
                     } }
                 />
             )}
@@ -170,6 +195,7 @@ AddRecurringCancellationModal.propTypes = {
     actionState: PropTypes.object.isRequired,
     isInputFieldValidationSuccess: PropTypes.bool.isRequired,
     multipleRowData: PropTypes.array.isRequired,
+    uploadFileRecurringCancellation: PropTypes.func.isRequired,
 };
 
 AddRecurringCancellationModal.defaultProps = {
@@ -184,5 +210,10 @@ export default connect(
         isLoading: getAddRecurringCancellationIsLoading(state),
         isInputFieldValidationSuccess: getAddRecurringCancellationInputFieldValidation(state),
     }),
-    { fetchRoutes, saveRecurringCancellationInDatabase, deleteRecurringCancellationInDatabase },
+    {
+        fetchRoutes,
+        saveRecurringCancellationInDatabase,
+        deleteRecurringCancellationInDatabase,
+        uploadFileRecurringCancellation,
+    },
 )(AddRecurringCancellationModal);

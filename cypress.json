@@ -12,6 +12,5 @@
     "chromeWebSecurity": false,
     "requestTimeout": 10000,
     "responseTimeout": 60000,
-    "experimentalFetchPolyfill": true,
-    "nodeVersion": "system"
+    "experimentalFetchPolyfill": true
 }

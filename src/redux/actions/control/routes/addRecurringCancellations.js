@@ -1,7 +1,7 @@
 import moment from 'moment';
 import ACTION_TYPE from '../../../action-types';
 import { DATE_FORMAT_DDMMYYYY } from '../../../../utils/dateUtils';
-import { recurringUpdateTripStatus, recurringDeleteTripStatus } from '../../../../utils/transmitters/trip-mgt-api';
+import { recurringUpdateTripStatus, recurringDeleteTripStatus, recurringCancellationUploadFile } from '../../../../utils/transmitters/trip-mgt-api';
 import { getAddRecurringCancellationValidationField } from '../../../selectors/control/routes/addRecurringCancellations';
 import { ALERT_ERROR_MESSAGE_TYPE, CONFIRMATION_MESSAGE_TYPE, ALERT_MESSAGE_TYPE } from '../../../../types/message-types';
 
@@ -108,4 +108,19 @@ export const checkValidityOfInputField = statusOfInputField => (dispatch, getSta
     const updatedStateOfInputFieldValidity = { ...currentStateOfInputFieldValidity, ...statusOfInputField };
     const { isRouteVariantValid, isStartTimeValid, isRouteValid } = updatedStateOfInputFieldValidity;
     dispatch(updateValidationOfInputField(isRouteVariantValid, isStartTimeValid, isRouteValid));
+};
+
+export const uploadFileRecurringCancellation = fileData => (dispatch) => {
+    dispatch(updateRecurringCancellationIsLoading(true));
+    return recurringCancellationUploadFile(fileData)
+        .then((response) => {
+            if (response) {
+                dispatch(updateRecurringCancellationIsLoading(false));
+                dispatch(updateStatusMessage('', CONFIRMATION_MESSAGE_TYPE, 'File has been uploaded successfully'));
+            }
+        })
+        .catch(() => {
+            dispatch(updateRecurringCancellationIsLoading(false));
+            dispatch(updateStatusMessage('', ALERT_ERROR_MESSAGE_TYPE, 'Failed to process the file'));
+        });
 };

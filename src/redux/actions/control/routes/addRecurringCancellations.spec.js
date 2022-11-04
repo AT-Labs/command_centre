@@ -4,7 +4,11 @@ import sinon from 'sinon';
 
 import * as TRIP_MGT_API from '../../../../utils/transmitters/trip-mgt-api';
 import { CONFIRMATION_MESSAGE_TYPE } from '../../../../types/message-types';
-import { saveRecurringCancellationInDatabase, deleteRecurringCancellationInDatabase } from './addRecurringCancellations';
+import {
+    saveRecurringCancellationInDatabase,
+    deleteRecurringCancellationInDatabase,
+    uploadFileRecurringCancellation,
+} from './addRecurringCancellations';
 import ACTION_TYPE from '../../../action-types';
 
 const mockStore = configureMockStore([thunk]);
@@ -24,6 +28,10 @@ const mockResponseForAdd = {
 
 const mockResponseForDelete = {
     affected: 1,
+};
+
+const mockResponseForFileUpload = {
+    message: 'File [test.csv] has been uploaded',
 };
 
 const expectedActions = [
@@ -148,5 +156,39 @@ describe('Delete multiple recurring cancellation', () => {
 
         await store.dispatch(deleteRecurringCancellationInDatabase(mockData));
         expect(store.getActions()).toEqual(deleteRecurringExpectedActions);
+    });
+});
+
+describe('Upload file recurring cancellation', () => {
+    beforeEach(() => {
+        sandbox = sinon.createSandbox();
+    });
+
+    afterEach(() => {
+        sandbox.restore();
+        store.clearActions();
+    });
+
+    const mockData = {
+        csvFile: {
+            name: 'test.csv',
+        },
+        operator: 'AM',
+    };
+
+    const uploadFileExpectedActions = [...expectedActions];
+    uploadFileExpectedActions.push({
+        ...expectedMessage,
+        payload: {
+            ...expectedMessage.payload,
+            resultMessage: 'File has been uploaded successfully',
+        },
+    });
+
+    it('Update message and loading state when delete', async () => {
+        mockApiCall('recurringCancellationUploadFile', mockResponseForFileUpload);
+
+        await store.dispatch(uploadFileRecurringCancellation(mockData));
+        expect(store.getActions()).toEqual(uploadFileExpectedActions);
     });
 });

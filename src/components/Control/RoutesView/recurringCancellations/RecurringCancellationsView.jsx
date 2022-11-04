@@ -35,6 +35,7 @@ export const RecurringCancellationsView = (props) => {
     const [actionState, setActionState] = useState({
         isEdit: false,
         isDelete: false,
+        isUploadFile: false,
     });
     const [rowData, setRowData] = useState(null);
     const [multipleRowData, setMultipleRowRowData] = useState([]);
@@ -45,30 +46,36 @@ export const RecurringCancellationsView = (props) => {
         setActionState({
             isEdit: false,
             isDelete: false,
+            isUploadFile: false,
         });
         setIsOpen(true);
     };
 
     const openEditModal = (allData) => {
-        setActionState({ isEdit: true, isDelete: false });
+        setActionState({ isEdit: true, isDelete: false, isUploadFile: false });
         setRowData(allData);
         setIsOpen(true);
     };
 
     const openDeleteModal = (allData) => {
-        setActionState({ isEdit: false, isDelete: true });
+        setActionState({ isEdit: false, isDelete: true, isUploadFile: false });
         setRowData(allData);
         setIsOpen(true);
     };
 
     const openDeleteModalforCheckBox = (allData) => {
         setMultipleRowRowData(allData);
-        setActionState({ isEdit: false, isDelete: true });
+        setActionState({ isEdit: false, isDelete: true, isUploadFile: false });
         setIsOpen(true);
     };
 
     const deselectAllRecurringCancellations = () => {
         setSelectedRow([]);
+    };
+
+    const openUploadFileModal = () => {
+        setActionState({ isEdit: false, isDelete: false, isUploadFile: true });
+        setIsOpen(true);
     };
 
     const getActionsButtons = (params) => {
@@ -249,6 +256,12 @@ export const RecurringCancellationsView = (props) => {
                 </div>
                 { props.isRecurringCancellationUpdateAllowed && (
                     <div className="d-flex justify-content-end align-items-center">
+                        <Button
+                            id="upload-recurring-cancellation-file"
+                            className="cc-btn-primary mr-2"
+                            onClick={ () => openUploadFileModal() }>
+                            Upload File
+                        </Button>
                         <Button
                             id="add-new-recurring-cancellation-button"
                             className="cc-btn-primary"
