@@ -24,7 +24,7 @@ import { DATE_FORMAT_DDMMYYYY } from '../../../../utils/dateUtils';
 
 const AddRecurringCancellationModal = (props) => {
     const { className, isModalOpen, permission, rowData, isInputFieldValidationSuccess, multipleRowData } = props;
-    const { isEdit, isDelete, isUploadFile } = props.actionState;
+    const { isEdit, isDelete, isUploadFile, isRedirectionWarning } = props.actionState;
     const loadingState = props.isLoading;
     const recurrenceFileUploadInitialState = {
         csvFile: '',
@@ -84,6 +84,9 @@ const AddRecurringCancellationModal = (props) => {
         if (isUploadFile) {
             return 'uploadFileRecurringCancellation';
         }
+        if (isRedirectionWarning) {
+            return 'displayRedirectionWarning';
+        }
         return 'addRecurringCancellation';
     };
 
@@ -97,6 +100,27 @@ const AddRecurringCancellationModal = (props) => {
         recurrenceSetting.route,
     ], _.isEmpty);
 
+    const renderMainBody = () => (
+        <ModalWithInputField
+            isUploadFile={ isUploadFile }
+            isEdit={ isEdit }
+            className={ className }
+            allowUpdate={ permission }
+            recurringProps={ {
+                onChange: setting => setRecurrenceSetting(prev => ({ ...prev, ...setting })),
+                setting: recurrenceSetting,
+                options: {
+                    startDatePickerMinimumDate: moment(rowData?.cancelFrom).format(DATE_FORMAT_DDMMYYYY),
+                    endDatePickerMinimumDate: recurrenceSetting.startDate,
+                },
+            } }
+            recurringFileProps={ {
+                onChange: setting => setRecurrenceFileSetting(prev => ({ ...prev, ...setting })),
+                setting: recurrenceFileSetting,
+            } }
+        />
+    );
+
     const modalProps = {
         addRecurringCancellation: {
             className: 'add-modal',
@@ -104,6 +128,7 @@ const AddRecurringCancellationModal = (props) => {
             mainButtonLabel: 'Add recurring cancellation',
             onClick: () => props.saveRecurringCancellationInDatabase({ ...recurrenceSetting }),
             disabled: !(!isFieldEmpty && permission && isInputFieldValidationSuccess),
+            renderBody: renderMainBody(),
         },
         editRecurringCancellation: {
             className: 'edit-modal',
@@ -111,25 +136,40 @@ const AddRecurringCancellationModal = (props) => {
             mainButtonLabel: 'Edit recurring cancellation',
             onClick: () => props.saveRecurringCancellationInDatabase({ ...recurrenceSetting, id: rowData.id }),
             disabled: !(!isFieldEmpty && permission),
+            renderBody: renderMainBody(),
         },
         deleteRecurringCancellation: {
             className: 'delete-modal',
             title: 'Delete recurring cancellation',
             errorMessage: 'trip fail to be updated',
-            confirmationMessage: ['Are you sure you want to remove the recurring cancellation ?', <br />,
-                `Trips for today or tomorrow may have already processed this cancellation. 
-                To manually reinstate those trips, check Routes & Trips.`,
-            ],
             mainButtonLabel: 'Delete recurring cancellation',
             onClick: () => props.deleteRecurringCancellationInDatabase(_.isEmpty(multipleRowData) ? rowData.id : multipleRowData),
             disabled: props.isLoading,
+            renderBody: (
+                <div>
+                    <ConfirmationModalBody
+                        message={ ['Are you sure you want to remove the recurring cancellation ?', <br />,
+                            `Trips for today or tomorrow may have already processed this cancellation. 
+                            To manually reinstate those trips, check Routes & Trips.`] }
+                    />
+                </div>
+            ),
+        },
+        displayRedirectionWarning: {
+            className: 'redirection-warning-modal',
+            title: 'Trip does not exist',
+            mainButtonLabel: 'OK',
+            onClick: () => props.onClose(),
+            disabled: false,
+            renderBody: (<p className="font-weight-light text-center mb-0">The trip that you are trying to view does not exist for today’s timetable</p>),
         },
         uploadFileRecurringCancellation: {
             className: 'upload-file-modal',
             title: 'Upload file',
             mainButtonLabel: 'Upload file',
             onClick: () => props.uploadFileRecurringCancellation(recurrenceFileSetting),
-            disabled: !(!_.isEmpty(recurrenceFileSetting.operator) && !_.isNull(recurrenceFileSetting)),
+            disabled: !(!_.isEmpty(recurrenceFileSetting.operator) && !_.isEmpty(recurrenceFileSetting.csvFile.name)),
+            renderBody: renderMainBody(),
         },
     };
 
@@ -153,31 +193,7 @@ const AddRecurringCancellationModal = (props) => {
             isModalOpen={ isModalOpen }
             title={ activeModalProps.title }
             customFooter={ generateModalFooter() }>
-            { isDelete ? (
-                <div>
-                    <ConfirmationModalBody
-                        message={ activeModalProps.confirmationMessage } />
-                </div>
-            ) : (
-                <ModalWithInputField
-                    isUploadFile={ isUploadFile }
-                    isEdit={ isEdit }
-                    className={ className }
-                    allowUpdate={ permission }
-                    recurringProps={ {
-                        onChange: setting => setRecurrenceSetting(prev => ({ ...prev, ...setting })),
-                        setting: recurrenceSetting,
-                        options: {
-                            startDatePickerMinimumDate: moment(rowData?.cancelFrom).format(DATE_FORMAT_DDMMYYYY),
-                            endDatePickerMinimumDate: recurrenceSetting.startDate,
-                        },
-                    } }
-                    recurringFileProps={ {
-                        onChange: setting => setRecurrenceFileSetting(prev => ({ ...prev, ...setting })),
-                        setting: recurrenceFileSetting,
-                    } }
-                />
-            )}
+            { activeModalProps.renderBody }
         </CustomModal>
     );
 };

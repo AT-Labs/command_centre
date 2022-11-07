@@ -12,20 +12,28 @@ import AlertMessage from '../../../Common/AlertMessage/AlertMessage';
 import AddRecurringCancellationModal from './AddRecurringCancellationModal';
 import RecurringCancellationFooter from './RecurringCancellationFooter';
 import CustomDataGrid from '../../../Common/CustomDataGrid/CustomDataGrid';
-import { retrieveRecurringCancellations, updateRecurringCancellationsDatagridConfig } from '../../../../redux/actions/control/routes/recurringCancellations';
+import {
+    retrieveRecurringCancellations,
+    updateRecurringCancellationsDatagridConfig,
+    checkTripInstance,
+    recurringCancellationRedirection,
+} from '../../../../redux/actions/control/routes/recurringCancellations';
 import { clearStatusMessage } from '../../../../redux/actions/control/routes/addRecurringCancellations';
 import { getClosestTimeValueForFilter } from '../../../../utils/helpers';
 import {
     getRecurringCancellations,
     getRecurringCancellationsDatagridConfig,
     isRecurringCancellationUpdateAllowed,
+    getRecurringCancellationRedirectionStatus,
 } from '../../../../redux/selectors/control/routes/recurringCancellations';
 import { getAgencies } from '../../../../redux/selectors/control/agencies';
+import { getServiceDate } from '../../../../redux/selectors/control/serviceDate';
 import { getAddRecurringCancellationMessage } from '../../../../redux/selectors/control/routes/addRecurringCancellations';
 import { retrieveAgencies } from '../../../../redux/actions/control/agencies';
 import { goToRoutesView } from '../../../../redux/actions/control/link';
 import { displayRecurrentDays } from '../../../../utils/recurrence';
 import { DATE_FORMAT_DDMMYYYY } from '../../../../utils/dateUtils';
+import { SERVICE_DATE_FORMAT, PAGE_SIZE } from '../../../../utils/control/routes';
 
 import './RecurringCancellationsView.scss';
 
@@ -35,6 +43,7 @@ export const RecurringCancellationsView = (props) => {
     const [actionState, setActionState] = useState({
         isEdit: false,
         isDelete: false,
+        isRedirectionWarning: false,
         isUploadFile: false,
     });
     const [rowData, setRowData] = useState(null);
@@ -46,26 +55,42 @@ export const RecurringCancellationsView = (props) => {
         setActionState({
             isEdit: false,
             isDelete: false,
+            isRedirectionWarning: false,
             isUploadFile: false,
         });
         setIsOpen(true);
     };
 
     const openEditModal = (allData) => {
-        setActionState({ isEdit: true, isDelete: false, isUploadFile: false });
+        setActionState({
+            isEdit: true,
+            isDelete: false,
+            isRedirectionWarning: false,
+            isUploadFile: false,
+        });
         setRowData(allData);
         setIsOpen(true);
     };
 
     const openDeleteModal = (allData) => {
-        setActionState({ isEdit: false, isDelete: true, isUploadFile: false });
+        setActionState({
+            isEdit: false,
+            isDelete: true,
+            isRedirectionWarning: false,
+            isUploadFile: false,
+        });
         setRowData(allData);
         setIsOpen(true);
     };
 
     const openDeleteModalforCheckBox = (allData) => {
         setMultipleRowRowData(allData);
-        setActionState({ isEdit: false, isDelete: true, isUploadFile: false });
+        setActionState({
+            isEdit: false,
+            isDelete: true,
+            isRedirectionWarning: false,
+            isUploadFile: false,
+        });
         setIsOpen(true);
     };
 
@@ -74,32 +99,46 @@ export const RecurringCancellationsView = (props) => {
     };
 
     const openUploadFileModal = () => {
-        setActionState({ isEdit: false, isDelete: false, isUploadFile: true });
+        setActionState({
+            isEdit: false,
+            isDelete: false,
+            isUploadFile: true,
+            isRedirectionWarning: false,
+        });
         setIsOpen(true);
     };
 
-    const getActionsButtons = (params) => {
-        const { row: { routeVariantId, startTime, allData } } = params;
-
-        const trip = {
-            routeVariantId,
-            routeType: null,
-            startTime,
-            routeShortName: null,
-            agencyId: null,
-            tripStartDate: null,
-            tripStartTime: null,
-        };
-
-        const filter = {
-            routeType: null,
-            startTimeFrom: getClosestTimeValueForFilter(startTime),
-            startTimeTo: '',
+    const checkTripExistence = (data) => {
+        const { routeShortName, routeVariantId, agencyId, routeType, startTime } = data;
+        const splitStartTime = startTime.split(':');
+        const formattedStartTime = `${splitStartTime[0]}:${splitStartTime[1]}`;
+        const tripsArgs = {
+            serviceDate: moment(props.serviceDate).format(SERVICE_DATE_FORMAT),
+            agencyId,
+            depotIds: [],
+            routeType,
+            isGroupedByRoute: false,
+            isGroupedByRouteVariant: false,
+            startTimeFrom: formattedStartTime,
+            startTimeTo: formattedStartTime,
             tripStatus: '',
-            agencyId: '',
-            routeShortName: null,
+            routeShortName,
             routeVariantId,
+            trackingStatuses: [],
+            sorting: { sortBy: 'startTime', order: 'asc' },
+            delayRange: { min: null, max: null },
+            page: 1,
+            limit: PAGE_SIZE,
         };
+
+        if (routeVariantId) {
+            tripsArgs.routeVariantIds = [routeVariantId];
+        }
+        props.checkTripInstance(tripsArgs, startTime);
+    };
+
+    const getActionsButtons = (params) => {
+        const { row: { allData } } = params;
 
         return (
             <>
@@ -108,7 +147,7 @@ export const RecurringCancellationsView = (props) => {
                         size="small"
                         variant="contained"
                         endIcon={ <ReadMore /> }
-                        onClick={ () => props.goToRoutesView(trip, filter) }
+                        onClick={ () => checkTripExistence(allData) }
                     >
                         View Trip
                     </Button>
@@ -193,6 +232,43 @@ export const RecurringCancellationsView = (props) => {
         props.operators.forEach(element => operators.push(element.agencyName));
         setOperatorsList(operators);
     }, [props.operators]);
+
+    useEffect(() => {
+        const { status, data } = props.redirectionStatus;
+        if (status) {
+            const trip = {
+                routeVariantId: data.routeVariantId,
+                routeType: data.routeType,
+                startTime: data.startTime,
+                routeShortName: data.routeShortName,
+                agencyId: data.agencyId,
+                tripStartDate: null,
+                tripStartTime: null,
+            };
+
+            const filter = {
+                routeType: data.routeType,
+                startTimeFrom: getClosestTimeValueForFilter(data.startTime),
+                startTimeTo: '',
+                tripStatus: data.status,
+                agencyId: data.agencyId,
+                routeShortName: data.routeShortName,
+                routeVariantId: data.routeVariantId,
+            };
+            props.goToRoutesView(trip, filter);
+            props.recurringCancellationRedirection(null, null);
+        }
+
+        if (status === false) {
+            setActionState({
+                isEdit: false,
+                isDelete: false,
+                isRedirectionWarning: true,
+            });
+            setIsOpen(true);
+            props.recurringCancellationRedirection(null, null);
+        }
+    }, [props.redirectionStatus]);
 
     const enrichRecurringCancellations = () => {
         const { operators } = props;
@@ -324,6 +400,10 @@ RecurringCancellationsView.propTypes = {
     clearStatusMessage: PropTypes.func.isRequired,
     recurringCancellationMessage: PropTypes.object.isRequired,
     isRecurringCancellationUpdateAllowed: PropTypes.bool,
+    checkTripInstance: PropTypes.func.isRequired,
+    recurringCancellationRedirection: PropTypes.func.isRequired,
+    redirectionStatus: PropTypes.object.isRequired,
+    serviceDate: PropTypes.string.isRequired,
 };
 
 RecurringCancellationsView.defaultProps = {
@@ -338,6 +418,8 @@ export default connect(
         recurringCancellationDatagridConfig: getRecurringCancellationsDatagridConfig(state),
         recurringCancellationMessage: getAddRecurringCancellationMessage(state),
         isRecurringCancellationUpdateAllowed: isRecurringCancellationUpdateAllowed(state),
+        redirectionStatus: getRecurringCancellationRedirectionStatus(state),
+        serviceDate: getServiceDate(state),
     }),
     {
         goToRoutesView,
@@ -345,5 +427,7 @@ export default connect(
         updateRecurringCancellationsDatagridConfig,
         retrieveRecurringCancellations,
         clearStatusMessage,
+        checkTripInstance,
+        recurringCancellationRedirection,
     },
 )(RecurringCancellationsView);

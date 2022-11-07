@@ -8,5 +8,6 @@ export const getRecurringCancellationsState = state => _.result(state, 'control.
 export const getRecurringCancellations = createSelector(getRecurringCancellationsState, recurringCancellationsState => _.result(recurringCancellationsState, 'recurringCancellations'));
 export const getRecurringCancellationsDatagridConfig = createSelector(getRecurringCancellationsState, recurringCancellationsState => _.result(recurringCancellationsState, 'recurringCancellationsDatagridConfig'));
 export const getRecurringCancellationPermissions = createSelector(getRecurringCancellationsState, recurringCancellationsState => _.result(recurringCancellationsState, 'permissions'));
+export const getRecurringCancellationRedirectionStatus = createSelector(getRecurringCancellationsState, recurringCancellationsState => _.result(recurringCancellationsState, 'redirectionStatus'));
 
 export const isRecurringCancellationUpdateAllowed = createSelector(getRecurringCancellationPermissions, permissions => !!_.find(permissions, { _rel: USER_PERMISSIONS.RECURRING_CANCELLATIONS.UPDATE_RECURRING_CANCELLATIONS }));
