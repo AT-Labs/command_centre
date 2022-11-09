@@ -32,8 +32,9 @@ import { getAddRecurringCancellationMessage } from '../../../../redux/selectors/
 import { retrieveAgencies } from '../../../../redux/actions/control/agencies';
 import { goToRoutesView } from '../../../../redux/actions/control/link';
 import { displayRecurrentDays } from '../../../../utils/recurrence';
-import { DATE_FORMAT_DDMMYYYY } from '../../../../utils/dateUtils';
 import { SERVICE_DATE_FORMAT, PAGE_SIZE } from '../../../../utils/control/routes';
+import DATE_TYPE from '../../../../types/date-types';
+import { DATE_FORMAT_DDMMYYYY, dateTimeFormat } from '../../../../utils/dateUtils';
 
 import './RecurringCancellationsView.scss';
 
@@ -215,6 +216,18 @@ export const RecurringCancellationsView = (props) => {
             width: 200,
         },
         {
+            field: 'lastUpdated',
+            headerName: 'LAST UPDATED',
+            width: 150,
+            type: 'dateTime',
+            valueFormatter: params => params.value.format(dateTimeFormat),
+        },
+        {
+            field: 'updatedBy',
+            headerName: 'UPDATED BY',
+            width: 200,
+        },
+        {
             field: 'action',
             headerName: 'ACTION',
             width: 200,
@@ -292,6 +305,8 @@ export const RecurringCancellationsView = (props) => {
         cancel_from: moment(recurringCancellation.cancelFrom),
         cancel_to: moment(recurringCancellation.cancelTo),
         recurrence: displayRecurrentDays(recurringCancellation.dayPattern),
+        lastUpdated: moment.tz(recurringCancellation.updatedTimestamp, DATE_TYPE.TIME_ZONE),
+        updatedBy: recurringCancellation.updatedBy,
         goToRoutesView: props.goToRoutesView,
         allData: recurringCancellation,
     }));

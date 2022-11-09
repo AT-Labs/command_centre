@@ -24,6 +24,8 @@ const mockResponseForAdd = {
     cancelTo: '2022-08-25T16:00:00.000Z',
     agencyId: 'GBT',
     routeShortName: '309',
+    updatedBy: 'test@xyz.com',
+    updatedTimestamp: '2022-10-05T05:27:03.866Z',
 };
 
 const mockResponseForDelete = {
