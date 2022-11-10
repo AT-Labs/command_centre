@@ -43,7 +43,6 @@ import Workarounds from '../WizardSteps/Workarounds';
 import Map from './Map';
 import { parseRecurrencePattern } from '../../../../../utils/recurrence';
 import EDIT_TYPE from '../../../../../types/edit-types';
-import { getPassengerCountData } from '../../../../../utils/transmitters/passenger-count-api';
 
 const INIT_STATE = {
     startTime: '',
@@ -64,7 +63,6 @@ const INIT_STATE = {
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    passengerCount: [],
 };
 
 export class CreateDisruption extends React.Component {
@@ -118,7 +116,7 @@ export class CreateDisruption extends React.Component {
     };
 
     setupDataEdit = () => {
-        const { workarounds, startTime, endTime, passengerCount } = this.props.disruptionToEdit;
+        const { workarounds } = this.props.disruptionToEdit;
 
         const disruptionType = _.isEmpty(this.props.routes) && !_.isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
         this.setState({
@@ -126,9 +124,6 @@ export class CreateDisruption extends React.Component {
                 ...INIT_STATE,
                 disruptionType,
                 workarounds,
-                ...(startTime && { startTime: startTime.toISOString() }),
-                ...(endTime && { endTime: endTime.toISOString() }),
-                passengerCount,
             },
         });
     };
@@ -183,7 +178,7 @@ export class CreateDisruption extends React.Component {
         }));
     };
 
-    onSubmit = async () => {
+    onSubmit = () => {
         this.toggleModal('Confirmation', true);
         const { disruptionData } = this.state;
 
@@ -200,14 +195,12 @@ export class CreateDisruption extends React.Component {
             startTime: startTimeMoment,
             notes: [],
         };
-        const passengerCount = await this.getPassengerCount();
-        this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds, passengerCount));
+        this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds));
     };
 
-    onSubmitUpdate = async () => {
+    onSubmitUpdate = () => {
         const { disruptionData } = this.state;
-        const passengerCount = await this.getPassengerCount();
-        const disruptionRequest = buildSubmitBody(this.props.disruptionToEdit, this.props.routes, this.props.stops, disruptionData.workarounds, passengerCount);
+        const disruptionRequest = buildSubmitBody(this.props.disruptionToEdit, this.props.routes, this.props.stops, disruptionData.workarounds);
         this.props.updateDisruption(disruptionRequest);
         this.props.openCreateDisruption(false);
         this.props.toggleDisruptionModals('isConfirmationOpen', true);
@@ -217,20 +210,6 @@ export class CreateDisruption extends React.Component {
         const type = `is${modalType}Open`;
         this.setState({ [type]: isOpen });
         this.props.toggleDisruptionModals(type, isOpen);
-    };
-
-    getPassengerCount = () => {
-        const routes = this.props.routes.map(({ routeId }) => routeId);
-        const stops = this.props.stops.map(({ stopCode }) => stopCode);
-        const { disruptionData } = this.state;
-
-        const startDate = disruptionData.startDate ? disruptionData.startDate : moment(disruptionData.startTime).format(DATE_FORMAT);
-        const startTime = momentFromDateTime(startDate, disruptionData.startTime).toISOString();
-        let endTime;
-        if (!_.isEmpty(disruptionData.endDate) && !_.isEmpty(disruptionData.endTime)) {
-            endTime = momentFromDateTime(disruptionData.endDate, disruptionData.endTime).toISOString();
-        }
-        return getPassengerCountData(routes, stops, startTime, endTime);
     };
 
     render() {
