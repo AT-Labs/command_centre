@@ -5,6 +5,13 @@ import { recurringUpdateTripStatus, recurringDeleteTripStatus, recurringCancella
 import { getAddRecurringCancellationValidationField } from '../../../selectors/control/routes/addRecurringCancellations';
 import { ALERT_ERROR_MESSAGE_TYPE, CONFIRMATION_MESSAGE_TYPE, ALERT_MESSAGE_TYPE } from '../../../../types/message-types';
 
+export const displayOperatorPermissionError = displayError => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_RECURRING_CANCELLATIONS_DISPLAY_OPERATOR_ERROR,
+    payload: {
+        displayError,
+    },
+});
+
 export const updateRecurringCancellationIsLoading = isLoading => ({
     type: ACTION_TYPE.UPDATE_CONTROL_RECURRING_CANCELLATIONS_IS_LOADING,
     payload: {

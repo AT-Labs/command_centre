@@ -126,6 +126,7 @@ export default {
     CLEAR_CONTROL_RECURRING_CANCELLATIONS_MESSAGE: 'clear-control-recurring-cancellations-message',
     CLEAR_CONTROL_RECURRING_CANCELLATIONS_VALIDATION: 'clear-control-recurring-cancellations-validation',
     UPDATE_CONTROL_RECURRING_CANCELLATIONS_REDIRECTION: 'update-control-recurring-cancellations-redirection',
+    UPDATE_CONTROL_RECURRING_CANCELLATIONS_DISPLAY_OPERATOR_ERROR: 'update-control-recurring-cancellations-display-operator-error',
     // Control: route variants
     UPDATE_CONTROL_ROUTE_VARIANTS: 'update-control-route-variants',
     CLEAR_CONTROL_ROUTE_VARIANTS: 'clear-control-route-variants',

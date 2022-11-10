@@ -8,16 +8,35 @@ import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import SearchFilter from '../../Common/Filters/SearchFilter/SearchFilter';
 import FilterByOperator from '../../Common/Filters/FilterByOperator';
 import { getSearchResults } from '../../../../redux/selectors/search';
-import { checkValidityOfInputField } from '../../../../redux/actions/control/routes/addRecurringCancellations';
+import { getRestrictedAgencies } from '../../../../redux/selectors/control/agencies';
+import { checkValidityOfInputField, displayOperatorPermissionError } from '../../../../redux/actions/control/routes/addRecurringCancellations';
 import { TIME_FORMAT_HHMM, TIME_FORMAT_HHMMSS } from '../../../../utils/dateUtils';
 import './RecurringCancellationsView.scss';
 
 const ModalWithAdditionalInputField = (props) => {
-    const { allowUpdate, searchResults } = props;
+    const { allowUpdate, searchResults, restrictOperatorData } = props;
     const { routeVariant, startTime, route, operator } = props.setting;
     const [isOperatorAndRouteDisabled, setIsOperatorAndRouteDisabled] = useState(false);
     const [isRouteVariantValid, setIsRouteVariantValid] = useState(false);
     const [isRouteValid, setIsRouteValid] = useState(false);
+
+    useEffect(() => {
+        if (restrictOperatorData.length === 1) {
+            props.onChange({ operator: restrictOperatorData[0].value });
+        }
+    }, []);
+
+    const updateAutoFillOperator = (autoFillOperatorValue) => {
+        const autoUpdateAllowedValue = restrictOperatorData.filter(option => option.value === autoFillOperatorValue)[0];
+        if (autoUpdateAllowedValue) {
+            props.onChange({ operator: autoFillOperatorValue });
+        } else {
+            props.displayOperatorPermissionError(true);
+            if (operator) {
+                props.onChange({ operator: '' });
+            }
+        }
+    };
 
     const routeVariantValid = (value) => {
         if (!_.isEmpty(value) && value.length > 10) {
@@ -54,9 +73,9 @@ const ModalWithAdditionalInputField = (props) => {
             [SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type]: (selectedOption) => {
                 props.onChange({ routeVariant: _.get(selectedOption, 'data.routeVariantId') });
                 props.onChange({ route: _.get(selectedOption, 'data.routeShortName') });
-                props.onChange({ operator: _.get(selectedOption, 'data.agencyId') });
                 setIsOperatorAndRouteDisabled(true);
                 props.checkValidityOfInputField({ isRouteValid: true });
+                updateAutoFillOperator(_.get(selectedOption, 'data.agencyId'));
             },
         },
         clear: {
@@ -151,6 +170,7 @@ const ModalWithAdditionalInputField = (props) => {
                     <FilterByOperator
                         id={ allowUpdate ? 'control-filters-operators-search' : 'display-control-filters-operators-search-only' }
                         selectedOption={ operator }
+                        customData={ restrictOperatorData }
                         isDisabled={ !allowUpdate || isOperatorAndRouteDisabled }
                         onSelection={ selectedOption => props.onChange({ operator: selectedOption.value }) } />
                 </FormGroup>
@@ -184,7 +204,9 @@ ModalWithAdditionalInputField.propTypes = {
         operator: PropTypes.string.isRequired,
     }).isRequired,
     searchResults: PropTypes.object.isRequired,
+    restrictOperatorData: PropTypes.array.isRequired,
     checkValidityOfInputField: PropTypes.func.isRequired,
+    displayOperatorPermissionError: PropTypes.func.isRequired,
 };
 
 ModalWithAdditionalInputField.defaultProps = {
@@ -195,4 +217,8 @@ ModalWithAdditionalInputField.defaultProps = {
 
 export default connect(state => ({
     searchResults: getSearchResults(state),
-}), { checkValidityOfInputField })(ModalWithAdditionalInputField);
+    restrictOperatorData: getRestrictedAgencies(state),
+}), {
+    checkValidityOfInputField,
+    displayOperatorPermissionError,
+})(ModalWithAdditionalInputField);

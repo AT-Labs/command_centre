@@ -12,6 +12,7 @@ import ModalWithInputField from './ModalWithInputField';
 import {
     getAddRecurringCancellationIsLoading,
     getAddRecurringCancellationInputFieldValidation,
+    getAddRecurringCancellationOperatorErrorDisplay,
 } from '../../../../redux/selectors/control/routes/addRecurringCancellations';
 import { fetchRoutes } from '../../../../redux/actions/control/routes/routes';
 import { getServiceDate } from '../../../../redux/selectors/control/serviceDate';
@@ -23,7 +24,7 @@ import {
 import { DATE_FORMAT_DDMMYYYY } from '../../../../utils/dateUtils';
 
 const AddRecurringCancellationModal = (props) => {
-    const { className, isModalOpen, permission, rowData, isInputFieldValidationSuccess, multipleRowData } = props;
+    const { className, isModalOpen, permission, rowData, isInputFieldValidationSuccess, multipleRowData, shouldDisplayError } = props;
     const { isEdit, isDelete, isUploadFile, isRedirectionWarning } = props.actionState;
     const loadingState = props.isLoading;
     const recurrenceFileUploadInitialState = {
@@ -106,6 +107,7 @@ const AddRecurringCancellationModal = (props) => {
             isEdit={ isEdit }
             className={ className }
             allowUpdate={ permission }
+            shouldErrorAlertBeShown={ shouldDisplayError }
             recurringProps={ {
                 onChange: setting => setRecurrenceSetting(prev => ({ ...prev, ...setting })),
                 setting: recurrenceSetting,
@@ -212,6 +214,7 @@ AddRecurringCancellationModal.propTypes = {
     isInputFieldValidationSuccess: PropTypes.bool.isRequired,
     multipleRowData: PropTypes.array.isRequired,
     uploadFileRecurringCancellation: PropTypes.func.isRequired,
+    shouldDisplayError: PropTypes.bool.isRequired,
 };
 
 AddRecurringCancellationModal.defaultProps = {
@@ -225,6 +228,7 @@ export default connect(
         serviceDate: getServiceDate(state),
         isLoading: getAddRecurringCancellationIsLoading(state),
         isInputFieldValidationSuccess: getAddRecurringCancellationInputFieldValidation(state),
+        shouldDisplayError: getAddRecurringCancellationOperatorErrorDisplay(state),
     }),
     {
         fetchRoutes,

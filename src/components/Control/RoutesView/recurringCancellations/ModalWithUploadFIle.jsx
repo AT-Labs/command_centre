@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 import { FormGroup } from 'reactstrap';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import { getRestrictedAgencies } from '../../../../redux/selectors/control/agencies';
 import FilterByOperator from '../../Common/Filters/FilterByOperator';
 
 const ModalWithUploadFile = (props) => {
-    const { allowUpdate } = props;
+    const { allowUpdate, restrictOperatorData } = props;
     const { operator } = props.setting;
     const [filename, setFilename] = useState('');
+
+    useEffect(() => {
+        if (restrictOperatorData.length === 1) {
+            props.onChange({ operator: restrictOperatorData[0].value });
+        }
+    }, []);
 
     const handleFileUpload = (e) => {
         if (!e.target.files) {
@@ -25,6 +33,7 @@ const ModalWithUploadFile = (props) => {
                 <FilterByOperator
                     disabled={ !allowUpdate }
                     id="control-filters-operators-search"
+                    customData={ restrictOperatorData }
                     selectedOption={ operator }
                     onSelection={ selectedOption => props.onChange({ operator: selectedOption.value }) } />
             </FormGroup>
@@ -52,6 +61,12 @@ ModalWithUploadFile.propTypes = {
     setting: PropTypes.shape({
         operator: PropTypes.string.isRequired,
     }).isRequired,
+    restrictOperatorData: PropTypes.array.isRequired,
 };
 
-export default ModalWithUploadFile;
+export default connect(
+    state => ({
+        restrictOperatorData: getRestrictedAgencies(state),
+    }),
+    { },
+)(ModalWithUploadFile);
