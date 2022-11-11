@@ -17,7 +17,6 @@ const componentPropsMock = {
     hasError: false,
     isInitLoading: false,
     activeMainView: VIEW_TYPE.MAIN.REAL_TIME,
-    useNotifications: false,
     setCache: jest.fn(),
     startPollingSiteStatus: jest.fn(),
     getTrains: jest.fn(),
@@ -81,16 +80,6 @@ describe('<App />', () => {
             expect(componentPropsMock.getBuses).toHaveBeenCalled();
             expect(componentPropsMock.getFerries).toHaveBeenCalled();
             expect(componentPropsMock.setCache).toHaveBeenCalled();
-        });
-    });
-
-    it('should fetchNotificationsViewPermission when useNotifications is updated', () => {
-        withHooks(() => {
-            mockResolveStaticData();
-            wrapper = setup();
-            expect(componentPropsMock.fetchNotificationsViewPermission).not.toHaveBeenCalled();
-            wrapper.setProps({ useNotifications: true });
-            expect(componentPropsMock.fetchNotificationsViewPermission).toHaveBeenCalled();
         });
     });
 });

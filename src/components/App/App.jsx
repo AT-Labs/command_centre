@@ -24,7 +24,12 @@ import {
 import { hasPrerequisiteDataLoaded, isAnyError } from '../../redux/selectors/activity';
 import { getActiveMainView } from '../../redux/selectors/navigation';
 import VIEW_TYPE from '../../types/view-types';
-import { IS_ALERTS_ENABLED, IS_DISRUPTIONS_ENABLED, IS_TRIP_REPLAYS_ENABLED, IS_FLEETS_ENABLED } from '../../utils/feature-toggles';
+import {
+    IS_ALERTS_ENABLED,
+    IS_DISRUPTIONS_ENABLED,
+    IS_TRIP_REPLAYS_ENABLED,
+    IS_FLEETS_ENABLED,
+} from '../../utils/feature-toggles';
 import BrowserCompatibilityModal from '../Common/BrowserCompatibilityModal/BrowserCompatibilityModal';
 import MaskLoader from '../Common/Loader/MaskLoader';
 import ControlView from '../Control/ControlView';
@@ -37,7 +42,6 @@ import './App.scss';
 import Header from './Header/Header';
 import ERROR_TYPE from '../../types/error-types';
 import { getApplicationSettings } from '../../redux/actions/appSettings';
-import { useNotifications } from '../../redux/selectors/appSettings';
 import 'flatpickr/dist/flatpickr.css';
 
 export function App(props) {
@@ -70,9 +74,7 @@ export function App(props) {
             props.fetchRoutesViewPermission();
             props.fetchStopMessagingViewPermission();
             props.startTrackingVehicleAllocations();
-            if (props.useNotifications) {
-                props.fetchNotificationsViewPermission();
-            }
+            props.fetchNotificationsViewPermission();
             if (IS_DISRUPTIONS_ENABLED) {
                 props.fetchDisruptionsViewPermission();
             }
@@ -94,12 +96,6 @@ export function App(props) {
         });
         props.getApplicationSettings();
     }, []);
-
-    useEffect(() => {
-        if (props.useNotifications) {
-            props.fetchNotificationsViewPermission();
-        }
-    }, [props.useNotifications]);
 
     return (
         <div className="app">
@@ -136,14 +132,12 @@ App.propTypes = {
     fetchTripReplaysViewPermission: PropTypes.func.isRequired,
     fetchNotificationsViewPermission: PropTypes.func.isRequired,
     getApplicationSettings: PropTypes.func.isRequired,
-    useNotifications: PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({
     hasError: isAnyError(state),
     isInitLoading: !hasPrerequisiteDataLoaded(state),
     activeMainView: getActiveMainView(state),
-    useNotifications: useNotifications(state),
 }), {
     setCache,
     startPollingSiteStatus,

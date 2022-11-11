@@ -23,7 +23,7 @@ import CustomButton from '../../Common/CustomButton/CustomButton';
 import Icon from '../../Common/Icon/Icon';
 import { HelpInformationModal } from '../HelpInformationModal/HelpInformationModal';
 import { resetRealtimeToDefault } from '../../../redux/actions/realtime/common';
-import { useNotifications, useRecurringCancellationsGridView } from '../../../redux/selectors/appSettings';
+import { useRecurringCancellationsGridView } from '../../../redux/selectors/appSettings';
 import './Header.scss';
 
 function Header(props) {
@@ -227,7 +227,7 @@ function Header(props) {
                             </CustomButton>
                         </NavItem>
                     )}
-                    { props.useNotifications && isViewPermitted('controlNotificationsView') && (
+                    { isViewPermitted('controlNotificationsView') && (
                         <NavItem>
                             <CustomButton
                                 className="header__btn header__notifications rounded-0 px-3"
@@ -415,7 +415,6 @@ Header.propTypes = {
         controlStopMessagingView: PropTypes.bool.isRequired,
     }).isRequired,
     resetRealtimeToDefault: PropTypes.func.isRequired,
-    useNotifications: PropTypes.bool.isRequired,
     useRecurringCancellationsGridView: PropTypes.bool.isRequired,
 };
 
@@ -433,7 +432,6 @@ export default connect(
         userPermissions: getUserPermissions(state),
         hasAlerts: isAlertsEmpty(state),
         stopMessagesPermissions: getStopMessagesPermissions(state),
-        useNotifications: useNotifications(state),
         useRecurringCancellationsGridView: useRecurringCancellationsGridView(state),
     }),
     {
