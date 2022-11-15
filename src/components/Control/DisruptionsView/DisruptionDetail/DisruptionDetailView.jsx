@@ -9,7 +9,7 @@ import { BsArrowRepeat } from 'react-icons/bs';
 import Flatpickr from 'react-flatpickr';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
-import { CAUSES, IMPACTS, STATUSES } from '../../../../types/disruptions-types';
+import { CAUSES, IMPACTS, STATUSES, SEVERITIES } from '../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
     HEADER_MAX_LENGTH,
@@ -31,6 +31,7 @@ import {
     LABEL_DISRUPTION_NOTES,
     DESCRIPTION_NOTE_MAX_LENGTH,
     LABEL_LAST_NOTE,
+    LABEL_SEVERITY,
 } from '../../../../constants/disruptions';
 import {
     getRoutesByShortName,
@@ -104,6 +105,7 @@ const DisruptionDetailView = (props) => {
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [activePeriods, setActivePeriods] = useState(disruption.activePeriods);
     const [notes, setNotes] = useState(disruption.notes);
+    const [severity, setSeverity] = useState(disruption.severity);
     const [isRecurrenceDirty, setIsRecurrenceDirty] = useState(false);
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(NONE);
     const [isViewWorkaroundsModalOpen, setIsViewWorkaroundsModalOpen] = useState(false);
@@ -216,6 +218,7 @@ const DisruptionDetailView = (props) => {
         duration,
         recurrencePattern,
         notes: [...notes, { description: descriptionNote }],
+        severity,
     });
 
     useEffect(() => {
@@ -301,7 +304,7 @@ const DisruptionDetailView = (props) => {
 
     const durationValid = () => isDurationValid(duration, recurrent);
     const isWeekdayRequiredButEmpty = recurrent && isEmpty(recurrencePattern.byweekday);
-    const isPropsEmpty = some([cause, impact, status, header], isEmpty) || isWeekdayRequiredButEmpty;
+    const isPropsEmpty = some([cause, impact, status, header, severity], isEmpty) || isWeekdayRequiredButEmpty;
     const isUpdating = isRequesting && resultDisruptionId === disruption.disruptionId;
 
     const isViewAllDisabled = isWeekdayRequiredButEmpty || !startTimeValid() || !startDateValid() || !endDateValid() || !durationValid();
@@ -537,6 +540,37 @@ const DisruptionDetailView = (props) => {
                     )}
                 </section>
                 <section className="col-6">
+                    <div className="row">
+                        <div className="col-6">
+                            <FormGroup className="mt-2">
+                                <Label for="disruption-detail__url">
+                                    <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
+                                </Label>
+                                <Input id="disruption-detail__url"
+                                    className="border border-dark"
+                                    value={ url }
+                                    disabled={ isResolved() }
+                                    onChange={ e => setUrl(e.currentTarget.value) }
+                                    placeholder="e.g. https://at.govt.nz"
+                                    maxLength={ URL_MAX_LENGTH }
+                                    invalid={ !isUrlValid(url) }
+                                />
+                                <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
+                            </FormGroup>
+                        </div>
+                        <div className="col-6">
+                            <FormGroup className="mt-2">
+                                <DisruptionDetailSelect
+                                    id="disruption-detail__severity"
+                                    value={ severity }
+                                    options={ SEVERITIES }
+                                    label={ LABEL_SEVERITY }
+                                    onChange={ setSeverity }
+                                    disabled={ isResolved() }
+                                />
+                            </FormGroup>
+                        </div>
+                    </div>
                     <FormGroup className="mt-2">
                         <Label for="disruption-detail__header">
                             <span className="font-size-md font-weight-bold">{LABEL_HEADER}</span>
@@ -547,21 +581,6 @@ const DisruptionDetailView = (props) => {
                             disabled={ isResolved() }
                             onChange={ e => setHeader(e.currentTarget.value) }
                             maxLength={ HEADER_MAX_LENGTH } />
-                    </FormGroup>
-                    <FormGroup className="mt-2">
-                        <Label for="disruption-detail__url">
-                            <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
-                        </Label>
-                        <Input id="disruption-detail__url"
-                            className="border border-dark"
-                            value={ url }
-                            disabled={ isResolved() }
-                            onChange={ e => setUrl(e.currentTarget.value) }
-                            placeholder="e.g. https://at.govt.nz"
-                            maxLength={ URL_MAX_LENGTH }
-                            invalid={ !isUrlValid(url) }
-                        />
-                        <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
                     </FormGroup>
                     <FormGroup>
                         <Label for="disruption-detail__notes">

@@ -64,6 +64,7 @@ describe('<SelectDetails />', () => {
                     until: new Date('2022-03-10T06:00:00.000Z'),
                     byweekday: [0],
                 },
+                severity: 'MINOR',
             };
             stops = [{ stopCode: '105' }];
             routes = [{ routeId: 'AIR-221' }];

@@ -11,7 +11,7 @@ import {
     DATE_FORMAT,
     LABEL_CAUSE, LABEL_CREATED_BY,
     LABEL_CUSTOMER_IMPACT, LABEL_DURATION, LABEL_END_DATE, LABEL_END_TIME, LABEL_HEADER, LABEL_LAST_UPDATED_BY,
-    LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME, LABEL_STATUS, LABEL_URL,
+    LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME, LABEL_STATUS, LABEL_URL, LABEL_SEVERITY,
     TIME_FORMAT, LABEL_LAST_NOTE,
 } from '../../../../constants/disruptions';
 import {
@@ -149,20 +149,29 @@ const Readonly = (props) => {
                     </div>
                 </section>
                 <section className="col-6">
+                    <div className="row">
+                        <div className="col-6">
+                            <FormGroup>
+                                <Label for="disruption-detail__url">
+                                    <span className="font-size-md font-weight-bold">{LABEL_URL}</span>
+                                </Label>
+                                <Input id="disruption-detail__url"
+                                    defaultValue={ disruption.url }
+                                    disabled />
+                            </FormGroup>
+                        </div>
+                        <div className="col-6">
+                            <div className="position-relative form-group">
+                                <DisruptionLabelAndText label={ LABEL_SEVERITY } id="disruption-detail__severity" text={ disruption.severity } />
+                            </div>
+                        </div>
+                    </div>
                     <FormGroup>
                         <Label for="disruption-detail__header">
                             <span className="font-size-md font-weight-bold">{LABEL_HEADER}</span>
                         </Label>
                         <Input id="disruption-detail__header"
                             defaultValue={ disruption.header }
-                            disabled />
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for="disruption-detail__url">
-                            <span className="font-size-md font-weight-bold">{LABEL_URL}</span>
-                        </Label>
-                        <Input id="disruption-detail__url"
-                            defaultValue={ disruption.url }
                             disabled />
                     </FormGroup>
                     { disruption.recurrent && (

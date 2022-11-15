@@ -18,6 +18,7 @@ import { useWorkarounds } from '../../../../../redux/selectors/appSettings';
 import {
     CAUSES,
     IMPACTS,
+    SEVERITIES,
 } from '../../../../../types/disruptions-types';
 import {
     URL_MAX_LENGTH,
@@ -31,6 +32,7 @@ import {
     DATE_FORMAT,
     LABEL_END_TIME, LABEL_END_DATE,
     LABEL_DURATION,
+    LABEL_SEVERITY,
 } from '../../../../../constants/disruptions';
 import Footer from './Footer';
 import AffectedEntities from '../../AffectedEntities';
@@ -43,7 +45,7 @@ import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 
 export const SelectDetails = (props) => {
-    const { startDate, startTime, endDate, endTime, impact, cause, header, url, createNotification, exemptAffectedTrips } = props.data;
+    const { startDate, startTime, endDate, endTime, impact, cause, header, url, createNotification, exemptAffectedTrips, severity } = props.data;
     const { recurrent, duration, recurrencePattern } = props.data;
     const { routes, stops } = props;
 
@@ -65,7 +67,7 @@ export const SelectDetails = (props) => {
 
     const isRequiredPropsEmpty = () => {
         const isEntitiesEmpty = isEmpty([...routes, ...stops]);
-        const isPropsEmpty = some([startTime, startDate, impact, cause, header], isEmpty);
+        const isPropsEmpty = some([startTime, startDate, impact, cause, header, severity], isEmpty);
         const isEndTimeRequiredAndEmpty = !recurrent && !isEmpty(endDate) && isEmpty(endTime);
         const isWeekdayRequiredAndEmpty = recurrent && isEmpty(recurrencePattern.byweekday);
         return isEntitiesEmpty || isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
@@ -272,6 +274,17 @@ export const SelectDetails = (props) => {
                         options={ IMPACTS }
                         label={ LABEL_CUSTOMER_IMPACT }
                         onChange={ selectedItem => props.onDataUpdate('impact', selectedItem) } />
+                </div>
+                <div className="col-12">
+                    <FormGroup>
+                        <DisruptionDetailSelect
+                            id="disruption-creation__wizard-select-details__severity"
+                            className=""
+                            value={ severity }
+                            options={ SEVERITIES }
+                            label={ LABEL_SEVERITY }
+                            onChange={ selectedItem => props.onDataUpdate('severity', selectedItem) } />
+                    </FormGroup>
                 </div>
                 <div className="col-12">
                     <FormGroup>

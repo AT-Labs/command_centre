@@ -12,6 +12,11 @@ export const DEFAULT_CAUSE = {
     value: '',
 };
 
+export const DEFAULT_SEVERITY = {
+    label: '',
+    value: '',
+};
+
 export const CAUSES = [
     DEFAULT_CAUSE,
     {
@@ -167,3 +172,31 @@ export const DISRUPTION_CREATION_STEPS = {
 export const DISRUPTIONS_MESSAGE_TYPE = {
     noWorkaroundsMessage: 'No workarounds added for this disruption.',
 };
+
+export const SEVERITIES = [
+    DEFAULT_SEVERITY,
+    {
+        label: '5 (Catastrophic)',
+        value: 'CATASTROPHIC',
+    },
+    {
+        label: '4 (Headline)',
+        value: 'HEADLINE',
+    },
+    {
+        label: '3 (Serious)',
+        value: 'SERIOUS',
+    },
+    {
+        label: '2 (Significant)',
+        value: 'SIGNIFICANT',
+    },
+    {
+        label: '1 (Minor)',
+        value: 'MINOR',
+    },
+    {
+        label: 'Unknown',
+        value: 'UNKNOWN',
+    },
+];

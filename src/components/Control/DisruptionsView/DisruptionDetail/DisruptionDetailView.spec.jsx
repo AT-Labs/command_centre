@@ -55,6 +55,7 @@ const baseDisruption = {
             description: 'test the disruption notes feature',
         },
     ],
+    severity: 'MINOR',
 };
 
 const cache = createCache({ key: 'blah' });

@@ -31,6 +31,7 @@ export const LABEL_DURATION = 'Duration (hours)';
 export const LABEL_WORKAROUNDS = 'Workarounds';
 export const LABEL_DISRUPTION_NOTES = 'Disruption Notes';
 export const LABEL_LAST_NOTE = 'Last Note';
+export const LABEL_SEVERITY = 'Severity';
 
 export const FREQUENCY_TYPE = {
     ONCE: 'Once',
