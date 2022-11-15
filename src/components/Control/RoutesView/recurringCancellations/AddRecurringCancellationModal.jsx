@@ -20,6 +20,7 @@ import {
     saveRecurringCancellationInDatabase,
     deleteRecurringCancellationInDatabase,
     uploadFileRecurringCancellation,
+    displayOperatorPermissionError,
 } from '../../../../redux/actions/control/routes/addRecurringCancellations';
 import { DATE_FORMAT_DDMMYYYY } from '../../../../utils/dateUtils';
 
@@ -65,6 +66,7 @@ const AddRecurringCancellationModal = (props) => {
 
     const resetToInitialValue = () => {
         props.onClose();
+        props.displayOperatorPermissionError(false);
         setRecurrenceFileSetting(recurrenceFileUploadInitialState);
         setRecurrenceSetting(recurrenceSettingInitialState);
     };
@@ -208,6 +210,7 @@ AddRecurringCancellationModal.propTypes = {
     fetchRoutes: PropTypes.func.isRequired,
     saveRecurringCancellationInDatabase: PropTypes.func.isRequired,
     deleteRecurringCancellationInDatabase: PropTypes.func.isRequired,
+    displayOperatorPermissionError: PropTypes.func.isRequired,
     isLoading: PropTypes.bool.isRequired,
     rowData: PropTypes.object,
     actionState: PropTypes.object.isRequired,
@@ -235,5 +238,6 @@ export default connect(
         saveRecurringCancellationInDatabase,
         deleteRecurringCancellationInDatabase,
         uploadFileRecurringCancellation,
+        displayOperatorPermissionError,
     },
 )(AddRecurringCancellationModal);
