@@ -18,7 +18,6 @@ import {
     getEditMode,
 } from '../../selectors/control/disruptions';
 import { getAllRoutes } from '../../selectors/static/routes';
-import { getAllStops } from '../../selectors/static/stops';
 import EDIT_TYPE from '../../../types/edit-types';
 
 const loadDisruptions = disruptions => ({
@@ -217,7 +216,6 @@ export const getStopsByRoute = routes => async (dispatch, getState) => {
     dispatch(updateLoadingStopsByRoute(true));
     if (!isEmpty(routes)) {
         const state = getState();
-        const allStops = getAllStops(state);
         const cachedRoutesToStops = getCachedRoutesToStops(state);
         const stopsByRoute = {};
 
@@ -235,12 +233,7 @@ export const getStopsByRoute = routes => async (dispatch, getState) => {
         return Promise.all(missingRoutes.map(route => ccStatic.getStopsByRoute(route.routeId)))
             .then((allRoutesToStops) => {
                 allRoutesToStops.forEach((stops, index) => {
-                    const stopsWithCoordinates = stops.map(stop => ({
-                        ...stop,
-                        stopLat: allStops[stop.stop_code].stop_lat,
-                        stopLon: allStops[stop.stop_code].stop_lon,
-                    }));
-                    const camelCaseStops = toCamelCaseKeys(stopsWithCoordinates);
+                    const camelCaseStops = toCamelCaseKeys(stops);
                     stopsByRoute[missingRoutes[index].routeId] = camelCaseStops;
                     missingCacheRoutesToStops[missingRoutes[index].routeId] = camelCaseStops;
                 });

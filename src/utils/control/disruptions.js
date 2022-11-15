@@ -117,3 +117,33 @@ export const getStatusOptions = (startDate, startTime, now) => {
     }
     return Object.values(STATUSES).filter(s => s !== STATUSES.NOT_STARTED);
 };
+
+/**
+ * this function takes a list of stops and groups them by their parent station, those without a parent station are added to the array 'noParentStation'.
+ */
+export const groupStopsByRouteElementByParentStation = (list) => {
+    const result = new Map();
+    list.forEach((element) => {
+        if (element.parentStationStopId) {
+            const parent = {
+                stopId: element.parentStationStopId,
+                stopCode: element.parentStationStopCode,
+                stopName: element.parentStationStopName,
+                stopLat: element.parentStationStopLat,
+                stopLon: element.parentStationStopLon,
+                directionId: element.directionId,
+            };
+            const parentAsString = JSON.stringify(parent);
+            if (!result.has(parentAsString)) {
+                result.set(parentAsString, []);
+            }
+            result.set(parentAsString, [...result.get(parentAsString), element]);
+        } else {
+            if (!result.has(undefined)) {
+                result.set(undefined, []);
+            }
+            result.set(undefined, [...result.get(undefined), element]);
+        }
+    });
+    return result;
+};

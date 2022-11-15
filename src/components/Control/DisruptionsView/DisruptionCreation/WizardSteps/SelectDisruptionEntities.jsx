@@ -45,6 +45,7 @@ import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import ConfirmationModal from '../../../Common/ConfirmationModal/ConfirmationModal';
 import { DIRECTIONS, confirmationModalTypes } from '../../types';
+import { groupStopsByRouteElementByParentStation } from '../../../../../utils/control/disruptions';
 
 export const SelectDisruptionEntities = (props) => {
     const { ROUTE, STOP, STOP_GROUP } = SEARCH_RESULT_TYPE;
@@ -570,40 +571,82 @@ export const SelectDisruptionEntities = (props) => {
 
     const renderStopsCheckboxByRouteDirection = (route, direction) => {
         const stopsByRoute = props.findStopsByRoute[route.routeId];
+
         const stopsByRouteDirection = stopsByRoute.filter(stop => `${stop.directionId}` === `${direction}`);
 
         const allSelected = stopsByRouteDirection.every(stop => props.affectedRoutes.some(routes => routes.stopCode === stop.stopCode
             && routes.routeId === route.routeId));
 
-        let stopsByRouteDirectionHTML = stopsByRouteDirection.map(stop => (
-            <li key={ `${route.routeId}-${stop.stopCode}-${direction}` } className="select_entities pb-2">
-                <EntityCheckbox
-                    id={ `stopByRoute-${route.routeId}-${stop.stopCode}-${direction}` }
-                    checked={ props.affectedRoutes.some(affectedRoute => (
-                        affectedRoute.routeId === route.routeId && affectedRoute.stopCode === stop.stopCode && `${affectedRoute.directionId}` === `${direction}`)) }
-                    onChange={ e => toggleStopsByRoute(route, stop, e.target.checked) }
-                    label={ `${stop.stopCode} - ${stop.stopName}` }
-                />
-            </li>
-        ));
+        const grouped = groupStopsByRouteElementByParentStation(stopsByRouteDirection);
+
+        const isChecked = stop => props.affectedRoutes.some(affectedRoute => (affectedRoute.routeId === route.routeId && affectedRoute.stopCode === stop.stopCode && `${affectedRoute.directionId}` === `${direction}`));
+
+        let groupedStopsByRouteDirectionHTML = [];
+
+        const parents = [];
+
+        grouped.forEach((value, key) => {
+            const childList = value;
+            if (!key) {
+                childList.forEach((childStop) => {
+                    groupedStopsByRouteDirectionHTML.push(
+                        <li key={ `${route.routeId}-${childStop.stopCode}-${direction}` } className="select_entities pb-2">
+                            <EntityCheckbox
+                                id={ `stopByRoute-${route.routeId}-${childStop.stopCode}-${direction}` }
+                                checked={ isChecked(childStop) }
+                                onChange={ e => toggleStopsByRoute(route, childStop, e.target.checked) }
+                                label={ `${childStop.stopCode} - ${childStop.stopName}` }
+                                size="small"
+                            />
+                        </li>,
+                    );
+                });
+            } else {
+                const parent = JSON.parse(key);
+                parents.push(parent);
+                groupedStopsByRouteDirectionHTML.push(
+                    <li key={ `${route.routeId}-${key.stopCode}-${direction}` } className="select_entities pb-2">
+                        <EntityCheckbox
+                            id={ `stopByRoute-${route.routeId}-${key}-${direction}` }
+                            checked={ isChecked(parent) }
+                            onChange={ e => toggleStopsByRoute(route, parent, e.target.checked) }
+                            label={ `${parent.stopCode} - ${parent.stopName}` }
+                            size="small"
+                        />
+                        { childList.map(childStop => (
+                            <li key={ `${route.routeId}-${childStop.stopCode}-${direction}` } className="select_entities pb-2 ml-4">
+                                <EntityCheckbox
+                                    id={ `stopByRoute-${route.routeId}-${childStop.stopCode}-${direction}` }
+                                    checked={ isChecked(childStop) }
+                                    onChange={ e => toggleStopsByRoute(route, childStop, e.target.checked) }
+                                    label={ `${childStop.stopCode} - ${childStop.stopName}` }
+                                    size="small"
+                                />
+                            </li>
+                        ))}
+                    </li>,
+                );
+            }
+        });
 
         if (stopsByRouteDirection.length > 1) {
-            stopsByRouteDirectionHTML = [
+            groupedStopsByRouteDirectionHTML = [
                 (
                     <li key="-1" className="select_entities pb-2">
                         <EntityCheckbox
                             id={ `selectAll-${route.routeId}` }
                             checked={ allSelected }
-                            onChange={ e => toggleAllStopsByRouteDirection(route, direction, stopsByRouteDirection, e.target.checked) }
+                            onChange={ e => toggleAllStopsByRouteDirection(route, direction, [...stopsByRouteDirection, ...parents], e.target.checked) }
                             label="Select All"
+                            size="small"
                         />
                     </li>
                 ),
-                ...stopsByRouteDirectionHTML,
+                ...groupedStopsByRouteDirectionHTML,
             ];
         }
 
-        return stopsByRouteDirectionHTML;
+        return groupedStopsByRouteDirectionHTML;
     };
 
     const renderStopsByRouteDirection = (route, direction) => {
