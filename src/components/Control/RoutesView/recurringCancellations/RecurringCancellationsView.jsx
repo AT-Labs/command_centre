@@ -74,6 +74,7 @@ export const RecurringCancellationsView = (props) => {
     };
 
     const openDeleteModal = (allData) => {
+        setMultipleRowRowData([]);
         setActionState({
             isEdit: false,
             isDelete: true,
