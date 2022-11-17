@@ -13,7 +13,14 @@ export const getShape = createSelector(getCurrentTripState, (tripDetail) => {
 export const getRouteShortName = createSelector(getCurrentTripState, tripDetail => _.result(tripDetail, 'routeShortName'));
 export const getRouteColor = createSelector(getCurrentTripState, tripDetail => _.result(tripDetail, 'route.routeColor'));
 
-export const getFleetByVehicleId = createSelector(getFleetState, getCurrentTripState, (allFleetState, currentTrip) => allFleetState[currentTrip.vehicleId]);
+export const getFleetByVehicleId = createSelector(getFleetState, getCurrentTripState, (allFleetState, currentTrip) => {
+    const vehicleId = _.result(currentTrip, 'vehicleId');
+    if (vehicleId.includes(',')) {
+        const id = vehicleId.split(',')[0];
+        return allFleetState[id];
+    }
+    return allFleetState[vehicleId];
+});
 
 export const getVehiclePositions = createSelector(getCurrentTripState, (tripDetail) => {
     const vehiclePositions = _.result(tripDetail, 'vehicleEvents');
