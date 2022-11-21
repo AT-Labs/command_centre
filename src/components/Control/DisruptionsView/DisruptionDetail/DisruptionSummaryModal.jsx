@@ -1,4 +1,4 @@
-import { Table } from 'reactstrap';
+import { Table, Button } from 'reactstrap';
 import _ from 'lodash-es';
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -16,6 +16,7 @@ import { CAUSES, IMPACTS, DISRUPTIONS_MESSAGE_TYPE, SEVERITIES } from '../../../
 import { formatCreatedUpdatedTime } from '../../../../utils/control/disruptions';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import { getWorkaroundsAsText } from '../../../../utils/control/disruption-workarounds';
+import { shareToEmail } from '../../../../utils/control/disruption-sharing';
 import CustomCollapse from '../../../Common/CustomCollapse/CustomCollapse';
 
 const generateDisruptionNotes = (notes) => {
@@ -34,7 +35,7 @@ const generateDisruptionNotes = (notes) => {
             </Table>
         );
     }
-    return <span>No notes added to this disruption</span>;
+    return <span>{ DISRUPTIONS_MESSAGE_TYPE.noNotesMessage }</span>;
 };
 
 const createLine = (label, value) => (value && (
@@ -51,16 +52,25 @@ const createLine = (label, value) => (value && (
 
 const DisruptionSummaryModal = (props) => {
     const endDateTimeMoment = moment(props.disruption.endTime);
+    const generateModalFooter = () => (
+        <>
+            <Button onClick={ () => shareToEmail(props.disruption) } className="cc-btn-primary">
+                Share to email
+            </Button>
+            <Button onClick={ () => props.onClose() } className="cc-btn-primary">
+                Close
+            </Button>
+        </>
+    );
+
     return (
         <CustomModal
             className="cc-modal-standard-width disruption-summary"
             title={ `Summary for Disruption #${props.disruption.incidentNo}` }
             isModalOpen={ props.isModalOpen }
             onClose={ () => props.onClose() }
-            okButton={ {
-                onClick: () => props.onClose(),
-                label: 'Close',
-            } }>
+            customFooter={ generateModalFooter() }
+        >
             <Table className="table-layout-fixed">
                 <tbody>
                     {createLine(LABEL_HEADER, props.disruption.header)}

@@ -671,15 +671,15 @@ const DisruptionDetailView = (props) => {
                             Copy
                         </Button>
                         <Button
+                            className="control-messaging-view__stop-groups-btn cc-btn-primary ml-1 mb-2"
+                            onClick={ () => setDisruptionsDetailsModalOpen(true) }>
+                            Preview & Share
+                        </Button>
+                        <Button
                             className="cc-btn-primary ml-1 mr-1 mb-2"
                             onClick={ handleUpdateDisruption }
                             disabled={ isSaveDisabled }>
                             Save Changes
-                        </Button>
-                        <Button
-                            className="control-messaging-view__stop-groups-btn cc-btn-primary ml-1 mb-2"
-                            onClick={ () => setDisruptionsDetailsModalOpen(true) }>
-                            Show Summary
                         </Button>
                         <DisruptionSummaryModal
                             disruption={ disruption }

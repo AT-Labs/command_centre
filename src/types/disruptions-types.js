@@ -171,6 +171,7 @@ export const DISRUPTION_CREATION_STEPS = {
 
 export const DISRUPTIONS_MESSAGE_TYPE = {
     noWorkaroundsMessage: 'No workarounds added for this disruption.',
+    noNotesMessage: 'No notes added to this disruption',
 };
 
 export const SEVERITIES = [
