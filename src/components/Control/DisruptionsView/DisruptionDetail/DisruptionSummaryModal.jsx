@@ -13,7 +13,7 @@ import {
     LABEL_SEVERITY,
 } from '../../../../constants/disruptions';
 import { CAUSES, IMPACTS, DISRUPTIONS_MESSAGE_TYPE, SEVERITIES } from '../../../../types/disruptions-types';
-import { formatCreatedUpdatedTime } from '../../../../utils/control/disruptions';
+import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from '../../../../utils/control/disruptions';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import { getWorkaroundsAsText } from '../../../../utils/control/disruption-workarounds';
 import { shareToEmail } from '../../../../utils/control/disruption-sharing';
@@ -77,8 +77,8 @@ const DisruptionSummaryModal = (props) => {
                     {createLine(LABEL_SEVERITY, _.find(SEVERITIES, { value: props.disruption.severity }).label)}
                     {createLine(LABEL_STATUS, props.disruption.status)}
                     {createLine(LABEL_MODE, props.disruption.mode)}
-                    {createLine(LABEL_AFFECTED_ROUTES, props.disruption.affectedEntities.filter(entity => entity.routeId).map(route => route.routeShortName).join(', '))}
-                    {createLine(LABEL_AFFECTED_STOPS, props.disruption.affectedEntities.filter(entity => entity.stopCode).map(stop => stop.stopCode).join(', '))}
+                    {createLine(LABEL_AFFECTED_ROUTES, getDeduplcatedAffectedRoutes(props.disruption.affectedEntities).join(', '))}
+                    {createLine(LABEL_AFFECTED_STOPS, getDeduplcatedAffectedStops(props.disruption.affectedEntities).join(', '))}
                     {createLine(LABEL_CUSTOMER_IMPACT, _.find(IMPACTS, { value: props.disruption.impact }).label)}
                     {createLine(LABEL_CAUSE, _.find(CAUSES, { value: props.disruption.cause }).label)}
                     {props.disruption.description ? createLine(LABEL_DESCRIPTION, props.disruption.description) : null}

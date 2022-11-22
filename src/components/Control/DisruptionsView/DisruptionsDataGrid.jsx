@@ -27,6 +27,7 @@ import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOpera
 import './DisruptionsDataGrid.scss';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
 import { useWorkarounds } from '../../../redux/selectors/appSettings';
+import { getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from '../../../utils/control/disruptions';
 import { getWorkaroundsAsText } from '../../../utils/control/disruption-workarounds';
 
 const getDisruptionLabel = (disruption) => {
@@ -82,7 +83,7 @@ export const DisruptionsDataGrid = (props) => {
             field: 'affectedRoutes',
             headerName: LABEL_AFFECTED_ROUTES,
             width: 150,
-            valueGetter: params => [...new Set(params.row.affectedEntities.filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))].join(', '),
+            valueGetter: params => getDeduplcatedAffectedRoutes(params.row.affectedEntities).join(', '),
             renderCell: RenderCellExpand,
             filterable: false,
         },
@@ -90,7 +91,7 @@ export const DisruptionsDataGrid = (props) => {
             field: 'affectedStops',
             headerName: LABEL_AFFECTED_STOPS,
             width: 200,
-            valueGetter: params => [...new Set(params.row.affectedEntities.filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))].join(', '),
+            valueGetter: params => getDeduplcatedAffectedStops(params.row.affectedEntities).join(', '),
             renderCell: RenderCellExpand,
             filterable: false,
         },

@@ -147,3 +147,7 @@ export const groupStopsByRouteElementByParentStation = (list) => {
     });
     return result;
 };
+
+export const getDeduplcatedAffectedRoutes = affectedEntities => [...new Set(affectedEntities.filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))];
+
+export const getDeduplcatedAffectedStops = affectedEntities => [...new Set(affectedEntities.filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))];

@@ -10,7 +10,7 @@ import {
 } from '../../constants/disruptions';
 import { CAUSES, IMPACTS, DISRUPTIONS_MESSAGE_TYPE } from '../../types/disruptions-types';
 import { getWorkaroundsAsText } from './disruption-workarounds';
-import { formatCreatedUpdatedTime } from './disruptions';
+import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from './disruptions';
 
 function getImageBase64(url) {
     return new Promise((resolve) => {
@@ -86,8 +86,8 @@ function generateHtmlEmailBody(disruption) {
             ${createHtmlLine(LABEL_HEADER, disruption.header)}
             ${createHtmlLine(LABEL_STATUS, disruption.status)}
             ${createHtmlLine(LABEL_MODE, disruption.mode)}
-            ${createHtmlLine(LABEL_AFFECTED_ROUTES, disruption.affectedEntities.filter(entity => entity.routeId).map(route => route.routeShortName).join(', '))}
-            ${createHtmlLine(LABEL_AFFECTED_STOPS, disruption.affectedEntities.filter(entity => entity.stopCode).map(stop => stop.stopCode).join(', '))}
+            ${createHtmlLine(LABEL_AFFECTED_ROUTES, getDeduplcatedAffectedRoutes(disruption.affectedEntities).join(', '))}
+            ${createHtmlLine(LABEL_AFFECTED_STOPS, getDeduplcatedAffectedStops(disruption.affectedEntities).join(', '))}
             ${createHtmlLine(LABEL_CUSTOMER_IMPACT, _.find(IMPACTS, { value: disruption.impact }).label)}
             ${createHtmlLine(LABEL_CAUSE, _.find(CAUSES, { value: disruption.cause }).label)}
             ${createHtmlLine(LABEL_DESCRIPTION, disruption.description)}
