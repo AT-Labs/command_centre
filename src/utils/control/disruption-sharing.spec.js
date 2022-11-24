@@ -107,6 +107,8 @@ describe('shareToEmail', () => {
     });
 
     test('should not set from and cc if env not set', async () => {
+        delete process.env.REACT_APP_DISRUPTION_SHARING_EMAIL_FROM;
+        delete process.env.REACT_APP_DISRUPTION_SHARING_EMAIL_CC;
         await shareToEmail(disruption);
         expect(link.href).toContain('From:  \ncc:  \n');
     });
@@ -119,8 +121,8 @@ describe('shareToEmail', () => {
         expect(link.href).toContain('From: dayof.ops@at.govt.nz');
         expect(link.href).toContain('cc: dayof.ops@at.govt.nz');
 
-        process.env.REACT_APP_DISRUPTION_SHARING_EMAIL_FROM = undefined;
-        process.env.REACT_APP_DISRUPTION_SHARING_EMAIL_CC = undefined;
+        delete process.env.REACT_APP_DISRUPTION_SHARING_EMAIL_FROM;
+        delete process.env.REACT_APP_DISRUPTION_SHARING_EMAIL_CC;
     });
 
     test('should handle empty mode', async () => {
