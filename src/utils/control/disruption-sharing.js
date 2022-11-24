@@ -124,10 +124,10 @@ export async function shareToEmail(disruption) {
     const mode = disruption.mode ? `-${disruption.mode}` : '';
     const subject = `Re: ${disruption.incidentNo}${mode}-${disruption.header}`;
     const boundary = '--disruption_email_boundary_string';
-    const from = 'dayof.ops@at.govt.nz';
+    const { REACT_APP_DISRUPTION_SHARING_EMAIL_FROM, REACT_APP_DISRUPTION_SHARING_EMAIL_CC } = process.env;
     let emailFile = 'data:message/rfc822 eml;charset=utf-8,'
-        + `From: ${from} \n`
-        + `cc: ${from} \n`
+        + `From: ${REACT_APP_DISRUPTION_SHARING_EMAIL_FROM || ''} \n`
+        + `cc: ${REACT_APP_DISRUPTION_SHARING_EMAIL_CC || ''} \n`
         + 'X-Unsent: 1 \n'
         + `Subject: ${subject} \n`
         + `Content-Type: multipart/mixed; boundary=${boundary} \n`

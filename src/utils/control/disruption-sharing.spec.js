@@ -106,10 +106,21 @@ describe('shareToEmail', () => {
         expect(link.href).toContain('data:message/rfc822 eml;charset=utf-8');
     });
 
-    test('should set the sender and cc to the default address', async () => {
+    test('should not set from and cc if env not set', async () => {
+        await shareToEmail(disruption);
+        expect(link.href).toContain('From:  \ncc:  \n');
+    });
+
+    test('should set from and cc from process.env', async () => {
+        process.env.REACT_APP_DISRUPTION_SHARING_EMAIL_FROM = 'dayof.ops@at.govt.nz';
+        process.env.REACT_APP_DISRUPTION_SHARING_EMAIL_CC = 'dayof.ops@at.govt.nz';
+
         await shareToEmail(disruption);
         expect(link.href).toContain('From: dayof.ops@at.govt.nz');
         expect(link.href).toContain('cc: dayof.ops@at.govt.nz');
+
+        process.env.REACT_APP_DISRUPTION_SHARING_EMAIL_FROM = undefined;
+        process.env.REACT_APP_DISRUPTION_SHARING_EMAIL_CC = undefined;
     });
 
     test('should handle empty mode', async () => {
