@@ -4,11 +4,11 @@ import {
     DATE_FORMAT,
     LABEL_AFFECTED_ROUTES,
     LABEL_CAUSE, LABEL_CREATED_AT, LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_END_DATE, LABEL_END_TIME,
-    LABEL_HEADER, LABEL_LAST_UPDATED_AT,
+    LABEL_HEADER, LABEL_LAST_UPDATED_AT, LABEL_SEVERITY,
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME,
     LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_CREATED_BY, LABEL_LAST_UPDATED_BY, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
 } from '../../constants/disruptions';
-import { CAUSES, IMPACTS, DISRUPTIONS_MESSAGE_TYPE } from '../../types/disruptions-types';
+import { CAUSES, IMPACTS, SEVERITIES, DISRUPTIONS_MESSAGE_TYPE } from '../../types/disruptions-types';
 import { getWorkaroundsAsText } from './disruption-workarounds';
 import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from './disruptions';
 
@@ -84,6 +84,7 @@ function generateHtmlEmailBody(disruption) {
         margin-bottom: 1rem; color: #212529; table-layout: fixed;" width="100%">
         <tbody>
             ${createHtmlLine(LABEL_HEADER, disruption.header)}
+            ${createHtmlLine(LABEL_SEVERITY, _.find(SEVERITIES, { value: disruption.severity }).label)}
             ${createHtmlLine(LABEL_STATUS, disruption.status)}
             ${createHtmlLine(LABEL_MODE, disruption.mode)}
             ${createHtmlLine(LABEL_AFFECTED_ROUTES, getDeduplcatedAffectedRoutes(disruption.affectedEntities).join(', '))}
@@ -122,7 +123,7 @@ async function generateAttachment(uploadFile) {
 
 export async function shareToEmail(disruption) {
     const mode = disruption.mode ? `-${disruption.mode}` : '';
-    const subject = `Re: ${disruption.incidentNo}${mode}-${disruption.header}`;
+    const subject = `Re: ${disruption.incidentNo}-${disruption.severity}${mode}-${disruption.header}`;
     const boundary = '--disruption_email_boundary_string';
     const { REACT_APP_DISRUPTION_SHARING_EMAIL_FROM, REACT_APP_DISRUPTION_SHARING_EMAIL_CC } = process.env;
     let emailFile = 'data:message/rfc822 eml;charset=utf-8,'

@@ -36,6 +36,7 @@ const disruption = {
         workaround: 'workaround text',
     }],
     notes: [],
+    severity: 'UNKNOWN',
 };
 
 const disruptionDiversion = [{
@@ -125,9 +126,14 @@ describe('shareToEmail', () => {
         delete process.env.REACT_APP_DISRUPTION_SHARING_EMAIL_CC;
     });
 
+    test('should generate subject', async () => {
+        await shareToEmail(disruption);
+        expect(link.href).toContain('Subject: Re: DISR0001-UNKNOWN-Train-Holidays for everyone');
+    });
+
     test('should handle empty mode', async () => {
         await shareToEmail({ ...disruption, mode: null });
-        expect(link.href).toContain('Subject: Re: DISR0001-Holidays for everyone');
+        expect(link.href).toContain('Subject: Re: DISR0001-UNKNOWN-Holidays for everyone');
     });
 
     test('should handle empty workaround', async () => {
