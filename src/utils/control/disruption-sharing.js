@@ -8,7 +8,8 @@ import {
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME,
     LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_CREATED_BY, LABEL_LAST_UPDATED_BY, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
 } from '../../constants/disruptions';
-import { CAUSES, IMPACTS, SEVERITIES, DISRUPTIONS_MESSAGE_TYPE } from '../../types/disruptions-types';
+import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES } from '../../types/disruptions-types';
+import { CAUSES, IMPACTS, OLD_CAUSES, OLD_IMPACTS } from '../../types/disruption-cause-and-effect';
 import { getWorkaroundsAsText } from './disruption-workarounds';
 import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from './disruptions';
 
@@ -76,6 +77,8 @@ function createHtmlLine(label, value) {
 
 function generateHtmlEmailBody(disruption) {
     const endDateTimeMoment = moment(disruption.endTime);
+    const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
+    const MERGED_IMPACTS = [...IMPACTS, ...OLD_IMPACTS];
     const htmlBody = `
     <div style="display: flex;width: 100% !important;font-weight: 400;font-size: 1rem;line-height: 1.5;">
         <h3 class="modal-title mx-auto font-weight-normal">Summary for Disruption ${disruption.incidentNo}</h3>
@@ -89,8 +92,8 @@ function generateHtmlEmailBody(disruption) {
             ${createHtmlLine(LABEL_MODE, disruption.mode)}
             ${createHtmlLine(LABEL_AFFECTED_ROUTES, getDeduplcatedAffectedRoutes(disruption.affectedEntities).join(', '))}
             ${createHtmlLine(LABEL_AFFECTED_STOPS, getDeduplcatedAffectedStops(disruption.affectedEntities).join(', '))}
-            ${createHtmlLine(LABEL_CUSTOMER_IMPACT, _.find(IMPACTS, { value: disruption.impact }).label)}
-            ${createHtmlLine(LABEL_CAUSE, _.find(CAUSES, { value: disruption.cause }).label)}
+            ${createHtmlLine(LABEL_CUSTOMER_IMPACT, _.find(MERGED_IMPACTS, { value: disruption.impact }).label)}
+            ${createHtmlLine(LABEL_CAUSE, _.find(MERGED_CAUSES, { value: disruption.cause }).label)}
             ${createHtmlLine(LABEL_DESCRIPTION, disruption.description)}
             ${createHtmlLine(LABEL_START_DATE, moment(disruption.startTime).format(DATE_FORMAT))}
             ${createHtmlLine(LABEL_START_TIME, moment(disruption.startTime).format(TIME_FORMAT))}

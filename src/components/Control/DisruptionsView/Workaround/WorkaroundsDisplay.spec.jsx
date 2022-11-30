@@ -4,6 +4,7 @@ import { expect } from 'chai';
 
 import WorkaroundsDisplay from './WorkaroundsDisplay';
 import { DISRUPTIONS_MESSAGE_TYPE } from '../../../../types/disruptions-types';
+import { CAUSES, IMPACTS } from '../../../../types/disruption-cause-and-effect';
 
 let wrapper;
 
@@ -32,8 +33,8 @@ const defaultState = {
                 type: 'route',
             },
         ],
-        impact: 'NO_SERVICE',
-        cause: 'TECHNICAL_PROBLEM',
+        impact: CAUSES[2].value,
+        cause: IMPACTS[4].value,
         startTime: '2022-08-03T23:16:00.000Z',
         endTime: null,
         status: 'in-progress',

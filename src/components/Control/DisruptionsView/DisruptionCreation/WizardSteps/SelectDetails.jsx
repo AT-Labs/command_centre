@@ -15,11 +15,8 @@ import { toggleDisruptionModals, updateCurrentStep } from '../../../../../redux/
 import { DisruptionDetailSelect } from '../../DisruptionDetail/DisruptionDetailSelect';
 import { getAffectedRoutes, getAffectedStops } from '../../../../../redux/selectors/control/disruptions';
 import { useWorkarounds } from '../../../../../redux/selectors/appSettings';
-import {
-    CAUSES,
-    IMPACTS,
-    SEVERITIES,
-} from '../../../../../types/disruptions-types';
+import { SEVERITIES } from '../../../../../types/disruptions-types';
+import { CAUSES, IMPACTS } from '../../../../../types/disruption-cause-and-effect';
 import {
     URL_MAX_LENGTH,
     HEADER_MAX_LENGTH,

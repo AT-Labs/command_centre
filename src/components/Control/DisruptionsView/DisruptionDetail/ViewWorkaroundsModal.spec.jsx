@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import { shallow } from 'enzyme';
 
 import { ViewWorkaroundsModal } from './ViewWorkaroundsModal';
+import { IMPACTS, CAUSES } from '../../../../types/disruption-cause-and-effect';
 
 let wrapper;
 
@@ -31,8 +32,8 @@ const mockProps = {
                 type: 'stop',
             },
         ],
-        impact: 'REDUCED_SERVICE',
-        cause: 'STRIKE',
+        impact: IMPACTS[2].value,
+        cause: CAUSES[3].value,
         startTime: '2022-08-03T23:12:00.000Z',
         endTime: '2022-09-03T23:12:00.000Z',
         status: 'cancelled',

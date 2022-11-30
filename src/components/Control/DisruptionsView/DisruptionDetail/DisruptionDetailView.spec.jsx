@@ -10,6 +10,7 @@ import { Provider } from 'react-redux';
 import sinon from 'sinon';
 import configureMockStore from 'redux-mock-store';
 import DisruptionDetailView from './DisruptionDetailView';
+import { IMPACTS, CAUSES } from '../../../../types/disruption-cause-and-effect';
 
 const mockStore = configureMockStore();
 
@@ -30,8 +31,8 @@ const stop = { stopId: '105-474861ff', stopCode: '105' };
 const baseDisruption = {
     startTime: '2022-03-09T06:00:00.000Z',
     endTime: '2022-04-20T03:00:00.000Z',
-    impact: 'NO_SERVICE',
-    cause: 'TECHNICAL_PROBLEM',
+    impact: IMPACTS[3].value,
+    cause: CAUSES[2].value,
     mode: '-',
     status: 'in-progress',
     header: 'Title',

@@ -186,6 +186,10 @@
     }
 }
 
+.cc-text-orange {
+    color: $at-orange;
+}
+
 // Custom input styles
 .cc-form-control {
     @extend .border;

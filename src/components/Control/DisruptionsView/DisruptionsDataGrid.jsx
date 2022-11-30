@@ -19,7 +19,8 @@ import {
     LABEL_MODE, LABEL_START_TIME, LABEL_STATUS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES, LABEL_SEVERITY,
 } from '../../../constants/disruptions';
 import { dateTimeFormat } from '../../../utils/dateUtils';
-import { CAUSES, DEFAULT_CAUSE, DEFAULT_IMPACT, IMPACTS, STATUSES, SEVERITIES, DEFAULT_SEVERITY } from '../../../types/disruptions-types';
+import { SEVERITIES, DEFAULT_SEVERITY, STATUSES } from '../../../types/disruptions-types';
+import { DEFAULT_CAUSE, DEFAULT_IMPACT, CAUSES, IMPACTS, OLD_CAUSES, OLD_IMPACTS } from '../../../types/disruption-cause-and-effect';
 import { getActiveDisruptionId, getDisruptionsDatagridConfig } from '../../../redux/selectors/control/disruptions';
 import { updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState } from '../../../redux/actions/control/disruptions';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
@@ -57,6 +58,9 @@ const getStatusIcon = (value) => {
 };
 
 export const DisruptionsDataGrid = (props) => {
+    const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
+    const MERGED_IMPACTS = [...IMPACTS, ...OLD_IMPACTS];
+
     const GRID_COLUMNS = [
         {
             field: 'incidentNo',
@@ -100,16 +104,16 @@ export const DisruptionsDataGrid = (props) => {
             headerName: LABEL_CUSTOMER_IMPACT,
             width: 200,
             type: 'singleSelect',
-            valueGetter: params => (IMPACTS.find(impact => impact.value === params.value) || DEFAULT_IMPACT).label,
-            valueOptions: IMPACTS.slice(1, IMPACTS.length).map(impact => impact.label),
+            valueGetter: params => (MERGED_IMPACTS.find(impact => impact.value === params.value) || DEFAULT_IMPACT).label,
+            valueOptions: MERGED_IMPACTS.slice(1, MERGED_IMPACTS.length).map(impact => impact.label),
         },
         {
             field: 'cause',
             headerName: LABEL_CAUSE,
             width: 200,
             type: 'singleSelect',
-            valueGetter: params => (CAUSES.find(cause => cause.value === params.value) || DEFAULT_CAUSE).label,
-            valueOptions: CAUSES.slice(1, CAUSES.length).map(cause => cause.label),
+            valueGetter: params => (MERGED_CAUSES.find(cause => cause.value === params.value) || DEFAULT_CAUSE).label,
+            valueOptions: MERGED_CAUSES.slice(1, MERGED_CAUSES.length).map(cause => cause.label),
         },
         {
             field: 'severity',

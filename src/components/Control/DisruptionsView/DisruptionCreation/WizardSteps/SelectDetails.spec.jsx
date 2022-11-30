@@ -3,6 +3,7 @@ import React from 'react';
 import sinon from 'sinon';
 import { SelectDetails } from './SelectDetails';
 import Footer from './Footer';
+import { IMPACTS, CAUSES } from '../../../../../types/disruption-cause-and-effect';
 
 let sandbox;
 let wrapper;
@@ -48,8 +49,8 @@ describe('<SelectDetails />', () => {
                 startDate: '09/03/2022',
                 endTime: '06:00',
                 endDate: '10/03/2022',
-                impact: 'NO_SERVICE',
-                cause: 'TECHNICAL_PROBLEM',
+                impact: IMPACTS[2].value,
+                cause: CAUSES[3].value,
                 mode: '-',
                 status: 'not-started',
                 header: 'Title',

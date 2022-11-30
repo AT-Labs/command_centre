@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import { Form, FormGroup, Input, Label, Button } from 'reactstrap';
 import { BsArrowRepeat } from 'react-icons/bs';
-import { CAUSES, IMPACTS } from '../../../../types/disruptions-types';
+import { OLD_CAUSES, OLD_IMPACTS, CAUSES, IMPACTS } from '../../../../types/disruption-cause-and-effect';
 import { getShapes, getDisruptionsLoadingState } from '../../../../redux/selectors/control/disruptions';
 import {
     DATE_FORMAT,
@@ -61,6 +61,9 @@ const Readonly = (props) => {
         }
     }, [disruption, lastNote]);
 
+    const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
+    const MERGED_IMPACTS = [...IMPACTS, ...OLD_IMPACTS];
+
     return (
         <Form>
             <div className="row position-relative">
@@ -86,7 +89,7 @@ const Readonly = (props) => {
                         <DisruptionLabelAndText label={ LABEL_MODE } id="disruption-detail__mode" text={ disruption.mode } />
                     </div>
                     <div className="mt-2 position-relative form-group">
-                        <DisruptionLabelAndText label={ LABEL_CAUSE } id="disruption-detail__cause" text={ CAUSES.find(cause => cause.value === disruption.cause).label } />
+                        <DisruptionLabelAndText label={ LABEL_CAUSE } id="disruption-detail__cause" text={ MERGED_CAUSES.find(cause => cause.value === disruption.cause).label } />
                     </div>
                     <div className="mt-2 position-relative form-group">
                         <DisruptionLabelAndText
@@ -125,7 +128,7 @@ const Readonly = (props) => {
                         <DisruptionLabelAndText
                             label={ LABEL_CUSTOMER_IMPACT }
                             id="disruption-detail__impact"
-                            text={ IMPACTS.find(impact => impact.value === disruption.impact).label } />
+                            text={ MERGED_IMPACTS.find(impact => impact.value === disruption.impact).label } />
                     </div>
                     <div className="mt-2 position-relative form-group">
                         <DisruptionLabelAndText

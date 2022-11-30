@@ -3,7 +3,7 @@ import _ from 'lodash-es';
 
 import PropTypes from 'prop-types';
 import ControlSearch from '../../Common/ControlSearch/ControlSearch';
-import { IMPACTS } from '../../../../types/disruptions-types';
+import { IMPACTS } from '../../../../types/disruption-cause-and-effect';
 
 const FilterByImpact = (props) => {
     FilterByImpact.propTypes = {

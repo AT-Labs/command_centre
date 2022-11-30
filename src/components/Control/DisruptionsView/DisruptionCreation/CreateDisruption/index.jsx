@@ -28,7 +28,8 @@ import {
     isDisruptionCreationOpen,
 } from '../../../../../redux/selectors/control/disruptions';
 import { useWorkarounds } from '../../../../../redux/selectors/appSettings';
-import { DEFAULT_CAUSE, DEFAULT_IMPACT, STATUSES, DISRUPTION_TYPE, DISRUPTION_CREATION_STEPS, DEFAULT_SEVERITY } from '../../../../../types/disruptions-types';
+import { STATUSES, DISRUPTION_TYPE, DISRUPTION_CREATION_STEPS, DEFAULT_SEVERITY } from '../../../../../types/disruptions-types';
+import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
 import { buildSubmitBody, momentFromDateTime, getRecurrenceDates } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';

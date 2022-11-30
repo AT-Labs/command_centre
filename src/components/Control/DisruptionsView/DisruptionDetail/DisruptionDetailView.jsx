@@ -9,7 +9,8 @@ import { BsArrowRepeat } from 'react-icons/bs';
 import Flatpickr from 'react-flatpickr';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
-import { CAUSES, IMPACTS, STATUSES, SEVERITIES } from '../../../../types/disruptions-types';
+import { STATUSES, SEVERITIES } from '../../../../types/disruptions-types';
+import { CAUSES, IMPACTS } from '../../../../types/disruption-cause-and-effect';
 import {
     DATE_FORMAT,
     HEADER_MAX_LENGTH,
@@ -302,13 +303,19 @@ const DisruptionDetailView = (props) => {
         </>
     );
 
+    const causeAndImpactAreValid = CAUSES.find(c => c.value === cause) && IMPACTS.find(i => i.value === impact);
+
     const durationValid = () => isDurationValid(duration, recurrent);
     const isWeekdayRequiredButEmpty = recurrent && isEmpty(recurrencePattern.byweekday);
     const isPropsEmpty = some([cause, impact, status, header, severity], isEmpty) || isWeekdayRequiredButEmpty;
     const isUpdating = isRequesting && resultDisruptionId === disruption.disruptionId;
 
     const isViewAllDisabled = isWeekdayRequiredButEmpty || !startTimeValid() || !startDateValid() || !endDateValid() || !durationValid();
-    const isSaveDisabled = isUpdating || isPropsEmpty || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() || !durationValid();
+    const isSaveDisabled = (
+        isUpdating
+        || isPropsEmpty
+        || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid()
+        || !endDateValid() || !durationValid() || !causeAndImpactAreValid);
     const isDiversionUploadDisabled = isUpdating || isPropsEmpty || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid();
 
     const editRoutesAndStops = () => {
@@ -396,148 +403,162 @@ const DisruptionDetailView = (props) => {
                 <section className="col-12">
                     <RadioButtons { ...recurrenceRadioOptions(recurrent) } />
                 </section>
-                <section className="col-3">
-                    <div className="mt-2 position-relative form-group">
-                        <DisruptionLabelAndText id="disruption-detail__mode" label={ LABEL_MODE } text={ mode } />
-                    </div>
-                    <div className="mt-2 position-relative form-group">
-                        <DisruptionDetailSelect
-                            id="disruption-detail__cause"
-                            value={ cause }
-                            options={ CAUSES }
-                            disabled={ isResolved() }
-                            label={ LABEL_CAUSE }
-                            onChange={ setCause } />
-                    </div>
-                    <FormGroup className="mt-2 position-relative">
-                        <Label for="disruption-detail__start-date">
-                            <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
-                        </Label>
-                        <Flatpickr
-                            id="disruption-detail__start-date"
-                            className="font-weight-normal cc-form-control form-control"
-                            value={ startDate }
-                            disabled={ isStartDateTimeDisabled() }
-                            options={ datePickerOptionsStartDate }
-                            placeholder="Select date"
-                            onChange={ (date) => {
-                                setStartDate(moment(date[0]).format(DATE_FORMAT));
-                                setIsRecurrenceDirty(true);
-                            } } />
-                        <FaRegCalendarAlt
-                            className="disruption-creation__wizard-select-details__icon position-absolute"
-                            size={ 22 } />
-                    </FormGroup>
-                    <FormGroup className="position-relative">
-                        <Label for="disruption-detail__end-date">
-                            <span className="font-size-md font-weight-bold">{LABEL_END_DATE}</span>
-                        </Label>
-                        <Flatpickr
-                            id="disruption-detail__end-date"
-                            className="font-weight-normal cc-form-control form-control"
-                            value={ endDate }
-                            disabled={ isEndDateTimeDisabled() }
-                            options={ datePickerOptionsEndDate }
-                            key={ datePickerOptionsEndDate.minDate }
-                            onChange={ (date) => {
-                                setEndDate(date.length ? moment(date[0]).format(DATE_FORMAT) : '');
-                                if (date.length === 0) {
-                                    setEndTime('');
-                                }
-                                setIsRecurrenceDirty(true);
-                            } } />
-                        <FaRegCalendarAlt
-                            className="disruption-creation__wizard-select-details__icon position-absolute"
-                            size={ 22 } />
-                    </FormGroup>
-                    { recurrent && (
-                        <>
-                            <FormGroup>
-                                <WeekdayPicker
-                                    selectedWeekdays={ recurrencePattern.byweekday || [] }
-                                    onUpdate={ (byweekday) => {
-                                        setRecurrencePattern({ ...recurrencePattern, byweekday });
+                <section className="col-6">
+                    <div className="row">
+                        <section className="col-12">
+                            <div className="row">
+                                <div className="col-6">
+                                    <div className="mt-2 position-relative form-group">
+                                        <DisruptionLabelAndText id="disruption-detail__mode" label={ LABEL_MODE } text={ mode } />
+                                    </div>
+                                    <div className="mt-2 position-relative form-group">
+                                        <DisruptionDetailSelect
+                                            id="disruption-detail__cause"
+                                            value={ cause }
+                                            options={ CAUSES }
+                                            disabled={ isResolved() }
+                                            label={ LABEL_CAUSE }
+                                            onChange={ setCause } />
+                                    </div>
+                                </div>
+                                <div className="col-6">
+                                    <div className="mt-2 position-relative form-group">
+                                        <DisruptionDetailSelect id="disruption-detail__status"
+                                            value={ status }
+                                            options={ getStatusOptions(startDate, startTime, now) }
+                                            label={ LABEL_STATUS }
+                                            onChange={ setDisruptionStatus } />
+                                    </div>
+                                    <DisruptionDetailSelect
+                                        id="disruption-detail__impact"
+                                        value={ impact }
+                                        options={ IMPACTS }
+                                        disabled={ isResolved() }
+                                        label={ LABEL_CUSTOMER_IMPACT }
+                                        onChange={ setImpact }
+                                    />
+                                </div>
+                                { !causeAndImpactAreValid && (<div className="col-12 cc-text-orange">Cause and/or Effect selected for this disruption are no longer valid.</div>)}
+                            </div>
+                        </section>
+                        <section className="col-6">
+                            <FormGroup className="mt-2 position-relative">
+                                <Label for="disruption-detail__start-date">
+                                    <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
+                                </Label>
+                                <Flatpickr
+                                    id="disruption-detail__start-date"
+                                    className="font-weight-normal cc-form-control form-control"
+                                    value={ startDate }
+                                    disabled={ isStartDateTimeDisabled() }
+                                    options={ datePickerOptionsStartDate }
+                                    placeholder="Select date"
+                                    onChange={ (date) => {
+                                        setStartDate(moment(date[0]).format(DATE_FORMAT));
+                                        setIsRecurrenceDirty(true);
+                                    } } />
+                                <FaRegCalendarAlt
+                                    className="disruption-creation__wizard-select-details__icon position-absolute"
+                                    size={ 22 } />
+                            </FormGroup>
+                            <FormGroup className="position-relative">
+                                <Label for="disruption-detail__end-date">
+                                    <span className="font-size-md font-weight-bold">{LABEL_END_DATE}</span>
+                                </Label>
+                                <Flatpickr
+                                    id="disruption-detail__end-date"
+                                    className="font-weight-normal cc-form-control form-control"
+                                    value={ endDate }
+                                    disabled={ isEndDateTimeDisabled() }
+                                    options={ datePickerOptionsEndDate }
+                                    key={ datePickerOptionsEndDate.minDate }
+                                    onChange={ (date) => {
+                                        setEndDate(date.length ? moment(date[0]).format(DATE_FORMAT) : '');
+                                        if (date.length === 0) {
+                                            setEndTime('');
+                                        }
+                                        setIsRecurrenceDirty(true);
+                                    } } />
+                                <FaRegCalendarAlt
+                                    className="disruption-creation__wizard-select-details__icon position-absolute"
+                                    size={ 22 } />
+                            </FormGroup>
+                            { recurrent && (
+                                <>
+                                    <FormGroup>
+                                        <WeekdayPicker
+                                            selectedWeekdays={ recurrencePattern.byweekday || [] }
+                                            onUpdate={ (byweekday) => {
+                                                setRecurrencePattern({ ...recurrencePattern, byweekday });
+                                                setIsRecurrenceDirty(true);
+                                            } }
+                                            disabled={ isResolved() }
+                                        />
+                                    </FormGroup>
+                                    { !isEmpty(recurrencePattern.byweekday) && (
+                                        <FormGroup>
+                                            <BsArrowRepeat size={ 22 } />
+                                            <span className="pl-1">{ getRecurrenceText(parseRecurrencePattern(recurrencePattern)) }</span>
+                                        </FormGroup>
+                                    )}
+                                </>
+                            )}
+                        </section>
+                        <section className="col-6">
+                            <FormGroup className="mt-2">
+                                <Label for="disruption-detail__start-time">
+                                    <span className="font-size-md font-weight-bold">{LABEL_START_TIME}</span>
+                                </Label>
+                                <Input
+                                    id="disruption-detail__start-time"
+                                    className="border border-dark"
+                                    value={ startTime }
+                                    disabled={ isStartDateTimeDisabled() }
+                                    onChange={ (event) => {
+                                        setStartTime(event.target.value);
                                         setIsRecurrenceDirty(true);
                                     } }
-                                    disabled={ isResolved() }
+                                    invalid={ !startTimeValid() }
                                 />
                             </FormGroup>
-                            { !isEmpty(recurrencePattern.byweekday) && (
+                            { !recurrent && (
                                 <FormGroup>
-                                    <BsArrowRepeat size={ 22 } />
-                                    <span className="pl-1">{ getRecurrenceText(parseRecurrencePattern(recurrencePattern)) }</span>
+                                    <Label for="disruption-detail__end-time">
+                                        <span className="font-size-md font-weight-bold">{LABEL_END_TIME}</span>
+                                    </Label>
+                                    <Input
+                                        id="disruption-detail__end-time"
+                                        className="border border-dark"
+                                        value={ endTime }
+                                        disabled={ isEndDateTimeDisabled() }
+                                        onChange={ event => setEndTime(event.target.value) }
+                                        invalid={ !endTimeValid() }
+                                    />
                                 </FormGroup>
                             )}
-                        </>
-                    )}
-                </section>
-                <section className="col-3">
-                    <div className="mt-2 position-relative form-group">
-                        <DisruptionDetailSelect id="disruption-detail__status"
-                            value={ status }
-                            options={ getStatusOptions(startDate, startTime, now) }
-                            label={ LABEL_STATUS }
-                            onChange={ setDisruptionStatus } />
+                            { recurrent && (
+                                <FormGroup>
+                                    <Label for="disruption-creation__wizard-select-details__duration">
+                                        <span className="font-size-md font-weight-bold">{LABEL_DURATION}</span>
+                                    </Label>
+                                    <Input
+                                        id="disruption-creation__wizard-select-details__duration"
+                                        className="border border-dark"
+                                        value={ duration }
+                                        onChange={ (event) => {
+                                            setDuration(event.target.value);
+                                            setIsRecurrenceDirty(true);
+                                        } }
+                                        invalid={ !durationValid() }
+                                        type="number"
+                                        min="1"
+                                        max="24"
+                                        disabled={ isResolved() }
+                                    />
+                                </FormGroup>
+                            )}
+                        </section>
                     </div>
-                    <DisruptionDetailSelect
-                        id="disruption-detail__impact"
-                        value={ impact }
-                        options={ IMPACTS }
-                        disabled={ isResolved() }
-                        label={ LABEL_CUSTOMER_IMPACT }
-                        onChange={ setImpact } />
-                    <FormGroup className="mt-2">
-                        <Label for="disruption-detail__start-time">
-                            <span className="font-size-md font-weight-bold">{LABEL_START_TIME}</span>
-                        </Label>
-                        <Input
-                            id="disruption-detail__start-time"
-                            className="border border-dark"
-                            value={ startTime }
-                            disabled={ isStartDateTimeDisabled() }
-                            onChange={ (event) => {
-                                setStartTime(event.target.value);
-                                setIsRecurrenceDirty(true);
-                            } }
-                            invalid={ !startTimeValid() }
-                        />
-                    </FormGroup>
-                    { !recurrent && (
-                        <FormGroup>
-                            <Label for="disruption-detail__end-time">
-                                <span className="font-size-md font-weight-bold">{LABEL_END_TIME}</span>
-                            </Label>
-                            <Input
-                                id="disruption-detail__end-time"
-                                className="border border-dark"
-                                value={ endTime }
-                                disabled={ isEndDateTimeDisabled() }
-                                onChange={ event => setEndTime(event.target.value) }
-                                invalid={ !endTimeValid() }
-                            />
-                        </FormGroup>
-                    )}
-                    { recurrent && (
-                        <FormGroup>
-                            <Label for="disruption-creation__wizard-select-details__duration">
-                                <span className="font-size-md font-weight-bold">{LABEL_DURATION}</span>
-                            </Label>
-                            <Input
-                                id="disruption-creation__wizard-select-details__duration"
-                                className="border border-dark"
-                                value={ duration }
-                                onChange={ (event) => {
-                                    setDuration(event.target.value);
-                                    setIsRecurrenceDirty(true);
-                                } }
-                                invalid={ !durationValid() }
-                                type="number"
-                                min="1"
-                                max="24"
-                                disabled={ isResolved() }
-                            />
-                        </FormGroup>
-                    )}
                 </section>
                 <section className="col-6">
                     <div className="row">

@@ -14,7 +14,7 @@ import { NOTIFICATION_CONDITION, NOTIFICATION_STATUS } from '../../../types/noti
 import { sourceIdDataGridOperator } from './sourceIdDataGridOperator';
 import { dateTimeFormat } from '../../../utils/dateUtils';
 import { getStopGroups } from '../../../redux/actions/control/dataManagement';
-import { CAUSES, DEFAULT_CAUSE } from '../../../types/disruptions-types';
+import { OLD_CAUSES, CAUSES, DEFAULT_CAUSE } from '../../../types/disruption-cause-and-effect';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
 import { flatInformedEntities } from '../../../utils/control/notifications';
 
@@ -24,6 +24,7 @@ export const NotificationsView = (props) => {
     const [loadingTimer, setLoadingTimer] = useState(null);
     const NOTIFICATIONS_POLLING_INTERVAL = 10000;
     const isActiveNoti = notification => notification.condition === 'published' && notification.status === 'in-progress';
+    const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
 
     const GRID_COLUMNS = [
         {
@@ -89,8 +90,8 @@ export const NotificationsView = (props) => {
             width: 150,
             flex: 1,
             type: 'singleSelect',
-            valueGetter: params => (CAUSES.find(cause => cause.value === params.value) || DEFAULT_CAUSE).label,
-            valueOptions: CAUSES.slice(1, CAUSES.length).map(cause => cause.label),
+            valueGetter: params => (MERGED_CAUSES.find(cause => cause.value === params.value) || DEFAULT_CAUSE).label,
+            valueOptions: MERGED_CAUSES.slice(1, MERGED_CAUSES.length).map(cause => cause.label),
         },
         {
             field: 'startTime',
