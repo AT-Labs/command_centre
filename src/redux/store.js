@@ -37,7 +37,6 @@ import prevFilterValue from './reducers/control/tripReplays/prevFilterValue';
 import tripReplaysMap from './reducers/control/tripReplays/map';
 import currentVehicleReplay from './reducers/control/vehicleReplays/currentVehicleReplay';
 import analytics from './reducers/analytics/analytics';
-import routesMappings from './reducers/static/routesMappings';
 import dataManagement from './reducers/control/dataManagement';
 import appSettings from './reducers/appSettings';
 import notifications from './reducers/control/notifications';
@@ -57,7 +56,6 @@ export default createStore(
             fleet,
             routes,
             stops,
-            routesMappings,
         }),
         realtime: combineReducers({
             vehicles,

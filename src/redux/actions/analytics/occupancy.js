@@ -1,7 +1,6 @@
-import { keyBy, get } from 'lodash-es';
+import { keyBy } from 'lodash-es';
 import { fetchOccupancyEvents } from '../../../utils/transmitters/event-store-api';
 import { getAllRoutes } from '../../selectors/static/routes';
-import { getAllRoutesMappings } from '../../selectors/static/routesMapping';
 import ACTION_TYPES from '../../action-types';
 
 export const updateLoading = isLoading => dispatch => dispatch({
@@ -16,13 +15,11 @@ export const getOccupancy = (from = '') => async (dispatch, getState) => {
     await Promise.all([
         fetchOccupancyEvents(from),
         getAllRoutes(state),
-        getAllRoutesMappings(state),
     ])
-        .then(([occupancyEvents, routes, routesMappings]) => {
+        .then(([occupancyEvents, routes]) => {
             const occupancyData = occupancyEvents;
             const allRoutes = keyBy(routes, 'route_id');
-            const allRouteMappings = keyBy(routesMappings, 'oldId');
-            return occupancyData.map(occupancy => ({ ...occupancy, ...allRoutes[get(allRouteMappings[occupancy.route_id], 'newId', '')] }));
+            return occupancyData.map(occupancy => ({ ...occupancy, ...allRoutes[occupancy.route_id] }));
         })
         .then((data) => {
             dispatch({

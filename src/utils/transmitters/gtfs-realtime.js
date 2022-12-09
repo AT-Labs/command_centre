@@ -91,6 +91,3 @@ export const getTripUpdateRealTimeSnapshot = (tripId) => {
 
 export const getNewTripId = oldTripId => fetch(`${GTFS_ID_MAPPING_URL}/mappings/oldtonew/${oldTripId}?current=true&routes=false&shapes=false&stops=false`, { method: 'GET' })
     .then(response => jsonResponseHandling(response));
-
-export const fetchRouteMappings = () => fetch(`${GTFS_ID_MAPPING_URL}/mappings/routes`, { method: 'GET' })
-    .then(response => jsonResponseHandling(response));

@@ -7,7 +7,6 @@ import sinonChai from 'sinon-chai';
 import { setCache } from './cache';
 import * as cache from '../../../utils/cache';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
-import * as gtfsRealtime from '../../../utils/transmitters/gtfs-realtime';
 import ACTION_TYPE from '../../action-types';
 
 chai.use(sinonChai);
@@ -31,13 +30,11 @@ describe('cache actions', () => {
         const testRoute = { route_id: `test-route-${validVersion}`, route_short_name: 'test-route' };
         const testStop = { stop_id: 'test-stop-id', stop_name: 'test-stop-name', stop_code: 'test-stop-id' };
         const testStopType = { stop_code: 'test-stop-id', route_type: 2, parent_stop_code: null };
-        const testMapping = { newId: 'newId', oldId: 'oldId' };
         const fakeIsValid = sandbox.fake.resolves({ isValid: false, validVersion });
 
         sandbox.stub(ccStatic, 'getAllRoutes').callsFake(sandbox.fake.resolves([testRoute]));
         sandbox.stub(ccStatic, 'getAllStops').callsFake(sandbox.fake.resolves([testStop]));
         sandbox.stub(ccStatic, 'getAllStopTypes').callsFake(sandbox.fake.resolves([testStopType]));
-        sandbox.stub(gtfsRealtime, 'fetchRouteMappings').callsFake(sandbox.fake.resolves([testMapping]));
         sandbox.stub(cache, 'isCacheValid').callsFake(fakeIsValid);
 
         const cacheFunctions = {
@@ -46,7 +43,6 @@ describe('cache actions', () => {
         };
         cache.default.routes = cacheFunctions;
         cache.default.stops = cacheFunctions;
-        cache.default.route_mappings = cacheFunctions;
 
         const expectedActions = [
             {
@@ -71,12 +67,6 @@ describe('cache actions', () => {
                     },
                 },
             },
-            {
-                type: ACTION_TYPE.FETCH_ROUTES_MAPPINGS,
-                payload: {
-                    routesMappings: [testMapping],
-                },
-            },
         ];
 
         await store.dispatch(setCache());
@@ -91,7 +81,6 @@ describe('cache actions', () => {
         sandbox.stub(cache, 'isCacheValid').callsFake(fakeIsValid);
 
         const testRoute = { route_id: 'test-route' };
-        const testMapping = { newId: 'newId', oldId: 'oldId' };
         const testStop = { stop_id: 'test-stop-id', stop_name: 'test-stop-name', stop_code: 'test-stop-id' };
         cache.default.routes = {
             toArray: sandbox.fake.resolves([testRoute]),
@@ -101,13 +90,8 @@ describe('cache actions', () => {
             toArray: sandbox.fake.resolves([testStop]),
             clear: sandbox.fake,
         };
-        cache.default.route_mappings = {
-            toArray: sandbox.fake.resolves([testMapping]),
-            clear: sandbox.fake,
-        };
 
         const expectedActions = [
-            { type: ACTION_TYPE.FETCH_ROUTES_MAPPINGS, payload: { routesMappings: [testMapping] } },
             { type: ACTION_TYPE.FETCH_STOPS, payload: { all: { [testStop.stop_id]: testStop } } },
             { type: ACTION_TYPE.FETCH_ROUTES, payload: { routes: { [testRoute.route_id]: testRoute } } },
             { type: ACTION_TYPE.POPULATE_AGENCIES, payload: { routes: [{ route_id: testRoute.route_id }] } },

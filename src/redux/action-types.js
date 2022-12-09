@@ -9,8 +9,6 @@ export default {
     FETCH_STOPS: 'fetch-stops',
     // All routes
     FETCH_ROUTES: 'fetch-routes',
-    // All routes mappings
-    FETCH_ROUTES_MAPPINGS: 'fetch-routes-mappings',
     // All agencies
     POPULATE_AGENCIES: 'populate-agencies',
     // All vehicles

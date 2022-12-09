@@ -24,7 +24,6 @@ describe('Cache', () => {
             cache.default.routes.count = fakedCount(1984);
             cache.default.published_version.get = fakedVersion();
             cache.default.stops.count = fakedCount(1984);
-            cache.default.route_mappings.count = fakedCount(1984);
 
             const isCacheValid = await cache.isCacheValid();
             expect(isCacheValid.isValid).to.equal(true);
@@ -35,7 +34,6 @@ describe('Cache', () => {
             cache.default.routes.count = fakedCount(undefined);
             cache.default.published_version.get = fakedVersion();
             cache.default.stops.count = fakedCount(1984);
-            cache.default.route_mappings.count = fakedCount(1984);
 
             const isCacheValid = await cache.isCacheValid();
             expect(isCacheValid.isValid).to.equal(false);
