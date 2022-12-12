@@ -1,4 +1,4 @@
-import { isEmpty, camelCase, isObject, uniq, transform, isArray, omit } from 'lodash-es';
+import { isEmpty, camelCase, isObject, uniq, transform, isArray, omit, pick } from 'lodash-es';
 import moment from 'moment';
 import { TIME_FORMAT, LABEL_FREQUENCY, FREQUENCY_TYPE } from '../../constants/disruptions';
 import { DATE_FORMAT_DDMMYYYY as DATE_FORMAT } from '../dateUtils';
@@ -151,3 +151,8 @@ export const groupStopsByRouteElementByParentStation = (list) => {
 export const getDeduplcatedAffectedRoutes = affectedEntities => [...new Set(affectedEntities.filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))];
 
 export const getDeduplcatedAffectedStops = affectedEntities => [...new Set(affectedEntities.filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))];
+
+export const filterOnlyRouteParams = route => pick(route, ['routeId', 'routeShortName', 'routeType', 'routeColor', 'shapeWkt', 'agencyId', 'agencyName',
+    'text', 'category', 'icon', 'valueKey', 'labelKey', 'type']);
+export const filterOnlyStopParams = stop => pick(stop, ['stopId', 'stopName', 'stopCode', 'locationType', 'stopLat', 'stopLon', 'parentStation',
+    'platformCode', 'text', 'category', 'icon', 'valueKey', 'labelKey', 'type', 'groupId']);

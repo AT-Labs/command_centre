@@ -316,3 +316,27 @@ button.continue {
         width: $side-panel-width-large;
     }
 }
+
+.select-stops-route {
+    .selection-item-body {
+        padding-top: 0;
+    }
+
+    .select-stops-route-direction {
+        border: 0;
+
+        .expandable,
+        .expandable__header__expand,
+        .expandable__body {
+            border: 0;
+        }
+
+        .picklist__list-btn {
+            font-weight: normal;
+        }
+
+        .selection-item-body {
+            padding-top: 1.25rem;
+        }
+    }
+}
