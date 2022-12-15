@@ -25,7 +25,7 @@ import {
 } from '../../../../redux/actions/control/tripReplays/filters';
 
 import {
-    searchVehicleReplay,
+    getVehicleReplayStatusAndPosition,
 } from '../../../../redux/actions/control/vehicleReplays/vehicleReplay';
 
 import ControlSearch from '../../Common/ControlSearch/ControlSearch';
@@ -131,7 +131,7 @@ const Filters = (props) => {
 
     const refinedSearch = () => {
         if ((searchTerm.type === BUS.type) || (searchTerm.type === TRAIN.type) || (searchTerm.type === FERRY.type)) {
-            props.searchVehicleReplay();
+            props.getVehicleReplayStatusAndPosition();
         }
         props.search();
     };
@@ -291,7 +291,7 @@ Filters.propTypes = {
     endTime: PropTypes.string.isRequired,
     timeType: PropTypes.string.isRequired,
     search: PropTypes.func.isRequired,
-    searchVehicleReplay: PropTypes.func.isRequired,
+    getVehicleReplayStatusAndPosition: PropTypes.func.isRequired,
 };
 
 Filters.defaultProps = {
@@ -305,7 +305,7 @@ export default connect(state => ({
     endTime: getTripReplayEndTimeFilter(state),
     timeType: getTripReplayTimeTypeFilter(state),
 }), {
-    searchVehicleReplay,
+    getVehicleReplayStatusAndPosition,
     search,
     updateTripReplaySearchTerm,
     resetTripReplaySearchTerm,

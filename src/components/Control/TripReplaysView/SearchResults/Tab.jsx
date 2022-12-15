@@ -5,7 +5,7 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import { connect } from 'react-redux';
 import VehicleStatusView from './VehicleStatusView';
-import { getVehicleReplaysTotalResults } from '../../../../redux/selectors/control/vehicleReplays/vehicleReplay';
+import { getVehicleEventsDisplayedTotalResults } from '../../../../redux/selectors/control/vehicleReplays/vehicleReplay';
 import { getAllVehicleReplayEvents } from '../../../../redux/actions/control/vehicleReplays/currentVehicleReplay';
 import { clearCurrentTrip } from '../../../../redux/actions/control/tripReplays/currentTrip';
 import { getTripReplayRedirected } from '../../../../redux/selectors/control/tripReplays/tripReplayView';
@@ -81,7 +81,7 @@ const ReplaySubTab = (props) => {
                     <dd>
                         Showing
                         {' '}
-                        { props.vehicleReplaysTotalStatus}
+                        { props.vehicleEventsTotalResult }
                         {' '}
                         statuses
                     </dd>
@@ -90,14 +90,16 @@ const ReplaySubTab = (props) => {
                     handleMouseEnter={ handleMouseEnter }
                     handleMouseLeave={ handleMouseLeave }
                     handleMouseClick={ handleMouseClick } />
+                { props.vehicleStatusFooter }
             </TabPanel>
         </section>
     );
 };
 
 ReplaySubTab.propTypes = {
-    vehicleReplaysTotalStatus: PropTypes.number,
+    vehicleEventsTotalResult: PropTypes.number.isRequired,
     renderTripView: PropTypes.func.isRequired,
+    vehicleStatusFooter: PropTypes.object.isRequired,
     handleMouseEnter: PropTypes.func.isRequired,
     handleMouseLeave: PropTypes.func.isRequired,
     handleMouseClick: PropTypes.func.isRequired,
@@ -107,13 +109,12 @@ ReplaySubTab.propTypes = {
 };
 
 ReplaySubTab.defaultProps = {
-    vehicleReplaysTotalStatus: 0,
     isRedirected: false,
 };
 
 export default connect(
     state => ({
-        vehicleReplaysTotalStatus: getVehicleReplaysTotalResults(state),
+        vehicleEventsTotalResult: getVehicleEventsDisplayedTotalResults(state),
         isRedirected: getTripReplayRedirected(state),
     }),
     {

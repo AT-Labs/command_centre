@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import _ from 'lodash-es';
 import React, { PureComponent } from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
@@ -7,7 +8,12 @@ import Icon from '../../../Common/Icon/Icon';
 import { getColumns } from './columns';
 import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import AutoRefreshTable from '../../../Common/AutoRefreshTable/AutoRefreshTable';
-import { getVehicleReplaysTotalResults } from '../../../../redux/selectors/control/vehicleReplays/vehicleReplay';
+import {
+    getVehicleEventsTotalResults,
+    getVehicleEventsHasMore,
+    getVehicleEvents,
+    getVehicleEventsDisplayedTotalResults,
+} from '../../../../redux/selectors/control/vehicleReplays/vehicleReplay';
 import { isTripCanceled } from '../../../../utils/control/tripReplays';
 import { selectTrip } from '../../../../redux/actions/control/tripReplays/currentTrip';
 import VehicleStatusView from './VehicleStatusView';
@@ -23,7 +29,7 @@ class SearchResultsList extends PureComponent {
         handleMouseEnter: PropTypes.func.isRequired,
         handleMouseLeave: PropTypes.func.isRequired,
         handleMouseClick: PropTypes.func.isRequired,
-        vehicleReplaysTotalStatus: PropTypes.number,
+        vehicleEventsTotalResult: PropTypes.number,
         searchParams: PropTypes.shape({
             searchTerm: PropTypes.object.isRequired,
             date: PropTypes.string.isRequired,
@@ -32,13 +38,18 @@ class SearchResultsList extends PureComponent {
             timeType: PropTypes.string.isRequired,
         }).isRequired,
         selectTrip: PropTypes.func.isRequired,
+        hasMoreVehicleStausAndPositions: PropTypes.bool.isRequired,
+        vehicleEvents: PropTypes.array,
+        vehicleEventsDisplayedTotalResult: PropTypes.number,
     };
 
     static defaultProps = {
         hasMore: false,
         totalResults: 0,
-        vehicleReplaysTotalStatus: 0,
+        vehicleEventsTotalResult: 0,
         trips: null,
+        vehicleEvents: null,
+        vehicleEventsDisplayedTotalResult: 0,
     };
 
     formatTime = (time) => {
@@ -50,9 +61,27 @@ class SearchResultsList extends PureComponent {
         return `${m.format('HH:mm')}${hours > 23 ? ' (+1)' : ''}`;
     };
 
+    renderVehicleStatusFooter = (hasMoreVehicleStausAndPositions, vehicleEvents, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) => (
+        <>
+            { hasMoreVehicleStausAndPositions && !_.isNull(vehicleEvents) && (
+                <div className="text-muted p-4">
+                    Showing
+                    {' '}
+                    {vehicleEventsDisplayedTotalResult}
+                    {' '}
+                    of
+                    {' '}
+                    {vehicleEventsTotalResult}
+                    {' '}
+                    results. Please refine your search.
+                </div>
+            )}
+        </>
+    );
+
     render() {
-        const { trips, hasMore, totalResults, vehicleReplaysTotalStatus, searchParams: { searchTerm, date, startTime, endTime },
-            handleMouseEnter, handleMouseLeave, handleMouseClick } = this.props;
+        const { trips, hasMore, totalResults, vehicleEventsTotalResult, searchParams: { searchTerm, date, startTime, endTime },
+            handleMouseEnter, handleMouseLeave, handleMouseClick, hasMoreVehicleStausAndPositions, vehicleEvents, vehicleEventsDisplayedTotalResult } = this.props;
         const { type, label } = searchTerm;
         const { BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
         const vehicles = [BUS.type, TRAIN.type, FERRY.type];
@@ -137,16 +166,16 @@ class SearchResultsList extends PureComponent {
             }
 
             if (vehicles.includes(type) && trips.length === 0) {
-                // no tab just vehicle detail display
                 return (
                     <div>
                         <div className="px-4">
-                            <dd>{`Showing ${vehicleReplaysTotalStatus} statuses`}</dd>
+                            <dd>{`Showing ${vehicleEventsDisplayedTotalResult} statuses`}</dd>
                         </div>
                         <VehicleStatusView
                             handleMouseEnter={ handleMouseEnter }
                             handleMouseLeave={ handleMouseLeave }
                             handleMouseClick={ handleMouseClick } />
+                        { this.renderVehicleStatusFooter(hasMoreVehicleStausAndPositions, vehicleEvents, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) }
                     </div>
                 );
             }
@@ -156,6 +185,9 @@ class SearchResultsList extends PureComponent {
                 return (
                     <Tab
                         renderTripView={ renderResults }
+                        vehicleStatusFooter={
+                            this.renderVehicleStatusFooter(hasMoreVehicleStausAndPositions, vehicleEvents, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult)
+                        }
                         handleMouseEnter={ handleMouseEnter }
                         handleMouseLeave={ handleMouseLeave }
                         handleMouseClick={ handleMouseClick }
@@ -216,7 +248,10 @@ class SearchResultsList extends PureComponent {
 
 export default connect(
     state => ({
-        vehicleReplaysTotalStatus: getVehicleReplaysTotalResults(state),
+        vehicleEventsTotalResult: getVehicleEventsTotalResults(state),
+        vehicleEventsDisplayedTotalResult: getVehicleEventsDisplayedTotalResults(state),
+        hasMoreVehicleStausAndPositions: getVehicleEventsHasMore(state),
+        vehicleEvents: getVehicleEvents(state),
     }),
     {
         selectTrip,

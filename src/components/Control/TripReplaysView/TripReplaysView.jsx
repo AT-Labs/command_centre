@@ -288,7 +288,7 @@ const TripReplaysView = (props) => {
                 isActive
                 className="sidepanel-primary-panel"
                 toggleButton={ false }>
-                { !props.isFiltersViewDisplayed && <BackHeader text={ `Back to ${props.isSingleTripDisplayed ? 'Result' : 'Search'}` } onClick={ backClick } /> }
+                { !props.isFiltersViewDisplayed && <BackHeader text={ `Back ${props.isSingleTripDisplayed || props.isRedirected ? '' : 'to Search'}` } onClick={ backClick } /> }
                 { renderMain() }
             </SidePanel>
             <HistoricalMap

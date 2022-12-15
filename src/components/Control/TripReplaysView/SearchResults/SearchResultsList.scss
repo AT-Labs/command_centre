@@ -63,15 +63,7 @@
         display: flex !important;
         padding: 1rem !important;
 
-        & > .display-status {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-        }
-
         & > .vehicle-status-time {
-            display: flex;
-            flex: auto;
             justify-content: flex-end;
             align-items: center;
 
@@ -81,9 +73,20 @@
         }
     }
 
-    .vehicle-status-divider {
-        height: .5rem;
-        background-color: $at-bk-gray;
+    .vehicle-position-body {
+        display: flex !important;
+        align-items: center;
+
+        & > .vehicle-position-time {
+            justify-content: flex-end;
+            margin-right: 0;
+
+            & > dd {
+                font-size: initial;
+                font-weight: normal;
+                margin-bottom: auto;
+            }
+        }
     }
 
     .replay-tab {
@@ -92,5 +95,14 @@
 
     .total-result {
         border-bottom: 1px solid rgba(0, 0, 0, .12);
+    }
+
+    .vehicle-position-header {
+        display: flex !important;
+        align-items: center;
+    }
+
+    .vehicle-position-header-border {
+        border: 1px solid rgba(0, 0, 0, .12) !important;
     }
 }
