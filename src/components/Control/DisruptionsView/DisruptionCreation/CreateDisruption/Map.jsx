@@ -9,6 +9,7 @@ import { isEqual, isEmpty } from 'lodash-es';
 import { MAP_DATA } from '../../../../../types/map-types';
 import ShapeLayer from './ShapeLayer';
 import StopsLayer from './StopsLayer';
+import DrawLayer from './DrawLayer';
 import { getBoundsToFit, getDisruptionsLoadingState } from '../../../../../redux/selectors/control/disruptions';
 import Loader from '../../../../Common/Loader/Loader';
 import 'leaflet/dist/leaflet.css';
@@ -103,6 +104,10 @@ class Map extends React.Component {
                         <StopsLayer
                             disruptionType={ this.props.disruptionType }
                             stops={ this.props.stops } />
+                        <DrawLayer
+                            disruptionType={ this.props.disruptionType }
+                            onDrawCreated={ this.props.onDrawCreated }
+                        />
                     </LeafletMap>
                 </LeafletProvider>
             </>
@@ -119,6 +124,7 @@ Map.propTypes = {
     routeColors: PropTypes.array,
     stops: PropTypes.array,
     disruptionType: PropTypes.string.isRequired,
+    onDrawCreated: PropTypes.func.isRequired,
 };
 
 Map.defaultProps = {

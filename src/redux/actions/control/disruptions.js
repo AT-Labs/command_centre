@@ -1,12 +1,13 @@
 /* eslint-disable camelcase */
 import { isEmpty, uniqBy, each } from 'lodash-es';
 
-import { ACTION_RESULT } from '../../../types/disruptions-types';
+import { ACTION_RESULT, DISRUPTION_TYPE } from '../../../types/disruptions-types';
 import ERROR_TYPE from '../../../types/error-types';
 import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
 import { toCamelCaseKeys } from '../../../utils/control/disruptions';
 import ACTION_TYPE from '../../action-types';
+import SEARCH_RESULT_TYPE from '../../../types/search-result-types';
 import { setBannerError, modalStatus } from '../activity';
 import {
     getAffectedStops,
@@ -18,6 +19,7 @@ import {
     getEditMode,
 } from '../../selectors/control/disruptions';
 import { getAllRoutes } from '../../selectors/static/routes';
+import { getAllStops } from '../../selectors/static/stops';
 import EDIT_TYPE from '../../../types/edit-types';
 
 const loadDisruptions = disruptions => ({
@@ -504,3 +506,62 @@ export const updateDisruptionsDatagridConfig = dataGridConfig => ({
     type: ACTION_TYPE.UPDATE_DISRUPTION_DATAGRID_CONFIG,
     payload: dataGridConfig,
 });
+
+const geographySearchRoutes = searchBody => async (dispatch, getState) => {
+    const routesSearchResult = await ccStatic.geoSearch(searchBody, 'routes');
+    const allRoutes = getAllRoutes(getState());
+    const enrichedRoutes = routesSearchResult.map(({ route_id }) => {
+        const route = allRoutes[route_id];
+        return {
+            routeId: route.route_id,
+            routeType: route.route_type,
+            routeShortName: route.route_short_name,
+            agencyName: route.agency_name,
+            agencyId: route.agency_id,
+            text: route.route_short_name,
+            valueKey: 'routeId',
+            labelKey: 'routeShortName',
+            type: SEARCH_RESULT_TYPE.ROUTE.type,
+        };
+    });
+    dispatch(updateAffectedRoutesState(enrichedRoutes));
+    dispatch(getRoutesByShortName(enrichedRoutes));
+};
+
+const geographySearchStops = searchBody => async (dispatch, getState) => {
+    const stopsSearchResult = await ccStatic.geoSearch(searchBody, 'stops');
+    const allStops = getAllStops(getState());
+    const enrichedStops = stopsSearchResult.map(({ stop_code }) => {
+        const stop = allStops[stop_code];
+        return {
+            stopId: stop.stop_id,
+            stopName: stop.stop_name,
+            stopCode: stop.stop_code,
+            locationType: stop.location_type,
+            stopLat: stop.stop_lat,
+            stopLon: stop.stop_lon,
+            parentStation: stop.parent_station,
+            platformCode: stop.platform_code,
+            routeType: stop.route_type,
+            text: `${stop.stop_code} - ${stop.stop_name}`,
+            valueKey: 'stopCode',
+            labelKey: 'stopCode',
+            type: SEARCH_RESULT_TYPE.STOP.type,
+        };
+    });
+    dispatch(updateAffectedStopsState(enrichedStops));
+};
+
+export const searchByDrawing = (disruptionType, shape) => async (dispatch) => {
+    dispatch(updateLoadingDisruptionsState(true));
+
+    try {
+        if (disruptionType === DISRUPTION_TYPE.ROUTES) {
+            await dispatch(geographySearchRoutes(shape));
+        } else if (disruptionType === DISRUPTION_TYPE.STOPS) {
+            await dispatch(geographySearchStops(shape));
+        }
+    } finally {
+        dispatch(updateLoadingDisruptionsState(false));
+    }
+};

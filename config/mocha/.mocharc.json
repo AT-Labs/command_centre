@@ -8,7 +8,7 @@
     "timeout": "2000",
     "recusive": true,
     "ui": "bdd",    
-    "watch-files": ["src/**/*.test.js", "src/**/*.test.jsx"],    
+    "watch-files": ["src/**/*.test.js", "src/**/*.test.jsx"],   
     "require": [
         "esm",
         "@babel/register",

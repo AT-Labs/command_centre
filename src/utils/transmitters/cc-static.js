@@ -66,3 +66,18 @@ export const getAllRoutes = () => fetchAllRoutes()
         cache.routes.clear();
         throw error;
     });
+
+export const geoSearch = (body, searchEntityType) => {
+    const url = `${CC_STATIC_QUERY_URL}/gtfs/geosearch/${searchEntityType}`;
+    return fetch(
+        url,
+        {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        },
+    ).then(response => jsonResponseHandling(response));
+};

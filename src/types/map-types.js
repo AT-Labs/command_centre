@@ -7,4 +7,5 @@ export const MAP_DATA = {
         max: 19,
         initial: 14,
     },
+    maxZoomLevelForDrawing: 13,
 };

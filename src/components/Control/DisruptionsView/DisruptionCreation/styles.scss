@@ -62,6 +62,10 @@
             text-decoration: underline;
         }
     }
+
+    .map {
+        left: $side-panel-width;
+    }
 }
 
 .disruption-creation__wizard-select-address__search {

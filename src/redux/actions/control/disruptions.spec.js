@@ -4,8 +4,9 @@ import sinon from 'sinon';
 import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 
-import { updateDisruptionFilters, updateRequestingDisruptionResult, updateDisruptionsDatagridConfig } from './disruptions';
+import { updateDisruptionFilters, updateRequestingDisruptionResult, updateDisruptionsDatagridConfig, searchByDrawing } from './disruptions';
 import ACTION_TYPE from '../../action-types';
+import * as ccStatic from '../../../utils/transmitters/cc-static';
 
 chai.use(sinonChai);
 
@@ -34,6 +35,16 @@ const mockDataGridConfig = {
     filterModel: { items: [], linkOperator: 'and' },
     pinnedColumns: { right: ['__detail_panel_toggle__'] },
 };
+
+const mockShape = {
+    type: 'circle',
+    coordinates: [{ lat: 1, lng: 1 }],
+    radius: 200,
+};
+
+jest.mock('../../../utils/transmitters/cc-static', () => ({
+    geoSearch: jest.fn(),
+}));
 
 describe('Disruptions actions', () => {
     beforeEach(() => {
@@ -64,12 +75,12 @@ describe('Disruptions actions', () => {
             {
                 type: ACTION_TYPE.UPDATE_DISRUPTION_DATAGRID_CONFIG,
                 payload: mockDataGridConfig,
-            }
+            },
         ];
 
         await store.dispatch(updateDisruptionsDatagridConfig(mockDataGridConfig));
         expect(store.getActions()).to.eql(expectedActions);
-    })
+    });
 
     it('updates requesting disruption result', async () => {
         const mock = {
@@ -83,12 +94,56 @@ describe('Disruptions actions', () => {
             {
                 type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
                 payload: {
-                    ...mock
+                    ...mock,
                 },
             },
         ];
 
         await store.dispatch(updateRequestingDisruptionResult(mock.resultDisruptionId, mock));
+        expect(store.getActions()).to.eql(expectedActions);
+    });
+
+    it('Search routes by drawing', async () => {
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_LOADING,
+                payload: { isLoading: true },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_AFFECTED_ENTITIES,
+                payload: { affectedRoutes: [] },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_LOADING,
+                payload: { isLoading: true },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_LOADING,
+                payload: { isLoading: false },
+            },
+        ];
+        ccStatic.geoSearch.mockResolvedValue([]);
+        await store.dispatch(searchByDrawing('Routes', mockShape));
+        expect(store.getActions()).to.eql(expectedActions);
+    });
+
+    it('Search stops by drawing', async () => {
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_LOADING,
+                payload: { isLoading: true },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_AFFECTED_ENTITIES,
+                payload: { affectedStops: [] },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_LOADING,
+                payload: { isLoading: false },
+            },
+        ];
+        ccStatic.geoSearch.mockResolvedValue([]);
+        await store.dispatch(searchByDrawing('Stops', mockShape));
         expect(store.getActions()).to.eql(expectedActions);
     });
 });

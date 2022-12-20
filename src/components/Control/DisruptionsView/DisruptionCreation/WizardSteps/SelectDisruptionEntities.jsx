@@ -412,12 +412,12 @@ export const SelectDisruptionEntities = (props) => {
 
     const disruptionTypeParams = {
         Routes: {
-            label: 'Search routes',
+            label: 'Search routes or draw in the map',
             placeholder: 'Enter a route',
             searchCategory: [ROUTE.type],
         },
         Stops: {
-            label: 'Search stops',
+            label: 'Search stop or draw in the maps',
             placeholder: 'Enter a stop or stop group',
             searchCategory: [STOP.type, STOP_GROUP.type],
         },

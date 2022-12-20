@@ -14,6 +14,7 @@ import {
     toggleDisruptionModals,
     updateCurrentStep,
     updateDisruption,
+    searchByDrawing,
 } from '../../../../../redux/actions/control/disruptions';
 import {
     getAffectedRoutes,
@@ -281,8 +282,7 @@ export class CreateDisruption extends React.Component {
                             response={ this.props.action }
                             onDataUpdate={ this.updateData }
                             onSubmit={ this.onSubmit }>
-                            <SelectDisruptionEntities
-                                onSubmitUpdate={ this.onSubmitUpdate } />
+                            <SelectDisruptionEntities onSubmitUpdate={ this.onSubmitUpdate } />
                             <SelectDetails />
                             { this.props.useWorkarounds && (
                                 <Workarounds
@@ -308,7 +308,9 @@ export class CreateDisruption extends React.Component {
                     shapes={ this.props.shapes }
                     stops={ _.uniqBy([...this.props.stops, ...this.props.routes], stop => stop.stopCode) }
                     routeColors={ this.props.routeColors }
-                    disruptionType={ disruptionData.disruptionType } />
+                    disruptionType={ disruptionData.disruptionType }
+                    onDrawCreated={ shape => this.props.searchByDrawing(disruptionData.disruptionType, shape) }
+                />
                 <Button
                     className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
                     onClick={ () => this.toggleModal('Cancellation', true) }>
@@ -337,6 +339,7 @@ CreateDisruption.propTypes = {
     disruptionToEdit: PropTypes.object,
     openCreateDisruption: PropTypes.func.isRequired,
     useWorkarounds: PropTypes.bool.isRequired,
+    searchByDrawing: PropTypes.func.isRequired,
 };
 
 CreateDisruption.defaultProps = {
@@ -363,4 +366,11 @@ export default connect(state => ({
     routeColors: getRouteColors(state),
     disruptionToEdit: getDisruptionToEdit(state),
     useWorkarounds: useWorkarounds(state),
-}), { createDisruption, openCreateDisruption, toggleDisruptionModals, updateCurrentStep, updateDisruption })(CreateDisruption);
+}), {
+    createDisruption,
+    openCreateDisruption,
+    toggleDisruptionModals,
+    updateCurrentStep,
+    updateDisruption,
+    searchByDrawing,
+})(CreateDisruption);
