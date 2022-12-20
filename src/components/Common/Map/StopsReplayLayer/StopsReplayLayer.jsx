@@ -4,10 +4,10 @@ import { connect } from 'react-redux';
 import { FeatureGroup } from 'react-leaflet';
 import _ from 'lodash-es';
 import StopMarker from './StopMarker';
-import './StopsLayer.scss';
-import { getCurrentTripState } from '../../../../../redux/selectors/control/tripReplays/currentTrip';
+import './StopsReplayLayer.scss';
+import { getCurrentTripState } from '../../../../redux/selectors/control/tripReplays/currentTrip';
 
-function StopsLayer(props) {
+function StopsReplayLayer(props) {
     const { stops, selectedKeyEvent, hoveredKeyEvent, selectedKeyEventId, currentTrip, clearSelectedKeyEvent } = props;
     const handleOnClick = (event) => {
         clearSelectedKeyEvent(selectedKeyEvent && selectedKeyEvent.id !== _.get(event, 'layer.options.id'));
@@ -29,7 +29,7 @@ function StopsLayer(props) {
     );
 }
 
-StopsLayer.propTypes = {
+StopsReplayLayer.propTypes = {
     stops: PropTypes.array,
     currentTrip: PropTypes.object.isRequired,
     selectedKeyEvent: PropTypes.object,
@@ -38,7 +38,7 @@ StopsLayer.propTypes = {
     clearSelectedKeyEvent: PropTypes.func.isRequired,
 };
 
-StopsLayer.defaultProps = {
+StopsReplayLayer.defaultProps = {
     stops: [],
     selectedKeyEvent: null,
     hoveredKeyEvent: '',
@@ -49,4 +49,4 @@ export default connect(
     state => ({
         currentTrip: getCurrentTripState(state),
     }),
-)(StopsLayer);
+)(StopsReplayLayer);

@@ -5,10 +5,21 @@ import { connect } from 'react-redux';
 import { getSearchTerms } from '../../redux/selectors/search';
 import { addressSelected } from '../../redux/actions/realtime/detail/address';
 import { routeChecked } from '../../redux/actions/realtime/detail/route';
-import { stopChecked } from '../../redux/actions/realtime/detail/stop';
+import { stopChecked, stopSelected } from '../../redux/actions/realtime/detail/stop';
 import { vehicleChecked } from '../../redux/actions/realtime/detail/vehicle';
 import { startTrackingVehicles } from '../../redux/actions/realtime/vehicles';
-import { getStopDetail, getRouteDetail, getVehicleDetail, getClearForReplace, getSelectedSearchResults } from '../../redux/selectors/realtime/detail';
+import {
+    getStopDetail,
+    getRouteDetail,
+    getVehicleDetail,
+    getClearForReplace,
+    getSelectedSearchResults,
+    getAddressDetail,
+    getViewDetailKey,
+    getVisibleEntities,
+    getCheckedStops,
+    getVisibleStops,
+} from '../../redux/selectors/realtime/detail';
 import { getAllocations } from '../../redux/selectors/control/blocks';
 import { getRealTimeSidePanelIsOpen, getRealTimeSidePanelIsActive, getShouldShowSearchBox } from '../../redux/selectors/navigation';
 import SEARCH_RESULT_TYPE from '../../types/search-result-types';
@@ -18,7 +29,7 @@ import SidePanel from '../Common/OffCanvasLayout/SidePanel/SidePanel';
 import SecondarySidePanel from '../Common/OffCanvasLayout/SecondarySidePanel/SecondarySidePanel';
 import OmniSearch, { defaultTheme } from '../OmniSearch/OmniSearch';
 import DetailView from './DetailView/DetailView';
-import RealTimeMap from './RealTimeMap/RealTimeMap';
+import { Map } from '../Common/Map/Map';
 import VehicleFilters from './VehicleFilters/VehicleFilters';
 import ErrorAlerts from './ErrorAlert/ErrorAlerts';
 import Feedback from './Feedback/Feedback';
@@ -26,8 +37,19 @@ import { updateRealTimeDetailView } from '../../redux/actions/navigation';
 import { addSelectedSearchResult, removeSelectedSearchResult, clearSelectedSearchResult } from '../../redux/actions/realtime/detail/common';
 import { formatRealtimeDetailListItemKey } from '../../utils/helpers';
 import VIEW_TYPE from '../../types/view-types';
+import { recenterMap, updateHoveredEntityKey } from '../../redux/actions/realtime/map';
+import { getBoundsToFit, getMaxZoom, getShouldOffsetForSidePanel, getHoveredEntityKey, getMapRecenterStatus } from '../../redux/selectors/realtime/map';
+import { MAP_DATA } from '../../types/map-types';
+import { getHighlightVehiclePosition } from '../../redux/selectors/realtime/vehicles';
+import { getChildStops } from '../../redux/selectors/static/stops';
 
 import './RealTimeView.scss';
+import { SelectedAddressMarker } from '../Common/Map/SelectedAddressMarker/SelectedAddressMarker';
+import { TripShapeLayer } from '../Common/Map/TripShapeLayer/TripShapeLayer';
+import StopsLayer from '../Common/Map/StopsLayer/StopsLayer';
+import { HighlightingLayer } from '../Common/Map/HighlightingLayer/HighlightingLayer';
+import { SelectedStopsMarker } from '../Common/Map/StopsLayer/SelectedStopsMarker';
+import VehicleLayer from '../Common/Map/VehicleLayer/VehicleLayer';
 
 function RealTimeView(props) {
     const { ADDRESS, ROUTE, STOP, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
@@ -155,7 +177,45 @@ function RealTimeView(props) {
                 )}
             </SidePanel>
             <Main className="real-time-view d-flex">
-                <RealTimeMap />
+                <Map
+                    recenterMap={ props.recenterMap }
+                    maxZoom={ props.maxZoom }
+                    shouldOffsetForSidePanel={ props.shouldOffsetForSidePanel }
+                    boundsToFit={ props.boundsToFit }
+                    center={ props.shouldMapBeRecentered ? MAP_DATA.centerLocation : null }
+                >
+                    <SelectedAddressMarker address={ props.selectedAddress } />
+                    <TripShapeLayer
+                        visibleEntities={ props.visibleEntities }
+                        currentDetailKey={ props.currentDetailKey }
+                        hoveredEntityKey={ props.hoveredEntityKey }
+                        updateHoveredEntityKey={ props.updateHoveredEntityKey } />
+                    <StopsLayer
+                        visibleStops={ props.visibleStops }
+                        childStops={ props.childStops }
+                        stopDetail={ props.selectedStop }
+                        focusZoom={ 17 }
+                        onStopClick={ (stop) => {
+                            const { selectedStop } = props;
+                            if (selectedStop && selectedStop.stop_id !== stop.stop_id) {
+                                props.stopSelected({
+                                    ...stop,
+                                    searchResultType: SEARCH_RESULT_TYPE.STOP.type,
+                                    key: formatRealtimeDetailListItemKey(SEARCH_RESULT_TYPE.STOP.type, stop.stop_id),
+                                });
+                            }
+                        } } />
+                    <HighlightingLayer
+                        vehiclePosition={ props.vehiclePosition }
+                        stopDetail={ props.selectedStop } />
+                    <SelectedStopsMarker
+                        stops={ props.stops }
+                        onPopupOpen={ stop => props.updateHoveredEntityKey(stop.key) }
+                        onPopupClose={ props.updateHoveredEntityKey }
+                        size={ 26 }
+                        popup />
+                    <VehicleLayer />
+                </Map>
                 <ErrorAlerts />
                 <VehicleFilters />
                 <Feedback />
@@ -180,6 +240,26 @@ RealTimeView.propTypes = {
     removeSelectedSearchResult: PropTypes.func.isRequired,
     clearSelectedSearchResult: PropTypes.func.isRequired,
     allSearchResults: PropTypes.object.isRequired,
+    recenterMap: PropTypes.func.isRequired,
+    maxZoom: PropTypes.number.isRequired,
+    shouldOffsetForSidePanel: PropTypes.bool.isRequired,
+    boundsToFit: PropTypes.array.isRequired,
+    selectedAddress: PropTypes.object.isRequired,
+    vehiclePosition: PropTypes.object,
+    selectedStop: PropTypes.object.isRequired,
+    visibleEntities: PropTypes.array.isRequired,
+    currentDetailKey: PropTypes.string.isRequired,
+    hoveredEntityKey: PropTypes.string.isRequired,
+    updateHoveredEntityKey: PropTypes.func.isRequired,
+    stops: PropTypes.array.isRequired,
+    visibleStops: PropTypes.array.isRequired,
+    childStops: PropTypes.object.isRequired,
+    stopSelected: PropTypes.func.isRequired,
+    shouldMapBeRecentered: PropTypes.bool.isRequired,
+};
+
+RealTimeView.defaultProps = {
+    vehiclePosition: undefined,
 };
 
 export default connect(
@@ -194,6 +274,18 @@ export default connect(
         isClearForReplace: getClearForReplace(state),
         allAllocations: getAllocations(state),
         allSearchResults: getSelectedSearchResults(state),
+        maxZoom: getMaxZoom(state),
+        shouldOffsetForSidePanel: getShouldOffsetForSidePanel(state),
+        boundsToFit: getBoundsToFit(state),
+        selectedAddress: getAddressDetail(state),
+        vehiclePosition: getHighlightVehiclePosition(state),
+        visibleEntities: getVisibleEntities(state),
+        currentDetailKey: getViewDetailKey(state),
+        hoveredEntityKey: getHoveredEntityKey(state),
+        stops: getCheckedStops(state),
+        childStops: getChildStops(state),
+        visibleStops: getVisibleStops(state),
+        shouldMapBeRecentered: getMapRecenterStatus(state),
     }),
     {
         addressSelected,
@@ -205,5 +297,8 @@ export default connect(
         addSelectedSearchResult,
         removeSelectedSearchResult,
         clearSelectedSearchResult,
+        recenterMap,
+        updateHoveredEntityKey,
+        stopSelected,
     },
 )(RealTimeView);

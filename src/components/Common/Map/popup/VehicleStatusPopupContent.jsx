@@ -6,7 +6,7 @@ import { BsKeyFill, BsKey, BsFillLightbulbFill, BsFillLightbulbOffFill } from 'r
 import { TbEngine, TbEngineOff } from 'react-icons/tb';
 import { BiLogIn, BiLogOut } from 'react-icons/bi';
 import { FaDoorOpen, FaDoorClosed } from 'react-icons/fa';
-import DATE_TYPE from '../../../../../types/date-types';
+import DATE_TYPE from '../../../../types/date-types';
 
 function VehicleStatusPopupContent({ eventDetail }) {
     const Icons = {

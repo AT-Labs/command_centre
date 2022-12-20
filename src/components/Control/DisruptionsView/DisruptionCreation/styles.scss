@@ -9,6 +9,7 @@
             height: calc(100vh - 149px);
         }
 
+        & .loader,
         & .loader-disruptions {
             left: 50%;
             z-index: 501;

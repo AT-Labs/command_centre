@@ -1,14 +1,8 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { connect } from 'react-redux';
-import { getAddressDetail } from '../../../../redux/selectors/realtime/detail';
-import IconMarker from '../../../Common/IconMarker/IconMarker';
+import IconMarker from '../../IconMarker/IconMarker';
 
-class SelectedAddressMarker extends React.PureComponent {
-    static propTypes = {
-        address: PropTypes.object.isRequired,
-    };
-
+export class SelectedAddressMarker extends React.PureComponent {
     render() {
         const { address } = this.props;
         const marker = this.props.address.lat
@@ -25,6 +19,10 @@ class SelectedAddressMarker extends React.PureComponent {
     }
 }
 
-export default connect(state => ({
-    address: getAddressDetail(state),
-}))(SelectedAddressMarker);
+SelectedAddressMarker.propTypes = {
+    address: PropTypes.object,
+};
+
+SelectedAddressMarker.defaultProps = {
+    address: {},
+};

@@ -9,9 +9,9 @@ import {
     getRouteShortName, getStops,
     getTripInfo,
     getVehicleInfo,
-} from '../../../../../redux/selectors/control/tripReplays/currentTrip';
-import { formatUnixDatetime } from '../../../../../utils/helpers';
-import { occupancyStatusToMessage } from '../../../../../types/vehicle-occupancy-status-types';
+} from '../../../../redux/selectors/control/tripReplays/currentTrip';
+import { formatUnixDatetime } from '../../../../utils/helpers';
+import { occupancyStatusToMessage } from '../../../../types/vehicle-occupancy-status-types';
 
 const getDatetime = (vehiclePosition) => {
     const { timestamp } = vehiclePosition;

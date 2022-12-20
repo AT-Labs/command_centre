@@ -2,17 +2,13 @@ import { isEmpty, find, get } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { FeatureGroup, Polyline } from 'react-leaflet';
-import { connect } from 'react-redux';
-import { getViewDetailKey, getVisibleEntities } from '../../../../redux/selectors/realtime/detail';
 import { ROUTE_COLOR, HIGHLIGHTED_ROUTE_COLOR } from '../constants';
 import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import { getAllCoordinatesFromWKT, generateUniqueID } from '../../../../utils/helpers';
-import { getHoveredEntityKey } from '../../../../redux/selectors/realtime/map';
-import { updateHoveredEntityKey } from '../../../../redux/actions/realtime/map';
 import EntityPopup from '../popup/EntityPopup';
 
 const { ROUTE, STOP, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
-class TripShapeLayer extends React.PureComponent {
+export class TripShapeLayer extends React.PureComponent {
     static propTypes = {
         visibleEntities: PropTypes.array,
         currentDetailKey: PropTypes.string,
@@ -109,9 +105,3 @@ class TripShapeLayer extends React.PureComponent {
             : null;
     }
 }
-
-export default connect(state => ({
-    visibleEntities: getVisibleEntities(state),
-    currentDetailKey: getViewDetailKey(state),
-    hoveredEntityKey: getHoveredEntityKey(state),
-}), { updateHoveredEntityKey })(TripShapeLayer);

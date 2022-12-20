@@ -5,7 +5,7 @@ import { getAllCoordinatesFromWKT } from '../../../utils/helpers';
 import {
     getAddressDetail, getViewDetailEntity, getCheckedSearchResults,
 } from './detail';
-import { FOCUS_ZOOM } from '../../../components/RealTime/RealTimeMap/constants';
+import { FOCUS_ZOOM } from '../../../components/Common/Map/constants';
 import { getRealTimeSidePanelIsOpen, getActiveRealTimeDetailView, getRealTimeSidePanelIsActive } from '../navigation';
 import VIEW_TYPE from '../../../types/view-types';
 import SEARCH_RESULT_TYPE from '../../../types/search-result-types';

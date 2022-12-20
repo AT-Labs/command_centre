@@ -15,6 +15,7 @@ import {
     updateCurrentStep,
     updateDisruption,
     searchByDrawing,
+    updateAffectedStopsState,
 } from '../../../../../redux/actions/control/disruptions';
 import {
     getAffectedRoutes,
@@ -27,11 +28,13 @@ import {
     getEditMode,
     isDisruptionCancellationModalOpen,
     isDisruptionCreationOpen,
+    getBoundsToFit,
+    getDisruptionsLoadingState,
 } from '../../../../../redux/selectors/control/disruptions';
 import { useWorkarounds } from '../../../../../redux/selectors/appSettings';
-import { STATUSES, DISRUPTION_TYPE, DISRUPTION_CREATION_STEPS, DEFAULT_SEVERITY } from '../../../../../types/disruptions-types';
+import { STATUSES, DISRUPTION_TYPE, DISRUPTION_CREATION_STEPS, DEFAULT_SEVERITY, ALERT_TYPES } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
-import { buildSubmitBody, momentFromDateTime, getRecurrenceDates } from '../../../../../utils/control/disruptions';
+import { buildSubmitBody, momentFromDateTime, getRecurrenceDates, itemToEntityTransformers, toCamelCaseKeys } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
 import SidePanel from '../../../../Common/OffCanvasLayout/SidePanel/SidePanel';
@@ -42,9 +45,18 @@ import Confirmation from '../WizardSteps/Confirmation';
 import SelectDetails from '../WizardSteps/SelectDetails';
 import SelectDisruptionEntities from '../WizardSteps/SelectDisruptionEntities';
 import Workarounds from '../WizardSteps/Workarounds';
-import Map from './Map';
 import { parseRecurrencePattern } from '../../../../../utils/recurrence';
 import EDIT_TYPE from '../../../../../types/edit-types';
+import { Map } from '../../../../Common/Map/Map';
+import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
+import { getChildStops } from '../../../../../redux/selectors/static/stops';
+import { getStopDetail } from '../../../../../redux/selectors/realtime/detail';
+import AlertMessage from '../../../../Common/AlertMessage/AlertMessage';
+import { ShapeLayer } from '../../../../Common/Map/ShapeLayer/ShapeLayer';
+import StopsLayer from '../../../../Common/Map/StopsLayer/StopsLayer';
+import { HighlightingLayer } from '../../../../Common/Map/HighlightingLayer/HighlightingLayer';
+import { SelectedStopsMarker } from '../../../../Common/Map/StopsLayer/SelectedStopsMarker';
+import DrawLayer from './DrawLayer';
 
 const INIT_STATE = {
     startTime: '',
@@ -69,6 +81,8 @@ const INIT_STATE = {
     passengerCount: [],
 };
 
+const { STOP } = SEARCH_RESULT_TYPE;
+
 export class CreateDisruption extends React.Component {
     constructor(props) {
         super(props);
@@ -76,6 +90,7 @@ export class CreateDisruption extends React.Component {
         this.state = {
             disruptionData: INIT_STATE,
             isConfirmationOpen: false,
+            showAlert: false,
         };
     }
 
@@ -305,18 +320,55 @@ export class CreateDisruption extends React.Component {
                 </SidePanel>
                 <Map
                     shouldOffsetForSidePanel
-                    shapes={ this.props.shapes }
-                    stops={ _.uniqBy([...this.props.stops, ...this.props.routes], stop => stop.stopCode) }
-                    routeColors={ this.props.routeColors }
-                    disruptionType={ disruptionData.disruptionType }
-                    onDrawCreated={ shape => this.props.searchByDrawing(disruptionData.disruptionType, shape) }
-                />
+                    boundsToFit={ this.props.boundsToFit }
+                    isLoading={ this.props.isLoading }
+                >
+                    <ShapeLayer
+                        shapes={ this.props.shapes }
+                        routeColors={ this.props.routeColors } />
+                    <StopsLayer
+                        childStops={ this.props.activeStep === 1 ? this.props.childStops : undefined }
+                        stopDetail={ this.props.stopDetail }
+                        focusZoom={ 16 }
+                        onStopClick={ (stop) => {
+                            if (disruptionData.disruptionType === DISRUPTION_TYPE.ROUTES) {
+                                this.setState({ showAlert: true });
+                                return;
+                            }
+                            this.props.updateAffectedStopsState([...this.props.stops, toCamelCaseKeys(stop)].map(stopEntity => ({
+                                ...stopEntity,
+                                valueKey: 'stopCode',
+                                labelKey: 'stopCode',
+                                type: SEARCH_RESULT_TYPE.STOP.type,
+                            })));
+                        } } />
+                    <HighlightingLayer
+                        stopDetail={ this.props.stopDetail } />
+                    <SelectedStopsMarker
+                        stops={ _.uniqBy([...this.props.stops, ...this.props.routes], stop => stop.stopCode).map(stop => itemToEntityTransformers[STOP.type](stop).data) }
+                        size={ 28 }
+                        tooltip
+                        maximumStopsToDisplay={ 200 } />
+                    <DrawLayer
+                        disruptionType={ disruptionData.disruptionType }
+                        onDrawCreated={ shape => this.props.searchByDrawing(disruptionData.disruptionType, shape) }
+                    />
+                </Map>
                 <Button
                     className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
                     onClick={ () => this.toggleModal('Cancellation', true) }>
                     Close
                     <AiOutlineClose className="disruption-creation-close" size={ 20 } />
                 </Button>
+                {this.state.showAlert && (
+                    <AlertMessage
+                        autoDismiss
+                        message={ {
+                            ...ALERT_TYPES.STOP_SELECTION_DISABLED_ERROR(),
+                        } }
+                        onClose={ () => this.setState({ showAlert: false }) }
+                    />
+                )}
             </div>
         );
     }
@@ -340,6 +392,11 @@ CreateDisruption.propTypes = {
     openCreateDisruption: PropTypes.func.isRequired,
     useWorkarounds: PropTypes.bool.isRequired,
     searchByDrawing: PropTypes.func.isRequired,
+    boundsToFit: PropTypes.array.isRequired,
+    childStops: PropTypes.object.isRequired,
+    updateAffectedStopsState: PropTypes.func.isRequired,
+    stopDetail: PropTypes.object.isRequired,
+    isLoading: PropTypes.bool,
 };
 
 CreateDisruption.defaultProps = {
@@ -352,6 +409,7 @@ CreateDisruption.defaultProps = {
     editMode: EDIT_TYPE.CREATE,
     routeColors: [],
     disruptionToEdit: {},
+    isLoading: false,
 };
 
 export default connect(state => ({
@@ -366,6 +424,10 @@ export default connect(state => ({
     routeColors: getRouteColors(state),
     disruptionToEdit: getDisruptionToEdit(state),
     useWorkarounds: useWorkarounds(state),
+    boundsToFit: getBoundsToFit(state),
+    childStops: getChildStops(state),
+    stopDetail: getStopDetail(state),
+    isLoading: getDisruptionsLoadingState(state),
 }), {
     createDisruption,
     openCreateDisruption,
@@ -373,4 +435,5 @@ export default connect(state => ({
     updateCurrentStep,
     updateDisruption,
     searchByDrawing,
+    updateAffectedStopsState,
 })(CreateDisruption);

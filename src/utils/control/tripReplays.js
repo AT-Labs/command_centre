@@ -1,5 +1,5 @@
 import parse from 'wellknown';
-import { get, find, findLastIndex } from 'lodash-es';
+import { get, find, findLastIndex, has } from 'lodash-es';
 import { TRIP_UPDATE_TYPE, TRIP_FINAL_STATUS } from '../../constants/tripReplays';
 
 export const getJsonFromWkt = wkt => parse(wkt).coordinates.map(coors => [
@@ -74,4 +74,41 @@ export const getStopIndexAfterCancel = (stops, canceledEvent) => {
         return stopDepartureTime && stopDepartureTime <= cancelTime;
     });
     return stopIndexBeforeCancel === -1 ? 0 : stopIndexBeforeCancel + 1;
+};
+
+export const formatTimeLabel = (times, prefix) => {
+    if (has(times, 'signedOn')) {
+        return 'Signed on time';
+    }
+
+    if ((has(times, 'arrival') && has(times, 'departure'))
+    || (!has(times, 'arrival') && !has(times, 'departure'))) {
+        return `${prefix} time`.trim();
+    }
+
+    if (has(times, 'arrival')) {
+        return `${prefix} arrival`.trim();
+    }
+
+    return `${prefix} departure`.trim();
+};
+
+export const formatArrivalDeparture = (times) => {
+    if (has(times, 'signedOn')) {
+        return get(times, 'signedOn');
+    }
+
+    if (has(times, 'arrival') && has(times, 'departure')) {
+        return `${get(times, 'arrival')} - ${get(times, 'departure')}`;
+    }
+
+    if (!has(times, 'arrival') && !has(times, 'departure')) {
+        return '-';
+    }
+
+    if (has(times, 'arrival')) {
+        return get(times, 'arrival');
+    }
+
+    return get(times, 'departure');
 };

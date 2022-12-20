@@ -2,44 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash-es';
 import moment from 'moment';
-import { occupancyStatusToMessage } from '../../../../../types/vehicle-occupancy-status-types';
-
-const formatTimeLabel = (times, prefix) => {
-    if (_.has(times, 'signedOn')) {
-        return 'Signed on time';
-    }
-
-    if ((_.has(times, 'arrival') && _.has(times, 'departure'))
-    || (!_.has(times, 'arrival') && !_.has(times, 'departure'))) {
-        return `${prefix} time`.trim();
-    }
-
-    if (_.has(times, 'arrival')) {
-        return `${prefix} arrival`.trim();
-    }
-
-    return `${prefix} departure`.trim();
-};
-
-const formatArrivalDeparture = (times) => {
-    if (_.has(times, 'signedOn')) {
-        return _.get(times, 'signedOn');
-    }
-
-    if (_.has(times, 'arrival') && _.has(times, 'departure')) {
-        return `${_.get(times, 'arrival')} - ${_.get(times, 'departure')}`;
-    }
-
-    if (!_.has(times, 'arrival') && !_.has(times, 'departure')) {
-        return '-';
-    }
-
-    if (_.has(times, 'arrival')) {
-        return _.get(times, 'arrival');
-    }
-
-    return _.get(times, 'departure');
-};
+import { occupancyStatusToMessage } from '../../../../types/vehicle-occupancy-status-types';
+import { formatTimeLabel, formatArrivalDeparture } from '../../../../utils/control/tripReplays';
 
 function PopupContent({ selectedKeyEvent, currentTrip, coordinates, scheduledTime, time, markerId }) {
     const tripDate = moment(currentTrip.tripSignOn).format('YYYY-MM-DD');

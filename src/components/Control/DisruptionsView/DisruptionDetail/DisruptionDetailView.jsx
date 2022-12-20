@@ -46,7 +46,7 @@ import {
     deleteDisruptionFile,
 } from '../../../../redux/actions/control/disruptions';
 import { useWorkarounds } from '../../../../redux/selectors/appSettings';
-import { getShapes, getDisruptionsLoadingState, getRouteColors, getAffectedRoutes, getAffectedStops } from '../../../../redux/selectors/control/disruptions';
+import { getShapes, getDisruptionsLoadingState, getRouteColors, getAffectedRoutes, getAffectedStops, getBoundsToFit } from '../../../../redux/selectors/control/disruptions';
 import DetailLoader from '../../../Common/Loader/DetailLoader';
 import { DisruptionDetailSelect } from './DisruptionDetailSelect';
 import DisruptionLabelAndText from './DisruptionLabelAndText';
@@ -62,11 +62,12 @@ import {
     getRecurrenceDates,
     recurrenceRadioOptions,
     getStatusOptions,
+    itemToEntityTransformers,
 } from '../../../../utils/control/disruptions';
 import { calculateActivePeriods, getRecurrenceText, parseRecurrencePattern, fetchEndDateFromRecurrence } from '../../../../utils/recurrence';
 import './styles.scss';
 import DisruptionSummaryModal from './DisruptionSummaryModal';
-import Map from '../DisruptionCreation/CreateDisruption/Map';
+import { Map } from '../../../Common/Map/Map';
 import DiversionUpload from './DiversionUpload';
 import AffectedEntities from '../AffectedEntities';
 import WeekdayPicker from '../../Common/WeekdayPicker/WeekdayPicker';
@@ -77,6 +78,11 @@ import ConfirmationModal from '../../Common/ConfirmationModal/ConfirmationModal'
 import { confirmationModalTypes } from '../types';
 import { ViewWorkaroundsModal } from './ViewWorkaroundsModal';
 import { LastNoteView } from './LastNoteView';
+import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
+import { ShapeLayer } from '../../../Common/Map/ShapeLayer/ShapeLayer';
+import { SelectedStopsMarker } from '../../../Common/Map/StopsLayer/SelectedStopsMarker';
+
+const { STOP } = SEARCH_RESULT_TYPE;
 
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
@@ -392,10 +398,24 @@ const DisruptionDetailView = (props) => {
                     viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                 />
                 <section className="position-relative w-50 d-flex disruption-detail__map">
-                    <Map shouldOffsetForSidePanel={ false }
-                        shapes={ !isLoading ? props.shapes : [] }
-                        stops={ !isLoading ? disruption.affectedEntities.filter(entity => entity.stopCode).slice(0, 10) : [] }
-                        routeColors={ !isLoading ? props.routeColors : [] } />
+                    <Map
+                        shouldOffsetForSidePanel
+                        boundsToFit={ props.boundsToFit }
+                        isLoading={ isLoading }
+                    >
+                        <ShapeLayer
+                            shapes={ !isLoading ? props.shapes : [] }
+                            routeColors={ !isLoading ? props.routeColors : [] } />
+                        <SelectedStopsMarker
+                            stops={
+                                !isLoading
+                                    ? disruption.affectedEntities.filter(entity => entity.stopCode).slice(0, 10).map(stop => itemToEntityTransformers[STOP.type](stop).data)
+                                    : []
+                            }
+                            size={ 28 }
+                            tooltip
+                            maximumStopsToDisplay={ 200 } />
+                    </Map>
                 </section>
                 <span className="map-note">Note: Only a max of ten routes and ten stops will be displayed on the map.</span>
             </div>
@@ -752,6 +772,7 @@ DisruptionDetailView.propTypes = {
     stops: PropTypes.array.isRequired,
     className: PropTypes.string,
     useWorkarounds: PropTypes.bool.isRequired,
+    boundsToFit: PropTypes.array.isRequired,
 };
 
 DisruptionDetailView.defaultProps = {
@@ -769,6 +790,7 @@ export default connect(state => ({
     routes: getAffectedRoutes(state),
     stops: getAffectedStops(state),
     useWorkarounds: useWorkarounds(state),
+    boundsToFit: getBoundsToFit(state),
 }), {
     getRoutesByShortName,
     openCreateDisruption,

@@ -1,9 +1,10 @@
-import { isEmpty, camelCase, isObject, uniq, transform, isArray, omit, pick } from 'lodash-es';
+import { isEmpty, camelCase, isObject, uniq, transform, isArray, omit, pick, groupBy } from 'lodash-es';
 import moment from 'moment';
 import { TIME_FORMAT, LABEL_FREQUENCY, FREQUENCY_TYPE } from '../../constants/disruptions';
 import { DATE_FORMAT_DDMMYYYY as DATE_FORMAT } from '../dateUtils';
 import VEHICLE_TYPES from '../../types/vehicle-types';
 import { STATUSES } from '../../types/disruptions-types';
+import SEARCH_RESULT_TYPE from '../../types/search-result-types';
 
 export const PAGE_SIZE = 50;
 
@@ -156,3 +157,121 @@ export const filterOnlyRouteParams = route => pick(route, ['routeId', 'routeShor
     'text', 'category', 'icon', 'valueKey', 'labelKey', 'type']);
 export const filterOnlyStopParams = stop => pick(stop, ['stopId', 'stopName', 'stopCode', 'locationType', 'stopLat', 'stopLon', 'parentStation',
     'platformCode', 'text', 'category', 'icon', 'valueKey', 'labelKey', 'type', 'groupId']);
+
+const { ROUTE, STOP, STOP_GROUP } = SEARCH_RESULT_TYPE;
+
+export const formatStop = (stop, text = null, category = null, icon = null) => ({
+    stopId: stop.stop_id,
+    stopName: stop.stop_name,
+    stopCode: stop.stop_code,
+    locationType: stop.location_type,
+    stopLat: stop.stop_lat,
+    stopLon: stop.stop_lon,
+    parentStation: stop.parent_station,
+    platformCode: stop.platform_code,
+    routeType: stop.route_type,
+    text: text ?? `${stop.stop_code} - ${stop.stop_name}`,
+    category,
+    icon,
+    valueKey: 'stopCode',
+    labelKey: 'stopCode',
+    type: STOP.type,
+});
+
+export const formatStopsWithGroup = (stops, groupId) => stops.map(stop => ({
+    ...formatStop(stop),
+    groupId,
+}));
+
+export const formatStopsInStopGroup = (stopGroups, allStops) => {
+    const stops = [];
+    stopGroups.forEach((group) => {
+        if (!group.stops[0].value) {
+            stops.push(...group.stops);
+        } else {
+            const groupStops = group.stops.map((stop) => {
+                let foundStop = allStops[stop.value];
+
+                if (!foundStop) {
+                    foundStop = {
+                        stop_id: `-${stop.value}`,
+                        text: `${stop.value}`,
+                        stop_name: `${stop.value}`,
+                        stop_code: 'Not Found',
+                    };
+                }
+
+                return foundStop;
+            });
+
+            stops.push(...formatStopsWithGroup(groupStops, group.groupId));
+        }
+    });
+
+    return groupBy(stops, 'groupId');
+};
+
+export const entityToItemTransformers = {
+    [ROUTE.type]: entity => ({
+        routeId: entity.data.route_id,
+        routeType: entity.data.route_type,
+        routeShortName: entity.data.route_short_name,
+        agencyName: entity.data.agency_name,
+        agencyId: entity.data.agency_id,
+        text: entity.text,
+        category: entity.category,
+        icon: entity.icon,
+        valueKey: 'routeId',
+        labelKey: 'routeShortName',
+        type: ROUTE.type,
+    }),
+    [STOP.type]: entity => formatStop(entity.data, entity.text, entity.category, entity.icon),
+    [STOP_GROUP.type]: entity => ({
+        groupId: entity.data.id,
+        groupName: entity.data.title,
+        stops: entity.data.stops,
+        valueKey: 'groupId',
+        labelKey: 'groupName',
+        type: STOP_GROUP.type,
+        category: entity.category,
+    }),
+};
+
+export const itemToEntityTransformers = {
+    [ROUTE.type]: item => ({
+        text: item.routeShortName,
+        data: {
+            route_id: item.routeId,
+            route_type: item.routeType,
+            route_short_name: item.routeShortName,
+            agency_name: item.agencyName,
+            agency_id: item.agencyId,
+        },
+        category: item.category,
+        icon: item.icon,
+    }),
+    [STOP.type]: item => ({
+        text: item.text,
+        data: {
+            stop_id: item.stopId,
+            stop_name: item.stopName,
+            stop_code: item.stopCode,
+            location_type: item.locationType,
+            stop_lat: item.stopLat,
+            stop_lon: item.stopLon,
+            parent_station: item.parentStation,
+            platform_code: item.platformCode,
+            route_type: item.routeType,
+        },
+        category: item.category,
+        icon: item.icon,
+    }),
+    [STOP_GROUP.type]: item => ({
+        text: item.groupName,
+        data: {
+            group_id: item.groupId,
+        },
+        category: item.category,
+        icon: item.icon,
+    }),
+};

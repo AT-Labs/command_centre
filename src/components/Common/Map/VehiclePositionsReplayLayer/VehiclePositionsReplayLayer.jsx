@@ -5,9 +5,9 @@ import * as moment from 'moment';
 import * as L from 'leaflet';
 import _ from 'lodash-es';
 import { FeatureGroup, LeafletConsumer } from 'react-leaflet';
-import { getVehiclePositions, getTripSignOn } from '../../../../../redux/selectors/control/tripReplays/currentTrip';
+import { getVehiclePositions, getTripSignOn } from '../../../../redux/selectors/control/tripReplays/currentTrip';
 import VehiclePositionMarker from './VehiclePositionMarker';
-import './VehiclePositionsLayer.scss';
+import './VehiclePositionsReplayLayer.scss';
 
 const getCoordinates = (vehiclePosition) => {
     const { position } = vehiclePosition;
@@ -46,7 +46,7 @@ const filterPositions = (positions, leafletMap, tripSignOn) => {
     return filteredPositions;
 };
 
-function VehiclePositionsLayer({ tripSignOn, vehiclePositions, leafletMap, selectedKeyEvent, hoveredKeyEvent, selectedKeyEventId, clearSelectedKeyEvent }) {
+function VehiclePositionsReplayLayer({ tripSignOn, vehiclePositions, leafletMap, selectedKeyEvent, hoveredKeyEvent, selectedKeyEventId, clearSelectedKeyEvent }) {
     const [positionsToDisplay, setPositionsToDisplay] = useState([]);
 
     useEffect(() => {
@@ -80,7 +80,7 @@ function VehiclePositionsLayer({ tripSignOn, vehiclePositions, leafletMap, selec
     );
 }
 
-VehiclePositionsLayer.propTypes = {
+VehiclePositionsReplayLayer.propTypes = {
     vehiclePositions: PropTypes.array.isRequired,
     leafletMap: PropTypes.object.isRequired,
     selectedKeyEvent: PropTypes.object,
@@ -90,7 +90,7 @@ VehiclePositionsLayer.propTypes = {
     tripSignOn: PropTypes.string,
 };
 
-VehiclePositionsLayer.defaultProps = {
+VehiclePositionsReplayLayer.defaultProps = {
     selectedKeyEvent: null,
     hoveredKeyEvent: '',
     selectedKeyEventId: '',
@@ -102,6 +102,6 @@ export default connect(state => ({
     tripSignOn: getTripSignOn(state),
 }))(props => (
     <LeafletConsumer>
-        {({ map }) => <VehiclePositionsLayer { ...props } leafletMap={ map } />}
+        {({ map }) => <VehiclePositionsReplayLayer { ...props } leafletMap={ map } />}
     </LeafletConsumer>
 ));

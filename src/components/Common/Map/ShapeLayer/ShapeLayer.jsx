@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { isEmpty } from 'lodash-es';
 import { FeatureGroup, Polyline } from 'react-leaflet';
-import { generateUniqueID } from '../../../../../utils/helpers';
+import { generateUniqueID } from '../../../../utils/helpers';
 
-class ShapeLayer extends React.Component {
+export class ShapeLayer extends React.Component {
     static propTypes = {
         shapes: PropTypes.array,
         routeColors: PropTypes.array,
@@ -56,5 +56,3 @@ class ShapeLayer extends React.Component {
             : null;
     }
 }
-
-export default ShapeLayer;

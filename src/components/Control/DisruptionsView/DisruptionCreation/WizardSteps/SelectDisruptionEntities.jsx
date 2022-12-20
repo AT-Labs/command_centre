@@ -41,7 +41,12 @@ import { confirmationModalTypes } from '../../types';
 import RoutesByStopMultiSelect from './MultiSelect/RoutesByStopMultiSelect';
 import StopByRoutesMultiSelect from './MultiSelect/StopByRoutesMultiSelect';
 import StopGroupsMultiSelect from './MultiSelect/StopGroupsMultiSelect';
-import { filterOnlyStopParams } from '../../../../../utils/control/disruptions';
+import {
+    filterOnlyStopParams,
+    formatStopsInStopGroup,
+    entityToItemTransformers,
+    itemToEntityTransformers,
+} from '../../../../../utils/control/disruptions';
 
 export const SelectDisruptionEntities = (props) => {
     const { ROUTE, STOP, STOP_GROUP } = SEARCH_RESULT_TYPE;
@@ -235,62 +240,11 @@ export const SelectDisruptionEntities = (props) => {
         return { ...updatedStopGroups, ...stopGroupsToAdd };
     };
 
-    const formatStop = (stop, text = null, category = null, icon = null) => ({
-        stopId: stop.stop_id,
-        stopName: stop.stop_name,
-        stopCode: stop.stop_code,
-        locationType: stop.location_type,
-        stopLat: stop.stop_lat,
-        stopLon: stop.stop_lon,
-        parentStation: stop.parent_station,
-        platformCode: stop.platform_code,
-        routeType: stop.route_type,
-        text: text ?? `${stop.stop_code} - ${stop.stop_name}`,
-        category,
-        icon,
-        valueKey: 'stopCode',
-        labelKey: 'stopCode',
-        type: STOP.type,
-    });
-
-    const formatStopsWithGroup = (stops, groupId) => stops.map(stop => ({
-        ...formatStop(stop),
-        groupId,
-    }));
-
-    const formatStopsInStopGroup = (stopGroups) => {
-        const stops = [];
-        stopGroups.forEach((group) => {
-            if (!group.stops[0].value) {
-                stops.push(...group.stops);
-            } else {
-                const groupStops = group.stops.map((stop) => {
-                    let foundStop = props.stops[stop.value];
-
-                    if (!foundStop) {
-                        foundStop = {
-                            stop_id: `-${stop.value}`,
-                            text: `${stop.value}`,
-                            stop_name: `${stop.value}`,
-                            stop_code: 'Not Found',
-                        };
-                    }
-
-                    return foundStop;
-                });
-
-                stops.push(...formatStopsWithGroup(groupStops, group.groupId));
-            }
-        });
-
-        return groupBy(stops, 'groupId');
-    };
-
     const onChange = (selectedItems) => {
         const stops = filter(selectedItems, { type: 'stop' });
         const routes = filter(selectedItems, { type: 'route' });
         const stopGroups = filter(selectedItems, { type: 'stop-group' });
-        const stopGroupsWithFormattedStops = stopGroups?.length > 0 ? formatStopsInStopGroup(stopGroups) : {};
+        const stopGroupsWithFormattedStops = stopGroups?.length > 0 ? formatStopsInStopGroup(stopGroups, props.stops) : {};
 
         const allStops = addRemoveStops(affectedSingleStops, stops);
         const allStopGroups = addRemoveStopsByGroup(affectedStopGroups, stopGroupsWithFormattedStops);
@@ -326,71 +280,6 @@ export const SelectDisruptionEntities = (props) => {
         const updatedStopGroups = { ...affectedStopGroups };
         delete updatedStopGroups[groupId];
         saveStopsState([...affectedSingleStops, ...Object.values(updatedStopGroups).flat()]);
-    };
-
-    const entityToItemTransformers = {
-        [ROUTE.type]: entity => ({
-            routeId: entity.data.route_id,
-            routeType: entity.data.route_type,
-            routeShortName: entity.data.route_short_name,
-            agencyName: entity.data.agency_name,
-            agencyId: entity.data.agency_id,
-            text: entity.text,
-            category: entity.category,
-            icon: entity.icon,
-            valueKey: 'routeId',
-            labelKey: 'routeShortName',
-            type: ROUTE.type,
-        }),
-        [STOP.type]: entity => formatStop(entity.data, entity.text, entity.category, entity.icon),
-        [STOP_GROUP.type]: entity => ({
-            groupId: entity.data.id,
-            groupName: entity.data.title,
-            stops: entity.data.stops,
-            valueKey: 'groupId',
-            labelKey: 'groupName',
-            type: STOP_GROUP.type,
-            category: entity.category,
-        }),
-    };
-
-    const itemToEntityTransformers = {
-        [ROUTE.type]: item => ({
-            text: item.routeShortName,
-            data: {
-                route_id: item.routeId,
-                route_type: item.routeType,
-                route_short_name: item.routeShortName,
-                agency_name: item.agencyName,
-                agency_id: item.agencyId,
-            },
-            category: item.category,
-            icon: item.icon,
-        }),
-        [STOP.type]: item => ({
-            text: item.text,
-            data: {
-                stop_id: item.stopId,
-                stop_name: item.stopName,
-                stop_code: item.stopCode,
-                location_type: item.locationType,
-                stop_lat: item.stopLat,
-                stop_lon: item.stopLon,
-                parent_station: item.parentStation,
-                platform_code: item.platformCode,
-                route_type: item.routeType,
-            },
-            category: item.category,
-            icon: item.icon,
-        }),
-        [STOP_GROUP.type]: item => ({
-            text: item.groupName,
-            data: {
-                group_id: item.groupId,
-            },
-            category: item.category,
-            icon: item.icon,
-        }),
     };
 
     const itemsSelectedText = () => {

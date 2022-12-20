@@ -1,8 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { CircleMarker, Popup, Tooltip } from 'react-leaflet';
-import PopupContent from '../Common/PopupContent';
-import { getTimesFromStop } from '../../../../../utils/helpers';
+import PopupContent from '../popup/PopupContent';
+import { getTimesFromStop } from '../../../../utils/helpers';
 
 const getCoordinates = stop => [stop.stopLat, stop.stopLon];
 

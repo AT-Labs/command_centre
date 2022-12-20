@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { CircleMarker, Popup, Tooltip } from 'react-leaflet';
-import VehicleStatusPopupContent from '../Common/VehicleStatusPopupContent';
+import VehicleStatusPopupContent from '../popup/VehicleStatusPopupContent';
 
 const getCoordinates = eventPosition => [eventPosition.latitude, eventPosition.longitude];
 

@@ -2,18 +2,16 @@ import L from 'leaflet';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { CircleMarker } from 'react-leaflet';
-import { connect } from 'react-redux';
-import { getStopDetail } from '../../../../redux/selectors/realtime/detail';
-import { getHighlightVehiclePosition } from '../../../../redux/selectors/realtime/vehicles';
 
 export class HighlightingLayer extends React.PureComponent {
     static propTypes = {
         vehiclePosition: PropTypes.object,
-        stopDetail: PropTypes.object.isRequired,
+        stopDetail: PropTypes.object,
     };
 
     static defaultProps = {
         vehiclePosition: undefined,
+        stopDetail: undefined,
     };
 
     constructor(props) {
@@ -62,10 +60,3 @@ export class HighlightingLayer extends React.PureComponent {
         return layer;
     }
 }
-
-export default connect(
-    state => ({
-        vehiclePosition: getHighlightVehiclePosition(state),
-        stopDetail: getStopDetail(state),
-    }),
-)(HighlightingLayer);

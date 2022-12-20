@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { Form, FormGroup, Input, Label, Button } from 'reactstrap';
 import { BsArrowRepeat } from 'react-icons/bs';
 import { OLD_CAUSES, OLD_IMPACTS, CAUSES, IMPACTS } from '../../../../types/disruption-cause-and-effect';
-import { getShapes, getDisruptionsLoadingState } from '../../../../redux/selectors/control/disruptions';
+import { getShapes, getDisruptionsLoadingState, getBoundsToFit, getRouteColors } from '../../../../redux/selectors/control/disruptions';
 import {
     DATE_FORMAT,
     LABEL_CAUSE, LABEL_CREATED_BY,
@@ -19,11 +19,11 @@ import {
     updateAffectedRoutesState,
     updateAffectedStopsState,
 } from '../../../../redux/actions/control/disruptions';
-import { formatCreatedUpdatedTime, recurrenceRadioOptions } from '../../../../utils/control/disruptions';
+import { formatCreatedUpdatedTime, recurrenceRadioOptions, itemToEntityTransformers } from '../../../../utils/control/disruptions';
 import { getRecurrenceText, parseRecurrencePattern } from '../../../../utils/recurrence';
 import DisruptionLabelAndText from './DisruptionLabelAndText';
 import DiversionUpload from './DiversionUpload';
-import Map from '../DisruptionCreation/CreateDisruption/Map';
+import { Map } from '../../../Common/Map/Map';
 import AffectedEntities from '../AffectedEntities';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
@@ -31,6 +31,11 @@ import WeekdayPicker from '../../Common/WeekdayPicker/WeekdayPicker';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 import { ViewWorkaroundsModal } from './ViewWorkaroundsModal';
 import { LastNoteView } from './LastNoteView';
+import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
+import { ShapeLayer } from '../../../Common/Map/ShapeLayer/ShapeLayer';
+import { SelectedStopsMarker } from '../../../Common/Map/StopsLayer/SelectedStopsMarker';
+
+const { STOP } = SEARCH_RESULT_TYPE;
 
 const Readonly = (props) => {
     const { disruption, isLoading } = props;
@@ -74,9 +79,24 @@ const Readonly = (props) => {
                     viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                 />
                 <section className="position-relative w-50 d-flex disruption-detail__map">
-                    <Map shouldOffsetForSidePanel={ false }
-                        shapes={ !isLoading ? props.shapes : [] }
-                        stops={ !isLoading ? disruption.affectedEntities.filter(entity => entity.stopCode).slice(0, 10) : [] } />
+                    <Map
+                        shouldOffsetForSidePanel
+                        boundsToFit={ props.boundsToFit }
+                        isLoading={ isLoading }
+                    >
+                        <ShapeLayer
+                            shapes={ !isLoading ? props.shapes : [] }
+                            routeColors={ !isLoading ? props.routeColors : [] } />
+                        <SelectedStopsMarker
+                            stops={
+                                !isLoading
+                                    ? disruption.affectedEntities.filter(entity => entity.stopCode).slice(0, 10).map(stop => itemToEntityTransformers[STOP.type](stop).data)
+                                    : []
+                            }
+                            size={ 28 }
+                            tooltip
+                            maximumStopsToDisplay={ 200 } />
+                    </Map>
                 </section>
                 <span className="map-note">Note: Only a max of ten routes and ten stops will be displayed on the map.</span>
             </div>
@@ -218,16 +238,21 @@ Readonly.propTypes = {
     updateAffectedStopsState: PropTypes.func.isRequired,
     shapes: PropTypes.array,
     isLoading: PropTypes.bool,
+    boundsToFit: PropTypes.array.isRequired,
+    routeColors: PropTypes.array,
 };
 
 Readonly.defaultProps = {
     shapes: [],
     isLoading: false,
+    routeColors: [],
 };
 
 export default connect(state => ({
     shapes: getShapes(state),
     isLoading: getDisruptionsLoadingState(state),
+    boundsToFit: getBoundsToFit(state),
+    routeColors: getRouteColors(state),
 }), {
     getRoutesByShortName,
     updateAffectedRoutesState,
