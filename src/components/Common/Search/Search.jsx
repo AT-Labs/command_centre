@@ -40,6 +40,7 @@ export class Search extends Component {
         selectedEntities: PropTypes.object,
         showTags: PropTypes.bool,
         isValid: PropTypes.bool,
+        inputRef: PropTypes.object,
     };
 
     static defaultProps = {
@@ -63,6 +64,7 @@ export class Search extends Component {
         selectedEntities: {},
         showTags: true,
         isValid: true,
+        inputRef: {},
     };
 
     static NO_RESULTS = 'No Results';
@@ -227,6 +229,7 @@ export class Search extends Component {
             value,
             id: this.props.inputId,
             disabled: this.props.isDisabled,
+            ref: this.props.inputRef,
         };
 
         return (

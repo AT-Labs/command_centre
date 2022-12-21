@@ -65,6 +65,7 @@ export class OmniSearch extends Component {
         selectedEntities: PropTypes.object,
         showTags: PropTypes.bool,
         isValid: PropTypes.bool,
+        inputRef: PropTypes.object,
     };
 
     static defaultProps = {
@@ -85,6 +86,7 @@ export class OmniSearch extends Component {
         selectedEntities: {},
         showTags: true,
         isValid: true,
+        inputRef: {},
     };
 
     handleSelect = (selectedItem) => {
@@ -110,6 +112,7 @@ export class OmniSearch extends Component {
             <div className="omni-search flex-grow-1">
                 <Search
                     inputId={ this.props.inputId }
+                    inputRef={ this.props.inputRef }
                     isIconVisible={ this.props.isIconVisible }
                     showValue={ this.props.isSelectedValueShown }
                     placeholder={ this.props.placeholder }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import _ from 'lodash-es';
@@ -19,6 +19,7 @@ const ModalWithAdditionalInputField = (props) => {
     const [isOperatorAndRouteDisabled, setIsOperatorAndRouteDisabled] = useState(false);
     const [isRouteVariantValid, setIsRouteVariantValid] = useState(false);
     const [isRouteValid, setIsRouteValid] = useState(false);
+    const routeVariantInputRef = useRef();
 
     useEffect(() => {
         if (restrictOperatorData.length === 1) {
@@ -104,11 +105,22 @@ const ModalWithAdditionalInputField = (props) => {
     };
 
     const handleInputValueChangeRouteVariant = (value) => {
+        let selectedRouteVariant = value;
         props.onChange({ routeVariant: value });
         routeVariantValid(value);
         if (isOperatorAndRouteDisabled) {
             setIsOperatorAndRouteDisabled(false);
         }
+        routeVariantInputRef.current.addEventListener('keydown', (event) => {
+            if (event.key === 'Tab') {
+                const routeData = searchResults[SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type];
+                const selectedRouteVariantValue = _.find(routeData, object => object.text === selectedRouteVariant);
+                if (_.isObject(selectedRouteVariantValue)) {
+                    routeVariantIdActionHandler.selection[SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type](selectedRouteVariantValue);
+                }
+                selectedRouteVariant = '';
+            }
+        });
     };
 
     const handleInputValueChangeRoute = (value) => {
@@ -138,6 +150,7 @@ const ModalWithAdditionalInputField = (props) => {
                         <span className="font-size-md font-weight-bold">Route Variant</span>
                     </Label>
                     <SearchFilter
+                        inputRef={ routeVariantInputRef }
                         isDisabled={ !allowUpdate }
                         value={ routeVariant }
                         placeholder="Search route variant"

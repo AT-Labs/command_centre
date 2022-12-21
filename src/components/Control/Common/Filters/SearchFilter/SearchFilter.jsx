@@ -13,6 +13,7 @@ const SearchFilter = (props) => {
 
     return (
         <OmniSearch
+            inputRef={ props.inputRef }
             theme={ SearchTheme }
             placeholder={ props.placeholder }
             value={ props.value }
@@ -37,6 +38,7 @@ SearchFilter.propTypes = {
     onHandleInputValueChange: PropTypes.func,
     isDisabled: PropTypes.bool,
     isValid: PropTypes.bool,
+    inputRef: PropTypes.object,
 };
 
 SearchFilter.defaultProps = {
@@ -44,6 +46,7 @@ SearchFilter.defaultProps = {
     value: '',
     isDisabled: false,
     isValid: true,
+    inputRef: {},
     onHandleInputValueChange: () => {},
 };
 
