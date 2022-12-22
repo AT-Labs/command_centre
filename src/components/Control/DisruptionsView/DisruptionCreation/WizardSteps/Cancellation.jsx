@@ -17,25 +17,25 @@ const Cancellation = (props) => {
         <div className="disruption-creation__wizard-confirmation">
             <div className="row">
                 <div className="col 'd-flex justify-content-center'">
-                    <h2>Are you sure you want to cancel?</h2>
+                    <h2>Are you sure you want to close?</h2>
                     <div>
-                        <span className="d-block mt-3 mb-2">The information you entered cannot be saved.</span>
+                        <span className="d-block mt-3 mb-2">Any information entered will not be saved.</span>
                     </div>
                 </div>
             </div>
             <footer className="row justify-content-between mt-3">
-                <div className="col-4">
+                <div className="col-5">
                     <Button
                         className="btn cc-btn-secondary btn-block"
                         onClick={ () => props.toggleDisruptionModals('isCancellationOpen', false) }>
-                        Not right now
+                        Keep editing
                     </Button>
                 </div>
-                <div className="col-4">
+                <div className="col-5">
                     <Button
-                        className="btn cc-btn-primary btn-block continue"
+                        className="btn cc-btn-primary btn-block"
                         onClick={ () => { closeCreateDisruption(); } }>
-                        Confirm
+                        Discard changes
                     </Button>
                 </div>
             </footer>

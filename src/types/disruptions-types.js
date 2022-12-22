@@ -24,7 +24,7 @@ export const ACTION_RESULT = {
     }),
     CREATE_SUCCESS: (incidentNo, createNotification = false) => ({
         resultStatus: ACTION_RESULT_TYPES.SUCCESS,
-        resultMessage: `Disruption with disrupt number #${incidentNo} created successfully.`,
+        resultMessage: `Disruption number #${incidentNo} created successfully.`,
         resultCreateNotification: createNotification,
     }),
     COPY_SUCCESS: (incidentNo, createNotification, sourceDisruptionID = false) => ({

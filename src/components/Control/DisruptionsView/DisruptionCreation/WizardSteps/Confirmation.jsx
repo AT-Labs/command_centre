@@ -2,11 +2,15 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
-
+import { GridLinkOperator } from '@mui/x-data-grid-pro';
 import Message from '../../../Common/Message/Message';
 import DetailLoader from '../../../../Common/Loader/DetailLoader';
-import { clearDisruptionActionResult, updateActiveDisruptionId, openCreateDisruption, deleteAffectedEntities } from '../../../../../redux/actions/control/disruptions';
+import {
+    clearDisruptionActionResult,
+    updateActiveDisruptionId,
+    openCreateDisruption, deleteAffectedEntities, updateDisruptionsDatagridConfig } from '../../../../../redux/actions/control/disruptions';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
+import { getDisruptionsDatagridConfig } from '../../../../../redux/selectors/control/disruptions';
 
 const Confirmation = (props) => {
     const { isRequesting, resultDisruptionId, resultMessage, resultCreateNotification } = props.response;
@@ -49,31 +53,32 @@ const Confirmation = (props) => {
             </div>
             { !isRequesting && (
                 <footer className="row justify-content-between mt-3">
-                    <div className="col-6">
+                    <div className="col-4">
                         {
                             resultDisruptionId && (
                                 <Button
-                                    className="btn cc-btn-primary btn-block"
+                                    className="btn cc-btn-secondary"
                                     onClick={ () => {
                                         props.openCreateDisruption(false);
                                         props.deleteAffectedEntities();
-                                        if (!props.isModalOpen) {
-                                            setTimeout(() => props.updateActiveDisruptionId(resultDisruptionId), 0);
-                                        }
                                     } }>
-                                    Add more information
+                                    View all
                                 </Button>
                             )
                         }
                     </div>
-                    <div className="col-4">
+                    <div className="col-8">
                         <Button
-                            className="btn cc-btn-secondary btn-block"
+                            className="btn cc-btn-primary btn-block"
                             onClick={ () => {
                                 props.openCreateDisruption(false);
                                 props.deleteAffectedEntities();
+                                if (!props.isModalOpen && resultDisruptionId) {
+                                    props.updateDisruptionsDatagridConfig({ ...props.datagridConfig, filterModel: { items: [], linkOperator: GridLinkOperator.And } });
+                                    setTimeout(() => props.updateActiveDisruptionId(resultDisruptionId), 0);
+                                }
                             } }>
-                            { resultDisruptionId ? 'Done' : 'Close' }
+                            { resultDisruptionId ? 'View and add more information' : 'Close' }
                         </Button>
                     </div>
                 </footer>
@@ -89,6 +94,8 @@ Confirmation.propTypes = {
     isModalOpen: PropTypes.bool.isRequired,
     openCreateDisruption: PropTypes.func.isRequired,
     deleteAffectedEntities: PropTypes.func.isRequired,
+    datagridConfig: PropTypes.object.isRequired,
+    updateDisruptionsDatagridConfig: PropTypes.func.isRequired,
 };
 
 Confirmation.defaultProps = {
@@ -98,11 +105,13 @@ Confirmation.defaultProps = {
 export default connect(
     state => ({
         isModalOpen: isModalOpen(state),
+        datagridConfig: getDisruptionsDatagridConfig(state),
     }),
     {
         clearDisruptionActionResult,
         updateActiveDisruptionId,
         openCreateDisruption,
         deleteAffectedEntities,
+        updateDisruptionsDatagridConfig,
     },
 )(Confirmation);
