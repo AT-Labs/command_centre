@@ -27,7 +27,6 @@ import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOpera
 
 import './DisruptionsDataGrid.scss';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
-import { useWorkarounds } from '../../../redux/selectors/appSettings';
 import { getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from '../../../utils/control/disruptions';
 import { getWorkaroundsAsText } from '../../../utils/control/disruption-workarounds';
 
@@ -207,17 +206,15 @@ export const DisruptionsDataGrid = (props) => {
         props.updateCopyDisruptionState(false);
     };
 
-    if (props.useWorkarounds) {
-        const workaroundsColumnInfos = {
-            field: 'workarounds',
-            headerName: LABEL_WORKAROUNDS,
-            width: 150,
-            valueGetter: params => getWorkaroundsAsText(params.value),
-            type: 'string',
-            renderCell: RenderCellExpand,
-        };
-        GRID_COLUMNS.splice(8, 0, workaroundsColumnInfos);
-    }
+    const workaroundsColumnInfos = {
+        field: 'workarounds',
+        headerName: LABEL_WORKAROUNDS,
+        width: 150,
+        valueGetter: params => getWorkaroundsAsText(params.value),
+        type: 'string',
+        renderCell: RenderCellExpand,
+    };
+    GRID_COLUMNS.splice(8, 0, workaroundsColumnInfos);
 
     return (
         <div>
@@ -243,7 +240,6 @@ DisruptionsDataGrid.propTypes = {
     activeDisruptionId: PropTypes.number,
     updateActiveDisruptionId: PropTypes.func.isRequired,
     updateCopyDisruptionState: PropTypes.func.isRequired,
-    useWorkarounds: PropTypes.bool.isRequired,
 };
 
 DisruptionsDataGrid.defaultProps = {
@@ -255,7 +251,6 @@ export default connect(
     state => ({
         datagridConfig: getDisruptionsDatagridConfig(state),
         activeDisruptionId: getActiveDisruptionId(state),
-        useWorkarounds: useWorkarounds(state),
     }),
     {
         updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState,

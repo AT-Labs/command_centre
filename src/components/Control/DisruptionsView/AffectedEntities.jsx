@@ -5,7 +5,6 @@ import { Button } from 'reactstrap';
 import { isEmpty, groupBy } from 'lodash-es';
 import { MdEdit, MdEast } from 'react-icons/md';
 import { getStopGroupsIncludingDeleted } from '../../../redux/selectors/control/dataManagement/stopGroups';
-import { useWorkarounds } from '../../../redux/selectors/appSettings';
 import { getStopGroupName } from '../../../utils/control/dataManagement';
 import './AffectedEntities.scss';
 import { DIRECTIONS } from './types';
@@ -78,7 +77,7 @@ export const AffectedEntities = (props) => {
                                         </Button>
                                     </div>
                                 )}
-                                {props.useWorkarounds && props.showViewWorkaroundsButton && (
+                                {props.showViewWorkaroundsButton && (
                                     <div>
                                         <Button
                                             className="btn cc-btn-link pr-0 font-weight-bold"
@@ -117,7 +116,6 @@ AffectedEntities.propTypes = {
     heightSmall: PropTypes.bool,
     showViewWorkaroundsButton: PropTypes.bool,
     viewWorkaroundsAction: PropTypes.func,
-    useWorkarounds: PropTypes.bool.isRequired,
 };
 
 AffectedEntities.defaultProps = {
@@ -133,5 +131,4 @@ AffectedEntities.defaultProps = {
 
 export default connect(state => ({
     stopGroups: getStopGroupsIncludingDeleted(state),
-    useWorkarounds: useWorkarounds(state),
 }))(AffectedEntities);

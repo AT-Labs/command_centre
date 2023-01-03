@@ -342,7 +342,7 @@ export const deleteAffectedEntities = () => (dispatch) => {
     dispatch({
         type: ACTION_TYPE.DELETE_AFFECTED_ENTITIES,
         payload: {
-            activeStep: 1,
+            activeStep: 2,
             showSelectedRoutes: false,
             affectedEntities: {
                 affectedRoutes: [],

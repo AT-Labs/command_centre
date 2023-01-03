@@ -73,20 +73,22 @@ const DrawLayer = (props) => {
     return (
         <>
             <FeatureGroup ref={ drawingRef }>
-                <EditControl
-                    position="topleft"
-                    onCreated={ handleDrawCreated }
-                    onDeleted={ handleDrawDeleted }
-                    edit={ { edit: false } }
-                    draw={ {
-                        rectangle: false,
-                        polyline: false,
-                        marker: false,
-                        circlemarker: false,
-                        circle: enableDrawing,
-                        polygon: enableDrawing,
-                    } }
-                />
+                {!props.disabled && (
+                    <EditControl
+                        position="topleft"
+                        onCreated={ handleDrawCreated }
+                        onDeleted={ handleDrawDeleted }
+                        edit={ { edit: false } }
+                        draw={ {
+                            rectangle: false,
+                            polyline: false,
+                            marker: false,
+                            circlemarker: false,
+                            circle: enableDrawing,
+                            polygon: enableDrawing,
+                        } }
+                    />
+                )}
             </FeatureGroup>
             {alert.show && (
                 <AlertMessage
@@ -108,11 +110,13 @@ DrawLayer.propTypes = {
     disruptionType: PropTypes.string.isRequired,
     onDrawCreated: PropTypes.func,
     onDrawDeleted: PropTypes.func,
+    disabled: PropTypes.bool,
 };
 
 DrawLayer.defaultProps = {
     onDrawCreated: () => { },
     onDrawDeleted: () => { },
+    disabled: false,
 };
 
 export default (props => (

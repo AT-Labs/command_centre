@@ -71,12 +71,6 @@ describe('<SelectDetails />', () => {
             routes = [{ routeId: 'AIR-221' }];
         });
 
-        it('should be disabled when there are no affected entities', () => {
-            wrapper = setup({ data, stops: [], routes: [] });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
         it('should be disabled when startTime is empty', () => {
             data.startTime = '';
             wrapper = setup({ data, stops, routes });
@@ -200,23 +194,14 @@ describe('<SelectDetails />', () => {
             expect(footer.prop('isSubmitDisabled')).toEqual(false);
         });
 
-        it('with useWorkarounds off: should fire submit when next button is clicked', () => {
+        it('should fire step update when next button is clicked', () => {
             data.recurrent = false;
             wrapper = setup({ data, stops, routes });
             const footer = wrapper.find(Footer);
-            expect(footer.prop('nextButtonValue')).toEqual('Finish');
-            footer.renderProp('onContinue')();
-            expect(componentPropsMock.onSubmit).toHaveBeenCalled();
-        });
-
-        it('with useWorkarounds on: should fire step update when next button is clicked', () => {
-            data.recurrent = false;
-            wrapper = setup({ data, stops, routes, useWorkarounds: true });
-            const footer = wrapper.find(Footer);
             expect(footer.prop('nextButtonValue')).toEqual('Continue');
             footer.renderProp('onContinue')();
-            expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(2);
-            expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(3);
+            expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(1);
+            expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(2);
         });
     });
 });

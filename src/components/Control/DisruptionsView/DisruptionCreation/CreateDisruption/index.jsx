@@ -31,7 +31,6 @@ import {
     getBoundsToFit,
     getDisruptionsLoadingState,
 } from '../../../../../redux/selectors/control/disruptions';
-import { useWorkarounds } from '../../../../../redux/selectors/appSettings';
 import { STATUSES, DISRUPTION_TYPE, DISRUPTION_CREATION_STEPS, DEFAULT_SEVERITY, ALERT_TYPES } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
 import { buildSubmitBody, momentFromDateTime, getRecurrenceDates, itemToEntityTransformers, toCamelCaseKeys } from '../../../../../utils/control/disruptions';
@@ -162,13 +161,14 @@ export class CreateDisruption extends React.Component {
     };
 
     componentDidMount() {
-        this.props.updateCurrentStep(1);
-
         if (this.props.editMode === EDIT_TYPE.COPY) {
+            this.props.updateCurrentStep(1);
             this.setupDataCopy();
         } else if (this.props.editMode === EDIT_TYPE.EDIT) {
+            this.props.updateCurrentStep(2);
             this.setupDataEdit();
         } else {
+            this.props.updateCurrentStep(1);
             this.setupData();
         }
     }
@@ -233,14 +233,14 @@ export class CreateDisruption extends React.Component {
 
     renderSteps = () => {
         const steps = {
-            [DISRUPTION_CREATION_STEPS.SEARCH_ROUTES_STOPS]: (
-                <li key="1" className={ `position-relative ${this.props.activeStep === 1 ? 'active' : ''}` }>
-                    Search routes or stops
+            [DISRUPTION_CREATION_STEPS.ENTER_DETAILS]: (
+                <li key="1" className={ this.props.activeStep === 1 ? 'active' : '' }>
+                    Enter Details
                 </li>
             ),
-            [DISRUPTION_CREATION_STEPS.ENTER_DETAILS]: (
-                <li key="2" className={ this.props.activeStep === 2 ? 'active' : '' }>
-                    Enter Details
+            [DISRUPTION_CREATION_STEPS.SEARCH_ROUTES_STOPS]: (
+                <li key="2" className={ `position-relative ${this.props.activeStep === 2 ? 'active' : ''}` }>
+                    Search routes or stops
                 </li>
             ),
             [DISRUPTION_CREATION_STEPS.ADD_WORKAROUNDS]: (
@@ -255,14 +255,13 @@ export class CreateDisruption extends React.Component {
             <div className="disruption-creation__steps p-4">
                 <ol>
                     { this.props.editMode !== EDIT_TYPE.EDIT && ([
-                        steps[DISRUPTION_CREATION_STEPS.SEARCH_ROUTES_STOPS],
                         steps[DISRUPTION_CREATION_STEPS.ENTER_DETAILS],
-                        ...(this.props.useWorkarounds ? [steps[DISRUPTION_CREATION_STEPS.ADD_WORKAROUNDS]] : []),
+                        steps[DISRUPTION_CREATION_STEPS.SEARCH_ROUTES_STOPS],
+                        steps[DISRUPTION_CREATION_STEPS.ADD_WORKAROUNDS],
                     ])}
                     { this.props.editMode === EDIT_TYPE.EDIT && ([
                         steps[DISRUPTION_CREATION_STEPS.SEARCH_ROUTES_STOPS],
-                        ...(this.props.useWorkarounds ? [steps[DISRUPTION_CREATION_STEPS.ADD_WORKAROUNDS]] : []),
-                        ...(!this.props.useWorkarounds ? [steps[DISRUPTION_CREATION_STEPS.ENTER_DETAILS]] : []),
+                        steps[DISRUPTION_CREATION_STEPS.ADD_WORKAROUNDS],
                     ])}
                 </ol>
             </div>
@@ -280,7 +279,7 @@ export class CreateDisruption extends React.Component {
             return <h2 className="pl-4 pr-4">{titleByMode[this.props.editMode]}</h2>;
         };
         return (
-            <div className={ `sidepanel-control-component-view d-flex ${this.props.useWorkarounds && 'disruptions-sidepanel-with-workarounds'}` }>
+            <div className="sidepanel-control-component-view d-flex">
                 <SidePanel
                     isOpen
                     isActive
@@ -295,12 +294,11 @@ export class CreateDisruption extends React.Component {
                             response={ this.props.action }
                             onDataUpdate={ this.updateData }
                             onSubmit={ this.onSubmit }>
-                            <SelectDisruptionEntities onSubmitUpdate={ this.onSubmitUpdate } />
-                            <SelectDetails />
-                            { this.props.useWorkarounds && (
-                                <Workarounds
-                                    onSubmitUpdate={ this.onSubmitUpdate } />
-                            )}
+                            {this.props.editMode !== EDIT_TYPE.EDIT && (<SelectDetails />)}
+                            <SelectDisruptionEntities
+                                onSubmitUpdate={ this.onSubmitUpdate } />
+                            <Workarounds
+                                onSubmitUpdate={ this.onSubmitUpdate } />
                         </Wizard>
                         <CustomModal
                             className="disruption-creation__modal"
@@ -325,7 +323,7 @@ export class CreateDisruption extends React.Component {
                         shapes={ this.props.shapes }
                         routeColors={ this.props.routeColors } />
                     <StopsLayer
-                        childStops={ this.props.activeStep === 1 ? this.props.childStops : undefined }
+                        childStops={ this.props.activeStep === 2 ? this.props.childStops : undefined }
                         stopDetail={ this.props.stopDetail }
                         focusZoom={ 16 }
                         onStopClick={ (stop) => {
@@ -348,9 +346,9 @@ export class CreateDisruption extends React.Component {
                         tooltip
                         maximumStopsToDisplay={ 200 } />
                     <DrawLayer
+                        disabled={ this.props.activeStep !== 2 }
                         disruptionType={ disruptionData.disruptionType }
-                        onDrawCreated={ shape => this.props.searchByDrawing(disruptionData.disruptionType, shape) }
-                    />
+                        onDrawCreated={ shape => this.props.searchByDrawing(disruptionData.disruptionType, shape) } />
                 </Map>
                 <Button
                     className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
@@ -388,7 +386,6 @@ CreateDisruption.propTypes = {
     updateDisruption: PropTypes.func.isRequired,
     disruptionToEdit: PropTypes.object,
     openCreateDisruption: PropTypes.func.isRequired,
-    useWorkarounds: PropTypes.bool.isRequired,
     searchByDrawing: PropTypes.func.isRequired,
     boundsToFit: PropTypes.array.isRequired,
     childStops: PropTypes.object.isRequired,
@@ -421,7 +418,6 @@ export default connect(state => ({
     editMode: getEditMode(state),
     routeColors: getRouteColors(state),
     disruptionToEdit: getDisruptionToEdit(state),
-    useWorkarounds: useWorkarounds(state),
     boundsToFit: getBoundsToFit(state),
     childStops: getChildStops(state),
     stopDetail: getStopDetail(state),

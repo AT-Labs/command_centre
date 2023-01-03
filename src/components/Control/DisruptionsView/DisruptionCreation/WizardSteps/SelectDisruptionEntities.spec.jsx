@@ -70,14 +70,10 @@ describe('<SelectDisruptionEntities />', () => {
             withHooks(() => {
                 setup({ affectedRoutes });
                 expect(wrapper.find(Footer).exists()).toEqual(true);
-                expect(wrapper.find(Footer).prop('nextButtonValue')).toEqual('Save');
+                expect(wrapper.find(Footer).prop('nextButtonValue')).toEqual('Continue');
 
                 wrapper.setProps({ isEditMode: false });
                 expect(wrapper.find(Footer).prop('nextButtonValue')).toEqual('Continue');
-
-                wrapper.setProps({ affectedRoutes: [] });
-                expect(wrapper.find(Footer).exists()).toEqual(false);
-                expect(wrapper.find('footer').exists()).toEqual(true);
             });
         });
     });

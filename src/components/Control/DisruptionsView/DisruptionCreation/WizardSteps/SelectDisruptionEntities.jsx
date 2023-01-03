@@ -32,7 +32,6 @@ import { search } from '../../../../../redux/actions/search';
 import { getSearchResults } from '../../../../../redux/selectors/search';
 import { getAllStops } from '../../../../../redux/selectors/static/stops';
 import { getStopGroupsIncludingDeleted } from '../../../../../redux/selectors/control/dataManagement/stopGroups';
-import { useWorkarounds } from '../../../../../redux/selectors/appSettings';
 import { getStopGroupName } from '../../../../../utils/control/dataManagement';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
@@ -204,13 +203,11 @@ export const SelectDisruptionEntities = (props) => {
             setIsAlertModalOpen(true);
         } else if (!props.isEditMode) {
             removeNotFoundFromStopGroups();
-            props.onStepUpdate(1);
-            props.updateCurrentStep(2);
-        } else if (props.useWorkarounds) {
             props.onStepUpdate(2);
             props.updateCurrentStep(3);
         } else {
-            props.onSubmitUpdate();
+            props.onStepUpdate(1);
+            props.updateCurrentStep(3);
         }
     };
 
@@ -320,6 +317,11 @@ export const SelectDisruptionEntities = (props) => {
         }
     };
 
+    const onBack = () => {
+        props.onStepUpdate(0);
+        props.updateCurrentStep(1);
+    };
+
     const confirmationModalProps = {
         [NONE]: {
             title: '',
@@ -367,6 +369,15 @@ export const SelectDisruptionEntities = (props) => {
         },
     };
 
+    const removeAction = (entity, entityType) => {
+        if (props.data.workarounds && props.data.workarounds.length > 0) {
+            setConfirmationModalType(REMOVE_SELECTED_ENTITY);
+            setEntityPropsWaitToRemove({ entity, entityType });
+        } else {
+            removeItem(entity);
+        }
+    };
+
     const activeConfirmationModalProps = confirmationModalProps[confirmationModalType];
 
     return (
@@ -410,59 +421,35 @@ export const SelectDisruptionEntities = (props) => {
                 <div className="card-header pt-0 pb-3 bg-transparent">
                     <ResetButton
                         className="search__reset p-0"
-                        onClick={ () => (props.useWorkarounds ? setConfirmationModalType(RESET_SELECTED_ENTITIES) : deselectAllEntities()) }
+                        onClick={ () => setConfirmationModalType(RESET_SELECTED_ENTITIES) }
                     />
                 </div>
             )}
             <div className="selection-container h-100">
                 <ul className="p-0">
                     <StopByRoutesMultiSelect
-                        removeAction={ (route) => {
-                            if (props.useWorkarounds && props.data.workarounds && props.data.workarounds.length > 0) {
-                                setConfirmationModalType(REMOVE_SELECTED_ENTITY);
-                                setEntityPropsWaitToRemove({ entity: route, entityType: ROUTE });
-                            } else {
-                                removeItem(route);
-                            }
-                        } }
+                        removeAction={ route => removeAction(route, ROUTE) }
                         className="select-stops-route"
                     />
                     <RoutesByStopMultiSelect
-                        removeAction={ (stop) => {
-                            if (props.useWorkarounds && props.data.workarounds && props.data.workarounds.length > 0) {
-                                setConfirmationModalType(REMOVE_SELECTED_ENTITY);
-                                setEntityPropsWaitToRemove({ entity: stop, entityType: STOP });
-                            } else {
-                                removeItem(stop);
-                            }
-                        } }
+                        removeAction={ stop => removeAction(stop, STOP) }
                         className="select-routes-stop"
                     />
                     <StopGroupsMultiSelect
-                        removeAction={ (stopGroupStops) => {
-                            if (props.useWorkarounds && props.data.workarounds && props.data.workarounds.length > 0) {
-                                setConfirmationModalType(REMOVE_SELECTED_ENTITY);
-                                setEntityPropsWaitToRemove({ entity: stopGroupStops[0].groupId, entityType: STOP_GROUP });
-                            } else {
-                                removeGroup(stopGroupStops[0].groupId);
-                            }
-                        } }
+                        removeAction={ stopGroupStops => removeAction(stopGroupStops[0].groupId, STOP_GROUP) }
                         className="select-stop-groups"
                     />
                 </ul>
             </div>
-            { selectedEntities.length > 0 && (
-                <Footer
-                    updateCurrentStep={ props.updateCurrentStep }
-                    onStepUpdate={ props.onStepUpdate }
-                    toggleDisruptionModals={ props.toggleDisruptionModals }
-                    nextButtonValue={ props.isEditMode && !props.useWorkarounds ? 'Save' : 'Continue' }
-                    onContinue={ () => onContinue() }
-                    isSubmitDisabled={ isButtonDisabled() } />
-            ) }
-            { selectedEntities.length === 0 && (
-                <footer className="row justify-content-between position-fixed p-4 m-0 disruptions-creation__wizard-footer" />
-            )}
+            <Footer
+                updateCurrentStep={ props.updateCurrentStep }
+                onStepUpdate={ props.onStepUpdate }
+                toggleDisruptionModals={ props.toggleDisruptionModals }
+                nextButtonValue="Continue"
+                onContinue={ () => onContinue() }
+                isSubmitDisabled={ isButtonDisabled() }
+                onBack={ !props.isEditMode ? onBack : undefined }
+            />
             <CustomModal
                 title="Log a Disruption"
                 okButton={ {
@@ -502,13 +489,11 @@ SelectDisruptionEntities.propTypes = {
     isLoadingRoutesByStop: PropTypes.bool,
     isEditMode: PropTypes.bool,
     toggleDisruptionModals: PropTypes.func.isRequired,
-    onSubmitUpdate: PropTypes.func.isRequired,
     search: PropTypes.func.isRequired,
     searchResults: PropTypes.object.isRequired,
     stops: PropTypes.object.isRequired,
     stopGroups: PropTypes.object.isRequired,
     data: PropTypes.object,
-    useWorkarounds: PropTypes.bool.isRequired,
 };
 
 SelectDisruptionEntities.defaultProps = {
@@ -529,7 +514,6 @@ export default connect(state => ({
     searchResults: getSearchResults(state),
     stops: getAllStops(state),
     stopGroups: getStopGroupsIncludingDeleted(state),
-    useWorkarounds: useWorkarounds(state),
 }), {
     deleteAffectedEntities,
     updateCurrentStep,

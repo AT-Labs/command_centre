@@ -13,8 +13,6 @@ import { isStartTimeValid, isStartDateValid, isEndDateValid, isEndTimeValid, isD
     from '../../../../../utils/control/disruptions';
 import { toggleDisruptionModals, updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { DisruptionDetailSelect } from '../../DisruptionDetail/DisruptionDetailSelect';
-import { getAffectedRoutes, getAffectedStops } from '../../../../../redux/selectors/control/disruptions';
-import { useWorkarounds } from '../../../../../redux/selectors/appSettings';
 import { SEVERITIES } from '../../../../../types/disruptions-types';
 import { CAUSES, IMPACTS } from '../../../../../types/disruption-cause-and-effect';
 import {
@@ -32,7 +30,6 @@ import {
     LABEL_SEVERITY,
 } from '../../../../../constants/disruptions';
 import Footer from './Footer';
-import AffectedEntities from '../../AffectedEntities';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
 import CustomMuiDialog from '../../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../../Common/ActivePeriods/ActivePeriods';
@@ -44,7 +41,6 @@ import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 export const SelectDetails = (props) => {
     const { startDate, startTime, endDate, endTime, impact, cause, header, url, createNotification, exemptAffectedTrips, severity } = props.data;
     const { recurrent, duration, recurrencePattern } = props.data;
-    const { routes, stops } = props;
 
     const [modalOpenedTime] = useState(moment().second(0).millisecond(0));
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
@@ -63,11 +59,10 @@ export const SelectDetails = (props) => {
     const durationValid = () => isDurationValid(duration, recurrent);
 
     const isRequiredPropsEmpty = () => {
-        const isEntitiesEmpty = isEmpty([...routes, ...stops]);
         const isPropsEmpty = some([startTime, startDate, impact, cause, header, severity], isEmpty);
         const isEndTimeRequiredAndEmpty = !recurrent && !isEmpty(endDate) && isEmpty(endTime);
         const isWeekdayRequiredAndEmpty = recurrent && isEmpty(recurrencePattern.byweekday);
-        return isEntitiesEmpty || isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
+        return isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
     };
 
     const getOptionalLabel = label => (
@@ -108,20 +103,9 @@ export const SelectDetails = (props) => {
 
     const onContinue = () => {
         if (activePeriodsValid()) {
-            if (props.useWorkarounds) {
-                props.onStepUpdate(2);
-                props.updateCurrentStep(3);
-            } else {
-                props.onStepUpdate(2);
-                props.updateCurrentStep(1);
-                props.onSubmit();
-            }
+            props.onStepUpdate(1);
+            props.updateCurrentStep(2);
         }
-    };
-
-    const onBack = () => {
-        props.onStepUpdate(0);
-        props.updateCurrentStep(1);
     };
 
     const displayActivePeriods = () => {
@@ -131,18 +115,7 @@ export const SelectDetails = (props) => {
 
     return (
         <div className="disruption-creation__wizard-select-details">
-            <AffectedEntities
-                editLabel="Edit"
-                editAction={ () => {
-                    props.onStepUpdate(0);
-                    props.updateCurrentStep(1);
-                } }
-                affectedEntities={ [...stops, ...routes] }
-            />
             <Form className="row my-3 p-4">
-                <div className="col-12">
-                    <h3>Add disruption details</h3>
-                </div>
                 <div className="col-12">
                     <RadioButtons
                         { ...recurrenceRadioOptions(recurrent) }
@@ -318,26 +291,22 @@ export const SelectDetails = (props) => {
                 </div>
                 <div className="col-12">
                     <FormGroup className="disruption-creation__checkbox">
-                        <Label>
-                            <Input
-                                type="checkbox"
-                                className="ml-0"
-                                onChange={ e => props.onDataUpdate('createNotification', e.currentTarget.checked) }
-                                checked={ createNotification }
-                            />
-                            <span className="pl-2">Draft Stop Message</span>
-                        </Label>
+                        <Input
+                            type="checkbox"
+                            className="ml-0"
+                            onChange={ e => props.onDataUpdate('createNotification', e.currentTarget.checked) }
+                            checked={ createNotification }
+                        />
+                        <span className="pl-2">Draft Stop Message</span>
                     </FormGroup>
                     <FormGroup className="disruption-creation__checkbox">
-                        <Label>
-                            <Input
-                                type="checkbox"
-                                className="ml-0"
-                                onChange={ e => props.onDataUpdate('exemptAffectedTrips', e.currentTarget.checked) }
-                                checked={ exemptAffectedTrips }
-                            />
-                            <span className="pl-2">Exempt Affected Trips</span>
-                        </Label>
+                        <Input
+                            type="checkbox"
+                            className="ml-0"
+                            onChange={ e => props.onDataUpdate('exemptAffectedTrips', e.currentTarget.checked) }
+                            checked={ exemptAffectedTrips }
+                        />
+                        <span className="pl-2">Exempt Affected Trips</span>
                     </FormGroup>
                 </div>
             </Form>
@@ -346,9 +315,9 @@ export const SelectDetails = (props) => {
                 onStepUpdate={ props.onStepUpdate }
                 toggleDisruptionModals={ props.toggleDisruptionModals }
                 isSubmitDisabled={ isSubmitDisabled }
-                nextButtonValue={ props.useWorkarounds ? 'Continue' : 'Finish' }
+                nextButtonValue="Continue"
                 onContinue={ () => onContinue() }
-                onBack={ () => onBack() } />
+            />
             <CustomMuiDialog
                 title="Disruption Active Periods"
                 onClose={ () => setActivePeriodsModalOpen(false) }
@@ -380,9 +349,6 @@ SelectDetails.propTypes = {
     onSubmit: PropTypes.func,
     toggleDisruptionModals: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func,
-    stops: PropTypes.array,
-    routes: PropTypes.array,
-    useWorkarounds: PropTypes.bool.isRequired,
 };
 
 SelectDetails.defaultProps = {
@@ -391,12 +357,6 @@ SelectDetails.defaultProps = {
     onDataUpdate: () => { },
     onSubmit: () => { },
     updateCurrentStep: () => { },
-    stops: [],
-    routes: [],
 };
 
-export default connect(state => ({
-    stops: getAffectedStops(state),
-    routes: getAffectedRoutes(state),
-    useWorkarounds: useWorkarounds(state),
-}), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);
+export default connect(() => ({}), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);

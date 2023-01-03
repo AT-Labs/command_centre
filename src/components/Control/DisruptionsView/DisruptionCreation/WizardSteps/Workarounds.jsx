@@ -23,7 +23,7 @@ export const Workarounds = (props) => {
             props.updateCurrentStep(2);
         } else {
             props.onStepUpdate(0);
-            props.updateCurrentStep(1);
+            props.updateCurrentStep(2);
         }
     };
 
