@@ -33,7 +33,14 @@ import {
 } from '../../../../../redux/selectors/control/disruptions';
 import { STATUSES, DISRUPTION_TYPE, DISRUPTION_CREATION_STEPS, DEFAULT_SEVERITY, ALERT_TYPES } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
-import { buildSubmitBody, momentFromDateTime, getRecurrenceDates, itemToEntityTransformers, toCamelCaseKeys } from '../../../../../utils/control/disruptions';
+import {
+    buildSubmitBody,
+    momentFromDateTime,
+    getRecurrenceDates,
+    itemToEntityTransformers,
+    toCamelCaseKeys,
+    getPassengerCountTotal,
+} from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
 import SidePanel from '../../../../Common/OffCanvasLayout/SidePanel/SidePanel';
@@ -56,6 +63,7 @@ import StopsLayer from '../../../../Common/Map/StopsLayer/StopsLayer';
 import { HighlightingLayer } from '../../../../Common/Map/HighlightingLayer/HighlightingLayer';
 import { SelectedStopsMarker } from '../../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import DrawLayer from './DrawLayer';
+import { getPassengerCountData } from '../../../../../utils/transmitters/passenger-count-api';
 
 const INIT_STATE = {
     startTime: '',
@@ -77,7 +85,7 @@ const INIT_STATE = {
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
     severity: DEFAULT_SEVERITY.value,
-    passengerCount: [],
+    passengerCount: undefined,
 };
 
 const { STOP } = SEARCH_RESULT_TYPE;
@@ -134,7 +142,7 @@ export class CreateDisruption extends React.Component {
     };
 
     setupDataEdit = () => {
-        const { workarounds } = this.props.disruptionToEdit;
+        const { workarounds, startTime, endTime, passengerCount } = this.props.disruptionToEdit;
 
         const disruptionType = _.isEmpty(this.props.routes) && !_.isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
         this.setState({
@@ -142,6 +150,9 @@ export class CreateDisruption extends React.Component {
                 ...INIT_STATE,
                 disruptionType,
                 workarounds,
+                ...(startTime && { startTime: startTime.toISOString() }),
+                ...(endTime && { endTime: endTime.toISOString() }),
+                passengerCount,
             },
         });
     };
@@ -197,7 +208,7 @@ export class CreateDisruption extends React.Component {
         }));
     };
 
-    onSubmit = () => {
+    onSubmit = async () => {
         this.toggleModal('Confirmation', true);
         const { disruptionData } = this.state;
 
@@ -214,12 +225,14 @@ export class CreateDisruption extends React.Component {
             startTime: startTimeMoment,
             notes: [],
         };
-        this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds));
+        const passengerCount = await this.getPassengerCount();
+        this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds, passengerCount));
     };
 
-    onSubmitUpdate = () => {
+    onSubmitUpdate = async () => {
         const { disruptionData } = this.state;
-        const disruptionRequest = buildSubmitBody(this.props.disruptionToEdit, this.props.routes, this.props.stops, disruptionData.workarounds);
+        const passengerCount = await this.getPassengerCount();
+        const disruptionRequest = buildSubmitBody(this.props.disruptionToEdit, this.props.routes, this.props.stops, disruptionData.workarounds, passengerCount);
         this.props.updateDisruption(disruptionRequest);
         this.props.openCreateDisruption(false);
         this.props.toggleDisruptionModals('isConfirmationOpen', true);
@@ -229,6 +242,22 @@ export class CreateDisruption extends React.Component {
         const type = `is${modalType}Open`;
         this.setState({ [type]: isOpen });
         this.props.toggleDisruptionModals(type, isOpen);
+    };
+
+    getPassengerCount = async () => {
+        const routes = this.props.routes.map(({ routeId }) => routeId);
+        const stops = this.props.stops.map(({ stopCode }) => stopCode);
+        const { disruptionData } = this.state;
+        const { recurrent, recurrencePattern, duration } = disruptionData;
+
+        const startDate = disruptionData.startDate ? disruptionData.startDate : moment(disruptionData.startTime).format(DATE_FORMAT);
+        const startTime = momentFromDateTime(startDate, disruptionData.startTime).toISOString();
+        let endTime;
+        if (!_.isEmpty(disruptionData.endDate) && !_.isEmpty(disruptionData.endTime)) {
+            endTime = momentFromDateTime(disruptionData.endDate, disruptionData.endTime).toISOString();
+        }
+        const passengerCountData = await getPassengerCountData(routes, stops, startTime, endTime);
+        return getPassengerCountTotal(passengerCountData, recurrent, recurrencePattern, duration);
     };
 
     renderSteps = () => {
