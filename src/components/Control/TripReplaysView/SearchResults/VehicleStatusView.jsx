@@ -12,16 +12,20 @@ import { FaDoorOpen, FaDoorClosed } from 'react-icons/fa';
 import { MdKeyboardArrowRight } from 'react-icons/md';
 import { Expandable, ExpandableContent, ExpandableSummary } from '../../../Common/Expandable';
 import DATE_TYPE from '../../../../types/date-types';
+import { VEHICLE_POSITION } from '../../../../types/vehicle-types';
 import { getTripReplayTotalResults } from '../../../../redux/selectors/control/tripReplays/tripReplayView';
-import { getAllVehicleReplayEvents } from '../../../../redux/actions/control/vehicleReplays/currentVehicleReplay';
 import Loader from '../../../Common/Loader/Loader';
-import { getVehicleEvents } from '../../../../redux/selectors/control/vehicleReplays/vehicleReplay';
+import { getVehicleEventsAndPositions } from '../../../../redux/selectors/control/vehicleReplays/vehicleReplay';
+import { getVehicleReplayStatusAndPosition } from '../../../../redux/actions/control/vehicleReplays/vehicleReplay';
 
 const VehicleStatusView = (props) => {
     const { vehicleEvents, handleMouseEnter, handleMouseLeave, handleMouseClick } = props;
     const [expandedVehiclePosition, setExpandedVehiclePosition] = useState({});
+
     useEffect(() => {
-        props.getAllVehicleReplayEvents();
+        if (_.isNull(vehicleEvents)) {
+            props.getVehicleReplayStatusAndPosition();
+        }
     }, []);
 
     const Icons = {
@@ -111,6 +115,10 @@ const VehicleStatusView = (props) => {
                                         className="vehicle-status-card"
                                         id={ childVehiclePosition.id }
                                         key={ childVehiclePosition.id }
+                                        onClick={ () => onClick(childVehiclePosition) }
+                                        onKeyDown={ () => handleMouseClick(childVehiclePosition) }
+                                        onMouseEnter={ () => handleMouseEnter(childVehiclePosition) }
+                                        onMouseLeave={ () => handleMouseLeave() }
                                     >
                                         <CardBody>
                                             <div className="vehicle-position-body">
@@ -172,7 +180,7 @@ const VehicleStatusView = (props) => {
         return (
             <div>
                 {vehicleEvents.map((event) => {
-                    if (event.type === 'vehiclePosition' && !_.isEmpty(event.child)) {
+                    if (event.type === VEHICLE_POSITION && !_.isEmpty(event.child)) {
                         return renderVehiclePositionDropDown(event);
                     }
                     return renderVehicleStatusView(event);
@@ -202,19 +210,14 @@ VehicleStatusView.propTypes = {
     handleMouseEnter: PropTypes.func.isRequired,
     handleMouseLeave: PropTypes.func.isRequired,
     handleMouseClick: PropTypes.func.isRequired,
-    getAllVehicleReplayEvents: PropTypes.func.isRequired,
+    getVehicleReplayStatusAndPosition: PropTypes.func.isRequired,
 };
 
 VehicleStatusView.defaultProps = {
     vehicleEvents: null,
 };
 
-export default connect(
-    state => ({
-        totalTripResults: getTripReplayTotalResults(state),
-        vehicleEvents: getVehicleEvents(state),
-    }),
-    {
-        getAllVehicleReplayEvents,
-    },
-)(VehicleStatusView);
+export default connect(state => ({
+    totalTripResults: getTripReplayTotalResults(state),
+    vehicleEvents: getVehicleEventsAndPositions(state),
+}), { getVehicleReplayStatusAndPosition })(VehicleStatusView);

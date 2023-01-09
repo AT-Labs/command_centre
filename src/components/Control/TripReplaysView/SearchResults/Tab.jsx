@@ -6,8 +6,8 @@ import Box from '@mui/material/Box';
 import { connect } from 'react-redux';
 import VehicleStatusView from './VehicleStatusView';
 import { getVehicleEventsDisplayedTotalResults } from '../../../../redux/selectors/control/vehicleReplays/vehicleReplay';
-import { getAllVehicleReplayEvents } from '../../../../redux/actions/control/vehicleReplays/currentVehicleReplay';
 import { clearCurrentTrip } from '../../../../redux/actions/control/tripReplays/currentTrip';
+import { setVehicleViewTabStatus } from '../../../../redux/actions/control/vehicleReplays/vehicleReplay';
 import { getTripReplayRedirected } from '../../../../redux/selectors/control/tripReplays/tripReplayView';
 
 const TabPanel = (props) => {
@@ -52,6 +52,7 @@ const ReplaySubTab = (props) => {
     useEffect(() => {
         if (value === 1) {
             props.clearCurrentTrip();
+            props.setVehicleViewTabStatus(true);
         }
     }, [value]);
 
@@ -77,20 +78,11 @@ const ReplaySubTab = (props) => {
                 { props.renderTripView() }
             </TabPanel>
             <TabPanel value={ value } index={ 1 }>
-                <div className="px-4 mt-3 mb-3">
-                    <dd>
-                        Showing
-                        {' '}
-                        { props.vehicleEventsTotalResult }
-                        {' '}
-                        statuses
-                    </dd>
-                </div>
+                { props.vehicleStatusHeader }
                 <VehicleStatusView
                     handleMouseEnter={ handleMouseEnter }
                     handleMouseLeave={ handleMouseLeave }
                     handleMouseClick={ handleMouseClick } />
-                { props.vehicleStatusFooter }
             </TabPanel>
         </section>
     );
@@ -99,17 +91,18 @@ const ReplaySubTab = (props) => {
 ReplaySubTab.propTypes = {
     vehicleEventsTotalResult: PropTypes.number.isRequired,
     renderTripView: PropTypes.func.isRequired,
-    vehicleStatusFooter: PropTypes.object.isRequired,
+    vehicleStatusHeader: PropTypes.object,
     handleMouseEnter: PropTypes.func.isRequired,
     handleMouseLeave: PropTypes.func.isRequired,
     handleMouseClick: PropTypes.func.isRequired,
-    getAllVehicleReplayEvents: PropTypes.func.isRequired,
     clearCurrentTrip: PropTypes.func.isRequired,
+    setVehicleViewTabStatus: PropTypes.func.isRequired,
     isRedirected: PropTypes.bool,
 };
 
 ReplaySubTab.defaultProps = {
     isRedirected: false,
+    vehicleStatusHeader: null,
 };
 
 export default connect(
@@ -118,7 +111,7 @@ export default connect(
         isRedirected: getTripReplayRedirected(state),
     }),
     {
-        getAllVehicleReplayEvents,
         clearCurrentTrip,
+        setVehicleViewTabStatus,
     },
 )(ReplaySubTab);

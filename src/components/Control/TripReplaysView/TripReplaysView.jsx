@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import moment from 'moment';
-import { find } from 'lodash-es';
+import { find, isEmpty } from 'lodash-es';
 import { Alert } from 'reactstrap';
 import Filters from './Filters/Filters';
 import { getTripReplayFilters } from '../../../redux/selectors/control/tripReplays/filters';
@@ -20,8 +20,8 @@ import '../../Common/OffCanvasLayout/OffCanvasLayout.scss';
 import TripSearchResultsList from './SearchResults/SearchResultsList';
 import SidePanel from '../../Common/OffCanvasLayout/SidePanel/SidePanel';
 import TripDetail from './TripDetail/TripDetail';
-import { clearVehicleReplayCurrentReplayDetail } from '../../../redux/actions/control/vehicleReplays/currentVehicleReplay';
-import { getFirstEventPosition, getEventPosition } from '../../../redux/selectors/control/vehicleReplays/currentVehicleReplay';
+import { clearVehicleReplayCurrentReplayDetail, setVehicleViewTabStatus } from '../../../redux/actions/control/vehicleReplays/vehicleReplay';
+import { getVehicleEvents, getVehiclePositions, getvehicleViewTabStatus, getFirstEventPosition } from '../../../redux/selectors/control/vehicleReplays/vehicleReplay';
 import {
     clearTrips,
     updateTripReplayDisplayFilters,
@@ -55,7 +55,8 @@ const TripReplaysView = (props) => {
     const history = useHistory();
     const location = useLocation();
 
-    const { searchFilters, trips, totalResults, hasMore, isSingleTripDisplayed, selectedTripRedirect, prevFilterValues, firstEventPosition } = props;
+    const { searchFilters, trips, totalResults, hasMore, isSingleTripDisplayed, selectedTripRedirect, prevFilterValues, firstEventPosition, isVehicleViewTabActive,
+        eventPositions, vehicletPositions } = props;
     const { searchTerm, searchDate, startTime, endTime, timeType } = searchFilters;
     const [hoveredKeyEvent, setHoveredKeyEvent] = useState();
     const [selectedKeyEventDetail, setSelectedKeyEventDetail] = useState();
@@ -268,6 +269,11 @@ const TripReplaysView = (props) => {
         return renderResults();
     };
 
+    const clearVehiclePositionAndResetTabStatus = () => {
+        props.clearVehicleReplayCurrentReplayDetail(null, null);
+        props.setVehicleViewTabStatus(false);
+    };
+
     const backClick = () => {
         if (props.isRedirected) {
             props.updateTripReplayDisplaySingleTrip(true);
@@ -275,13 +281,14 @@ const TripReplaysView = (props) => {
             props.search();
             props.updateTripReplayFilterData(prevFilterValues);
             props.updateTripReplayRedirected(false);
+            clearVehiclePositionAndResetTabStatus();
         } else if (props.isSingleTripDisplayed) {
             props.updateTripReplayDisplaySingleTrip(false);
         } else {
             props.updateTripReplayDisplayFilters(true);
             props.clearTrips();
             props.clearCurrentTrip();
-            props.clearVehicleReplayCurrentReplayDetail();
+            clearVehiclePositionAndResetTabStatus();
         }
     };
 
@@ -313,12 +320,15 @@ const TripReplaysView = (props) => {
                     selectedKeyEventId={ selectedKeyEventId }
                     hoveredKeyEvent={ hoveredKeyEvent }
                     clearSelectedKeyEvent={ clearSelectedKeyEvent } />
-                <VehicleReplayStatusLayer
-                    eventPositions={ props.eventPositions }
-                    selectedKeyEvent={ selectedKeyEventDetail }
-                    selectedKeyEventId={ selectedKeyEventId }
-                    hoveredKeyEvent={ hoveredKeyEvent }
-                    clearSelectedKeyEvent={ clearSelectedKeyEvent } />
+                { (isEmpty(trips) || isVehicleViewTabActive) && (
+                    <VehicleReplayStatusLayer
+                        eventPositions={ eventPositions }
+                        vehiclePositions={ vehicletPositions }
+                        selectedKeyEvent={ selectedKeyEventDetail }
+                        selectedKeyEventId={ selectedKeyEventId }
+                        hoveredKeyEvent={ hoveredKeyEvent }
+                        clearSelectedKeyEvent={ clearSelectedKeyEvent } />
+                )}
                 <VehiclePositionsReplayLayer
                     selectedKeyEvent={ selectedKeyEventDetail }
                     selectedKeyEventId={ selectedKeyEventId }
@@ -374,6 +384,9 @@ TripReplaysView.propTypes = {
     routeColor: PropTypes.string,
     stops: PropTypes.array.isRequired,
     eventPositions: PropTypes.array,
+    isVehicleViewTabActive: PropTypes.bool,
+    vehicletPositions: PropTypes.array,
+    setVehicleViewTabStatus: PropTypes.func.isRequired,
 };
 
 TripReplaysView.defaultProps = {
@@ -384,6 +397,8 @@ TripReplaysView.defaultProps = {
     prevFilterValues: null,
     routeColor: null,
     eventPositions: null,
+    vehicletPositions: null,
+    isVehicleViewTabActive: false,
 };
 
 export default connect(
@@ -403,7 +418,9 @@ export default connect(
         shape: getShape(state),
         routeColor: getRouteColor(state),
         stops: getStops(state),
-        eventPositions: getEventPosition(state),
+        eventPositions: getVehicleEvents(state),
+        vehicletPositions: getVehiclePositions(state),
+        isVehicleViewTabActive: getvehicleViewTabStatus(state),
     }),
     {
         updateTripReplayDisplayFilters,
@@ -421,5 +438,6 @@ export default connect(
         selectTrip,
         updateTripReplayRedirected,
         updateTripReplayFilterData,
+        setVehicleViewTabStatus,
     },
 )(TripReplaysView);

@@ -11,9 +11,10 @@ import AutoRefreshTable from '../../../Common/AutoRefreshTable/AutoRefreshTable'
 import {
     getVehicleEventsTotalResults,
     getVehicleEventsHasMore,
-    getVehicleEvents,
     getVehicleEventsDisplayedTotalResults,
+    getVehicleEventsAndPositions,
 } from '../../../../redux/selectors/control/vehicleReplays/vehicleReplay';
+import { clearVehicleReplayCurrentReplayDetail } from '../../../../redux/actions/control/vehicleReplays/vehicleReplay';
 import { isTripCanceled } from '../../../../utils/control/tripReplays';
 import { selectTrip } from '../../../../redux/actions/control/tripReplays/currentTrip';
 import VehicleStatusView from './VehicleStatusView';
@@ -29,6 +30,7 @@ class SearchResultsList extends PureComponent {
         handleMouseEnter: PropTypes.func.isRequired,
         handleMouseLeave: PropTypes.func.isRequired,
         handleMouseClick: PropTypes.func.isRequired,
+        clearVehicleReplayCurrentReplayDetail: PropTypes.func.isRequired,
         vehicleEventsTotalResult: PropTypes.number,
         searchParams: PropTypes.shape({
             searchTerm: PropTypes.object.isRequired,
@@ -61,10 +63,10 @@ class SearchResultsList extends PureComponent {
         return `${m.format('HH:mm')}${hours > 23 ? ' (+1)' : ''}`;
     };
 
-    renderVehicleStatusFooter = (hasMoreVehicleStausAndPositions, vehicleEvents, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) => (
+    renderVehicleStatusHeader = (hasMoreVehicleStausAndPositions, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) => (
         <>
-            { hasMoreVehicleStausAndPositions && !_.isNull(vehicleEvents) && (
-                <div className="text-muted p-4">
+            { hasMoreVehicleStausAndPositions ? (
+                <div className="px-4 mt-3 mb-3">
                     Showing
                     {' '}
                     {vehicleEventsDisplayedTotalResult}
@@ -74,6 +76,10 @@ class SearchResultsList extends PureComponent {
                     {vehicleEventsTotalResult}
                     {' '}
                     results. Please refine your search.
+                </div>
+            ) : (
+                <div className="px-4 mt-3 mb-3">
+                    <dd>{`Showing ${vehicleEventsDisplayedTotalResult} statuses`}</dd>
                 </div>
             )}
         </>
@@ -86,6 +92,11 @@ class SearchResultsList extends PureComponent {
         const { BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
         const vehicles = [BUS.type, TRAIN.type, FERRY.type];
         const title = label.split('-');
+
+        const displayTripAndClearVehiclePosition = (trip) => {
+            this.props.selectTrip(trip);
+            this.props.clearVehicleReplayCurrentReplayDetail();
+        };
 
         const renderHeader = () => (
             <div>
@@ -131,7 +142,7 @@ class SearchResultsList extends PureComponent {
                     columns={ getColumns(type) }
                     className="trip-progress__past-stops-table pb-0"
                     emptyMessage="No trips found, please try again."
-                    onRowClick={ trip => this.props.selectTrip(trip) }
+                    onRowClick={ trip => displayTripAndClearVehiclePosition(trip) }
                     hover
                     clickable
                     refresh={ false }
@@ -168,25 +179,22 @@ class SearchResultsList extends PureComponent {
             if (vehicles.includes(type) && trips.length === 0) {
                 return (
                     <div>
-                        <div className="px-4">
-                            <dd>{`Showing ${vehicleEventsDisplayedTotalResult} statuses`}</dd>
-                        </div>
+                        { this.renderVehicleStatusHeader(hasMoreVehicleStausAndPositions, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) }
                         <VehicleStatusView
                             handleMouseEnter={ handleMouseEnter }
                             handleMouseLeave={ handleMouseLeave }
                             handleMouseClick={ handleMouseClick } />
-                        { this.renderVehicleStatusFooter(hasMoreVehicleStausAndPositions, vehicleEvents, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) }
                     </div>
                 );
             }
 
             if (vehicles.includes(type) && trips.length > 0) {
-                // return tab
                 return (
                     <Tab
                         renderTripView={ renderResults }
-                        vehicleStatusFooter={
-                            this.renderVehicleStatusFooter(hasMoreVehicleStausAndPositions, vehicleEvents, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult)
+                        vehicleStatusHeader={
+                            !_.isNull(vehicleEvents)
+                                ? this.renderVehicleStatusHeader(hasMoreVehicleStausAndPositions, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) : null
                         }
                         handleMouseEnter={ handleMouseEnter }
                         handleMouseLeave={ handleMouseLeave }
@@ -251,9 +259,10 @@ export default connect(
         vehicleEventsTotalResult: getVehicleEventsTotalResults(state),
         vehicleEventsDisplayedTotalResult: getVehicleEventsDisplayedTotalResults(state),
         hasMoreVehicleStausAndPositions: getVehicleEventsHasMore(state),
-        vehicleEvents: getVehicleEvents(state),
+        vehicleEvents: getVehicleEventsAndPositions(state),
     }),
     {
         selectTrip,
+        clearVehicleReplayCurrentReplayDetail,
     },
 )(SearchResultsList);

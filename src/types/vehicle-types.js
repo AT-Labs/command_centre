@@ -7,6 +7,8 @@ export const TRIP_DIRECTION_INBOUND = 0;
 
 export const VEHICLE_TYPES = ['Bus', 'Train', 'Ferry'];
 
+export const VEHICLE_POSITION = 'vehiclePosition';
+
 export default {
     [TRAIN_TYPE_ID]: {
         type: 'Train',

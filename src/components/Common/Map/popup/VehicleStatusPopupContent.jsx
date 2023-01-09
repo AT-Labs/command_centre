@@ -2,11 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash-es';
 import moment from 'moment';
-import { BsKeyFill, BsKey, BsFillLightbulbFill, BsFillLightbulbOffFill } from 'react-icons/bs';
+import { BsKeyFill, BsKey, BsFillLightbulbFill, BsFillLightbulbOffFill, BsFillGeoAltFill } from 'react-icons/bs';
 import { TbEngine, TbEngineOff } from 'react-icons/tb';
 import { BiLogIn, BiLogOut } from 'react-icons/bi';
 import { FaDoorOpen, FaDoorClosed } from 'react-icons/fa';
 import DATE_TYPE from '../../../../types/date-types';
+import { VEHICLE_POSITION } from '../../../../types/vehicle-types';
 
 function VehicleStatusPopupContent({ eventDetail }) {
     const Icons = {
@@ -20,6 +21,7 @@ function VehicleStatusPopupContent({ eventDetail }) {
         doorClosed: FaDoorClosed,
         stoppingLightOn: BsFillLightbulbFill,
         stoppingLightOff: BsFillLightbulbOffFill,
+        vehiclePosition: BsFillGeoAltFill,
     };
 
     const Titles = {
@@ -33,9 +35,29 @@ function VehicleStatusPopupContent({ eventDetail }) {
         doorClosed: 'Door Closed',
         stoppingLightOn: 'Stopping Light On',
         stoppingLightOff: 'Stopping Light Off',
+        vehiclePosition: 'Vehicle Position',
     };
 
-    const tripDate = moment(eventDetail.tripDate).format('YYYY-MM-DD');
+    const getDate = () => {
+        if (eventDetail.type === VEHICLE_POSITION && eventDetail.trip) {
+            return moment(eventDetail.trip.startDate).format('YYYY-MM-DD');
+        }
+        if (eventDetail.type !== VEHICLE_POSITION && eventDetail.tripDate) {
+            return moment(eventDetail.tripDate).format('YYYY-MM-DD');
+        }
+        return 'N/A';
+    };
+
+    const getTripId = () => {
+        if (eventDetail.type === VEHICLE_POSITION && eventDetail.trip) {
+            return eventDetail.tripId;
+        }
+        if (eventDetail.type !== VEHICLE_POSITION && !_.isNull(eventDetail.tripId)) {
+            return eventDetail.tripId;
+        }
+        return 'N/A';
+    };
+
     const eventTime = moment.unix(eventDetail.timestamp).tz(DATE_TYPE.TIME_ZONE).format('HH:mm:ss');
     const IconName = Icons[eventDetail.type];
 
@@ -43,6 +65,13 @@ function VehicleStatusPopupContent({ eventDetail }) {
         const startTime = time.start ? time.start : 'N/A';
         const endTime = time.end ? time.end : 'N/A';
         return `${startTime} - ${endTime}`;
+    };
+
+    const formatCoordinate = (coordinate) => {
+        const firstHalf = coordinate.toString().split('.')[0];
+        const secondHalf = coordinate.toString().split('.')[1];
+        const formattedSecondHalf = secondHalf.slice(0, 5);
+        return firstHalf.concat('.', formattedSecondHalf);
     };
 
     return (
@@ -61,10 +90,17 @@ function VehicleStatusPopupContent({ eventDetail }) {
                     {' '}
                     lat:
                     {' '}
-                    { eventDetail.position.latitude }
+                    { formatCoordinate(eventDetail.position.latitude) }
                     , lon:
                     {' '}
-                    { eventDetail.position.longitude }
+                    { formatCoordinate(eventDetail.position.longitude) }
+                </div>
+            </div>
+            <div className="row">
+                <div className="col pb-2">
+                    <b>Route:</b>
+                    {' '}
+                    { !_.isEmpty(eventDetail.routeShortName) ? eventDetail.routeShortName : 'N/A' }
                 </div>
             </div>
             <div className="row">
@@ -78,7 +114,7 @@ function VehicleStatusPopupContent({ eventDetail }) {
                 <div className="col pb-2">
                     <b>Date:</b>
                     {' '}
-                    { eventDetail.tripDate ? tripDate : 'N/A'}
+                    { getDate() }
                 </div>
             </div>
             <div className="row">
@@ -92,7 +128,7 @@ function VehicleStatusPopupContent({ eventDetail }) {
                 <div className="col pb-2">
                     <b>Trip ID:</b>
                     {' '}
-                    { !_.isNull(eventDetail.tripId) ? eventDetail.tripId : 'N/A' }
+                    { getTripId() }
                 </div>
             </div>
             <div className="row">

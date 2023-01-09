@@ -33,6 +33,13 @@ export const Map = (props) => {
     };
 
     useEffect(() => {
+        if (props.center) {
+            const leafletInstance = mapRef.current.leafletElement;
+            leafletInstance.setView(props.center, MAP_DATA.zoomLevel.initial);
+        }
+    }, [props.center]);
+
+    useEffect(() => {
         fitBounds();
     }, [needBoundsFit]);
 

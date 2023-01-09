@@ -7,7 +7,7 @@ const getCoordinates = eventPosition => [eventPosition.latitude, eventPosition.l
 
 function VehicleReplayMarker({ openTooltip, openPopup, eventPosition }) {
     const markerRef = useRef(null);
-
+    const markerColor = eventPosition.tripId ? 'blue' : 'orange';
     useEffect(() => {
         if (openTooltip && !markerRef.current.leafletElement.isPopupOpen()) {
             markerRef.current.leafletElement.openTooltip();
@@ -27,7 +27,7 @@ function VehicleReplayMarker({ openTooltip, openPopup, eventPosition }) {
             ref={ markerRef }
             fill
             color="white"
-            fillColor="black"
+            fillColor={ markerColor }
             fillRule="nonzero"
             fillOpacity="1"
             stroke

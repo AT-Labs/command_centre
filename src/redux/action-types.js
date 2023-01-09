@@ -234,6 +234,8 @@ export default {
     CLEAR_CONTROL_VEHICLE_REPLAYS_CURRENT_REPLAY_DETAIL: 'clear-control-vehicle-replays-current-replay-detail',
     UPDATE_CONTROL_VEHICLE_REPLAYS_EVENTS: 'update-control-vehicle-replays-events',
     UPDATE_CONTROL_VEHICLE_FIRST_REPLAY_EVENT: 'update-control-vehicle-first-replay-event',
+    UPDATE_SPLIT_CONTROL_VEHICLE_REPLAYS_EVENTS: 'update-split-control-vehicle-replays-events',
+    UPDATE_VEHICLE_VIEW_TAB_STATUS: 'update-vehicle-view-tab-status',
     // Analytics
     SET_ID_MAPPINGS: 'set-id-mappings',
     SET_OCCUPANCY: 'set-occupancy',
