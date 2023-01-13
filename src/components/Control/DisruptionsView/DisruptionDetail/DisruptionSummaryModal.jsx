@@ -40,7 +40,7 @@ const generateDisruptionNotes = (notes) => {
 };
 
 const createLine = (label, value) => (value && (
-    <tr className="row">
+    <tr className="row" key={ _.uniqueId() }>
         <td className="col-4">{label}</td>
         <td className="col text-break">
             {label === LABEL_WORKAROUNDS && value.length === 0 ? DISRUPTIONS_MESSAGE_TYPE.noWorkaroundsMessage : null }

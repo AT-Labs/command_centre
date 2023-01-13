@@ -14,6 +14,7 @@ export class SelectedStopsMarker extends React.PureComponent {
         popup: PropTypes.bool,
         tooltip: PropTypes.bool,
         maximumStopsToDisplay: PropTypes.number,
+        tabIndexOverride: PropTypes.number,
     };
 
     static defaultProps = {
@@ -22,6 +23,7 @@ export class SelectedStopsMarker extends React.PureComponent {
         popup: false,
         tooltip: false,
         maximumStopsToDisplay: 0,
+        tabIndexOverride: 0,
     };
 
     handleClick = (event) => {
@@ -43,6 +45,7 @@ export class SelectedStopsMarker extends React.PureComponent {
             const marker = stop.stop_lat
                 ? (
                     <IconMarker
+                        keyboard={ this.props.tabIndexOverride >= 0 }
                         key={ stop.stop_id }
                         className="selected-stop-marker"
                         location={ [stop.stop_lat, stop.stop_lon] }

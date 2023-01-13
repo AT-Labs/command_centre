@@ -54,6 +54,8 @@ export const Map = (props) => {
 
     const handleZoom = () => setNeedBoundsFit(false);
 
+    const childrenWithProps = React.Children.map(props.children, child => (child ? React.cloneElement(child, { tabIndexOverride: props.tabIndexOverride }) : null));
+
     return (
         <>
             { props.isLoading && <Loader className="position-fixed" />}
@@ -75,7 +77,7 @@ export const Map = (props) => {
                         attribution={ MAP_DATA.copyright }
                         minZoom={ MAP_DATA.zoomLevel.min }
                         maxZoom={ MAP_DATA.zoomLevel.max } />
-                    { props.children }
+                    { childrenWithProps }
                 </LeafletMap>
             </LeafletProvider>
         </>
@@ -95,6 +97,7 @@ Map.propTypes = {
     isLoading: PropTypes.bool,
     handlePopupClose: PropTypes.func,
     sidePanelWidthPX: PropTypes.number,
+    tabIndexOverride: PropTypes.number,
 };
 
 Map.defaultProps = {
@@ -105,4 +108,5 @@ Map.defaultProps = {
     isLoading: false,
     handlePopupClose: () => {},
     sidePanelWidthPX: SIDE_PANEL_WIDTH_PX,
+    tabIndexOverride: -1,
 };

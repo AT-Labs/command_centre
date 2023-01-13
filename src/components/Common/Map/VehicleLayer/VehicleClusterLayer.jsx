@@ -33,10 +33,12 @@ class VehicleClusterLayer extends React.Component {
         leafletMap: PropTypes.object.isRequired,
         tripUpdates: PropTypes.object.isRequired,
         getTripUpdateSnapshot: PropTypes.func.isRequired,
+        tabIndexOverride: PropTypes.number,
     };
 
     static defaultProps = {
         highlightedVehicle: undefined,
+        tabIndexOverride: 0,
     };
 
     constructor(props) {
@@ -114,7 +116,11 @@ class VehicleClusterLayer extends React.Component {
         const markersInBoundary = _.filter(vehicles, vehicle => bounds.contains(getVehicleLatLng(vehicle)));
 
         if (!this.props.vehicleType.startsWith('unselected')) {
-            const markers = _.map(markersInBoundary, vehicle => L.marker(getVehicleLatLng(vehicle), { icon: getVehicleIcon(vehicle, ''), vehicle }));
+            const markers = _.map(markersInBoundary, vehicle => L.marker(getVehicleLatLng(vehicle), {
+                icon: getVehicleIcon(vehicle, ''),
+                vehicle,
+                keyboard: this.props.tabIndexOverride >= 0,
+            }));
             this.handleClusterLayers(this.clusterLayerRef, markers);
         }
 
@@ -124,6 +130,7 @@ class VehicleClusterLayer extends React.Component {
                 const unselectedMarkers = unselectedVehiclesInBoundary.map(vehicle => L.marker(getVehicleLatLng(vehicle), {
                     icon: getVehicleIcon(vehicle, 'opacity-markers'),
                     vehicle,
+                    keyboard: this.props.tabIndexOverride >= 0,
                 }));
                 this.handleClusterLayers(this.unselectedVehiclesClusterLayerRef, unselectedMarkers);
             }
@@ -165,6 +172,12 @@ class VehicleClusterLayer extends React.Component {
         );
     };
 
+    handleGetClusterIcon = (cluster, opacity) => {
+        const clusterCopy = cluster;
+        clusterCopy.options.keyboard = this.props.tabIndexOverride >= 0;
+        return getClusterIcon(cluster, this.props.vehicleType, opacity);
+    };
+
     render() {
         return (
             <>
@@ -177,7 +190,7 @@ class VehicleClusterLayer extends React.Component {
                         showCoverageOnHover={ false }
                         disableClusteringAtZoom={ FOCUS_ZOOM }
                         removeOutsideVisibleBounds
-                        iconCreateFunction={ cluster => getClusterIcon(cluster, this.props.vehicleType, 'opacity-markers') }
+                        iconCreateFunction={ cluster => this.handleGetClusterIcon(cluster, 'opacity-markers') }
                         onClick={ this.handleClick } />
                 )}
                 <MarkerClusterGroup
@@ -188,7 +201,7 @@ class VehicleClusterLayer extends React.Component {
                     showCoverageOnHover={ false }
                     disableClusteringAtZoom={ FOCUS_ZOOM }
                     removeOutsideVisibleBounds
-                    iconCreateFunction={ cluster => getClusterIcon(cluster, this.props.vehicleType) }
+                    iconCreateFunction={ cluster => this.handleGetClusterIcon(cluster) }
                     onClick={ this.handleClick } />
             </>
         );

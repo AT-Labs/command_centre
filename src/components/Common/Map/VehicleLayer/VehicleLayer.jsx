@@ -16,11 +16,13 @@ class VehicleLayer extends React.PureComponent {
         allFleet: PropTypes.object.isRequired,
         highlightedVehicle: PropTypes.object,
         filteredVehicles: PropTypes.object,
+        tabIndexOverride: PropTypes.number,
     };
 
     static defaultProps = {
         filteredVehicles: [],
         highlightedVehicle: undefined,
+        tabIndexOverride: 0,
     };
 
     groupVehicles = vehicles => groupBy(vehicles, vehicle => getFleetVehicleType(this.props.allFleet[vehicle.id]));
@@ -51,6 +53,7 @@ class VehicleLayer extends React.PureComponent {
                             vehicles={ vehiclesByType }
                             vehicleAllocations={ this.props.vehicleAllocations }
                             vehicleType={ key }
+                            tabIndexOverride={ this.props.tabIndexOverride }
                         />
                     ))}
             </LayerGroup>
