@@ -61,7 +61,7 @@ export const StopGroupsMultiSelect = (props) => {
 };
 
 StopGroupsMultiSelect.propTypes = {
-    stopGroups: PropTypes.array.isRequired,
+    stopGroups: PropTypes.object.isRequired,
     affectedStops: PropTypes.array.isRequired,
     className: PropTypes.string,
     removeAction: PropTypes.func,

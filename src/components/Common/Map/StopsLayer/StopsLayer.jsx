@@ -11,7 +11,7 @@ import { TRAIN_TYPE_ID } from '../../../../types/vehicle-types';
 class StopsLayer extends React.Component {
     static propTypes = {
         visibleStops: PropTypes.array,
-        childStops: PropTypes.object.isRequired,
+        childStops: PropTypes.object,
         stopDetail: PropTypes.object.isRequired,
         leafletMap: PropTypes.object.isRequired,
         focusZoom: PropTypes.number.isRequired,
@@ -20,6 +20,7 @@ class StopsLayer extends React.Component {
 
     static defaultProps = {
         visibleStops: [],
+        childStops: {},
     };
 
     constructor(props) {

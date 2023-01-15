@@ -60,7 +60,10 @@ ExpandableList.propTypes = {
     className: PropTypes.string,
     label: PropTypes.string.isRequired,
     removeAction: PropTypes.func,
-    children: PropTypes.arrayOf(PropTypes.element),
+    children: PropTypes.oneOfType([
+        PropTypes.array,
+        PropTypes.element,
+    ]),
 };
 
 ExpandableList.defaultProps = {

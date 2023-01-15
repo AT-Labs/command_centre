@@ -524,8 +524,10 @@ const geographySearchRoutes = searchBody => async (dispatch, getState) => {
             type: SEARCH_RESULT_TYPE.ROUTE.type,
         };
     });
-    dispatch(updateAffectedRoutesState(enrichedRoutes));
-    dispatch(getRoutesByShortName(enrichedRoutes));
+    const exisingAffectedRoutes = getAffectedRoutes(getState());
+    const newAffectedRoutes = [...new Set(exisingAffectedRoutes.concat(enrichedRoutes))];
+    dispatch(updateAffectedRoutesState(newAffectedRoutes));
+    dispatch(getRoutesByShortName(newAffectedRoutes));
 };
 
 const geographySearchStops = searchBody => async (dispatch, getState) => {
@@ -549,7 +551,9 @@ const geographySearchStops = searchBody => async (dispatch, getState) => {
             type: SEARCH_RESULT_TYPE.STOP.type,
         };
     });
-    dispatch(updateAffectedStopsState(enrichedStops));
+    const exisingAffectedStops = getAffectedStops(getState());
+    const newAffectedStops = [...new Set(exisingAffectedStops.concat(enrichedStops))];
+    dispatch(updateAffectedStopsState(newAffectedStops));
 };
 
 export const searchByDrawing = (disruptionType, shape) => async (dispatch) => {
