@@ -99,7 +99,7 @@ export const AlertsView = (props) => {
             headerName: 'TYPE',
             width: 200,
             type: 'singleSelect',
-            valueOptions: ['Missed Trip', 'Incorrect Trip Sign On'],
+            valueOptions: ['Late Trip', 'Missed Trip', 'Incorrect Trip Sign On'],
         },
         { field: 'operator', headerName: 'OPERATOR', width: 230 },
         {
@@ -182,6 +182,7 @@ export const AlertsView = (props) => {
     });
 
     const parseAlertType = (type) => {
+        if (type === 'Late') return 'Late Trip';
         if (type === 'Missed') return 'Missed Trip';
         if (type === 'Signon') return 'Incorrect Trip Sign On';
         return null;
