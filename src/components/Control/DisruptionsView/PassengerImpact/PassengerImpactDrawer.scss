@@ -1,0 +1,36 @@
+@import '../../../../assets/styles/variables';
+
+.passenger-impact-drawer {
+    left: $side-panel-width-large;
+    position: fixed;
+    z-index: 401;
+    display: flex;
+    top: 200px;
+
+    & .handler-wrap {
+        margin-left: -70px;
+        & .handler {
+            transform: rotate(90deg);
+            text-transform: none;
+            top: 50%;
+            border-radius: 4px 4px 0 0;
+        }
+        & :disabled {
+            color: $at-ocean !important;
+            background-color: $at-light-gray !important;
+        }
+    }
+
+    & .disabled {
+        margin-left: -115px !important;
+    }
+
+    & .open {
+        display: block;
+        background-color: #FAFAFA;
+    }
+
+    & .closed {
+        display: none;
+    }
+}

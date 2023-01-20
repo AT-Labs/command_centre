@@ -1,4 +1,5 @@
 {
     "useRecurringCancellations": "false",
-    "useRecurringCancellationsGridView": "false"
+    "useRecurringCancellationsGridView": "false",
+    "usePassengerImpact": "false"
 }

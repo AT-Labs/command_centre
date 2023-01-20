@@ -1,0 +1,10 @@
+.passenger-imact-grid {
+    max-width: 1200px;
+    text-align: center;
+    margin: 20px 0;
+
+    & .customDataGrid {
+        background-color: #FFF;
+        height: 500px;
+    }
+}

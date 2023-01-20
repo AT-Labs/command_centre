@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import _ from 'lodash-es';
 import PropTypes from 'prop-types';
 import {
     DataGridPro, GridToolbarExport, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton,
-    GridToolbarDensitySelector, useGridApiRef, GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridLinkOperator, GridFooterContainer, GridFooter,
+    GridToolbarDensitySelector, useGridApiRef, GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridLinkOperator,
 } from '@mui/x-data-grid-pro';
 import DateAdapter from '@mui/lab/AdapterMoment';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
@@ -138,13 +137,6 @@ export const CustomDataGrid = (props) => {
         props.onRowExpanded(updatedIds);
     };
 
-    const CustomFooter = () => (
-        <GridFooterContainer>
-            { props.customFooter() }
-            <GridFooter />
-        </GridFooterContainer>
-    );
-
     return (
         <div className={ `customDataGrid ${props.gridClassNames}` }>
             <LocalizationProvider dateAdapter={ DateAdapter }>
@@ -154,7 +146,7 @@ export const CustomDataGrid = (props) => {
                         Toolbar: props.toolbar ?? CustomToolbar,
                         NoRowsOverlay: getNoRowsOverlay,
                         NoResultsOverlay: getNoResultsOverlay,
-                        Footer: _.size(props.selectedRow) > 0 ? CustomFooter : undefined,
+                        Footer: props.customFooter,
                     } }
                     componentsProps={ {
                         filterPanel: {
@@ -176,7 +168,7 @@ export const CustomDataGrid = (props) => {
                     onPinnedColumnsChange={ model => props.updateDatagridConfig({ pinnedColumns: model }) }
                     pinnedColumns={ props.datagridConfig.pinnedColumns }
                     onPageChange={ page => props.updateDatagridConfig({ page }) }
-                    pagination
+                    pagination={ props.pagination }
                     getDetailPanelContent={ props.getDetailPanelContent }
                     getDetailPanelHeight={ ({ row }) => (props.calculateDetailPanelHeight ? props.calculateDetailPanelHeight(row) : props.detailPanelHeight) }
                     disableSelectionOnClick={ props.disableSelectionOnClick }
@@ -187,8 +179,12 @@ export const CustomDataGrid = (props) => {
                     detailPanelExpandedRowIds={ selectedRows }
                     checkboxSelection={ props.checkboxSelection }
                     onSelectionModelChange={ newSelectionModel => props.onChangeSelectedData(newSelectionModel) }
-                    selectionModel={ props.selectedRow }
+                    selectionModel={ props.selectionModel }
                     hideFooterSelectedRowCount
+                    treeData={ props.treeData }
+                    getTreeDataPath={ props.getTreeDataPath }
+                    autoHeight={ props.autoHeight }
+                    groupingColDef={ props.groupingColDef }
                 />
             </LocalizationProvider>
         </div>
@@ -200,7 +196,7 @@ CustomDataGrid.propTypes = {
     updateDatagridConfig: PropTypes.func.isRequired,
     dataSource: PropTypes.array,
     columns: PropTypes.array,
-    toolbar: PropTypes.object,
+    toolbar: PropTypes.func,
     getDetailPanelContent: PropTypes.func,
     calculateDetailPanelHeight: PropTypes.func,
     detailPanelHeight: PropTypes.number,
@@ -215,8 +211,13 @@ CustomDataGrid.propTypes = {
     onRowExpanded: PropTypes.func,
     checkboxSelection: PropTypes.bool,
     onChangeSelectedData: PropTypes.func,
-    selectedRow: PropTypes.array.isRequired,
+    selectionModel: PropTypes.array,
     customFooter: PropTypes.func,
+    treeData: PropTypes.bool,
+    getTreeDataPath: PropTypes.func,
+    autoHeight: PropTypes.bool,
+    pagination: PropTypes.bool,
+    groupingColDef: PropTypes.object,
 };
 
 CustomDataGrid.defaultProps = {
@@ -238,7 +239,13 @@ CustomDataGrid.defaultProps = {
     onRowExpanded: () => null,
     checkboxSelection: false,
     onChangeSelectedData: () => null,
-    customFooter: () => null,
+    customFooter: undefined,
+    treeData: false,
+    getTreeDataPath: () => null,
+    autoHeight: false,
+    pagination: true,
+    selectionModel: [],
+    groupingColDef: undefined,
 };
 
 export default CustomDataGrid;

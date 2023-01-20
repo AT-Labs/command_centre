@@ -51,7 +51,7 @@ export const momentFromDateTime = (date, time) => {
     return undefined;
 };
 
-export const buildSubmitBody = (disruption, routes, stops, workarounds, passengerCount) => {
+export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
     const modes = [...routes.map(route => VEHICLE_TYPES[route.routeType].type),
         ...stops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType].type)];
     const routesToRequest = routes.map(({ routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon }) => ({
@@ -74,7 +74,6 @@ export const buildSubmitBody = (disruption, routes, stops, workarounds, passenge
         mode: uniq(modes).join(', '),
         affectedEntities: [...routesToRequest, ...stopsToRequest],
         ...(workarounds && { workarounds }),
-        ...(passengerCount && { passengerCount }),
     };
 };
 
@@ -275,45 +274,4 @@ export const itemToEntityTransformers = {
         category: item.category,
         icon: item.icon,
     }),
-};
-
-const getAffectedHoursByWeekDay = (weekDay, recurrencePattern, duration) => {
-    if (!recurrencePattern.byweekday.includes(weekDay)) {
-        return [];
-    }
-    const dayOfWeek = weekDay === 6 ? 0 : weekDay + 1;
-    const affectedHours = [];
-    const startDate = moment.utc(recurrencePattern.dtstart);
-    const endDate = moment.utc(recurrencePattern.until);
-    const currentDay = moment.utc(recurrencePattern.dtstart);
-    while (currentDay.isSameOrBefore(endDate)) {
-        if (currentDay.day() === dayOfWeek) {
-            for (let i = 0; i <= duration && startDate.hour() + i <= 23; i++) {
-                affectedHours.push(startDate.hour() + i);
-            }
-            break;
-        }
-        currentDay.add(1, 'day');
-    }
-    return affectedHours;
-};
-
-export const getPassengerCountTotal = (passengerCountData, recurrent, recurrencePattern, duration) => {
-    const weekDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-    let total = 0;
-    passengerCountData.forEach((affectedEntityData) => {
-        weekDays.forEach((weekDay, index) => {
-            if (affectedEntityData[weekDay]) {
-                if (recurrent) {
-                    const hours = getAffectedHoursByWeekDay(index, recurrencePattern, duration);
-                    hours.forEach((hour) => {
-                        total += affectedEntityData[weekDay][hour];
-                    });
-                } else {
-                    total += affectedEntityData[weekDay].reduce((sum, value) => sum + value, 0);
-                }
-            }
-        });
-    });
-    return total;
 };

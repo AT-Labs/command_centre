@@ -8,6 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ReadMore from '@mui/icons-material/ReadMore';
+import { GridFooterContainer, GridFooter } from '@mui/x-data-grid-pro';
 import AlertMessage from '../../../Common/AlertMessage/AlertMessage';
 import AddRecurringCancellationModal from './AddRecurringCancellationModal';
 import RecurringCancellationFooter from './RecurringCancellationFooter';
@@ -333,11 +334,14 @@ export const RecurringCancellationsView = (props) => {
     };
 
     const renderCustomFooter = () => (
-        <RecurringCancellationFooter
-            selectedRow={ selectedRow }
-            deselectAllRecurringCancellations={ () => deselectAllRecurringCancellations() }
-            onClick={ () => openDeleteModalforCheckBox(selectedRow) }
-        />
+        <GridFooterContainer>
+            <RecurringCancellationFooter
+                selectedRow={ selectedRow }
+                deselectAllRecurringCancellations={ () => deselectAllRecurringCancellations() }
+                onClick={ () => openDeleteModalforCheckBox(selectedRow) }
+            />
+            <GridFooter />
+        </GridFooterContainer>
     );
 
     return (
@@ -396,9 +400,9 @@ export const RecurringCancellationsView = (props) => {
                     getRowId={ row => row.id }
                     rowCount={ recurringCancellations.length }
                     onChangeSelectedData={ x => setSelectedRow([...x]) }
-                    selectedRow={ selectedRow }
+                    selectionModel={ selectedRow }
                     checkboxSelection={ props.isRecurringCancellationUpdateAllowed }
-                    customFooter={ renderCustomFooter }
+                    customFooter={ _.size(selectedRow) > 0 ? renderCustomFooter : undefined }
                 />
             </div>
         </div>

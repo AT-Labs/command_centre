@@ -168,16 +168,6 @@ describe('buildSubmitBody', () => {
             mode: "",
         });
     });
-
-    it('should include passenger count when passed', () => {
-        const passengerCount = 23;
-        expect(buildSubmitBody({}, [], [], [], passengerCount)).to.deep.equal({
-            affectedEntities: [],
-            mode: "",
-            workarounds: [],
-            passengerCount,
-        });
-    });
 });
 
 describe('getStatusOptions', () => {
@@ -303,22 +293,3 @@ describe('groupStopsByRouteElementByParentStation', () => {
     });
 });
 
-describe('getPassengerCountTotal', () => {
-    const passengerCountData = [
-        'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'
-    ].map(day => ({ [day]: new Array(24).fill(1) }));
-
-    it('should sum all passenger count data when disruption is not recurrent', () => {
-        expect(getPassengerCountTotal(passengerCountData, false)).to.equal(168);
-    });
-
-    it('should sum passenger count data filtering by week day and time when disruption is recurrent', () => {
-        const recurrencePattern = {
-            byweekday: [1, 2, 5, 6],
-            dtstart: moment.utc('2022-12-28T14:00:00.000Z').toDate(),
-            until: moment.utc('2023-01-01T16:00:00.000Z').toDate(),
-            freq: 2,
-        };
-        expect(getPassengerCountTotal(passengerCountData, true, recurrencePattern, "2")).to.equal(9);
-    });
-});

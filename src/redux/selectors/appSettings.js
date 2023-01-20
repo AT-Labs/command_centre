@@ -7,3 +7,4 @@ export const useRecurringCancellationsGridView = createSelector(
     getAppSettingsState,
     appSettingState => (_.result(appSettingState, 'useRecurringCancellationsGridView') === 'true'),
 );
+export const usePassengerImpact = createSelector(getAppSettingsState, appSettingState => (_.result(appSettingState, 'usePassengerImpact') === 'true'));
