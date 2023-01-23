@@ -139,7 +139,7 @@ export const StopByRoutesMultiSelect = (props) => {
                 const parent = JSON.parse(key);
                 parents.push(parent);
                 groupedStopsByRouteDirectionHTML.push(
-                    <li key={ `${route.routeId}-${key.stopCode}-${direction}` } className="select_entities pb-2">
+                    <li key={ `${route.routeId}-${parent.stopCode}-${direction}` } className="select_entities pb-2">
                         <EntityCheckbox
                             id={ `stopByRoute-${route.routeId}-${key}-${direction}` }
                             checked={ isChecked(parent) }
@@ -147,17 +147,19 @@ export const StopByRoutesMultiSelect = (props) => {
                             label={ `${parent.stopCode} - ${parent.stopName}` }
                             size="small"
                         />
-                        { childList.map(childStop => (
-                            <li key={ `${route.routeId}-${childStop.stopCode}-${direction}` } className="select_entities pb-2 ml-4">
-                                <EntityCheckbox
-                                    id={ `stopByRoute-${route.routeId}-${childStop.stopCode}-${direction}` }
-                                    checked={ isChecked(childStop) }
-                                    onChange={ e => toggleStopsByRoute(route, childStop, e.target.checked) }
-                                    label={ `${childStop.stopCode} - ${childStop.stopName}` }
-                                    size="small"
-                                />
-                            </li>
-                        ))}
+                        <ul className="p-0">
+                            { childList.map(childStop => (
+                                <li key={ `${route.routeId}-${childStop.stopCode}-${direction}` } className="select_entities pb-2 ml-4">
+                                    <EntityCheckbox
+                                        id={ `stopByRoute-${route.routeId}-${childStop.stopCode}-${direction}` }
+                                        checked={ isChecked(childStop) }
+                                        onChange={ e => toggleStopsByRoute(route, childStop, e.target.checked) }
+                                        label={ `${childStop.stopCode} - ${childStop.stopName}` }
+                                        size="small"
+                                    />
+                                </li>
+                            ))}
+                        </ul>
                     </li>,
                 );
             }
