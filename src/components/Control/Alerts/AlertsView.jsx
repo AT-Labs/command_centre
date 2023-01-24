@@ -182,7 +182,7 @@ export const AlertsView = (props) => {
     });
 
     const parseAlertType = (type) => {
-        if (type === 'Late') return 'Late Trip';
+        if (type === 'Late') return 'Not Started & Delayed';
         if (type === 'Missed') return 'Missed Trip';
         if (type === 'Signon') return 'Incorrect Trip Sign On';
         return null;
