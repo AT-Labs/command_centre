@@ -38,7 +38,7 @@ import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import ConfirmationModal from '../../../Common/ConfirmationModal/ConfirmationModal';
 import { confirmationModalTypes } from '../../types';
 import RoutesByStopMultiSelect from './MultiSelect/RoutesByStopMultiSelect';
-import StopByRoutesMultiSelect from './MultiSelect/StopByRoutesMultiSelect';
+import StopsByRouteMultiSelect from './MultiSelect/StopsByRouteMultiSelect';
 import StopGroupsMultiSelect from './MultiSelect/StopGroupsMultiSelect';
 import {
     filterOnlyStopParams,
@@ -427,7 +427,7 @@ export const SelectDisruptionEntities = (props) => {
             )}
             <div className="selection-container h-100">
                 <ul className="p-0">
-                    <StopByRoutesMultiSelect
+                    <StopsByRouteMultiSelect
                         removeAction={ route => removeAction(route, ROUTE) }
                         className="select-stops-route"
                     />

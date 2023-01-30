@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { uniqBy, isEmpty, uniq } from 'lodash-es';
+import { uniqBy, isEmpty } from 'lodash-es';
 import { ExpandableList } from '../../../../../Common/Expandable';
 import { EntityCheckbox } from '../EntityCheckbox';
 import Loader from '../../../../../Common/Loader/Loader';
@@ -10,23 +10,17 @@ import { filterOnlyRouteParams, groupStopsByRouteElementByParentStation } from '
 import { getAffectedRoutes, getStopsByRoute as findStopsByRoute } from '../../../../../../redux/selectors/control/disruptions';
 import { getStopsByRoute, updateAffectedRoutesState } from '../../../../../../redux/actions/control/disruptions';
 
-export const StopByRoutesMultiSelect = (props) => {
+export const StopsByRouteMultiSelect = (props) => {
     const { className, removeAction } = props;
 
     const [expandedRoutes, setExpandedRoutes] = useState({});
     const [expandedRouteDirections, setExpandedRouteDirections] = useState({});
     const [loadedStopsByRoute, setLoadedStopsByRoute] = useState([]);
-    const [isLoadingStopsByRoute, setIsLoadingStopsByRoute] = useState(false);
 
     // loadedStopsByRoute are updated when a route is expanded - this triggers a JIT fetch of all stops for the routes
     useEffect(() => {
         props.getStopsByRoute(loadedStopsByRoute);
     }, [loadedStopsByRoute]);
-
-    // after getStopsByRoute has completed and findStopsByRoute has been updated ensure loading render is turned off
-    useEffect(() => {
-        setIsLoadingStopsByRoute(false);
-    }, [props.findStopsByRoute]);
 
     const isRouteActive = route => !!expandedRoutes[route.routeId];
     const isRouteDirectionActive = (route, direction) => !!expandedRouteDirections[`${route.routeId}-${direction}`];
@@ -41,7 +35,12 @@ export const StopByRoutesMultiSelect = (props) => {
             setExpandedItems(currentItems);
         }
     };
-    const toggleExpandedRoute = route => toggleExpandedItem(route.routeId, expandedRoutes, setExpandedRoutes);
+    const toggleExpandedRoute = (route) => {
+        toggleExpandedItem(route.routeId, expandedRoutes, setExpandedRoutes);
+        if (!loadedStopsByRoute.find(item => item.routeId === route.routeId)) {
+            setLoadedStopsByRoute([...loadedStopsByRoute, route]);
+        }
+    };
     const toggleExpandedRouteDirection = (route, direction) => toggleExpandedItem(`${route.routeId}-${direction}`, expandedRouteDirections, setExpandedRouteDirections);
 
     const createStopWithRoute = (stop, route) => ({ ...route, ...stop });
@@ -205,19 +204,12 @@ export const StopByRoutesMultiSelect = (props) => {
     const renderStopsByRoute = (route) => {
         const stopsByRoute = props.findStopsByRoute[route.routeId];
 
-        if (isEmpty(stopsByRoute)) {
-            if (isLoadingStopsByRoute) {
-                return [(<li key="-1"><Loader className="loader-disruptions loader-disruptions-list" /></li>)];
-            }
-
-            if (loadedStopsByRoute.findIndex(loadedRoute => loadedRoute.routeId === route.routeId) >= 0) {
-                return [(<li key="-1"><div>Stops not found</div></li>)];
-            }
-
-            setIsLoadingStopsByRoute(true);
-
-            setLoadedStopsByRoute(uniq([...loadedStopsByRoute, route]));
+        if (!stopsByRoute) {
             return [(<li key="-1"><Loader className="loader-disruptions loader-disruptions-list" /></li>)];
+        }
+
+        if (isEmpty(stopsByRoute)) {
+            return [(<li key="-1"><div>Stops not found</div></li>)];
         }
 
         return Object.keys(DIRECTIONS)
@@ -243,7 +235,7 @@ export const StopByRoutesMultiSelect = (props) => {
     );
 };
 
-StopByRoutesMultiSelect.propTypes = {
+StopsByRouteMultiSelect.propTypes = {
     affectedRoutes: PropTypes.array.isRequired,
     className: PropTypes.string,
     removeAction: PropTypes.func,
@@ -252,7 +244,7 @@ StopByRoutesMultiSelect.propTypes = {
     updateAffectedRoutesState: PropTypes.func.isRequired,
 };
 
-StopByRoutesMultiSelect.defaultProps = {
+StopsByRouteMultiSelect.defaultProps = {
     className: '',
     removeAction: null,
 };
@@ -263,4 +255,4 @@ export default connect(state => ({
 }), {
     getStopsByRoute,
     updateAffectedRoutesState,
-})(StopByRoutesMultiSelect);
+})(StopsByRouteMultiSelect);

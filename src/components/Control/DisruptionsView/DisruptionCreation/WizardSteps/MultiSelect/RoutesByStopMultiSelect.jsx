@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { uniqBy, isEmpty, uniq, sortBy, groupBy } from 'lodash-es';
+import { uniqBy, isEmpty, sortBy, groupBy } from 'lodash-es';
 import { ExpandableList } from '../../../../../Common/Expandable';
 import { EntityCheckbox } from '../EntityCheckbox';
 import Loader from '../../../../../Common/Loader/Loader';
@@ -14,17 +14,11 @@ export const RoutesByStopMultiSelect = (props) => {
 
     const [expandedStops, setExpandedStops] = useState({});
     const [loadedRoutesByStop, setLoadedRoutesByStop] = useState([]);
-    const [isLoadingRoutesByStop, setIsLoadingRoutesByStop] = useState(false);
 
     // loadedRoutesByStop are updated when a stop is expanded - this triggers a JIT fetch of all routes for the stops
     useEffect(() => {
         props.getRoutesByStop(loadedRoutesByStop);
     }, [loadedRoutesByStop]);
-
-    // after getRoutesByStop has completed and findRoutesByStop has been updated ensure loading render is turned off
-    useEffect(() => {
-        setIsLoadingRoutesByStop(false);
-    }, [props.findRoutesByStop]);
 
     const affectedSingleStops = props.affectedStops.filter(entity => !entity.groupId);
     const stopGroupStops = props.affectedStops.filter(entity => !!entity.groupId);
@@ -40,6 +34,10 @@ export const RoutesByStopMultiSelect = (props) => {
         } else {
             delete currentItems[stop.stopCode];
             setExpandedStops(currentItems);
+        }
+
+        if (!loadedRoutesByStop.find(item => item.stopCode === stop.stopCode)) {
+            setLoadedRoutesByStop([...loadedRoutesByStop, stop]);
         }
     };
 
@@ -108,18 +106,12 @@ export const RoutesByStopMultiSelect = (props) => {
     const renderRoutesByStop = (stop) => {
         const routesByStop = props.findRoutesByStop[stop.stopCode];
 
-        if (isEmpty(routesByStop)) {
-            if (isLoadingRoutesByStop) {
-                return [(<li key="-1"><Loader className="loader-disruptions loader-disruptions-list" /></li>)];
-            }
-
-            if (loadedRoutesByStop.findIndex(loadedStop => loadedStop.stopCode === stop.stopCode) >= 0) {
-                return [(<li key="-1"><div>Routes not found</div></li>)];
-            }
-
-            setIsLoadingRoutesByStop(true);
-            setLoadedRoutesByStop(uniq([...loadedRoutesByStop, stop]));
+        if (!routesByStop) {
             return [(<li key="-1"><Loader className="loader-disruptions loader-disruptions-list" /></li>)];
+        }
+
+        if (isEmpty(routesByStop)) {
+            return [(<li key="-1"><div>Routes not found</div></li>)];
         }
 
         const allSelected = routesByStop.every(route => affectedSingleStops.findIndex(stops => stops.stopCode === stop.stopCode

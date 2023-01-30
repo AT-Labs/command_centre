@@ -1,7 +1,7 @@
 import React from 'react';
 import sinon from 'sinon';
 import { shallow } from 'enzyme';
-import { StopByRoutesMultiSelect } from './StopByRoutesMultiSelect';
+import { StopsByRouteMultiSelect } from './StopsByRouteMultiSelect';
 
 let wrapper;
 let sandbox;
@@ -35,10 +35,10 @@ function setup(customProps) {
 
     Object.assign(props, customProps);
 
-    wrapper = shallow(<StopByRoutesMultiSelect { ...props } />);
+    wrapper = shallow(<StopsByRouteMultiSelect { ...props } />);
 }
 
-describe('<StopByRoutesMultiSelect />', () => {
+describe('<StopsByRouteMultiSelect />', () => {
     beforeEach(() => {
         sandbox = sinon.createSandbox();
     });
