@@ -99,7 +99,7 @@ export const AlertsView = (props) => {
             headerName: 'TYPE',
             width: 200,
             type: 'singleSelect',
-            valueOptions: ['Late Trip', 'Missed Trip', 'Incorrect Trip Sign On'],
+            valueOptions: ['Not Started & Delayed', 'Missed Trip', 'Incorrect Trip Sign On'],
         },
         { field: 'operator', headerName: 'OPERATOR', width: 230 },
         {
