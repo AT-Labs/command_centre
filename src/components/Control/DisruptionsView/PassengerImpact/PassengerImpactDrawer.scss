@@ -5,15 +5,22 @@
     position: fixed;
     z-index: 401;
     display: flex;
-    top: 200px;
+    height: calc(100vh - #{$header-height});
+    width: calc(100vw - #{$side-panel-width-large});
+    max-width: 1000px;
 
     & .handler-wrap {
         margin-left: -70px;
         & .handler {
             transform: rotate(90deg);
             text-transform: none;
-            top: 50%;
+            top: 45%;
             border-radius: 4px 4px 0 0;
+            background-color: $at-magenta;
+            white-space: nowrap;
+        }
+        & :hover {
+            background-color: map_get($theme-colors, 'at-magenta-tint-80');
         }
         & :disabled {
             color: $at-ocean !important;
@@ -28,6 +35,8 @@
     & .open {
         display: block;
         background-color: #FAFAFA;
+        border-radius: 0 4px 4px 0;
+        width: 100%;
     }
 
     & .closed {

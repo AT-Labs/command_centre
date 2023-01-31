@@ -1,3 +1,5 @@
+@import '../../../../assets/styles/variables';
+
 .passenger-imact-grid {
     max-width: 1200px;
     text-align: center;
@@ -5,6 +7,14 @@
 
     & .customDataGrid {
         background-color: #FFF;
-        height: 500px;
+        height: calc(100vh - #{$header-height} - 200px);
+        & .cel-wrapper {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        & .MuiDataGrid-footerContainer {
+            margin-left: 5px;
+        }
     }
 }

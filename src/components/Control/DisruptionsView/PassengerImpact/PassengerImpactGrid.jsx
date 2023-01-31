@@ -1,14 +1,72 @@
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { Container } from '@mui/material';
+import { Container, Tooltip } from '@mui/material';
 import { GridFooterContainer } from '@mui/x-data-grid-pro';
 import CustomDataGrid from '../../../Common/CustomDataGrid/CustomDataGrid';
 import { getChildStops, getAllStops } from '../../../../redux/selectors/static/stops';
 import { getAllRoutes } from '../../../../redux/selectors/static/routes';
 import { getAffectedRoutes, getAffectedStops } from '../../../../redux/selectors/control/disruptions';
-import { PASSENGER_IMPACT_GRID_COLUMNS, fetchAndProcessPassengerImpactData } from '../../../../utils/control/disruption-passenger-impact';
+import { fetchAndProcessPassengerImpactData, WEEKDAYS } from '../../../../utils/control/disruption-passenger-impact';
+import { DISRUPTION_TYPE } from '../../../../types/disruptions-types';
 import './PassengerImpactGrid.scss';
+
+const weekdayGridColumns = Object.values(WEEKDAYS).map(weekDay => ({
+    field: weekDay.name,
+    headerName: weekDay.init,
+    width: 50,
+}));
+
+const renderCellWithTooltip = params => params.value && (
+    <Tooltip title={ params.value }>
+        <span className="cel-wrapper">{params.value}</span>
+    </Tooltip>
+);
+
+const formatParentStopColumn = params => params.row.parentStopCode && `${params.row.parentStopCode}-${params.row.parentStopName}`;
+const formatStopColumn = params => params.row.stopCode && `${params.row.stopCode}-${params.row.stopName}`;
+
+const PASSENGER_IMPACT_GRID_COLUMNS = {
+    [DISRUPTION_TYPE.ROUTES]: [
+        {
+            field: 'routeShortName',
+            headerName: 'Route',
+            width: 120,
+            renderCell: renderCellWithTooltip,
+        },
+        {
+            field: 'parentStopCode',
+            headerName: 'Parent Stop',
+            width: 120,
+            valueGetter: formatParentStopColumn,
+            renderCell: renderCellWithTooltip,
+        },
+        {
+            field: 'stopCode',
+            headerName: 'Stop',
+            width: 120,
+            valueGetter: formatStopColumn,
+            renderCell: renderCellWithTooltip,
+        },
+        ...weekdayGridColumns,
+    ],
+    [DISRUPTION_TYPE.STOPS]: [
+        {
+            field: 'parentStopCode',
+            headerName: 'Stop',
+            width: 120,
+            valueGetter: formatParentStopColumn,
+            renderCell: renderCellWithTooltip,
+        },
+        {
+            field: 'routeShortName',
+            headerName: 'Route',
+            width: 120,
+            renderCell: renderCellWithTooltip,
+        },
+        ...weekdayGridColumns,
+    ],
+};
 
 export const PassengerImpactGrid = (props) => {
     const datagridConfig = {
@@ -34,6 +92,7 @@ export const PassengerImpactGrid = (props) => {
     const customFooter = () => (
         <GridFooterContainer>
             Total Impacted Passenger Count:
+            {' '}
             { passengerCountData.total }
         </GridFooterContainer>
     );

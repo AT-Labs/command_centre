@@ -5,7 +5,7 @@ import { momentFromDateTime } from './disruptions';
 import { DATE_FORMAT } from '../../constants/disruptions';
 import { getPassengerCountData } from '../transmitters/passenger-count-api';
 
-const WEEKDAYS = {
+export const WEEKDAYS = {
     0: { init: 'M', name: 'monday' },
     1: { init: 'Tu', name: 'tuesday' },
     2: { init: 'W', name: 'wednesday' },
@@ -17,58 +17,13 @@ const WEEKDAYS = {
 
 const weekdayNames = Object.values(WEEKDAYS).map(weekDay => weekDay.name);
 
-const weekdayGridColumns = Object.values(WEEKDAYS).map(weekDay => ({
-    field: weekDay.name,
-    headerName: weekDay.init,
-    width: 50,
-}));
-
-export const PASSENGER_IMPACT_GRID_COLUMNS = {
-    [DISRUPTION_TYPE.ROUTES]: [
-        {
-            field: 'routeShortName',
-            headerName: 'Route',
-            width: 120,
-            valueFormatter: params => params.value,
-        },
-        {
-            field: 'parentStopCode',
-            headerName: 'Parent Stop',
-            width: 120,
-            valueGetter: params => params.row.parentStopCode && `${params.row.parentStopCode}-${params.row.parentStopName}`,
-        },
-        {
-            field: 'stopCode',
-            headerName: 'Stop',
-            width: 120,
-            valueGetter: params => params.row.stopCode && `${params.row.stopCode}-${params.row.stopName}`,
-        },
-        ...weekdayGridColumns,
-    ],
-    [DISRUPTION_TYPE.STOPS]: [
-        {
-            field: 'parentStopCode',
-            headerName: 'Stop',
-            width: 120,
-            valueGetter: params => params.row.parentStopCode && `${params.row.parentStopCode}-${params.row.parentStopName}`,
-        },
-        {
-            field: 'routeShortName',
-            headerName: 'Route',
-            width: 120,
-            valueFormatter: params => params.value,
-        },
-        ...weekdayGridColumns,
-    ],
-};
-
 const aggregateTreeDataByPath = (row, treePathObject, resMap) => {
     const id = Object.values(treePathObject).join('_');
-    const [[lastAdditionalColumnForTreePathKey, lastAdditionalColumnForTreePattValue]] = Object.entries(treePathObject).slice(-1);
+    const [[lastAdditionalColumnForTreePathKey, lastAdditionalColumnForTreePathValue]] = Object.entries(treePathObject).slice(-1);
     const basicData = {
         id,
         path: Object.values(treePathObject),
-        [lastAdditionalColumnForTreePathKey]: lastAdditionalColumnForTreePattValue,
+        [lastAdditionalColumnForTreePathKey]: lastAdditionalColumnForTreePathValue,
     };
     let aggregatedValueForEachDay;
     if (resMap.has(id)) {
@@ -151,7 +106,7 @@ export const extendPassengerCountData = (transformedPassengerCountTreeData, allR
 
 export const fetchAndProcessPassengerImpactData = async (disruptionData, affectedRoutes, affectedStops, allChildStops, allRoutes, allStops) => {
     const affectedEntities = [...affectedRoutes, ...affectedStops];
-    const routeIds = [...new Set(affectedEntities.map(({ routeId }) => routeId))];
+    const routeIds = [...new Set(affectedEntities.map(({ routeId }) => routeId))].filter(routeId => routeId);
     const stopCodes = [...new Set(getAllChildStopCodesByStops(affectedEntities, allChildStops))];
     const startDate = disruptionData.startDate ? disruptionData.startDate : moment(disruptionData.startTime).format(DATE_FORMAT);
     const startTime = momentFromDateTime(startDate, disruptionData.startTime).toISOString();
