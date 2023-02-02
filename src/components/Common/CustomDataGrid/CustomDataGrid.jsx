@@ -73,11 +73,11 @@ export const CustomDataGrid = (props) => {
     };
 
     React.useEffect(() => {
-        if (isInitialLoad && props.dataSource.length > 0 && props.expandedDetailPanels) {
+        if (isInitialLoad && props.dataSource.length > 0 && props.expandedDetailPanels?.length > 0) {
             setTimeout(() => displaySelectedDetail(props.expandedDetailPanels, false));
 
             setIsInitialLoad(false);
-        } else if (props.expandedDetailPanels && props.expandedDetailPanels.length > 0 && (!selectedRows || !selectedRows.includes(props.expandedDetailPanels[0]))) {
+        } else if (props.expandedDetailPanels?.length > 0 && (!selectedRows || !selectedRows.includes(props.expandedDetailPanels[0]))) {
             setTimeout(() => displaySelectedDetail(props.expandedDetailPanels, true));
         }
     }, [props.dataSource, props.expandedDetailPanels]);
