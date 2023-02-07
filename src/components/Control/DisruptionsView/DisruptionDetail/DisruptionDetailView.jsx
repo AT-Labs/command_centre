@@ -80,6 +80,8 @@ import { LastNoteView } from './LastNoteView';
 import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import { ShapeLayer } from '../../../Common/Map/ShapeLayer/ShapeLayer';
 import { SelectedStopsMarker } from '../../../Common/Map/StopsLayer/SelectedStopsMarker';
+import { DisruptionPassengerImpactGridModal } from './DisruptionPassengerImpactGridModal';
+import { usePassengerImpact } from '../../../../redux/selectors/appSettings';
 
 const { STOP } = SEARCH_RESULT_TYPE;
 
@@ -117,6 +119,7 @@ const DisruptionDetailView = (props) => {
     const [isViewWorkaroundsModalOpen, setIsViewWorkaroundsModalOpen] = useState(false);
     const [descriptionNote, setDescriptionNote] = useState('');
     const [lastNote, setLastNote] = useState();
+    const [isViewPassengerImpactModalOpen, setIsViewPassengerImpactModalOpen] = useState(false);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqWith([...affectedRoutes, ...props.routes], (routeA, routeB) => routeA.routeId === routeB.routeId && routeA.stopCode === routeB.stopCode);
@@ -395,6 +398,8 @@ const DisruptionDetailView = (props) => {
                     affectedEntities={ disruption.affectedEntities }
                     showViewWorkaroundsButton
                     viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
+                    showViewPassengerImpactButton={ props.usePassengerImpact }
+                    viewPassengerImpactAction={ () => setIsViewPassengerImpactModalOpen(true) }
                 />
                 <section className="position-relative w-50 d-flex disruption-detail__map">
                     <Map
@@ -746,6 +751,13 @@ const DisruptionDetailView = (props) => {
                 onClose={ () => setIsViewWorkaroundsModalOpen(false) }
                 isOpen={ isViewWorkaroundsModalOpen }
             />
+            { props.usePassengerImpact && (
+                <DisruptionPassengerImpactGridModal
+                    disruption={ disruption }
+                    onClose={ () => setIsViewPassengerImpactModalOpen(false) }
+                    isOpen={ isViewPassengerImpactModalOpen }
+                />
+            ) }
         </Form>
     );
 };
@@ -771,6 +783,7 @@ DisruptionDetailView.propTypes = {
     stops: PropTypes.array.isRequired,
     className: PropTypes.string,
     boundsToFit: PropTypes.array.isRequired,
+    usePassengerImpact: PropTypes.bool.isRequired,
 };
 
 DisruptionDetailView.defaultProps = {
@@ -788,6 +801,7 @@ export default connect(state => ({
     routes: getAffectedRoutes(state),
     stops: getAffectedStops(state),
     boundsToFit: getBoundsToFit(state),
+    usePassengerImpact: usePassengerImpact(state),
 }), {
     getRoutesByShortName,
     openCreateDisruption,

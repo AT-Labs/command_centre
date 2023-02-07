@@ -34,6 +34,8 @@ import { LastNoteView } from './LastNoteView';
 import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import { ShapeLayer } from '../../../Common/Map/ShapeLayer/ShapeLayer';
 import { SelectedStopsMarker } from '../../../Common/Map/StopsLayer/SelectedStopsMarker';
+import { DisruptionPassengerImpactGridModal } from './DisruptionPassengerImpactGridModal';
+import { usePassengerImpact } from '../../../../redux/selectors/appSettings';
 
 const { STOP } = SEARCH_RESULT_TYPE;
 
@@ -43,6 +45,7 @@ const Readonly = (props) => {
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [isViewWorkaroundsModalOpen, setIsViewWorkaroundsModalOpen] = useState(false);
     const [lastNote, setLastNote] = useState();
+    const [isViewPassengerImpactModalOpen, setIsViewPassengerImpactModalOpen] = useState(false);
 
     const affectedEntitiesWithoutShape = toString(disruption.affectedEntities.map(entity => omit(entity, ['shapeWkt'])));
     useEffect(() => {
@@ -77,6 +80,8 @@ const Readonly = (props) => {
                     affectedEntities={ disruption.affectedEntities }
                     showViewWorkaroundsButton
                     viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
+                    showViewPassengerImpactButton={ props.usePassengerImpact }
+                    viewPassengerImpactAction={ () => setIsViewPassengerImpactModalOpen(true) }
                 />
                 <section className="position-relative w-50 d-flex disruption-detail__map">
                     <Map
@@ -227,6 +232,13 @@ const Readonly = (props) => {
                 onClose={ () => setIsViewWorkaroundsModalOpen(false) }
                 isOpen={ isViewWorkaroundsModalOpen }
             />
+            { props.usePassengerImpact && (
+                <DisruptionPassengerImpactGridModal
+                    disruption={ disruption }
+                    onClose={ () => setIsViewPassengerImpactModalOpen(false) }
+                    isOpen={ isViewPassengerImpactModalOpen }
+                />
+            ) }
         </Form>
     );
 };
@@ -240,6 +252,7 @@ Readonly.propTypes = {
     isLoading: PropTypes.bool,
     boundsToFit: PropTypes.array.isRequired,
     routeColors: PropTypes.array,
+    usePassengerImpact: PropTypes.bool.isRequired,
 };
 
 Readonly.defaultProps = {
@@ -253,6 +266,7 @@ export default connect(state => ({
     isLoading: getDisruptionsLoadingState(state),
     boundsToFit: getBoundsToFit(state),
     routeColors: getRouteColors(state),
+    usePassengerImpact: usePassengerImpact(state),
 }), {
     getRoutesByShortName,
     updateAffectedRoutesState,

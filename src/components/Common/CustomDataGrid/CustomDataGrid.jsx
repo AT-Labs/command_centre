@@ -185,6 +185,7 @@ export const CustomDataGrid = (props) => {
                     getTreeDataPath={ props.getTreeDataPath }
                     autoHeight={ props.autoHeight }
                     groupingColDef={ props.groupingColDef }
+                    loading={ props.loading }
                 />
             </LocalizationProvider>
         </div>
@@ -218,6 +219,7 @@ CustomDataGrid.propTypes = {
     autoHeight: PropTypes.bool,
     pagination: PropTypes.bool,
     groupingColDef: PropTypes.object,
+    loading: PropTypes.bool,
 };
 
 CustomDataGrid.defaultProps = {
@@ -246,6 +248,7 @@ CustomDataGrid.defaultProps = {
     pagination: true,
     selectionModel: [],
     groupingColDef: undefined,
+    loading: false,
 };
 
 export default CustomDataGrid;

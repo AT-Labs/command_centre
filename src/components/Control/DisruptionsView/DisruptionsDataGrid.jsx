@@ -16,10 +16,10 @@ import {
     LABEL_CAUSE, LABEL_CREATED_AT, LABEL_CREATED_BY, LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_DISRUPTION, LABEL_END_TIME,
     LABEL_HEADER,
     LABEL_LAST_UPDATED_AT,
-    LABEL_MODE, LABEL_START_TIME, LABEL_STATUS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES, LABEL_SEVERITY,
+    LABEL_MODE, LABEL_START_TIME, LABEL_STATUS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES, LABEL_SEVERITY, LABEL_PASSENGER_IMPACT,
 } from '../../../constants/disruptions';
 import { dateTimeFormat } from '../../../utils/dateUtils';
-import { SEVERITIES, DEFAULT_SEVERITY, STATUSES } from '../../../types/disruptions-types';
+import { SEVERITIES, DEFAULT_SEVERITY, STATUSES, PASSENGER_IMPACT_RANGE } from '../../../types/disruptions-types';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT, CAUSES, IMPACTS, OLD_CAUSES, OLD_IMPACTS } from '../../../types/disruption-cause-and-effect';
 import { getActiveDisruptionId, getDisruptionsDatagridConfig } from '../../../redux/selectors/control/disruptions';
 import { updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState } from '../../../redux/actions/control/disruptions';
@@ -27,8 +27,9 @@ import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOpera
 
 import './DisruptionsDataGrid.scss';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
-import { getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from '../../../utils/control/disruptions';
+import { getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops, getPassengerCountRange } from '../../../utils/control/disruptions';
 import { getWorkaroundsAsText } from '../../../utils/control/disruption-workarounds';
+import { usePassengerImpact } from '../../../redux/selectors/appSettings';
 
 const getDisruptionLabel = (disruption) => {
     const { uploadedFiles, incidentNo, createNotification, recurrent } = disruption;
@@ -123,6 +124,14 @@ export const DisruptionsDataGrid = (props) => {
             valueOptions: SEVERITIES.slice(1, SEVERITIES.length).map(severity => severity.label),
         },
         {
+            field: 'workarounds',
+            headerName: LABEL_WORKAROUNDS,
+            width: 150,
+            valueGetter: params => getWorkaroundsAsText(params.value),
+            type: 'string',
+            renderCell: RenderCellExpand,
+        },
+        {
             field: 'startTime',
             headerName: LABEL_START_TIME,
             width: 150,
@@ -190,6 +199,21 @@ export const DisruptionsDataGrid = (props) => {
         },
     ];
 
+    if (props.usePassengerImpact) {
+        GRID_COLUMNS.push(
+            {
+                field: 'passengerCount',
+                headerName: LABEL_PASSENGER_IMPACT,
+                width: 200,
+                hide: false,
+                valueGetter: params => (params.value ? getPassengerCountRange(params.value) : 'No records found'),
+                renderCell: RenderCellExpand,
+                type: 'singleSelect',
+                valueOptions: Object.values(PASSENGER_IMPACT_RANGE),
+            },
+        );
+    }
+
     const getDetailPanelContent = React.useCallback(
         ({ row }) => (<Box sx={ { padding: '16px 16px 10px 16px' } }><DisruptionDetail disruption={ row } /></Box>),
         [],
@@ -205,16 +229,6 @@ export const DisruptionsDataGrid = (props) => {
         }
         props.updateCopyDisruptionState(false);
     };
-
-    const workaroundsColumnInfos = {
-        field: 'workarounds',
-        headerName: LABEL_WORKAROUNDS,
-        width: 150,
-        valueGetter: params => getWorkaroundsAsText(params.value),
-        type: 'string',
-        renderCell: RenderCellExpand,
-    };
-    GRID_COLUMNS.splice(8, 0, workaroundsColumnInfos);
 
     return (
         <div>
@@ -240,6 +254,7 @@ DisruptionsDataGrid.propTypes = {
     activeDisruptionId: PropTypes.number,
     updateActiveDisruptionId: PropTypes.func.isRequired,
     updateCopyDisruptionState: PropTypes.func.isRequired,
+    usePassengerImpact: PropTypes.bool.isRequired,
 };
 
 DisruptionsDataGrid.defaultProps = {
@@ -251,6 +266,7 @@ export default connect(
     state => ({
         datagridConfig: getDisruptionsDatagridConfig(state),
         activeDisruptionId: getActiveDisruptionId(state),
+        usePassengerImpact: usePassengerImpact(state),
     }),
     {
         updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState,

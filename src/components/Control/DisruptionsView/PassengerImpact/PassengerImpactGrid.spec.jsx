@@ -28,12 +28,16 @@ const mockProps = {
 
 cache = createCache({ key: 'blah' });
 
-const setup = (customProps) => {
+const setup = async (customProps) => {
     let props = mockProps;
     props = Object.assign(props, customProps);
 
     store = mockStore({});
-    return mount(<CacheProvider value={ cache }><Provider store={ store }><PassengerImpactGrid { ...props } /></Provider></CacheProvider>);
+    let component;
+    await act(() => {
+        component = mount(<CacheProvider value={ cache }><Provider store={ store }><PassengerImpactGrid { ...props } /></Provider></CacheProvider>);
+    });
+    return component;
 };
 
 const waitForComponentToRender = async (domWrapper) => {
@@ -89,9 +93,21 @@ describe('<PassengerImpactGrid />', () => {
             friday: 1,
             saturday: 1,
             sunday: 1,
+        }, {
+            id: '106-202__1009',
+            path: ['106-202', '1009'],
+            stopCode: '1009',
+            monday: 'n/a',
+            tuesday: 'n/a',
+            wednesday: 'n/a',
+            thursday: 'n/a',
+            friday: 'n/a',
+            saturday: 'n/a',
+            sunday: 'n/a',
+            stopName: 'Stop not available',
         }];
         jest.spyOn(passengerImpactUtil, 'fetchAndProcessPassengerImpactData').mockResolvedValueOnce({ grid: gridData, total: 7 });
-        wrapper = setup();
+        wrapper = await setup();
 
         await waitForComponentToRender(wrapper);
 

@@ -2,8 +2,8 @@ import moment from 'moment';
 import { sum, isEmpty } from 'lodash-es';
 import { DISRUPTION_TYPE } from '../../types/disruptions-types';
 import { momentFromDateTime } from './disruptions';
-import { DATE_FORMAT } from '../../constants/disruptions';
 import { getPassengerCountData } from '../transmitters/passenger-count-api';
+import { STOP_NOT_AVAILABLE } from '../../constants/disruptions';
 
 export const WEEKDAYS = {
     0: { init: 'M', name: 'monday' },
@@ -99,25 +99,41 @@ export const getAllChildStopCodesByStops = (stops, allChildStops) => stops.map((
 
 export const extendPassengerCountData = (transformedPassengerCountTreeData, allRoutes, allStops) => transformedPassengerCountTreeData.map(row => ({
     ...row,
+    ...(row.stopCode && { stopName: STOP_NOT_AVAILABLE }),
+    ...(row.stopCode && allStops[row.stopCode] && { stopName: allStops[row.stopCode].stop_name }),
+    ...(row.parentStopCode && { parentStopName: STOP_NOT_AVAILABLE }),
+    ...(row.parentStopCode && allStops[row.parentStopCode] && { parentStopName: allStops[row.parentStopCode].stop_name }),
     ...(row.routeId && { routeShortName: allRoutes[row.routeId].route_short_name }),
-    ...(row.stopCode && { stopName: allStops[row.stopCode].stop_name }),
-    ...(row.parentStopCode && { parentStopName: allStops[row.parentStopCode].stop_name }),
 }));
 
 export const fetchAndProcessPassengerImpactData = async (disruptionData, affectedRoutes, affectedStops, allChildStops, allRoutes, allStops) => {
     const affectedEntities = [...affectedRoutes, ...affectedStops];
     const routeIds = [...new Set(affectedEntities.map(({ routeId }) => routeId))].filter(routeId => routeId);
-    const stopCodes = [...new Set(getAllChildStopCodesByStops(affectedEntities, allChildStops))];
-    const startDate = disruptionData.startDate ? disruptionData.startDate : moment(disruptionData.startTime).format(DATE_FORMAT);
-    const startTime = momentFromDateTime(startDate, disruptionData.startTime).toISOString();
-    let endTime;
+    const stopCodes = [...new Set(getAllChildStopCodesByStops(affectedEntities, allChildStops))].filter(stopCode => stopCode);
+    let { startTime } = disruptionData;
+    if (!isEmpty(disruptionData.startDate) && !isEmpty(disruptionData.startTime)) {
+        startTime = momentFromDateTime(disruptionData.startDate, disruptionData.startTime).toISOString();
+    }
+    let { endTime } = disruptionData;
     if (!isEmpty(disruptionData.endDate) && !isEmpty(disruptionData.endTime)) {
         endTime = momentFromDateTime(disruptionData.endDate, disruptionData.endTime).toISOString();
     }
-    const rawPassengerCountData = await getPassengerCountData(routeIds, stopCodes, startTime, endTime);
+    let rawPassengerCountData = await getPassengerCountData(routeIds, stopCodes, startTime, endTime);
 
+    const disruptionType = disruptionData.disruptionType || (isEmpty(affectedRoutes) && !isEmpty(affectedStops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES);
+
+    let gridData = extendPassengerCountData(transformPassengerCountToTreeData(rawPassengerCountData, disruptionType), allRoutes, allStops);
+    gridData = gridData.map(row => ({
+        ...row,
+        ...(row.stopCode && row.stopName === STOP_NOT_AVAILABLE && weekdayNames.reduce((obj, name) => ({ ...obj, [name]: 'n/a' }), {})),
+    }));
+
+    rawPassengerCountData = rawPassengerCountData.map(affectedEntityData => ({
+        ...affectedEntityData,
+        ...(affectedEntityData.stopCode && !allStops[affectedEntityData.stopCode] && weekdayNames.reduce((obj, name) => ({ ...obj, [name]: Array(24).fill(0) }), {})),
+    }));
     return {
-        grid: extendPassengerCountData(transformPassengerCountToTreeData(rawPassengerCountData, disruptionData.disruptionType), allRoutes, allStops),
+        grid: gridData,
         total: getPassengerCountTotal(rawPassengerCountData, disruptionData.recurrent, disruptionData.recurrencePattern, disruptionData.duration),
     };
 };

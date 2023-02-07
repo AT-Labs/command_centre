@@ -3,12 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Container, Tooltip } from '@mui/material';
 import { GridFooterContainer } from '@mui/x-data-grid-pro';
+import { isEmpty } from 'lodash-es';
 import CustomDataGrid from '../../../Common/CustomDataGrid/CustomDataGrid';
 import { getChildStops, getAllStops } from '../../../../redux/selectors/static/stops';
 import { getAllRoutes } from '../../../../redux/selectors/static/routes';
 import { getAffectedRoutes, getAffectedStops } from '../../../../redux/selectors/control/disruptions';
 import { fetchAndProcessPassengerImpactData, WEEKDAYS } from '../../../../utils/control/disruption-passenger-impact';
 import { DISRUPTION_TYPE } from '../../../../types/disruptions-types';
+import { STOP_NOT_AVAILABLE } from '../../../../constants/disruptions';
+
 import './PassengerImpactGrid.scss';
 
 const weekdayGridColumns = Object.values(WEEKDAYS).map(weekDay => ({
@@ -24,7 +27,8 @@ const renderCellWithTooltip = params => params.value && (
 );
 
 const formatParentStopColumn = params => params.row.parentStopCode && `${params.row.parentStopCode}-${params.row.parentStopName}`;
-const formatStopColumn = params => params.row.stopCode && `${params.row.stopCode}-${params.row.stopName}`;
+
+const formatStopColumn = params => (params.row.stopCode && params.row.stopName === STOP_NOT_AVAILABLE ? `[${params.row.stopCode}] ${STOP_NOT_AVAILABLE}` : params.row.stopCode && `${params.row.stopCode}-${params.row.stopName}`);
 
 const PASSENGER_IMPACT_GRID_COLUMNS = {
     [DISRUPTION_TYPE.ROUTES]: [
@@ -74,6 +78,7 @@ export const PassengerImpactGrid = (props) => {
     };
 
     const [passengerCountData, setPassengerCountData] = useState({ grid: [], total: 0 });
+    const [isLoading, setIsLoading] = useState(true);
 
     const { affectedRoutes, affectedStops, childStops, disruptionData, onUpdatePassengerImpactState, onUpdatePassengerImpactData, allRoutes, allStops } = props;
 
@@ -82,6 +87,7 @@ export const PassengerImpactGrid = (props) => {
         setPassengerCountData(aggregatedPassengerImpactData);
         onUpdatePassengerImpactState(aggregatedPassengerImpactData.grid.length > 0);
         onUpdatePassengerImpactData(aggregatedPassengerImpactData);
+        setIsLoading(false);
     };
 
     useEffect(
@@ -104,13 +110,15 @@ export const PassengerImpactGrid = (props) => {
         width: 30,
     };
 
+    const disruptionType = disruptionData.disruptionType || (isEmpty(affectedRoutes) && !isEmpty(affectedStops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES);
+
     return (
         <Container className="passenger-imact-grid">
             <h2 className="pl-4 pr-4">Passenger Impact</h2>
             <p className="font-weight-light">Estimates are based on the disruption details and typical passenger counts over the last 90 days.</p>
             <p className="font-weight-light">For recurring disruptions, the estimate is per day rather than over the disruption.</p>
             <CustomDataGrid
-                columns={ PASSENGER_IMPACT_GRID_COLUMNS[disruptionData.disruptionType] }
+                columns={ PASSENGER_IMPACT_GRID_COLUMNS[disruptionType] }
                 datagridConfig={ datagridConfig }
                 dataSource={ passengerCountData.grid }
                 getRowId={ row => row.id }
@@ -123,6 +131,7 @@ export const PassengerImpactGrid = (props) => {
                 pagination={ false }
                 groupingColDef={ groupingColDef }
                 customFooter={ customFooter }
+                loading={ isLoading }
             />
         </Container>
     );

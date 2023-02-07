@@ -3,7 +3,7 @@ import moment from 'moment';
 import { TIME_FORMAT, LABEL_FREQUENCY, FREQUENCY_TYPE } from '../../constants/disruptions';
 import { DATE_FORMAT_DDMMYYYY as DATE_FORMAT } from '../dateUtils';
 import VEHICLE_TYPES from '../../types/vehicle-types';
-import { STATUSES } from '../../types/disruptions-types';
+import { STATUSES, PASSENGER_IMPACT_RANGE } from '../../types/disruptions-types';
 import SEARCH_RESULT_TYPE from '../../types/search-result-types';
 
 export const PAGE_SIZE = 50;
@@ -274,4 +274,12 @@ export const itemToEntityTransformers = {
         category: item.category,
         icon: item.icon,
     }),
+};
+
+export const getPassengerCountRange = (count) => {
+    if (count < 500) return PASSENGER_IMPACT_RANGE.LOWER_THAN_500;
+    if (count >= 500 && count <= 5000) return PASSENGER_IMPACT_RANGE.BETWEEN_500_5000;
+    if (count >= 5001 && count <= 15000) return PASSENGER_IMPACT_RANGE.BETWEEN_5001_15000;
+    if (count >= 15001 && count <= 40000) return PASSENGER_IMPACT_RANGE.BETWEEN_15001_40000;
+    return PASSENGER_IMPACT_RANGE.GREATER_THAN_40000;
 };

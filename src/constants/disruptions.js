@@ -32,6 +32,9 @@ export const LABEL_WORKAROUNDS = 'Workarounds';
 export const LABEL_DISRUPTION_NOTES = 'Disruption Notes';
 export const LABEL_LAST_NOTE = 'Last Note';
 export const LABEL_SEVERITY = 'Severity';
+export const LABEL_PASSENGER_IMPACT = 'Passenger Impact';
+
+export const STOP_NOT_AVAILABLE = 'Stop not available';
 
 export const FREQUENCY_TYPE = {
     ONCE: 'Once',

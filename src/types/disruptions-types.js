@@ -99,3 +99,11 @@ export const SEVERITIES = [
         value: 'UNKNOWN',
     },
 ];
+
+export const PASSENGER_IMPACT_RANGE = {
+    LOWER_THAN_500: '<500',
+    BETWEEN_500_5000: '500 - 5,000',
+    BETWEEN_5001_15000: '5,001 - 15,000',
+    BETWEEN_15001_40000: '15,001 - 40,000',
+    GREATER_THAN_40000: '>40,000',
+};

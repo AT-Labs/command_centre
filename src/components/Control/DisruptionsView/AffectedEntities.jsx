@@ -89,6 +89,18 @@ export const AffectedEntities = (props) => {
                                         </Button>
                                     </div>
                                 )}
+                                {props.showViewPassengerImpactButton && (
+                                    <div>
+                                        <Button
+                                            className="btn cc-btn-link pr-0 font-weight-bold"
+                                            id="view-workarounds-btn"
+                                            onClick={ props.viewPassengerImpactAction }
+                                        >
+                                            View passenger impact
+                                            <MdEast size={ 20 } color="black" className="ml-1" />
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
 
                         </div>
@@ -116,6 +128,8 @@ AffectedEntities.propTypes = {
     heightSmall: PropTypes.bool,
     showViewWorkaroundsButton: PropTypes.bool,
     viewWorkaroundsAction: PropTypes.func,
+    showViewPassengerImpactButton: PropTypes.bool,
+    viewPassengerImpactAction: PropTypes.func,
 };
 
 AffectedEntities.defaultProps = {
@@ -127,6 +141,8 @@ AffectedEntities.defaultProps = {
     heightSmall: false,
     showViewWorkaroundsButton: false,
     viewWorkaroundsAction: null,
+    showViewPassengerImpactButton: false,
+    viewPassengerImpactAction: null,
 };
 
 export default connect(state => ({

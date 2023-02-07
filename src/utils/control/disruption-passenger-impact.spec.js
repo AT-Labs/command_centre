@@ -203,12 +203,15 @@ describe('extendPassengerCountData', () => {
             { id: 'STH-201_115_9001', stopCode: '9001' },
             { id: 'STH-201_115_9001', stopCode: '9001', parentStopCode: '133' },
             { id: 'STH-201_115_9001', routeId: 'STH-201' },
+            { id: 'STH-201_115_9008', stopCode: '9008' },
+
         ];
         expect(extendPassengerCountData(passengerCountTreeData, allRoutes, allStops)).toEqual(
             [
                 { id: 'STH-201_115_9001', stopCode: '9001', stopName: 'Britomart Train Station 1' },
                 { id: 'STH-201_115_9001', stopCode: '9001', stopName: 'Britomart Train Station 1', parentStopCode: '133', parentStopName: 'Britomart Train Station' },
                 { id: 'STH-201_115_9001', routeId: 'STH-201', routeShortName: 'STH' },
+                { id: 'STH-201_115_9008', stopCode: '9008', stopName: 'Stop not available' },
             ],
         );
     });

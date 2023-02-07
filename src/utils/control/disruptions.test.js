@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import moment from 'moment';
 import MockDate from 'mockdate';
-import { isEndDateValid, isEndTimeValid, isStartDateValid, isStartTimeValid, transformIncidentNo, isDurationValid, buildSubmitBody, getStatusOptions, groupStopsByRouteElementByParentStation, getPassengerCountTotal } from './disruptions';
+import { isEndDateValid, isEndTimeValid, isStartDateValid, isStartTimeValid, transformIncidentNo, isDurationValid, buildSubmitBody, getStatusOptions, groupStopsByRouteElementByParentStation, getPassengerCountRange, momentFromDateTime } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 import { STATUSES } from '../../types/disruptions-types';
 
@@ -152,6 +152,16 @@ describe('isDurationValid', () => {
     });
 });
 
+describe('momentFromDateTime', () => {
+    it('should be undefined for non valid param', () => {
+        expect(momentFromDateTime(null, null)).to.be.undefined;
+    });
+
+    it('should be valid string for correcnt params', () => {
+        expect(momentFromDateTime('2022/08/03', '22:17').toString()).to.be.string;
+    });
+});
+
 describe('buildSubmitBody', () => {
     it('should include workarounds when passed', () => {
         const workarounds = [{"type": "all", "workaround": "workaround"}];
@@ -293,3 +303,12 @@ describe('groupStopsByRouteElementByParentStation', () => {
     });
 });
 
+describe('getPassengerCountRange', () => {
+    it('should return an appropriate value', () => {
+        expect(getPassengerCountRange(237)).to.eql("<500")
+        expect(getPassengerCountRange(500)).to.eql("500 - 5,000")
+        expect(getPassengerCountRange(6789)).to.eql("5,001 - 15,000")
+        expect(getPassengerCountRange(23700)).to.eql("15,001 - 40,000")
+        expect(getPassengerCountRange(86000)).to.eql(">40,000")
+    });
+});

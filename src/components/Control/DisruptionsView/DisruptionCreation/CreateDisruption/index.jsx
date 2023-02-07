@@ -16,6 +16,7 @@ import {
     updateDisruption,
     searchByDrawing,
     updateAffectedStopsState,
+    updateDisruptionToEdit,
 } from '../../../../../redux/actions/control/disruptions';
 import {
     getAffectedRoutes,
@@ -328,7 +329,10 @@ export class CreateDisruption extends React.Component {
                 { this.props.activeStep === 3 && this.props.usePassengerImpact && (
                     <PassengerImpactDrawer
                         disruptionData={ this.state.disruptionData }
-                        onUpdatePassengerImpactData={ ({ total }) => this.updateData('passengerCount', total) }
+                        onUpdatePassengerImpactData={ ({ total }) => {
+                            this.updateData('passengerCount', total);
+                            this.props.updateDisruptionToEdit({ ...this.props.disruptionToEdit, passengerCount: total });
+                        } }
                     />
                 )}
                 <Map
@@ -409,6 +413,7 @@ CreateDisruption.propTypes = {
     updateAffectedStopsState: PropTypes.func.isRequired,
     stopDetail: PropTypes.object.isRequired,
     isLoading: PropTypes.bool,
+    updateDisruptionToEdit: PropTypes.func.isRequired,
     usePassengerImpact: PropTypes.bool.isRequired,
 };
 
@@ -449,4 +454,5 @@ export default connect(state => ({
     updateDisruption,
     searchByDrawing,
     updateAffectedStopsState,
+    updateDisruptionToEdit,
 })(CreateDisruption);
