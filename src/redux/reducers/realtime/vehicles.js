@@ -14,6 +14,7 @@ export const INIT_STATE = {
         agencyIds: null,
         isShowingDirectionInbound: true,
         isShowingDirectionOutbound: true,
+        isShowingSchoolBus: false,
         isShowingNIS: false,
         showingDelay: {},
         showingOccupancyLevels: [],

@@ -2,7 +2,7 @@ import L from 'leaflet';
 import { each, filter, get, isFunction, isMatch, isNull, keyBy, pick, sortBy } from 'lodash-es';
 import moment from 'moment';
 import { createSelector } from 'reselect';
-import VEHICLE_TYPE, { TRIP_DIRECTION_INBOUND, TRIP_DIRECTION_OUTBOUND } from '../../../types/vehicle-types';
+import VEHICLE_TYPE, { TRIP_DIRECTION_INBOUND, TRIP_DIRECTION_OUTBOUND, EXTENDED_ROUTE_TYPE } from '../../../types/vehicle-types';
 import { getAllocations, getVehicleAllocationByTrip, getVehicleAllocationLabelByTrip } from '../control/blocks';
 import { getAgencies } from '../static/agencies';
 import { getFleetState, getFleetVehicleAgencyId, getFleetVehicleType, getFleetVehicleTag } from '../static/fleet';
@@ -68,6 +68,7 @@ export const getVehiclesFilterAgencies = createSelector(
 export const getVehiclesFilterAgencyIds = createSelector(getVehiclesFilters, filters => get(filters, 'agencyIds'));
 export const getVehiclesFilterIsShowingDirectionInbound = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingDirectionInbound'));
 export const getVehiclesFilterIsShowingDirectionOutbound = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingDirectionOutbound'));
+export const getVehiclesFilterIsShowingSchoolBus = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingSchoolBus'));
 export const getVehiclesFilterShowingDelay = createSelector(getVehiclesFilters, filters => get(filters, 'showingDelay', {}));
 export const getVehiclesFilterShowingOccupancyLevels = createSelector(getVehiclesFilters, filters => get(filters, 'showingOccupancyLevels', []));
 export const getVehiclesFilterIsShowingNIS = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingNIS'));
@@ -85,11 +86,27 @@ export const getFilteredVehicles = createSelector(
     getVehiclesFilterShowingOccupancyLevels,
     getVehiclesFilterShowingDelay,
     getVehiclesFilterShowingTags,
-    (allVehicles, allFleet, allocations, tripUpdates, routeType, agencyIds, showInbound, showOutbound, showNIS, showingOccupancyLevels, showingDelay, showingTags) => {
+    getVehiclesFilterIsShowingSchoolBus,
+    (
+        allVehicles,
+        allFleet,
+        allocations,
+        tripUpdates,
+        routeType,
+        agencyIds,
+        showInbound,
+        showOutbound,
+        showNIS,
+        showingOccupancyLevels,
+        showingDelay,
+        showingTags,
+        isShowingSchoolBus,
+    ) => {
         const runningVehiclesWithAllocations = showNIS ? getVehiclesWithAllocations(allVehicles, allocations) : [];
         const visibleVehicles = filter(allVehicles, (vehicle) => {
             const id = getVehicleId(vehicle);
             const tripId = getVehicleTripId(vehicle);
+            const route = getVehicleRoute(vehicle);
             const fleetInfo = allFleet[id];
 
             if (!tripId) {
@@ -138,6 +155,10 @@ export const getFilteredVehicles = createSelector(
             }
 
             if (!!showingTags.length && !showingTags.includes(getFleetVehicleTag(fleetInfo))) {
+                return false;
+            }
+
+            if (isShowingSchoolBus && route.extended_route_type !== EXTENDED_ROUTE_TYPE.schoolBus) {
                 return false;
             }
 

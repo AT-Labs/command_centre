@@ -28,3 +28,7 @@ export default {
     },
 
 };
+
+export const EXTENDED_ROUTE_TYPE = {
+    schoolBus: 712,
+};
