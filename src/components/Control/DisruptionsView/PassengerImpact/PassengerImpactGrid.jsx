@@ -7,7 +7,7 @@ import { isEmpty } from 'lodash-es';
 import CustomDataGrid from '../../../Common/CustomDataGrid/CustomDataGrid';
 import { getChildStops, getAllStops } from '../../../../redux/selectors/static/stops';
 import { getAllRoutes } from '../../../../redux/selectors/static/routes';
-import { getAffectedRoutes, getAffectedStops } from '../../../../redux/selectors/control/disruptions';
+import { getAffectedRoutes, getAffectedStops, getStopsByRoute } from '../../../../redux/selectors/control/disruptions';
 import { fetchAndProcessPassengerImpactData, WEEKDAYS } from '../../../../utils/control/disruption-passenger-impact';
 import { DISRUPTION_TYPE } from '../../../../types/disruptions-types';
 import { STOP_NOT_AVAILABLE } from '../../../../constants/disruptions';
@@ -83,7 +83,15 @@ export const PassengerImpactGrid = (props) => {
     const { affectedRoutes, affectedStops, childStops, disruptionData, onUpdatePassengerImpactState, onUpdatePassengerImpactData, allRoutes, allStops } = props;
 
     const refreshPassengerCountData = async () => {
-        const aggregatedPassengerImpactData = await fetchAndProcessPassengerImpactData(disruptionData, affectedRoutes, affectedStops, childStops, allRoutes, allStops);
+        const aggregatedPassengerImpactData = await fetchAndProcessPassengerImpactData(
+            disruptionData,
+            affectedRoutes,
+            affectedStops,
+            childStops,
+            allRoutes,
+            allStops,
+            props.stopsByRoute,
+        );
         setPassengerCountData(aggregatedPassengerImpactData);
         onUpdatePassengerImpactState(aggregatedPassengerImpactData.grid.length > 0);
         onUpdatePassengerImpactData(aggregatedPassengerImpactData);
@@ -146,6 +154,7 @@ PassengerImpactGrid.propTypes = {
     onUpdatePassengerImpactState: PropTypes.func,
     onUpdatePassengerImpactData: PropTypes.func,
     childStops: PropTypes.object.isRequired,
+    stopsByRoute: PropTypes.object.isRequired,
 };
 
 PassengerImpactGrid.defaultProps = {
@@ -161,4 +170,5 @@ export default connect(state => ({
     childStops: getChildStops(state),
     allRoutes: getAllRoutes(state),
     allStops: getAllStops(state),
+    stopsByRoute: getStopsByRoute(state),
 }), null)(PassengerImpactGrid);

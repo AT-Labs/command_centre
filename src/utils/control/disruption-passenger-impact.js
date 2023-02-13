@@ -90,9 +90,15 @@ export const getPassengerCountTotal = (passengerCountData, recurrent, recurrence
     return total;
 };
 
-export const getAllChildStopCodesByStops = (stops, allChildStops) => stops.map(({ locationType, stopCode }) => {
-    if (locationType === 1) {
-        return Object.values(allChildStops).filter(childStop => childStop.parent_stop_code === stopCode).map(stop => stop.stop_code);
+export const getAllChildStopCodesByStops = (stops, allChildStops, stopsByRoute) => stops.map(({ stopCode, routeId, directionId }) => {
+    const childStops = directionId === undefined || !stopsByRoute[routeId]
+        ? allChildStops
+        : stopsByRoute[routeId]
+            .filter(stop => `${stop.directionId}` === `${directionId}`)
+            .map(stop => ({ stop_code: stop.stopCode, parent_stop_code: stop.parentStationStopCode }));
+    const isParentStop = !!Object.values(childStops).find(childStop => childStop.parent_stop_code === stopCode);
+    if (isParentStop) {
+        return Object.values(childStops).filter(childStop => childStop.parent_stop_code === stopCode).map(stop => stop.stop_code);
     }
     return stopCode;
 }).flat().filter(stopCode => stopCode);
@@ -106,10 +112,23 @@ export const extendPassengerCountData = (transformedPassengerCountTreeData, allR
     ...(row.routeId && { routeShortName: allRoutes[row.routeId].route_short_name }),
 }));
 
-export const fetchAndProcessPassengerImpactData = async (disruptionData, affectedRoutes, affectedStops, allChildStops, allRoutes, allStops) => {
-    const affectedEntities = [...affectedRoutes, ...affectedStops];
-    const routeIds = [...new Set(affectedEntities.map(({ routeId }) => routeId))].filter(routeId => routeId);
-    const stopCodes = [...new Set(getAllChildStopCodesByStops(affectedEntities, allChildStops))].filter(stopCode => stopCode);
+export const fetchAndProcessPassengerImpactData = async (disruptionData, affectedRoutes, affectedStops, allChildStops, allRoutes, allStops, stopsByRoute) => {
+    const affectedEntities = [...affectedRoutes, ...affectedStops].map((entity) => {
+        if (!entity.stopCode) {
+            return {
+                routeId: entity.routeId,
+            };
+        }
+        const childStops = getAllChildStopCodesByStops([entity], allChildStops, stopsByRoute);
+        return childStops.map(stopCode => ({
+            stopCode,
+            ...(entity.routeId && { routeId: entity.routeId }),
+        }));
+    }).flat().filter((entity, index, arr) => (
+        index === arr.findIndex(item => (
+            item.routeId === entity.routeId && item.stopCode === entity.stopCode
+        ))
+    ));
     let { startTime } = disruptionData;
     if (!isEmpty(disruptionData.startDate) && !isEmpty(disruptionData.startTime)) {
         startTime = momentFromDateTime(disruptionData.startDate, disruptionData.startTime).toISOString();
@@ -118,7 +137,7 @@ export const fetchAndProcessPassengerImpactData = async (disruptionData, affecte
     if (!isEmpty(disruptionData.endDate) && !isEmpty(disruptionData.endTime)) {
         endTime = momentFromDateTime(disruptionData.endDate, disruptionData.endTime).toISOString();
     }
-    let rawPassengerCountData = await getPassengerCountData(routeIds, stopCodes, startTime, endTime);
+    let rawPassengerCountData = await getPassengerCountData(affectedEntities, startTime, endTime);
 
     const disruptionType = disruptionData.disruptionType || (isEmpty(affectedRoutes) && !isEmpty(affectedStops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES);
 

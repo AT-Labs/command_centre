@@ -249,7 +249,7 @@ export const getStopsByRoute = routes => async (dispatch, getState) => {
                 dispatch(updateStopsByRoute(stopsByRoute, false));
             });
     }
-    return dispatch(updateStopsByRoute({}, false));
+    return dispatch(updateLoadingStopsByRoute(false));
 };
 
 export const getRoutesByStop = stops => async (dispatch, getState) => {
@@ -308,7 +308,7 @@ export const getRoutesByStop = stops => async (dispatch, getState) => {
                 dispatch(updateRoutesByStop(routesByStop, false));
             });
     }
-    return dispatch(updateRoutesByStop({}, false));
+    return dispatch(updateLoadingRoutesByStop(false));
 };
 
 export const updateCopyDisruptionState = isCopied => async (dispatch) => {

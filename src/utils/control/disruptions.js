@@ -1,10 +1,11 @@
 import { isEmpty, camelCase, isObject, uniq, transform, isArray, omit, pick, groupBy } from 'lodash-es';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { TIME_FORMAT, LABEL_FREQUENCY, FREQUENCY_TYPE } from '../../constants/disruptions';
 import { DATE_FORMAT_DDMMYYYY as DATE_FORMAT } from '../dateUtils';
 import VEHICLE_TYPES from '../../types/vehicle-types';
 import { STATUSES, PASSENGER_IMPACT_RANGE } from '../../types/disruptions-types';
 import SEARCH_RESULT_TYPE from '../../types/search-result-types';
+import DATE_TYPE from '../../types/date-types';
 
 export const PAGE_SIZE = 50;
 
@@ -46,7 +47,7 @@ export const isDurationValid = (duration, recurrent) => !recurrent || (!isEmpty(
 
 export const momentFromDateTime = (date, time) => {
     if (time && date) {
-        return moment(`${date}T${time}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`);
+        return moment.tz(`${date}T${time}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`, DATE_TYPE.TIME_ZONE);
     }
     return undefined;
 };

@@ -1,6 +1,17 @@
 import moment from 'moment';
-import { transformPassengerCountToTreeData, getPassengerCountTotal, getAllChildStopCodesByStops, extendPassengerCountData } from './disruption-passenger-impact';
+import {
+    transformPassengerCountToTreeData,
+    getPassengerCountTotal,
+    getAllChildStopCodesByStops,
+    extendPassengerCountData,
+    fetchAndProcessPassengerImpactData,
+} from './disruption-passenger-impact';
 import { DISRUPTION_TYPE } from '../../types/disruptions-types';
+import * as passengerCountApi from '../transmitters/passenger-count-api';
+
+jest.mock('../transmitters/passenger-count-api', () => ({
+    getPassengerCountData: jest.fn(() => Promise.resolve([])),
+}));
 
 const allStops = {
     9001: {
@@ -19,6 +30,19 @@ const allStops = {
     },
 };
 
+const allChildStops = {
+    9001: {
+        parent_stop_code: '133',
+        stop_code: '9001',
+        stop_name: 'Britomart Train Station 1',
+    },
+    9002: {
+        parent_stop_code: '133',
+        stop_code: '9002',
+        stop_name: 'Britomart Train Station 2',
+    },
+};
+
 const allRoutes = {
     'WEST-201': {
         route_id: 'WEST-201',
@@ -28,6 +52,13 @@ const allRoutes = {
         route_id: 'STH-201',
         route_short_name: 'STH',
     },
+};
+
+const stopsByRoute = {
+    'EAST-201': [
+        { stopCode: '9001', parentStationStopCode: '133', directionId: 0 },
+        { stopCode: '9002', parentStationStopCode: '133', directionId: 1 },
+    ],
 };
 
 const rawPassengerCountData = [{
@@ -190,10 +221,17 @@ describe('getPassengerCountTotal', () => {
 describe('getAllChildStopCodesByStops', () => {
     it('Should get all child stops code if the input stop is a parent station', () => {
         const affectedStops = [
-            { stopCode: '133', locationType: 1 },
-            { stopCode: '9100', locationType: 0 },
+            { stopCode: '133' },
+            { stopCode: '9100' },
         ];
         expect(getAllChildStopCodesByStops(affectedStops, allStops)).toEqual(['9001', '9002', '9100']);
+    });
+    it('Should get all child stops code if the input stop is a parent station and for the selected direction', () => {
+        const affectedStops = [
+            { stopCode: '133', routeId: 'EAST-201', directionId: 0 },
+            { stopCode: '9100' },
+        ];
+        expect(getAllChildStopCodesByStops(affectedStops, allStops, stopsByRoute)).toEqual(['9001', '9100']);
     });
 });
 
@@ -214,5 +252,31 @@ describe('extendPassengerCountData', () => {
                 { id: 'STH-201_115_9008', stopCode: '9008', stopName: 'Stop not available' },
             ],
         );
+    });
+});
+
+describe('fetchAndProcessPassengerImpactData', () => {
+    it('Should call getPassengerCountData with expected entities', async () => {
+        const affectedRoutes = [
+            { stopCode: '133', routeId: 'EAST-201', directionId: 0 },
+            { routeId: 'WEST-201' },
+        ];
+        const disruptionData = {
+            disruptionType: 'Routes',
+            startDate: '10/02/2023',
+            startTime: '09:00',
+            endDate: '10/02/2023',
+            endTime: '12:00',
+            recurrent: false,
+        };
+
+        await expect(fetchAndProcessPassengerImpactData(disruptionData, affectedRoutes, [], allChildStops, allRoutes, allStops, stopsByRoute)).resolves.toEqual({
+            grid: [],
+            total: 0,
+        });
+        expect(passengerCountApi.getPassengerCountData).toBeCalledWith([
+            { routeId: 'EAST-201', stopCode: '9001' },
+            { routeId: 'WEST-201' },
+        ], '2023-02-09T20:00:00.000Z', '2023-02-09T23:00:00.000Z');
     });
 });
