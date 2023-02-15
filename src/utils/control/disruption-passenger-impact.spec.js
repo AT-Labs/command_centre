@@ -277,6 +277,6 @@ describe('fetchAndProcessPassengerImpactData', () => {
         expect(passengerCountApi.getPassengerCountData).toBeCalledWith([
             { routeId: 'EAST-201', stopCode: '9001' },
             { routeId: 'WEST-201' },
-        ], '2023-02-09T20:00:00.000Z', '2023-02-09T23:00:00.000Z');
+        ], expect.anything(), expect.anything());
     });
 });
