@@ -39,8 +39,10 @@ export const transformPassengerCountToTreeData = (rawPassengerCountData, disrupt
     rawPassengerCountData.forEach((row) => {
         const { routeId, parentStopCode, stopCode } = row;
         if (disruptionType === DISRUPTION_TYPE.ROUTES) {
-            aggregateTreeDataByPath(row, { routeId, parentStopCode: parentStopCode || '', stopCode }, res);
-            aggregateTreeDataByPath(row, { routeId, parentStopCode: parentStopCode || '' }, res);
+            if (parentStopCode) {
+                aggregateTreeDataByPath(row, { routeId, parentStopCode, stopCode }, res);
+            }
+            aggregateTreeDataByPath(row, { routeId, parentStopCode: parentStopCode || stopCode }, res);
             aggregateTreeDataByPath(row, { routeId }, res);
         } else if (disruptionType === DISRUPTION_TYPE.STOPS) {
             aggregateTreeDataByPath(row, { parentStopCode: parentStopCode || stopCode, routeId }, res);

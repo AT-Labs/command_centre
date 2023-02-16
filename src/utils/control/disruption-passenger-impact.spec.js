@@ -83,6 +83,17 @@ const rawPassengerCountData = [{
     friday: [5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     saturday: [6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     sunday: [7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+}, {
+    routeId: 'NX1-203',
+    stopCode: '1315',
+    parentStopCode: null,
+    monday: [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    tuesday: [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    wednesday: [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    thursday: [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    friday: [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    saturday: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    sunday: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 }];
 
 describe('transformPassengerCountToTreeData', () => {
@@ -105,7 +116,7 @@ describe('transformPassengerCountToTreeData', () => {
 
     test('Stop base disruption: Should aggregate the result and generate records for parent stop, route', () => {
         const result = transformPassengerCountToTreeData(rawPassengerCountData, DISRUPTION_TYPE.STOPS);
-        expect(result.length).toEqual(2);
+        expect(result.length).toEqual(4);
         expect(result).toEqual(
             expect.arrayContaining([{
                 id: '115_STH-201',
@@ -134,11 +145,39 @@ describe('transformPassengerCountToTreeData', () => {
                 sunday: 11,
             }]),
         );
+        expect(result).toEqual(
+            expect.arrayContaining([{
+                id: '1315',
+                path: ['1315'],
+                parentStopCode: '1315',
+                monday: 19,
+                tuesday: 19,
+                wednesday: 19,
+                thursday: 19,
+                friday: 19,
+                saturday: 18,
+                sunday: 18,
+            }]),
+        );
+        expect(result).toEqual(
+            expect.arrayContaining([{
+                id: '1315_NX1-203',
+                path: ['1315', 'NX1-203'],
+                routeId: 'NX1-203',
+                monday: 19,
+                tuesday: 19,
+                wednesday: 19,
+                thursday: 19,
+                friday: 19,
+                saturday: 18,
+                sunday: 18,
+            }]),
+        );
     });
 
     test('Route base disruption: Should aggregate the result and generate records for child stop, parent stop, route', () => {
         const result = transformPassengerCountToTreeData(rawPassengerCountData, DISRUPTION_TYPE.ROUTES);
-        expect(result.length).toEqual(4);
+        expect(result.length).toEqual(6);
         expect(result).toEqual(
             expect.arrayContaining([{
                 id: 'STH-201_115_9100',
@@ -193,6 +232,34 @@ describe('transformPassengerCountToTreeData', () => {
                 friday: 8,
                 saturday: 8,
                 sunday: 11,
+            }]),
+        );
+        expect(result).toEqual(
+            expect.arrayContaining([{
+                id: 'NX1-203_1315',
+                path: ['NX1-203', '1315'],
+                parentStopCode: '1315',
+                monday: 19,
+                tuesday: 19,
+                wednesday: 19,
+                thursday: 19,
+                friday: 19,
+                saturday: 18,
+                sunday: 18,
+            }]),
+        );
+        expect(result).toEqual(
+            expect.arrayContaining([{
+                id: 'NX1-203',
+                path: ['NX1-203'],
+                routeId: 'NX1-203',
+                monday: 19,
+                tuesday: 19,
+                wednesday: 19,
+                thursday: 19,
+                friday: 19,
+                saturday: 18,
+                sunday: 18,
             }]),
         );
     });
