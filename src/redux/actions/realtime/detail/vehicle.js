@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import _ from 'lodash-es';
+import { result, map, uniqBy, flatten, isInteger, orderBy } from 'lodash-es';
 import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
@@ -55,7 +55,7 @@ export const getVehicleTripInfo = (tripId, entityKey) => (dispatch) => {
     return ccStatic.getTripById(tripId)
         .then((trip) => {
             dispatch(updateVehicleTripInfo(entityKey, trip));
-            dispatch(updateVehicleTripStops(entityKey, _.uniqBy(_.map(_.result(trip, 'stopTimes', []), 'stop'))));
+            dispatch(updateVehicleTripStops(entityKey, uniqBy(map(result(trip, 'stopTimes', []), 'stop'))));
             dispatch(updateDataLoading(false));
         });
 };
@@ -64,7 +64,7 @@ const getTrackingVehicle = (selectedVehicleId, state) => {
     const allTrackingVehicles = getAllVehicles(state);
     const allVehicleAllocations = getAllocations(state);
     const matchingVehicleAllocations = getVehicleAllocationByVehicleId(selectedVehicleId, allVehicleAllocations);
-    const matchingVehiclesInStore = _.flatten(matchingVehicleAllocations).filter(({ vehicleId, tripId, serviceDate, startTime }) => {
+    const matchingVehiclesInStore = flatten(matchingVehicleAllocations).filter(({ vehicleId, tripId, serviceDate, startTime }) => {
         const vehicleInStore = allTrackingVehicles[vehicleId];
         if (!vehicleInStore) return false;
         const vehicleTrip = getVehicleTrip(vehicleInStore);
@@ -95,13 +95,13 @@ export const vehicleSelected = selectedVehicle => (dispatch, getState) => {
                         return vehicle.id === selectedVehicleId;
                     }
 
-                    const { directionId, routeId } = _.result(vehicle, 'vehicle.trip') || {};
+                    const { directionId, routeId } = result(vehicle, 'vehicle.trip') || {};
 
-                    return (selectedRouteId === routeId) && (_.isInteger(selectedDirectionId) ? selectedDirectionId === directionId : true);
+                    return (selectedRouteId === routeId) && (isInteger(selectedDirectionId) ? selectedDirectionId === directionId : true);
                 },
             },
         ));
-        const selectedTripId = _.result(trackingVehicle, 'vehicle.trip.tripId');
+        const selectedTripId = result(trackingVehicle, 'vehicle.trip.tripId');
         if (selectedTripId) {
             dispatch(getVehicleTripInfo(selectedTripId, selectedVehicle.key));
         }
@@ -112,7 +112,7 @@ export const vehicleSelected = selectedVehicle => (dispatch, getState) => {
 
 export const vehicleChecked = ({ id, key }) => (dispatch, getState) => {
     const trackingVehicle = getTrackingVehicle(id, getState());
-    const selectedTripId = _.result(trackingVehicle, 'vehicle.trip.tripId');
+    const selectedTripId = result(trackingVehicle, 'vehicle.trip.tripId');
     if (selectedTripId) {
         dispatch(getVehicleTripInfo(selectedTripId, key));
     }
@@ -122,7 +122,7 @@ export const vehicleChecked = ({ id, key }) => (dispatch, getState) => {
 export const fetchUpcomingStops = vehicleId => (dispatch, getState) => {
     dispatch(updateDataLoading(true));
     const trackingVehicle = getTrackingVehicle(vehicleId, getState());
-    return ccRealtime.getUpcomingByVehicleId(_.result(trackingVehicle, 'id'))
+    return ccRealtime.getUpcomingByVehicleId(result(trackingVehicle, 'id'))
         .then(upcoming => upcoming.map(({ stop, trip }) => {
             const { stopCode, stopName, scheduleRelationship, passed } = stop;
             const { scheduledTime, actualTime } = calculateScheduledAndActualTimes(stop);
@@ -134,7 +134,7 @@ export const fetchUpcomingStops = vehicleId => (dispatch, getState) => {
             };
         }))
         .then(stops => stops.filter(({ actualTime, scheduledTime }) => isWithinNextHalfHour(actualTime || scheduledTime)))
-        .then(upcomingStops => _.orderBy(upcomingStops, 'scheduledTime'))
+        .then(upcomingStops => orderBy(upcomingStops, 'scheduledTime'))
         .then(upcomingStops => dispatch({
             type: ACTION_TYPE.FETCH_VEHICLE_UPCOMING_STOPS,
             payload: {
@@ -149,7 +149,7 @@ export const fetchUpcomingStops = vehicleId => (dispatch, getState) => {
 export const fetchPastStops = vehicleId => (dispatch, getState) => {
     dispatch(updateDataLoading(true));
     const trackingVehicle = getTrackingVehicle(vehicleId, getState());
-    return ccRealtime.getHistoryByVehicleId(_.result(trackingVehicle, 'id'))
+    return ccRealtime.getHistoryByVehicleId(result(trackingVehicle, 'id'))
         .then((history) => {
             const vehicleTripId = getCurrentVehicleTripId(getState());
             return history.filter(({ trip }) => trip.tripId === vehicleTripId)
@@ -165,7 +165,7 @@ export const fetchPastStops = vehicleId => (dispatch, getState) => {
                 });
         })
         .then(stops => stops.filter(({ actualTime, scheduledTime }) => isWithinPastHalfHour(actualTime || scheduledTime)))
-        .then(pastVehicles => _.orderBy(pastVehicles, 'stop.stopSequence', 'asc'))
+        .then(pastVehicles => orderBy(pastVehicles, 'stop.stopSequence', 'asc'))
         .then((pastStops) => {
             dispatch({
                 type: ACTION_TYPE.FETCH_VEHICLE_PAST_STOPS,

@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { keyBy, flatten, isEmpty, find, includes, sortBy, isEqual, map, omit, findIndex, unset, noop, groupBy, pick } from 'lodash-es';
 import moment from 'moment';
 import ERROR_TYPE from '../../../types/error-types';
 import OPERATION_TYPE from '../../../types/operation-type';
@@ -52,7 +52,7 @@ export const updateFocusedBlock = focusedBlock => ({
 export const enrichBlocksTrips = (blocks, tripsWithStatusFromTripMgtApi) => {
     const generateKey = (tripId, startTime) => `${tripId}_${startTime}`;
 
-    const tripsWithStatusKeyedById = _.keyBy(tripsWithStatusFromTripMgtApi.tripInstances, trip => generateKey(trip.tripId, trip.startTime));
+    const tripsWithStatusKeyedById = keyBy(tripsWithStatusFromTripMgtApi.tripInstances, trip => generateKey(trip.tripId, trip.startTime));
     return blocks.map(block => ({
         ...block,
         operationalTrips: block.operationalTrips.map((trip) => {
@@ -70,7 +70,7 @@ export const enrichBlocksTrips = (blocks, tripsWithStatusFromTripMgtApi) => {
 };
 
 const getTripsWithStatusFromTripMgtApi = (blocks, serviceDate) => {
-    const blocksTripsIds = _.flatten(blocks.map(block => block.operationalTrips.map(trip => trip.tripId)));
+    const blocksTripsIds = flatten(blocks.map(block => block.operationalTrips.map(trip => trip.tripId)));
     const BlocksTripsInfo = {
         serviceDate: moment(serviceDate).format('YYYYMMDD'),
         tripIds: blocksTripsIds,
@@ -110,7 +110,7 @@ export const getBlocks = shouldUpdateLoader => (dispatch, getState) => {
 
             dispatch(updateBlocksPermissions(permissions));
 
-            if (!_.isEmpty(blocks)) {
+            if (!isEmpty(blocks)) {
                 await getTripsWithStatusFromTripMgtApi(blocks, getServiceDate(getState()))
                     .then((tripsWithStatusFromTripMgtApi) => {
                         dispatch(loadBlocks(enrichBlocksTrips(blocks, tripsWithStatusFromTripMgtApi)));
@@ -119,7 +119,7 @@ export const getBlocks = shouldUpdateLoader => (dispatch, getState) => {
 
                         blocks.forEach((block) => {
                             if (activeBlocksInStoreIds.includes(block.operationalBlockId)) {
-                                dispatch(updateActiveBlock(_.find(getAllBlocks(getState()), { operationalBlockId: block.operationalBlockId })));
+                                dispatch(updateActiveBlock(find(getAllBlocks(getState()), { operationalBlockId: block.operationalBlockId })));
                             }
                         });
                     });
@@ -129,10 +129,10 @@ export const getBlocks = shouldUpdateLoader => (dispatch, getState) => {
 
             const linkRouteVariantId = getLinkRouteVariantId(getState());
             const linkTripStartTime = getLinkStartTime(getState());
-            const activeTripFromLink = _.find(getBlockTrips(getState()), { routeVariantId: linkRouteVariantId, startTime: linkTripStartTime });
+            const activeTripFromLink = find(getBlockTrips(getState()), { routeVariantId: linkRouteVariantId, startTime: linkTripStartTime });
 
             if (activeTripFromLink) {
-                const activeBlock = _.find(getAllBlocks(getState()), { operationalBlockId: activeTripFromLink.operationalBlockId });
+                const activeBlock = find(getAllBlocks(getState()), { operationalBlockId: activeTripFromLink.operationalBlockId });
                 dispatch(updateActiveBlock(activeBlock));
                 dispatch(updateActiveTrip(activeTripFromLink));
                 dispatch(updateFocusedBlock(activeBlock));
@@ -208,7 +208,7 @@ export const allocateVehicles = (operationalBlockRun, vehicles, selectedTrips) =
         if (selectedTrips.length) {
             return {
                 ...trip,
-                vehicles: _.includes(
+                vehicles: includes(
                     selectedTrips.map(selectedTrip => selectedTrip.externalRef),
                     trip.externalRef,
                 ) && !isTripStatusCompleted(trip) ? vehicles : trip.vehicles,
@@ -246,7 +246,7 @@ export const moveTrips = (operationalBlockRunFrom, operationalBlockRunTo, select
 export const substituteVehicles = (operationalBlockRun, vehicles, operationalTripExternalRef) => (dispatch) => {
     let startSubstituting = false;
     const { operationalBlockRunId, operationalTrips, version } = operationalBlockRun;
-    const updatedOperationalTrips = _.sortBy(operationalTrips, 'startTime')
+    const updatedOperationalTrips = sortBy(operationalTrips, 'startTime')
         .map((trip) => {
             if (trip.externalRef === operationalTripExternalRef) {
                 startSubstituting = true;
@@ -283,7 +283,7 @@ const deallocateVehicles = (operationalBlockRun, operationalTrips) => async (dis
     const { operationalBlockRunId, version } = operationalBlockRun;
     const data = {
         version,
-        operationalTrips: _.sortBy(operationalTrips, 'startTime'),
+        operationalTrips: sortBy(operationalTrips, 'startTime'),
     };
 
     await dispatch(updateOperationalBlockRun(operationalBlockRunId, data));
@@ -292,9 +292,9 @@ const deallocateVehicles = (operationalBlockRun, operationalTrips) => async (dis
 export const deallocateVehiclesFromAllTripsInBlock = (operationalBlockRun, vehicles) => async (dispatch) => {
     const trips = operationalBlockRun.operationalTrips.map((trip) => {
         if (!isTripStatusCompleted(trip)) {
-            const tripVehiclesIds = _.map(trip.vehicles, vehicle => (vehicle.id));
-            const tripVehiclesIdsInput = _.map(vehicles, vehicle => (vehicle.id));
-            if (_.isEqual(tripVehiclesIds, tripVehiclesIdsInput)) return _.omit(trip, 'vehicles');
+            const tripVehiclesIds = map(trip.vehicles, vehicle => (vehicle.id));
+            const tripVehiclesIdsInput = map(vehicles, vehicle => (vehicle.id));
+            if (isEqual(tripVehiclesIds, tripVehiclesIdsInput)) return omit(trip, 'vehicles');
         }
         return { ...trip };
     });
@@ -304,7 +304,7 @@ export const deallocateVehiclesFromAllTripsInBlock = (operationalBlockRun, vehic
 
 export const deallocateVehiclesFromTripSelected = (operationalBlockRun, tripSelectedExternalRef) => async (dispatch) => {
     const trips = operationalBlockRun.operationalTrips.map((trip) => {
-        if (trip.externalRef === tripSelectedExternalRef) _.unset(trip, 'vehicles');
+        if (trip.externalRef === tripSelectedExternalRef) unset(trip, 'vehicles');
         return trip;
     });
 
@@ -314,11 +314,11 @@ export const deallocateVehiclesFromTripSelected = (operationalBlockRun, tripSele
 export const deallocateVehiclesFromTripSelectedOnwards = (operationalBlockRun, tripSelectedExternalRef) => async (dispatch) => {
     const trips = [];
     const { operationalTrips } = operationalBlockRun;
-    const tripSelectedIndex = _.findIndex(operationalTrips, { externalRef: tripSelectedExternalRef });
+    const tripSelectedIndex = findIndex(operationalTrips, { externalRef: tripSelectedExternalRef });
 
     for (let i = 0; i < operationalTrips.length; i++) {
         if (i >= tripSelectedIndex && !isTripStatusCompleted(operationalTrips[i])) {
-            _.unset(operationalTrips[i], 'vehicles');
+            unset(operationalTrips[i], 'vehicles');
         }
         trips.push(operationalTrips[i]);
     }
@@ -342,8 +342,8 @@ const updateAllocations = allocations => ({
 
 export const getAllocationSnapshot = () => dispatch => blockMgtApi.getAllocationSnapshot()
     .then((allocations) => {
-        const groupedAllocations = _.groupBy(
-            allocations.map(allocation => _.pick(allocation, ['tripId', 'serviceDate', 'startTime', 'vehicleId', 'vehicleLabel'])),
+        const groupedAllocations = groupBy(
+            allocations.map(allocation => pick(allocation, ['tripId', 'serviceDate', 'startTime', 'vehicleId', 'vehicleLabel'])),
             ({ serviceDate, startTime, tripId }) => getVehicleAllocationKey(tripId, serviceDate, startTime),
         );
         dispatch(loadAllocations(groupedAllocations));
@@ -361,6 +361,6 @@ export const startTrackingVehicleAllocations = () => dispatch => dispatch(getAll
                 });
                 dispatch(updateAllocations(formattedAllocations));
             },
-            onError: _.noop,
+            onError: noop,
         });
     });

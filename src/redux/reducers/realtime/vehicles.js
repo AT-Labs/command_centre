@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { result, isEqual, keyBy, map, filter, has } from 'lodash-es';
 import { handleActions } from 'redux-actions';
 
 import ACTION_TYPE from '../../action-types';
@@ -28,24 +28,24 @@ const hasPositionChanged = (existingVehicle, vehicleUpdate) => {
     const existingVehiclePosition = getVehiclePosition(existingVehicle);
     const updatedPosition = getVehiclePosition(vehicleUpdate);
 
-    return !_.isEqual(existingVehiclePosition, updatedPosition);
+    return !isEqual(existingVehiclePosition, updatedPosition);
 };
 
-const isValidVehicleUpdate = (existingVehicle, vehicleUpdate) => _.result(existingVehicle, 'vehicle.timestamp', 0) < vehicleUpdate.vehicle.timestamp;
+const isValidVehicleUpdate = (existingVehicle, vehicleUpdate) => result(existingVehicle, 'vehicle.timestamp', 0) < vehicleUpdate.vehicle.timestamp;
 
 const handleVehiclesUpdate = (state, action) => {
     const { payload: { isSnapshotUpdate, vehicles } } = action;
     let allVehicles = [];
     if (isSnapshotUpdate) {
-        allVehicles = _.keyBy(
-            _.map(vehicles, (vehicleUpdate, key) => {
+        allVehicles = keyBy(
+            map(vehicles, (vehicleUpdate, key) => {
                 const existingVehicle = state.all[key];
                 return isValidVehicleUpdate(existingVehicle, vehicleUpdate) ? vehicleUpdate : existingVehicle;
             }),
             vehicleKeyedById,
         );
     } else {
-        let updatedVehicles = _.keyBy(_.filter(vehicles, (vehicleUpdate, key) => {
+        let updatedVehicles = keyBy(filter(vehicles, (vehicleUpdate, key) => {
             const existingVehicle = state.all[key];
             return isValidVehicleUpdate(existingVehicle, vehicleUpdate)
                 && hasPositionChanged(existingVehicle, vehicleUpdate);
@@ -62,7 +62,7 @@ const handleVehiclesUpdate = (state, action) => {
 
 export const handleVehicleFiltersMerge = (state, { payload: { filters } }) => {
     // when switching between route types, should reset all filters except the predicate
-    const newFilters = _.has(filters, 'routeType') && filters.routeType !== state.filters.routeType ? {
+    const newFilters = has(filters, 'routeType') && filters.routeType !== state.filters.routeType ? {
         ...INIT_STATE.filters,
         ...filters,
         predicate: state.filters.predicate,

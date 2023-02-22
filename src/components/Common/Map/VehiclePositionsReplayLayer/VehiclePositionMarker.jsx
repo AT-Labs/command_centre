@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import _ from 'lodash-es';
+import { isEqual } from 'lodash-es';
 import { connect } from 'react-redux';
 import { CircleMarker, Popup } from 'react-leaflet';
 import VehiclePositionTooltip from './VehiclePositionTooltip';
@@ -19,7 +19,7 @@ function VehiclePositionMarker({ center, openTooltip, openPopup, selectedKeyEven
     const time = {
         signedOn: formatUnixTime(timestamp),
     };
-    const shouldAddPopup = _.isEqual(timestamp, moment(currentTrip.tripSignOn).unix());
+    const shouldAddPopup = isEqual(timestamp, moment(currentTrip.tripSignOn).unix());
     useEffect(() => {
         if (openTooltip && !markerRef.current.leafletElement.isPopupOpen()) {
             markerRef.current.leafletElement.openTooltip();

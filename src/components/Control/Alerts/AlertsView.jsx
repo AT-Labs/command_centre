@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { isEmpty, filter } from 'lodash-es';
 import moment from 'moment-timezone';
 import {
     DataGridPro, GridToolbarExport, useGridApiRef, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton,
@@ -45,7 +45,7 @@ export const AlertsView = (props) => {
             tripStartTime: allData.tripStartTime,
         };
 
-        const filter = {
+        const tripsFilter = {
             routeType: allData.routeType,
             startTimeFrom: getClosestTimeValueForFilter(allData.tripStartTime),
             startTimeTo: '',
@@ -61,7 +61,7 @@ export const AlertsView = (props) => {
                     size="small"
                     variant="contained"
                     endIcon={ <ReadMore /> }
-                    onClick={ () => props.goToRoutesView(trip, filter) }
+                    onClick={ () => props.goToRoutesView(trip, tripsFilter) }
                 >
                     View Trip
                 </Button>
@@ -138,7 +138,7 @@ export const AlertsView = (props) => {
     ];
 
     useEffect(() => {
-        if (_.isEmpty(props.operators)) props.retrieveAgencies();
+        if (isEmpty(props.operators)) props.retrieveAgencies();
     }, []);
 
     const dataGridSave = (gridApi) => {
@@ -193,7 +193,7 @@ export const AlertsView = (props) => {
         return operators.length
             ? alerts.map(alert => ({
                 ...alert,
-                operator: _.filter(
+                operator: filter(
                     operators,
                     ope => ope.agencyId === alert.agencyId,
                 )[0].agencyName,

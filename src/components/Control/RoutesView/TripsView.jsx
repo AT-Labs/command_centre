@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { lowerCase, get, filter, map, isEmpty, includes } from 'lodash-es';
 import moment from 'moment';
 
 import TripView from './TripView';
@@ -33,11 +33,11 @@ import {
 
 const formatDelayColumn = (row) => {
     const trip = row.tripInstance || row;
-    return <TripDelay delayInSeconds={ _.get(trip, 'delay', 0) } noDelayText="-" status={ _.get(trip, 'status', '') } />;
+    return <TripDelay delayInSeconds={ get(trip, 'delay', 0) } noDelayText="-" status={ get(trip, 'status', '') } />;
 };
 
 const formatStatusColumn = (row) => {
-    const lowerCaseStatus = _.lowerCase(row.status);
+    const lowerCaseStatus = lowerCase(row.status);
     return row.status === TRIP_STATUS_TYPES.cancelled ? <span className="text-danger">{lowerCaseStatus}</span> : lowerCaseStatus;
 };
 
@@ -102,13 +102,13 @@ export class TripsView extends React.Component {
 
     isTripsOnlyView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.TRIPS;
 
-    isTrainMode = () => _.get(this.props.filters, 'routeType') === TRAIN_TYPE_ID;
+    isTrainMode = () => get(this.props.filters, 'routeType') === TRAIN_TYPE_ID;
 
     isSortingEnable = () => this.isTripsOnlyView();
 
-    getSorting = () => _.get(this.props.filters, 'sorting');
+    getSorting = () => get(this.props.filters, 'sorting');
 
-    isSortByDelayVisible = () => [TRIP_STATUS_TYPES.notStarted, TRIP_STATUS_TYPES.inProgress, TRIP_STATUS_TYPES.completed].includes(_.get(this.props.filters, 'tripStatus'));
+    isSortByDelayVisible = () => [TRIP_STATUS_TYPES.notStarted, TRIP_STATUS_TYPES.inProgress, TRIP_STATUS_TYPES.completed].includes(get(this.props.filters, 'tripStatus'));
 
     retrieveTripInstances = (isUpdate) => {
         const variables = {
@@ -116,11 +116,11 @@ export class TripsView extends React.Component {
             ...this.props.filters,
         };
         if (this.isRoutesRouteVariantsTripsView() || this.isRouteVariantsTripsView()) {
-            variables.routeVariantIds = [_.get(this.props.activeRouteVariant, 'routeVariantId')];
+            variables.routeVariantIds = [get(this.props.activeRouteVariant, 'routeVariantId')];
         }
         if (this.isRoutesTripsView()) {
-            const routeVariants = _.filter(this.props.routeVariants, { routeShortName: _.get(this.props.activeRoute, 'routeShortName') });
-            variables.routeVariantIds = _.map(routeVariants, item => item.routeVariantId);
+            const routeVariants = filter(this.props.routeVariants, { routeShortName: get(this.props.activeRoute, 'routeShortName') });
+            variables.routeVariantIds = map(routeVariants, item => item.routeVariantId);
         }
         this.props.fetchTripInstances(variables, { isUpdate });
     };
@@ -181,8 +181,8 @@ export class TripsView extends React.Component {
             key: 'routeLongName',
             cols: this.isTrainMode() ? 'col-3' : 'col-4',
             getContent: (row) => {
-                const routeLongName = _.get(row.tripInstance, 'routeLongName');
-                const routeShortName = _.get(row.tripInstance, 'routeShortName');
+                const routeLongName = get(row.tripInstance, 'routeLongName');
+                const routeShortName = get(row.tripInstance, 'routeShortName');
                 return `${routeShortName} ${routeLongName}`;
             },
         };
@@ -206,7 +206,7 @@ export class TripsView extends React.Component {
 
     handleRowClick = tripInstance => this.props.updateActiveTripInstanceId(getTripInstanceId(tripInstance));
 
-    isRowActive = tripInstance => !_.isEmpty(this.props.activeTripInstance) && !_.isEmpty(
+    isRowActive = tripInstance => !isEmpty(this.props.activeTripInstance) && !isEmpty(
         this.props.activeTripInstance
             .filter(trip => getTripInstanceId(trip) === getTripInstanceId(tripInstance)),
     );
@@ -214,7 +214,7 @@ export class TripsView extends React.Component {
     renderRowBody = tripInstances => <TripView tripInstance={ tripInstances.tripInstance } />;
 
     getRowClassName = (tripInstance) => {
-        const status = _.get(tripInstance, 'status', null);
+        const status = get(tripInstance, 'status', null);
         if (isTripCompleted(status) || status === TRIP_STATUS_TYPES.notStarted) {
             return 'bg-at-ocean-tint-5 text-muted';
         }
@@ -236,8 +236,8 @@ export class TripsView extends React.Component {
         let subIcon = null;
         const tripKey = getTripInstanceId(row.tripInstance);
         const isCompleted = isTripCompleted(row.tripInstance.status);
-        const isTripSelected = _.includes(this.props.selectedTrips, tripKey);
-        const isDelayed = formatTripDelay(_.get(row.tripInstance, 'delay')) > 0;
+        const isTripSelected = includes(this.props.selectedTrips, tripKey);
+        const isDelayed = formatTripDelay(get(row.tripInstance, 'delay')) > 0;
         const isCancelPermitted = IS_LOGIN_NOT_REQUIRED || isTripCancelPermitted(row.tripInstance);
         const shouldCheckboxBeDisabled = !isCancelPermitted || isCompleted || !this.isDateServiceTodayOrTomorrow();
 
@@ -278,19 +278,19 @@ export class TripsView extends React.Component {
         let controlTableLevel = 2;
 
         if (this.isRoutesRouteVariantsTripsView()) {
-            tripInstancesFilterPredicate = { routeVariantId: _.get(this.props.activeRouteVariant, 'routeVariantId') };
+            tripInstancesFilterPredicate = { routeVariantId: get(this.props.activeRouteVariant, 'routeVariantId') };
             controlTableLevel = 3;
         }
         if (this.isRouteVariantsTripsView()) {
-            tripInstancesFilterPredicate = { routeVariantId: _.get(this.props.activeRouteVariant, 'routeVariantId') };
+            tripInstancesFilterPredicate = { routeVariantId: get(this.props.activeRouteVariant, 'routeVariantId') };
             controlTableLevel = 2;
         }
         if (this.isRoutesTripsView()) {
-            tripInstancesFilterPredicate = { routeShortName: _.get(this.props.activeRoute, 'routeShortName') };
+            tripInstancesFilterPredicate = { routeShortName: get(this.props.activeRoute, 'routeShortName') };
             controlTableLevel = 2;
         }
 
-        const tripInstances = _.filter(this.props.tripInstances, tripInstancesFilterPredicate);
+        const tripInstances = filter(this.props.tripInstances, tripInstancesFilterPredicate);
         const rows = tripInstances.map(tripInstance => ({
             routeVariantId: tripInstance.routeVariantId,
             startTime: getTripTimeDisplay(tripInstance.startTime),

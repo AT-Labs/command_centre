@@ -1,19 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { kebabCase } from 'lodash-es';
 
 const TripDetails = ({ data }) => {
     if (!data || !data.length) return null;
 
     const getRows = rows => rows.map(row => (
-        <React.Fragment key={ _.kebabCase(row.name) }>
+        <React.Fragment key={ kebabCase(row.name) }>
             <dt className="col-6 text-right text-nowrap">
                 {row.name}
                 :
             </dt>
             <dd
                 className="col-6 text-left"
-                id={ `trip-detail-${_.kebabCase(row.name)}` }
+                id={ `trip-detail-${kebabCase(row.name)}` }
                 data-value={ row.value }
             >
                 {row.value}
@@ -22,7 +22,7 @@ const TripDetails = ({ data }) => {
     ));
 
     const getColumns = columns => columns.map(column => (
-        <div className="col" key={ _.kebabCase(column[0].name) }>
+        <div className="col" key={ kebabCase(column[0].name) }>
             <dl className="row m-0">
                 { getRows(column) }
             </dl>

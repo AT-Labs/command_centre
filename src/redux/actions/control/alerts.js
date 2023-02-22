@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import _ from 'lodash-es';
+import { result, orderBy } from 'lodash-es';
 
 import DATE_TYPE from '../../../types/date-types';
 import ACTION_TYPE from '../../action-types';
@@ -32,9 +32,9 @@ export const getAlerts = () => (dispatch, getState) => {
                 Signon: 'Sign-on',
             };
             if (alerts.length > 0) {
-                const activeAlertsWithinLast12hs = _.orderBy(alerts.map((alert) => {
+                const activeAlertsWithinLast12hs = orderBy(alerts.map((alert) => {
                     // eslint-disable-next-line no-param-reassign
-                    alert.customTitle = `${_.result(alertTypeDisplayMapping, alert.type, alert.type)} Trip`;
+                    alert.customTitle = `${result(alertTypeDisplayMapping, alert.type, alert.type)} Trip`;
                     if (alert.type !== 'Signon') {
                         // eslint-disable-next-line max-len
                         const alertDatetime = new Date(alert.tripStartDate.slice(0, 4), alert.tripStartDate.slice(4, 6) - 1, alert.tripStartDate.slice(6), alert.tripStartTime.slice(0, 2), alert.tripStartTime.slice(3, 5), alert.tripStartTime.slice(6), 0);

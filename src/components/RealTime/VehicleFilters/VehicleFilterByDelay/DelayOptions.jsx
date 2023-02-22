@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FormGroup, Label, Input } from 'reactstrap';
-import Slider from '@material-ui/core/Slider';
+import { Slider } from '@mui/material';
 
 const DEFAULT_RANGE_VALUE = [5, 15];
 

@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { isEmpty, findKey, capitalize, pickBy } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import React, { useState, useEffect } from 'react';
@@ -18,13 +18,13 @@ const UpdateStopStatusModal = (props) => {
     const isUpdatingOnGoing = hasUpdateBeenTriggered && areSelectedStopsUpdating;
     const hasUpdatingFinished = hasUpdateBeenTriggered && !areSelectedStopsUpdating;
     const selectedStops = props.selectedStopsByTripKey(tripInstance);
-    const firstSelectedStop = !_.isEmpty(selectedStops) && selectedStops[_.findKey(selectedStops)];
+    const firstSelectedStop = !isEmpty(selectedStops) && selectedStops[findKey(selectedStops)];
 
     const modalProps = {
         [SKIP]: {
             stopStatus: skipped,
             className: `${SKIP}-modal`,
-            title: `${_.capitalize(SKIP)} stop(s)`,
+            title: `${capitalize(SKIP)} stop(s)`,
             errorMessage: 'stop(s) could not be skipped:',
             successMessage: 'stop(s) successfully skipped',
             confirmationMessage: 'Are you sure you want to skip the selected stops?',
@@ -33,7 +33,7 @@ const UpdateStopStatusModal = (props) => {
         [REINSTATE]: {
             stopStatus: notPassed,
             className: `${REINSTATE}-modal`,
-            title: `${_.capitalize(REINSTATE)} stop(s)`,
+            title: `${capitalize(REINSTATE)} stop(s)`,
             errorMessage: 'stop(s) could not be reinstated',
             successMessage: 'stop(s) successfully reinstated',
             confirmationMessage: 'Are you sure you want to reinstate the selected stops?',
@@ -67,7 +67,7 @@ const UpdateStopStatusModal = (props) => {
             props.moveTripToStop(options, modalProps[activeModal].successMessage(firstSelectedStop), tripInstance);
         } else {
             const filterSelectedStopsByModalType = status => ((activeModal === SKIP && status !== skipped) || (activeModal === REINSTATE && status === skipped));
-            const selectedStopsByModalType = _.pickBy(selectedStops, stop => filterSelectedStopsByModalType(stop.status));
+            const selectedStopsByModalType = pickBy(selectedStops, stop => filterSelectedStopsByModalType(stop.status));
 
             props.updateSelectedStopsStatus(
                 tripInstance,

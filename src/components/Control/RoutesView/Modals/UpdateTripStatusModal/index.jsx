@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { pickBy, values, some } from 'lodash-es';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -42,14 +42,14 @@ const UpdateTripStatusModal = (props) => {
     const { cancelled, notStarted } = TRIP_STATUS_TYPES;
     const { CANCEL_MODAL, REINSTATE_MODAL } = updateTripsStatusModalTypes;
     const { className, activeModal, isModalOpen, operateTrips, selectedTrips, actionLoadingStatesByTripId, actionResults, origin } = props;
-    const hasSelectedTrips = _.values(selectedTrips).length > 0;
+    const hasSelectedTrips = values(selectedTrips).length > 0;
 
     const bulkUpdateErrorMessages = getBulkUpdateMessagesByType(actionResults, operateTrips, ERROR_MESSAGE_TYPE, MESSAGE_ACTION_TYPES.bulkStatusUpdate);
     const bulkUpdateConfirmationMessages = getBulkUpdateMessagesByType(actionResults, operateTrips, CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES.bulkStatusUpdate);
-    const areTripsUpdating = _.some(actionLoadingStatesByTripId, Boolean);
+    const areTripsUpdating = some(actionLoadingStatesByTripId, Boolean);
     const filterOperateTripsByModalType = status => ((activeModal === CANCEL_MODAL && status !== cancelled) || (activeModal === REINSTATE_MODAL && status === cancelled));
-    const operateTripsByModalType = _.pickBy(operateTrips, trip => filterOperateTripsByModalType(trip.status));
-    const modalPropsKey = `${activeModal || CANCEL_MODAL}${_.values(operateTripsByModalType).length > 1 ? '' : 'Single'}`;
+    const operateTripsByModalType = pickBy(operateTrips, trip => filterOperateTripsByModalType(trip.status));
+    const modalPropsKey = `${activeModal || CANCEL_MODAL}${values(operateTripsByModalType).length > 1 ? '' : 'Single'}`;
 
     const modalProps = {
         cancel: {

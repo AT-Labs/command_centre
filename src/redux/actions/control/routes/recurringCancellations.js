@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { find } from 'lodash-es';
 import ERROR_TYPE from '../../../../types/error-types';
 import * as TRIP_MGT_API from '../../../../utils/transmitters/trip-mgt-api';
 import ACTION_TYPE from '../../../action-types';
@@ -49,7 +49,7 @@ export const recurringCancellationRedirection = (status, data) => ({
 export const checkTripInstance = (variables, time) => (dispatch) => {
     TRIP_MGT_API.getTrips(variables)
         .then(async ({ tripInstances }) => {
-            const activeTrip = _.find(tripInstances, { startTime: time });
+            const activeTrip = find(tripInstances, { startTime: time });
             if (activeTrip) {
                 dispatch(recurringCancellationRedirection(true, activeTrip));
             } else {

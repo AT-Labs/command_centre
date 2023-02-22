@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash-es';
+import { upperFirst, lowerCase, map, words, get } from 'lodash-es';
 
 import PropTypes from 'prop-types';
 import ControlSearch from '../ControlSearch/ControlSearch';
@@ -26,9 +26,9 @@ const StandardFilter = (props) => {
 
     const onInputValueChange = (value) => { if (!value) props.onSelection({ value: '', label: '' }); };
 
-    const getOptions = () => _.map(props.options, value => ({
+    const getOptions = () => map(props.options, value => ({
         value,
-        label: _.words(_.lowerCase(value)).map(word => _.upperFirst(word)).join(' '),
+        label: words(lowerCase(value)).map(word => upperFirst(word)).join(' '),
     }));
 
     const getSelectedOption = () => getOptions().find(option => option.value === props.selectedOption);
@@ -44,7 +44,7 @@ const StandardFilter = (props) => {
             placeholder={ props.placeholder }
             onSelection={ selectedOption => props.onSelection(selectedOption) }
             onInputValueChange={ onInputValueChange }
-            value={ _.get(getSelectedOption(), 'label') }
+            value={ get(getSelectedOption(), 'label') }
             updateOnPropsValueChange={ props.updateOnPropsValueChange } />
     );
 };

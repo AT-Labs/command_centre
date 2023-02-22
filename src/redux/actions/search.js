@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import _ from 'lodash-es';
+import { remove, orderBy, intersectionBy, some, filter, startsWith, uniqBy, flatten, includes, map, isArray } from 'lodash-es';
 import SEARCH_RESULT_TYPE from '../../types/search-result-types';
 import VEHICLE_TYPE from '../../types/vehicle-types';
 import * as mapbox from '../../utils/transmitters/mapbox';
@@ -73,13 +73,13 @@ export const searchAddresses = searchTerms => (dispatch, getState) => {
         });
 };
 
-export const performTokenSearch = (searchTerms, entries, intersectionBy) => new Promise((resolve) => {
+export const performTokenSearch = (searchTerms, entries, intersection) => new Promise((resolve) => {
     const searchTokens = searchTerms.toLowerCase().split(' ');
     // remove '-' as it interferes with search. entry tokens do not have a '-' in them
-    _.remove(searchTokens, token => token === '-');
-    const tokenResults = searchTokens.map(searchTerm => _.filter(entries, entry => _.some(entry.tokens, token => _.startsWith(token, searchTerm))));
-    const results = _.intersectionBy(...tokenResults, intersectionBy);
-    resolve(_.orderBy(results, intersectionBy));
+    remove(searchTokens, token => token === '-');
+    const tokenResults = searchTokens.map(searchTerm => filter(entries, entry => some(entry.tokens, token => startsWith(token, searchTerm))));
+    const results = intersectionBy(...tokenResults, intersection);
+    resolve(orderBy(results, intersection));
 });
 
 export const formatStopSearchResults = stops => stops.map((stop) => {
@@ -158,7 +158,7 @@ export const formatBlockSearchResults = blocks => blocks.map(block => ({
 }));
 
 export const searchBlocks = searchTerms => (dispatch, getState) => {
-    const blocks = _.filter(getAllBlocks(getState()), block => _.startsWith(block.operationalBlockId.toUpperCase(), searchTerms.toUpperCase()));
+    const blocks = filter(getAllBlocks(getState()), block => startsWith(block.operationalBlockId.toUpperCase(), searchTerms.toUpperCase()));
     dispatch({
         type: ACTION_TYPE.UPDATE_CONTROL_BLOCK_SEARCH_RESULTS,
         payload: { [SEARCH_RESULT_TYPE.BLOCK.type]: formatBlockSearchResults(blocks) },
@@ -173,7 +173,7 @@ export const formatControlRoutesSearchResults = routes => routes.map(route => ({
 }));
 
 export const searchControlRoutes = searchTerms => (dispatch, getState) => {
-    const routes = _.filter(getControlRoutes(getState()), route => _.startsWith(route.routeShortName.toUpperCase(), searchTerms.toUpperCase()));
+    const routes = filter(getControlRoutes(getState()), route => startsWith(route.routeShortName.toUpperCase(), searchTerms.toUpperCase()));
     dispatch({
         type: ACTION_TYPE.UPDATE_CONTROL_ROUTES_SEARCH_RESULTS,
         payload: { [SEARCH_RESULT_TYPE.CONTROL_ROUTE.type]: formatControlRoutesSearchResults(routes) },
@@ -188,9 +188,9 @@ export const formatControlRouteVariantsSearchResults = routes => routes.map(rout
 }));
 
 export const searchControlRouteVariants = searchTerms => (dispatch, getState) => {
-    const routes = _.filter(
+    const routes = filter(
         getControlRouteVariants(getState()),
-        route => _.startsWith(route.routeVariantId.toUpperCase(), searchTerms.toUpperCase()),
+        route => startsWith(route.routeVariantId.toUpperCase(), searchTerms.toUpperCase()),
     );
     dispatch({
         type: ACTION_TYPE.UPDATE_CONTROL_ROUTE_VARIANTS_SEARCH_RESULTS,
@@ -208,12 +208,12 @@ const formatAlertsRoutesSearchResults = routes => routes.map(route => ({
 export const searchControlAlertsRoutes = searchTerms => (dispatch, getState) => {
     const allRoutes = getAllRoutes(getState());
     const allAlerts = getAllAlerts(getState());
-    const routesInAlertsList = _.uniqBy(_.flatten(
+    const routesInAlertsList = uniqBy(flatten(
         allAlerts.map(
-            alert => _.filter(allRoutes, route => route.route_short_name === alert.routeShortName),
+            alert => filter(allRoutes, route => route.route_short_name === alert.routeShortName),
         ),
     ), 'route_id');
-    const routes = _.filter(routesInAlertsList, route => _.startsWith(route.route_short_name.toUpperCase(), searchTerms.toUpperCase()));
+    const routes = filter(routesInAlertsList, route => startsWith(route.route_short_name.toUpperCase(), searchTerms.toUpperCase()));
 
     dispatch({
         type: ACTION_TYPE.UPDATE_CONTROL_ALERTS_ROUTES_SEARCH_RESULTS,
@@ -260,7 +260,7 @@ export const formatStopMessageSearchResults = stopMessages => stopMessages.map(s
 
 export const searchStopMessages = searchTerms => (dispatch, getState) => {
     const allStopMessages = getAllStopMessages(getState());
-    const stopMessages = _.filter(allStopMessages, stopMessage => _.includes(stopMessage.message.toLowerCase(), searchTerms.toLowerCase()));
+    const stopMessages = filter(allStopMessages, stopMessage => includes(stopMessage.message.toLowerCase(), searchTerms.toLowerCase()));
 
     dispatch({
         type: ACTION_TYPE.UPDATE_STOP_MESSAGE_SEARCH_RESULTS,
@@ -277,7 +277,7 @@ export const formatStopDisruptionSearchResults = incidentNos => incidentNos.map(
 
 export const searchStopDisruptions = searchTerms => (dispatch, getState) => {
     const allStopMessages = getAllStopMessages(getState());
-    const stopMessages = _.filter(allStopMessages, ({ incidentNo }) => incidentNo && _.includes(incidentNo.toLowerCase(), searchTerms.toLowerCase()));
+    const stopMessages = filter(allStopMessages, ({ incidentNo }) => incidentNo && includes(incidentNo.toLowerCase(), searchTerms.toLowerCase()));
     const incidentNos = [...new Set(stopMessages.map(({ incidentNo }) => incidentNo))];
     dispatch({
         type: ACTION_TYPE.UPDATE_STOP_DISRUPTION_SEARCH_RESULTS,
@@ -294,9 +294,9 @@ export const formatStopInGroupsSearchResults = stops => stops.map(stop => ({
 
 export const searchStopInGroups = searchTerms => (dispatch, getState) => {
     const allStopGroups = allStopGroupsWithTokens(getState());
-    const stopInGroups = _.uniqBy(_.flatten(_.map(allStopGroups, stopInGroup => stopInGroup.stops)), 'value');
-    const filteredStops = _.filter(stopInGroups, stop => _.includes(stop.label.toLowerCase(), searchTerms.toLowerCase()));
-    const tokenizedStops = _.map(filteredStops, stop => ({
+    const stopInGroups = uniqBy(flatten(map(allStopGroups, stopInGroup => stopInGroup.stops)), 'value');
+    const filteredStops = filter(stopInGroups, stop => includes(stop.label.toLowerCase(), searchTerms.toLowerCase()));
+    const tokenizedStops = map(filteredStops, stop => ({
         ...stop,
         tokens: stop.label.toLowerCase().split(' '),
     }));
@@ -332,6 +332,6 @@ export const search = (searchTerms, searchInCategory) => (dispatch) => {
         [SEARCH_RESULT_TYPE.STOP_IN_GROUP.type, () => dispatch(searchStopInGroups(searchTerms))],
     ]);
 
-    if (_.isArray(searchInCategory)) _.map(searchInCategory, (category) => { searchInCategoryActions.get(category)(); });
+    if (isArray(searchInCategory)) map(searchInCategory, (category) => { searchInCategoryActions.get(category)(); });
     else searchInCategoryActions.get(searchInCategory)();
 };

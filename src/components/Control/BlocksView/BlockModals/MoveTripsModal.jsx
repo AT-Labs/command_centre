@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { isNull, isEmpty, join } from 'lodash-es';
 import { Button } from 'reactstrap';
 
 import CustomModal from '../../../Common/CustomModal/CustomModal';
@@ -44,7 +44,7 @@ export class MoveTripsModal extends React.Component {
         };
     }
 
-    isErrorEmpty = () => _.isEmpty(this.props.error.moveTrips);
+    isErrorEmpty = () => isEmpty(this.props.error.moveTrips);
 
     moveTrips = () => {
         this.props.moveTrips(this.props.block, this.state.selectedBlock, this.props.selectedTrips);
@@ -86,7 +86,7 @@ export class MoveTripsModal extends React.Component {
                 okButton={ {
                     label: 'Move',
                     onClick: this.moveTrips,
-                    isDisabled: _.isNull(selectedBlock) || !this.isErrorEmpty(),
+                    isDisabled: isNull(selectedBlock) || !this.isErrorEmpty(),
                     className: 'move-trips-modal__save-btn',
                 } }>
                 <dl className="row">
@@ -97,7 +97,7 @@ export class MoveTripsModal extends React.Component {
                         && (
                             <>
                                 <dt className="col-6">Selected Trips:</dt>
-                                <dd className="col-6">{ _.join(this.props.selectedTrips.map(trip => trip.externalRef), ', ') }</dd>
+                                <dd className="col-6">{ join(this.props.selectedTrips.map(trip => trip.externalRef), ', ') }</dd>
                             </>
                         )
                     }

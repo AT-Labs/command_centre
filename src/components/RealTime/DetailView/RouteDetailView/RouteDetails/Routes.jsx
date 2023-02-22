@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { map, orderBy, lowerCase, isEmpty, some, has, filter } from 'lodash-es';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -55,9 +55,9 @@ class Routes extends Component {
                     <div className="col-4">Occupancy</div>
                 </div>
                 <div className="row">
-                    { _.map(_.orderBy(route.vehicles, ['arrivalTime'], 'asc'), (vehicle) => {
+                    { map(orderBy(route.vehicles, ['arrivalTime'], 'asc'), (vehicle) => {
                         const vehicleRouteType = getVehicleRouteType(vehicle);
-                        const vehicleType = vehicleRouteType ? _.lowerCase(VEHICLE_TYPES[vehicleRouteType].type) : '';
+                        const vehicleType = vehicleRouteType ? lowerCase(VEHICLE_TYPES[vehicleRouteType].type) : '';
                         const startTime = getVehicleTripStartTimeISO(vehicle);
                         const formattedStartTime = (startTime && moment(startTime).format('HH:mm')) || '-';
                         const occupancyStatus = this.props.occupancyStatuses[vehicle.id];
@@ -102,10 +102,10 @@ class Routes extends Component {
 
     render() {
         const { routes } = this.props;
-        const routesWithVehicles = _.filter(routes, route => !_.isEmpty(route.vehicles));
-        const areVehiclesForRouteAvailable = _.some(routesWithVehicles, route => _.has(route, 'vehicles'));
-        const shouldShowDetailLoader = !routes || (!_.isEmpty(routesWithVehicles) && !areVehiclesForRouteAvailable);
-        const shouldShowNoResults = routes && !_.isEmpty(routes) && _.isEmpty(routesWithVehicles);
+        const routesWithVehicles = filter(routes, route => !isEmpty(route.vehicles));
+        const areVehiclesForRouteAvailable = some(routesWithVehicles, route => has(route, 'vehicles'));
+        const shouldShowDetailLoader = !routes || (!isEmpty(routesWithVehicles) && !areVehiclesForRouteAvailable);
+        const shouldShowNoResults = routes && !isEmpty(routes) && isEmpty(routesWithVehicles);
 
         return (
             <section className="route-detail-view__routes col-12">
@@ -120,7 +120,7 @@ class Routes extends Component {
                 { areVehiclesForRouteAvailable && (
                     <div className="route-detail-view__routes-table">
                         <div className="row">
-                            { _.map(routesWithVehicles, route => (
+                            { map(routesWithVehicles, route => (
                                 <div
                                     className="route-detail-view__routes-tr col-12"
                                     key={ route.routeVariantName }>

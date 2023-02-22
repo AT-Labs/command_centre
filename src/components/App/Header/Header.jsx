@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { get } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import { IoIosStats } from 'react-icons/io';
@@ -103,7 +103,7 @@ function Header(props) {
     }, [props.activeView]);
 
     const { activeView, controlActiveView, userProfile, userPermissions } = props;
-    const isViewPermitted = view => IS_LOGIN_NOT_REQUIRED || _.get(userPermissions, view, false);
+    const isViewPermitted = view => IS_LOGIN_NOT_REQUIRED || get(userPermissions, view, false);
 
     const isRouteTabActive = () => {
         if (activeView === VIEW_TYPE.MAIN.CONTROL

@@ -1,6 +1,6 @@
 import React from 'react';
 import moment from 'moment';
-import _ from 'lodash-es';
+import { result } from 'lodash-es';
 import ActualTimeVariance from '../../ActualTimeVariance';
 import Icon from '../../../../Common/Icon/Icon';
 import { getVehicleAllocationLabel } from '../../../../../redux/selectors/control/blocks';
@@ -11,7 +11,7 @@ export const getColumns = ({ isHistorical }) => [{
     header: 'Vehicle',
     headerClassName: 'w-20 border-top border-bottom font-size-sm',
     cellClassName: 'border-bottom font-size-sm',
-    formatter: ({ vehicle, allocation }) => getVehicleAllocationLabel(allocation) || _.result(vehicle, 'label', '—'),
+    formatter: ({ vehicle, allocation }) => getVehicleAllocationLabel(allocation) || result(vehicle, 'label', '—'),
 }, {
     header: 'Route',
     headerClassName: 'border-top border-bottom font-size-sm',

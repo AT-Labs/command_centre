@@ -56,7 +56,7 @@ $sizes: map-merge(
 
 $header-height: 60px;
 $grid-gutter-width:  30px;
-$table-cell-padding: $grid-gutter-width/2;
+$table-cell-padding: calc($grid-gutter-width / 2);
 
 $pagination-color:                  $at-shore;
 $pagination-hover-color:            $at-shore;

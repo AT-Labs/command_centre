@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { result } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
@@ -8,8 +8,8 @@ import { getCurrentVehicleOccupancyStatus } from '../../../../../redux/selectors
 import OccupancyStatus from '../../OccupancyStatus';
 
 const VehicleCapacityOccupancy = ({ vehicleCapacity, occupancyStatus }) => {
-    const seating = _.result(vehicleCapacity, 'seating');
-    const total = _.result(vehicleCapacity, 'total');
+    const seating = result(vehicleCapacity, 'seating');
+    const total = result(vehicleCapacity, 'total');
     return (
         <>
             {total ? (

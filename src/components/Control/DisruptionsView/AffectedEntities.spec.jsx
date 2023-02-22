@@ -1,6 +1,6 @@
 import { shallow } from 'enzyme';
 import React, { useRef } from 'react';
-import _ from 'lodash-es';
+import { keyBy } from 'lodash-es';
 import { Button } from 'reactstrap';
 import sinon from 'sinon';
 import { AffectedEntities } from './AffectedEntities';
@@ -77,7 +77,7 @@ describe('<AffectedEntities />', () => {
             { stopId: 'stop2', stopCode: '2', groupId: 1, text: '2', type: 'stop' },
             { stopId: 'stop3', stopCode: '3', groupId: 1, text: '3', type: 'stop' },
         ];
-        const stopGroups = _.keyBy([{ id: 1, title: 'stop group 1' }], group => group.id);
+        const stopGroups = keyBy([{ id: 1, title: 'stop group 1' }], group => group.id);
         wrapper = setup({ affectedEntities, stopGroups });
 
         expect(wrapper.find('ul').children()).toHaveLength(3);

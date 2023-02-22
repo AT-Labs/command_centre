@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { map, filter, isNull } from 'lodash-es';
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -50,16 +50,16 @@ class VehicleFilterByOperator extends React.Component {
     handleCheckboxValueChange = (event, agencyId) => {
         let newSelectedAgencyIds = this.props.selectedAgencyIds;
         if (this.props.selectedAgencyIds === null) {
-            newSelectedAgencyIds = _.map(_.filter(this.props.agencyOptions, option => option.value), option => option.value);
+            newSelectedAgencyIds = map(filter(this.props.agencyOptions, option => option.value), option => option.value);
         }
         if (event.target.checked === false) {
-            this.updateVehicleFilters(_.filter(newSelectedAgencyIds, saId => saId !== agencyId));
+            this.updateVehicleFilters(filter(newSelectedAgencyIds, saId => saId !== agencyId));
         } else if (newSelectedAgencyIds.indexOf(agencyId) === -1) {
             this.updateVehicleFilters(newSelectedAgencyIds.concat([agencyId]));
         }
     };
 
-    getSelectedOption = () => (!_.isNull(this.props.selectedAgencyIds)
+    getSelectedOption = () => (!isNull(this.props.selectedAgencyIds)
         ? this.props.agencyOptions.filter(option => option.value === this.props.selectedAgencyIds[0])[0] || getDefaultOption(this.props.routeType)
         : getDefaultOption(this.props.routeType)).value;
 
@@ -79,7 +79,7 @@ class VehicleFilterByOperator extends React.Component {
                         <>
                             <h6 className="mt-3 mb-1">Operators</h6>
                             {
-                                _.map(this.props.agencyOptions, (option, index) => (
+                                map(this.props.agencyOptions, (option, index) => (
                                     index > 0 && (
                                         <FormGroup check key={ option.value }>
                                             <Label check>

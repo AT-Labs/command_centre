@@ -1,10 +1,10 @@
 import React from 'react';
-import _ from 'lodash-es';
+import { isEmpty } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { FeatureGroup, Polyline } from 'react-leaflet';
 
 function StopThreshold({ threshold }) {
-    return !_.isEmpty(threshold)
+    return !isEmpty(threshold)
         ? (
             <FeatureGroup>
                 <Polyline positions={ threshold } weight={ 5 } color="BLACK" />

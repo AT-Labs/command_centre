@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import { PropTypes } from 'prop-types';
-import Plotly from 'plotly.js';
+import Plotly from 'plotly.js-basic-dist-min';
 
 import { getTopRoutes } from '../../redux/selectors/analytics/occupancy';
 

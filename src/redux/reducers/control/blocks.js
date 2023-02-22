@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { union, map } from 'lodash-es';
 import { handleActions } from 'redux-actions';
 
 import ACTION_TYPE from '../../action-types';
@@ -35,7 +35,7 @@ const handleIsActiveBlockLoading = (state, { payload: { isActiveBlockLoading } }
 const handleSortingParamsUpdate = (state, { payload: { sortingParams } }) => ({ ...state, sortingParams });
 const handleBlocksUpdate = (state, { payload: { blocks } }) => ({
     ...state,
-    trips: _.union(..._.map(blocks, 'operationalTrips')),
+    trips: union(...map(blocks, 'operationalTrips')),
     blocks,
 });
 const handleLoadVehicleAllocations = (state, { payload: { allocations } }) => ({ ...state, allocations });

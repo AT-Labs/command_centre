@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { times, slice, map } from 'lodash-es';
 
 const AMOUNT_OF_VISIBLE_PAGES = 9;
 const MIDDLE_PAGE_NUMBER = 5;
@@ -12,7 +12,7 @@ export const Pagination = (props) => {
 
     const amountOfWholePages = Math.floor(itemsTotal / itemsPerPage);
     const pagesTotal = itemsTotal % itemsPerPage > 0 ? amountOfWholePages + 1 : amountOfWholePages;
-    const pagesAll = _.times(pagesTotal, index => index + 1);
+    const pagesAll = times(pagesTotal, index => index + 1);
 
     if (pagesTotal < 2) return null;
 
@@ -28,7 +28,7 @@ export const Pagination = (props) => {
         if (arePagesNoLongerAtTheStart) { startIndex = currentPage - MIDDLE_PAGE_NUMBER; }
         if (havePagesReachedTheEnd) { startIndex = pagesTotal - AMOUNT_OF_VISIBLE_PAGES; }
 
-        pagesVisible = _.slice(pagesAll, startIndex, startIndex + AMOUNT_OF_VISIBLE_PAGES);
+        pagesVisible = slice(pagesAll, startIndex, startIndex + AMOUNT_OF_VISIBLE_PAGES);
     }
 
     return (
@@ -53,7 +53,7 @@ export const Pagination = (props) => {
                     </>
                 )}
 
-                {_.map(pagesVisible, page => (
+                {map(pagesVisible, page => (
                     <li className={ `page-item ${currentPage === page ? 'active' : ''}` } key={ page }>
                         <button
                             type="button"

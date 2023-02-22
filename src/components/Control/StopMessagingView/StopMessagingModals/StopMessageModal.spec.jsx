@@ -1,12 +1,14 @@
 import React from 'react';
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
+import createCache from '@emotion/cache';
+import { CacheProvider } from '@emotion/react';
+import { Provider } from 'react-redux';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import moment from 'moment';
 import { mount } from 'enzyme';
 import StopMessageModal from './StopMessageModal';
-
 
 global.Node = document.defaultView.Node;
 global.HTMLElement = document.defaultView.HTMLElement;
@@ -16,6 +18,8 @@ let sandbox;
 
 const mockStore = configureMockStore([thunk]);
 let store;
+
+const cache = createCache({ key: 'blah' });
 
 const componentPropsMock = {
     title: '',
@@ -41,11 +45,11 @@ const setup = (customProps, customState) => {
         attachTo: document.querySelector('#testContainer'),
         context: { store },
     };
-    wrapper = mount(<StopMessageModal { ...props } />, options);
+    wrapper = mount(<CacheProvider value={ cache }><Provider store={ store }><StopMessageModal { ...props } /></Provider></CacheProvider>, options);
 };
 
 // skipped due to issue with passing props to wrapper needs to be solved with new mocha
-describe.skip('<StopMessageModal />', () => {
+describe('<StopMessageModal />', () => {
     beforeEach(() => { sandbox = sinon.createSandbox(); });
     afterEach(() => {
         sandbox.restore();
@@ -53,7 +57,7 @@ describe.skip('<StopMessageModal />', () => {
     });
 
     describe('End date time validation', () => {
-        context('When create message', () => {
+        describe('When create message', () => {
             it('End date time can be null when message status is draft', () => {
                 setup({
                     activeMessage: {
@@ -98,7 +102,7 @@ describe.skip('<StopMessageModal />', () => {
             });
         });
 
-        context('When edit message', () => {
+        describe('When edit message', () => {
             it('End date time can be null when message status is draft', () => {
                 setup({
                     modalType: 'edit',

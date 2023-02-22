@@ -2,6 +2,9 @@ import React from 'react';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { mount } from 'enzyme';
+import createCache from '@emotion/cache';
+import { CacheProvider } from '@emotion/react';
+import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import FilterByDelay from './FilterByDelay';
@@ -9,8 +12,9 @@ import tripStatusTypes from '../../../../types/trip-status-types';
 
 const reduxSelectors = require('../../../../redux/selectors/control/routes/filters');
 
-let wrapper;
 let sandbox;
+
+const cache = createCache({ key: 'blah' });
 
 const mockStore = configureMockStore([thunk]);
 let store;
@@ -45,7 +49,7 @@ const setup = (customState, customProps, tripStatusFilterInit) => {
         return [delayRangeValue, setDelayRange];
     });
 
-    wrapper = mount(<FilterByDelay { ...customProps } store={ store } />);
+    mount(<CacheProvider value={ cache }><Provider store={ store }><FilterByDelay { ...customProps } /></Provider></CacheProvider>);
 };
 
 describe('<FilterByDelay />', () => {
@@ -55,7 +59,7 @@ describe('<FilterByDelay />', () => {
         delayRangeValue = null;
     });
 
-    context('Status selection change impact on Delay Range Filter', async () => {
+    describe('Status selection change impact on Delay Range Filter', () => {
         it('Will set the range to the max limits when no range is passed', () => {
             setup(null, {
                 delayRangeLimits: { MIN: -25, MAX: 25 },

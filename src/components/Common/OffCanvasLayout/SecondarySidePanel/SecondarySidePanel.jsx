@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { isEmpty } from 'lodash-es';
 import { Button, Alert } from 'reactstrap';
 
 import VIEW_TYPE from '../../../../types/view-types';
@@ -47,7 +47,7 @@ export class SecondarySidePanel extends React.Component {
 
     render() {
         const { alerts, activeSecondaryPanelView } = this.props;
-        const isSecondarySidePanelOpen = !_.isEmpty(activeSecondaryPanelView);
+        const isSecondarySidePanelOpen = !isEmpty(activeSecondaryPanelView);
         const activeAlertsLength = alerts.length;
         return (
             isSecondarySidePanelOpen && (

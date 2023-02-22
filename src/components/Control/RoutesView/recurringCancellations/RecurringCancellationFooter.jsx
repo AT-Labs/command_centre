@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash-es';
+import { size } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import { IoIosCloseCircle } from 'react-icons/io';
@@ -12,7 +12,7 @@ const RecurringCancellationFooter = (props) => {
         <div className="recurring-cancellation-selection-footer d-flex align-items-center ml-3 mr-3">
             <div>
                 <span className="recurring-cancellation-selection-footer__trips-amount">
-                    { `${_.size(selectedRow)} trips selected` }
+                    { `${size(selectedRow)} trips selected` }
                 </span>
             </div>
             <div className="border-right">

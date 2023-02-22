@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash-es';
+import { get, inRange, size, findKey, isEmpty, isEqual, delay, sortBy, isFunction, findLastIndex } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -36,7 +36,7 @@ export class Stops extends React.Component {
     }
 
     componentDidMount() {
-        _.delay(() => {
+        delay(() => {
             const container = this.containerRef.current;
             if (container) {
                 const midContainer = parseInt(container.clientWidth / 2, 10) || 0;
@@ -44,7 +44,7 @@ export class Stops extends React.Component {
                 let scrollPosition = (this.getCurrentStopIndex() * STOP_WIDTH) - midContainer + STOP_WIDTH / 2;
                 if (scrollPosition < 0) { scrollPosition = 0; }
 
-                if (_.isFunction(container.scrollTo)) { // safe check for cypress as scrollTo does not work in Electron browser
+                if (isFunction(container.scrollTo)) { // safe check for cypress as scrollTo does not work in Electron browser
                     container.scrollTo(scrollPosition, 0);
                 }
 
@@ -60,28 +60,28 @@ export class Stops extends React.Component {
 
         if (prevProps.tripInstance.status !== tripInstance.status) {
             this.props.deselectAllStopsByTrip(tripInstance);
-        } else if (!_.isEqual(prevProps.tripInstance.stops, tripInstance.stops)) {
+        } else if (!isEqual(prevProps.tripInstance.stops, tripInstance.stops)) {
             this.props.updateSelectedStopsByTrip(tripInstance);
         }
     }
 
-    getSortedStops = () => _.sortBy(_.get(this.props.tripInstance, 'stops'), 'stopSequence');
+    getSortedStops = () => sortBy(get(this.props.tripInstance, 'stops'), 'stopSequence');
 
-    getCurrentStopIndex = () => _.findLastIndex(this.getSortedStops(), { status: StopStatus.passed });
+    getCurrentStopIndex = () => findLastIndex(this.getSortedStops(), { status: StopStatus.passed });
 
     isStopInSelectionRange = (stop) => {
         const { tripInstance } = this.props;
         const selectedStops = this.props.selectedStopsByTripKey(tripInstance);
 
-        if (!_.isEmpty(selectedStops)) {
+        if (!isEmpty(selectedStops)) {
             const hoveredStopData = this.state.hoveredStop && this.state.hoveredStop.stop;
-            const shouldCheckRange = _.size(selectedStops) === 1 && hoveredStopData;
-            const onlySelectedStop = selectedStops[_.findKey(selectedStops)];
+            const shouldCheckRange = size(selectedStops) === 1 && hoveredStopData;
+            const onlySelectedStop = selectedStops[findKey(selectedStops)];
             const isStopInRange = shouldCheckRange
             && (
                 stop.stopSequence === hoveredStopData.stopSequence
                 || stop.stopSequence === onlySelectedStop.stopSequence
-                || _.inRange(
+                || inRange(
                     stop.stopSequence,
                     onlySelectedStop.stopSequence,
                     hoveredStopData.stopSequence,
@@ -99,7 +99,7 @@ export class Stops extends React.Component {
 
         if (!stops || !stops.length) return null;
 
-        const shouldStopSelectionFooterBeShown = !_.isEmpty(this.props.selectedStopsByTripKey(this.props.tripInstance));
+        const shouldStopSelectionFooterBeShown = !isEmpty(this.props.selectedStopsByTripKey(this.props.tripInstance));
         const stopContainerWidth = STOP_WIDTH * stops.length;
         const currentStop = stops[this.getCurrentStopIndex()];
         const StopLinesHelper = new StopLinesHelperClass(
@@ -130,7 +130,7 @@ export class Stops extends React.Component {
                                         tripInstance={ this.props.tripInstance }
                                         onHover={ hoveredStop => this.setState({ hoveredStop }) }
                                         isStopInSelectionRange={ this.isStopInSelectionRange(stop) }
-                                        isCurrent={ stop.stopSequence === _.get(currentStop, 'stopSequence') }
+                                        isCurrent={ stop.stopSequence === get(currentStop, 'stopSequence') }
                                         lineInteractionClasses={ `${selectedEventClasses} ${hoverEventClasses}` } />
                                 );
                             })}

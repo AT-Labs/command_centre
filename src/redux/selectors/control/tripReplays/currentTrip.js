@@ -1,20 +1,20 @@
-import _ from 'lodash-es';
+import { isEmpty, result, pick } from 'lodash-es';
 import { createSelector } from 'reselect';
 import { getJsonFromWkt } from '../../../../utils/control/tripReplays';
 import { getFleetState } from '../../static/fleet';
 
-export const getCurrentTripState = state => _.result(state, 'control.tripReplays.currentTrip');
+export const getCurrentTripState = state => result(state, 'control.tripReplays.currentTrip');
 
 export const getShape = createSelector(getCurrentTripState, (tripDetail) => {
-    const shape = _.result(tripDetail, 'shape');
-    return _.isEmpty(shape) ? [] : getJsonFromWkt(shape);
+    const shape = result(tripDetail, 'shape');
+    return isEmpty(shape) ? [] : getJsonFromWkt(shape);
 });
 
-export const getRouteShortName = createSelector(getCurrentTripState, tripDetail => _.result(tripDetail, 'routeShortName'));
-export const getRouteColor = createSelector(getCurrentTripState, tripDetail => _.result(tripDetail, 'route.routeColor'));
+export const getRouteShortName = createSelector(getCurrentTripState, tripDetail => result(tripDetail, 'routeShortName'));
+export const getRouteColor = createSelector(getCurrentTripState, tripDetail => result(tripDetail, 'route.routeColor'));
 
 export const getFleetByVehicleId = createSelector(getFleetState, getCurrentTripState, (allFleetState, currentTrip) => {
-    const vehicleId = _.result(currentTrip, 'vehicleId');
+    const vehicleId = result(currentTrip, 'vehicleId');
     if (vehicleId.includes(',')) {
         const id = vehicleId.split(',')[0];
         return allFleetState[id];
@@ -23,23 +23,23 @@ export const getFleetByVehicleId = createSelector(getFleetState, getCurrentTripS
 });
 
 export const getVehiclePositions = createSelector(getCurrentTripState, (tripDetail) => {
-    const vehiclePositions = _.result(tripDetail, 'vehicleEvents');
-    return _.isEmpty(vehiclePositions) ? [] : vehiclePositions;
+    const vehiclePositions = result(tripDetail, 'vehicleEvents');
+    return isEmpty(vehiclePositions) ? [] : vehiclePositions;
 });
 
 export const getStops = createSelector(getCurrentTripState, (tripDetail) => {
-    const stops = _.result(tripDetail, 'stopEvents', []);
-    return _.isEmpty(stops) ? [] : stops;
+    const stops = result(tripDetail, 'stopEvents', []);
+    return isEmpty(stops) ? [] : stops;
 });
 
 export const getOperationalEvents = createSelector(getCurrentTripState, (tripDetail) => {
-    const operationalEvents = _.result(tripDetail, 'operationalEvents', []);
-    return _.isEmpty(operationalEvents) ? [] : operationalEvents;
+    const operationalEvents = result(tripDetail, 'operationalEvents', []);
+    return isEmpty(operationalEvents) ? [] : operationalEvents;
 });
 
-export const getTripStatus = createSelector(getCurrentTripState, tripDetail => _.result(tripDetail, 'finalStatus'));
+export const getTripStatus = createSelector(getCurrentTripState, tripDetail => result(tripDetail, 'finalStatus'));
 
-export const getVehicleInfo = createSelector(getCurrentTripState, tripDetail => _.pick(tripDetail, ['vehicleId', 'vehicleLabel', 'vehicleRegistration']));
-export const getTripInfo = createSelector(getCurrentTripState, tripDetail => _.pick(tripDetail, ['tripId', 'tripStart', 'tripSignOn']));
-export const getOperatorCode = createSelector(getCurrentTripState, tripDetail => _.result(tripDetail, 'agencyId'));
-export const getTripSignOn = createSelector(getCurrentTripState, tripDetail => _.result(tripDetail, 'tripSignOn'));
+export const getVehicleInfo = createSelector(getCurrentTripState, tripDetail => pick(tripDetail, ['vehicleId', 'vehicleLabel', 'vehicleRegistration']));
+export const getTripInfo = createSelector(getCurrentTripState, tripDetail => pick(tripDetail, ['tripId', 'tripStart', 'tripSignOn']));
+export const getOperatorCode = createSelector(getCurrentTripState, tripDetail => result(tripDetail, 'agencyId'));
+export const getTripSignOn = createSelector(getCurrentTripState, tripDetail => result(tripDetail, 'tripSignOn'));

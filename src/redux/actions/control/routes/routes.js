@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { map, result, startsWith, get } from 'lodash-es';
 import ErrorType from '../../../../types/error-types';
 import * as TRIP_MGT_API from '../../../../utils/transmitters/trip-mgt-api';
 import ACTION_TYPE from '../../../action-types';
@@ -52,9 +52,9 @@ export const clearActiveRoute = () => (dispatch) => {
 
 const getRouteDescription = (name, variants) => {
     if (!variants || !variants.length) return '';
-    if (_.startsWith(name, '0')) return 'School buses';
+    if (startsWith(name, '0')) return 'School buses';
     if (name === 'SKY') return '';
-    return _.get(variants[0], 'routeLongName');
+    return get(variants[0], 'routeLongName');
 };
 
 export const fetchRoutes = variables => (dispatch, getState) => {
@@ -68,7 +68,7 @@ export const fetchRoutes = variables => (dispatch, getState) => {
 
     TRIP_MGT_API.getRoutes(variables)
         .then((rawRoutes) => {
-            const routes = _.map(_.result(rawRoutes, 'routes'), route => ({
+            const routes = map(result(rawRoutes, 'routes'), route => ({
                 ...route,
                 description: getRouteDescription(route.routeShortName, route.routeVariants) || '—',
             }));

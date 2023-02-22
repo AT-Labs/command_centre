@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { isEmpty, result, compact } from 'lodash-es';
 import { createSelector } from 'reselect';
 import L from 'leaflet';
 import { getAllCoordinatesFromWKT } from '../../../utils/helpers';
@@ -10,9 +10,9 @@ import { getRealTimeSidePanelIsOpen, getActiveRealTimeDetailView, getRealTimeSid
 import VIEW_TYPE from '../../../types/view-types';
 import SEARCH_RESULT_TYPE from '../../../types/search-result-types';
 
-export const getMapState = state => _.result(state, 'realtime.map');
-export const getMapRecenterStatus = createSelector(getMapState, mapState => _.result(mapState, 'shouldMapBeRecentered'));
-export const getHoveredEntityKey = createSelector(getMapState, mapState => _.result(mapState, 'hoveredEntityKey'));
+export const getMapState = state => result(state, 'realtime.map');
+export const getMapRecenterStatus = createSelector(getMapState, mapState => result(mapState, 'shouldMapBeRecentered'));
+export const getHoveredEntityKey = createSelector(getMapState, mapState => result(mapState, 'hoveredEntityKey'));
 
 export const getShouldOffsetForSidePanel = createSelector(
     getRealTimeSidePanelIsActive,
@@ -37,22 +37,22 @@ export const getBoundsToFit = createSelector(
                     pointsInBounds.push(getAllCoordinatesFromWKT(entity.trip.shape_wkt));
                 }
             });
-        } else if (!_.isEmpty(currentViewDetailEntity)) {
+        } else if (!isEmpty(currentViewDetailEntity)) {
             if ([STOP.type, ROUTE.type].includes(currentViewDetailEntity.searchResultType) && currentViewDetailEntity.routes) {
                 currentViewDetailEntity.routes.forEach(r => pointsInBounds.push(getAllCoordinatesFromWKT(r.shape_wkt)));
             } else if (currentViewDetailEntity.trip && currentViewDetailEntity.trip.shape_wkt) {
                 pointsInBounds.push(getAllCoordinatesFromWKT(currentViewDetailEntity.trip.shape_wkt));
             }
         }
-        if (!_.isEmpty(address)) {
+        if (!isEmpty(address)) {
             pointsInBounds.push([new L.LatLng(address.lat, address.lng)]);
         }
-        return _.compact(pointsInBounds);
+        return compact(pointsInBounds);
     },
 );
 
 export const getMaxZoom = createSelector(getAddressDetail, (address) => {
-    if (!_.isEmpty(address)) {
+    if (!isEmpty(address)) {
         return FOCUS_ZOOM;
     }
     return 0;

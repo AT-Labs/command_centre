@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import _ from 'lodash-es';
+import { isEmpty } from 'lodash-es';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { FaRegCalendarAlt } from 'react-icons/fa';
@@ -81,7 +81,7 @@ const RecurrentTripCancellation = (props) => {
                         disabled={ !allowUpdate }
                     />
                 </FormGroup>
-                {!_.isEmpty(selectedWeekdays) && startDate && (
+                {!isEmpty(selectedWeekdays) && startDate && (
                     <FormGroup>
                         <BsArrowRepeat size={ 22 } />
                         <span className="pl-1">{ getRecurringTextWithFrom('Cancel selected trips', { startDate, selectedWeekdays, endDate }) }</span>

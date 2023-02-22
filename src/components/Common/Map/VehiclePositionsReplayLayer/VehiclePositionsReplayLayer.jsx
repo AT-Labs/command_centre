@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import * as moment from 'moment';
 import * as L from 'leaflet';
-import _ from 'lodash-es';
+import { get, isEmpty, isEqual } from 'lodash-es';
 import { FeatureGroup, LeafletConsumer } from 'react-leaflet';
 import { getVehiclePositions, getTripSignOn } from '../../../../redux/selectors/control/tripReplays/currentTrip';
 import VehiclePositionMarker from './VehiclePositionMarker';
@@ -22,14 +22,14 @@ const getLength = (start, end, leafletMap) => {
 
 // only show vps are 30px away from each other
 const filterPositions = (positions, leafletMap, tripSignOn) => {
-    if (_.isEmpty(positions)) return positions;
+    if (isEmpty(positions)) return positions;
     const tripSignOnTimestamp = moment(tripSignOn).unix().toString();
     let signOnPositionNotFound = true;
     let current = 0;
     const filteredPositions = [positions[0]];
     for (let i = 0; i < positions.length - 1; i++) {
         if (signOnPositionNotFound) {
-            if (_.isEqual(positions[i].timestamp, tripSignOnTimestamp)) {
+            if (isEqual(positions[i].timestamp, tripSignOnTimestamp)) {
                 filteredPositions.push(positions[i]);
                 signOnPositionNotFound = false;
                 current = i;
@@ -60,7 +60,7 @@ function VehiclePositionsReplayLayer({ tripSignOn, vehiclePositions, leafletMap,
     }, [vehiclePositions]);
 
     const handleOnClick = (event) => {
-        clearSelectedKeyEvent(selectedKeyEvent && selectedKeyEvent.id !== _.get(event, 'layer.options.id'));
+        clearSelectedKeyEvent(selectedKeyEvent && selectedKeyEvent.id !== get(event, 'layer.options.id'));
     };
 
     return (

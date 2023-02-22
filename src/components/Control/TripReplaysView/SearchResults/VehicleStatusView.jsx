@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import _ from 'lodash-es';
+import { isNull, isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -23,7 +23,7 @@ const VehicleStatusView = (props) => {
     const [expandedVehiclePosition, setExpandedVehiclePosition] = useState({});
 
     useEffect(() => {
-        if (_.isNull(vehicleEvents)) {
+        if (isNull(vehicleEvents)) {
             props.getVehicleReplayStatusAndPosition();
         }
     }, []);
@@ -160,7 +160,7 @@ const VehicleStatusView = (props) => {
                         <dt className="font-size-md ml-3">{Titles[event.type]}</dt>
                     </div>
                     <div className="col-6 row">
-                        <dt className="font-size-md ml-3">{!_.isNull(event.tripId) && event.tripId}</dt>
+                        <dt className="font-size-md ml-3">{!isNull(event.tripId) && event.tripId}</dt>
                     </div>
                     <div className="col-3 row vehicle-status-time mr-3">
                         <dd>{getTime(event.timestamp)}</dd>
@@ -172,7 +172,7 @@ const VehicleStatusView = (props) => {
     };
 
     const renderMain = () => {
-        if (_.isEmpty(vehicleEvents)) {
+        if (isEmpty(vehicleEvents)) {
             return (
                 <p className="px-4 text-muted">No vehicle status available</p>
             );
@@ -180,7 +180,7 @@ const VehicleStatusView = (props) => {
         return (
             <div>
                 {vehicleEvents.map((event) => {
-                    if (event.type === VEHICLE_POSITION && !_.isEmpty(event.child)) {
+                    if (event.type === VEHICLE_POSITION && !isEmpty(event.child)) {
                         return renderVehiclePositionDropDown(event);
                     }
                     return renderVehicleStatusView(event);
@@ -191,7 +191,7 @@ const VehicleStatusView = (props) => {
 
     return (
         <div>
-            {_.isNull(vehicleEvents)
+            {isNull(vehicleEvents)
                 ? (
                     <section className="auto-refresh-table">
                         <h4 className="px-4">

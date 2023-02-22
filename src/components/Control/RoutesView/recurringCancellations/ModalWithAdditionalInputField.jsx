@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { isEmpty, get, noop, isObject, find } from 'lodash-es';
 import moment from 'moment';
 import { FormGroup, Label, Input } from 'reactstrap';
 import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
@@ -40,7 +40,7 @@ const ModalWithAdditionalInputField = (props) => {
     };
 
     const routeVariantValid = (value) => {
-        if (!_.isEmpty(value) && value.length > 10) {
+        if (!isEmpty(value) && value.length > 10) {
             setIsRouteVariantValid(true);
             props.checkValidityOfInputField({ isRouteVariantValid: false });
         } else {
@@ -49,10 +49,10 @@ const ModalWithAdditionalInputField = (props) => {
         }
     };
 
-    const startTimeValid = () => _.isEmpty(startTime) || (moment(startTime, TIME_FORMAT_HHMM, true).isValid() || moment(startTime, TIME_FORMAT_HHMMSS, true).isValid());
+    const startTimeValid = () => isEmpty(startTime) || (moment(startTime, TIME_FORMAT_HHMM, true).isValid() || moment(startTime, TIME_FORMAT_HHMMSS, true).isValid());
 
     const routeValid = (value) => {
-        if (!_.isEmpty(value) && value.length > 10) {
+        if (!isEmpty(value) && value.length > 10) {
             setIsRouteValid(true);
             props.checkValidityOfInputField({ isRouteValid: false });
         } else {
@@ -72,16 +72,16 @@ const ModalWithAdditionalInputField = (props) => {
     const routeVariantIdActionHandler = {
         selection: {
             [SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type]: (selectedOption) => {
-                props.onChange({ routeVariant: _.get(selectedOption, 'data.routeVariantId') });
-                props.onChange({ route: _.get(selectedOption, 'data.routeShortName') });
+                props.onChange({ routeVariant: get(selectedOption, 'data.routeVariantId') });
+                props.onChange({ route: get(selectedOption, 'data.routeShortName') });
                 setIsOperatorAndRouteDisabled(true);
                 props.checkValidityOfInputField({ isRouteValid: true });
-                updateAutoFillOperator(_.get(selectedOption, 'data.agencyId'));
+                updateAutoFillOperator(get(selectedOption, 'data.agencyId'));
             },
         },
         clear: {
             [SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type]: () => {
-                _.noop();
+                noop();
                 enableAndClearOperatorAndRoute();
                 props.checkValidityOfInputField({ isRouteValid: false });
             },
@@ -97,10 +97,10 @@ const ModalWithAdditionalInputField = (props) => {
 
     const routeActionHandler = {
         selection: {
-            [SEARCH_RESULT_TYPE.CONTROL_ROUTE.type]: selectedOption => props.onChange({ route: _.get(selectedOption, 'data.routeShortName') }),
+            [SEARCH_RESULT_TYPE.CONTROL_ROUTE.type]: selectedOption => props.onChange({ route: get(selectedOption, 'data.routeShortName') }),
         },
         clear: {
-            [SEARCH_RESULT_TYPE.CONTROL_ROUTE.type]: _.noop,
+            [SEARCH_RESULT_TYPE.CONTROL_ROUTE.type]: noop,
         },
     };
 
@@ -114,8 +114,8 @@ const ModalWithAdditionalInputField = (props) => {
         routeVariantInputRef.current.addEventListener('keydown', (event) => {
             if (event.key === 'Tab') {
                 const routeData = searchResults[SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type];
-                const selectedRouteVariantValue = _.find(routeData, object => object.text === selectedRouteVariant);
-                if (_.isObject(selectedRouteVariantValue)) {
+                const selectedRouteVariantValue = find(routeData, object => object.text === selectedRouteVariant);
+                if (isObject(selectedRouteVariantValue)) {
                     routeVariantIdActionHandler.selection[SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type](selectedRouteVariantValue);
                 }
                 selectedRouteVariant = '';
@@ -135,7 +135,7 @@ const ModalWithAdditionalInputField = (props) => {
 
     const handleInputValueChangeStartTime = (value) => {
         props.onChange({ startTime: value });
-        if (!_.isEmpty(value) && (moment(value, TIME_FORMAT_HHMMSS, true).isValid() || moment(value, TIME_FORMAT_HHMM, true).isValid())) {
+        if (!isEmpty(value) && (moment(value, TIME_FORMAT_HHMMSS, true).isValid() || moment(value, TIME_FORMAT_HHMM, true).isValid())) {
             props.checkValidityOfInputField({ isStartTimeValid: true });
         } else {
             props.checkValidityOfInputField({ isStartTimeValid: false });

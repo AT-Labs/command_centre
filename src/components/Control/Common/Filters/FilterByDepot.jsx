@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es/lodash.default';
+import { isEmpty } from 'lodash-es';
 import TokenMultiSelect from '../../../Common/TokenMultiSelect/TokenMultiSelect';
 import SearchTheme from '../search-theme';
 import { getAgencies } from '../../../../redux/selectors/control/agencies';
@@ -35,7 +35,7 @@ class FilterByDepot extends React.Component {
         selectedAgency: '',
     };
 
-    componentDidMount() { if (_.isEmpty(this.props.agencies)) this.props.retrieveAgencies(); }
+    componentDidMount() { if (isEmpty(this.props.agencies)) this.props.retrieveAgencies(); }
 
     getOptions() {
         if (this.props.selectedAgency) {

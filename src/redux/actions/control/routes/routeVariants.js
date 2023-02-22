@@ -1,11 +1,11 @@
-import _ from 'lodash-es';
+import { keyBy, each, get, concat } from 'lodash-es';
 
 import ACTION_TYPE from '../../../action-types';
 
 const updateRouteVariants = routeVariants => ({
     type: ACTION_TYPE.UPDATE_CONTROL_ROUTE_VARIANTS,
     payload: {
-        routeVariants: _.keyBy(routeVariants, 'routeVariantId'),
+        routeVariants: keyBy(routeVariants, 'routeVariantId'),
     },
 });
 
@@ -16,9 +16,9 @@ export const clearRouteVariants = () => ({
 
 export const updateRouteVariantsFromRoutes = routes => (dispatch) => {
     let routeVariants = [];
-    _.each(routes, (route) => {
-        const variants = _.get(route, 'routeVariants', []);
-        routeVariants = _.concat(routeVariants, variants);
+    each(routes, (route) => {
+        const variants = get(route, 'routeVariants', []);
+        routeVariants = concat(routeVariants, variants);
     });
     dispatch(updateRouteVariants(routeVariants));
 };

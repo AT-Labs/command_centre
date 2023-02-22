@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { size, findKey, filter } from 'lodash-es';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
@@ -22,8 +22,8 @@ const StopSelectionFooter = (props) => {
     const { tripInstance } = props;
     const isBeforeTomorrow = moment(tripInstance.serviceDate).isBefore(moment().add(1, 'days'), 'day');
     const selectedStops = props.selectedStopsByTripKey(tripInstance);
-    const isOnlyOneStopSelected = _.size(selectedStops) === 1;
-    const onlySelectedStop = selectedStops && selectedStops[_.findKey(selectedStops)];
+    const isOnlyOneStopSelected = size(selectedStops) === 1;
+    const onlySelectedStop = selectedStops && selectedStops[findKey(selectedStops)];
     const isMoveTripToStopPossible = isBeforeTomorrow && isOnlyOneStopSelected && (IS_LOGIN_NOT_REQUIRED || isMoveToStopPermitted(onlySelectedStop));
 
     const handleModalOnToggle = (activeModalName) => {
@@ -32,7 +32,7 @@ const StopSelectionFooter = (props) => {
     };
 
     const checkIfButtonsShouldBeDisabled = () => {
-        const getStopsByStatus = comparator => _.filter(selectedStops, stop => comparator(stop.status, StopStatus.skipped));
+        const getStopsByStatus = comparator => filter(selectedStops, stop => comparator(stop.status, StopStatus.skipped));
         return {
             isThereSkippedStop: getStopsByStatus((stopStatus, status) => stopStatus === status).length > 0,
             isThereANotSkippedStop: getStopsByStatus((stopStatus, status) => stopStatus !== status).length > 0,
@@ -44,7 +44,7 @@ const StopSelectionFooter = (props) => {
             <ul className="col-12 d-flex align-items-center mt-3 mr-3 pb-3">
                 <li>
                     <span className="selection-tools-footer__stops-amount text-muted">
-                        { `${_.size(selectedStops)} stops selected` }
+                        { `${size(selectedStops)} stops selected` }
                     </span>
                 </li>
                 <li className="border-right mr-3">

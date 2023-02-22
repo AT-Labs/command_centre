@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { uniq } from 'lodash-es';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { allStopGroupsWithTokens, getAllStopGroups, getDataManagementState, getStopGroupsLoadingState, mergedAllStopGroupsWithTokens } from './stopGroups';
@@ -123,8 +123,8 @@ describe('Data Management Selector', () => {
             sandbox.stub(stopSelectors, 'getAllStops').returns(mockStops);
 
             const tokenizedStopGroups = mergedAllStopGroupsWithTokens(mockState(mockAllState));
-            const mergeTestTokensAllStops = _.uniq([ ...mockStops[0].testTokens, ...mockStops[1].testTokens ]);
-            const mergeTestTokensStopGroups = [ ..._.uniq(mockStops[1].testTokens), "__", "1000", "to", "8999", "__",];
+            const mergeTestTokensAllStops = uniq([ ...mockStops[0].testTokens, ...mockStops[1].testTokens ]);
+            const mergeTestTokensStopGroups = [ ...uniq(mockStops[1].testTokens), "__", "1000", "to", "8999", "__",];
 
             expect(tokenizedStopGroups.length).to.equal(4);
             expect(tokenizedStopGroups[0].tokens).to.deep.equal(mockStopGroups[0].testTokens);

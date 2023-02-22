@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { keyBy } from 'lodash-es';
 import ACTION_TYPE from '../../action-types';
 import STOP_MESSAGE_TYPE from '../../../types/stop-messages-types';
 import ERROR_TYPE from '../../../types/error-types';
@@ -32,7 +32,7 @@ export const getStopGroups = () => (dispatch) => {
             const filteredStopGroups = stopGroups.filter(
                 stopGroup => stopGroup.workflowState !== STOP_MESSAGE_TYPE.WORKFLOW_STATUS.DELETED,
             );
-            const mappedStopGroups = _.keyBy(stopGroups, group => group.id);
+            const mappedStopGroups = keyBy(stopGroups, group => group.id);
             dispatch(loadStopGroups(filteredStopGroups, mappedStopGroups));
             dispatch(updateLoadingStopGroupsState(false));
         })

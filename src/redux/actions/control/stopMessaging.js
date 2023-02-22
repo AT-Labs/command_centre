@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { sortBy } from 'lodash-es';
 import ACTION_TYPE from '../../action-types';
 import ERROR_TYPE from '../../../types/error-types';
 import STOP_MESSAGE_TYPE from '../../../types/stop-messages-types';
@@ -35,7 +35,7 @@ export const getStopMessagesAndPermissions = () => (dispatch) => {
             const { permissions } = messagesAndPermissions._links; // eslint-disable-line
 
             const filteredStopMessages = stopMessages.filter(stopMessage => stopMessage.workflowState !== STOP_MESSAGE_TYPE.WORKFLOW_STATUS.DELETED);
-            let activeStopMessages = _.sortBy(filteredStopMessages, 'startTime');
+            let activeStopMessages = sortBy(filteredStopMessages, 'startTime');
 
             activeStopMessages = activeStopMessages.map((message) => {
                 if (message.incidentId) {

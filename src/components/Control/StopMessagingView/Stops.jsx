@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { isArray, has, get } from 'lodash-es';
 import './Stops.scss';
 
 class Stops extends React.Component {
@@ -24,8 +24,8 @@ class Stops extends React.Component {
 
         const toggleCollapse = () => {
             let newStatus = false;
-            if (_.has(stopsCollapseStatus, stopMessage.id)) {
-                newStatus = !_.get(stopsCollapseStatus, stopMessage.id);
+            if (has(stopsCollapseStatus, stopMessage.id)) {
+                newStatus = !get(stopsCollapseStatus, stopMessage.id);
             }
             this.setState(prevState => ({
                 stopsCollapseStatus: {
@@ -35,7 +35,7 @@ class Stops extends React.Component {
             }));
         };
 
-        if (_.isArray(stops)) {
+        if (isArray(stops)) {
             if (stops.length <= 5) {
                 return stops.map(stop => stop.label).join(', ');
             }
@@ -43,12 +43,12 @@ class Stops extends React.Component {
             return (
                 <>
                     <span>
-                        {_.get(stopsCollapseStatus, stopMessage.id, true)
+                        {get(stopsCollapseStatus, stopMessage.id, true)
                             ? stops.slice(0, 5).map(stop => stop.label).join(', ')
                             : stops.map(stop => stop.label).join(', ')}
                     </span>
                     <button type="button" className="control-messaging-view__collapse-btn" onClick={ () => toggleCollapse() }>
-                        {_.get(stopsCollapseStatus, stopMessage.id, true) ? '+' : '-'}
+                        {get(stopsCollapseStatus, stopMessage.id, true) ? '+' : '-'}
                     </button>
                 </>
             );

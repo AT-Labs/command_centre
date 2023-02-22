@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { get, keyBy, find, uniqueId, filter, size, findKey, inRange, map, isEmpty, values, findIndex, reduce, findLastIndex, sortBy } from 'lodash-es';
 import moment from 'moment';
 
 import ACTION_TYPE from '../../../action-types';
@@ -21,7 +21,7 @@ import { StopStatus } from '../../../../components/Control/RoutesView/Types';
 const loadTripInstances = (tripInstances, timestamp) => ({
     type: ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES,
     payload: {
-        tripInstances: _.keyBy(tripInstances, tripInstance => getTripInstanceId(tripInstance)),
+        tripInstances: keyBy(tripInstances, tripInstance => getTripInstanceId(tripInstance)),
         timestamp,
     },
 });
@@ -94,7 +94,7 @@ export const fetchTripInstances = (variables, { isUpdate }) => (dispatch, getSta
             }
             dispatch(loadTripInstances(tripInstances, timestamp));
             if (linkStartTime) {
-                const activeTrip = _.find(tripInstances, { startTime: linkStartTime });
+                const activeTrip = find(tripInstances, { startTime: linkStartTime });
                 dispatch(updateActiveTripInstanceId(activeTrip && getTripInstanceId(activeTrip)));
             }
         })
@@ -125,7 +125,7 @@ const addTripInstance = tripInstance => ({
 const setTripInstanceActionResult = (body, type, tripId, actionType) => ({
     type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
     payload: {
-        id: _.uniqueId('actionResult'), body, type, tripId, actionType,
+        id: uniqueId('actionResult'), body, type, tripId, actionType,
     },
 });
 
@@ -150,12 +150,12 @@ export const updateSelectedStops = (tripInstance, updatedStops) => ({
 export const updateSelectedStopsByTrip = tripInstance => async (dispatch, getState) => {
     const selectedStops = getSelectedStops(getState());
     const selectedStopsByTrip = getSelectedStopsByTripKey(selectedStops, tripInstance);
-    const sortedStops = _.sortBy(_.get(tripInstance, 'stops'), 'stopSequence');
-    const currentStopIndex = _.findLastIndex(sortedStops, { status: StopStatus.passed });
+    const sortedStops = sortBy(get(tripInstance, 'stops'), 'stopSequence');
+    const currentStopIndex = findLastIndex(sortedStops, { status: StopStatus.passed });
 
     try {
-        const updatedSelectedStops = _.reduce(selectedStopsByTrip, (filteredStops, selectedStop) => {
-            const stopIndex = _.findIndex(tripInstance.stops, stop => stop.stopId === selectedStop.stopId);
+        const updatedSelectedStops = reduce(selectedStopsByTrip, (filteredStops, selectedStop) => {
+            const stopIndex = findIndex(tripInstance.stops, stop => stop.stopId === selectedStop.stopId);
             if (stopIndex > currentStopIndex) {
                 filteredStops.push(sortedStops[stopIndex]);
             }
@@ -265,9 +265,9 @@ export const fetchAndUpdateSelectedTrips = selectedTripInstances => (dispatch, g
     const state = getState();
     const tripsArgs = {
         serviceDate: moment(getServiceDate(state)).format(SERVICE_DATE_FORMAT),
-        tripIds: _.map(selectedTripInstances, trip => trip.tripId),
+        tripIds: map(selectedTripInstances, trip => trip.tripId),
     };
-    const startTimeOfSelectedTrips = _.map(selectedTripInstances, trip => `${trip.tripId}-${trip.startTime}`);
+    const startTimeOfSelectedTrips = map(selectedTripInstances, trip => `${trip.tripId}-${trip.startTime}`);
     TRIP_MGT_API.getTrips(tripsArgs)
         .then(({ tripInstances }) => tripInstances.filter(tripInstance => startTimeOfSelectedTrips.includes(`${tripInstance.tripId}-${tripInstance.startTime}`)))
         .then(tripInstances => dispatch(updateSelectedTrips(tripInstances)))
@@ -275,7 +275,7 @@ export const fetchAndUpdateSelectedTrips = selectedTripInstances => (dispatch, g
 };
 
 export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, successMessage, errorMessage, recurrenceSetting, selectedTrips) => async (dispatch) => {
-    const tripUpdateCalls = _.map(operateTrips, trip => dispatch(updateTripInstanceStatus(
+    const tripUpdateCalls = map(operateTrips, trip => dispatch(updateTripInstanceStatus(
         {
             tripStatus,
             tripId: trip.tripId,
@@ -295,7 +295,7 @@ export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, s
         errorMessage,
     )));
     await Promise.all(tripUpdateCalls);
-    if (_.values(selectedTrips).length > 0) {
+    if (values(selectedTrips).length > 0) {
         await dispatch(fetchAndUpdateSelectedTrips(selectedTrips));
     }
 };
@@ -305,7 +305,7 @@ export const removeBulkUpdateMessages = type => (dispatch, getState) => {
     const actionResult = getTripInstancesActionResults(getState());
 
     actionResult.forEach((action) => {
-        if (action.type === type && !_.isEmpty(selected[action.tripId])) {
+        if (action.type === type && !isEmpty(selected[action.tripId])) {
             dispatch(clearTripInstanceActionResult(action.id));
         }
     });
@@ -336,7 +336,7 @@ export const fetchAndUpdateSelectedStops = tripInstance => async (dispatch, getS
 
     try {
         const { tripInstances } = await TRIP_MGT_API.getTrips(tripsArgs);
-        const updatedStops = _.map(selectedStopsByTrip, selectedStop => tripInstances[0].stops.filter(stop => stop.stopId === selectedStop.stopId)[0]);
+        const updatedStops = map(selectedStopsByTrip, selectedStop => tripInstances[0].stops.filter(stop => stop.stopId === selectedStop.stopId)[0]);
         dispatch(updateSelectedStops(tripInstance, updatedStops));
     } catch (e) {
         return ErrorType.tripsFetch && dispatch(setBannerError(ErrorType.tripsFetch));
@@ -358,7 +358,7 @@ export const removeBulkStopsUpdateMessages = tripInstance => (dispatch, getState
 
 export const updateSelectedStopsStatus = (tripInstance, selectedStops, stopStatus, successMessage, errorMessage) => async (dispatch) => {
     dispatch(updateSelectedStopsUpdatingState(true));
-    const stopUpdateCalls = _.map(selectedStops, stop => stop.status !== StopStatus.passed && dispatch(updateTripInstanceStopStatus(
+    const stopUpdateCalls = map(selectedStops, stop => stop.status !== StopStatus.passed && dispatch(updateTripInstanceStopStatus(
         {
             stopStatus,
             tripId: tripInstance.tripId,
@@ -400,13 +400,13 @@ export const selectStops = (tripInstance, stop) => (dispatch, getState) => {
     const tripInstanceId = getTripInstanceId(tripInstance);
     const allSelectedStops = getSelectedStops(getState());
     const selectedStopsByTrip = getSelectedStopsByTripKey(allSelectedStops, tripInstance);
-    const isThereJustOneStopSelected = selectedStopsByTrip && _.size(selectedStopsByTrip) === 1;
-    const onlySelectedStop = isThereJustOneStopSelected && selectedStopsByTrip[_.findKey(selectedStopsByTrip)];
+    const isThereJustOneStopSelected = selectedStopsByTrip && size(selectedStopsByTrip) === 1;
+    const onlySelectedStop = isThereJustOneStopSelected && selectedStopsByTrip[findKey(selectedStopsByTrip)];
     const isRangeSelection = isThereJustOneStopSelected && onlySelectedStop.stopId !== stop.stopId;
 
     if (isRangeSelection) {
         const stopToKeep = stop.stopSequence < onlySelectedStop.stopSequence ? onlySelectedStop : stop;
-        const stopsInBetween = _.filter(allStopsInTrip, unselectedStop => unselectedStop.status !== StopStatus.nonStopping && _.inRange(
+        const stopsInBetween = filter(allStopsInTrip, unselectedStop => unselectedStop.status !== StopStatus.nonStopping && inRange(
             unselectedStop.stopSequence,
             stop.stopSequence,
             onlySelectedStop.stopSequence,

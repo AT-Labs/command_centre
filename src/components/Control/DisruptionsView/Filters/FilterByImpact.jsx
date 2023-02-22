@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash-es';
+import { get } from 'lodash-es';
 
 import PropTypes from 'prop-types';
 import ControlSearch from '../../Common/ControlSearch/ControlSearch';
@@ -40,7 +40,7 @@ const FilterByImpact = (props) => {
             placeholder={ props.placeholder }
             onSelection={ selectedOption => props.onSelection(selectedOption) }
             onInputValueChange={ onInputValueChange }
-            value={ _.get(getSelectedOption(), 'label') }
+            value={ get(getSelectedOption(), 'label') }
             updateOnPropsValueChange={ props.updateOnPropsValueChange } />
     );
 };

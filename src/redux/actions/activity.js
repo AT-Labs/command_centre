@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { keys } from 'lodash-es';
 import ACTION_TYPE from '../action-types';
 import { getSiteStatus } from '../../utils/transmitters/cc-host';
 
@@ -29,7 +29,7 @@ export const reportError = (error, disableDismiss) => (dispatch) => {
 
     if (disableDismiss) return;
 
-    const errorTypes = _.keys(error.error);
+    const errorTypes = keys(error.error);
     errorTypes.forEach((errorType) => {
         if (dismissDelayHandles[errorType]) {
             clearTimeout(dismissDelayHandles[errorType]);

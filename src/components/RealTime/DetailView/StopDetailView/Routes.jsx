@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { sortBy, uniq } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
@@ -17,7 +17,7 @@ export class Routes extends React.Component {
                 }
                 return route.route_short_name;
             }).filter(route => !!route);
-        return _.uniq(_.sortBy(routeNames));
+        return uniq(sortBy(routeNames));
     };
 
     render() {

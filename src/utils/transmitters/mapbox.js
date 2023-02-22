@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { result } from 'lodash-es';
 import { jsonResponseHandling } from '../fetch';
 
 const MAPBOX_ACCESS_TOKEN = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
@@ -12,7 +12,7 @@ export const searchAddresses = searchTerms => fetch(
     `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchTerms}.json?&country=NZ&bbox=${AUCKLAND_BBOX}&limit=${MAPBOX_LIMIT}&types=${MAPBOX_TYPES}&access_token=${MAPBOX_ACCESS_TOKEN}`,
 )
     .then(response => jsonResponseHandling(response))
-    .then(data => _.result(data, 'features').map(f => (
+    .then(data => result(data, 'features').map(f => (
         {
             address: f.place_name.split(SEPARATOR).slice(0, 2).join(SEPARATOR),
             lng: f.center[0],

@@ -11,7 +11,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import inView from 'in-view';
-import _ from 'lodash-es';
+import { map, delay } from 'lodash-es';
 import moment from 'moment-timezone';
 
 import { getBlocks, updateActiveBlock, updateBlocksSortingParams, clearActiveBlock, updateFocusedBlock } from '../../../redux/actions/control/blocks';
@@ -176,7 +176,7 @@ export class BlocksView extends React.Component {
             }
             return null;
         }
-        if (vehiclesLength) return <div>{ _.map(vehicles, 'buttonLabel').join(', ') }</div>;
+        if (vehiclesLength) return <div>{ map(vehicles, 'buttonLabel').join(', ') }</div>;
         return null;
     };
 
@@ -205,7 +205,7 @@ export class BlocksView extends React.Component {
     handleBlockSearchOnSelect = ({ data: block }) => {
         this.props.updateActiveBlock(block);
         const blockElement = this.ref.current.querySelector(`li[data-row-id="${this.getRowId(block)}"]`);
-        if (!inView.is(blockElement)) _.delay(() => blockElement.scrollIntoView(), 0);
+        if (!inView.is(blockElement)) delay(() => blockElement.scrollIntoView(), 0);
     };
 
     getRowClassName = (block) => {

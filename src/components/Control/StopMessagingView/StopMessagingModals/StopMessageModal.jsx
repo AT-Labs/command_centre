@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { isNull, max, isObject, isDate, get, isEmpty } from 'lodash-es';
 import moment from 'moment';
 import Flatpickr from 'react-flatpickr';
 import { IoIosWarning } from 'react-icons/io';
@@ -116,7 +116,7 @@ export class StopMessageModal extends React.Component {
 
     parseSelectedDate = (date, time) => moment(`${moment(date).format('YYYY-MM-DD')} ${time}`, 'YYYY-MM-DD HH:mm');
 
-    dismissErrorHandler = () => !_.isNull(this.props.error.createStopMessage) && this.props.dismissError('createStopMessage');
+    dismissErrorHandler = () => !isNull(this.props.error.createStopMessage) && this.props.dismissError('createStopMessage');
 
     toggleModal = () => {
         this.setState({
@@ -158,7 +158,7 @@ export class StopMessageModal extends React.Component {
         if (!recurrence.days.length) {
             return null;
         }
-        const mostFutureDay = _.max(recurrence.days);
+        const mostFutureDay = max(recurrence.days);
         mostFutureDateTime.add(recurrence.weeks - 1, 'w').weekday(mostFutureDay);
         return mostFutureDateTime;
     };
@@ -201,14 +201,14 @@ export class StopMessageModal extends React.Component {
     };
 
     updateStopMessage = () => {
-        if (!_.isNull(this.props.error.createStopMessage)) {
+        if (!isNull(this.props.error.createStopMessage)) {
             return;
         }
         const {
             stopsAndGroups, message, startTime, startDate, priority, status, recurrence,
         } = this.state;
-        const singleStops = stopsAndGroups.filter(selectedItem => !_.isObject(selectedItem.stopGroup));
-        const stopGroups = stopsAndGroups.filter(selectedItem => _.isObject(selectedItem.stopGroup))
+        const singleStops = stopsAndGroups.filter(selectedItem => !isObject(selectedItem.stopGroup));
+        const stopGroups = stopsAndGroups.filter(selectedItem => isObject(selectedItem.stopGroup))
             .map(group => group.stopGroup);
 
         const payload = {
@@ -242,17 +242,17 @@ export class StopMessageModal extends React.Component {
         const endDatetime = this.getEndDateTime();
         const hasRecurrence = this.hasRecurrence();
         const isEditing = modalType === MESSAGING_MODAL_TYPE.EDIT;
-        const isStartTimeSelected = _.isDate(startDate) && startTime !== '';
-        const isEndDateAndTimeBothSelected = _.isDate(endDate) && endTime !== '';
-        const isEndDateAndTimeSelectedPartly = !!_.isDate(endDate) !== !!endTime;
+        const isStartTimeSelected = isDate(startDate) && startTime !== '';
+        const isEndDateAndTimeBothSelected = isDate(endDate) && endTime !== '';
+        const isEndDateAndTimeSelectedPartly = !!isDate(endDate) !== !!endTime;
         const isEndDateTimeOptional = status === STOP_MESSAGE_TYPE.STATUS.DRAFT.toLowerCase();
         const isEndTimeValid = (isEndDateTimeOptional && !isEndDateAndTimeSelectedPartly) || isEndDateAndTimeBothSelected || (hasRecurrence && endTime !== '');
         const now = moment();
         const isTimeSelectedValid = !isEndDateAndTimeBothSelected || (startDatetime.isBefore(endDatetime) && endDatetime.isAfter(now));
 
-        const isSaveButtonDisabled = _.isEmpty(stopsAndGroups)
+        const isSaveButtonDisabled = isEmpty(stopsAndGroups)
             || message === ''
-            || !_.isNull(error.createStopMessage)
+            || !isNull(error.createStopMessage)
             || (isMaxCharactersLengthExceeded && status === STOP_MESSAGE_TYPE.STATUS.ACTIVE.toLowerCase())
             || !isStartTimeSelected
             || !isEndTimeValid
@@ -284,7 +284,7 @@ export class StopMessageModal extends React.Component {
                     <div className="col">
                         <ModalAlert
                             color="danger"
-                            isOpen={ !_.isNull(error.createStopMessage) }
+                            isOpen={ !isNull(error.createStopMessage) }
                             content={ <span>{ error.createStopMessage }</span> } />
                     </div>
                 </div>
@@ -350,9 +350,9 @@ export class StopMessageModal extends React.Component {
                                         value={ startDate }
                                         options={ {
                                             ...this.datePickerOptions,
-                                            minDate: moment.min(moment(), moment(_.get(activeMessage, 'startTime', new Date()))).format('YYYY-MM-DD'),
+                                            minDate: moment.min(moment(), moment(get(activeMessage, 'startTime', new Date()))).format('YYYY-MM-DD'),
                                             disable: [activeMessage && {
-                                                from: moment(_.get(activeMessage, 'startTime', new Date())).add(1, 'day').format('D MMMM YYYY'),
+                                                from: moment(get(activeMessage, 'startTime', new Date())).add(1, 'day').format('D MMMM YYYY'),
                                                 to: moment().add(-1, 'day').format('D MMMM YYYY'),
                                             }],
                                         } }

@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { keys } from 'lodash-es';
 import ModalAlert from './ModalAlert';
 
 const OverlappingTripsAlert = ({
     overlappingBlocks,
 }) => {
     const renderOverlappingTripsContent = () => {
-        const blockIds = _.keys(overlappingBlocks);
+        const blockIds = keys(overlappingBlocks);
         return blockIds.map(blockId => (
             <div key={ blockId }>
                 {blockId}

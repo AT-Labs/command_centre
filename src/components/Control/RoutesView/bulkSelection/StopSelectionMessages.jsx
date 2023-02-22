@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash-es';
+import { compact, last } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -10,9 +10,9 @@ import { getBulkUpdateErrorMessagesForStops, getSelectedStopsUpdatingState, getB
 
 const StopSelectionMessages = (props) => {
     const { bulkUpdateConfirmationMessages, bulkUpdateErrorMessages, areSelectedStopsUpdating, tripInstance } = props;
-    const lastMessagesByType = _.compact([
-        _.last(bulkUpdateConfirmationMessages),
-        _.last(bulkUpdateErrorMessages),
+    const lastMessagesByType = compact([
+        last(bulkUpdateConfirmationMessages),
+        last(bulkUpdateErrorMessages),
     ]);
 
     const getMessageBody = (type, body) => `${type === CONFIRMATION_MESSAGE_TYPE ? bulkUpdateConfirmationMessages.length : bulkUpdateErrorMessages.length} ${body}`;

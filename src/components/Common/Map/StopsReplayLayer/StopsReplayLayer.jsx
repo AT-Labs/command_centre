@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 import { FeatureGroup } from 'react-leaflet';
-import _ from 'lodash-es';
+import { get, has } from 'lodash-es';
 import StopMarker from './StopMarker';
 import './StopsReplayLayer.scss';
 import { getCurrentTripState } from '../../../../redux/selectors/control/tripReplays/currentTrip';
@@ -10,12 +10,12 @@ import { getCurrentTripState } from '../../../../redux/selectors/control/tripRep
 function StopsReplayLayer(props) {
     const { stops, selectedKeyEvent, hoveredKeyEvent, selectedKeyEventId, currentTrip, clearSelectedKeyEvent } = props;
     const handleOnClick = (event) => {
-        clearSelectedKeyEvent(selectedKeyEvent && selectedKeyEvent.id !== _.get(event, 'layer.options.id'));
+        clearSelectedKeyEvent(selectedKeyEvent && selectedKeyEvent.id !== get(event, 'layer.options.id'));
     };
     return (
         <FeatureGroup onClick={ handleOnClick }>
             {
-                stops.map(stop => (_.has(stop, 'stopLat') ? (
+                stops.map(stop => (has(stop, 'stopLat') ? (
                     <StopMarker
                         key={ `${stop.stopCode}_${stop.stopSequence}` }
                         selectedKeyEvent={ selectedKeyEvent }

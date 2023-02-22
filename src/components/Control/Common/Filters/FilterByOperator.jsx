@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { isEmpty } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
@@ -33,7 +33,7 @@ class FilterByOperator extends React.Component {
         isDisabled: false,
     };
 
-    componentDidMount() { if (_.isEmpty(this.props.agencies)) this.props.retrieveAgencies(); }
+    componentDidMount() { if (isEmpty(this.props.agencies)) this.props.retrieveAgencies(); }
 
     onInputValueChange = (value) => { if (!value) this.props.onSelection({ value: '', label: '' }); };
 

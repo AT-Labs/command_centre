@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { clone } from 'lodash-es';
 import { FormGroup, Label, Input } from 'reactstrap';
 import { mergeRouteFilters } from '../../../../redux/actions/control/routes/filters';
 import {
@@ -27,7 +27,7 @@ export class FilterByTrackingStatus extends React.Component {
     };
 
     handleTrackingStatusChange = (trackingStatus, checked) => {
-        const trackingStatuses = _.clone(this.props.trackingStatuses.length ? this.props.trackingStatuses : allTrackingStatuses);
+        const trackingStatuses = clone(this.props.trackingStatuses.length ? this.props.trackingStatuses : allTrackingStatuses);
         if (checked) {
             trackingStatuses.splice(trackingStatuses.indexOf(trackingStatus), 1);
         } else if (!trackingStatuses.includes(trackingStatus)) {

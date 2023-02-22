@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Tooltip } from 'react-leaflet';
-import _ from 'lodash-es';
+import { result, isEqual, find } from 'lodash-es';
 import moment from 'moment';
 import {
     getOperatorCode,
@@ -22,20 +22,20 @@ const getKeyEventTitle = (vehiclePosition, tripInfo, stops) => {
     if (!tripInfo || !stops) return null;
 
     const timestamp = parseInt(vehiclePosition.timestamp, 10);
-    if (_.isEqual(timestamp, moment(tripInfo.tripSignOn).unix())) {
+    if (isEqual(timestamp, moment(tripInfo.tripSignOn).unix())) {
         return 'Signed onto trip';
     }
 
-    const matchedStop = _.find(
+    const matchedStop = find(
         stops,
         (stop) => {
-            const isDeparture = _.isEqual(_.result(stop, 'departure.time'), vehiclePosition.timestamp);
-            const isArrival = _.isEqual(_.result(stop, 'arrival.time'), vehiclePosition.timestamp);
+            const isDeparture = isEqual(result(stop, 'departure.time'), vehiclePosition.timestamp);
+            const isArrival = isEqual(result(stop, 'arrival.time'), vehiclePosition.timestamp);
             return isDeparture || isArrival;
         },
     );
     if (matchedStop) {
-        if (_.isEqual(_.result(matchedStop, 'departure.time'), vehiclePosition.timestamp)) {
+        if (isEqual(result(matchedStop, 'departure.time'), vehiclePosition.timestamp)) {
             return `Departed from stop ${matchedStop.stopCode} - ${matchedStop.stopName}`;
         }
 

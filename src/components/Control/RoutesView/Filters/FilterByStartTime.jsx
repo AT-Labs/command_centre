@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { debounce, filter } from 'lodash-es';
 import { getTimePickerOptions } from '../../../../utils/helpers';
 import { mergeRouteFilters } from '../../../../redux/actions/control/routes/filters';
 import { getStartTimeFromFilter, getStartTimeToFilter } from '../../../../redux/selectors/control/routes/filters';
@@ -40,16 +40,16 @@ class FilterByStartTime extends React.Component {
         return res;
     }
 
-    debouncedMergeRouteFilters = _.debounce(this.props.mergeRouteFilters, 350);
+    debouncedMergeRouteFilters = debounce(this.props.mergeRouteFilters, 350);
 
     getStartTimeToOptions = () => {
         if (!this.state.startTimeFrom.value) return OPTIONS;
-        return _.filter(OPTIONS, option => option.value > this.state.startTimeFrom.value);
+        return filter(OPTIONS, option => option.value > this.state.startTimeFrom.value);
     };
 
     getStartTimeFromOptions = () => {
         if (!this.state.startTimeTo.value) return OPTIONS;
-        return _.filter(OPTIONS, option => option.value < this.state.startTimeTo.value);
+        return filter(OPTIONS, option => option.value < this.state.startTimeTo.value);
     };
 
     handleFilterChange = (name, value) => {

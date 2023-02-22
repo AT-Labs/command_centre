@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { findIndex, map, has } from 'lodash-es';
 import { LeafletConsumer } from 'react-leaflet';
 import * as L from 'leaflet';
 import StopThreshold from './StopThreshold';
 import 'leaflet-geometryutil';
 
-const findStopIndexInRoute = (stop, route) => _.findIndex(route, point => point[0] === stop.stopLat && point[1] === stop.stopLon);
+const findStopIndexInRoute = (stop, route) => findIndex(route, point => point[0] === stop.stopLat && point[1] === stop.stopLon);
 
 /**
  * This function is used to get stop thresholds
@@ -20,8 +20,8 @@ const findStopIndexInRoute = (stop, route) => _.findIndex(route, point => point[
  * @param route
  * @returns {Array}
  */
-const getThresholds = (leafletMap, stops, route) => _.map(stops, (stop) => {
-    if (!_.has(stop, 'stopLat')) return null;
+const getThresholds = (leafletMap, stops, route) => map(stops, (stop) => {
+    if (!has(stop, 'stopLat')) return null;
     let stopIndex = findStopIndexInRoute(stop, route);
 
     // In case the stop's point is not a key point on the route polyline
@@ -116,7 +116,7 @@ function StopThresholdsLayer({ leafletMap, stops, route }) {
     return route.length && (
         <>
             {
-                _.map(getThresholds(leafletMap, stops, route), (threshold, index) => (threshold ? (<StopThreshold key={ `threshold_${index}` } threshold={ threshold } />) : null))
+                map(getThresholds(leafletMap, stops, route), (threshold, index) => (threshold ? (<StopThreshold key={ `threshold_${index}` } threshold={ threshold } />) : null))
             }
         </>
     );
@@ -130,6 +130,6 @@ StopThresholdsLayer.propTypes = {
 
 export default (props => (
     <LeafletConsumer>
-        {({ map }) => <StopThresholdsLayer { ...props } leafletMap={ map } />}
+        { leafletContext => <StopThresholdsLayer { ...props } leafletMap={ leafletContext.map } />}
     </LeafletConsumer>
 ));

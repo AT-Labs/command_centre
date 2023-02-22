@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash-es';
+import { flatten, find, isEmpty } from 'lodash-es';
 import moment from 'moment';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -70,28 +70,28 @@ describe('<TripView />', () => {
         context('When trip is TRAIN', () => {
             it('Should contain External Ref ID info', () => {
                 wrapper = setup({ tripInstance: trainTrip });
-                const result = _.flatten(wrapper.instance().getTripDetailsData(trainTrip));
-                expect(_.find(result, { value: 'test10' })).to.not.be.undefined; // eslint-disable-line
+                const result = flatten(wrapper.instance().getTripDetailsData(trainTrip));
+                expect(find(result, { value: 'test10' })).to.not.be.undefined; // eslint-disable-line
             });
 
             it('Should contain Block ID', () => {
                 wrapper = setup({ tripInstance: trainTrip });
-                const result = _.flatten(wrapper.instance().getTripDetailsData(trainTrip));
-                expect(_.find(result, { value: '123' })).to.not.be.undefined; // eslint-disable-line
+                const result = flatten(wrapper.instance().getTripDetailsData(trainTrip));
+                expect(find(result, { value: '123' })).to.not.be.undefined; // eslint-disable-line
             });
         });
 
         context('When trip is NOT TRAIN', () => {
             it('Should not contain External Ref ID info', () => {
                 wrapper = setup({ tripInstance: busTrip });
-                const result = _.flatten(wrapper.instance().getTripDetailsData(busTrip));
-                expect(_.find(result, { value: 'test5' })).to.be.undefined;  // eslint-disable-line
+                const result = flatten(wrapper.instance().getTripDetailsData(busTrip));
+                expect(find(result, { value: 'test5' })).to.be.undefined;  // eslint-disable-line
             });
 
             it('Should not contain Block ID', () => {
                 wrapper = setup({ tripInstance: busTrip });
-                const result = _.flatten(wrapper.instance().getTripDetailsData(busTrip));
-                expect(_.find(result, { value: '123' })).to.be.undefined;  // eslint-disable-line
+                const result = flatten(wrapper.instance().getTripDetailsData(busTrip));
+                expect(find(result, { value: '123' })).to.be.undefined;  // eslint-disable-line
             });
         });
     });
@@ -105,7 +105,7 @@ describe('<TripView />', () => {
 
             it('should contain View in Blocks button', () => {
                 const result = wrapper.instance().getButtonBarConfig(trip);
-                expect(_.find(result, { label: 'View in Blocks' })).to.not.be.undefined; // eslint-disable-line
+                expect(find(result, { label: 'View in Blocks' })).to.not.be.undefined; // eslint-disable-line
             });
         });
 
@@ -117,7 +117,7 @@ describe('<TripView />', () => {
 
             it('should not contain View in Blocks button', () => {
                 const result = wrapper.instance().getButtonBarConfig(trip);
-                expect(_.find(result, { label: 'View in Blocks' })).to.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'View in Blocks' })).to.be.undefined;  // eslint-disable-line
             });
         });
 
@@ -130,13 +130,13 @@ describe('<TripView />', () => {
             });
 
             it('should contain Cancel trip button', () => {
-                expect(_.find(result, { label: 'Cancel trip' })).to.not.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Cancel trip' })).to.not.be.undefined;  // eslint-disable-line
             });
             it('should contain Set trip delay button', () => {
-                expect(_.find(result, { label: 'Set trip delay' })).to.not.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Set trip delay' })).to.not.be.undefined;  // eslint-disable-line
             });
             it('should contain Move to next stop button', () => {
-                expect(_.find(result, { label: 'Move to next stop' })).to.not.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Move to next stop' })).to.not.be.undefined;  // eslint-disable-line
             });
         });
 
@@ -149,16 +149,16 @@ describe('<TripView />', () => {
             });
 
             it('should contain Cancel trip button', () => {
-                expect(_.find(result, { label: 'Cancel trip' })).to.not.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Cancel trip' })).to.not.be.undefined;  // eslint-disable-line
             });
             it('should contain Set trip delay button', () => {
-                expect(_.find(result, { label: 'Set trip delay' })).to.not.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Set trip delay' })).to.not.be.undefined;  // eslint-disable-line
             });
             it('should not contain Reinstate trip button', () => {
-                expect(_.find(result, { label: 'Reinstate trip' })).to.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Reinstate trip' })).to.be.undefined;  // eslint-disable-line
             });
             it('should contain Move to next stop button', () => {
-                expect(_.find(result, { label: 'Move to next stop' })).to.not.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Move to next stop' })).to.not.be.undefined;  // eslint-disable-line
             });
         });
 
@@ -171,13 +171,13 @@ describe('<TripView />', () => {
             });
 
             it('should not contain Cancel trip button', () => {
-                expect(_.find(result, { label: 'Cancel trip' })).to.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Cancel trip' })).to.be.undefined;  // eslint-disable-line
             });
             it('should not contain Set trip delay button', () => {
-                expect(_.find(result, { label: 'Set trip delay' })).to.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Set trip delay' })).to.be.undefined;  // eslint-disable-line
             });
             it('should not contain Move to next stop button', () => {
-                expect(_.find(result, { label: 'Move to next stop' })).to.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Move to next stop' })).to.be.undefined;  // eslint-disable-line
             });
         });
 
@@ -190,16 +190,16 @@ describe('<TripView />', () => {
             });
 
             it('should not contain Cancel trip button', () => {
-                expect(_.find(result, { label: 'Cancel trip' })).to.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Cancel trip' })).to.be.undefined;  // eslint-disable-line
             });
             it('should not contain Set trip delay button', () => {
-                expect(_.find(result, { label: 'Set trip delay' })).to.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Set trip delay' })).to.be.undefined;  // eslint-disable-line
             });
             it('should contain reinstate trip button', () => {
-                expect(_.find(result, { label: 'Reinstate trip' })).to.not.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Reinstate trip' })).to.not.be.undefined;  // eslint-disable-line
             });
             it('should not contain Move to next stop button', () => {
-                expect(_.find(result, { label: 'Move to next stop' })).to.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Move to next stop' })).to.be.undefined;  // eslint-disable-line
             });
         });
 
@@ -212,7 +212,7 @@ describe('<TripView />', () => {
             });
 
             it('should contain some buttons', () => {
-                expect(_.isEmpty(result)).to.be.false;  // eslint-disable-line
+                expect(isEmpty(result)).to.be.false;  // eslint-disable-line
             });
         });
 
@@ -225,7 +225,7 @@ describe('<TripView />', () => {
             });
 
             it('should contain some buttons', () => {
-                expect(_.isEmpty(result)).to.be.false;  // eslint-disable-line
+                expect(isEmpty(result)).to.be.false;  // eslint-disable-line
             });
         });
 
@@ -238,16 +238,16 @@ describe('<TripView />', () => {
             });
 
             it('should contain some buttons', () => {
-                expect(_.isEmpty(result)).to.be.false;  // eslint-disable-line
+                expect(isEmpty(result)).to.be.false;  // eslint-disable-line
             });
             it('should not contain Set trip delay button', () => {
-                expect(_.find(result, { label: 'Set trip delay' })).to.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Set trip delay' })).to.be.undefined;  // eslint-disable-line
             });
             it('should not contain Move to next stop button', () => {
-                expect(_.find(result, { label: 'Move to next stop' })).to.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'Move to next stop' })).to.be.undefined;  // eslint-disable-line
             });
             it('should not contain View in Blocks button', () => {
-                expect(_.find(result, { label: 'View in Blocks' })).to.be.undefined;  // eslint-disable-line
+                expect(find(result, { label: 'View in Blocks' })).to.be.undefined;  // eslint-disable-line
             });
         });
 
@@ -260,7 +260,7 @@ describe('<TripView />', () => {
             });
 
             it('should be empty', () => {
-                expect(_.isEmpty(result)).to.be.true;  // eslint-disable-line
+                expect(isEmpty(result)).to.be.true;  // eslint-disable-line
             });
         });
     });

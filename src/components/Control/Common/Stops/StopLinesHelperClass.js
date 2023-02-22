@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { isEmpty, findKey, size } from 'lodash-es';
 import { getStopKey } from '../../../../utils/helpers';
 
 export default class StopLinesHelperClass {
@@ -10,9 +10,9 @@ export default class StopLinesHelperClass {
 
     getCommonValuesForLineInteractions = () => ({
         // These method returns values used by both getHoverDirectionClass() & getLineInteractionClasses() to avoid code duplication.
-        isHoveredStopSetSet: !_.isEmpty(this.hoveredStop),
-        isSelectedStopsEmpty: _.isEmpty(this.selectedStops),
-        selectedStop: this.selectedStops && this.selectedStops[_.findKey(this.selectedStops)],
+        isHoveredStopSetSet: !isEmpty(this.hoveredStop),
+        isSelectedStopsEmpty: isEmpty(this.selectedStops),
+        selectedStop: this.selectedStops && this.selectedStops[findKey(this.selectedStops)],
     });
 
     getHoverDirectionClass() {
@@ -20,7 +20,7 @@ export default class StopLinesHelperClass {
         // if hover is on a stop previous to the selected stop, that will add stop-control--hover-direction-prev and vice versa.
         let prevOrNext = '';
         const { isHoveredStopSetSet, isSelectedStopsEmpty, selectedStop } = this.getCommonValuesForLineInteractions();
-        const isOnlyOneStopSelected = _.size(this.selectedStops) === 1;
+        const isOnlyOneStopSelected = size(this.selectedStops) === 1;
 
         if (!isSelectedStopsEmpty && isOnlyOneStopSelected && isHoveredStopSetSet) {
             if (selectedStop.stopSequence < this.hoveredStop.stop.stopSequence) prevOrNext = 'stop-control--hover-direction-next';
@@ -35,7 +35,7 @@ export default class StopLinesHelperClass {
         // after you select a stop and hover on another one, the stops before and after them as well as the first and last in the list will be applied these classes accordingly.
         // This approach was selected to avoid modifying the existing "line" implementation.
         const { isHoveredStopSetSet, isSelectedStopsEmpty, selectedStop } = this.getCommonValuesForLineInteractions();
-        const isStopSelected = this.selectedStops && !_.isEmpty(this.selectedStops[getStopKey(stop)]);
+        const isStopSelected = this.selectedStops && !isEmpty(this.selectedStops[getStopKey(stop)]);
 
         let hoverEventClasses = '';
         let selectedEventClasses = '';
@@ -61,7 +61,7 @@ export default class StopLinesHelperClass {
                 const nextOfHoveredStopClass = isStopNextOfHovered ? 'stop-control--next-of-selected-stop' : '';
                 const firstStopClassWhenHoverEvent = stop.stopSequence === 1 ? 'stop-control--first-stop' : '';
                 const hoveredStopClass = stop.stopSequence === this.hoveredStop.stop.stopSequence ? 'stop-control--hovered-stop' : '';
-                const lastStopClassWhenHoverEvent = stop.stopSequence === _.size(this.tripInstance.stops) ? 'stop-control--last-stop' : '';
+                const lastStopClassWhenHoverEvent = stop.stopSequence === size(this.tripInstance.stops) ? 'stop-control--last-stop' : '';
                 const hoveredSelectedStop = this.hoveredStop.stop.stopSequence === selectedStop.stopSequence ? 'stop-control--hovered-selected-stop' : '';
 
                 hoverEventClasses = `

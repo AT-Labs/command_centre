@@ -18,12 +18,12 @@ $border-color: map_get($theme-colors, "at-ocean-tint-20");
     &__header {
         &__expand {
             border-bottom: 1px solid $border-color;
-            padding: $grid-gutter-width/2;
+            padding: calc($grid-gutter-width / 2);
             position: relative;
         }
         &__expand-button {
             border: 0;
-            padding: $grid-gutter-width/2;
+            padding: calc($grid-gutter-width / 2);
             cursor: pointer;
             background: transparent;
             display: block;
@@ -62,7 +62,7 @@ $border-color: map_get($theme-colors, "at-ocean-tint-20");
         }
 
         & > #{$self}__body {
-            padding: 0 $grid-gutter-width/2 $grid-gutter-width/2;
+            padding: 0 calc($grid-gutter-width / 2) calc($grid-gutter-width / 2);
         }
     }
 

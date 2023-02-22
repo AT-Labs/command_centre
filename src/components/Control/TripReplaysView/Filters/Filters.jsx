@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { get, isEmpty, noop, isEqual, filter } from 'lodash-es';
 import { Button, FormGroup, Label } from 'reactstrap';
 import * as moment from 'moment';
 import Flatpickr from 'react-flatpickr';
@@ -37,25 +37,25 @@ const OPTIONS = getTimePickerOptions(28);
 
 export const formatVehiclesSearchResults = (selectedOption, mode) => {
     let label;
-    let id = _.get(selectedOption, 'data.id');
+    let id = get(selectedOption, 'data.id');
 
     if (mode.type === SEARCH_RESULT_TYPE.BUS.type) {
-        label = _.get(selectedOption, 'data.label');
-        const dataRegistration = _.get(selectedOption, 'data.registration');
-        if (!_.isEmpty(dataRegistration)) {
+        label = get(selectedOption, 'data.label');
+        const dataRegistration = get(selectedOption, 'data.registration');
+        if (!isEmpty(dataRegistration)) {
             label = `${label} - ${dataRegistration}`;
         }
     } else if (mode.type === SEARCH_RESULT_TYPE.TRAIN.type) {
-        label = _.get(selectedOption, 'data.label').replace(/\s+/g, ' ');
+        label = get(selectedOption, 'data.label').replace(/\s+/g, ' ');
     } else if (mode.type === SEARCH_RESULT_TYPE.FERRY.type) {
-        label = `${_.get(selectedOption, 'data.label')} - ${id}`;
+        label = `${get(selectedOption, 'data.label')} - ${id}`;
     } else if (mode.type === SEARCH_RESULT_TYPE.ROUTE.type) {
-        label = _.get(selectedOption, 'data.route_short_name');
+        label = get(selectedOption, 'data.route_short_name');
         id = label;
     } else if (mode.type === SEARCH_RESULT_TYPE.STOP.type) {
-        id = _.get(selectedOption, 'data.stop_code');
-        const stopName = _.get(selectedOption, 'data.stop_name');
-        label = !_.isEmpty(stopName) ? `${id} - ${stopName}` : id;
+        id = get(selectedOption, 'data.stop_code');
+        const stopName = get(selectedOption, 'data.stop_name');
+        label = !isEmpty(stopName) ? `${id} - ${stopName}` : id;
     }
 
     return ({
@@ -81,12 +81,12 @@ const Filters = (props) => {
             [SEARCH_RESULT_TYPE.FERRY.type]: selectedOption => props.updateTripReplaySearchTerm(formatVehiclesSearchResults(selectedOption, SEARCH_RESULT_TYPE.FERRY)),
         },
         clear: {
-            [SEARCH_RESULT_TYPE.BUS.type]: _.noop,
-            [SEARCH_RESULT_TYPE.ROUTE.type]: _.noop,
-            [SEARCH_RESULT_TYPE.STOP.type]: _.noop,
-            [SEARCH_RESULT_TYPE.TRAIN.type]: _.noop,
-            [SEARCH_RESULT_TYPE.FERRY.type]: _.noop,
-            [SEARCH_RESULT_TYPE.TRIP.type]: _.noop,
+            [SEARCH_RESULT_TYPE.BUS.type]: noop,
+            [SEARCH_RESULT_TYPE.ROUTE.type]: noop,
+            [SEARCH_RESULT_TYPE.STOP.type]: noop,
+            [SEARCH_RESULT_TYPE.TRAIN.type]: noop,
+            [SEARCH_RESULT_TYPE.FERRY.type]: noop,
+            [SEARCH_RESULT_TYPE.TRIP.type]: noop,
         },
     };
 
@@ -114,19 +114,19 @@ const Filters = (props) => {
     const handleOmniSearchTextChange = (text) => {
         if (isTripId) {
             updateSearchTermForTripId(text);
-        } else if (searchTerm && searchTerm.label && !_.isEqual(text, searchTerm.label)) {
+        } else if (searchTerm && searchTerm.label && !isEqual(text, searchTerm.label)) {
             props.resetTripReplaySearchTerm();
         }
     };
 
     const getEndTimeOptions = () => {
         if (!startTime) return OPTIONS;
-        return _.filter(OPTIONS, option => option.value > startTime);
+        return filter(OPTIONS, option => option.value > startTime);
     };
 
     const getStartTimeOptions = () => {
         if (!endTime) return OPTIONS;
-        return _.filter(OPTIONS, option => option.value < endTime);
+        return filter(OPTIONS, option => option.value < endTime);
     };
 
     const refinedSearch = () => {

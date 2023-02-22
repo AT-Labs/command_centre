@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { result, lowerCase, get, isEmpty, some, every, map, filter } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
@@ -22,8 +22,8 @@ import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
 
 const formatStatusColumn = (row) => {
     const trip = row.tripInstance || row;
-    const delay = formatTripDelay(_.get(trip, 'delay', 0));
-    const status = _.lowerCase(row.status);
+    const delay = formatTripDelay(get(trip, 'delay', 0));
+    const status = lowerCase(row.status);
     if (row.status === TRIP_STATUS_TYPES.cancelled) {
         return <span className="text-danger">{status}</span>;
     }
@@ -33,7 +33,7 @@ const formatStatusColumn = (row) => {
                 {status}
                 :
                 {' '}
-                <TripDelay delayInSeconds={ _.get(trip, 'delay', 0) } />
+                <TripDelay delayInSeconds={ get(trip, 'delay', 0) } />
             </span>
         );
     }
@@ -153,19 +153,19 @@ export class BlockTrips extends React.Component {
             (trips, trip) => ({
                 ...trips,
                 [trip.externalRef]: {
-                    selected: _.result(currentState.checkboxes, `${trip.externalRef}.selected`, false),
+                    selected: result(currentState.checkboxes, `${trip.externalRef}.selected`, false),
                     tripObj: trip,
                 },
             }),
             {},
         );
-        const allSelected = !_.isEmpty(checkboxes)
-            && _.every(
+        const allSelected = !isEmpty(checkboxes)
+            && every(
                 checkboxes,
-                checkbox => _.get(checkbox, 'selected', false)
-                    || (_.get(checkbox, 'tripObj.status') === TRIP_STATUS_TYPES.completed),
+                checkbox => get(checkbox, 'selected', false)
+                    || (get(checkbox, 'tripObj.status') === TRIP_STATUS_TYPES.completed),
             );
-        const atLeastOneTripSelected = _.some(checkboxes, 'selected');
+        const atLeastOneTripSelected = some(checkboxes, 'selected');
 
         return { checkboxes, allSelected, atLeastOneTripSelected };
     }
@@ -213,7 +213,7 @@ export class BlockTrips extends React.Component {
         });
     };
 
-    returnTripObj = () => _.map(_.filter(this.state.checkboxes, 'selected'), 'tripObj');
+    returnTripObj = () => map(filter(this.state.checkboxes, 'selected'), 'tripObj');
 
     getButtonBarConfig = block => [
         {
@@ -233,7 +233,7 @@ export class BlockTrips extends React.Component {
                 key={ `move-trips-${block.operationalBlockRunId}` }
                 buttonLabel="Move trips"
                 openModalButtonClass="mr-2 cc-btn-secondary"
-                disable={ !block.operationalTrips || _.isEmpty(block.operationalTrips) || !this.state.atLeastOneTripSelected }
+                disable={ !block.operationalTrips || isEmpty(block.operationalTrips) || !this.state.atLeastOneTripSelected }
                 selectedTrips={ this.returnTripObj() } />,
             action: null,
         },
@@ -249,7 +249,7 @@ export class BlockTrips extends React.Component {
                 key={ `change-vehicle-${block.operationalBlockRunId}` }
                 buttonLabel="Change vehicles"
                 openModalButtonClass="mr-2 cc-btn-secondary"
-                disable={ !block.operationalTrips || _.isEmpty(block.operationalTrips) || !this.state.atLeastOneTripSelected }
+                disable={ !block.operationalTrips || isEmpty(block.operationalTrips) || !this.state.atLeastOneTripSelected }
                 selectedTrips={ this.returnTripObj() } />,
             action: null,
         },

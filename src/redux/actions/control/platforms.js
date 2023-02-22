@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { keyBy } from 'lodash-es';
 
 import ACTION_TYPE from '../../action-types';
 import ERROR_TYPE from '../../../types/error-types';
@@ -8,7 +8,7 @@ import { setBannerError } from '../activity';
 const updatePlatforms = platforms => ({
     type: ACTION_TYPE.UPDATE_PLATFORMS,
     payload: {
-        platforms: _.keyBy(platforms, 'stopId'),
+        platforms: keyBy(platforms, 'stopId'),
     },
 });
 

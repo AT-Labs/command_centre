@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { shallow } from 'enzyme';
 import L from 'leaflet';
-import _ from 'lodash-es';
+import { isEqual } from 'lodash-es';
 
 import { HighlightingLayer } from './HighlightingLayer';
 
@@ -48,7 +48,7 @@ describe('<HighlightingLayer />', () => {
 
         const renderHighlightingLayer = instance.renderHiglightingLayer();
 
-        expect(_.isEqual(renderHighlightingLayer, expectedPosition)).to.equal(true);
+        expect(isEqual(renderHighlightingLayer, expectedPosition)).to.equal(true);
     });
 
     it('It should render the highligh over the vehicle', () => {
@@ -65,6 +65,6 @@ describe('<HighlightingLayer />', () => {
 
         const renderHighlightingLayer = instance.renderHiglightingLayer();
 
-        expect(_.isEqual(renderHighlightingLayer, expectedPosition)).to.equal(true);
+        expect(isEqual(renderHighlightingLayer, expectedPosition)).to.equal(true);
     });
 });

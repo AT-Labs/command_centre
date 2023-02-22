@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { capitalize, find, get, filter, some, toNumber } from 'lodash-es';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -75,8 +75,8 @@ export class TripView extends React.Component {
 
     getTripDetailsData = (tripInstance) => {
         const vehicleAllocationLabel = getVehicleAllocationLabelByTrip(tripInstance, this.props.vehicleAllocations);
-        const agency = _.find(this.props.agencies, { agencyId: tripInstance.agencyId });
-        const depot = agency ? _.find(agency.depots, { depotId: tripInstance.depotId }) : undefined;
+        const agency = find(this.props.agencies, { agencyId: tripInstance.agencyId });
+        const depot = agency ? find(agency.depots, { depotId: tripInstance.depotId }) : undefined;
         const tripDelay = (this.props.tripInstance.status === TRIP_STATUS_TYPES.cancelled) ? '—' : `${formatTripDelay(tripInstance.delay)} min` || '—';
         const details = [
             [
@@ -85,9 +85,9 @@ export class TripView extends React.Component {
                 { name: 'Trip ID', value: tripInstance.tripId || '—' },
                 { name: 'Route number', value: tripInstance.routeVariantId || '—' },
             ], [
-                { name: 'Mode', value: _.capitalize(VEHICLE_TYPE[tripInstance.routeType].type) || '—' },
-                { name: 'Operator', value: _.get(agency, 'agencyName') || '—' },
-                { name: 'Depot', value: _.get(depot, 'depotName') || '—' },
+                { name: 'Mode', value: capitalize(VEHICLE_TYPE[tripInstance.routeType].type) || '—' },
+                { name: 'Operator', value: get(agency, 'agencyName') || '—' },
+                { name: 'Depot', value: get(depot, 'depotName') || '—' },
                 { name: 'Service date', value: moment(tripInstance.serviceDate).format('DD MMM YYYY') || '—' },
             ], [
                 { name: 'Start time', value: getTripTimeDisplay(tripInstance.startTime) || '—' },
@@ -203,9 +203,9 @@ export class TripView extends React.Component {
         const { tripId } = tripInstance;
         const tripInstanceId = getTripInstanceId(tripInstance);
         const buttonBarConfig = this.getButtonBarConfig(tripInstance);
-        const tripActionResults = _.filter(actionResults, item => item.tripId === tripInstanceId);
+        const tripActionResults = filter(actionResults, item => item.tripId === tripInstanceId);
         const isTripActionLoading = actionLoadingStatesByTripId[tripInstanceId] || false;
-        const isBulkStopSelectionMessage = _.some(tripActionResults, { actionType: bulkStopStatusUpdate });
+        const isBulkStopSelectionMessage = some(tripActionResults, { actionType: bulkStopStatusUpdate });
 
         return (
             <div className="trip-view">
@@ -244,7 +244,7 @@ export class TripView extends React.Component {
                             tripId: tripInstance.tripId,
                             serviceDate: tripInstance.serviceDate,
                             startTime: tripInstance.startTime,
-                            delay: _.toNumber(delay),
+                            delay: toNumber(delay),
                         };
                         this.props.updateTripInstanceDelay(options, `Delay for trip ${tripId} has been updated`);
                         this.setState({ isSetTripDelayModalOpen: false });

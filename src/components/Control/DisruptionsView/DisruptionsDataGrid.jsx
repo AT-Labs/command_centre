@@ -3,12 +3,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { FaPaperclip } from 'react-icons/fa';
 import { RiMailCheckLine } from 'react-icons/ri';
-import { BsArrowRepeat } from 'react-icons/bs';
+import { BsArrowRepeat, BsAlarm } from 'react-icons/bs';
 import moment from 'moment';
 import { GoAlert } from 'react-icons/go';
-import { GiAlarmClock } from 'react-icons/gi';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
 import DisruptionDetail from './DisruptionDetail';
 import {
@@ -52,7 +51,7 @@ const getStatusIcon = (value) => {
         return <GoAlert className="icon-in-progress mr-1" />;
     }
     if (value === STATUSES.NOT_STARTED) {
-        return <GiAlarmClock className="icon-not-started mr-1" />;
+        return <BsAlarm className="icon-not-started mr-1" />;
     }
     return <HiOutlineCheckCircle className="mr-1" />;
 };

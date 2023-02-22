@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { map, get } from 'lodash-es';
 
 import { getAllRoutes } from '../../../../../redux/selectors/static/routes';
 import ControlSearch from '../../ControlSearch/ControlSearch';
@@ -24,7 +24,7 @@ class FilterByRoute extends React.Component {
 
     onInputValueChange = (value) => { if (!value) this.props.onSelection({ value: '', label: '' }); };
 
-    getOptions = () => _.map(this.props.routes, route => ({ value: route.route_id, label: route.route_short_name }));
+    getOptions = () => map(this.props.routes, route => ({ value: route.route_id, label: route.route_short_name }));
 
     getSelectedOption = () => this.getOptions().filter(option => option.label === this.props.selectedOption)[0] || {};
 
@@ -43,7 +43,7 @@ class FilterByRoute extends React.Component {
                 onSelection={ selectedOption => this.props.onSelection(selectedOption) }
                 onInputValueChange={ this.onInputValueChange }
                 onClose={ this.props.onDeleteSelection }
-                value={ _.get(this.getSelectedOption(), 'label') } />
+                value={ get(this.getSelectedOption(), 'label') } />
         );
     }
 }

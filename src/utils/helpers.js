@@ -1,6 +1,6 @@
 import wellknown from 'wellknown';
 import moment from 'moment';
-import _ from 'lodash-es';
+import { isEmpty, intersectionWith, get, has, isEqual } from 'lodash-es';
 import isURL from 'validator/lib/isURL';
 
 import { fetchWithAuthHeader } from '../auth';
@@ -21,7 +21,7 @@ export const getTripTimeDisplay = (time) => {
     return `${timeMoment.format('HH:mm')}${timeMoment.isAfter(moment(), 'day') ? ' (+1)' : ''}`;
 };
 
-export const isUrlValid = url => _.isEmpty(url) || isURL(url, {
+export const isUrlValid = url => isEmpty(url) || isURL(url, {
     require_protocol: true,
     protocols: ['http', 'https'],
 });
@@ -83,7 +83,7 @@ export const isChrome = browserDetection() === 'chrome';
 
 // Check if all trips in a specific view are also in the selected trips list to determine whether "all trips selected".
 export const checkIfAllTripsAreSelected = (notCompletedTripsKeys, selectedTripsKeys) => notCompletedTripsKeys.length > 0
-    && notCompletedTripsKeys.length === _.intersectionWith(notCompletedTripsKeys, selectedTripsKeys, _.isEqual).length;
+    && notCompletedTripsKeys.length === intersectionWith(notCompletedTripsKeys, selectedTripsKeys, isEqual).length;
 
 export const formatTime = time => moment(time).format('HH:mm:ss');
 export const formatUnixTime = time => moment.unix(time).format('HH:mm:ss');
@@ -92,20 +92,20 @@ export const formatUnixDatetime = timestamp => moment.unix(timestamp).format('dd
 export const getTimesFromStop = (stop) => {
     const scheduledTime = {};
     const time = {};
-    if (_.has(stop, 'arrival.scheduledTime')) {
-        scheduledTime.arrival = formatUnixTime(parseInt(_.get(stop, 'arrival.scheduledTime', 0), 10));
+    if (has(stop, 'arrival.scheduledTime')) {
+        scheduledTime.arrival = formatUnixTime(parseInt(get(stop, 'arrival.scheduledTime', 0), 10));
     }
 
-    if (_.has(stop, 'arrival.time')) {
-        time.arrival = formatUnixTime(parseInt(_.get(stop, 'arrival.time', 0), 10));
+    if (has(stop, 'arrival.time')) {
+        time.arrival = formatUnixTime(parseInt(get(stop, 'arrival.time', 0), 10));
     }
 
-    if (_.has(stop, 'departure.scheduledTime')) {
-        scheduledTime.departure = formatUnixTime(parseInt(_.get(stop, 'departure.scheduledTime', 0), 10));
+    if (has(stop, 'departure.scheduledTime')) {
+        scheduledTime.departure = formatUnixTime(parseInt(get(stop, 'departure.scheduledTime', 0), 10));
     }
 
-    if (_.has(stop, 'departure.time')) {
-        time.departure = formatUnixTime(parseInt(_.get(stop, 'departure.time', 0), 10));
+    if (has(stop, 'departure.time')) {
+        time.departure = formatUnixTime(parseInt(get(stop, 'departure.time', 0), 10));
     }
 
     return {

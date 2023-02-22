@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { isEmpty, some } from 'lodash-es';
 import { FormGroup, Button } from 'reactstrap';
 
 import ControlSearch from '../ControlSearch/ControlSearch';
@@ -49,7 +49,7 @@ export class SearchCombo extends React.Component {
 
     componentDidUpdate() {
         const { searchFields } = this.state;
-        const isPopulated = !_.some(Array.from(searchFields.values()), _.isEmpty);
+        const isPopulated = !some(Array.from(searchFields.values()), isEmpty);
         this.props.onSelection(isPopulated, searchFields);
     }
 
@@ -134,7 +134,7 @@ export class SearchCombo extends React.Component {
                     </div>
                 </FormGroup>
                 {
-                    (!_.isEmpty(searchFields.get(this.defaultSearch.key)) && searchFields.size < this.props.maxSearchFields) && (
+                    (!isEmpty(searchFields.get(this.defaultSearch.key)) && searchFields.size < this.props.maxSearchFields) && (
                         <div className="col">
                             <Button
                                 className="search-combo__add mb-3 bg-white border border-info font-weight-bold"

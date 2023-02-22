@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { toNumber, isFinite } from 'lodash-es';
 import { Input } from 'reactstrap';
 
 import { formatTripDelay, unformatTripDelay } from '../../../../utils/control/routes';
@@ -30,9 +30,9 @@ class SetTripDelayModal extends React.Component {
 
     handleDelayChange = (event) => {
         const { value } = event.target;
-        const delay = _.toNumber(value);
+        const delay = toNumber(value);
         // value.includes('.') is to detect float. The tricky case is when value is 5.00
-        const isInvalid = !_.isFinite(delay) || value.includes('.');
+        const isInvalid = !isFinite(delay) || value.includes('.');
 
         this.setState({
             formattedDelay: value,

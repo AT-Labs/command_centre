@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { isNull } from 'lodash-es';
 import React, { PureComponent } from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
@@ -193,7 +193,7 @@ class SearchResultsList extends PureComponent {
                     <Tab
                         renderTripView={ renderResults }
                         vehicleStatusHeader={
-                            !_.isNull(vehicleEvents)
+                            !isNull(vehicleEvents)
                                 ? this.renderVehicleStatusHeader(hasMoreVehicleStausAndPositions, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) : null
                         }
                         handleMouseEnter={ handleMouseEnter }

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import _ from 'lodash-es';
+import { random, debounce, noop } from 'lodash-es';
 import ReconnectingWS from 'reconnectingwebsocket';
 
 const REALTIME_SUBSCRIPTIONS_URL = process.env.REACT_APP_GTFS_REALTIME_SUBSCRIPTIONS_URL
@@ -8,7 +8,7 @@ const REALTIME_SUBSCRIPTIONS_KEY = process.env.REACT_APP_GTFS_REALTIME_SUBSCRIPT
 
 const logPrefix = 'Command Centre WebSocket Client:';
 // Pinging
-const idleWait = Math.ceil((10 + _.random(0, 10, true)) * 1000); // Randomise the idle wait for clients to prevent DDOSing server.
+const idleWait = Math.ceil((10 + random(0, 10, true)) * 1000); // Randomise the idle wait for clients to prevent DDOSing server.
 const maxPingCount = 10;
 const pingInterval = 2 * 1000;
 // Autoreconnect
@@ -28,7 +28,7 @@ const createWebSocket = () => new ReconnectingWS(REALTIME_SUBSCRIPTIONS_URL, nul
     maxReconnectAttempts,
 });
 
-const debouncedPinging = _.debounce((onError) => {
+const debouncedPinging = debounce((onError) => {
     console.debug(`${logPrefix} start pinging`);
     pingIntervalHandle = window.setInterval(() => {
         if (pingCount < maxPingCount) {
@@ -63,7 +63,7 @@ const stopPinging = () => {
 };
 
 export const subscribeRealTime = ({
-    queryString, onData, onError, filters = _.noop,
+    queryString, onData, onError, filters = noop,
 }) => {
     try {
         if (socket) {

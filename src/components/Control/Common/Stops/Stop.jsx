@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import moment from 'moment';
-import _ from 'lodash-es';
+import { isEmpty, get } from 'lodash-es';
 import { connect } from 'react-redux';
 import { FaCheck } from 'react-icons/fa';
 import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
@@ -102,13 +102,13 @@ export class Stop extends React.Component {
         return stopControlClassNames;
     };
 
-    getAvailablePlatforms = () => _.get(this.props.platforms, `${this.props.stop.parent}.children`, []);
+    getAvailablePlatforms = () => get(this.props.platforms, `${this.props.stop.parent}.children`, []);
 
     render() {
         const { stop, tripInstance, isStopInSelectionRange } = this.props;
         const stopKey = getStopKey(stop);
         const selectedStops = this.props.selectedStopsByTripKey(tripInstance);
-        const isStopSelected = selectedStops && !_.isEmpty(selectedStops[stopKey]) && selectedStops[stopKey].status;
+        const isStopSelected = selectedStops && !isEmpty(selectedStops[stopKey]) && selectedStops[stopKey].status;
 
         if (!stop) return null;
 

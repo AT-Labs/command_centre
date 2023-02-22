@@ -13,6 +13,12 @@ import * as stops from '../selectors/static/stops';
 import * as routes from '../selectors/static/routes';
 import * as fleet from '../selectors/static/fleet';
 import * as activity from './activity';
+import * as blocks from '../selectors/control/blocks';
+import * as routesSelector from '../selectors/control/routes/routes';
+import * as routeVariantsSelector  from '../selectors/control/routes/routeVariants';
+import * as alerts from '../selectors/control/alerts';
+import * as stopMessaging from '../selectors/control/stopMessaging/stopMessages';
+import * as stopGroups from '../selectors/control/dataManagement/stopGroups';
 
 const mockStore = configureMockStore([thunk]);
 const store = mockStore({});
@@ -483,4 +489,194 @@ describe('Search actions', () => {
             expect(search.formatStopDisruptionSearchResults(incidentNos)).to.eql(expectedData);
         });
     });
+
+    context('Search blocks', () => {
+        const mockAllBlocks = [{
+            operationalBlockId: '12345',
+        }, {
+            operationalBlockId: '23456',
+        }];
+        it('should search blocks by operationalBlockId', async () => {
+            const searchTerm = '123';
+            sandbox.stub(blocks, 'getAllBlocks').returns(mockAllBlocks);
+            await store.dispatch(search.searchBlocks(searchTerm));
+
+            expect(store.getActions()[0].payload).to.eql({
+                [SEARCH_RESULT_TYPE.BLOCK.type]: [{
+                    text: '12345',
+                    data: {
+                        operationalBlockId: '12345',
+                    },
+                    category: SEARCH_RESULT_TYPE.BLOCK,
+                    icon: '',
+                }]
+            });
+        });
+    });
+
+    context('Search routes', () => {
+        const mockRoutes = [{
+            routeShortName: 'NX1',
+        }, {
+            routeShortName: 'WEST',
+        }];
+        it('should search routes by shortName', async () => {
+            const searchTerm = 'NX';
+            sandbox.stub(routesSelector, 'getRoutesForSearch').returns(mockRoutes);
+            await store.dispatch(search.searchControlRoutes(searchTerm));
+            expect(store.getActions()[0].payload).to.eql({
+                [SEARCH_RESULT_TYPE.CONTROL_ROUTE.type]: [{
+                    text: 'NX1',
+                    data: {
+                        routeShortName: 'NX1',
+                    },
+                    category: SEARCH_RESULT_TYPE.CONTROL_ROUTE,
+                    icon: '',
+                }]
+            });
+        });
+    });
+
+    context('Search route variants', () => {
+        const mockRouteVariants = [{
+            routeVariantId: '1234',
+        }, {
+            routeVariantId: '2345',
+        }];
+        it('should search routes by shortName', async () => {
+            const searchTerm = '123';
+            sandbox.stub(routeVariantsSelector, 'getRouteVariantsForSearch').returns(mockRouteVariants);
+            await store.dispatch(search.searchControlRouteVariants(searchTerm));
+            expect(store.getActions()[0].payload).to.eql({
+                [SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type]: [{
+                    text: '1234',
+                    data: {
+                        routeVariantId: '1234',
+                    },
+                    category: SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT,
+                    icon: '',
+                }]
+            });
+        });
+    });
+
+    context('Search alert routes', () => {
+        const mockStaticRoutes = [{
+            route_short_name: 'NX1',
+            route_id: 'NX1'
+        }, {
+            route_short_name: 'WEST',
+            route_id: 'WEST'
+        }, {
+            route_short_name: 'EAST',
+            route_id: 'EAST'
+        }];
+        const mockAlerts = [{
+            routeShortName: 'NX1',
+        }, {
+            routeShortName: 'WEST',
+        }, {
+            routeShortName: 'NX2',
+        }];
+        it('should search alert routes by shortName', async () => {
+            const searchTerm = 'WES';
+            sandbox.stub(routes, 'getAllRoutes').returns(mockStaticRoutes);
+            sandbox.stub(alerts, 'getAllAlerts').returns(mockAlerts);
+            await store.dispatch(search.searchControlAlertsRoutes(searchTerm));
+            expect(store.getActions()[0].payload).to.eql({
+                [SEARCH_RESULT_TYPE.CONTROL_ALERTS_ROUTES.type]: [{
+                    text: 'WEST',
+                    data: {
+                        route_id: "WEST",
+                        route_short_name: 'WEST',
+                    },
+                    category: SEARCH_RESULT_TYPE.CONTROL_ALERTS_ROUTES,
+                    icon: '',
+                }]
+            });
+        });
+    });
+
+    context('Search stop messaging', () => {
+        const mockMessages = [{
+            message: 'abcd1234',
+            incidentNo: 'DISR001',
+        }, {
+            message: '1234abcd',
+            incidentNo: 'DISR002',
+        }];
+
+        it('should search stop messaging by message', async () => {
+            const searchTerm = '34ab';
+            sandbox.stub(stopMessaging, 'getAllStopMessages').returns(mockMessages);
+            await store.dispatch(search.searchStopMessages(searchTerm));
+            expect(store.getActions()[0].payload).to.eql({
+                [SEARCH_RESULT_TYPE.STOP_MESSAGE.type]: [{
+                    text: '1234abcd',
+                    data: {
+                        message: '1234abcd',
+                        incidentNo: 'DISR002',
+                    },
+                    category: SEARCH_RESULT_TYPE.STOP_MESSAGE,
+                    icon: '',
+                }]
+            });
+        });
+
+        it('should search disruptions from stop messaging by incidentNo', async () => {
+            const searchTerm = '002';
+            sandbox.stub(stopMessaging, 'getAllStopMessages').returns(mockMessages);
+            await store.dispatch(search.searchStopDisruptions(searchTerm));
+            expect(store.getActions()[0].payload).to.eql({
+                [SEARCH_RESULT_TYPE.STOP_DISRUPTION.type]: [{
+                    text: 'DISR002',
+                    data: 'DISR002',
+                    category: SEARCH_RESULT_TYPE.STOP_DISRUPTION,
+                    icon: '',
+                }]
+            });
+        });
+    });
+
+
+    context('Search stop in groups', () => {
+        const mockStopInGroups = [
+            {
+                stops: [{
+                    label: 'stop1',
+                    value: 'stop1',
+                }, {
+                    label: 'stop2',
+                    value: 'stop2',
+                }],
+            },
+            {
+                stops: [{
+                    label: 'stop2',
+                    value: 'stop2',
+                }, {
+                    label: 'stop3',
+                    value: 'stop3',
+                }],
+            }
+        ];
+        it('should search stop in groups by stop label', async () => {
+            const searchTerm = 'stop2';
+            sandbox.stub(stopGroups, 'allStopGroupsWithTokens').returns(mockStopInGroups);
+            await store.dispatch(search.searchStopInGroups(searchTerm));
+            expect(store.getActions()[0].payload).to.eql({
+                [SEARCH_RESULT_TYPE.STOP_IN_GROUP.type]: [{
+                    text: 'stop2',
+                    data: {
+                        label: 'stop2',
+                        tokens: [ "stop2" ],
+                        value: 'stop2',
+                    },
+                    category: SEARCH_RESULT_TYPE.STOP_IN_GROUP,
+                    icon: 'stop',
+                }]
+            });
+        });
+    });
+
 });

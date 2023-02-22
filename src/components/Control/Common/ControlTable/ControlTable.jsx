@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { uniqueId, isString, map } from 'lodash-es';
 
 import DetailLoader from '../../../Common/Loader/DetailLoader';
 import ControlTableRow from './ControlTableRow';
@@ -11,16 +11,16 @@ const ControlTable = (props) => {
         data, columns, isLoading, level,
     } = props;
 
-    const getRowId = rowData => (props.getRowId ? props.getRowId(rowData) : _.uniqueId('control-table-row'));
+    const getRowId = rowData => (props.getRowId ? props.getRowId(rowData) : uniqueId('control-table-row'));
 
     return (
         <div className="control-table">
             { columns.some(col => col.label) && (
                 <div className="container-fluid">
                     <div className={ `row control-table-list-heading bg-white text-uppercase font-weight-bold py-1 border-secondary text-muted font-size-sm ${level === 3 ? '' : 'border-top border-left border-right'}` }>
-                        { _.map(columns, column => (
-                            <div key={ _.uniqueId('control-table-head-column') } className={ column.cols }>
-                                { (_.isString(column.label)) ? column.label : column.label() }
+                        { map(columns, column => (
+                            <div key={ uniqueId('control-table-head-column') } className={ column.cols }>
+                                { (isString(column.label)) ? column.label : column.label() }
                             </div>
                         )) }
                     </div>

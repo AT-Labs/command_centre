@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { filter, slice, get } from 'lodash-es';
 import { connect } from 'react-redux';
 import { RouteType, RouteVariantType } from './Types';
 import ControlTable from '../Common/ControlTable/ControlTable';
@@ -76,8 +76,8 @@ export class RouteVariantView extends React.Component {
 
     render() {
         const routeVariants = this.isRouteVariantTripView()
-            ? _.slice(this.props.routeVariants, (this.props.page - 1) * PAGE_SIZE, this.props.page * PAGE_SIZE)
-            : _.filter(this.props.routeVariants, ['routeShortName', _.get(this.props.activeRoute, 'routeShortName')]);
+            ? slice(this.props.routeVariants, (this.props.page - 1) * PAGE_SIZE, this.props.page * PAGE_SIZE)
+            : filter(this.props.routeVariants, ['routeShortName', get(this.props.activeRoute, 'routeShortName')]);
         return (
             <ControlTable
                 columns={ this.ROUTE_VARIANT }

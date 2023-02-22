@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { last, filter, size, some } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
@@ -24,7 +24,7 @@ const SelectionToolsFooter = (props) => {
     const { selectedTrips, actionLoadingStatesByTripId, actionResults, tripStatusModalOrigin } = props;
 
     const bulkUpdateConfirmationMessages = getBulkUpdateMessagesByType(actionResults, selectedTrips, CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES.bulkStatusUpdate);
-    const lastBulkConfirmationMessage = _.last(bulkUpdateConfirmationMessages);
+    const lastBulkConfirmationMessage = last(bulkUpdateConfirmationMessages);
 
     const handleModalOnToggle = (activeModalName) => {
         setIsModalOpen(!isModalOpen);
@@ -34,7 +34,7 @@ const SelectionToolsFooter = (props) => {
     };
 
     const checkIfButtonsShouldBeDisabled = () => {
-        const getTripsByStatus = comparator => _.filter(selectedTrips, trip => comparator(trip.status, TRIP_STATUS_TYPES.cancelled));
+        const getTripsByStatus = comparator => filter(selectedTrips, trip => comparator(trip.status, TRIP_STATUS_TYPES.cancelled));
         return {
             isThereACancelledTrip: getTripsByStatus((tripStatus, status) => tripStatus === status).length > 0,
             isThereANotCancelledTrip: getTripsByStatus((tripStatus, status) => tripStatus !== status).length > 0,
@@ -47,7 +47,7 @@ const SelectionToolsFooter = (props) => {
                 tripStatusModalOrigin === updateTripsStatusModalOrigins.FOOTER
                 && !isModalOpen
                 && bulkUpdateConfirmationMessages.length > 0
-                && !_.some(actionLoadingStatesByTripId, Boolean)
+                && !some(actionLoadingStatesByTripId, Boolean)
                 && (
                     <div className="col-12 mt-3">
                         <Message
@@ -67,7 +67,7 @@ const SelectionToolsFooter = (props) => {
             <ul className="col-12 d-flex align-items-center mt-3 mr-3">
                 <li>
                     <span className="selection-tools-footer__trips-amount text-muted">
-                        { `${_.size(selectedTrips)} trips selected` }
+                        { `${size(selectedTrips)} trips selected` }
                     </span>
                 </li>
                 <li className="border-right mr-3">

@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { get, capitalize } from 'lodash-es';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -13,13 +13,13 @@ import { TripType } from './types';
 
 const BlockTrip = (props) => {
     const { trip, userPermissions } = props;
-    const isControlRoutesViewPermitted = _.get(userPermissions, 'controlRoutesView', false);
+    const isControlRoutesViewPermitted = get(userPermissions, 'controlRoutesView', false);
     const getTripDetailsData = () => [
         [
             { name: 'External Ref ID', value: trip.externalRef || '—' },
             { name: 'Route number', value: trip.routeVariantId || '—' },
         ], [
-            { name: 'Mode', value: _.capitalize(VEHICLE_TYPE[trip.routeType].type) || '—' },
+            { name: 'Mode', value: capitalize(VEHICLE_TYPE[trip.routeType].type) || '—' },
             { name: 'Service date', value: moment(trip.serviceDate).format('DD MMM YYYY') || '—' },
         ],
     ];

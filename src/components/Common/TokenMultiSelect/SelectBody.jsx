@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash-es';
+import { intersection, difference, includes } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { ListGroup } from 'reactstrap';
 import SelectItem from './SelectItem';
@@ -57,14 +57,14 @@ class SelectBody extends React.Component {
 
     getSelectedValuesInFilter = () => {
         if (this.isFilterSet()) {
-            return _.intersection(this.props.selectedValues, this.getFilteredOptions().map(option => option.value));
+            return intersection(this.props.selectedValues, this.getFilteredOptions().map(option => option.value));
         }
         return this.props.selectedValues;
     };
 
     getSelectedValuesOutOfFilter = () => {
         if (this.isFilterSet()) {
-            return _.difference(this.props.selectedValues, this.getFilteredOptions().map(option => option.value));
+            return difference(this.props.selectedValues, this.getFilteredOptions().map(option => option.value));
         }
         return [];
     };
@@ -75,7 +75,7 @@ class SelectBody extends React.Component {
         if (value === SELECT_ALL_VALUE) {
             return this.getFilteredOptions().length > 0 && this.compareArrays(this.getSelectedValuesInFilter(), this.getFilteredOptions().map(option => option.value));
         }
-        return _.includes(this.props.selectedValues, value);
+        return includes(this.props.selectedValues, value);
     };
 
     handleSelectionChange = (event) => {

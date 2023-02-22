@@ -2,7 +2,7 @@ import React from 'react';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { shallow } from 'enzyme';
-import _ from 'lodash-es';
+import { isEqual } from 'lodash-es';
 
 import Search from './Search';
 import SearchResultItem from './SearchResultItem';
@@ -60,7 +60,7 @@ describe('Search', () => {
             }];
             const getSuggestions = instance.getSuggestionsToDisplay();
 
-            expect(_.isEqual(getSuggestions, expectedResponse)).to.equal(true);
+            expect(isEqual(getSuggestions, expectedResponse)).to.equal(true);
         });
 
         it('Should return suggestions', () => {
@@ -77,7 +77,7 @@ describe('Search', () => {
             });
 
             const getSuggestions = instance.getSuggestionsToDisplay();
-            expect(_.isEqual(getSuggestions, instance.props.suggestions)).to.equal(true);
+            expect(isEqual(getSuggestions, instance.props.suggestions)).to.equal(true);
         });
     });
 
@@ -111,7 +111,7 @@ describe('Search', () => {
             };
 
             instance.onSuggestionSelected(null, { suggestion });
-            expect(_.isEqual(instance.state.selected, suggestion)).to.equal(true);
+            expect(isEqual(instance.state.selected, suggestion)).to.equal(true);
             expect(instance.state.value).to.be.equal('');
         });
     });

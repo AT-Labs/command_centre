@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { compact, map, get } from 'lodash-es';
 import { Alert } from 'reactstrap';
 import ERROR_TYPE from '../../../types/error-types';
 
@@ -11,11 +11,11 @@ import { dismissError } from '../../../redux/actions/activity';
 import './ErrorAlerts.scss';
 
 const ErrorAlerts = (props) => {
-    const errors = _.compact(_.map(props.error, (value, key) => {
+    const errors = compact(map(props.error, (value, key) => {
         if (!value) return null;
         return {
             key,
-            message: ERROR_TYPE[key] || _.get(value, 'message') || '',
+            message: ERROR_TYPE[key] || get(value, 'message') || '',
         };
     }));
 

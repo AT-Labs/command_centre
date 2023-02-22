@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import { Button, Box, Paper, Stack } from '@mui/material';
-import { Add, Close } from '@mui/icons-material';
+import Add from '@mui/icons-material/Add';
+import Close from '@mui/icons-material/Close';
 import PassengerImpactGrid from './PassengerImpactGrid';
 import './PassengerImpactDrawer.scss';
 

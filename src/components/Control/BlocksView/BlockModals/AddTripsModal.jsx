@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { filter, find, isEmpty } from 'lodash-es';
 import { Button } from 'reactstrap';
 
 import CustomModal from '../../../Common/CustomModal/CustomModal';
@@ -55,9 +55,9 @@ export class AddTripsModal extends React.Component {
 
     addOrphanOperationalTrips = () => {
         const { orphanOperationalTripRuns, selectedTripExternalRefs } = this.state;
-        const orphanOperationalTripRunsSelected = _.filter(
+        const orphanOperationalTripRunsSelected = filter(
             orphanOperationalTripRuns,
-            orphanOperationalTripRun => _.find(selectedTripExternalRefs, { value: orphanOperationalTripRun.externalRef }),
+            orphanOperationalTripRun => find(selectedTripExternalRefs, { value: orphanOperationalTripRun.externalRef }),
         );
 
         this.props.addOrphanOperationalTrips(this.props.block, orphanOperationalTripRunsSelected);
@@ -93,7 +93,7 @@ export class AddTripsModal extends React.Component {
                 okButton={ {
                     label: 'Move',
                     onClick: this.addOrphanOperationalTrips,
-                    isDisabled: _.isEmpty(selectedTripExternalRefs),
+                    isDisabled: isEmpty(selectedTripExternalRefs),
                     className: 'add-trips-modal__save-btn',
                 } }>
                 <dl className="row">

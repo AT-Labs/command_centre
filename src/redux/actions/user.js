@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { result } from 'lodash-es';
 import ACTION_TYPE from '../action-types';
 import * as TRIP_MGT_API from '../../utils/transmitters/trip-mgt-api';
 import * as BLOCK_MGT_API from '../../utils/transmitters/block-mgt-api';
@@ -12,9 +12,9 @@ import { reportError } from './activity';
 
 export const updateUserProfile = user => (dispatch) => {
     const profile = {
-        userName: _.result(user, 'userName', ''),
-        name: _.result(user, 'profile.name', ''),
-        roles: _.result(user, 'profile.roles', []),
+        userName: result(user, 'userName', ''),
+        name: result(user, 'profile.name', ''),
+        roles: result(user, 'profile.roles', []),
     };
     dispatch({
         type: ACTION_TYPE.UPDATE_USER_PROFILE,

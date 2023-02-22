@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import Autosuggest from 'react-autosuggest';
-import _ from 'lodash-es';
+import { result, isEmpty, differenceWith, isEqual, filter } from 'lodash-es';
 import { IoIosArrowDown, IoMdClose } from 'react-icons/io';
 
 import SearchTheme from '../search-theme';
@@ -71,7 +71,7 @@ class ControlSearch extends React.Component {
     UNSAFE_componentWillReceiveProps(nextProps) {
         if (this.props.updateOnPropsValueChange && nextProps.value === '') {
             this.setState({ value: '', selectedSuggestion: null });
-        } else if (!_.isEmpty(nextProps.value) && this.props.value !== nextProps.value) {
+        } else if (!isEmpty(nextProps.value) && this.props.value !== nextProps.value) {
             this.setState({ value: nextProps.value });
         }
     }
@@ -84,10 +84,10 @@ class ControlSearch extends React.Component {
         // if the input has not changed (eg combo clicked or key up/down), we want to drop down and show all
         const dataToExclude = (this.props.getDataToExclude) ? this.props.getDataToExclude() : [];
         if (reason !== 'input-changed') {
-            const dataFinal = _.differenceWith(
+            const dataFinal = differenceWith(
                 data,
                 dataToExclude,
-                _.isEqual,
+                isEqual,
             );
             return dataFinal;
         }
@@ -97,34 +97,34 @@ class ControlSearch extends React.Component {
         if (this.state.selectedSuggestion != null) {
             const selectedSuggestionArray = [];
             selectedSuggestionArray.push(this.state.selectedSuggestion);
-            dataToExcludeFinal = _.differenceWith(
+            dataToExcludeFinal = differenceWith(
                 dataToExclude,
                 selectedSuggestionArray,
-                _.isEqual,
+                isEqual,
             );
         }
-        const dataFinal = _.differenceWith(
+        const dataFinal = differenceWith(
             data,
             dataToExcludeFinal,
-            _.isEqual,
+            isEqual,
         );
         const escapedValue = this.escapeRegexCharacters(value.trim()).replace(/  +/g, ' ');
         const regex = new RegExp(`${escapedValue}`, 'i');
-        return _.filter(dataFinal, (each) => {
-            let propToSearch = _.result(each, pathToProperty);
+        return filter(dataFinal, (each) => {
+            let propToSearch = result(each, pathToProperty);
             if (pathToEditedPropForSuggestion) {
-                propToSearch = `${propToSearch} ${_.result(each, pathToEditedPropForSuggestion)}`;
+                propToSearch = `${propToSearch} ${result(each, pathToEditedPropForSuggestion)}`;
             }
             propToSearch = propToSearch.replace(/  +/g, ' ');
             return regex.test(propToSearch);
         });
     };
 
-    getSuggestionValue = suggestion => _.result(suggestion, this.props.pathToProperty);
+    getSuggestionValue = suggestion => result(suggestion, this.props.pathToProperty);
 
     renderSuggestion = (suggestion) => {
-        const label = _.result(suggestion, this.props.pathToProperty);
-        const labelAndAllocatedBlock = _.result(suggestion, this.props.pathToEditedPropForSuggestion);
+        const label = result(suggestion, this.props.pathToProperty);
+        const labelAndAllocatedBlock = result(suggestion, this.props.pathToEditedPropForSuggestion);
         return (
             <span>
                 { label }

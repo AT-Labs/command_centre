@@ -7,7 +7,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { isEqual, isEmpty } from 'lodash-es';
 import moment from 'moment';
 
 import { fetchRoutes } from '../../../redux/actions/control/routes/routes';
@@ -85,7 +85,7 @@ export class CommonView extends React.Component {
     isTripsOnlyView = () => this.props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.TRIPS;
 
     componentDidMount() {
-        if (_.isEmpty(this.props.platforms)) {
+        if (isEmpty(this.props.platforms)) {
             this.props.fetchPlatforms();
         }
 
@@ -100,7 +100,7 @@ export class CommonView extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        const hasAnyFilterChanged = !_.isEqual(this.props.filters, prevProps.filters);
+        const hasAnyFilterChanged = !isEqual(this.props.filters, prevProps.filters);
         const hasServiceDateChanged = !moment(this.props.serviceDate).isSame(moment(prevProps.serviceDate), 'day');
         const hasPageSizeIncreased = this.state.pageSize > prevState.pageSize;
         const hasViewChanged = this.props.viewType !== prevProps.viewType;

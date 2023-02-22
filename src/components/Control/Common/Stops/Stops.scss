@@ -25,7 +25,7 @@ $body-height: 40px;
             position: absolute;
             left: 0;
             right: 0;
-            bottom: $body-height/2 - 2px;
+            bottom: calc($body-height / 2) - 2px;
             width: 100%;
             height: 5px;
             line-height: .5;
@@ -40,8 +40,8 @@ $body-height: 40px;
             height: $action-container-size;
             position: absolute;
             left: 50%;
-            bottom: $body-height/2 - 11px;
-            margin: 0 0 0 (-$action-container-size/2);
+            bottom: calc($body-height / 2) - 11px;
+            margin: 0 0 0 calc(($action-container-size / 2) * -1);
 
             &__circle {
                 color: $white;
@@ -53,7 +53,7 @@ $body-height: 40px;
                 top: 6px;
                 width: $circle-size;
                 height: $circle-size;
-                margin: 0 0 0 (-$circle-size/2);
+                margin: 0 0 0 calc(($circle-size / 2) * -1);
                 padding: 0;
                 line-height: 0;
                 cursor: pointer;
@@ -100,10 +100,10 @@ $body-height: 40px;
                     width: $circle-size;
                     height: $circle-size;
                     background-color: tint($at-shore, 50%);
+                }
 
-                    &--disabled {
-                        display: none;
-                    }
+                #{$actions-self}__action--disabled:not(#{$actions-self}__action--selected) {
+                    display: none;
                 }
             }
         }

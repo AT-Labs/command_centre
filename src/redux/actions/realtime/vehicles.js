@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { result, merge, throttle, get, pick } from 'lodash-es';
 import * as gtfsRealTime from '../../../utils/transmitters/gtfs-realtime';
 import ACTION_TYPE from '../../action-types';
 import { getVehicleId, getVehicleLat, getVehicleRouteId, getVehicleTimestamp } from '../../selectors/realtime/vehicles';
@@ -10,12 +10,12 @@ let vehiclesTrackingCache = {};
 let tripUpdateCache = {};
 let realTimeSnapshotIntervalId = null;
 
-const decorateWithRouteType = (vehicle, routes) => _.merge(
+const decorateWithRouteType = (vehicle, routes) => merge(
     vehicle,
     { vehicle: { route: routes[getVehicleRouteId(vehicle)] } },
 );
 
-const throttledRealTimeUpdates = _.throttle((dispatch) => {
+const throttledRealTimeUpdates = throttle((dispatch) => {
     dispatch({
         type: ACTION_TYPE.FETCH_VEHICLES_REALTIME,
         payload: {
@@ -25,7 +25,7 @@ const throttledRealTimeUpdates = _.throttle((dispatch) => {
     vehiclesTrackingCache = {};
 }, 1000);
 
-const throttleTripUpdate = _.throttle((dispatch) => {
+const throttleTripUpdate = throttle((dispatch) => {
     dispatch({
         type: ACTION_TYPE.FETCH_TRIP_UPDATES_REALTIME,
         payload: {
@@ -35,10 +35,10 @@ const throttleTripUpdate = _.throttle((dispatch) => {
     tripUpdateCache = {};
 }, 1000);
 
-const isValidVehicleUpdate = (vehicle, allFleet) => _.result(vehicle, 'vehicle') && getVehicleLat(vehicle) && !!allFleet[getVehicleId(vehicle)];
+const isValidVehicleUpdate = (vehicle, allFleet) => result(vehicle, 'vehicle') && getVehicleLat(vehicle) && !!allFleet[getVehicleId(vehicle)];
 const isValidTripUpdate = (trip, allFleet) => {
-    const vehicleId = _.get(trip, 'tripUpdate.vehicle.id');
-    return _.result(trip, 'tripUpdate') && !!allFleet[vehicleId];
+    const vehicleId = get(trip, 'tripUpdate.vehicle.id');
+    return result(trip, 'tripUpdate') && !!allFleet[vehicleId];
 };
 
 const queryRealTimeSnapshot = () => (dispatch, getState) => {
@@ -77,7 +77,7 @@ const queryRealTimeSnapshot = () => (dispatch, getState) => {
 };
 
 const updateVehiclePosition = (data, dispatch, state) => {
-    const vehicle = _.pick(data, ['id', 'vehicle']);
+    const vehicle = pick(data, ['id', 'vehicle']);
     const routes = getAllRoutes(state);
     const cachedVehicle = vehiclesTrackingCache[getVehicleId(vehicle)];
     if (!cachedVehicle || getVehicleTimestamp(cachedVehicle) < getVehicleTimestamp(vehicle)) {
@@ -88,8 +88,8 @@ const updateVehiclePosition = (data, dispatch, state) => {
 };
 
 const updateTripDelay = (data) => {
-    const tripUpdate = _.get(data, 'tripUpdate');
-    const vehicleId = _.get(tripUpdate, 'vehicle.id');
+    const tripUpdate = get(data, 'tripUpdate');
+    const vehicleId = get(tripUpdate, 'vehicle.id');
     const cachedVehicle = tripUpdateCache[vehicleId];
     if (!cachedVehicle || getVehicleTimestamp(cachedVehicle) <= tripUpdate.timestamp) {
         tripUpdateCache[vehicleId] = tripUpdate;

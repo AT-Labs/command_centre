@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { isEmpty } from 'lodash-es';
 import ACTION_TYPE from '../../../action-types';
 import ERROR_TYPE from '../../../../types/error-types';
 import { getVehicleReplay, getVehiclePosition } from '../../../../utils/transmitters/vehicle-replay-api';
@@ -81,7 +81,7 @@ const mergeVehiclePosition = (data) => {
     return initialTimestamp === lastTimestamp ? data[0] : { ...data[0], startOfRangeTime: initialTimestamp, endOfRangeTime: lastTimestamp, child: data };
 };
 
-const updateRouteShortName = (element, allRoutes) => (!_.isEmpty(element.routeId) ? allRoutes[element.routeId].route_short_name : '');
+const updateRouteShortName = (element, allRoutes) => (!isEmpty(element.routeId) ? allRoutes[element.routeId].route_short_name : '');
 
 const segregateVehiclePositionAndEvents = (mergedVehiclePosition) => {
     const splitVehicleEvents = [];

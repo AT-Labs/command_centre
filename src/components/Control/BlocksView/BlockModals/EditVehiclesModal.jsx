@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { uniqBy, flatten, compact, map, isEmpty, find, isNull } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
@@ -111,11 +111,11 @@ class EditVehiclesModal extends React.Component {
 
     getBlockVehicleMappings = (renderToggleButtonFunc) => {
         const blockVehicleMappings = getVehiclesFromBlockTrips(this.props.block);
-        return _.map(blockVehicleMappings, vehicle => (renderToggleButtonFunc ? renderToggleButtonFunc(vehicle) : vehicle.buttonLabel));
+        return map(blockVehicleMappings, vehicle => (renderToggleButtonFunc ? renderToggleButtonFunc(vehicle) : vehicle.buttonLabel));
     };
 
-    getVehiclesFromBlock = () => _.uniqBy(_.compact(
-        _.flatten(
+    getVehiclesFromBlock = () => uniqBy(compact(
+        flatten(
             this.props.block.operationalTrips
                 .map(trip => (
                     trip.status !== TRIP_STATUS_TYPES.completed && trip.status !== TRIP_STATUS_TYPES.inProgress
@@ -128,8 +128,8 @@ class EditVehiclesModal extends React.Component {
         const renderToggleButton = (blockVehicleMapping) => {
             const { buttonLabel, vehicles } = blockVehicleMapping;
             const blockVehicles = this.getVehiclesFromBlock();
-            const notCompletedTripsVehicles = !_.isEmpty(blockVehicles) && _.compact(vehicles.map(vehicle => _.find(blockVehicles, { id: vehicle.id })));
-            const isNotCompletedTripsVehiclesEmpty = _.isEmpty(notCompletedTripsVehicles);
+            const notCompletedTripsVehicles = !isEmpty(blockVehicles) && compact(vehicles.map(vehicle => find(blockVehicles, { id: vehicle.id })));
+            const isNotCompletedTripsVehiclesEmpty = isEmpty(notCompletedTripsVehicles);
 
             return (
                 <div key={ buttonLabel } className="mr-4">
@@ -194,7 +194,7 @@ class EditVehiclesModal extends React.Component {
                 inputId="search-trip-input"
                 focusInputBackOnClickOut
                 label="Select trip:"
-                data={ _.compact(this.props.block.operationalTrips.map(trip => trip.status !== TRIP_STATUS_TYPES.completed && ({
+                data={ compact(this.props.block.operationalTrips.map(trip => trip.status !== TRIP_STATUS_TYPES.completed && ({
                     ...trip,
                     customLabel: `${trip.externalRef} - ${trip.routeLongName}`,
                 }))) }
@@ -211,8 +211,8 @@ class EditVehiclesModal extends React.Component {
         const { vehicles, isPopulated, tripSelected, isModalOpen, isSubstitute, isDeallocateCheckboxActive } = this.state;
         const okButtonWhensSubstitute = isDeallocateCheckboxActive ? this.deallocateVehicles : this.allocateVehicles;
         const shouldOkButtonBeDisableWhenSubstitute = isDeallocateCheckboxActive
-            ? _.isEmpty(tripSelected)
-            : (_.isNull(vehicles) || !isPopulated) || _.isEmpty(tripSelected);
+            ? isEmpty(tripSelected)
+            : (isNull(vehicles) || !isPopulated) || isEmpty(tripSelected);
 
         return (
             <CustomModal

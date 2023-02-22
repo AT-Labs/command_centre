@@ -1,5 +1,5 @@
 import { Table, Button } from 'reactstrap';
-import _ from 'lodash-es';
+import { uniqueId, find } from 'lodash-es';
 import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -40,7 +40,7 @@ const generateDisruptionNotes = (notes) => {
 };
 
 const createLine = (label, value) => (value && (
-    <tr className="row" key={ _.uniqueId() }>
+    <tr className="row" key={ uniqueId() }>
         <td className="col-4">{label}</td>
         <td className="col text-break">
             {label === LABEL_WORKAROUNDS && value.length === 0 ? DISRUPTIONS_MESSAGE_TYPE.noWorkaroundsMessage : null }
@@ -76,13 +76,13 @@ const DisruptionSummaryModal = (props) => {
             <Table className="table-layout-fixed">
                 <tbody>
                     {createLine(LABEL_HEADER, props.disruption.header)}
-                    {createLine(LABEL_SEVERITY, _.find(SEVERITIES, { value: props.disruption.severity }).label)}
+                    {createLine(LABEL_SEVERITY, find(SEVERITIES, { value: props.disruption.severity }).label)}
                     {createLine(LABEL_STATUS, props.disruption.status)}
                     {createLine(LABEL_MODE, props.disruption.mode)}
                     {createLine(LABEL_AFFECTED_ROUTES, getDeduplcatedAffectedRoutes(props.disruption.affectedEntities).join(', '))}
                     {createLine(LABEL_AFFECTED_STOPS, getDeduplcatedAffectedStops(props.disruption.affectedEntities).join(', '))}
-                    {createLine(LABEL_CUSTOMER_IMPACT, (_.find(MERGED_IMPACTS, { value: props.disruption.impact })).label)}
-                    {createLine(LABEL_CAUSE, (_.find(MERGED_CAUSES, { value: props.disruption.cause })).label)}
+                    {createLine(LABEL_CUSTOMER_IMPACT, (find(MERGED_IMPACTS, { value: props.disruption.impact })).label)}
+                    {createLine(LABEL_CAUSE, (find(MERGED_CAUSES, { value: props.disruption.cause })).label)}
                     {props.disruption.description ? createLine(LABEL_DESCRIPTION, props.disruption.description) : null}
                     {createLine(LABEL_START_DATE, moment(props.disruption.startTime).format(DATE_FORMAT))}
                     {createLine(LABEL_START_TIME, moment(props.disruption.startTime).format(TIME_FORMAT))}

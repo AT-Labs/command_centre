@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { isEmpty } from 'lodash-es';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
@@ -86,7 +86,7 @@ export default class AutoRefreshTable extends Component {
                     </tr>
                 </thead>
             )}
-            { !_.isEmpty(rows) && (
+            { !isEmpty(rows) && (
                 <tbody>
                     { rows.map(row => (
                         <tr onClick={ () => this.props.onRowClick(row) }
@@ -112,11 +112,11 @@ export default class AutoRefreshTable extends Component {
     );
 
     renderEmptyMessage = (rows, emptyMessage) => rows
-        && _.isEmpty(rows)
+        && isEmpty(rows)
         && <p className="auto-refresh-table__empty-message col-12 text-muted my-3">{ emptyMessage }</p>;
 
     renderNoteMessage = (rows, noteMessage) => noteMessage
-        && !_.isEmpty(rows)
+        && !isEmpty(rows)
         && <p className="auto-refresh-table__note-message col-12 text-danger my-3">{ noteMessage }</p>;
 
     render() {

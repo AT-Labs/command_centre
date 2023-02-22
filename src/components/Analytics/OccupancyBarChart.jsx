@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { PropTypes } from 'prop-types';
 import { isEmpty, startCase } from 'lodash-es';
-import Plotly from 'plotly.js';
+import Plotly from 'plotly.js-basic-dist-min';
 
 import Loader from '../Common/Loader/Loader';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { slice, filter } from 'lodash-es';
 
 import { clearActiveRoute, updateActiveRoute } from '../../../redux/actions/control/routes/routes';
 import { getActiveRoute, getFilteredRoutes, getRoutesLoadingState } from '../../../redux/selectors/control/routes/routes';
@@ -76,8 +76,8 @@ export class RoutesView extends React.Component {
     };
 
     render() {
-        const pageData = _.slice(this.props.routes, (this.props.page - 1) * PAGE_SIZE, this.props.page * PAGE_SIZE);
-        const columns = pageData.length && pageData[0].routeType !== 2 ? this.ROUTES : _.filter(this.ROUTES, route => route.label !== 'description');
+        const pageData = slice(this.props.routes, (this.props.page - 1) * PAGE_SIZE, this.props.page * PAGE_SIZE);
+        const columns = pageData.length && pageData[0].routeType !== 2 ? this.ROUTES : filter(this.ROUTES, route => route.label !== 'description');
 
         return (
             <ControlTable

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import _ from 'lodash-es';
+import { isEmpty, uniqBy } from 'lodash-es';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { AiOutlineClose } from 'react-icons/ai';
@@ -123,7 +123,7 @@ export class CreateDisruption extends React.Component {
         copiedData.startDate = now.isSameOrAfter(copiedData.startTime) ? now.format(DATE_FORMAT) : copiedData.startTime.format(DATE_FORMAT);
         copiedData.startTime = now.isSameOrAfter(copiedData.startTime) ? now.format(TIME_FORMAT) : copiedData.startTime.format(TIME_FORMAT);
 
-        const disruptionType = _.isEmpty(this.props.routes) && !_.isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
+        const disruptionType = isEmpty(this.props.routes) && !isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
 
         this.setState({
             disruptionData: {
@@ -145,7 +145,7 @@ export class CreateDisruption extends React.Component {
     setupDataEdit = () => {
         const { workarounds, startTime, endTime, passengerCount } = this.props.disruptionToEdit;
 
-        const disruptionType = _.isEmpty(this.props.routes) && !_.isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
+        const disruptionType = isEmpty(this.props.routes) && !isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
         this.setState({
             disruptionData: {
                 ...INIT_STATE,
@@ -160,7 +160,7 @@ export class CreateDisruption extends React.Component {
 
     setupData = () => {
         const now = moment();
-        const disruptionType = _.isEmpty(this.props.routes) && !_.isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
+        const disruptionType = isEmpty(this.props.routes) && !isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
         this.setState({
             disruptionData: {
                 ...INIT_STATE,
@@ -217,7 +217,7 @@ export class CreateDisruption extends React.Component {
         const startTimeMoment = momentFromDateTime(startDate, disruptionData.startTime);
 
         let endTimeMoment;
-        if (!_.isEmpty(disruptionData.endDate) && !_.isEmpty(disruptionData.endTime)) {
+        if (!isEmpty(disruptionData.endDate) && !isEmpty(disruptionData.endTime)) {
             endTimeMoment = momentFromDateTime(disruptionData.endDate, disruptionData.endTime);
         }
         const disruption = {
@@ -362,7 +362,7 @@ export class CreateDisruption extends React.Component {
                     <HighlightingLayer
                         stopDetail={ this.props.stopDetail } />
                     <SelectedStopsMarker
-                        stops={ _.uniqBy([...this.props.stops, ...this.props.routes], stop => stop.stopCode).map(stop => itemToEntityTransformers[STOP.type](stop).data) }
+                        stops={ uniqBy([...this.props.stops, ...this.props.routes], stop => stop.stopCode).map(stop => itemToEntityTransformers[STOP.type](stop).data) }
                         size={ 28 }
                         tooltip
                         maximumStopsToDisplay={ 200 } />

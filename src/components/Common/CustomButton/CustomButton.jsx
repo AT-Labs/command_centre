@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
-import _ from 'lodash-es';
+import { uniqueId, map } from 'lodash-es';
 
 const CustomButton = ({
     className,
@@ -29,8 +29,8 @@ const CustomButton = ({
             { ...idProp }
         >
             {
-                _.map(formattedChildren, child => (
-                    <React.Fragment key={ _.uniqueId() }>
+                map(formattedChildren, child => (
+                    <React.Fragment key={ uniqueId() }>
                         { child }
                     </React.Fragment>
                 ))

@@ -2,7 +2,7 @@ import React from 'react';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { shallow } from 'enzyme';
-import _ from 'lodash-es';
+import { isEqual } from 'lodash-es';
 
 import { Routes } from './Routes';
 
@@ -95,6 +95,6 @@ describe('<Routes />', () => {
 
         const routeNames = instance.getRouteNames(allRoutes, routeIds);
 
-        expect(_.isEqual(routeNames, expectedData)).to.equal(true);
+        expect(isEqual(routeNames, expectedData)).to.equal(true);
     });
 });

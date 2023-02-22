@@ -1,5 +1,5 @@
 import inView from 'in-view';
-import _ from 'lodash-es';
+import { delay, uniqueId, map, get } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
 
@@ -43,7 +43,7 @@ export class ControlTableRow extends React.Component {
         const summaryElement = this.summaryRef.current;
         inView.threshold(1);
         if (!inView.is(summaryElement)) {
-            _.delay(() => summaryElement.scrollIntoView({ block: 'start', behavior: 'smooth' }), 0);
+            delay(() => summaryElement.scrollIntoView({ block: 'start', behavior: 'smooth' }), 0);
         }
     };
 
@@ -64,10 +64,10 @@ export class ControlTableRow extends React.Component {
                     <ExpandableSummary className={ rowClassName }>
                         <div className="row" ref={ this.summaryRef }>
                             {
-                                _.map(columns, column => (
-                                    <div key={ _.uniqueId('control-table-row-cells') } className={ `${column.cols}` }>
-                                        { column.key === 'status' && this.props.renderIcon && this.props.renderIcon(_.get(row, column.key))}
-                                        { column.getContent ? column.getContent(row, column.key) : _.get(row, column.key)}
+                                map(columns, column => (
+                                    <div key={ uniqueId('control-table-row-cells') } className={ `${column.cols}` }>
+                                        { column.key === 'status' && this.props.renderIcon && this.props.renderIcon(get(row, column.key))}
+                                        { column.getContent ? column.getContent(row, column.key) : get(row, column.key)}
                                     </div>
                                 ))
                             }
@@ -82,9 +82,9 @@ export class ControlTableRow extends React.Component {
                 <div className={ `standard-row ${rowClassName}` }>
                     <div className="row">
                         {
-                            _.map(columns, column => (
-                                <div key={ _.uniqueId('control-table-row-cells') } className={ `${column.cols}` }>
-                                    { column.getContent ? column.getContent(row, column.key) : _.get(row, column.key)}
+                            map(columns, column => (
+                                <div key={ uniqueId('control-table-row-cells') } className={ `${column.cols}` }>
+                                    { column.getContent ? column.getContent(row, column.key) : get(row, column.key)}
                                 </div>
                             ))
                         }

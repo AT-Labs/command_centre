@@ -1,10 +1,12 @@
 import * as React from 'react';
-import { Paper, Popper } from '@material-ui/core';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
-import { isOverflown } from '@material-ui/data-grid';
+import { Paper, Popper } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { makeStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 
-const useStyles = makeStyles(theme => createStyles({
+const theme = createTheme();
+
+const useStyles = makeStyles(() => ({
     root: {
         alignItems: 'center',
         lineHeight: '24px',
@@ -22,6 +24,8 @@ const useStyles = makeStyles(theme => createStyles({
         },
     },
 }));
+
+const isOverflown = element => element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth;
 
 const CellExpand = React.memo((props) => {
     const { width, value } = props;
@@ -54,41 +58,43 @@ const CellExpand = React.memo((props) => {
     }, [width]);
 
     return (
-        <div
-            ref={ wrapper }
-            className={ classes.root }
-            onMouseEnter={ showCell }
-            onMouseLeave={ hideCell }
-        >
+        <ThemeProvider theme={ theme }>
             <div
-                ref={ cellDiv }
-                style={ {
-                    height: 1,
-                    width,
-                    display: 'block',
-                    position: 'absolute',
-                    top: 0,
-                } }
-            />
-            <div ref={ cellValue } className="cellValue">
-                {value}
-            </div>
-            {showPopper && (
-                <Popper
-                    id="popper"
-                    open={ showFullCell && anchorEl != null }
-                    anchorEl={ anchorEl }
-                    style={ { width, marginLeft: -17 } }
-                >
-                    <Paper
-                        elevation={ 1 }
-                        style={ { minHeight: wrapper.current.offsetHeight - 2 } }
+                ref={ wrapper }
+                className={ classes.root }
+                onMouseEnter={ showCell }
+                onMouseLeave={ hideCell }
+            >
+                <div
+                    ref={ cellDiv }
+                    style={ {
+                        height: 1,
+                        width,
+                        display: 'block',
+                        position: 'absolute',
+                        top: 0,
+                    } }
+                />
+                <div ref={ cellValue } className="cellValue">
+                    {value}
+                </div>
+                {showPopper && (
+                    <Popper
+                        id="popper"
+                        open={ showFullCell && anchorEl != null }
+                        anchorEl={ anchorEl }
+                        style={ { width, marginLeft: -17 } }
                     >
-                        <div style={ { padding: 5 } }>{value}</div>
-                    </Paper>
-                </Popper>
-            )}
-        </div>
+                        <Paper
+                            elevation={ 1 }
+                            style={ { minHeight: wrapper.current.offsetHeight - 2 } }
+                        >
+                            <div style={ { padding: 5 } }>{value}</div>
+                        </Paper>
+                    </Popper>
+                )}
+            </div>
+        </ThemeProvider>
     );
 });
 

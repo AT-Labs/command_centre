@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
+import { isEqual } from 'lodash-es';
 
 import { getDisruptions, openCreateDisruption, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState } from '../../../redux/actions/control/disruptions';
 import {
@@ -51,6 +52,16 @@ export class DisruptionsView extends React.Component {
 
     componentWillUnmount() {
         clearTimeout(this.state.timer);
+    }
+
+    shouldComponentUpdate(nextProps) {
+        if (this.props.isCreateOpen !== nextProps.isCreateOpen) {
+            return true;
+        }
+        if (this.props.isCreateAllowed !== nextProps.isCreateAllowed) {
+            return true;
+        }
+        return !isEqual(this.props.filteredDisruptions, nextProps.filteredDisruptions);
     }
 
     createDisruptionButton = () => (

@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import _ from 'lodash-es';
+import { debounce, groupBy, filter, isEmpty, map, lowerCase } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { LeafletConsumer } from 'react-leaflet';
@@ -48,7 +48,7 @@ class VehicleClusterLayer extends React.Component {
         this.unselectedVehiclesClusterLayerRef = React.createRef();
     }
 
-    getTripUpdateSnapshotDebounced = _.debounce(tripId => this.props.getTripUpdateSnapshot(tripId), 1000);
+    getTripUpdateSnapshotDebounced = debounce(tripId => this.props.getTripUpdateSnapshot(tripId), 1000);
 
     componentDidMount() { return this.refreshMarkers(); }
 
@@ -58,8 +58,8 @@ class VehicleClusterLayer extends React.Component {
         let latitudeOffset = 0;
         let longitudeOffset = 0;
 
-        const groupedMarkersByPosition = _.groupBy(markers, ({ options: { vehicle } }) => getVehiclePositionCoordinates(vehicle));
-        const groupsWithMultipleMarkers = _.filter(groupedMarkersByPosition, group => group.length > 1);
+        const groupedMarkersByPosition = groupBy(markers, ({ options: { vehicle } }) => getVehiclePositionCoordinates(vehicle));
+        const groupsWithMultipleMarkers = filter(groupedMarkersByPosition, group => group.length > 1);
 
         groupsWithMultipleMarkers.forEach((group) => {
             group.forEach((marker) => {
@@ -113,10 +113,10 @@ class VehicleClusterLayer extends React.Component {
     refreshMarkers = () => {
         const { vehicles, highlightedVehicle } = this.props;
         const bounds = this.props.leafletMap.getBounds();
-        const markersInBoundary = _.filter(vehicles, vehicle => bounds.contains(getVehicleLatLng(vehicle)));
+        const markersInBoundary = filter(vehicles, vehicle => bounds.contains(getVehicleLatLng(vehicle)));
 
         if (!this.props.vehicleType.startsWith('unselected')) {
-            const markers = _.map(markersInBoundary, vehicle => L.marker(getVehicleLatLng(vehicle), {
+            const markers = map(markersInBoundary, vehicle => L.marker(getVehicleLatLng(vehicle), {
                 icon: getVehicleIcon(vehicle, ''),
                 vehicle,
                 keyboard: this.props.tabIndexOverride >= 0,
@@ -124,9 +124,9 @@ class VehicleClusterLayer extends React.Component {
             this.handleClusterLayers(this.clusterLayerRef, markers);
         }
 
-        if (!_.isEmpty(highlightedVehicle)) {
+        if (!isEmpty(highlightedVehicle)) {
             if (this.props.vehicleType.startsWith('unselected')) {
-                const unselectedVehiclesInBoundary = _.filter(vehicles, vehicle => bounds.contains(getVehicleLatLng(vehicle)));
+                const unselectedVehiclesInBoundary = filter(vehicles, vehicle => bounds.contains(getVehicleLatLng(vehicle)));
                 const unselectedMarkers = unselectedVehiclesInBoundary.map(vehicle => L.marker(getVehicleLatLng(vehicle), {
                     icon: getVehicleIcon(vehicle, 'opacity-markers'),
                     vehicle,
@@ -148,7 +148,7 @@ class VehicleClusterLayer extends React.Component {
         const { options: { vehicle } } = layer;
         if (!highlightedVehicle || highlightedVehicle.id !== vehicle.id) {
             const vehicleRouteType = getVehicleRouteType(vehicle);
-            const vehicleType = vehicleRouteType ? _.lowerCase(VEHICLE_TYPES[vehicleRouteType].type) : '';
+            const vehicleType = vehicleRouteType ? lowerCase(VEHICLE_TYPES[vehicleRouteType].type) : '';
             this.props.vehicleSelected({
                 id: vehicle.id,
                 ...vehicle.vehicle,
@@ -181,7 +181,7 @@ class VehicleClusterLayer extends React.Component {
     render() {
         return (
             <>
-                {!_.isEmpty(this.props.highlightedVehicle) && (
+                {!isEmpty(this.props.highlightedVehicle) && (
                     <MarkerClusterGroup
                         ref={ this.unselectedVehiclesClusterLayerRef }
                         zoomToBoundsOnClick
@@ -216,6 +216,6 @@ export default connect(
     { vehicleSelected, getTripUpdateSnapshot },
 )(props => (
     <LeafletConsumer>
-        {({ map }) => <VehicleClusterLayer { ...props } leafletMap={ map } />}
+        { leafletContext => <VehicleClusterLayer { ...props } leafletMap={ leafletContext.map } />}
     </LeafletConsumer>
 ));

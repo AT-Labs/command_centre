@@ -1,5 +1,5 @@
 import Dexie from 'dexie';
-import _ from 'lodash-es';
+import { forEach } from 'lodash-es';
 import moment from 'moment';
 import schemas from './schemas';
 
@@ -7,7 +7,7 @@ const cache = new Dexie('command-centre-cache-db');
 
 export default cache;
 
-_.forEach(schemas, (val) => {
+forEach(schemas, (val) => {
     cache.version(val.version)
         .stores(val.schema)
         .upgrade(db => Promise.all([

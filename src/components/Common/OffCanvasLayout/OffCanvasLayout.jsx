@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { noop } from 'lodash-es';
 
 import './OffCanvasLayout.scss';
 
@@ -28,7 +28,7 @@ export class OffCanvasLayout extends React.Component {
     };
 
     static defaultProps = {
-        onToggle: _.noop,
+        onToggle: noop,
     };
 
     componentDidUpdate() { return this.props.onToggle(); }

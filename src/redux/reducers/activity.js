@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { merge } from 'lodash-es';
 import { handleActions } from 'redux-actions';
 import actionType from '../action-types';
 
@@ -41,9 +41,9 @@ const clearAnErrorByType = (state, errorType) => {
 };
 
 const handleDataLoading = (state, { payload: { isLoading } }) => ({ ...state, isLoading });
-const handleDataError = (state, { payload: { error } }) => (_.merge({}, state, error));
+const handleDataError = (state, { payload: { error } }) => (merge({}, state, error));
 const handleDataErrorDismiss = (state, { payload: { errorType } }) => clearAnErrorByType(state, errorType);
-const handleBannerError = (state, { payload: { error } }) => (_.merge({}, state, { bannerError: error }));
+const handleBannerError = (state, { payload: { error } }) => (merge({}, state, { bannerError: error }));
 const handleModalStatus = (state, { payload: { isOpen } }) => ({ ...state, isOpen });
 
 export default handleActions({

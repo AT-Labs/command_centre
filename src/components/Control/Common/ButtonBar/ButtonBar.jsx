@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import * as _ from 'lodash-es';
+import { uniqueId } from 'lodash-es';
 
 import Icon from '../../../Common/Icon/Icon';
 import Loader from '../../../Common/Loader/Loader';
@@ -25,7 +25,7 @@ const ButtonBar = ({ buttons, isLoading }) => (
                 <button
                     type="button"
                     className="cc-btn-secondary mr-2"
-                    key={ _.uniqueId() }
+                    key={ uniqueId() }
                     onClick={ () => action && action(index, label) }
                     tabIndex={ index }
                     aria-label={ label }

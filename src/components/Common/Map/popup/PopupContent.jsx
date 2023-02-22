@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { get } from 'lodash-es';
 import moment from 'moment';
 import { occupancyStatusToMessage } from '../../../../types/vehicle-occupancy-status-types';
 import { formatTimeLabel, formatArrivalDeparture } from '../../../../utils/control/tripReplays';
@@ -56,7 +56,7 @@ function PopupContent({ selectedKeyEvent, currentTrip, coordinates, scheduledTim
                 <div className="col pb-2">
                     <b>Route:</b>
                     {' '}
-                    { _.get(currentTrip, 'routeShortName') }
+                    { get(currentTrip, 'routeShortName') }
                 </div>
             </div>
             <div className="row">

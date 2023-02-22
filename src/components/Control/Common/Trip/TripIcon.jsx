@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { get, values } from 'lodash-es';
 import { FaCheck, FaRegClock } from 'react-icons/fa';
 
 import Icon from '../../../Common/Icon/Icon';
@@ -10,7 +10,7 @@ import './TripIcon.scss';
 
 const TripIcon = ({ type, className, subIcon }) => {
     if (!type) return null;
-    const typeLabel = _.get(VEHICLE_TYPE[type], 'type');
+    const typeLabel = get(VEHICLE_TYPE[type], 'type');
     return (
         <div className="trip-icon" data-cy-icon-type={ typeLabel }>
             <Icon icon={ typeLabel } className={ `trip-icon__main ${className}` } />
@@ -23,7 +23,7 @@ const TripIcon = ({ type, className, subIcon }) => {
 TripIcon.propTypes = {
     type: PropTypes.number.isRequired,
     className: PropTypes.string,
-    subIcon: PropTypes.oneOf(_.values(TripSubIconType)),
+    subIcon: PropTypes.oneOf(values(TripSubIconType)),
 };
 
 TripIcon.defaultProps = {

@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import _ from 'lodash-es';
+import { result } from 'lodash-es';
 import { jsonResponseHandling } from '../fetch';
 import { mutateStatic } from '../graphql';
 import { fetchWithAuthHeader, getAuthToken } from '../../auth';
@@ -77,7 +77,7 @@ export const getTrips = ({
             body: JSON.stringify(variables),
         },
     ).then(response => jsonResponseHandling(response))
-        .then(result => ({ ...result, tripInstances: result.tripInstances.map(tripInstance => ({ ...tripInstance, delay: tripInstance.combinedDelay })) }));
+        .then(res => ({ ...res, tripInstances: res.tripInstances.map(tripInstance => ({ ...tripInstance, delay: tripInstance.combinedDelay })) }));
 };
 
 export const getRoutesViewPermission = () => getViewPermission(`${REACT_APP_TRIP_MGT_QUERY_URL}/view`);
@@ -132,7 +132,7 @@ export const updateTripStatus = (options) => {
         variables: { tripId, serviceDate, tripStatus, startTime },
         params: 'updateTripStatus',
         authToken: getAuthToken(),
-    }).then(response => _.result(response, 'data.updateTripStatus', {}));
+    }).then(response => result(response, 'data.updateTripStatus', {}));
 };
 
 export const copyTrip = (options) => {
@@ -163,7 +163,7 @@ export const updateTripDelay = (options) => {
         variables: { tripId, serviceDate, startTime, delay },
         params: 'setDelayTrip',
         authToken: getAuthToken(),
-    }).then(response => _.result(response, 'data.setDelayTrip', {}));
+    }).then(response => result(response, 'data.setDelayTrip', {}));
 };
 
 const updateStopStatusGqlMutation = gql`
@@ -186,7 +186,7 @@ export const updateStopStatus = (options) => {
         },
         params: 'updateStopStatus',
         authToken: getAuthToken(),
-    }).then(response => _.result(response, 'data.updateStopStatus', {}));
+    }).then(response => result(response, 'data.updateStopStatus', {}));
 };
 
 const updateStopIdGqlMutation = gql`
@@ -209,7 +209,7 @@ export const updateStopId = (options) => {
         },
         params: 'updateStopId',
         authToken: getAuthToken(),
-    }).then(response => _.result(response, 'data.updateStopId', {}));
+    }).then(response => result(response, 'data.updateStopId', {}));
 };
 
 const moveToNextStopGqlMutation = gql`
@@ -227,7 +227,7 @@ export const moveToNextStop = (options) => {
         variables: { tripId, serviceDate, startTime },
         params: 'moveToNextStop',
         authToken: getAuthToken(),
-    }).then(response => _.result(response, 'data.moveToNextStop', {}));
+    }).then(response => result(response, 'data.moveToNextStop', {}));
 };
 
 const moveToStopGqlMutation = gql`
@@ -246,7 +246,7 @@ export const moveTotStop = (options) => {
         variables: { tripId, serviceDate, startTime, stopSequence },
         params: 'moveToStop',
         authToken: getAuthToken(),
-    }).then(response => _.result(response, 'data.moveToStop', {}));
+    }).then(response => result(response, 'data.moveToStop', {}));
 };
 
 export const recurringUpdateTripStatus = (variables) => {

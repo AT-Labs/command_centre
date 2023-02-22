@@ -1,5 +1,5 @@
 import { handleActions } from 'redux-actions';
-import _ from 'lodash-es';
+import { filter, concat, includes, isNull, has, unset, difference, pick, keyBy, isEmpty } from 'lodash-es';
 
 import ACTION_TYPE from '../../../action-types';
 import { getTripInstanceId, getStopKey, checkIfAllTripsAreSelected } from '../../../../utils/helpers';
@@ -83,7 +83,7 @@ const handleTripInstancesActionResultSet = (state, { payload: actionResult }) =>
     const { actionResults } = state;
     return {
         ...state,
-        actionResults: _.concat([], actionResults, [actionResult]),
+        actionResults: concat([], actionResults, [actionResult]),
     };
 };
 
@@ -91,7 +91,7 @@ const handleTripInstancesActionResultClear = (state, { payload: { id } }) => {
     const { actionResults } = state;
     return {
         ...state,
-        actionResults: _.filter(actionResults, item => item.id !== id),
+        actionResults: filter(actionResults, item => item.id !== id),
     };
 };
 
@@ -107,14 +107,14 @@ const handleUpdateActiveTripInstance = (state, { payload: { activeTripInstanceId
     let active;
 
     if (activeTripInstanceId) {
-        const isExistingActiveTripInstanceId = _.includes(state.active, activeTripInstanceId);
+        const isExistingActiveTripInstanceId = includes(state.active, activeTripInstanceId);
         active = isExistingActiveTripInstanceId
             ? state.active.filter(activeTripId => activeTripId !== activeTripInstanceId)
             : [
                 ...state.active,
                 activeTripInstanceId,
             ];
-    } else if (_.isNull(activeTripInstanceId)) {
+    } else if (isNull(activeTripInstanceId)) {
         active = [];
     }
 
@@ -128,7 +128,7 @@ const handleSelectSingleTrip = (state, { payload: { trip } }) => {
     const tripKey = Object.keys(trip)[0];
     const selectedClone = { ...state.selected };
 
-    if (_.has(selectedClone, tripKey)) _.unset(selectedClone, tripKey);
+    if (has(selectedClone, tripKey)) unset(selectedClone, tripKey);
     else Object.assign(selectedClone, trip);
 
     return {
@@ -142,8 +142,8 @@ const handleSelectAllTrips = (state) => {
     const notCompletedTripsKeys = Object.keys(notCompletedInstances);
     const selectedKeys = Object.keys(state.selected);
     const areAllTripsSelected = checkIfAllTripsAreSelected(notCompletedTripsKeys, selectedKeys);
-    const selectedByViewKeys = _.difference(selectedKeys, notCompletedTripsKeys);
-    const selectedByViewInstances = _.pick(state.selected, selectedByViewKeys);
+    const selectedByViewKeys = difference(selectedKeys, notCompletedTripsKeys);
+    const selectedByViewInstances = pick(state.selected, selectedByViewKeys);
 
     return ({
         ...state,
@@ -163,25 +163,25 @@ const handleDeselectAllTrips = state => ({
 
 const handleUpdateSelectedTrips = (state, { payload: { selectedTripsUpdate } }) => ({
     ...state,
-    selected: _.keyBy(selectedTripsUpdate, tripInstance => getTripInstanceId(tripInstance)),
+    selected: keyBy(selectedTripsUpdate, tripInstance => getTripInstanceId(tripInstance)),
 });
 
 const handleSelectSingleStop = (state, { payload: { tripKey, stop } }) => {
     const stopKey = getStopKey(stop);
     const selectedStopsClone = { ...state.selectedStops };
-    const isTripKeySelected = _.has(selectedStopsClone, tripKey); // We group stops by trip key. Nothing to do with trip selection.
-    const isStopKeyInTrip = _.has(selectedStopsClone[tripKey], stopKey);
+    const isTripKeySelected = has(selectedStopsClone, tripKey); // We group stops by trip key. Nothing to do with trip selection.
+    const isStopKeyInTrip = has(selectedStopsClone[tripKey], stopKey);
     const stopDataByStopKey = {
         [stopKey]: { ...stop },
     };
     const stopDataByTripId = { [tripKey]: { ...stopDataByStopKey } };
     const handleSelectionIfTripKeyExists = () => (isStopKeyInTrip
-        ? _.unset(selectedStopsClone[tripKey], stopKey)
+        ? unset(selectedStopsClone[tripKey], stopKey)
         : Object.assign(selectedStopsClone[tripKey], stopDataByStopKey));
 
     if (isTripKeySelected) handleSelectionIfTripKeyExists(); // if trip is selected, assign or unset stop.
     else Object.assign(selectedStopsClone, stopDataByTripId); // if trip doesn't exist, assign it.
-    if (_.isEmpty(selectedStopsClone[tripKey])) _.unset(selectedStopsClone, tripKey); // if, after the two previous steps, trip is empty unset it.
+    if (isEmpty(selectedStopsClone[tripKey])) unset(selectedStopsClone, tripKey); // if, after the two previous steps, trip is empty unset it.
 
     return {
         ...state,
@@ -191,7 +191,7 @@ const handleSelectSingleStop = (state, { payload: { tripKey, stop } }) => {
 
 const handleDeselectAllStopsByTrip = (state, { payload: { tripInstance } }) => {
     const selectedStopsClone = { ...state.selectedStops };
-    _.unset(selectedStopsClone, getTripInstanceId(tripInstance));
+    unset(selectedStopsClone, getTripInstanceId(tripInstance));
 
     return {
         ...state,
@@ -203,7 +203,7 @@ const handleUpdateSelectedStops = (state, { payload: { tripInstance, updatedStop
     ...state,
     selectedStops: {
         ...state.selectedStops,
-        [getTripInstanceId(tripInstance)]: updatedStops ? _.keyBy(updatedStops, stop => getStopKey(stop)) : {},
+        [getTripInstanceId(tripInstance)]: updatedStops ? keyBy(updatedStops, stop => getStopKey(stop)) : {},
     },
 });
 

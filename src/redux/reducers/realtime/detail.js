@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { max, map } from 'lodash-es';
 import { handleActions } from 'redux-actions';
 import ACTION_TYPE from '../../action-types';
 
@@ -37,7 +37,7 @@ const handlePastStopsOfSelectedVehicle = (state, { payload: { pastStops } }) => 
     vehicle: {
         ...state.vehicle,
         pastStops,
-        lastStopSequence: _.max(_.map(pastStops, 'stop.stopSequence')) || -1,
+        lastStopSequence: max(map(pastStops, 'stop.stopSequence')) || -1,
     },
 });
 

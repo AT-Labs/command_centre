@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { isEmpty } from 'lodash-es';
 import { FaPlus } from 'react-icons/fa';
 import {
     FormGroup, Label, Button, Input,
@@ -43,7 +43,7 @@ export class AddNewBlockModal extends React.Component {
         };
     }
 
-    isErrorEmpty = () => _.isEmpty(this.props.error.addBlock);
+    isErrorEmpty = () => isEmpty(this.props.error.addBlock);
 
     handleBlockNumberChange = (event) => {
         const { value } = event.target;
@@ -72,7 +72,7 @@ export class AddNewBlockModal extends React.Component {
         <Button
             className="add-new-block-modal__btn cc-btn-secondary"
             onClick={ this.toggleModal }
-            disabled={ !_.isEmpty(this.props.error.addBlock) }>
+            disabled={ !isEmpty(this.props.error.addBlock) }>
             <FaPlus
                 className="cc-btn-secondary__icon" />
             Add new block
@@ -82,7 +82,7 @@ export class AddNewBlockModal extends React.Component {
     render() {
         const { isModalOpen, operationalBlockId } = this.state;
         const { error, blocks, isLoading } = this.props;
-        const isBlockValid = _.isEmpty(blocks.find(block => block.operationalBlockId === operationalBlockId));
+        const isBlockValid = isEmpty(blocks.find(block => block.operationalBlockId === operationalBlockId));
         return (
             <CustomModal
                 className="add-new-block-modal"
@@ -93,7 +93,7 @@ export class AddNewBlockModal extends React.Component {
                 okButton={ {
                     label: 'Add new block',
                     onClick: this.addOperationalBlockRun,
-                    isDisabled: _.isEmpty(operationalBlockId) || !isBlockValid || !this.isErrorEmpty() || isLoading,
+                    isDisabled: isEmpty(operationalBlockId) || !isBlockValid || !this.isErrorEmpty() || isLoading,
                     className: 'add-new-block-modal__save-btn',
                 } }>
                 <ModalAlert

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import Slider from '@material-ui/core/Slider';
+import { Slider } from '@mui/material';
 import debounce from 'lodash-es/debounce';
 import { getTripStatusFilter } from '../../../../redux/selectors/control/routes/filters';
 import { delayRangeAllowedTripStatuses } from '../../../../redux/actions/control/routes/filters';

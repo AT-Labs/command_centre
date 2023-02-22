@@ -1,24 +1,24 @@
-import _ from 'lodash-es';
+import { result, find, values, keyBy, get, filter, sortBy } from 'lodash-es';
 import { createSelector } from 'reselect';
 
-export const getRoutesState = state => _.result(state, 'control.routes.routes');
+export const getRoutesState = state => result(state, 'control.routes.routes');
 
-export const getRouteVariantsState = state => _.result(state, 'control.routes.routeVariants');
+export const getRouteVariantsState = state => result(state, 'control.routes.routeVariants');
 
-export const getFiltersState = state => _.result(state, 'control.routes.filters');
+export const getFiltersState = state => result(state, 'control.routes.filters');
 
-export const getRoutesLoadingState = createSelector(getRoutesState, routesState => _.result(routesState, 'isLoading'));
+export const getRoutesLoadingState = createSelector(getRoutesState, routesState => result(routesState, 'isLoading'));
 
 export const getActiveRoute = createSelector(getRoutesState, (routesState) => {
-    const routes = _.result(routesState, 'all');
-    const activeShortName = _.result(routesState, 'active');
-    return _.find(routes, { routeShortName: activeShortName });
+    const routes = result(routesState, 'all');
+    const activeShortName = result(routesState, 'active');
+    return find(routes, { routeShortName: activeShortName });
 });
 
-export const getAllRoutesArray = createSelector(getRoutesState, routesState => _.result(routesState, 'all'));
-export const getAllRoutes = createSelector(getAllRoutesArray, routesState => _.keyBy(routesState, 'routeShortName'));
+export const getAllRoutesArray = createSelector(getRoutesState, routesState => result(routesState, 'all'));
+export const getAllRoutes = createSelector(getAllRoutesArray, routesState => keyBy(routesState, 'routeShortName'));
 
-export const getAllRoutesTotal = createSelector(getAllRoutes, routes => _.values(routes).length);
+export const getAllRoutesTotal = createSelector(getAllRoutes, routes => values(routes).length);
 
 const filterRoutes = (routes, routeVariants, filters, isForSearch) => {
     const { routeType, agencyId, routeShortName, routeVariantId } = filters;
@@ -32,7 +32,7 @@ const filterRoutes = (routes, routeVariants, filters, isForSearch) => {
 
     if (!isForSearch) {
         if (routeVariantId) {
-            const shortName = _.get(routeVariants, `all.${routeVariantId}.routeShortName`, null);
+            const shortName = get(routeVariants, `all.${routeVariantId}.routeShortName`, null);
             if (shortName) {
                 filterPredicate.routeShortName = shortName;
             }
@@ -41,7 +41,7 @@ const filterRoutes = (routes, routeVariants, filters, isForSearch) => {
         }
     }
 
-    return _.sortBy(_.filter(routes, filterPredicate), 'routeShortName');
+    return sortBy(filter(routes, filterPredicate), 'routeShortName');
 };
 
 export const getFilteredRoutes = createSelector(

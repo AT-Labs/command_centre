@@ -1,5 +1,5 @@
 import moment from 'moment';
-import _ from 'lodash-es';
+import { find } from 'lodash-es';
 import {
     DATE_FORMAT,
     LABEL_AFFECTED_ROUTES,
@@ -87,13 +87,13 @@ function generateHtmlEmailBody(disruption) {
         margin-bottom: 1rem; color: #212529; table-layout: fixed;" width="100%">
         <tbody>
             ${createHtmlLine(LABEL_HEADER, disruption.header)}
-            ${createHtmlLine(LABEL_SEVERITY, _.find(SEVERITIES, { value: disruption.severity }).label)}
+            ${createHtmlLine(LABEL_SEVERITY, find(SEVERITIES, { value: disruption.severity }).label)}
             ${createHtmlLine(LABEL_STATUS, disruption.status)}
             ${createHtmlLine(LABEL_MODE, disruption.mode)}
             ${createHtmlLine(LABEL_AFFECTED_ROUTES, getDeduplcatedAffectedRoutes(disruption.affectedEntities).join(', '))}
             ${createHtmlLine(LABEL_AFFECTED_STOPS, getDeduplcatedAffectedStops(disruption.affectedEntities).join(', '))}
-            ${createHtmlLine(LABEL_CUSTOMER_IMPACT, _.find(MERGED_IMPACTS, { value: disruption.impact }).label)}
-            ${createHtmlLine(LABEL_CAUSE, _.find(MERGED_CAUSES, { value: disruption.cause }).label)}
+            ${createHtmlLine(LABEL_CUSTOMER_IMPACT, find(MERGED_IMPACTS, { value: disruption.impact }).label)}
+            ${createHtmlLine(LABEL_CAUSE, find(MERGED_CAUSES, { value: disruption.cause }).label)}
             ${createHtmlLine(LABEL_DESCRIPTION, disruption.description)}
             ${createHtmlLine(LABEL_START_DATE, moment(disruption.startTime).format(DATE_FORMAT))}
             ${createHtmlLine(LABEL_START_TIME, moment(disruption.startTime).format(TIME_FORMAT))}

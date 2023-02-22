@@ -1,12 +1,12 @@
-import _ from 'lodash-es';
+import { findIndex, some, get } from 'lodash-es';
 
 import USER_PERMISSIONS from '../types/user-permissions-types';
 
 const { ROUTES, BLOCKS, STOP_MESSAGING, ALERTS } = USER_PERMISSIONS;
-export const isGlobalActionPermitted = (permissions, action) => _.some(permissions, { _rel: action });
+export const isGlobalActionPermitted = (permissions, action) => some(permissions, { _rel: action });
 const isContainingPermission = (instance, permission) => {
-    const userPermissions = _.get(instance, '_links.permissions', []);
-    return _.findIndex(userPermissions, { _rel: permission }) !== -1;
+    const userPermissions = get(instance, '_links.permissions', []);
+    return findIndex(userPermissions, { _rel: permission }) !== -1;
 };
 
 // R&T
@@ -26,4 +26,4 @@ export const isGlobalEditStopMessagesPermitted = permissions => isGlobalActionPe
 export const isIndividualEditStopMessagesPermitted = message => isContainingPermission(message, STOP_MESSAGING.EDIT_STOP_MESSAGE);
 
 // Alerts
-export const isAlertDismissPermitted = _links => _.findIndex(_links.permissions, { _rel: ALERTS.DISMISS_ALERT }) !== -1;
+export const isAlertDismissPermitted = _links => findIndex(_links.permissions, { _rel: ALERTS.DISMISS_ALERT }) !== -1;

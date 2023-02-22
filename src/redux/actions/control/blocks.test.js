@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { unset, flatten } from 'lodash-es';
 import chai, { expect } from 'chai';
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
@@ -637,7 +637,7 @@ describe('blocks actions', () => {
         });
 
         it('should deallocate vehicles from selected trip', async () => {
-            _.unset(mockBlocksClone.blocks[0].operationalTrips[0], 'vehicles');
+            unset(mockBlocksClone.blocks[0].operationalTrips[0], 'vehicles');
             const expectedActions = getExpectedActions(mockBlocksClone.blocks);
             await store.dispatch(deallocateVehiclesFromTripSelected(
                 mockBlocks.blocks[0],
@@ -647,8 +647,8 @@ describe('blocks actions', () => {
         });
 
         it('should deallocate vehicles from selected trip onwards', async () => {
-            _.unset(mockBlocksClone.blocks[0].operationalTrips[1], 'vehicles');
-            _.unset(mockBlocksClone.blocks[0].operationalTrips[2], 'vehicles');
+            unset(mockBlocksClone.blocks[0].operationalTrips[1], 'vehicles');
+            unset(mockBlocksClone.blocks[0].operationalTrips[2], 'vehicles');
             const expectedActions = getExpectedActions(mockBlocksClone.blocks);
             await store.dispatch(deallocateVehiclesFromTripSelectedOnwards(
                 mockBlocks.blocks[0],
@@ -672,7 +672,7 @@ describe('blocks actions', () => {
                 await store.dispatch(deallocateVehiclesFromAllTripsInBlock(
                     mockBlocks.blocks[0],
                     [
-                        _.flatten(
+                        flatten(
                             mockBlocks.blocks[0].operationalTrips[0].vehicles,
                             mockBlocks.blocks[1].operationalTrips[0].vehicles,
                         ),

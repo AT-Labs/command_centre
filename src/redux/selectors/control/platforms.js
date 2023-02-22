@@ -1,5 +1,5 @@
-import _ from 'lodash-es';
+import { result } from 'lodash-es';
 import { createSelector } from 'reselect';
 
-export const getPlatformsState = state => _.result(state, 'control.platforms');
-export const getPlatforms = createSelector(getPlatformsState, state => _.result(state, 'all'));
+export const getPlatformsState = state => result(state, 'control.platforms');
+export const getPlatforms = createSelector(getPlatformsState, state => result(state, 'all'));

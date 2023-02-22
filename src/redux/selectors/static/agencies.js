@@ -1,3 +1,3 @@
-import _ from 'lodash-es';
+import { result } from 'lodash-es';
 
-export const getAgencies = state => _.result(state, 'static.agencies');
+export const getAgencies = state => result(state, 'static.agencies');

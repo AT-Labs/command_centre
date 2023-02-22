@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { isNull, isEmpty } from 'lodash-es';
 import { IoIosWarning } from 'react-icons/io';
 import { Input, Label } from 'reactstrap';
 
@@ -58,7 +58,7 @@ export class StopGroupsModal extends React.Component {
         return null;
     }
 
-    dismissErrorHandler = () => !_.isNull(this.props.error.createStopGroup) && this.props.dismissError('createStopGroup');
+    dismissErrorHandler = () => !isNull(this.props.error.createStopGroup) && this.props.dismissError('createStopGroup');
 
     toggleModal = () => {
         this.setState({
@@ -78,7 +78,7 @@ export class StopGroupsModal extends React.Component {
     };
 
     updateStopGroup = () => {
-        if (_.isNull(this.props.error.createStopGroup)) {
+        if (isNull(this.props.error.createStopGroup)) {
             const {
                 stops, title,
             } = this.state;
@@ -97,7 +97,7 @@ export class StopGroupsModal extends React.Component {
         const { stops, title } = this.state;
         const inputLabelAndPlaceholder = 'Search for a stop or group';
         const isMaxCharactersLengthExceeded = title.length > MAX_CHARACTERS;
-        const isSaveButtonDisabled = _.isEmpty(stops)
+        const isSaveButtonDisabled = isEmpty(stops)
         || title === ''
         || isMaxCharactersLengthExceeded;
 
@@ -117,7 +117,7 @@ export class StopGroupsModal extends React.Component {
                     <div className="col">
                         <ModalAlert
                             color="danger"
-                            isOpen={ !_.isNull(error.createStopGroup) }
+                            isOpen={ !isNull(error.createStopGroup) }
                             content={ <span>{ error.createStopGroup }</span> } />
                     </div>
                 </div>

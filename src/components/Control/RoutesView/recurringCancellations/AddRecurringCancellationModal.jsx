@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { isEmpty, some } from 'lodash-es';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 import moment from 'moment';
@@ -93,7 +93,7 @@ const AddRecurringCancellationModal = (props) => {
         return 'addRecurringCancellation';
     };
 
-    const isFieldEmpty = _.some([
+    const isFieldEmpty = some([
         recurrenceSetting.startDate,
         recurrenceSetting.endDate,
         recurrenceSetting.selectedWeekdays,
@@ -101,7 +101,7 @@ const AddRecurringCancellationModal = (props) => {
         recurrenceSetting.startTime,
         recurrenceSetting.operator,
         recurrenceSetting.route,
-    ], _.isEmpty);
+    ], isEmpty);
 
     const renderMainBody = () => (
         <ModalWithInputField
@@ -147,7 +147,7 @@ const AddRecurringCancellationModal = (props) => {
             title: 'Delete recurring cancellation',
             errorMessage: 'trip fail to be updated',
             mainButtonLabel: 'Delete recurring cancellation',
-            onClick: () => props.deleteRecurringCancellationInDatabase(_.isEmpty(multipleRowData) ? rowData.id : multipleRowData),
+            onClick: () => props.deleteRecurringCancellationInDatabase(isEmpty(multipleRowData) ? rowData.id : multipleRowData),
             disabled: props.isLoading,
             renderBody: (
                 <div>
@@ -172,7 +172,7 @@ const AddRecurringCancellationModal = (props) => {
             title: 'Upload file',
             mainButtonLabel: 'Upload file',
             onClick: () => props.uploadFileRecurringCancellation(recurrenceFileSetting),
-            disabled: !(!_.isEmpty(recurrenceFileSetting.operator) && !_.isEmpty(recurrenceFileSetting.csvFile.name)),
+            disabled: !(!isEmpty(recurrenceFileSetting.operator) && !isEmpty(recurrenceFileSetting.csvFile.name)),
             renderBody: renderMainBody(),
         },
     };

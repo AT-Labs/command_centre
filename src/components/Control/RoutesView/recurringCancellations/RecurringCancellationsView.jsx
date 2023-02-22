@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import _ from 'lodash-es';
+import { isEmpty, size, filter, isNull } from 'lodash-es';
 import moment from 'moment-timezone';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -243,7 +243,7 @@ export const RecurringCancellationsView = (props) => {
 
     useEffect(() => {
         const operators = [];
-        if (_.isEmpty(props.operators)) props.retrieveAgencies();
+        if (isEmpty(props.operators)) props.retrieveAgencies();
         props.operators.forEach(element => operators.push(element.agencyName));
         setOperatorsList(operators);
     }, [props.operators]);
@@ -261,7 +261,7 @@ export const RecurringCancellationsView = (props) => {
                 tripStartTime: null,
             };
 
-            const filter = {
+            const filterObj = {
                 routeType: data.routeType,
                 startTimeFrom: getClosestTimeValueForFilter(data.startTime),
                 startTimeTo: '',
@@ -270,7 +270,7 @@ export const RecurringCancellationsView = (props) => {
                 routeShortName: data.routeShortName,
                 routeVariantId: data.routeVariantId,
             };
-            props.goToRoutesView(trip, filter);
+            props.goToRoutesView(trip, filterObj);
             props.recurringCancellationRedirection(null, null);
         }
 
@@ -290,7 +290,7 @@ export const RecurringCancellationsView = (props) => {
         return operators.length
             ? recurringCancellations.map(recurringCancellation => ({
                 ...recurringCancellation,
-                operator: _.filter(
+                operator: filter(
                     operators,
                     ope => ope.agencyId === recurringCancellation.agencyId,
                 )[0]?.agencyName,
@@ -380,7 +380,7 @@ export const RecurringCancellationsView = (props) => {
             <div>
                 <div className="fixed-bottom">
                     <>
-                        {!_.isNull(props.recurringCancellationMessage.recurringCancellationId) && (
+                        {!isNull(props.recurringCancellationMessage.recurringCancellationId) && (
                             <AlertMessage
                                 message={ {
                                     id: `${props.recurringCancellationMessage.recurringCancellationId}`,
@@ -402,7 +402,7 @@ export const RecurringCancellationsView = (props) => {
                     onChangeSelectedData={ x => setSelectedRow([...x]) }
                     selectionModel={ selectedRow }
                     checkboxSelection={ props.isRecurringCancellationUpdateAllowed }
-                    customFooter={ _.size(selectedRow) > 0 ? renderCustomFooter : undefined }
+                    customFooter={ size(selectedRow) > 0 ? renderCustomFooter : undefined }
                 />
             </div>
         </div>

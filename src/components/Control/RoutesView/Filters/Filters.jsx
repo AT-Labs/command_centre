@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import _ from 'lodash-es';
+import { noop, get } from 'lodash-es';
 
 import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
@@ -48,17 +48,17 @@ const Filters = (props) => {
     const actionHandlers = {
         selection: {
             [SEARCH_RESULT_TYPE.CONTROL_ROUTE.type]: selectedOption => props.mergeRouteFilters({
-                routeShortName: _.get(selectedOption, 'data.routeShortName'),
+                routeShortName: get(selectedOption, 'data.routeShortName'),
                 routeVariantId: '',
             }),
             [SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type]: selectedOption => props.mergeRouteFilters({
                 routeShortName: '',
-                routeVariantId: _.get(selectedOption, 'data.routeVariantId'),
+                routeVariantId: get(selectedOption, 'data.routeVariantId'),
             }),
         },
         clear: {
-            [SEARCH_RESULT_TYPE.CONTROL_ROUTE.type]: _.noop,
-            [SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type]: _.noop,
+            [SEARCH_RESULT_TYPE.CONTROL_ROUTE.type]: noop,
+            [SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT.type]: noop,
         },
     };
 

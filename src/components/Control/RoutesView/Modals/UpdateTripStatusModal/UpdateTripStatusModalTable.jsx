@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash-es';
+import { compact, map } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
@@ -50,7 +50,7 @@ const UpdateTripStatusModalTable = (props) => {
     return (
         <ControlTable
             columns={ SELECTED_TRIPS_COLUMNS }
-            data={ _.compact(_.map(selectedTrips, (value, key) => ({
+            data={ compact(map(selectedTrips, (value, key) => ({
                 routeVariantId: value.routeVariantId,
                 startTime: value.startTime,
                 routeLongName: value.routeLongName,

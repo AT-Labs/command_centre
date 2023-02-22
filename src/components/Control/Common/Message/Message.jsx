@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import * as _ from 'lodash-es';
+import { delay, isEmpty } from 'lodash-es';
 import { Alert } from 'reactstrap';
 
 import MESSAGE_TYPES, { CONFIRMATION_MESSAGE_TYPE } from '../../../../types/message-types';
@@ -39,7 +39,7 @@ export default class Message extends React.Component {
 
     componentDidMount() {
         if (this.props.autoDismiss) {
-            this.dismissTimeoutId = _.delay(this.handleDismiss, this.props.timeout);
+            this.dismissTimeoutId = delay(this.handleDismiss, this.props.timeout);
         }
     }
 
@@ -52,7 +52,7 @@ export default class Message extends React.Component {
     handleDismiss = () => this.setState({ isVisible: false });
 
     render() {
-        if (_.isEmpty(this.props.message)) return null;
+        if (isEmpty(this.props.message)) return null;
 
         const transitionOptions = {
             in: true,

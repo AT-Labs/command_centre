@@ -1,4 +1,4 @@
-import _ from 'lodash-es';
+import { isNull } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
@@ -91,7 +91,7 @@ export class AllocateVehiclesModal extends React.Component {
                 okButton={ {
                     label: 'Allocate',
                     onClick: this.allocateVehicles,
-                    isDisabled: _.isNull(vehicles) || !isPopulated,
+                    isDisabled: isNull(vehicles) || !isPopulated,
                     className: 'allocate-vehicles-modal__save-btn',
                 } }>
                 <dl className="row">
