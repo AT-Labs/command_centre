@@ -281,7 +281,7 @@ describe('getPassengerCountTotal', () => {
             until: moment.utc('2023-01-01T16:00:00.000Z').toDate(),
             freq: 2,
         };
-        expect(getPassengerCountTotal(passengerCountData, true, recurrencePattern, '2')).toEqual(9);
+        expect(getPassengerCountTotal(passengerCountData, true, recurrencePattern, '2')).toEqual(168);
     });
 });
 
@@ -342,8 +342,15 @@ describe('fetchAndProcessPassengerImpactData', () => {
             total: 0,
         });
         expect(passengerCountApi.getPassengerCountData).toBeCalledWith([
-            { routeId: 'EAST-201', stopCode: '9001' },
-            { routeId: 'WEST-201' },
-        ], expect.anything(), expect.anything());
+            {
+                stopCode: '9001',
+                routeId: 'EAST-201',
+                friday: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+            },
+            {
+                routeId: 'WEST-201',
+                friday: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+            },
+        ]);
     });
 });

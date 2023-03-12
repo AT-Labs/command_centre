@@ -4,11 +4,8 @@ import HTTP_TYPES from '../../types/http-types';
 const { REACT_APP_PASSENGER_COUNT_API } = process.env;
 const { POST } = HTTP_TYPES;
 
-export const getPassengerCountData = (affectedEntities, startDate, endDate) => {
-    let url = `${REACT_APP_PASSENGER_COUNT_API}/passenger-count?startDate=${startDate}`;
-    if (endDate) {
-        url += `&endDate=${endDate}`;
-    }
+export const getPassengerCountData = (affectedEntities) => {
+    const url = `${REACT_APP_PASSENGER_COUNT_API}/passenger-count`;
     return fetch(
         url,
         {

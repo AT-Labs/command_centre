@@ -80,7 +80,7 @@ export const PassengerImpactGrid = (props) => {
     const [passengerCountData, setPassengerCountData] = useState({ grid: [], total: 0 });
     const [isLoading, setIsLoading] = useState(true);
 
-    const { affectedRoutes, affectedStops, childStops, disruptionData, onUpdatePassengerImpactState, onUpdatePassengerImpactData, allRoutes, allStops } = props;
+    const { affectedRoutes, affectedStops, childStops, disruptionData, onUpdatePassengerImpactState, onUpdatePassengerImpactData, allRoutes, allStops, stopsByRoute } = props;
 
     const refreshPassengerCountData = async () => {
         const aggregatedPassengerImpactData = await fetchAndProcessPassengerImpactData(
@@ -90,7 +90,7 @@ export const PassengerImpactGrid = (props) => {
             childStops,
             allRoutes,
             allStops,
-            props.stopsByRoute,
+            stopsByRoute,
         );
         setPassengerCountData(aggregatedPassengerImpactData);
         onUpdatePassengerImpactState(aggregatedPassengerImpactData.grid.length > 0);
