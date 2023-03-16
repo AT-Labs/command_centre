@@ -5,7 +5,7 @@ import { IoMdInformationCircle } from 'react-icons/io';
 import { IconContext } from 'react-icons';
 import { UncontrolledTooltip } from 'reactstrap';
 
-import { formatUnixTime } from '../../../../utils/helpers';
+import { formatUnixDatetime, formatUnixTime } from '../../../../utils/helpers';
 import { TRIP_UPDATE_TYPE } from '../../../../constants/tripReplays';
 
 import './TripUpdateTag.scss';
@@ -30,7 +30,7 @@ const TripUpdateTag = ({ className, type, indicatorBar, data, hasIcon, hasToolti
                     className="trip-update-tag__tooltip"
                     target={ `trip-update-tag--canceled-${data.timestamp}` }
                 >
-                    { `This trip was cancelled at ${formatUnixTime(data.timestamp)}` }
+                    { `This trip was cancelled at ${formatUnixDatetime(data.timestamp)}` }
                 </UncontrolledTooltip>
             ) }
         </>
