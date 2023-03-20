@@ -7,13 +7,13 @@ import { setBannerError } from '../../activity';
 import { getAllRoutes } from '../../../selectors/static/routes';
 import { VEHICLE_POSITION } from '../../../../types/vehicle-types';
 
-export const vechicleReplayEvents = (vehicleEventsAndPositions, totalEvents, totalDisplayedEvents, hasMoreVehicleStausAndPositions) => ({
+export const vehicleReplayEvents = (vehicleEventsAndPositions, totalEvents, totalDisplayedEvents, hasMoreVehicleStatusAndPositions) => ({
     type: ACTION_TYPE.FETCH_CONTROL_VEHICLE_REPLAYS,
     payload: {
         vehicleEventsAndPositions,
         totalEvents,
         totalDisplayedEvents,
-        hasMoreVehicleStausAndPositions,
+        hasMoreVehicleStatusAndPositions,
     },
 });
 
@@ -47,7 +47,7 @@ export const setVehicleViewTabStatus = vehicleViewTabStatus => ({
     },
 });
 
-const clusterVehiclePositionGroup = (vehicleEvents) => {
+export const clusterVehiclePositionGroup = (vehicleEvents) => {
     let vehiclePositionLowerBound = 0;
     let vehiclePositionUpperBound = 0;
     const output = [];
@@ -117,7 +117,7 @@ export const getVehicleReplayStatusAndPosition = () => (dispatch, getState) => {
         .then(([vehicleStatus, vehiclePositionsData]) => {
             const vehiclePositions = vehiclePositionsData.data;
             if (vehicleStatus.length === 0 && vehiclePositions.length === 0) {
-                dispatch(vechicleReplayEvents([], 0, 0, false));
+                dispatch(vehicleReplayEvents([], 0, 0, false));
             } else {
                 const vehicleEvents = [];
                 if (vehicleStatus.length !== 0) {
@@ -151,7 +151,7 @@ export const getVehicleReplayStatusAndPosition = () => (dispatch, getState) => {
                 const mergedVehiclePosition = clusterVehiclePositionGroup(vehicleEvents)
                     .map(data => mergeVehiclePosition(data));
 
-                dispatch(vechicleReplayEvents(mergedVehiclePosition, totalEvents, totalDisplayedEvents, hasMore));
+                dispatch(vehicleReplayEvents(mergedVehiclePosition, totalEvents, totalDisplayedEvents, hasMore));
 
                 const splitData = segregateVehiclePositionAndEvents(mergedVehiclePosition);
                 const { splitVehicleEvents, splitVehiclePosition } = splitData;

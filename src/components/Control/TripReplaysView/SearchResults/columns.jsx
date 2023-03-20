@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
-import { formatTime, formatUnixTime } from '../../../../utils/helpers';
+import { formatUnixTime, formatTimeForColumn } from '../../../../utils/helpers';
 import TripUpdateTag from '../../Common/Trip/TripUpdateTag';
 import { isTripCanceled, tripHasDisruption } from '../../../../utils/control/tripReplays';
 import { TRIP_UPDATE_TYPE } from '../../../../constants/tripReplays';
@@ -37,22 +37,22 @@ export const getColumns = (searchType) => {
         ),
     }, {
         header: 'Scheduled First Stop Departure',
-        headerClassName: 'trip-replay-progress__fixed-table-cell--scheduled-time font-size-sm text-right alignment',
-        cellClassName: 'trip-replay-progress__fixed-table-cell--scheduled-time font-size-sm text-right',
-        formatter: ({ tripStart }) => (tripStart && formatTime(tripStart)) || '',
+        headerClassName: 'trip-replay-progress__fixed-table-cell--scheduled-time font-size-sm alignment',
+        cellClassName: 'trip-replay-progress__fixed-table-cell--scheduled-time font-size-sm text-left',
+        formatter: ({ tripStart, serviceDate }) => formatTimeForColumn(tripStart, serviceDate),
     }];
 
     if (searchType !== SEARCH_RESULT_TYPE.STOP.type) {
         columns.push(...[{
             header: 'Trip Sign On',
-            headerClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-right alignment',
-            cellClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-right',
-            formatter: ({ tripSignOn }) => (tripSignOn && formatTime((tripSignOn))) || '',
+            headerClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm alignment',
+            cellClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-left',
+            formatter: ({ tripSignOn, serviceDate }) => formatTimeForColumn(tripSignOn, serviceDate),
         }, {
             header: 'Actual First Stop Departure',
-            headerClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-right alignment',
-            cellClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-right',
-            formatter: ({ firstStopDeparture }) => (firstStopDeparture && formatTime((firstStopDeparture))) || '-',
+            headerClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm alignment',
+            cellClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-left',
+            formatter: ({ firstStopDeparture, serviceDate }) => formatTimeForColumn(firstStopDeparture, serviceDate),
         }]);
     } else {
         columns.push(...[{

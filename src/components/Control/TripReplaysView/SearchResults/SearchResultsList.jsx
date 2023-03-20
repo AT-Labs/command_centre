@@ -40,7 +40,7 @@ class SearchResultsList extends PureComponent {
             timeType: PropTypes.string.isRequired,
         }).isRequired,
         selectTrip: PropTypes.func.isRequired,
-        hasMoreVehicleStausAndPositions: PropTypes.bool.isRequired,
+        hasMoreVehicleStatusAndPositions: PropTypes.bool.isRequired,
         vehicleEvents: PropTypes.array,
         vehicleEventsDisplayedTotalResult: PropTypes.number,
     };
@@ -63,9 +63,9 @@ class SearchResultsList extends PureComponent {
         return `${m.format('HH:mm')}${hours > 23 ? ' (+1)' : ''}`;
     };
 
-    renderVehicleStatusHeader = (hasMoreVehicleStausAndPositions, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) => (
+    renderVehicleStatusHeader = (hasMoreVehicleStatusAndPositions, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) => (
         <>
-            { hasMoreVehicleStausAndPositions ? (
+            { hasMoreVehicleStatusAndPositions ? (
                 <div className="px-4 mt-3 mb-3">
                     Showing
                     {' '}
@@ -87,7 +87,7 @@ class SearchResultsList extends PureComponent {
 
     render() {
         const { trips, hasMore, totalResults, vehicleEventsTotalResult, searchParams: { searchTerm, date, startTime, endTime },
-            handleMouseEnter, handleMouseLeave, handleMouseClick, hasMoreVehicleStausAndPositions, vehicleEvents, vehicleEventsDisplayedTotalResult } = this.props;
+            handleMouseEnter, handleMouseLeave, handleMouseClick, hasMoreVehicleStatusAndPositions, vehicleEvents, vehicleEventsDisplayedTotalResult } = this.props;
         const { type, label } = searchTerm;
         const { BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
         const vehicles = [BUS.type, TRAIN.type, FERRY.type];
@@ -179,7 +179,7 @@ class SearchResultsList extends PureComponent {
             if (vehicles.includes(type) && trips.length === 0) {
                 return (
                     <div>
-                        { this.renderVehicleStatusHeader(hasMoreVehicleStausAndPositions, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) }
+                        { this.renderVehicleStatusHeader(hasMoreVehicleStatusAndPositions, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) }
                         <VehicleStatusView
                             handleMouseEnter={ handleMouseEnter }
                             handleMouseLeave={ handleMouseLeave }
@@ -194,7 +194,7 @@ class SearchResultsList extends PureComponent {
                         renderTripView={ renderResults }
                         vehicleStatusHeader={
                             !isNull(vehicleEvents)
-                                ? this.renderVehicleStatusHeader(hasMoreVehicleStausAndPositions, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) : null
+                                ? this.renderVehicleStatusHeader(hasMoreVehicleStatusAndPositions, vehicleEventsDisplayedTotalResult, vehicleEventsTotalResult) : null
                         }
                         handleMouseEnter={ handleMouseEnter }
                         handleMouseLeave={ handleMouseLeave }
@@ -258,7 +258,7 @@ export default connect(
     state => ({
         vehicleEventsTotalResult: getVehicleEventsTotalResults(state),
         vehicleEventsDisplayedTotalResult: getVehicleEventsDisplayedTotalResults(state),
-        hasMoreVehicleStausAndPositions: getVehicleEventsHasMore(state),
+        hasMoreVehicleStatusAndPositions: getVehicleEventsHasMore(state),
         vehicleEvents: getVehicleEventsAndPositions(state),
     }),
     {

@@ -5,7 +5,7 @@ export const INIT_STATE = {
     vehicleEventsAndPositions: null,
     totalEvents: 0,
     totalDisplayedEvents: 0,
-    hasMoreVehicleStausAndPositions: false,
+    hasMoreVehicleStatusAndPositions: false,
     vehicleEvents: null,
     vehiclePositions: null,
     firstEvent: null,
@@ -16,8 +16,8 @@ const handleVehicleEvents = (state, { payload: {
     vehicleEventsAndPositions,
     totalEvents,
     totalDisplayedEvents,
-    hasMoreVehicleStausAndPositions,
-} }) => ({ ...state, vehicleEventsAndPositions, totalEvents, totalDisplayedEvents, hasMoreVehicleStausAndPositions });
+    hasMoreVehicleStatusAndPositions,
+} }) => ({ ...state, vehicleEventsAndPositions, totalEvents, totalDisplayedEvents, hasMoreVehicleStatusAndPositions });
 const handleVehicleEventsAndPositions = (state, { payload: { vehicleEvents, vehiclePositions } }) => ({ ...state, vehicleEvents, vehiclePositions });
 const handleVehicleFirstReplayEvent = (state, { payload: { firstEvent } }) => ({ ...state, firstEvent });
 const handleVehicleviewTabStatus = (state, { payload: { vehicleViewTabStatus } }) => ({ ...state, vehicleViewTabStatus });

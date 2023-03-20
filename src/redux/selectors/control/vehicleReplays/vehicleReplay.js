@@ -5,7 +5,7 @@ export const getVehicleReplay = state => result(state, 'control.vehicleReplays.v
 export const getVehicleEventsAndPositions = createSelector(getVehicleReplay, vehicleReplay => result(vehicleReplay, 'vehicleEventsAndPositions'));
 export const getVehicleEventsTotalResults = createSelector(getVehicleReplay, vehicleReplay => result(vehicleReplay, 'totalEvents'));
 export const getVehicleEventsDisplayedTotalResults = createSelector(getVehicleReplay, vehicleReplay => result(vehicleReplay, 'totalDisplayedEvents'));
-export const getVehicleEventsHasMore = createSelector(getVehicleReplay, vehicleReplay => result(vehicleReplay, 'hasMoreVehicleStausAndPositions'));
+export const getVehicleEventsHasMore = createSelector(getVehicleReplay, vehicleReplay => result(vehicleReplay, 'hasMoreVehicleStatusAndPositions'));
 
 export const getVehicleEvents = createSelector(getVehicleReplay, vehicleReplay => result(vehicleReplay, 'vehicleEvents'));
 export const getVehiclePositions = createSelector(getVehicleReplay, vehicleReplay => result(vehicleReplay, 'vehiclePositions'));

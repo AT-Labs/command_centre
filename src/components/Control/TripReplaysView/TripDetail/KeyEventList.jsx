@@ -10,7 +10,7 @@ import TripUpdateTag from '../../Common/Trip/TripUpdateTag';
 import { TRIP_UPDATE_TYPE, TRIP_FINAL_STATUS } from '../../../../constants/tripReplays';
 import { getCanceledEvent, getPlatformChanges, getSkippedStops, getStopIndexAfterCancel } from '../../../../utils/control/tripReplays';
 
-const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, operationalEvents) => {
+const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, operationalEvents, tripSignOn) => {
     const skippedStops = getSkippedStops(operationalEvents);
     const platformChanges = getPlatformChanges(operationalEvents);
     const canceledEvent = getCanceledEvent(operationalEvents);
@@ -27,7 +27,7 @@ const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMo
             type = EVENT_TYPES.TRIP_END;
         }
 
-        const { scheduledTime, time } = getTimesFromStop(stop);
+        const { scheduledTime, time } = getTimesFromStop(stop, tripSignOn);
 
         const keyEventDetail = {
             id: `${stop.stopCode}_${stop.stopSequence}`,
@@ -92,7 +92,7 @@ function KeyEventList({ tripId, tripSignOn, stops, status, handleMouseEnter, han
                 )
             }
             {
-                renderStops(stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, operationalEvents)
+                renderStops(stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, operationalEvents, tripSignOn)
             }
         </ul>
     );

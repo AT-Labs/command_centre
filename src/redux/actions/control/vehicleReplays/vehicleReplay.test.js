@@ -3,7 +3,7 @@ import thunk from 'redux-thunk';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import ACTION_TYPE from '../../../action-types';
-import { getVehicleReplayStatusAndPosition } from './vehicleReplay';
+import {clusterVehiclePositionGroup, getVehicleReplayStatusAndPosition} from './vehicleReplay';
 import * as vehicleReplayApi from '../../../../utils/transmitters/vehicle-replay-api';
 import * as routes from '../../../selectors/static/routes';
 
@@ -73,11 +73,121 @@ describe('Vehicle replay actions', () => {
                     start: "07:48:00",
                     end: "08:43:00"
                 }
-            }
+            },
         ],
         count: 2
     }
-    
+
+    const mockVehicleEventData = [ ...mockVehiclePosition.data,
+        {
+            id: "12114",
+            type: "signOff",
+            timestamp: 1668104503,
+            routeId: "",
+            vehicle: {
+                id: "12114",
+                label: "NB2114",
+                licensePlate: "EGR138"
+            },
+            position: {
+                speed: 0,
+                bearing: 299,
+                latitude: -36.9140285,
+                longitude: 174.6883322
+            },
+            actual: {
+                start: "07:47:07",
+                end: "10:30:26"
+            },
+            scheduled: {
+                start: "07:48:00",
+                end: "08:43:00"
+            }
+        },
+    ];
+
+    const mockVehicleEventClusterResult = [
+        [
+            {
+                id: '12114',
+                type: 'vehiclePosition',
+                timestamp: 1668103503,
+                routeId: '',
+                vehicle: {
+                    id: "12114",
+                    label: "NB2114",
+                    licensePlate: "EGR138"
+                },
+                position: {
+                    speed: 0,
+                    bearing: 299,
+                    latitude: -36.914028,
+                    longitude: 174.6883315
+                },
+                actual: {
+                    start: "07:47:07",
+                    end: "10:30:26"
+                },
+                scheduled: {
+                    start: "07:48:00",
+                    end: "08:43:00"
+                }
+            },
+            {
+                id: '12114',
+                type: 'vehiclePosition',
+                routeId: '',
+                timestamp: 1668103508,
+                vehicle: {
+                    id: "12114",
+                    label: "NB2114",
+                    licensePlate: "EGR138"
+                },
+                position: {
+                    speed: 0,
+                    bearing: 299,
+                    latitude: -36.9140285,
+                    longitude: 174.6883322
+                },
+                actual: {
+                    start: "07:47:07",
+                    end: "10:30:26"
+                },
+                scheduled: {
+                    start: "07:48:00",
+                    end: "08:43:00"
+                }
+            }
+        ],
+        [
+            {
+                id: '12114',
+                type: 'signOff',
+                timestamp: 1668104503,
+                routeId: '',
+                vehicle: {
+                    id: "12114",
+                    label: "NB2114",
+                    licensePlate: "EGR138"
+                },
+                position: {
+                    speed: 0,
+                    bearing: 299,
+                    latitude: -36.9140285,
+                    longitude: 174.6883322
+                },
+                actual: {
+                    start: "07:47:07",
+                    end: "10:30:26"
+                },
+                scheduled: {
+                    start: "07:48:00",
+                    end: "08:43:00"
+                }
+            }
+        ]
+    ];
+
     const mockVehicleReplayData = [
         {
             trip: [
@@ -122,7 +232,7 @@ describe('Vehicle replay actions', () => {
             }
         }
     ]
-    
+
     const dispatchedData = [
         {
             id: "30d16319-a915-4ddc-a5fd-f46c3cff5fb2",
@@ -345,7 +455,7 @@ describe('Vehicle replay actions', () => {
                     vehicleEventsAndPositions: dispatchedData,
                     totalEvents: 4,
                     totalDisplayedEvents: 4,
-                    hasMoreVehicleStausAndPositions: false
+                    hasMoreVehicleStatusAndPositions: false
                 },
             },
             {
@@ -384,7 +494,7 @@ describe('Vehicle replay actions', () => {
                     vehicleEventsAndPositions: [],
                     totalEvents: 0,
                     totalDisplayedEvents: 0,
-                    hasMoreVehicleStausAndPositions: false
+                    hasMoreVehicleStatusAndPositions: false
                 },
             },
         ];
@@ -394,5 +504,10 @@ describe('Vehicle replay actions', () => {
 
         await store.dispatch(getVehicleReplayStatusAndPosition());
         expect(store.getActions()).to.eql(expectedActions);
+    });
+
+    it('cluster Vehicle Position Correctly ', async () => {
+        const output = clusterVehiclePositionGroup(mockVehicleEventData);
+        expect(output).to.eql(mockVehicleEventClusterResult);
     });
 });

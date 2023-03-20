@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { isNull, isEmpty } from 'lodash-es';
+import { isNull } from 'lodash-es';
 import moment from 'moment';
 import { BsKeyFill, BsKey, BsFillLightbulbFill, BsFillLightbulbOffFill, BsFillGeoAltFill } from 'react-icons/bs';
 import { TbEngine, TbEngineOff } from 'react-icons/tb';
@@ -45,6 +45,18 @@ function VehicleStatusPopupContent({ eventDetail }) {
         if (eventDetail.type !== VEHICLE_POSITION && eventDetail.tripDate) {
             return moment(eventDetail.tripDate).format('YYYY-MM-DD');
         }
+        return 'N/A';
+    };
+
+    const getRouteName = () => {
+        if (eventDetail.trip?.routeId) {
+            return eventDetail.trip.routeId.split('-')[0];
+        }
+
+        if (eventDetail.routeShortName) {
+            return eventDetail.routeShortName;
+        }
+
         return 'N/A';
     };
 
@@ -100,7 +112,7 @@ function VehicleStatusPopupContent({ eventDetail }) {
                 <div className="col pb-2">
                     <b>Route:</b>
                     {' '}
-                    { !isEmpty(eventDetail.routeShortName) ? eventDetail.routeShortName : 'N/A' }
+                    { getRouteName() }
                 </div>
             </div>
             <div className="row">

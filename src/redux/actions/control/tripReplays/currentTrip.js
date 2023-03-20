@@ -6,7 +6,7 @@ import { setBannerError } from '../../activity';
 import { updateTripReplayDisplaySingleTrip } from './tripReplayView';
 import { updatePrevTripValue } from './prevFilterValue';
 import { getAllRoutes } from '../../../selectors/static/routes';
-import { vechicleReplayEvents } from '../vehicleReplays/vehicleReplay';
+import { vehicleReplayEvents } from '../vehicleReplays/vehicleReplay';
 
 const updateTripReplayCurrentTripDetail = detail => ({
     type: ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_CURRENT_TRIP_DETAIL,
@@ -30,7 +30,7 @@ export const clearCurrentTrip = () => ({
 });
 
 export const selectTrip = trip => (dispatch, getState) => {
-    dispatch(vechicleReplayEvents(null, null, 0, false));
+    dispatch(vehicleReplayEvents(null, null, 0, false));
     dispatch(updatePrevTripValue(trip));
     dispatch(updateLoadingTripReplayState(true));
     // update current trip detail with the existing information passed from list

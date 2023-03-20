@@ -17,9 +17,10 @@ import { getTripReplayTotalResults } from '../../../../redux/selectors/control/t
 import Loader from '../../../Common/Loader/Loader';
 import { getVehicleEventsAndPositions } from '../../../../redux/selectors/control/vehicleReplays/vehicleReplay';
 import { getVehicleReplayStatusAndPosition } from '../../../../redux/actions/control/vehicleReplays/vehicleReplay';
+import { getTripReplaySearchDateFilter } from '../../../../redux/selectors/control/tripReplays/filters';
 
 const VehicleStatusView = (props) => {
-    const { vehicleEvents, handleMouseEnter, handleMouseLeave, handleMouseClick } = props;
+    const { vehicleEvents, handleMouseEnter, handleMouseLeave, handleMouseClick, searchDate } = props;
     const [expandedVehiclePosition, setExpandedVehiclePosition] = useState({});
 
     useEffect(() => {
@@ -56,7 +57,10 @@ const VehicleStatusView = (props) => {
         vehiclePosition: 'Vehicle Position',
     };
 
-    const getTime = timestamp => moment.unix(timestamp).tz(DATE_TYPE.TIME_ZONE).format('HH:mm:ss');
+    const getTime = (timestamp) => {
+        const nextDay = moment.unix(timestamp).isAfter(moment(searchDate).endOf('day'));
+        return `${moment.unix(timestamp).tz(DATE_TYPE.TIME_ZONE).format('HH:mm:ss')}${nextDay ? ' (+1)' : ''}`;
+    };
 
     const onClick = (event) => {
         handleMouseClick(event);
@@ -211,13 +215,16 @@ VehicleStatusView.propTypes = {
     handleMouseLeave: PropTypes.func.isRequired,
     handleMouseClick: PropTypes.func.isRequired,
     getVehicleReplayStatusAndPosition: PropTypes.func.isRequired,
+    searchDate: PropTypes.string,
 };
 
 VehicleStatusView.defaultProps = {
     vehicleEvents: null,
+    searchDate: undefined,
 };
 
 export default connect(state => ({
     totalTripResults: getTripReplayTotalResults(state),
     vehicleEvents: getVehicleEventsAndPositions(state),
+    searchDate: getTripReplaySearchDateFilter(state),
 }), { getVehicleReplayStatusAndPosition })(VehicleStatusView);
