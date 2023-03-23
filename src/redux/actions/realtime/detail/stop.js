@@ -3,7 +3,6 @@ import { map, indexOf, result, orderBy } from 'lodash-es';
 import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
-import { getNewTripId } from '../../../../utils/transmitters/gtfs-realtime';
 import ACTION_TYPE from '../../../action-types';
 import { getAllVehicles } from '../../../selectors/realtime/vehicles';
 import { getAllRoutes } from '../../../selectors/static/routes';
@@ -131,9 +130,8 @@ const mapPidInformation = (movements, allVehicles, isTrainStop) => movements.map
     expectedDepartureTime,
     trip_id,
 }) => {
-    const newTripId = await getNewTripId(trip_id).then(newTrip => newTrip.trips[0] && newTrip.trips[0].newId);
     const allocations = isTrainStop ? await ccRealtime.getVehiclesByTripId(trip_id) : null;
-    const currentVehicle = allVehicles && Object.values(allVehicles).find(v => (v.vehicle.trip ? v.vehicle.trip.tripId === newTripId : null));
+    const currentVehicle = allVehicles && Object.values(allVehicles).find(v => (v.vehicle.trip ? v.vehicle.trip.tripId === trip_id : null));
     const occupancyStatus = currentVehicle ? currentVehicle.vehicle.occupancyStatus : null;
 
     return {
@@ -143,7 +141,7 @@ const mapPidInformation = (movements, allVehicles, isTrainStop) => movements.map
         platform: arrivalPlatformName,
         scheduledTime: scheduledDepartureTime,
         dueTime: expectedDepartureTime,
-        tripId: newTripId,
+        tripId: trip_id,
         numberOfCars: allocations ? getNumberOfCarsByAllocations(allocations.response) : null,
         occupancyStatus,
     };

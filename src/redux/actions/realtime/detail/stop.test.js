@@ -5,7 +5,6 @@ import thunk from 'redux-thunk';
 import sinon from 'sinon';
 import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
-import * as gtfsRealtime from '../../../../utils/transmitters/gtfs-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import ACTION_TYPE from '../../../action-types';
 import * as stopDetailActions from './stop';
@@ -318,21 +317,14 @@ describe('Stop detail actions', () => {
                 ],
             },
         };
-        const newTrip = {
-            trips: [
-                {
-                    tripId: 'tripId',
-                    newId: 'newTripId',
-                },
-            ],
-        };
+
         const pidInformation = [{
             route: '120',
             destinationDisplay: 'britomart',
             platform: '1',
             scheduledTime: '2020-09-08T08:22:00.000Z',
             dueTime: '2020-09-08T08:25:40.000Z',
-            tripId: 'newTripId',
+            tripId: 'tripId',
             arrivalStatus: undefined,
             numberOfCars: 6,
             occupancyStatus: null,
@@ -364,19 +356,14 @@ describe('Stop detail actions', () => {
             const fakeGetDeparturesByStopCode = sandbox.fake.resolves(departures);
             const getDeparturesByStopCode = sandbox.stub(ccRealtime, 'getDeparturesByStopCode').callsFake(fakeGetDeparturesByStopCode);
 
-            const fakeGetNewTripId = sandbox.fake.resolves(newTrip);
-            const getNewTripId = sandbox.stub(gtfsRealtime, 'getNewTripId').callsFake(fakeGetNewTripId);
-
             const fakeGetVehiclesByTripId = sandbox.fake.resolves(vehicles);
             const getVehiclesByTripId = sandbox.stub(ccRealtime, 'getVehiclesByTripId').callsFake(fakeGetVehiclesByTripId);
 
             await store.dispatch(stopDetailActions.fetchPidInformation('stopCode', true));
             sandbox.assert.calledOnce(getDeparturesByStopCode);
             sandbox.assert.calledWith(getDeparturesByStopCode, 'stopCode');
-            sandbox.assert.calledOnce(getNewTripId);
-            sandbox.assert.calledWith(getNewTripId, departures.response.movements[0].trip_id);
             sandbox.assert.calledOnce(getVehiclesByTripId);
-            sandbox.assert.calledWith(getVehiclesByTripId, newTrip.trips[0].tripId);
+            sandbox.assert.calledWith(getVehiclesByTripId, departures.response.movements[0].trip_id);
             expect(store.getActions()).to.eql(expectedActions);
         });
     });

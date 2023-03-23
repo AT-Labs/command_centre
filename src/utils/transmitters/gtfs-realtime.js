@@ -1,8 +1,6 @@
 import { subscribeRealTime, unsubscribeRealTime } from '../ws-client';
-import { jsonResponseHandling } from '../fetch';
 
 const GTFS_REALTIME_SNAPSHOT_QUERY_URL = process.env.REACT_APP_GTFS_REALTIME_QUERY_URL;
-const GTFS_ID_MAPPING_URL = process.env.REACT_APP_GTFS_ID_MAPPING_API;
 
 const realTimeTrackingSubscription = `
 {
@@ -88,6 +86,3 @@ export const getTripUpdateRealTimeSnapshot = (tripId) => {
         return [];
     });
 };
-
-export const getNewTripId = oldTripId => fetch(`${GTFS_ID_MAPPING_URL}/mappings/oldtonew/${oldTripId}?current=true&routes=false&shapes=false&stops=false`, { method: 'GET' })
-    .then(response => jsonResponseHandling(response));
