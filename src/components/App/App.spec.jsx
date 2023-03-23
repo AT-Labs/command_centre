@@ -35,6 +35,7 @@ const componentPropsMock = {
     fetchTripReplaysViewPermission: jest.fn(),
     fetchNotificationsViewPermission: jest.fn(),
     getApplicationSettings: jest.fn(),
+    getStops: jest.fn(),
 };
 
 const setup = (customProps) => {
@@ -49,6 +50,7 @@ const mockResolveStaticData = () => {
     componentPropsMock.getBuses.mockResolvedValueOnce([]);
     componentPropsMock.getFerries.mockResolvedValueOnce([]);
     componentPropsMock.setCache.mockResolvedValueOnce([]);
+    componentPropsMock.getStops.mockResolvedValueOnce([]);
 };
 
 describe('<App />', () => {
@@ -80,6 +82,7 @@ describe('<App />', () => {
             expect(componentPropsMock.getBuses).toHaveBeenCalled();
             expect(componentPropsMock.getFerries).toHaveBeenCalled();
             expect(componentPropsMock.setCache).toHaveBeenCalled();
+            expect(componentPropsMock.getStops).toHaveBeenCalled();
         });
     });
 });

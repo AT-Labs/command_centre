@@ -10,6 +10,7 @@ import { getFleets } from '../../redux/actions/control/fleets';
 import { startTrackingVehicleAllocations } from '../../redux/actions/control/blocks';
 import { getBuses, getFerries, getTrains } from '../../redux/actions/static/fleet';
 import { setCache } from '../../redux/actions/static/cache';
+import { getStops } from '../../redux/actions/static/stops';
 import {
     fetchBlocksViewPermission,
     fetchDisruptionsViewPermission,
@@ -68,6 +69,7 @@ export function App(props) {
             props.getBuses(),
             props.getFerries(),
             props.setCache(),
+            props.getStops(),
         ]).then(() => {
             props.updateUserProfile(getAuthUser());
             props.fetchBlocksViewPermission();
@@ -132,6 +134,7 @@ App.propTypes = {
     fetchTripReplaysViewPermission: PropTypes.func.isRequired,
     fetchNotificationsViewPermission: PropTypes.func.isRequired,
     getApplicationSettings: PropTypes.func.isRequired,
+    getStops: PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
@@ -157,4 +160,5 @@ export default connect(state => ({
     fetchTripReplaysViewPermission,
     fetchNotificationsViewPermission,
     getApplicationSettings,
+    getStops,
 })(App);

@@ -15,8 +15,8 @@ export const getRoutesByStop = stopCode => fetch(
     { method: 'GET' },
 ).then(response => jsonResponseHandling(response));
 
-export const getAllStops = () => fetch(
-    `${CC_STATIC_QUERY_URL}/stops`,
+export const getAllStops = serviceDate => fetch(
+    `${CC_STATIC_QUERY_URL}/stops?${serviceDate ? new URLSearchParams({ date: serviceDate }).toString() : ''}`,
     { method: 'GET' },
 ).then(response => jsonResponseHandling(response));
 

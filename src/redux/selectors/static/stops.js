@@ -28,3 +28,22 @@ export const getChildStops = createSelector(
         return validStops;
     },
 );
+export const getParentStopsWithPlatform = createSelector(getAllStops, (allStops) => {
+    const raw = Object.values(allStops);
+    const stopsWithChildren = raw
+        .filter(stop => stop.parent_stop_code === null)
+        .map((stop) => {
+            const children = raw.filter(findStop => findStop.parent_stop_code === stop.stop_code);
+            return {
+                ...stop,
+                children,
+            };
+        });
+
+    const validStops = {};
+    forEach(stopsWithChildren, (stop) => {
+        Object.assign(validStops, { [stop.stop_id]: stop });
+    });
+
+    return validStops;
+});

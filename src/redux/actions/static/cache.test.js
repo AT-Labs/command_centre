@@ -42,7 +42,6 @@ describe('cache actions', () => {
             clear: sandbox.fake.resolves(),
         };
         cache.default.routes = cacheFunctions;
-        cache.default.stops = cacheFunctions;
 
         const expectedActions = [
             {
@@ -59,14 +58,6 @@ describe('cache actions', () => {
                     routes: [testRoute],
                 },
             },
-            {
-                type: ACTION_TYPE.FETCH_STOPS,
-                payload: {
-                    all: {
-                        [testStop.stop_id]: { ...testStop, ...testStopType, tokens: [testStop.stop_name, testStop.stop_id] },
-                    },
-                },
-            },
         ];
 
         await store.dispatch(setCache());
@@ -81,18 +72,12 @@ describe('cache actions', () => {
         sandbox.stub(cache, 'isCacheValid').callsFake(fakeIsValid);
 
         const testRoute = { route_id: 'test-route' };
-        const testStop = { stop_id: 'test-stop-id', stop_name: 'test-stop-name', stop_code: 'test-stop-id' };
         cache.default.routes = {
             toArray: sandbox.fake.resolves([testRoute]),
             clear: sandbox.fake,
         };
-        cache.default.stops = {
-            toArray: sandbox.fake.resolves([testStop]),
-            clear: sandbox.fake,
-        };
 
         const expectedActions = [
-            { type: ACTION_TYPE.FETCH_STOPS, payload: { all: { [testStop.stop_id]: testStop } } },
             { type: ACTION_TYPE.FETCH_ROUTES, payload: { routes: { [testRoute.route_id]: testRoute } } },
             { type: ACTION_TYPE.POPULATE_AGENCIES, payload: { routes: [{ route_id: testRoute.route_id }] } },
         ];

@@ -1,9 +1,10 @@
-/* eslint-disable camelcase */
+import * as moment from 'moment-timezone';
 import { keyBy, map } from 'lodash-es';
-import cache from '../../../utils/cache';
 import ACTION_TYPE from '../../action-types';
+import DATE_TYPE from '../../../types/date-types';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
 import { reportError } from '../activity';
+import { getCache, setCache } from '../../../utils/browser-cache';
 
 export const loadStops = stops => ({
     type: ACTION_TYPE.FETCH_STOPS,
@@ -17,7 +18,24 @@ const tokenizeStops = stops => stops.map(stop => ({
     tokens: stop.stop_name.toLowerCase().split(' ').concat(stop.stop_code),
 }));
 
-export const getStops = () => dispatch => Promise.all([ccStatic.getAllStops(), ccStatic.getAllStopTypes()])
+const getStopsCache = async (serviceDate) => {
+    const formattedDate = moment(serviceDate).tz(DATE_TYPE.TIME_ZONE).format('YYYYMMDD');
+    const cacheKey = `/stops/${formattedDate}`;
+    const cached = await getCache(cacheKey);
+    return cached || ccStatic.getAllStops(serviceDate)
+        .then(response => setCache(response, cacheKey))
+        .then(response => response);
+};
+
+const getStopTypesCache = async () => {
+    const cacheKey = '/stoptypes';
+    const cached = await getCache(cacheKey);
+    return cached || ccStatic.getAllStopTypes()
+        .then(response => setCache(response, cacheKey))
+        .then(response => response);
+};
+
+export const getStops = serviceDate => dispatch => Promise.all([getStopsCache(serviceDate), getStopTypesCache()])
     .then((values) => {
         const [stops, stopTypes] = values;
         const keyedStopTypes = keyBy(stopTypes, 'stop_code');
@@ -31,12 +49,9 @@ export const getStops = () => dispatch => Promise.all([ccStatic.getAllStops(), c
         const tokenizedStops = tokenizeStops(stopsWithType);
 
         dispatch(loadStops(tokenizedStops));
-        return cache.stops.clear()
-            .then(() => cache.stops.bulkAdd(tokenizedStops))
-            .then(() => tokenizedStops);
+        return tokenizedStops;
     })
     .catch((error) => {
         dispatch(reportError({ error: { critical: error } }, true));
-        cache.stops.clear();
         return [];
     });

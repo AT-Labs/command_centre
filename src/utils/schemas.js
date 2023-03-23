@@ -23,6 +23,13 @@ const schemas = [
             published_version: 'version_name',
         },
     },
+    {
+        version: 5,
+        schema: {
+            routes: '&route_id, route_short_name',
+            published_version: 'version_name',
+        },
+    },
 ];
 
 export default schemas;

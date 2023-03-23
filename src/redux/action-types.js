@@ -160,8 +160,6 @@ export default {
     CLEAR_TRIP_CROSS_LINK: 'clear-trip-cross-link',
     // Control: Service date
     UPDATE_SERVICE_DATE: 'update-service-date',
-    // Control: Platforms
-    UPDATE_PLATFORMS: 'update-platforms',
     // User
     UPDATE_USER_PROFILE: 'update-user-profile',
     UPDATE_USER_BLOCKS_PERMISSIONS: 'update-user-blocks-permissions',

@@ -29,13 +29,6 @@ export const getRoutes = () => fetchWithAuthHeader(
     },
 ).then(response => jsonResponseHandling(response));
 
-export const getPlatforms = () => fetchWithAuthHeader(
-    `${REACT_APP_TRIP_MGT_QUERY_URL}/stops`,
-    {
-        method: 'GET',
-    },
-).then(response => jsonResponseHandling(response));
-
 export const getTrips = ({
     agencyId, routeType, serviceDate,
     routeVariantIds, page, limit,

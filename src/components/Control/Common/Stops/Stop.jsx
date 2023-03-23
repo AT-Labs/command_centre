@@ -9,7 +9,7 @@ import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from
 import { selectStops, updateTripInstanceStopPlatform } from '../../../../redux/actions/control/routes/trip-instances';
 import { getServiceDate } from '../../../../redux/selectors/control/serviceDate';
 import { getSelectedStopsByTripKey } from '../../../../redux/selectors/control/routes/trip-instances';
-import { getPlatforms } from '../../../../redux/selectors/control/platforms';
+import { getParentStopsWithPlatform } from '../../../../redux/selectors/static/stops';
 import { transformStopName } from '../../../../utils/control/routes';
 import { getTripTimeDisplay, getStopKey } from '../../../../utils/helpers';
 import ConfirmationModal from '../ConfirmationModal/ConfirmationModal';
@@ -87,7 +87,7 @@ export class Stop extends React.Component {
                 serviceDate: this.props.tripInstance.serviceDate,
                 startTime: this.props.tripInstance.startTime,
                 stopSequence: this.props.stop.stopSequence,
-                stopId: this.state.newPlatform.stopId,
+                stopId: this.state.newPlatform.stop_id,
             },
             `Platform for stop #${this.props.stop.stopSequence} has been changed`,
         );
@@ -138,10 +138,10 @@ export class Stop extends React.Component {
                 `${this.getStopControlClassNames()} d-flex flex-column justify-content-end flex-grow-1 font-size-sm ${isStopInSelectionRange ? 'stop-control--in-range' : ''}`
             }>
                 <div className="d-flex flex-column justify-content-end text-center px-2">
-                    { this.isChangePlatformDisabled() && (
+                    {this.isChangePlatformDisabled() && (
                         <div>{transformStopName(stop.stopName) || '—'}</div>
                     )}
-                    { !this.isChangePlatformDisabled() && (
+                    {!this.isChangePlatformDisabled() && (
                         <UncontrolledDropdown size="sm">
                             <DropdownToggle caret className="text-info bg-transparent border-0">
                                 <span className="white-space-normal">{transformStopName(stop.stopName)}</span>
@@ -167,15 +167,15 @@ export class Stop extends React.Component {
                                 {platforms.map(item => (
                                     <DropdownItem
                                         className="btn-sm"
-                                        key={ item.stopId }
-                                        active={ item.stopId === stop.stopId }
+                                        key={ item.stop_id }
+                                        active={ item.stop_id === stop.stopId }
                                         onClick={ () => {
-                                            if (item.stopId !== stop.stopId) {
+                                            if (item.stop_id !== stop.stopId) {
                                                 this.showChangePlatformModal(item);
                                             }
                                         } }
                                     >
-                                        {transformStopName(item.stopName)}
+                                        {transformStopName(item.stop_name)}
                                     </DropdownItem>
                                 ))}
                             </DropdownMenu>
@@ -211,7 +211,7 @@ export class Stop extends React.Component {
                     </div>
                     <ConfirmationModal
                         title="Change platform"
-                        message={ `Are you sure you wish to change platform for stop #${stop.stopSequence} to ${this.state.newPlatform.stopCode} - ${transformStopName(this.state.newPlatform.stopName)}?` }
+                        message={ `Are you sure you wish to change platform for stop #${stop.stopSequence} to ${this.state.newPlatform.stop_code} - ${transformStopName(this.state.newPlatform.stop_name)}?` }
                         isOpen={ this.state.isChangePlatformModalOpen }
                         onClose={ this.hideChangePlatformModal }
                         onAction={ this.handleChangePlatform } />
@@ -229,6 +229,6 @@ export class Stop extends React.Component {
 
 export default connect(state => ({
     serviceDate: getServiceDate(state),
-    platforms: getPlatforms(state),
+    platforms: getParentStopsWithPlatform(state),
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
 }), { updateTripInstanceStopPlatform, selectStops })(Stop);

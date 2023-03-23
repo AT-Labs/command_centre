@@ -30,8 +30,8 @@ const stop = {
 const platforms = {
     test9: {
         children: [
-            { stopId: 'test7' },
-            { stopId: 'test10' },
+            { stop_id: 'test7' },
+            { stop_id: 'test10' },
         ],
     },
 };

@@ -12,7 +12,7 @@ import moment from 'moment';
 
 import { fetchRoutes } from '../../../redux/actions/control/routes/routes';
 import { fetchTripInstances } from '../../../redux/actions/control/routes/trip-instances';
-import { fetchPlatforms } from '../../../redux/actions/control/platforms';
+import { getStops } from '../../../redux/actions/static/stops';
 import { getControlDetailRoutesViewType, getRouteFilters } from '../../../redux/selectors/control/routes/filters';
 import {
     getRoutesLoadingState, getFilteredRoutesTotal, getAllRoutesTotal, getAllRoutesArray,
@@ -24,7 +24,7 @@ import {
     getTripInstancesLoadingState, getTripInstancesUpdatingState, getAllTripInstancesTotal, getSelectedTripsKeys,
 } from '../../../redux/selectors/control/routes/trip-instances';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
-import { getPlatforms } from '../../../redux/selectors/control/platforms';
+import { getAllStops } from '../../../redux/selectors/static/stops';
 import VIEW_TYPE from '../../../types/view-types';
 import RoutesView from './RoutesView';
 import RouteVariantView from './RouteVariantView';
@@ -54,7 +54,7 @@ export class CommonView extends React.Component {
 
         fetchRoutes: PropTypes.func.isRequired,
         fetchTripInstances: PropTypes.func.isRequired,
-        fetchPlatforms: PropTypes.func.isRequired,
+        getStops: PropTypes.func.isRequired,
 
         isRoutesLoading: PropTypes.bool.isRequired,
         isRouteVariantsLoading: PropTypes.bool.isRequired,
@@ -86,7 +86,7 @@ export class CommonView extends React.Component {
 
     componentDidMount() {
         if (isEmpty(this.props.platforms)) {
-            this.props.fetchPlatforms();
+            this.props.getStops();
         }
 
         if (!this.props.allRoutesTotal || !this.props.allRouteVariantsTotal) {
@@ -270,9 +270,9 @@ export default connect(
         allRouteVariantsTotal: getAllRouteVariantsTotal(state),
         tripsTotal: getAllTripInstancesTotal(state),
         serviceDate: getServiceDate(state),
-        platforms: getPlatforms(state),
+        platforms: getAllStops(state),
         allRoutes: getAllRoutesArray(state),
         selectedTrips: getSelectedTripsKeys(state),
     }),
-    { fetchRoutes, fetchTripInstances, fetchPlatforms },
+    { fetchRoutes, fetchTripInstances, getStops },
 )(CommonView);

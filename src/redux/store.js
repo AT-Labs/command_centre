@@ -7,7 +7,6 @@ import blocks from './reducers/control/blocks';
 import link from './reducers/control/link';
 import alerts from './reducers/control/alerts';
 import fleets from './reducers/control/fleets';
-import platforms from './reducers/control/platforms';
 import addRecurringCancellations from './reducers/control/routes/addRecurringCancellations';
 import controlFilters from './reducers/control/routes/filters';
 import controlRoutes from './reducers/control/routes/routes';
@@ -88,7 +87,6 @@ export default createStore(
             }),
             link,
             serviceDate,
-            platforms,
             disruptions,
             dataManagement,
             notifications,
