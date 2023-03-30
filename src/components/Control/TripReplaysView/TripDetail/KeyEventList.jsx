@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { map, has, get } from 'lodash-es';
 import moment from 'moment';
+import { connect } from 'react-redux';
 import KeyEvent from './KeyEvent';
 import { EVENT_TYPES } from './KeyEventType';
 import { formatTime, getTimesFromStop } from '../../../../utils/helpers';
@@ -9,8 +10,9 @@ import './KeyEventList.scss';
 import TripUpdateTag from '../../Common/Trip/TripUpdateTag';
 import { TRIP_UPDATE_TYPE, TRIP_FINAL_STATUS } from '../../../../constants/tripReplays';
 import { getCanceledEvent, getPlatformChanges, getSkippedStops, getStopIndexAfterCancel } from '../../../../utils/control/tripReplays';
+import { getTripReplaySearchDateFilter } from '../../../../redux/selectors/control/tripReplays/filters';
 
-const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, operationalEvents, tripSignOn) => {
+const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, operationalEvents, searchDate) => {
     const skippedStops = getSkippedStops(operationalEvents);
     const platformChanges = getPlatformChanges(operationalEvents);
     const canceledEvent = getCanceledEvent(operationalEvents);
@@ -27,7 +29,7 @@ const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMo
             type = EVENT_TYPES.TRIP_END;
         }
 
-        const { scheduledTime, time } = getTimesFromStop(stop, tripSignOn);
+        const { scheduledTime, time } = getTimesFromStop(stop, searchDate);
 
         const keyEventDetail = {
             id: `${stop.stopCode}_${stop.stopSequence}`,
@@ -71,7 +73,7 @@ const renderStops = (stops, status, handleMouseEnter, handleMouseLeave, handleMo
     return stopsRendered;
 };
 
-function KeyEventList({ tripId, tripSignOn, stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, tripSignOnPosition, operationalEvents }) {
+function KeyEventList({ tripId, tripSignOn, stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, tripSignOnPosition, operationalEvents, searchDate }) {
     const tripSignOnCoordinates = [get(tripSignOnPosition, 'position.latitude'), get(tripSignOnPosition, 'position.longitude')];
     const keyEventDetail = {
         id: moment(tripSignOn).unix().toString(),
@@ -92,7 +94,7 @@ function KeyEventList({ tripId, tripSignOn, stops, status, handleMouseEnter, han
                 )
             }
             {
-                renderStops(stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, operationalEvents, tripSignOn)
+                renderStops(stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, operationalEvents, searchDate)
             }
         </ul>
     );
@@ -108,6 +110,7 @@ KeyEventList.propTypes = {
     handleMouseLeave: PropTypes.func.isRequired,
     handleMouseClick: PropTypes.func.isRequired,
     operationalEvents: PropTypes.array,
+    searchDate: PropTypes.string,
 };
 
 KeyEventList.defaultProps = {
@@ -117,6 +120,9 @@ KeyEventList.defaultProps = {
     tripSignOnPosition: null,
     status: null,
     operationalEvents: [],
+    searchDate: undefined,
 };
 
-export default KeyEventList;
+export default connect(state => ({
+    searchDate: getTripReplaySearchDateFilter(state),
+}))(KeyEventList);

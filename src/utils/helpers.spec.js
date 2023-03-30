@@ -9,6 +9,7 @@ import {
     getClosestTimeValueForFilter,
     getExpiredMessageRowClassName,
     generateUniqueID,
+    getTimesFromStop,
 } from './helpers';
 
 const time = '2021-11-16 18:43:30.000Z';
@@ -51,22 +52,28 @@ describe('formatTime', () => {
 });
 describe('formatUnixTime', () => {
     const validTimestamp = 1647224431;
-    const validTripSignOn = '2022-03-13T09:00:00Z';
+    const validSearchDate = '2022-03-13';
     const invalidTimestamp = 'not a timestamp';
-    const invalidTripSignOn = 'not a date';
+    const invalidSearchDate = 'not a date';
 
     it('returns formatted timestamp with "(+1)" if timestamp is next day', () => {
-        const result = formatUnixTime(validTimestamp, validTripSignOn);
+        const result = formatUnixTime(validTimestamp, validSearchDate);
         expect(result).to.contain('(+1)');
     });
 
-    it('returns formatted timestamp without "(+1)" if timestamp is same day', () => {
-        const result = formatUnixTime(timestamp, validTripSignOn);
+    it('returns formatted timestamp without "(+1)" if timestamp does not go over 23:59 for the day', () => {
+        const result = formatUnixTime(timestamp, validSearchDate);
         expect(result).to.not.contain('(+1)');
     });
 
     it('throws error if timestamp and tripSignOn is invalid', () => {
-        expect(() => formatUnixTime(invalidTimestamp, invalidTripSignOn)).to.throw('Invalid date time');
+        expect(() => formatUnixTime(invalidTimestamp, invalidSearchDate)).to.throw('Invalid date time');
+    });
+    it('throws error if search date is invalid but timestamp is valid', () => {
+        expect(() => formatUnixTime(validTimestamp, invalidSearchDate)).to.throw('Invalid date time');
+    });
+    it('throws error if search date is valid but timestamp is invalid', () => {
+        expect(() => formatUnixTime(invalidTimestamp, validSearchDate)).to.throw('Invalid date time');
     });
 });
 describe('formatUnixDatetime', () => {
@@ -131,5 +138,44 @@ describe('generateUniqueID', () => {
         const id1 = generateUniqueID();
         const id2 = generateUniqueID();
         expect(id1).to.not.equal(id2);
+    });
+});
+
+describe('getTimesFromStop', () => {
+    it('should return correct scheduledTime and time object', () => {
+        const searchDate = new Date('2023-03-22T00:00:00.000Z');
+        const stop = {
+            arrival: {
+                scheduledTime: '1648018800',
+                time: '1648018200',
+            },
+            departure: {
+                scheduledTime: '1648035600',
+                time: '1648036200',
+            },
+            stopLat: -37.02351,
+            stopLon: 174.89562,
+            stopCode: '6048',
+            stopName: 'Stop A Manurewa Station',
+            exitDistance: 30,
+            stopSequence: 52,
+            entryDistance: 30,
+            occupancyStatus: null,
+        };
+        const expected = {
+            scheduledTime: {
+                arrival: '20:00:00',
+                departure: '00:40:00',
+            },
+            time: {
+                arrival: '19:50:00',
+                departure: '00:50:00',
+            },
+        };
+        const result = getTimesFromStop(stop, searchDate);
+        expect(result.scheduledTime.arrival).to.equal(expected.scheduledTime.arrival);
+        expect(result.scheduledTime.departure).to.equal(expected.scheduledTime.departure);
+        expect(result.time.arrival).to.equal(expected.time.arrival);
+        expect(result.time.departure).to.equal(expected.time.departure);
     });
 });

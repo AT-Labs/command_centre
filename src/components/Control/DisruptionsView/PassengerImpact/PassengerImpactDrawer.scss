@@ -10,7 +10,13 @@
     max-width: 1000px;
 
     & .handler-wrap {
+        display: flex;
+        align-items: center;
         margin-left: -70px;
+        & .button-container {
+            display: flex;
+            align-items: center;
+        }
         & .handler {
             transform: rotate(90deg);
             text-transform: none;
@@ -19,12 +25,12 @@
             background-color: $at-magenta;
             white-space: nowrap;
         }
-        & :hover {
-            background-color: map_get($theme-colors, 'at-magenta-tint-80');
-        }
         & :disabled {
             color: $at-ocean !important;
             background-color: $at-light-gray !important;
+        }
+        & .spinner-wrapper {
+            margin-left: 115px;
         }
     }
 

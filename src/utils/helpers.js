@@ -84,11 +84,11 @@ export const formatTime = (time, isNextDay = false) => {
     }
     return moment(time).tz(DATE_TYPE.TIME_ZONE).format('HH:mm:ss') + (isNextDay ? ' (+1)' : '');
 };
-export const formatUnixTime = (timestamp, tripSignOn) => {
+export const formatUnixTime = (timestamp, searchDate) => {
     const timeMoment = moment.unix(timestamp).tz(DATE_TYPE.TIME_ZONE);
-    const viewDateMoment = moment(new Date(tripSignOn)).tz(DATE_TYPE.TIME_ZONE);
+    const viewDateMoment = moment(new Date(searchDate)).tz(DATE_TYPE.TIME_ZONE);
     const isNextDay = viewDateMoment.endOf('day').isBefore(timeMoment);
-    if (!moment.unix(timestamp)?.isValid() ?? !moment(tripSignOn)?.isValid) {
+    if (!moment.unix(timestamp).isValid() || !moment(searchDate).isValid()) {
         throw new Error('Invalid date time');
     }
     return moment.unix(timestamp).tz(DATE_TYPE.TIME_ZONE).format('HH:mm:ss') + (isNextDay ? ' (+1)' : '');
@@ -108,20 +108,20 @@ export const formatTimeForColumn = (time, viewDate) => {
     }
     return '';
 };
-export const getTimesFromStop = (stop, tripSignOn) => {
+export const getTimesFromStop = (stop, searchDate) => {
     const scheduledTime = {};
     const time = {};
     if (has(stop, 'arrival.scheduledTime')) {
-        scheduledTime.arrival = formatUnixTime(parseInt(get(stop, 'arrival.scheduledTime', 0), 10), tripSignOn);
+        scheduledTime.arrival = formatUnixTime(parseInt(get(stop, 'arrival.scheduledTime', 0), 10), searchDate);
     }
     if (has(stop, 'arrival.time')) {
-        time.arrival = formatUnixTime(parseInt(get(stop, 'arrival.time', 0), 10), tripSignOn);
+        time.arrival = formatUnixTime(parseInt(get(stop, 'arrival.time', 0), 10), searchDate);
     }
     if (has(stop, 'departure.scheduledTime')) {
-        scheduledTime.departure = formatUnixTime(parseInt(get(stop, 'departure.scheduledTime', 0), 10), tripSignOn);
+        scheduledTime.departure = formatUnixTime(parseInt(get(stop, 'departure.scheduledTime', 0), 10), searchDate);
     }
     if (has(stop, 'departure.time')) {
-        time.departure = formatUnixTime(parseInt(get(stop, 'departure.time', 0), 10), tripSignOn);
+        time.departure = formatUnixTime(parseInt(get(stop, 'departure.time', 0), 10), searchDate);
     }
     return {
         scheduledTime,

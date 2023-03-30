@@ -70,7 +70,7 @@ function KeyEvent(props) {
                 </div>
                 <div className="col-2">
                     {props.type !== EVENT_TYPES.SIGN_ON && (
-                        <div>
+                        <div className="time-table">
                             <div className="text-left font-weight-bold">Scheduled</div>
                             {props.type !== EVENT_TYPES.FIRST_STOP
                             && (

@@ -65,6 +65,7 @@ import { SelectedStopsMarker } from '../../../../Common/Map/StopsLayer/SelectedS
 import DrawLayer from './DrawLayer';
 import PassengerImpactDrawer from '../../PassengerImpact/PassengerImpactDrawer';
 import { usePassengerImpact } from '../../../../../redux/selectors/appSettings';
+import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 
 const INIT_STATE = {
     startTime: '',
@@ -292,6 +293,7 @@ export class CreateDisruption extends React.Component {
         };
         return (
             <div className="sidepanel-control-component-view d-flex">
+                { (this.props.isLoading) && (<LoadingOverlay />) }
                 <SidePanel
                     isOpen
                     isActive

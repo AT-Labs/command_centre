@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { FormGroup, Input, Label } from 'reactstrap';
+import { FormGroup, Input, Label, FormFeedback } from 'reactstrap';
 import { IoIosArrowDropdown } from 'react-icons/io';
 
 export const DisruptionDetailSelect = (props) => {
-    const { value, options, label, id, disabled, onChange } = props;
+    const { value, options, label, id, disabled, onChange, invalid, feedback, onBlur } = props;
     return (
         <FormGroup className={ `${props.className} position-relative` }>
             <Label for={ id }><span className="font-size-md font-weight-bold">{ label }</span></Label>
@@ -14,6 +14,8 @@ export const DisruptionDetailSelect = (props) => {
                 disabled={ disabled }
                 id={ id }
                 value={ value }
+                invalid={ invalid }
+                onBlur={ e => onBlur(e.currentTarget.value) }
                 onChange={ e => onChange(e.currentTarget.value) }>
                 {options.map((item) => {
                     if (item.label !== undefined) {
@@ -22,7 +24,10 @@ export const DisruptionDetailSelect = (props) => {
                     return (<option key={ item } value={ item }>{ item }</option>);
                 })}
             </Input>
-            <IoIosArrowDropdown className="disruption-creation__wizard-select-details__icon position-absolute" size={ 22 } />
+            { !invalid && (
+                <IoIosArrowDropdown className="disruption-creation__wizard-select-details__icon position-absolute" size={ 22 } />
+            )}
+            <FormFeedback>{ feedback }</FormFeedback>
         </FormGroup>
     );
 };
@@ -36,12 +41,18 @@ DisruptionDetailSelect.propTypes = {
     value: PropTypes.any,
     options: PropTypes.array.isRequired,
     onChange: PropTypes.func.isRequired,
+    onBlur: PropTypes.func,
     disabled: PropTypes.bool,
     className: PropTypes.string,
+    invalid: PropTypes.bool,
+    feedback: PropTypes.string,
 };
 
 DisruptionDetailSelect.defaultProps = {
     value: null,
     className: 'mt-2',
     disabled: false,
+    invalid: false,
+    feedback: '',
+    onBlur: () => {},
 };

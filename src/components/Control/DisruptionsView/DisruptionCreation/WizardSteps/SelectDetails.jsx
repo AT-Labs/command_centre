@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { isEmpty, some } from 'lodash-es';
 import moment from 'moment';
 import { Form, FormGroup, Label, Input, FormFeedback, Button } from 'reactstrap';
+
 import Flatpickr from 'react-flatpickr';
 import { BsArrowRepeat } from 'react-icons/bs';
 import { FaRegCalendarAlt, FaExclamationTriangle } from 'react-icons/fa';
@@ -47,7 +48,16 @@ export const SelectDetails = (props) => {
     const [activePeriods, setActivePeriods] = useState([]);
     const [alertDialogMessage, setAlertDialogMessage] = useState(null);
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+    const [isTitleDirty, setTitleDirty] = useState(false);
+    const [isSeverityDirty, setSeverityDirty] = useState(false);
+    const [isEffectDirty, setEffectDirty] = useState(false);
+    const [isCauseDirty, setCauseDirty] = useState(false);
+    const [isDurationDirty, setDurationDirty] = useState(false);
+    const [isRecurrencePatternDirty, setRecurrencePatternDirty] = useState(false);
+    const [cssStartDateInvalid, setCssStartDateInvalid] = useState('');
+    const [cssEndDateInvalid, setCssEndDateInvalid] = useState('');
     const maxActivePeriodsCount = 100;
+
     const startTimeValid = () => isStartTimeValid(startDate, startTime, modalOpenedTime, recurrent);
 
     const startDateValid = () => isStartDateValid(startDate, modalOpenedTime, recurrent);
@@ -57,6 +67,85 @@ export const SelectDetails = (props) => {
     const endDateValid = () => isEndDateValid(endDate, startDate, recurrent);
 
     const durationValid = () => isDurationValid(duration, recurrent);
+
+    const titleValid = () => !isEmpty(header);
+
+    const severityValid = () => !isEmpty(severity);
+
+    const effectValid = () => !isEmpty(impact);
+
+    const causeValid = () => !isEmpty(cause);
+
+    const onBlurTitle = () => {
+        setTitleDirty(true);
+    };
+
+    const onBlurDuration = () => {
+        setDurationDirty(true);
+    };
+
+    const onChangeSeverity = (selectedItem) => {
+        setSeverityDirty(true);
+        props.onDataUpdate('severity', selectedItem);
+    };
+
+    const onChangeEffect = (selectedItem) => {
+        setEffectDirty(true);
+        props.onDataUpdate('impact', selectedItem);
+    };
+
+    const onChangeCause = (selectedItem) => {
+        setCauseDirty(true);
+        props.onDataUpdate('cause', selectedItem);
+    };
+
+    const onUpdateRecurrencePattern = (byweekday) => {
+        setRecurrencePatternDirty(true);
+        props.onDataUpdate('recurrencePattern', { ...recurrencePattern, byweekday });
+    };
+
+    const onChangeEndDate = (date, isRecurrent) => {
+        if (isRecurrent) {
+            if (date.length === 0) {
+                setCssEndDateInvalid('is-invalid');
+            } else {
+                props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
+                setCssEndDateInvalid('');
+            }
+        } else {
+            props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
+            if (date.length === 0) {
+                props.onDataUpdate('endTime', '');
+            }
+            setCssEndDateInvalid('');
+        }
+    };
+
+    const onBlurEndDate = (date, isRecurrent) => {
+        if (isRecurrent) {
+            if (date.length === 0) {
+                setCssEndDateInvalid('is-invalid');
+            } else {
+                setCssEndDateInvalid('');
+            }
+        } else {
+            setCssEndDateInvalid('');
+        }
+    };
+
+    const onChangeRecurrent = (checkedButtonKey) => {
+        props.onDataUpdate('recurrent', checkedButtonKey === '1');
+    };
+
+    const onChangeStartDate = (date) => {
+        if (date.length === 0) {
+            setCssStartDateInvalid('is-invalid');
+            props.onDataUpdate('startDate', '');
+        } else {
+            setCssStartDateInvalid('');
+            props.onDataUpdate('startDate', moment(date[0]).format(DATE_FORMAT));
+        }
+    };
 
     const isRequiredPropsEmpty = () => {
         const isPropsEmpty = some([startTime, startDate, impact, cause, header, severity], isEmpty);
@@ -120,7 +209,7 @@ export const SelectDetails = (props) => {
                     <RadioButtons
                         { ...recurrenceRadioOptions(recurrent) }
                         disabled={ false }
-                        onChange={ checkedButtonKey => props.onDataUpdate('recurrent', checkedButtonKey === '1') }
+                        onChange={ checkedButtonKey => onChangeRecurrent(checkedButtonKey) }
                     />
                 </div>
                 <div className="col-6">
@@ -130,14 +219,19 @@ export const SelectDetails = (props) => {
                         </Label>
                         <Flatpickr
                             id="disruption-creation__wizard-select-details__start-date"
-                            className="font-weight-normal cc-form-control form-control"
+                            className={ `font-weight-normal cc-form-control form-control ${cssStartDateInvalid}` }
                             value={ startDate }
                             options={ datePickerOptions }
                             placeholder="Select date"
-                            onChange={ date => props.onDataUpdate('startDate', moment(date[0]).format(DATE_FORMAT)) } />
-                        <FaRegCalendarAlt
-                            className="disruption-creation__wizard-select-details__icon position-absolute"
-                            size={ 22 } />
+                            onChange={ date => onChangeStartDate(date) } />
+                        {cssStartDateInvalid === '' && (
+                            <FaRegCalendarAlt
+                                className="disruption-creation__wizard-select-details__icon position-absolute"
+                                size={ 22 } />
+                        )}
+                        {cssStartDateInvalid !== '' && (
+                            <div className="disruption-recurrance-invalid">Please select start date</div>
+                        )}
                     </FormGroup>
                     <FormGroup className="position-relative">
                         <Label for="disruption-creation__wizard-select-details__end-date">
@@ -145,20 +239,35 @@ export const SelectDetails = (props) => {
                                 {!recurrent ? getOptionalLabel(LABEL_END_DATE) : LABEL_END_DATE}
                             </span>
                         </Label>
-                        <Flatpickr
-                            id="disruption-creation__wizard-select-details__end-date"
-                            className="font-weight-normal cc-form-control form-control"
-                            value={ endDate }
-                            options={ endDateDatePickerOptions }
-                            onChange={ (date) => {
-                                props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
-                                if (date.length === 0) {
-                                    props.onDataUpdate('endTime', '');
-                                }
-                            } } />
-                        <FaRegCalendarAlt
-                            className="disruption-creation__wizard-select-details__icon position-absolute"
-                            size={ 22 } />
+                        { !recurrent && (
+                            <Flatpickr
+                                id="disruption-creation__wizard-select-details__end-date"
+                                className={ `font-weight-normal cc-form-control form-control ${cssEndDateInvalid}` }
+                                value={ endDate }
+                                options={ endDateDatePickerOptions }
+                                onChange={ date => onChangeEndDate(date, false) }
+                                onOpen={ date => onBlurEndDate(date, false) }
+
+                            />
+                        )}
+                        { recurrent && (
+                            <Flatpickr
+                                id="disruption-creation__wizard-select-details__end-date"
+                                className={ `font-weight-normal cc-form-control form-control ${cssEndDateInvalid}` }
+                                value={ endDate }
+                                options={ endDateDatePickerOptions }
+                                onChange={ date => onChangeEndDate(date, true) }
+                                onOpen={ date => onBlurEndDate(date, true) }
+                            />
+                        )}
+                        {cssEndDateInvalid === '' && (
+                            <FaRegCalendarAlt
+                                className="disruption-creation__wizard-select-details__icon position-absolute"
+                                size={ 22 } />
+                        )}
+                        {cssEndDateInvalid !== '' && (
+                            <span className="disruption-recurrance-invalid">Please select end date</span>
+                        )}
                     </FormGroup>
                 </div>
                 <div className="col-6">
@@ -173,6 +282,7 @@ export const SelectDetails = (props) => {
                             onChange={ event => props.onDataUpdate('startTime', event.target.value) }
                             invalid={ !startTimeValid() }
                         />
+                        <FormFeedback>Not valid values</FormFeedback>
                     </FormGroup>
                     { !recurrent && (
                         <FormGroup>
@@ -186,6 +296,7 @@ export const SelectDetails = (props) => {
                                 onChange={ event => props.onDataUpdate('endTime', event.target.value) }
                                 invalid={ !endTimeValid() }
                             />
+                            <FormFeedback>Not valid values</FormFeedback>
                         </FormGroup>
                     )}
                     { recurrent && (
@@ -198,11 +309,13 @@ export const SelectDetails = (props) => {
                                 className="border border-dark"
                                 value={ duration }
                                 onChange={ event => props.onDataUpdate('duration', event.target.value) }
-                                invalid={ !durationValid() }
+                                invalid={ isDurationDirty && !durationValid() }
+                                onBlur={ onBlurDuration }
                                 type="number"
                                 min="1"
                                 max="24"
                             />
+                            <FormFeedback>Not valid duration</FormFeedback>
                         </FormGroup>
                     )}
                 </div>
@@ -211,7 +324,7 @@ export const SelectDetails = (props) => {
                         <div className="col-6 text-center">
                             <WeekdayPicker
                                 selectedWeekdays={ recurrencePattern.byweekday || [] }
-                                onUpdate={ byweekday => props.onDataUpdate('recurrencePattern', { ...recurrencePattern, byweekday }) }
+                                onUpdate={ byweekday => onUpdateRecurrencePattern(byweekday) }
                             />
                         </div>
                         <div className="col-6 pb-3 text-center">
@@ -225,6 +338,13 @@ export const SelectDetails = (props) => {
                                 <span className="pl-1">{ getRecurrenceText(recurrencePattern) }</span>
                             </div>
                         )}
+                        {
+                            isRecurrencePatternDirty && isEmpty(recurrencePattern.byweekday) && (
+                                <div className="col-12 mb-3">
+                                    <span className="disruption-recurrance-invalid">Please select recurrence</span>
+                                </div>
+                            )
+                        }
                     </>
                 )}
                 <div className="col-6">
@@ -234,7 +354,10 @@ export const SelectDetails = (props) => {
                         value={ cause }
                         options={ CAUSES }
                         label={ LABEL_CAUSE }
-                        onChange={ selectedItem => props.onDataUpdate('cause', selectedItem) } />
+                        invalid={ isCauseDirty && !causeValid() }
+                        feedback="Please select cause"
+                        onBlur={ selectedItem => onChangeCause(selectedItem) }
+                        onChange={ selectedItem => onChangeCause(selectedItem) } />
                 </div>
                 <div className="col-6">
                     <DisruptionDetailSelect
@@ -243,7 +366,10 @@ export const SelectDetails = (props) => {
                         value={ impact }
                         options={ IMPACTS }
                         label={ LABEL_CUSTOMER_IMPACT }
-                        onChange={ selectedItem => props.onDataUpdate('impact', selectedItem) } />
+                        invalid={ isEffectDirty && !effectValid() }
+                        feedback="Please select effect"
+                        onBlur={ selectedItem => onChangeEffect(selectedItem) }
+                        onChange={ selectedItem => onChangeEffect(selectedItem) } />
                 </div>
                 <div className="col-12">
                     <FormGroup>
@@ -253,7 +379,11 @@ export const SelectDetails = (props) => {
                             value={ severity }
                             options={ SEVERITIES }
                             label={ LABEL_SEVERITY }
-                            onChange={ selectedItem => props.onDataUpdate('severity', selectedItem) } />
+                            invalid={ isSeverityDirty && !severityValid() }
+                            feedback="Please select severity"
+                            onBlur={ selectedItem => onChangeSeverity(selectedItem) }
+                            onChange={ selectedItem => onChangeSeverity(selectedItem) }
+                        />
                     </FormGroup>
                 </div>
                 <div className="col-12">
@@ -267,8 +397,11 @@ export const SelectDetails = (props) => {
                             placeholder="Title of the message"
                             maxLength={ HEADER_MAX_LENGTH }
                             onChange={ event => props.onDataUpdate('header', event.target.value) }
+                            onBlur={ onBlurTitle }
                             value={ header }
+                            invalid={ isTitleDirty && !titleValid() }
                         />
+                        <FormFeedback>Please enter disruption title</FormFeedback>
                     </FormGroup>
                 </div>
                 <div className="col-12">

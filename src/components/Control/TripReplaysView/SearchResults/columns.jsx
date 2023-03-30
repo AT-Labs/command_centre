@@ -15,7 +15,7 @@ export const getColumns = (searchType) => {
         formatter: ({ vehicleLabel }) => vehicleLabel,
     }, {
         header: 'Route',
-        headerClassName: 'font-size-sm alignment',
+        headerClassName: 'font-size-sm',
         cellClassName: 'font-size-sm',
         formatter: ({ routeShortName, tripHeadsign, ...trip }) => (
             <>
@@ -57,13 +57,13 @@ export const getColumns = (searchType) => {
     } else {
         columns.push(...[{
             header: 'Scheduled Stop Departure',
-            headerClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-right alignment',
-            cellClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-right',
+            headerClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm alignment',
+            cellClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-left',
             formatter: ({ stop }) => (stop && stop.departureScheduledTime && formatUnixTime((stop.departureScheduledTime))) || '-',
         }, {
             header: 'Actual Stop Departure',
-            headerClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-right alignment',
-            cellClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-right',
+            headerClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm alignment',
+            cellClassName: 'trip-replay-progress__fixed-table-cell--time font-size-sm text-left',
             formatter: ({ stop }) => (stop && stop.departureActualTime && formatUnixTime((stop.departureActualTime))) || '-',
         }]);
     }
