@@ -33,9 +33,6 @@ const skippedStop = {
         routeId: '246-201',
         routeType: 2,
         shapeId: '246-850004',
-        __oldTripId: '50051144211-20190719095551_v82.14',
-        __oldRouteId: '850004-20190719095551_v82.14',
-        __oldShapeId: '1093-20190719095551_v82.14',
     },
 };
 
@@ -63,9 +60,6 @@ const canceledStop = {
         routeId: '246-201',
         routeType: 2,
         shapeId: '246-850004',
-        __oldTripId: '50051144211-20190719095551_v82.14',
-        __oldRouteId: '850004-20190719095551_v82.14',
-        __oldShapeId: '1093-20190719095551_v82.14',
         scheduleRelationship: 'CANCELED' },
 };
 
@@ -93,9 +87,6 @@ const normalStop = {
         routeId: '246-201',
         routeType: 2,
         shapeId: '246-850004',
-        __oldTripId: '50051144211-20190719095551_v82.14',
-        __oldRouteId: '850004-20190719095551_v82.14',
-        __oldShapeId: '1093-20190719095551_v82.14',
         scheduleRelationship: 'SCHEDULED' },
 };
 
