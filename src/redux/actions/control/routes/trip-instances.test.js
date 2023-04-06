@@ -3,10 +3,11 @@ import thunk from 'redux-thunk';
 import sinon from 'sinon';
 import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
+import MockDate from 'mockdate';
 
 import {
     fetchTripInstances, clearActiveTripInstanceId, updateActiveTripInstanceId, collectTripsDataAndUpdateTripsStatus,
-    updateTripInstanceStatus, updateTripInstanceStopStatus, updateTripInstanceStopPlatform, updateTripInstanceDelay,
+    updateTripInstanceStatus, updateTripInstanceStopStatus, updateTripInstanceStopPlatform, updateTripInstanceDelay, filterTripInstances,
 } from './trip-instances';
 import * as tripMgtApi from '../../../../utils/transmitters/trip-mgt-api';
 import * as blockMgtApi from '../../../../utils/transmitters/block-mgt-api';
@@ -22,7 +23,7 @@ const store = mockStore({});
 let sandbox;
 
 const mockTrips = {
-    count: 2,
+    totalCount: 2,
     tripInstances: [{
         tripId: '1',
         serviceDate: '20190608',
@@ -81,12 +82,14 @@ const mockBlocks = [
 
 describe('Trip instances actions', () => {
     beforeEach(() => {
+        MockDate.set(new Date(Date.UTC(2023, 2, 20, 0, 0, 0)));
         sandbox = sinon.createSandbox();
     });
 
     afterEach(() => {
         sandbox.restore();
         store.clearActions();
+        MockDate.reset();
     });
 
     it('gets all trips, keys by tripId and clears trips prior updating, when it is not an update request', async () => {
@@ -120,6 +123,12 @@ describe('Trip instances actions', () => {
                     timestamp: '',
                 },
             },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT,
+                payload: {
+                    totalTripInstancesCount: 2,
+                },
+            },
         ];
 
         const storeWithFilter = mockStore({
@@ -139,6 +148,7 @@ describe('Trip instances actions', () => {
         expect(actualActions[1].type).to.equal(expectedActions[1].type);
         expect(actualActions[2].type).to.equal(expectedActions[2].type);
         expect(actualActions[2].payload.tripInstances).to.eql(expectedActions[2].payload.tripInstances);
+        expect(actualActions[3].payload.totalTripInstancesCount).to.eql(expectedActions[3].payload.totalTripInstancesCount);
     });
 
     it('gets all trips, keys by tripId and doesnt clear trips prior updating, when it is an update request', async () => {
@@ -164,6 +174,12 @@ describe('Trip instances actions', () => {
                     timestamp: '',
                 },
             },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT,
+                payload: {
+                    totalTripInstancesCount: 2,
+                },
+            },
         ];
 
         const storeWithFilter = mockStore({
@@ -182,6 +198,7 @@ describe('Trip instances actions', () => {
         expect(actualActions[0]).to.eql(expectedActions[0]);
         expect(actualActions[1].type).to.equal(expectedActions[1].type);
         expect(actualActions[1].payload.tripInstances).to.eql(expectedActions[1].payload.tripInstances);
+        expect(actualActions[2].payload.totalTripInstancesCount).to.eql(expectedActions[2].payload.totalTripInstancesCount);
     });
 
     it('gets all trips and also sets an active trip when link is available', async () => {
@@ -211,6 +228,12 @@ describe('Trip instances actions', () => {
                 payload: {
                     tripInstances: mockStoreTrips,
                     timestamp: '',
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT,
+                payload: {
+                    totalTripInstancesCount: 2,
                 },
             },
             {
@@ -244,6 +267,7 @@ describe('Trip instances actions', () => {
         expect(actualActions[1].type).to.equal(expectedActions[1].type);
         expect(actualActions[2].type).to.equal(expectedActions[2].type);
         expect(actualActions[2].payload.tripInstances).to.eql(expectedActions[2].payload.tripInstances);
+        expect(actualActions[3].payload.totalTripInstancesCount).to.eql(expectedActions[3].payload.totalTripInstancesCount);
     });
 
     it('clears active trip instance', async () => {
@@ -486,5 +510,283 @@ describe('Trip instances actions', () => {
 
         await store.dispatch(updateTripInstanceStopPlatform(options, successMessage));
         expect(store.getActions()).to.eql(expectedActions);
+    });
+
+    it('gets all trips filtered for the datagrid', async () => {
+        const fakeGetTrips = sandbox.fake.resolves(mockTrips);
+        sandbox.stub(tripMgtApi, 'getTrips').callsFake(fakeGetTrips);
+
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_UPDATING,
+                payload: {
+                    isUpdating: true,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LAST_FILTER,
+                payload: {
+                    lastFilterRequest: {
+                        routeType: 3,
+                        delayRange: undefined,
+                        serviceDate: '20230320',
+                        startTime: "23:00",
+                        startTimeFrom: "21:00",
+                        startTimeTo: "23:00",
+                        status: "COMPLETED",
+                        trackingStatus: ["STOPPED"],
+                        trackingStatuses: ["STOPPED"],
+                        tripId: ["1327-86502-75600-2-96e917d1"],
+                        tripIds: ["1327-86502-75600-2-96e917d1"],
+                        tripStatus: "COMPLETED",
+                        page: 1,
+                        limit: 15,
+                        sorting: {
+                          sortBy: 'startTime',
+                          order: 'asc',
+                        },
+                    },
+                },
+            },
+            {
+                type: ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES,
+                payload: {
+                    tripInstances: mockStoreTrips,
+                    timestamp: 1679270400000,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT,
+                payload: {
+                    totalTripInstancesCount: 2,
+                },
+            },
+        ];
+
+        const storeWithFilter = mockStore({
+            control: {
+                routes: {
+                    filters: {
+                        routeType: 3,
+                    },
+                    tripInstances: {
+                        datagridConfig: {
+                            columns: [],
+                            page: 0,
+                            pageSize: 15,
+                            sortModel: [{
+                                field: 'startTime',
+                                sort: 'asc',
+                            }],
+                            density: 'standard',
+                            routeSelection: '',
+                            filterModel: { items: [{
+                                columnField: "startTime",
+                                operatorValue: "onOrAfter",
+                                value: "21:00",
+                                id: 77389
+                            },{
+                                columnField: "startTime",
+                                operatorValue: "onOrBefore",
+                                id: 33259,
+                                value: "23:00"
+                            },{
+                                columnField: "tripId",
+                                operatorValue: "isAnyOf",
+                                id: 41345,
+                                value: ["1327-86502-75600-2-96e917d1"]
+                            },{
+                                columnField: "status",
+                                operatorValue: "is",
+                                id: 37143,
+                                value: "COMPLETED"
+                            },{
+                                columnField: "trackingStatus",
+                                operatorValue: "isAnyOf",
+                                id: 37471,
+                                value: ["STOPPED"]
+                            }],
+                            linkOperator: 'and' },
+                            pinnedColumns: { right: ['__detail_panel_toggle__'] },
+                        },
+                    },
+                },
+            },
+        });
+
+        await storeWithFilter.dispatch(filterTripInstances());
+        const actualActions = storeWithFilter.getActions();
+        expect(actualActions).to.eql(expectedActions);
+    });
+
+    it('gets all trips filtered by routeVariantId for the datagrid', async () => {
+        const fakeGetTrips = sandbox.fake.resolves(mockTrips);
+        sandbox.stub(tripMgtApi, 'getTrips').callsFake(fakeGetTrips);
+
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_UPDATING,
+                payload: {
+                    isUpdating: true,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LAST_FILTER,
+                payload: {
+                    lastFilterRequest: {
+                        startTime: '00:00',
+                        startTimeFrom: '00:00',
+                        routeType: 3,
+                        delayRange: undefined,
+                        serviceDate: '20230320',
+                        routeVariantIds: [50101],
+                        page: 1,
+                        limit: 15,
+                        sorting: {
+                          sortBy: 'startTime',
+                          order: 'asc',
+                        },
+                    },
+                },
+            },
+            {
+                type: ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES,
+                payload: {
+                    tripInstances: mockStoreTrips,
+                    timestamp: 1679270400000,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT,
+                payload: {
+                    totalTripInstancesCount: 2,
+                },
+            },
+        ];
+
+        const storeWithFilter = mockStore({
+            control: {
+                routes: {
+                    filters: {
+                        routeType: 3,
+                        routeVariantId: 50101,
+                    },
+                    tripInstances: {
+                        datagridConfig: {
+                            columns: [],
+                            page: 0,
+                            pageSize: 15,
+                            sortModel: [{
+                                field: 'startTime',
+                                sort: 'asc',
+                            }],
+                            density: 'standard',
+                            routeSelection: '',
+                            filterModel: { items: [{
+                                columnField: 'startTime',
+                                operatorValue: 'onOrAfter',
+                                value: '00:00',
+                            }],
+                            linkOperator: 'and' },
+                            pinnedColumns: { right: ['__detail_panel_toggle__'] },
+                        },
+                    },
+                },
+            },
+        });
+
+        await storeWithFilter.dispatch(filterTripInstances());
+        const actualActions = storeWithFilter.getActions();
+        expect(actualActions).to.eql(expectedActions);
+    });
+
+    it('gets all trips filtered by routeShortName for the datagrid', async () => {
+        const fakeGetTrips = sandbox.fake.resolves(mockTrips);
+        sandbox.stub(tripMgtApi, 'getTrips').callsFake(fakeGetTrips);
+
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_UPDATING,
+                payload: {
+                    isUpdating: true,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LAST_FILTER,
+                payload: {
+                    lastFilterRequest: {
+                        startTime: '00:00',
+                        startTimeFrom: '00:00',
+                        routeType: 3,
+                        delayRange: undefined,
+                        routeVariantIds: ['27001'],
+                        serviceDate: '20230320',
+                        page: 1,
+                        limit: 15,
+                        sorting: {
+                          sortBy: 'startTime',
+                          order: 'asc',
+                        },
+                    },
+                },
+            },
+            {
+                type: ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES,
+                payload: {
+                    tripInstances: mockStoreTrips,
+                    timestamp: 1679270400000,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT,
+                payload: {
+                    totalTripInstancesCount: 2,
+                },
+            },
+        ];
+
+        const storeWithFilter = mockStore({
+            control: {
+                routes: {
+                    filters: {
+                        routeType: 3,
+                        routeShortName: 'NX1',
+                    },
+                    tripInstances: {
+                        datagridConfig: {
+                            columns: [],
+                            page: 0,
+                            pageSize: 15,
+                            sortModel: [{
+                                field: 'startTime',
+                                sort: 'asc',
+                            }],
+                            density: 'standard',
+                            routeSelection: '',
+                            filterModel: { items: [{
+                                columnField: 'startTime',
+                                operatorValue: 'onOrAfter',
+                                value: '00:00',
+                            }],
+                            linkOperator: 'and' },
+                            pinnedColumns: { right: ['__detail_panel_toggle__'] },
+                        },
+                    },
+                    routes: {
+                        all: [{
+                            routeShortName: 'NX1',
+                            agencyAgnostic: true,
+                            routeVariants: [
+                                { routeVariantId: '27001' },
+                            ],
+                        }],
+                    },
+                },
+            },
+        });
+
+        await storeWithFilter.dispatch(filterTripInstances());
+        const actualActions = storeWithFilter.getActions();
+        expect(actualActions).to.eql(expectedActions);
     });
 });

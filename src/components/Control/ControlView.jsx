@@ -7,6 +7,7 @@ import VIEW_TYPE from '../../types/view-types';
 import ErrorBanner from './ErrorBanner/ErrorBanner';
 import BlocksView from './BlocksView/BlocksView';
 import CommonView from './RoutesView/CommonView';
+import TripsDataGrid from './RoutesView/TripsDataGrid';
 import RecurringCancellationsView from './RoutesView/recurringCancellations/RecurringCancellationsView';
 import Main from '../Common/OffCanvasLayout/Main/Main';
 import OffCanvasLayout from '../Common/OffCanvasLayout/OffCanvasLayout';
@@ -18,6 +19,7 @@ import FleetsView from './Fleets/FleetsView';
 import TripReplaysView from './TripReplaysView/TripReplaysView';
 import DataManagement from './DataManagement/DataManagement';
 import NotificationsView from './Notifications/NotificationsView';
+import { useRoutesTripsDatagrid } from '../../redux/selectors/appSettings';
 
 const ControlView = (props) => {
     const isBlocksView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.BLOCKS;
@@ -37,7 +39,8 @@ const ControlView = (props) => {
                 <ErrorBanner />
                 <div className={ classNames({ 'p-4': (!isTripReplaysView && !isDisruptionsView) }) }>
                     { isBlocksView && <BlocksView /> }
-                    { isRoutesView && <CommonView /> }
+                    { isRoutesView && !props.useRoutesTripsDatagrid && <CommonView /> }
+                    { isRoutesView && props.useRoutesTripsDatagrid && <TripsDataGrid /> }
                     { isRecurringCancellationsView && <RecurringCancellationsView /> }
                     { isStopMessagesView && <StopMessagesView /> }
                     { isAlertsView && <AlertsView /> }
@@ -55,10 +58,12 @@ const ControlView = (props) => {
 
 ControlView.propTypes = {
     activeControlDetailView: PropTypes.string.isRequired,
+    useRoutesTripsDatagrid: PropTypes.bool.isRequired,
 };
 
 export default connect(
     state => ({
         activeControlDetailView: getActiveControlDetailView(state),
+        useRoutesTripsDatagrid: useRoutesTripsDatagrid(state),
     }),
 )(ControlView);

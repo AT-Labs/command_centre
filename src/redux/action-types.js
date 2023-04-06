@@ -144,6 +144,7 @@ export default {
     CLEAR_TRIP_INSTANCE_ACTION_RESULT: 'clear_trip_instance_action_result',
     UPDATE_TRIP_INSTANCE_ACTION_LOADING: 'update_trip_instance_action_loading',
     UPDATE_CONTROL_ACTIVE_TRIP_INSTANCE: 'update-control-active-trip-instance',
+    UPDATE_CONTROL_ACTIVE_TRIP_INSTANCES: 'update-control-active-trip-instances',
     ADD_CONTROL_TRIP_INSTANCE_ENTRY: 'add-control-active-trip-instance',
     SELECT_CONTROL_SINGLE_TRIP: 'select-control-single-trip',
     SELECT_CONTROL_ALL_TRIPS: 'select-control-all-trips',
@@ -155,6 +156,9 @@ export default {
     UPDATE_CONTROL_SELECTED_STOPS_UPDATING: 'update-control-selected-stops-updating',
     CLEAR_CONTROL_SELECTED_STOPS: 'clear-control-selected-stops',
     SET_TRIP_STATUS_MODAL_ORIGIN: 'set-trip-status-modal-origin',
+    UPDATE_CONTROL_TRIP_INSTANCES_DATAGRID_CONFIG: 'update-trip-instances-datagrid-config',
+    UPDATE_CONTROL_TRIP_INSTANCES_LAST_FILTER: 'update-trip-instances-last-filter',
+    UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT: 'update-trip-instances-total-count',
     // Control: Cross Link
     UPDATE_TRIP_CROSS_LINK: 'update-trip-cross-link',
     CLEAR_TRIP_CROSS_LINK: 'clear-trip-cross-link',

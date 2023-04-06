@@ -35,6 +35,7 @@ export const getTrips = ({
     startTimeFrom, startTimeTo, tripIds,
     tripStatus, depotIds,
     trackingStatuses,
+    trackingStatus,
     sorting,
     isGroupedByRoute,
     isGroupedByRouteVariant,
@@ -52,6 +53,7 @@ export const getTrips = ({
     if (tripIds) { variables.tripIds = tripIds; }
     if (tripStatus) { variables.tripStatus = tripStatus; }
     if (TRIP_STATUS_TYPES.inProgress === tripStatus && trackingStatuses) { variables.trackingStatuses = trackingStatuses; }
+    if (trackingStatus) { variables.trackingStatuses = trackingStatus; }
     if (sorting && !isGroupedByRoute && !isGroupedByRouteVariant) {
         variables.sorting = sorting.sortBy === 'delay' ? { ...sorting, sortBy: 'combinedDelay' } : sorting;
     }

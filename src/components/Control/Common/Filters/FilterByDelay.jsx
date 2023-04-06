@@ -5,6 +5,7 @@ import { Slider } from '@mui/material';
 import debounce from 'lodash-es/debounce';
 import { getTripStatusFilter } from '../../../../redux/selectors/control/routes/filters';
 import { delayRangeAllowedTripStatuses } from '../../../../redux/actions/control/routes/filters';
+import { getTripsDatagridConfig } from '../../../../redux/selectors/control/routes/trip-instances';
 
 const FilterByDelay = (props) => {
     const delayLimitMin = props.delayRangeLimits.MIN;
@@ -52,7 +53,8 @@ const FilterByDelay = (props) => {
         return [earlyText, lateText];
     };
 
-    const disabled = !delayRangeAllowedTripStatuses.includes(props.tripStatusFilter);
+    const disabled = !delayRangeAllowedTripStatuses.includes(props.tripStatusFilter)
+        && !props.datagridConfig.filterModel.items?.find(item => item.columnField === 'status' && delayRangeAllowedTripStatuses.includes(item.value));
 
     const [early, late] = disabled ? [null, null] : calculateDelayText(delayRange);
 
@@ -115,6 +117,7 @@ FilterByDelay.propTypes = {
     delayRangeLimits: PropTypes.object.isRequired,
     onRangeChange: PropTypes.func.isRequired,
     tripStatusFilter: PropTypes.string.isRequired,
+    datagridConfig: PropTypes.object.isRequired,
 };
 
 FilterByDelay.defaultProps = {
@@ -124,4 +127,5 @@ FilterByDelay.defaultProps = {
 
 export default connect(state => ({
     tripStatusFilter: getTripStatusFilter(state),
+    datagridConfig: getTripsDatagridConfig(state),
 }), null)(FilterByDelay);

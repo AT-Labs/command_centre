@@ -16,7 +16,9 @@ const withCacheProvider = children => (
 
 const mockProps = {
     dataSource: [],
-    datagridConfig: {},
+    datagridConfig: {
+        density: 'standard',
+    },
     columns: [],
     toolbar: null,
     getDetailPanelContent: null,

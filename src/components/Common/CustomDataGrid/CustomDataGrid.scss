@@ -10,3 +10,7 @@
 .MuiDataGrid-columnsPanelRow {
     text-transform: uppercase;
 }
+
+.MuiDataGrid-main .MuiDataGrid-detailPanels {
+    position: static;
+}

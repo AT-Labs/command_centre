@@ -3,16 +3,47 @@ import thunk from 'redux-thunk';
 import sinon from 'sinon';
 import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
+import MockDate from 'mockdate';
 
 import { goToRoutesView, goToBlocksView, goToDisruptionsView } from './link';
+import * as tripMgtApi from '../../../utils/transmitters/trip-mgt-api';
 import ACTION_TYPE from '../../action-types';
 import VIEW_TYPE from '../../../types/view-types';
 
 chai.use(sinonChai);
 
 const mockStore = configureMockStore([thunk]);
-const store = mockStore({});
+const store = mockStore({ 
+    control: {
+        routes: {
+            tripInstances: {
+                datagridConfig: { filterModel: { items: [] }, sortModel: [] }
+            },
+            filters: {
+                routeType: 3,
+            },
+        },
+    },
+});
 let sandbox;
+const mockTrips = {
+    totalCount: 2,
+    tripInstances: [{
+        tripId: '1',
+        serviceDate: '20190608',
+        startTime: '10:00:00',
+        routeShortName: '10',
+        routeType: 3,
+        status: 'COMPLETED',
+    }, {
+        tripId: '2',
+        serviceDate: '20190608',
+        startTime: '10:00:00',
+        routeShortName: '20',
+        routeType: 3,
+        status: 'NOT_STARTED',
+    }],
+};
 const mockTrip = {
     agencyId: '',
     routeVariantId: '11111',
@@ -20,8 +51,30 @@ const mockTrip = {
     routeShortName: 'EAST',
     startTime: '06:00:00',
 };
+const mockStoreTrips = {
+    '1-20190608-10:00:00': {
+        tripId: '1',
+        serviceDate: '20190608',
+        startTime: '10:00:00',
+        routeShortName: '10',
+        routeType: 3,
+        status: 'COMPLETED',
+    },
+    '2-20190608-10:00:00': {
+        tripId: '2',
+        serviceDate: '20190608',
+        startTime: '10:00:00',
+        routeShortName: '20',
+        routeType: 3,
+        status: 'NOT_STARTED',
+    },
+};
 
 describe('Link actions', () => {
+    before(() => {
+        MockDate.set(new Date(Date.UTC(2023, 2, 1, 0, 0, 0)));
+    });
+
     beforeEach(() => {
         sandbox = sinon.createSandbox();
     });
@@ -31,7 +84,14 @@ describe('Link actions', () => {
         store.clearActions();
     });
 
+    after(() => {
+        MockDate.reset();
+    });
+
     it('when going from Blocks to R&T, updates the link and sets the route filters', async () => {
+        const fakeGetTrips = sandbox.fake.resolves(mockTrips);
+        sandbox.stub(tripMgtApi, 'getTrips').callsFake(fakeGetTrips);
+
         const expectedActions = [
             {
                 type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_TRIP_INSTANCE,
@@ -86,6 +146,50 @@ describe('Link actions', () => {
                     },
                 },
             },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_DATAGRID_CONFIG,
+                payload: {
+                    filterModel: {
+                        items: [{
+                            columnField: "startTime",
+                            operatorValue: "onOrAfter",
+                            value: "",
+                        }]
+                    }
+                }
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_UPDATING,
+                payload: {
+                    isUpdating: true
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LAST_FILTER,
+                payload: {
+                    lastFilterRequest: {
+                        delayRange: undefined,
+                        limit: undefined,
+                        page: NaN,
+                        routeType: 3,
+                        serviceDate: "20230301",
+                        sorting: undefined,
+                    },
+                },
+            },
+            {
+                type: ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES,
+                payload: {
+                    timestamp: 1677628800000,
+                    tripInstances: mockStoreTrips,
+                }
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT,
+                payload: {
+                    totalTripInstancesCount: 2,
+                }
+            },
         ];
 
         await store.dispatch(goToRoutesView(mockTrip,
@@ -100,7 +204,8 @@ describe('Link actions', () => {
                 routeShortName: '',
                 routeVariantId: '',
             }));
-        expect(store.getActions()).to.eql(expectedActions);
+        const actions = store.getActions();
+        expect(actions).to.eql(expectedActions);
     });
 
     it('when going from R&T to Blocks, updates the link', async () => {

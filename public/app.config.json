@@ -1,5 +1,6 @@
 {
     "useRecurringCancellations": "false",
     "useRecurringCancellationsGridView": "false",
-    "usePassengerImpact": "false"
+    "usePassengerImpact": "false",
+    "useRoutesTripsDatagrid": "false"
 }

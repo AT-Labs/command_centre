@@ -20,6 +20,7 @@ import { mergeRouteFilters, resetSorting } from '../../../../redux/actions/contr
 import { clearSelectedStops } from '../../../../redux/actions/control/routes/trip-instances';
 import FilterByDepot from '../../Common/Filters/FilterByDepot';
 import FilterByTrackingStatus from './FilterByTrackingStatus';
+import { useRoutesTripsDatagrid } from '../../../../redux/selectors/appSettings';
 
 const STATUS = [
     TRIP_STATUS_TYPES.notStarted,
@@ -93,42 +94,48 @@ const Filters = (props) => {
             <div className="border-bottom border-at-ocean-tint-20" />
             <div className="row justify-content-between pt-3 px-3">
                 <div className="col-md-12 col-xl-9">
-                    <div className="row justify-content-between">
-                        <div className="col-md-6 col-lg-4 col-xl-4">
-                            <FilterByOperator
-                                id="control-filters-operators-search"
-                                selectedOption={ props.agencyId }
-                                onSelection={ selectedOption => props.mergeRouteFilters({ agencyId: selectedOption.value }) } />
-                        </div>
-                        <div className="col-md-6 col-lg-4 col-xl-4">
-                            <FilterByDepot
-                                id="control-filters-depot"
-                                selectedAgency={ props.agencyId }
-                                selectedOptions={ props.depotIds }
-                                onSelection={ selectedOptions => props.mergeRouteFilters({ depotIds: selectedOptions }) } />
-                        </div>
-                        <div className="col-md-6 col-lg-4 col-xl-4">
-                            <StandardFilter
-                                id="control-filters-status"
-                                title="Status"
-                                placeholder="Select status"
-                                options={ STATUS }
-                                selectedOption={ props.status || '' }
-                                onSelection={ selectedOption => onStatusFilterChange({ tripStatus: selectedOption.value }) }
-                                updateOnPropsValueChange />
-                        </div>
+                    { !props.useRoutesTripsDatagrid && (
+                        <div className="row justify-content-between">
+                            <div className="col-md-6 col-lg-4 col-xl-4">
+                                <FilterByOperator
+                                    id="control-filters-operators-search"
+                                    selectedOption={ props.agencyId }
+                                    onSelection={ selectedOption => props.mergeRouteFilters({ agencyId: selectedOption.value }) } />
+                            </div>
+                            <div className="col-md-6 col-lg-4 col-xl-4">
+                                <FilterByDepot
+                                    id="control-filters-depot"
+                                    selectedAgency={ props.agencyId }
+                                    selectedOptions={ props.depotIds }
+                                    onSelection={ selectedOptions => props.mergeRouteFilters({ depotIds: selectedOptions }) } />
+                            </div>
+                            <div className="col-md-6 col-lg-4 col-xl-4">
+                                <StandardFilter
+                                    id="control-filters-status"
+                                    title="Status"
+                                    placeholder="Select status"
+                                    options={ STATUS }
+                                    selectedOption={ props.status || '' }
+                                    onSelection={ selectedOption => onStatusFilterChange({ tripStatus: selectedOption.value }) }
+                                    updateOnPropsValueChange />
+                            </div>
 
-                    </div>
+                        </div>
+                    ) }
                     <div className="row justify-content-between pt-3 px-3">
                         <div className="col-md-6 col-lg-4 col-xl-4">
                             <FilterRouteVariantGroup />
                         </div>
-                        <div className="col-md-6 col-lg-4 col-xl-4">
-                            <div><FilterByStartTime /></div>
-                        </div>
-                        <div className="col-md-6 col-lg-4 col-xl-4">
-                            <FilterByTrackingStatus />
-                        </div>
+                        { !props.useRoutesTripsDatagrid && (
+                            <>
+                                <div className="col-md-6 col-lg-4 col-xl-4">
+                                    <div><FilterByStartTime /></div>
+                                </div>
+                                <div className="col-md-6 col-lg-4 col-xl-4">
+                                    <FilterByTrackingStatus />
+                                </div>
+                            </>
+                        ) }
                     </div>
                 </div>
                 <div className="col-md-6 col-lg-4 col-xl-3 px-3">
@@ -155,6 +162,7 @@ Filters.propTypes = {
     sorting: PropTypes.object.isRequired,
     resetSorting: PropTypes.func.isRequired,
     delayRange: PropTypes.object.isRequired,
+    useRoutesTripsDatagrid: PropTypes.bool.isRequired,
 };
 
 Filters.defaultProps = {
@@ -173,6 +181,7 @@ export default connect(
         routeShortName: getRouteShortNameFilter(state),
         routeVariantId: getRouteVariantIdFilter(state),
         sorting: getSorting(state),
+        useRoutesTripsDatagrid: useRoutesTripsDatagrid(state),
     }),
     { mergeRouteFilters, clearSelectedStops, resetSorting },
 )(Filters);

@@ -1,9 +1,11 @@
 import { handleActions } from 'redux-actions';
 import { filter, concat, includes, isNull, has, unset, difference, pick, keyBy, isEmpty } from 'lodash-es';
+import moment from 'moment';
 
 import ACTION_TYPE from '../../../action-types';
 import { getTripInstanceId, getStopKey, checkIfAllTripsAreSelected } from '../../../../utils/helpers';
 import { getAllNotCompletedTrips } from '../../../selectors/control/routes/trip-instances';
+import { getStartTimeFromFilterInitialTime } from '../../../../utils/control/routes';
 
 export const INIT_STATE = {
     isLoading: false,
@@ -18,6 +20,26 @@ export const INIT_STATE = {
     selectedStops: {},
     areSelectedStopsUpdating: false,
     tripStatusModalOrigin: null,
+    datagridConfig: {
+        columns: [],
+        page: 0,
+        pageSize: 15,
+        sortModel: [{
+            field: 'startTime',
+            sort: 'asc',
+        }],
+        density: 'standard',
+        routeSelection: '',
+        filterModel: { items: [{
+            columnField: 'startTime',
+            operatorValue: 'onOrAfter',
+            value: getStartTimeFromFilterInitialTime(moment()),
+        }],
+        linkOperator: 'and' },
+        pinnedColumns: { right: ['__detail_panel_toggle__'] },
+    },
+    lastFilterRequest: null,
+    totalTripInstancesCount: 0,
 };
 
 const handleTripInstancesUpdate = (state, { payload: { tripInstances, timestamp } }) => {
@@ -124,6 +146,11 @@ const handleUpdateActiveTripInstance = (state, { payload: { activeTripInstanceId
     });
 };
 
+const handleUpdateActiveTripInstances = (state, { payload: { active } }) => ({
+    ...state,
+    active,
+});
+
 const handleSelectSingleTrip = (state, { payload: { trip } }) => {
     const tripKey = Object.keys(trip)[0];
     const selectedClone = { ...state.selected };
@@ -213,6 +240,12 @@ const handleClearSelectedStops = state => ({ ...state, selectedStops: {} });
 
 const handleSetTripStatusModalOrigin = (state, { payload: { origin } }) => ({ ...state, tripStatusModalOrigin: origin });
 
+const handleDatagridConfig = (state, action) => ({ ...state, datagridConfig: { ...state.datagridConfig, ...action.payload } });
+
+const handleLastFilterUpdate = (state, { payload: { lastFilterRequest } }) => ({ ...state, lastFilterRequest });
+
+const handleTotalCountUpdate = (state, { payload: { totalTripInstancesCount } }) => ({ ...state, totalTripInstancesCount });
+
 export default handleActions({
     [ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES]: handleTripInstancesUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LOADING]: handleLoadingUpdate,
@@ -223,6 +256,7 @@ export default handleActions({
     [ACTION_TYPE.CLEAR_TRIP_INSTANCE_ACTION_RESULT]: handleTripInstancesActionResultClear,
     [ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING]: handleTripInstanceActionLoadingUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_ACTIVE_TRIP_INSTANCE]: handleUpdateActiveTripInstance,
+    [ACTION_TYPE.UPDATE_CONTROL_ACTIVE_TRIP_INSTANCES]: handleUpdateActiveTripInstances,
     [ACTION_TYPE.ADD_CONTROL_TRIP_INSTANCE_ENTRY]: handleTripInstanceEntryCreated,
     [ACTION_TYPE.SELECT_CONTROL_SINGLE_TRIP]: handleSelectSingleTrip,
     [ACTION_TYPE.SELECT_CONTROL_ALL_TRIPS]: handleSelectAllTrips,
@@ -234,4 +268,7 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_SELECTED_STOPS_UPDATING]: handleSelectedStopsLoadingUpdate,
     [ACTION_TYPE.CLEAR_CONTROL_SELECTED_STOPS]: handleClearSelectedStops,
     [ACTION_TYPE.SET_TRIP_STATUS_MODAL_ORIGIN]: handleSetTripStatusModalOrigin,
+    [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_DATAGRID_CONFIG]: handleDatagridConfig,
+    [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LAST_FILTER]: handleLastFilterUpdate,
+    [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT]: handleTotalCountUpdate,
 }, INIT_STATE);

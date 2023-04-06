@@ -4,7 +4,7 @@ import { updateControlDetailView, updateMainView } from '../navigation';
 import { mergeRouteFilters } from './routes/filters';
 import { setActiveRoute } from './routes/routes';
 import { setActiveRouteVariant } from './routes/routeVariants';
-import { clearActiveTripInstanceId } from './routes/trip-instances';
+import { clearActiveTripInstanceId, updateTripsDatagridConfig } from './routes/trip-instances';
 import { updateServiceDate } from './serviceDate';
 import { parseStartAndDateTime } from './alerts';
 
@@ -31,6 +31,13 @@ export const goToRoutesView = (trip, filters) => (dispatch) => {
     dispatch(setActiveRoute(routeShortName));
     dispatch(setActiveRouteVariant(routeVariantId));
     dispatch(mergeRouteFilters(filters, false));
+    dispatch(updateTripsDatagridConfig({
+        filterModel: { items: [{
+            columnField: 'startTime',
+            operatorValue: 'onOrAfter',
+            value: filters.startTimeFrom,
+        }] },
+    }));
 };
 
 export const goToBlocksView = trip => (dispatch) => {

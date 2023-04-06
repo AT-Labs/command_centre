@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import moment from 'moment-timezone';
@@ -21,7 +21,7 @@ import { flatInformedEntities } from '../../../utils/control/notifications';
 import './NotificationsView.scss';
 
 export const NotificationsView = (props) => {
-    const [loadingTimer, setLoadingTimer] = useState(null);
+    const loadingTimerRef = useRef(null);
     const NOTIFICATIONS_POLLING_INTERVAL = 10000;
     const isActiveNoti = notification => notification.condition === 'published' && notification.status === 'in-progress';
     const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
@@ -137,13 +137,19 @@ export const NotificationsView = (props) => {
         const timer = setTimeout(() => {
             getNotifications();
         }, NOTIFICATIONS_POLLING_INTERVAL);
-        setLoadingTimer(timer);
+        loadingTimerRef.current = timer;
     };
 
     useEffect(() => {
         props.getStopGroups();
         getNotifications();
-    }, [], () => { if (loadingTimer) clearTimeout(loadingTimer); });
+
+        return () => {
+            if (loadingTimerRef.current) {
+                clearTimeout(loadingTimerRef.current);
+            }
+        };
+    }, []);
 
     const getDetailPanelContent = React.useCallback(
         ({ row }) => <NotificationsDetailView notification={ row } />,

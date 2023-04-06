@@ -11,6 +11,7 @@ import FilterByDelay from './FilterByDelay';
 import tripStatusTypes from '../../../../types/trip-status-types';
 
 const reduxSelectors = require('../../../../redux/selectors/control/routes/filters');
+const reduxTripInstancesSelectors = require('../../../../redux/selectors/control/routes/trip-instances');
 
 let sandbox;
 
@@ -31,7 +32,7 @@ const mockProps = {
     delayRangeLimits: { MIN: -30, MAX: 30 },
 };
 
-const setup = (customState, customProps, tripStatusFilterInit) => {
+const setup = (customState, customProps, tripStatusFilterInit, datagridConfigInit) => {
     const state = {};
     Object.assign(state, mockContext, customState);
     store = mockStore(state);
@@ -41,6 +42,9 @@ const setup = (customState, customProps, tripStatusFilterInit) => {
 
     if (tripStatusFilterInit) {
         sandbox.stub(reduxSelectors, 'getTripStatusFilter').returns(tripStatusFilterInit);
+    }
+    if (datagridConfigInit) {
+        sandbox.stub(reduxTripInstancesSelectors, 'getTripsDatagridConfig').returns(datagridConfigInit);
     }
 
     sandbox.stub(React, 'useState').callsFake((value) => {
@@ -65,7 +69,7 @@ describe('<FilterByDelay />', () => {
                 delayRangeLimits: { MIN: -25, MAX: 25 },
                 delayRange: { min: null, max: null },
                 onRangeChange: () => {},
-            });
+            }, null, { filterModel: { items: [] } });
 
             expect(delayRangeValue[0]).to.equal(-25);
             expect(delayRangeValue[1]).to.equal(25);
@@ -76,7 +80,7 @@ describe('<FilterByDelay />', () => {
                 delayRangeLimits: { MIN: -25, MAX: 25 },
                 delayRange: { min: 10, max: 15 },
                 onRangeChange: () => {},
-            }, tripStatusTypes.inProgress);
+            }, tripStatusTypes.inProgress, { filterModel: { items: [{ columnField: 'status', value: tripStatusTypes.inProgress }] } });
 
             expect(delayRangeValue[0]).to.equal(10);
             expect(delayRangeValue[1]).to.equal(15);
