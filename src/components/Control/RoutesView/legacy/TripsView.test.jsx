@@ -4,12 +4,12 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { mount } from 'enzyme';
 
-import VIEW_TYPE from '../../../types/view-types';
-import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
-import { SERVICE_DATE_FORMAT } from '../../../utils/control/routes';
+import VIEW_TYPE from '../../../../types/view-types';
+import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
+import { SERVICE_DATE_FORMAT } from '../../../../utils/control/routes';
 import { TripsView } from './TripsView';
-import SortButton from '../Common/SortButton/SortButton';
-import { INIT_STATE } from '../../../redux/reducers/control/routes/filters';
+import SortButton from '../../Common/SortButton/SortButton';
+import { INIT_STATE } from '../../../../redux/reducers/control/routes/filters';
 
 const tripInstances = [{
     tripId: 'test1',

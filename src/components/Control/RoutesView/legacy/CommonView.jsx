@@ -10,32 +10,32 @@ import { connect } from 'react-redux';
 import { isEqual, isEmpty } from 'lodash-es';
 import moment from 'moment';
 
-import { fetchRoutes } from '../../../redux/actions/control/routes/routes';
-import { fetchTripInstances } from '../../../redux/actions/control/routes/trip-instances';
-import { getStops } from '../../../redux/actions/static/stops';
-import { getControlDetailRoutesViewType, getRouteFilters } from '../../../redux/selectors/control/routes/filters';
+import { fetchRoutes } from '../../../../redux/actions/control/routes/routes';
+import { fetchTripInstances } from '../../../../redux/actions/control/routes/trip-instances';
+import { getStops } from '../../../../redux/actions/static/stops';
+import { getControlDetailRoutesViewType, getRouteFilters } from '../../../../redux/selectors/control/routes/filters';
 import {
     getRoutesLoadingState, getFilteredRoutesTotal, getAllRoutesTotal, getAllRoutesArray,
-} from '../../../redux/selectors/control/routes/routes';
+} from '../../../../redux/selectors/control/routes/routes';
 import {
     getRouteVariantsLoadingState, getFilteredRouteVariantsTotal, getAllRouteVariantsTotal,
-} from '../../../redux/selectors/control/routes/routeVariants';
+} from '../../../../redux/selectors/control/routes/routeVariants';
 import {
     getTripInstancesLoadingState, getTripInstancesUpdatingState, getAllTripInstancesTotal, getSelectedTripsKeys,
-} from '../../../redux/selectors/control/routes/trip-instances';
-import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
-import { getAllStops } from '../../../redux/selectors/static/stops';
-import VIEW_TYPE from '../../../types/view-types';
+} from '../../../../redux/selectors/control/routes/trip-instances';
+import { getServiceDate } from '../../../../redux/selectors/control/serviceDate';
+import { getAllStops } from '../../../../redux/selectors/static/stops';
+import VIEW_TYPE from '../../../../types/view-types';
 import RoutesView from './RoutesView';
 import RouteVariantView from './RouteVariantView';
 import TripsView from './TripsView';
-import TableTitle from '../Common/ControlTable/TableTitle';
-import Filters from './Filters/Filters';
-import { SERVICE_DATE_FORMAT, PAGE_SIZE, TRIPS_POLLING_INTERVAL } from '../../../utils/control/routes';
-import { RouteFiltersType } from './Types';
-import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
-import { LoadMore } from '../Common/LoadMore/LoadMore';
-import SelectionToolsFooter from './bulkSelection/TripsSelectionFooter';
+import TableTitle from '../../Common/ControlTable/TableTitle';
+import Filters from '../Filters/Filters';
+import { SERVICE_DATE_FORMAT, PAGE_SIZE, TRIPS_POLLING_INTERVAL } from '../../../../utils/control/routes';
+import { RouteFiltersType } from '../Types';
+import { PageInfo, Pagination } from '../../../Common/Pagination/Pagination';
+import { LoadMore } from '../../Common/LoadMore/LoadMore';
+import SelectionToolsFooter from '../bulkSelection/TripsSelectionFooter';
 
 const INIT_STATE = {
     page: 1,

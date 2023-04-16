@@ -2,20 +2,20 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { filter, slice, get } from 'lodash-es';
 import { connect } from 'react-redux';
-import { RouteType, RouteVariantType } from './Types';
-import ControlTable from '../Common/ControlTable/ControlTable';
-import { getActiveRoute } from '../../../redux/selectors/control/routes/routes';
-import { getControlDetailRoutesViewType } from '../../../redux/selectors/control/routes/filters';
-import { clearActiveRouteVariant, updateActiveRouteVariant } from '../../../redux/actions/control/routes/routeVariants';
+import { RouteType, RouteVariantType } from '../Types';
+import ControlTable from '../../Common/ControlTable/ControlTable';
+import { getActiveRoute } from '../../../../redux/selectors/control/routes/routes';
+import { getControlDetailRoutesViewType } from '../../../../redux/selectors/control/routes/filters';
+import { clearActiveRouteVariant, updateActiveRouteVariant } from '../../../../redux/actions/control/routes/routeVariants';
 import {
     getActiveRouteVariant,
     getFilteredRouteVariants,
     getRouteVariantsLoadingState,
-} from '../../../redux/selectors/control/routes/routeVariants';
+} from '../../../../redux/selectors/control/routes/routeVariants';
 import TripsView from './TripsView';
-import VIEW_TYPE from '../../../types/view-types';
-import { PAGE_SIZE } from '../../../utils/control/routes';
-import { clearActiveTripInstanceId } from '../../../redux/actions/control/routes/trip-instances';
+import VIEW_TYPE from '../../../../types/view-types';
+import { PAGE_SIZE } from '../../../../utils/control/routes';
+import { clearActiveTripInstanceId } from '../../../../redux/actions/control/routes/trip-instances';
 
 export class RouteVariantView extends React.Component {
     static propTypes = {

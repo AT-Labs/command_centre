@@ -4,32 +4,32 @@ import { connect } from 'react-redux';
 import { lowerCase, get, filter, map, isEmpty, includes } from 'lodash-es';
 import moment from 'moment';
 
-import TripView from './TripView';
-import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
-import { isTripCancelPermitted } from '../../../utils/user-permissions';
-import { getControlDetailRoutesViewType, getRouteFilters } from '../../../redux/selectors/control/routes/filters';
-import { getActiveRoute } from '../../../redux/selectors/control/routes/routes';
-import { getActiveRouteVariant, getFilteredRouteVariants } from '../../../redux/selectors/control/routes/routeVariants';
-import { mergeRouteFilters } from '../../../redux/actions/control/routes/filters';
-import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
-import VIEW_TYPE from '../../../types/view-types';
-import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
-import { TRAIN_TYPE_ID } from '../../../types/vehicle-types';
-import { formatTripDelay, SERVICE_DATE_FORMAT, TRIPS_POLLING_INTERVAL } from '../../../utils/control/routes';
-import { getTripInstanceId, getTripTimeDisplay, checkIfAllTripsAreSelected } from '../../../utils/helpers';
-import ControlTable from '../Common/ControlTable/ControlTable';
-import TripIcon from '../Common/Trip/TripIcon';
-import SortButton from '../Common/SortButton/SortButton';
-import TripDelay from '../Common/Trip/TripDelay';
+import TripView from '../TripView';
+import { IS_LOGIN_NOT_REQUIRED } from '../../../../auth';
+import { isTripCancelPermitted } from '../../../../utils/user-permissions';
+import { getControlDetailRoutesViewType, getRouteFilters } from '../../../../redux/selectors/control/routes/filters';
+import { getActiveRoute } from '../../../../redux/selectors/control/routes/routes';
+import { getActiveRouteVariant, getFilteredRouteVariants } from '../../../../redux/selectors/control/routes/routeVariants';
+import { mergeRouteFilters } from '../../../../redux/actions/control/routes/filters';
+import { getServiceDate } from '../../../../redux/selectors/control/serviceDate';
+import VIEW_TYPE from '../../../../types/view-types';
+import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
+import { TRAIN_TYPE_ID } from '../../../../types/vehicle-types';
+import { formatTripDelay, SERVICE_DATE_FORMAT, TRIPS_POLLING_INTERVAL } from '../../../../utils/control/routes';
+import { getTripInstanceId, getTripTimeDisplay, checkIfAllTripsAreSelected } from '../../../../utils/helpers';
+import ControlTable from '../../Common/ControlTable/ControlTable';
+import TripIcon from '../../Common/Trip/TripIcon';
+import SortButton from '../../Common/SortButton/SortButton';
+import TripDelay from '../../Common/Trip/TripDelay';
 import {
     fetchTripInstances, updateActiveTripInstanceId, selectSingleTrip, selectAllTrips,
-} from '../../../redux/actions/control/routes/trip-instances';
+} from '../../../../redux/actions/control/routes/trip-instances';
 import {
     RouteFiltersType, RouteType, RouteVariantType, TripInstanceType, TripSubIconType,
-} from './Types';
+} from '../Types';
 import {
     getActiveTripInstance, getAllTripInstancesList, getTripInstancesLoadingState, getTripInstancesUpdatingState, getSelectedTripsKeys, getAllNotCompletedTrips,
-} from '../../../redux/selectors/control/routes/trip-instances';
+} from '../../../../redux/selectors/control/routes/trip-instances';
 
 const formatDelayColumn = (row) => {
     const trip = row.tripInstance || row;

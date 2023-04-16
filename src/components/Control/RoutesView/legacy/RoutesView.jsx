@@ -3,16 +3,16 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { slice, filter } from 'lodash-es';
 
-import { clearActiveRoute, updateActiveRoute } from '../../../redux/actions/control/routes/routes';
-import { getActiveRoute, getFilteredRoutes, getRoutesLoadingState } from '../../../redux/selectors/control/routes/routes';
-import { getControlDetailRoutesViewType } from '../../../redux/selectors/control/routes/filters';
-import ControlTable from '../Common/ControlTable/ControlTable';
+import { clearActiveRoute, updateActiveRoute } from '../../../../redux/actions/control/routes/routes';
+import { getActiveRoute, getFilteredRoutes, getRoutesLoadingState } from '../../../../redux/selectors/control/routes/routes';
+import { getControlDetailRoutesViewType } from '../../../../redux/selectors/control/routes/filters';
+import ControlTable from '../../Common/ControlTable/ControlTable';
 import TripsView from './TripsView';
-import { RouteType } from './Types';
-import VIEW_TYPE from '../../../types/view-types';
+import { RouteType } from '../Types';
+import VIEW_TYPE from '../../../../types/view-types';
 import RouteVariantView from './RouteVariantView';
-import { clearActiveTripInstanceId } from '../../../redux/actions/control/routes/trip-instances';
-import { PAGE_SIZE } from '../../../utils/control/routes';
+import { clearActiveTripInstanceId } from '../../../../redux/actions/control/routes/trip-instances';
+import { PAGE_SIZE } from '../../../../utils/control/routes';
 
 export class RoutesView extends React.Component {
     static propTypes = {

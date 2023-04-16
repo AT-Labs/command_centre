@@ -1,6 +1,7 @@
 import { get, keyBy, find, uniqueId, filter, size, findKey, inRange, map, isEmpty, values, findIndex, reduce, findLastIndex, sortBy, isEqual } from 'lodash-es';
 import moment from 'moment';
 
+import VIEW_TYPE from '../../../../types/view-types';
 import ACTION_TYPE from '../../../action-types';
 import * as TRIP_MGT_API from '../../../../utils/transmitters/trip-mgt-api';
 import * as BLOCK_MGT_API from '../../../../utils/transmitters/block-mgt-api';
@@ -19,12 +20,13 @@ import {
 } from '../../../selectors/control/routes/trip-instances';
 import { getLinkStartTime } from '../../../selectors/control/link';
 import { getServiceDate } from '../../../selectors/control/serviceDate';
-import { getRouteFilters } from '../../../selectors/control/routes/filters';
+import { getRouteFilters, getControlDetailRoutesViewType } from '../../../selectors/control/routes/filters';
 import { SERVICE_DATE_FORMAT } from '../../../../utils/control/routes';
 import { BLOCKS_SERVICE_DATE_FORMAT } from '../../../../utils/control/blocks';
 import { DATE_FORMAT_DDMMYYYY } from '../../../../utils/dateUtils';
 import { StopStatus } from '../../../../components/Control/RoutesView/Types';
-import { getAllRoutesArray } from '../../../selectors/control/routes/routes';
+import { getFilteredRouteVariants, getActiveRouteVariant } from '../../../selectors/control/routes/routeVariants';
+import { getAllRoutesArray, getActiveRoute } from '../../../selectors/control/routes/routes';
 
 const loadTripInstances = (tripInstances, timestamp) => ({
     type: ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES,
@@ -502,6 +504,17 @@ export const filterTripInstances = forceLoad => (dispatch, getState) => {
         limit: datagridConfig.pageSize,
         sorting: parseSortModel(datagridConfig.sortModel),
     };
+
+    const viewType = getControlDetailRoutesViewType(state);
+
+    if (viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_ROUTE_VARIANTS_TRIPS
+        || viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTE_VARIANTS_TRIPS) {
+        filterRequest.routeVariantIds = [get(getActiveRouteVariant(state), 'routeVariantId')];
+    }
+    if (viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_TRIPS) {
+        const routeVariants = filter(getFilteredRouteVariants(state), { routeShortName: get(getActiveRoute(state), 'routeShortName') });
+        filterRequest.routeVariantIds = map(routeVariants, item => item.routeVariantId);
+    }
 
     if (forceLoad || !lastFilterRequest || !isEqual(filterRequest, lastFilterRequest)) {
         dispatch(fetchTripInstances(filterRequest, { isUpdate: true }));

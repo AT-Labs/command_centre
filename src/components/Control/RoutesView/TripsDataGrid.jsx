@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Box } from '@mui/material';
@@ -9,19 +9,18 @@ import moment from 'moment';
 import TripView from './TripView';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
 import { isTripCancelPermitted } from '../../../utils/user-permissions';
-import { fetchRoutes } from '../../../redux/actions/control/routes/routes';
 import { getRouteFilters } from '../../../redux/selectors/control/routes/filters';
 import { getActiveRoute } from '../../../redux/selectors/control/routes/routes';
 import { getActiveRouteVariant } from '../../../redux/selectors/control/routes/routeVariants';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
 import { TRAIN_TYPE_ID } from '../../../types/vehicle-types';
-import { formatTripDelay, TRIPS_POLLING_INTERVAL } from '../../../utils/control/routes';
+import { formatTripDelay } from '../../../utils/control/routes';
 import { getTripInstanceId, getTripTimeDisplay, checkIfAllTripsAreSelected, getTimePickerOptions } from '../../../utils/helpers';
 import TripIcon from '../Common/Trip/TripIcon';
 import TripDelay from '../Common/Trip/TripDelay';
 import {
-    selectSingleTrip, selectAllTrips, updateTripsDatagridConfig, filterTripInstances, updateActiveTripInstances,
+    selectSingleTrip, selectAllTrips, updateTripsDatagridConfig, updateActiveTripInstances,
 } from '../../../redux/actions/control/routes/trip-instances';
 import {
     RouteFiltersType, TripSubIconType,
@@ -38,10 +37,6 @@ import {
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
 import './TripsDataGrid.scss';
 import { getAgencies } from '../../../redux/selectors/control/agencies';
-import TableTitle from '../Common/ControlTable/TableTitle';
-import Filters from './Filters/Filters';
-import SelectionToolsFooter from './bulkSelection/TripsSelectionFooter';
-import { retrieveAgencies } from '../../../redux/actions/control/agencies';
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
 
@@ -56,32 +51,6 @@ const formatDelayColumn = (row) => {
 };
 
 export const TripsDataGrid = (props) => {
-    const loadingTimerRef = useRef(null);
-
-    const getTripInstances = () => {
-        props.filterTripInstances(true);
-
-        const timer = setTimeout(() => {
-            getTripInstances();
-        }, TRIPS_POLLING_INTERVAL);
-        loadingTimerRef.current = timer;
-    };
-
-    useEffect(() => {
-        getTripInstances();
-
-        return () => {
-            if (loadingTimerRef.current) {
-                clearTimeout(loadingTimerRef.current);
-            }
-        };
-    }, [props.filters, props.serviceDate]);
-
-    useEffect(() => {
-        props.fetchRoutes();
-        props.retrieveAgencies();
-    }, []);
-
     const isDateServiceTodayOrTomorrow = () => moment(props.serviceDate).isBetween(moment(), moment().add(1, 'd'), 'd', '[]');
 
     const removeCompletedTripFromSelectedListAfterUpdate = (tripKey, trip) => props.selectSingleTrip({ [tripKey]: trip });
@@ -314,8 +283,6 @@ export const TripsDataGrid = (props) => {
         [],
     );
 
-    const shouldSelectionToolsFooterBeVisible = props.selectedTrips.length > 0;
-
     const getRowClassName = ({ row: { tripInstance } }) => {
         const status = get(tripInstance, 'status', null);
         if (isTripCompleted(status) || status === TRIP_STATUS_TYPES.notStarted) {
@@ -334,11 +301,7 @@ export const TripsDataGrid = (props) => {
 
     return (
         <>
-            <TableTitle tableTitle="Routes & Trips" />
-
-            <Filters />
-
-            <div>
+            <div className="trips-data-grid">
                 <CustomDataGrid
                     columns={ GRID_COLUMNS }
                     datagridConfig={ props.datagridConfig }
@@ -356,7 +319,6 @@ export const TripsDataGrid = (props) => {
                     onRowExpanded={ ids => handleRowExpanded(ids) }
                 />
             </div>
-            { shouldSelectionToolsFooterBeVisible && <SelectionToolsFooter /> }
         </>
     );
 };
@@ -374,9 +336,6 @@ TripsDataGrid.propTypes = {
     filters: RouteFiltersType.isRequired,
     agencies: PropTypes.array.isRequired,
     rowCount: PropTypes.number.isRequired,
-    filterTripInstances: PropTypes.func.isRequired,
-    retrieveAgencies: PropTypes.func.isRequired,
-    fetchRoutes: PropTypes.func.isRequired,
     updateActiveTripInstances: PropTypes.func.isRequired,
     activeTripInstance: PropTypes.array,
 };
@@ -401,6 +360,6 @@ export default connect(
         activeTripInstance: getActiveTripInstance(state),
     }),
     {
-        fetchRoutes, updateTripsDatagridConfig, selectSingleTrip, selectAllTrips, filterTripInstances, retrieveAgencies, updateActiveTripInstances,
+        updateTripsDatagridConfig, selectSingleTrip, selectAllTrips, updateActiveTripInstances,
     },
 )(TripsDataGrid);

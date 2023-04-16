@@ -6,8 +6,8 @@ import { getActiveControlDetailView } from '../../redux/selectors/navigation';
 import VIEW_TYPE from '../../types/view-types';
 import ErrorBanner from './ErrorBanner/ErrorBanner';
 import BlocksView from './BlocksView/BlocksView';
-import CommonView from './RoutesView/CommonView';
-import TripsDataGrid from './RoutesView/TripsDataGrid';
+import CommonView from './RoutesView/legacy/CommonView';
+import RoutesAndTripsView from './RoutesView/RoutesAndTripsView';
 import RecurringCancellationsView from './RoutesView/recurringCancellations/RecurringCancellationsView';
 import Main from '../Common/OffCanvasLayout/Main/Main';
 import OffCanvasLayout from '../Common/OffCanvasLayout/OffCanvasLayout';
@@ -40,7 +40,7 @@ const ControlView = (props) => {
                 <div className={ classNames({ 'p-4': (!isTripReplaysView && !isDisruptionsView) }) }>
                     { isBlocksView && <BlocksView /> }
                     { isRoutesView && !props.useRoutesTripsDatagrid && <CommonView /> }
-                    { isRoutesView && props.useRoutesTripsDatagrid && <TripsDataGrid /> }
+                    { isRoutesView && props.useRoutesTripsDatagrid && <RoutesAndTripsView /> }
                     { isRecurringCancellationsView && <RecurringCancellationsView /> }
                     { isStopMessagesView && <StopMessagesView /> }
                     { isAlertsView && <AlertsView /> }
