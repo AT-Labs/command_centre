@@ -3,7 +3,7 @@ import { sum, isEmpty } from 'lodash-es';
 import { DISRUPTION_TYPE } from '../../types/disruptions-types';
 import { momentFromDateTime } from './disruptions';
 import { getPassengerCountData } from '../transmitters/passenger-count-api';
-import { STOP_NOT_AVAILABLE } from '../../constants/disruptions';
+import { STOP_NOT_AVAILABLE, TIME_FORMAT } from '../../constants/disruptions';
 
 export const WEEKDAYS = {
     0: { init: 'M', name: 'monday' },
@@ -180,7 +180,46 @@ export const parseRequestedHours = (weekDays, hourStartDate, hourEndDate) => {
     return weekDayWithHours;
 };
 
-export const getHourFromDate = date => moment.utc(date).hour();
+export const getHourFromDate = date => moment(date).hour();
+export const getWeekFromDate = date => moment(date).week();
+
+const getCorrectWeekDay = (day) => {
+    const newDayValue = day + 1;
+    if (newDayValue >= 7) return 0;
+    return newDayValue;
+};
+
+/**
+ * This function allows to select only the days available in the date range.
+ * If the difference in days is more than one week, we send all the days of the week,
+ * otherwise we choose the days that have been selected and that appear in the date range.
+ */
+const selectAvailableDaysInDateRange = (startTime, endTime, disruptionData) => {
+    let startDayInWeek = moment(startTime).day();
+    let endDayInWeek = moment(endTime).day();
+    let weekDays = [];
+    if (moment(endTime).diff(moment(startTime), 'days') > 7) {
+        weekDays = disruptionData.recurrencePattern.byweekday.map(day => getCorrectWeekDay(day));
+    } else {
+        disruptionData.recurrencePattern.byweekday.forEach((day) => {
+            const isoDay = getCorrectWeekDay(day);
+            if ((startDayInWeek === endDayInWeek) && (getWeekFromDate(startTime) !== getWeekFromDate(endTime))) {
+                startDayInWeek = 0;
+                endDayInWeek = 6;
+            }
+            if (startDayInWeek <= endDayInWeek) {
+                if (startDayInWeek <= isoDay && isoDay <= endDayInWeek) {
+                    weekDays.push(isoDay);
+                }
+            } else if (endDayInWeek >= isoDay) {
+                weekDays.push(isoDay);
+            } else if (isoDay >= startDayInWeek) {
+                weekDays.push(isoDay);
+            }
+        });
+    }
+    return weekDays;
+};
 
 export const fillAffectedEntitiesWithData = (disruptionData, affectedEntities, startTime, endTime) => {
     let filledAffectedEntities;
@@ -192,17 +231,16 @@ export const fillAffectedEntitiesWithData = (disruptionData, affectedEntities, s
         }));
     } else {
         const hourStartDate = getHourFromDate(startTime);
-        const hourEndDate = getHourFromDate(moment(startTime).add(disruptionData.duration, 'hour').toISOString());
+        const hourEndDate = getHourFromDate(moment(startTime).add(disruptionData.duration, 'hour').toString());
 
-        let weekDays = [];
-        weekDays.push(...disruptionData.recurrencePattern.byweekday);
+        let weekDays = selectAvailableDaysInDateRange(startTime, endTime, disruptionData);
 
         const hours = parseRequestedHours(weekDays, hourStartDate, hourEndDate);
         weekDays = Object.keys(hours).map(key => Number(key));
 
         filledAffectedEntities = affectedEntities.map(entity => ({
             ...entity,
-            ...(weekdayNames.reduce((obj, name, currentIndex) => (weekDays.includes(currentIndex) ? ({ ...obj, [name]: hours[currentIndex] }) : obj), {})),
+            ...(weekdayNamesISO.reduce((obj, name, currentIndex) => (weekDays.includes(currentIndex) ? ({ ...obj, [name]: hours[currentIndex] }) : obj), {})),
         }));
     }
     return filledAffectedEntities;
@@ -227,16 +265,19 @@ export const fetchAndProcessPassengerImpactData = async (disruptionData, affecte
     ));
     let { startTime } = disruptionData;
     if (!isEmpty(disruptionData.startDate) && !isEmpty(disruptionData.startTime)) {
-        startTime = momentFromDateTime(disruptionData.startDate, disruptionData.startTime).toISOString();
-    }
-
-    if (disruptionData.recurrent) {
-        startTime = disruptionData.recurrencePattern.dtstart;
+        startTime = momentFromDateTime(disruptionData.startDate, disruptionData.startTime).toString();
     }
 
     let { endTime } = disruptionData;
+
+    if (disruptionData.recurrent) {
+        if (!endTime) {
+            endTime = momentFromDateTime(disruptionData.endDate, moment(startTime).add(disruptionData.duration, 'hour').format(TIME_FORMAT)).toString();
+        }
+    }
+
     if (!isEmpty(disruptionData.endDate) && !isEmpty(disruptionData.endTime)) {
-        endTime = momentFromDateTime(disruptionData.endDate, disruptionData.endTime).toISOString();
+        endTime = momentFromDateTime(disruptionData.endDate, disruptionData.endTime).toString();
     }
     affectedEntities = fillAffectedEntitiesWithData(disruptionData, affectedEntities, startTime, endTime);
 

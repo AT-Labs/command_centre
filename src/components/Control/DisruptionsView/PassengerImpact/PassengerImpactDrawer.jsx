@@ -15,9 +15,9 @@ export const PassengerImpactDrawer = (props) => {
 
     const buttonLabel = passengerImpactAvailable ? 'Passenger Impact' : 'Passenger Impact not available';
 
-    const handleUpdatePassengerImpactData = async () => {
+    const handleUpdatePassengerImpactData = async (passengerImpactData) => {
         setLoading(true);
-        await props.onUpdatePassengerImpactData;
+        await props.onUpdatePassengerImpactData(passengerImpactData);
         setLoading(false);
     };
 
