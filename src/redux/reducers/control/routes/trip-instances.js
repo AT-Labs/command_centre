@@ -164,6 +164,18 @@ const handleSelectSingleTrip = (state, { payload: { trip } }) => {
     };
 };
 
+const handleSelectTrips = (state, { payload: { tripKeys } }) => {
+    const selected = tripKeys.reduce((obj, tripKey) => ({
+        ...obj,
+        [tripKey]: state.all[tripKey],
+    }), {});
+
+    return {
+        ...state,
+        selected,
+    };
+};
+
 const handleSelectAllTrips = (state) => {
     const notCompletedInstances = getAllNotCompletedTrips(state.all);
     const notCompletedTripsKeys = Object.keys(notCompletedInstances);
@@ -259,6 +271,7 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_ACTIVE_TRIP_INSTANCES]: handleUpdateActiveTripInstances,
     [ACTION_TYPE.ADD_CONTROL_TRIP_INSTANCE_ENTRY]: handleTripInstanceEntryCreated,
     [ACTION_TYPE.SELECT_CONTROL_SINGLE_TRIP]: handleSelectSingleTrip,
+    [ACTION_TYPE.SELECT_CONTROL_TRIPS]: handleSelectTrips,
     [ACTION_TYPE.SELECT_CONTROL_ALL_TRIPS]: handleSelectAllTrips,
     [ACTION_TYPE.DESELECT_CONTROL_ALL_TRIPS]: handleDeselectAllTrips,
     [ACTION_TYPE.UPDATE_CONTROL_SELECTED_TRIPS]: handleUpdateSelectedTrips,

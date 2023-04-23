@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Box } from '@mui/material';
-import { getGridSingleSelectOperators, getGridStringOperators } from '@mui/x-data-grid-pro';
-import { lowerCase, get, includes, words, upperFirst, map } from 'lodash-es';
+import { getGridSingleSelectOperators, getGridStringOperators, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid-pro';
+import { lowerCase, get, words, upperFirst, map } from 'lodash-es';
 import moment from 'moment';
 
 import TripView from './TripView';
@@ -16,20 +16,18 @@ import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
 import { TRAIN_TYPE_ID } from '../../../types/vehicle-types';
 import { formatTripDelay } from '../../../utils/control/routes';
-import { getTripInstanceId, getTripTimeDisplay, checkIfAllTripsAreSelected, getTimePickerOptions } from '../../../utils/helpers';
+import { getTripInstanceId, getTripTimeDisplay, getTimePickerOptions } from '../../../utils/helpers';
 import TripIcon from '../Common/Trip/TripIcon';
 import TripDelay from '../Common/Trip/TripDelay';
 import {
-    selectSingleTrip, selectAllTrips, updateTripsDatagridConfig, updateActiveTripInstances,
+    selectTrips, selectAllTrips, updateTripsDatagridConfig, filterTripInstances, updateActiveTripInstances,
 } from '../../../redux/actions/control/routes/trip-instances';
 import {
     RouteFiltersType, TripSubIconType,
 } from './Types';
 import {
     getAllTripInstancesList,
-    getTripInstancesLoadingState,
     getSelectedTripsKeys,
-    getAllNotCompletedTrips,
     getTripsDatagridConfig,
     getTotalTripInstancesCount,
     getActiveTripInstance,
@@ -37,6 +35,7 @@ import {
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
 import './TripsDataGrid.scss';
 import { getAgencies } from '../../../redux/selectors/control/agencies';
+import { CustomSelectionHeader } from './CustomSelectionHeader';
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
 
@@ -53,14 +52,12 @@ const formatDelayColumn = (row) => {
 export const TripsDataGrid = (props) => {
     const isDateServiceTodayOrTomorrow = () => moment(props.serviceDate).isBetween(moment(), moment().add(1, 'd'), 'd', '[]');
 
-    const removeCompletedTripFromSelectedListAfterUpdate = (tripKey, trip) => props.selectSingleTrip({ [tripKey]: trip });
-
-    const renderIconColumnContent = (row) => {
+    const renderIconColumnContent = ({ row, api }) => {
         let iconColor = '';
         let subIcon = null;
         const tripKey = getTripInstanceId(row.tripInstance);
         const isCompleted = isTripCompleted(row.tripInstance.status);
-        const isTripSelected = includes(props.selectedTrips, tripKey);
+        const isTripSelected = api.getSelectedRows().has(tripKey);
         const isDelayed = formatTripDelay(get(row.tripInstance, 'delay')) > 0;
         const isCancelPermitted = IS_LOGIN_NOT_REQUIRED || isTripCancelPermitted(row.tripInstance);
         const shouldCheckboxBeDisabled = !isCancelPermitted || isCompleted || !isDateServiceTodayOrTomorrow();
@@ -77,7 +74,7 @@ export const TripsDataGrid = (props) => {
 
         const shouldCheckboxBeChecked = isTripSelected && !isCompleted;
         const shouldCheckboxBeRemoved = isTripSelected && isCompleted;
-        if (shouldCheckboxBeRemoved) removeCompletedTripFromSelectedListAfterUpdate(tripKey, row.tripInstance);
+        if (shouldCheckboxBeRemoved) api.selectRow(tripKey, false);
 
         return (
             <>
@@ -88,7 +85,7 @@ export const TripsDataGrid = (props) => {
                     checked={ shouldCheckboxBeChecked }
                     disabled={ shouldCheckboxBeDisabled }
                     className={ `select-trip-checkbox mr-2 select-trip-checkbox__${row.status.toLowerCase()}` }
-                    onChange={ event => props.selectSingleTrip({ [event.target.name]: row.tripInstance }) } />
+                    onChange={ event => api.selectRow(tripKey, event.target.checked) } />
                 <TripIcon
                     type={ row.routeType }
                     className={ iconColor }
@@ -101,22 +98,15 @@ export const TripsDataGrid = (props) => {
 
     const GRID_COLUMNS = [
         {
-            field: 'routeNo',
-            headerName: (
-                <>
-                    <input
-                        type="checkbox"
-                        className="select-all-trips-checkbox mr-2"
-                        disabled={ !isDateServiceTodayOrTomorrow() }
-                        checked={ !props.isLoading && checkIfAllTripsAreSelected(Object.keys(props.notCompletedTrips), props.selectedTrips) }
-                        onChange={ props.selectAllTrips } />
-                </>
-            ),
+            ...GRID_CHECKBOX_SELECTION_COL_DEF,
             width: 80,
-            renderCell: params => renderIconColumnContent(params.row),
-            filterable: false,
-            sortable: false,
-            hideable: false,
+            renderHeader: () => (
+                <CustomSelectionHeader
+                    serviceDate={ props.serviceDate }
+                    selectAllTrips={ props.selectAllTrips }
+                />
+            ),
+            renderCell: params => renderIconColumnContent(params),
         },
         {
             field: 'routeVariantId',
@@ -317,6 +307,10 @@ export const TripsDataGrid = (props) => {
                     multipleDetailPanelOpen
                     expandedDetailPanels={ map(props.activeTripInstance, getTripInstanceId) }
                     onRowExpanded={ ids => handleRowExpanded(ids) }
+                    checkboxSelection
+                    selectionModel={ props.selectedTrips }
+                    onChangeSelectedData={ x => props.selectTrips(x) }
+                    keepNonExistentRowsSelected
                 />
             </div>
         </>
@@ -327,12 +321,11 @@ TripsDataGrid.propTypes = {
     datagridConfig: PropTypes.object.isRequired,
     tripInstances: PropTypes.array.isRequired,
     updateTripsDatagridConfig: PropTypes.func.isRequired,
-    selectSingleTrip: PropTypes.func.isRequired,
+    selectTrips: PropTypes.func.isRequired,
     selectedTrips: PropTypes.array.isRequired,
     serviceDate: PropTypes.string.isRequired,
+    // eslint-disable-next-line
     selectAllTrips: PropTypes.func.isRequired,
-    isLoading: PropTypes.bool.isRequired,
-    notCompletedTrips: PropTypes.object.isRequired,
     filters: RouteFiltersType.isRequired,
     agencies: PropTypes.array.isRequired,
     rowCount: PropTypes.number.isRequired,
@@ -352,14 +345,12 @@ export default connect(
         activeRouteVariant: getActiveRouteVariant(state),
         selectedTrips: getSelectedTripsKeys(state),
         serviceDate: getServiceDate(state),
-        isLoading: getTripInstancesLoadingState(state),
-        notCompletedTrips: getAllNotCompletedTrips(state.control.routes.tripInstances.all),
         filters: getRouteFilters(state),
         agencies: getAgencies(state),
         rowCount: getTotalTripInstancesCount(state),
         activeTripInstance: getActiveTripInstance(state),
     }),
     {
-        updateTripsDatagridConfig, selectSingleTrip, selectAllTrips, updateActiveTripInstances,
+        updateTripsDatagridConfig, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances,
     },
 )(TripsDataGrid);

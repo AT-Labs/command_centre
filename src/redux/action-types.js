@@ -147,6 +147,7 @@ export default {
     UPDATE_CONTROL_ACTIVE_TRIP_INSTANCES: 'update-control-active-trip-instances',
     ADD_CONTROL_TRIP_INSTANCE_ENTRY: 'add-control-active-trip-instance',
     SELECT_CONTROL_SINGLE_TRIP: 'select-control-single-trip',
+    SELECT_CONTROL_TRIPS: 'select-control-trips',
     SELECT_CONTROL_ALL_TRIPS: 'select-control-all-trips',
     DESELECT_CONTROL_ALL_TRIPS: 'deselect-control-all-trips',
     UPDATE_CONTROL_SELECTED_TRIPS: 'update-control-selected-trips',

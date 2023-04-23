@@ -180,6 +180,7 @@ export const CustomDataGrid = (props) => {
                     checkboxSelection={ props.checkboxSelection }
                     onSelectionModelChange={ newSelectionModel => props.onChangeSelectedData(newSelectionModel) }
                     selectionModel={ props.selectionModel }
+                    keepNonExistentRowsSelected={ props.keepNonExistentRowsSelected }
                     hideFooterSelectedRowCount
                     treeData={ props.treeData }
                     getTreeDataPath={ props.getTreeDataPath }
@@ -213,6 +214,7 @@ CustomDataGrid.propTypes = {
     checkboxSelection: PropTypes.bool,
     onChangeSelectedData: PropTypes.func,
     selectionModel: PropTypes.array,
+    keepNonExistentRowsSelected: PropTypes.bool,
     customFooter: PropTypes.func,
     treeData: PropTypes.bool,
     getTreeDataPath: PropTypes.func,
@@ -249,6 +251,7 @@ CustomDataGrid.defaultProps = {
     selectionModel: [],
     groupingColDef: undefined,
     loading: false,
+    keepNonExistentRowsSelected: false,
 };
 
 export default CustomDataGrid;

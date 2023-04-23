@@ -284,6 +284,11 @@ export const selectSingleTrip = trip => ({
     payload: { trip },
 });
 
+export const selectTrips = tripKeys => ({
+    type: ACTION_TYPE.SELECT_CONTROL_TRIPS,
+    payload: { tripKeys },
+});
+
 export const selectAllTrips = () => ({ type: ACTION_TYPE.SELECT_CONTROL_ALL_TRIPS });
 
 export const deselectAllTrips = () => ({ type: ACTION_TYPE.DESELECT_CONTROL_ALL_TRIPS });
