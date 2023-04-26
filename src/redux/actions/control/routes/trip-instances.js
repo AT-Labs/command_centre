@@ -477,6 +477,8 @@ const getFilters = (model, state) => {
         ...(item.columnField === 'startTime' && item.operatorValue === 'onOrBefore' && { startTimeTo: item.value }),
         ...(item.columnField === 'status' && { tripStatus: item.value }),
         ...(item.columnField === 'trackingStatus' && { trackingStatuses: item.value }),
+        ...(item.columnField === 'firstStopCode' && { firstStopCode: item.value.data.stop_code }),
+        ...(item.columnField === 'lastStopCode' && { lastStopCode: item.value.data.stop_code }),
     }), {});
 
     const routeFilters = getRouteFilters(state);

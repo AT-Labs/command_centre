@@ -35,3 +35,18 @@ form.magnify {
 .vh-70 {
     height: 70vh;
 }
+
+.MuiBox-root {
+    .search__clear {
+        top: 5px;
+        right: 5px;
+    }
+}
+
+div.custom-panel-content {
+    overflow: visible;
+}
+
+div.custom-filter-value-input {
+    width: 400px;
+}

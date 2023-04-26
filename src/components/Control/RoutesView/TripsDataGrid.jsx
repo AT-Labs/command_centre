@@ -31,11 +31,15 @@ import {
     getTripsDatagridConfig,
     getTotalTripInstancesCount,
     getActiveTripInstance,
+    getStartStopInputValue,
+    getEndStopInputValue,
 } from '../../../redux/selectors/control/routes/trip-instances';
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
 import './TripsDataGrid.scss';
 import { getAgencies } from '../../../redux/selectors/control/agencies';
 import { CustomSelectionHeader } from './CustomSelectionHeader';
+import { getAllStops } from '../../../redux/selectors/static/stops';
+import { omniSearchDataGridOperator } from '../Common/DataGrid/omniSearchDataGridOperator';
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
 
@@ -254,6 +258,40 @@ export const TripsDataGrid = (props) => {
             hide: true,
             filterable: false,
         },
+        {
+            field: 'firstStopCode',
+            headerName: 'Start Stop',
+            width: 200,
+            type: 'string',
+            filterOperators: omniSearchDataGridOperator.map(operator => ({
+                ...operator,
+                InputComponentProps: {
+                    ...operator.InputComponentProps,
+                    inputValue: props.startStopInputValue,
+                },
+            })),
+            valueGetter: ({ row }) => {
+                const stop = props.allStops[get(row.tripInstance, 'firstStopCode')];
+                return stop?.stop_name || '';
+            },
+        },
+        {
+            field: 'lastStopCode',
+            headerName: 'End Stop',
+            width: 200,
+            type: 'string',
+            filterOperators: omniSearchDataGridOperator.map(operator => ({
+                ...operator,
+                InputComponentProps: {
+                    ...operator.InputComponentProps,
+                    inputValue: props.endStopInputValue,
+                },
+            })),
+            valueGetter: ({ row }) => {
+                const stop = props.allStops[get(row.tripInstance, 'lastStopCode')];
+                return stop?.stop_name || '';
+            },
+        },
     ];
 
     const rows = props.tripInstances.map(tripInstance => ({
@@ -311,6 +349,10 @@ export const TripsDataGrid = (props) => {
                     selectionModel={ props.selectedTrips }
                     onChangeSelectedData={ x => props.selectTrips(x) }
                     keepNonExistentRowsSelected
+                    classes={ {
+                        panelContent: 'custom-panel-content',
+                        filterFormValueInput: 'custom-filter-value-input',
+                    } }
                 />
             </div>
         </>
@@ -331,10 +373,15 @@ TripsDataGrid.propTypes = {
     rowCount: PropTypes.number.isRequired,
     updateActiveTripInstances: PropTypes.func.isRequired,
     activeTripInstance: PropTypes.array,
+    allStops: PropTypes.object.isRequired,
+    startStopInputValue: PropTypes.string,
+    endStopInputValue: PropTypes.string,
 };
 
 TripsDataGrid.defaultProps = {
     activeTripInstance: [],
+    startStopInputValue: '',
+    endStopInputValue: '',
 };
 
 export default connect(
@@ -349,6 +396,9 @@ export default connect(
         agencies: getAgencies(state),
         rowCount: getTotalTripInstancesCount(state),
         activeTripInstance: getActiveTripInstance(state),
+        allStops: getAllStops(state),
+        startStopInputValue: getStartStopInputValue(state),
+        endStopInputValue: getEndStopInputValue(state),
     }),
     {
         updateTripsDatagridConfig, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances,

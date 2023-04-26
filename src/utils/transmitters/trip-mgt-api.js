@@ -40,6 +40,8 @@ export const getTrips = ({
     isGroupedByRoute,
     isGroupedByRouteVariant,
     delayRange,
+    firstStopCode,
+    lastStopCode,
 }) => {
     const variables = { serviceDate };
     if (agencyId) { variables.agencyId = agencyId; }
@@ -59,6 +61,8 @@ export const getTrips = ({
     }
     if (delayRange && delayRange.min != null) { variables.delayMin = delayRange.min * 60; }
     if (delayRange && delayRange.max != null) { variables.delayMax = delayRange.max * 60; }
+    if (firstStopCode) { variables.firstStopCode = firstStopCode; }
+    if (lastStopCode) { variables.lastStopCode = lastStopCode; }
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
     return fetchWithAuthHeader(

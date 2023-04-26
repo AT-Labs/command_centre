@@ -153,6 +153,7 @@ export const CustomDataGrid = (props) => {
                             linkOperators: [GridLinkOperator.And],
                         },
                     } }
+                    classes={ props.classes }
                     apiRef={ apiRef }
                     page={ props.datagridConfig.page }
                     pageSize={ props.datagridConfig.pageSize }
@@ -222,6 +223,7 @@ CustomDataGrid.propTypes = {
     pagination: PropTypes.bool,
     groupingColDef: PropTypes.object,
     loading: PropTypes.bool,
+    classes: PropTypes.object,
 };
 
 CustomDataGrid.defaultProps = {
@@ -252,6 +254,7 @@ CustomDataGrid.defaultProps = {
     groupingColDef: undefined,
     loading: false,
     keepNonExistentRowsSelected: false,
+    classes: {},
 };
 
 export default CustomDataGrid;

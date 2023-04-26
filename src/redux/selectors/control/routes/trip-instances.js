@@ -51,3 +51,13 @@ export const getTripsDatagridConfig = createSelector(getTripsState, tripInstance
 export const getLastFilterRequest = createSelector(getTripsState, tripInstancesState => result(tripInstancesState, 'lastFilterRequest'));
 
 export const getTotalTripInstancesCount = createSelector(getTripsState, tripInstancesState => result(tripInstancesState, 'totalTripInstancesCount'));
+
+export const getStartStopInputValue = createSelector(getTripsState, (tripInstancesState) => {
+    const filter = result(tripInstancesState, 'datagridConfig.filterModel.items')?.find(item => item.columnField === 'firstStopCode');
+    return filter?.value?.text;
+});
+
+export const getEndStopInputValue = createSelector(getTripsState, (tripInstancesState) => {
+    const filter = result(tripInstancesState, 'datagridConfig.filterModel.items')?.find(item => item.columnField === 'lastStopCode');
+    return filter?.value?.text;
+});
