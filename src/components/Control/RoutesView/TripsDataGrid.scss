@@ -43,7 +43,7 @@ form.magnify {
     }
 }
 
-div.custom-panel-content {
+.MuiDataGrid-panelWrapper div.custom-panel-content:first-child {
     overflow: visible;
 }
 
