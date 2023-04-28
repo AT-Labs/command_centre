@@ -95,10 +95,15 @@ export const CustomDataGrid = (props) => {
             dataGridSave(apiRef.current);
         });
 
+        const colVisibilityModelChangeEvent = apiRef.current.subscribeEvent('columnVisibilityModelChange', () => {
+            dataGridSave(apiRef.current);
+        });
+
         return () => {
             columnVisChangeEvent();
             colOrderChangeEvent();
             colResizeStopEvent();
+            colVisibilityModelChangeEvent();
         };
     }, [apiRef]);
 
