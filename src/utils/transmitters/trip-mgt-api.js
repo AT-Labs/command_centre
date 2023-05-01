@@ -122,6 +122,13 @@ const copyTripGqlMutation = gql`
         }
     }`;
 
+const updateHeadsignGqlMutation = gql`
+    mutation($tripId: String!, $serviceDate: Moment!, $startTime: String!, $headsign: String!, $stopCodes: [String!]!) {
+        updateHeadsign(tripId: $tripId, serviceDate: $serviceDate, startTime: $startTime, headsign: $headsign, stopCodes: $stopCodes) {
+            ${tripInstanceFields}
+        }
+    }`;
+
 export const updateTripStatus = (options) => {
     const { tripId, serviceDate, tripStatus, startTime } = options;
 
@@ -132,6 +139,18 @@ export const updateTripStatus = (options) => {
         params: 'updateTripStatus',
         authToken: getAuthToken(),
     }).then(response => result(response, 'data.updateTripStatus', {}));
+};
+
+export const updateHeadsign = (options) => {
+    const { tripId, serviceDate, startTime, stopCodes, headsign } = options;
+
+    return mutateStatic({
+        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+        mutation: updateHeadsignGqlMutation,
+        variables: { tripId, serviceDate, startTime, stopCodes, headsign },
+        params: 'updateHeadsign',
+        authToken: getAuthToken(),
+    }).then(response => result(response, 'data.updateHeadsign', {}));
 };
 
 export const copyTrip = (options) => {

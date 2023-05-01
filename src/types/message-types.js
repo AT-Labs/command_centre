@@ -10,6 +10,7 @@ export const MESSAGE_ACTION_TYPES = {
     moveTripNextStop: 'moveTripNextStop',
     bulkStatusUpdate: 'bulkStatusUpdate',
     bulkStopStatusUpdate: 'bulkStopStatusUpdate',
+    updateDestination: 'updateDestination',
 };
 
 export default [

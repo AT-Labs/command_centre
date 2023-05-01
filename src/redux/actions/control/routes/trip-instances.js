@@ -424,6 +424,15 @@ export const moveTripToStop = (options, successMessage, tripInstance) => (dispat
     dispatch(deselectAllStopsByTrip(tripInstance));
 };
 
+export const updateDestination = (options, successMessage, tripInstance) => (dispatch) => {
+    handleTripInstanceUpdate(
+        () => TRIP_MGT_API.updateHeadsign(options),
+        { ...options, successMessage, actionType: MESSAGE_ACTION_TYPES.updateDestination },
+        dispatch,
+    );
+    dispatch(deselectAllStopsByTrip(tripInstance));
+};
+
 export const moveTripToNextStop = (options, successMessage) => (dispatch) => {
     handleTripInstanceUpdate(
         () => TRIP_MGT_API.moveToNextStop(options),

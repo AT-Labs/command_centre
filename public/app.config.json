@@ -2,5 +2,6 @@
     "useRecurringCancellations": "false",
     "useRecurringCancellationsGridView": "false",
     "usePassengerImpact": "false",
-    "useRoutesTripsDatagrid": "false"
+    "useRoutesTripsDatagrid": "false",
+    "useHeadsignUpdate": "false"
 }

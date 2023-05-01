@@ -7,7 +7,7 @@ import MockDate from 'mockdate';
 
 import {
     fetchTripInstances, clearActiveTripInstanceId, updateActiveTripInstanceId, collectTripsDataAndUpdateTripsStatus,
-    updateTripInstanceStatus, updateTripInstanceStopStatus, updateTripInstanceStopPlatform, updateTripInstanceDelay, filterTripInstances,
+    updateTripInstanceStatus, updateTripInstanceStopStatus, updateTripInstanceStopPlatform, updateTripInstanceDelay, filterTripInstances, updateDestination,
 } from './trip-instances';
 import * as tripMgtApi from '../../../../utils/transmitters/trip-mgt-api';
 import * as blockMgtApi from '../../../../utils/transmitters/block-mgt-api';
@@ -788,5 +788,29 @@ describe('Trip instances actions', () => {
         await storeWithFilter.dispatch(filterTripInstances());
         const actualActions = storeWithFilter.getActions();
         expect(actualActions).to.eql(expectedActions);
+    });
+
+    it('updates active trip instance', async () => {
+        const trip = {
+            tripId: 'trip-id-1',
+            serviceDate: '20230101',
+            startTime: '10:00:00',
+        };
+
+        const expectedActions = [
+            {
+              type: 'update_trip_instance_action_loading',
+              payload: { tripId: 'trip-id-1-20230101-10:00:00', isLoading: true }
+            },
+            {
+              type: 'deselect-control-all-stops-by-trip',
+              payload: { tripInstance: trip }
+            }
+        ]
+
+        const options = { ...trip, headsign: 'new dest', stopCodes: ['9001', '9002'] };
+
+        await store.dispatch(updateDestination(options, "successMessage", trip));
+        expect(store.getActions()).to.eql(expectedActions);
     });
 });

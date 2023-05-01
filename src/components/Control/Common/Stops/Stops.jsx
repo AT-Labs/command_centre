@@ -10,6 +10,7 @@ import StopSelectionFooter from '../../RoutesView/bulkSelection/StopSelectionFoo
 import { getSelectedStopsByTripKey } from '../../../../redux/selectors/control/routes/trip-instances';
 import { deselectAllStopsByTrip, updateSelectedStopsByTrip } from '../../../../redux/actions/control/routes/trip-instances';
 import StopLinesHelperClass from './StopLinesHelperClass';
+import { useHeadsignUpdate } from '../../../../redux/selectors/appSettings';
 
 import './Stops.scss';
 import './StopsLine.scss';
@@ -22,6 +23,7 @@ export class Stops extends React.Component {
         selectedStopsByTripKey: PropTypes.func.isRequired,
         deselectAllStopsByTrip: PropTypes.func.isRequired,
         updateSelectedStopsByTrip: PropTypes.func.isRequired,
+        useHeadsignUpdate: PropTypes.bool.isRequired,
     };
 
     constructor(props) {
@@ -112,6 +114,11 @@ export class Stops extends React.Component {
             <section className={ `pt-3 ${StopLinesHelper.getHoverDirectionClass()}` }>
                 <div className="d-flex">
                     <div className={ `align-self-end ml-3 mr-2 text-right ${this.state.hasScrollbar ? 'stop-times-label__scrollbar' : 'stop-times-label__no-scrollbar'}` }>
+                        { this.props.useHeadsignUpdate && (
+                            <div className="mb-5">
+                                Destination
+                            </div>
+                        ) }
                         <div>Scheduled</div>
                         <div>
                             <span className="text-muted">Actual</span>
@@ -145,4 +152,5 @@ export class Stops extends React.Component {
 
 export default connect(state => ({
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
+    useHeadsignUpdate: useHeadsignUpdate(state),
 }), { deselectAllStopsByTrip, updateSelectedStopsByTrip })(Stops);

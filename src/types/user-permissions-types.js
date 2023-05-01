@@ -8,6 +8,7 @@ export default {
         ADVANCER: 'advancer',
         VIEW_TRIP: 'view',
         RECURRENT_CANCEL: 'recurrent_cancel',
+        UPDATE_HEADSIGN: 'update_headsign',
     },
     BLOCKS: {
         ADD_BLOCK: 'add',

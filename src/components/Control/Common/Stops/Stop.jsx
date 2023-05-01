@@ -14,9 +14,10 @@ import { transformStopName } from '../../../../utils/control/routes';
 import { getTripTimeDisplay, getStopKey } from '../../../../utils/helpers';
 import ConfirmationModal from '../ConfirmationModal/ConfirmationModal';
 import { StopStatus, StopType, TripInstanceType } from '../../RoutesView/Types';
-import { isChangeStopPermitted, isSkipStopPermitted } from '../../../../utils/user-permissions';
+import { isChangeStopPermitted, isSkipStopPermitted, isUpdateStopHeadsignPermitted } from '../../../../utils/user-permissions';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../../auth';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
+import { useHeadsignUpdate } from '../../../../redux/selectors/appSettings';
 
 export class Stop extends React.Component {
     static propTypes = {
@@ -31,6 +32,7 @@ export class Stop extends React.Component {
         onHover: PropTypes.func.isRequired,
         isStopInSelectionRange: PropTypes.bool,
         lineInteractionClasses: PropTypes.string.isRequired,
+        useHeadsignUpdate: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -56,10 +58,15 @@ export class Stop extends React.Component {
 
     isMissedTrip = () => this.props.tripInstance.status === TRIP_STATUS_TYPES.missed;
 
+    isUpdateHeadsignPermitted = () => IS_LOGIN_NOT_REQUIRED || isUpdateStopHeadsignPermitted(this.props.stop);
+
     isStopMutationPossible = () => (this.isNotStartedTrip() || this.isInProgressTrip() || this.isMissedTrip())
         && (moment(this.props.serviceDate).isSame(moment(), 'day')
             || moment(this.props.serviceDate).isSame(moment().add(1, 'days'), 'day')
             || (moment(this.props.serviceDate).isBefore(moment(), 'day') && this.props.tripInstance.endTime > '24:00:00'));
+
+    isUpdateStopHeadsignPossible = () => (this.isNotStartedTrip() || this.isInProgressTrip())
+        && (moment(this.props.serviceDate).isSame(moment(), 'day'));
 
     isStopSkippingPermitted = () => IS_LOGIN_NOT_REQUIRED || isSkipStopPermitted(this.props.stop);
 
@@ -69,7 +76,8 @@ export class Stop extends React.Component {
 
     isReinstateStopDisabled = () => !this.isSkipped() || !this.isStopSkippingPermitted() || !this.isStopMutationPossible();
 
-    shouldSelectStopButtonBeDisabled = () => !this.isStopSkippingPermitted() || !this.isStopMutationPossible();
+    shouldSelectStopButtonBeDisabled = () => !((this.isStopSkippingPermitted() && this.isStopMutationPossible())
+        || (this.isUpdateStopHeadsignPossible() && this.isUpdateHeadsignPermitted()));
 
     isChangePlatformDisabled = () => !this.isStopMutationPermitted()
         || !this.isStopMutationPossible()
@@ -182,6 +190,7 @@ export class Stop extends React.Component {
                         </UncontrolledDropdown>
                     )}
                     <div className="font-weight-bold mt-1">{stop.stopCode || '—'}</div>
+                    { this.props.useHeadsignUpdate && (<div className="mt-2 mb-2">{stop.stopHeadsign ? stop.stopHeadsign : ''}</div>) }
                 </div>
                 <div className={ `stop-control__body ${this.props.lineInteractionClasses}` }>
                     <div className="stop-control__body__line" />
@@ -231,4 +240,5 @@ export default connect(state => ({
     serviceDate: getServiceDate(state),
     platforms: getParentStopsWithPlatform(state),
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
+    useHeadsignUpdate: useHeadsignUpdate(state),
 }), { updateTripInstanceStopPlatform, selectStops })(Stop);

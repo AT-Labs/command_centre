@@ -1,4 +1,4 @@
-import { updateTripStatus, updateStopId, updateTripDelay, moveToNextStop, moveTotStop } from './trip-mgt-api';
+import { updateTripStatus, updateStopId, updateTripDelay, moveToNextStop, moveTotStop, updateHeadsign } from './trip-mgt-api';
 import * as graphql from '../graphql';
 import * as auth from '../../auth';
 
@@ -49,5 +49,11 @@ describe('Operation result', () => {
         mutateStatic.mockResolvedValue({ data: { moveToStop: stop } });
         const result = await moveTotStop({ ...tripId, ...stop });
         expect(result).toEqual(stop);
+    });
+
+    it('Should get trip from response after sending updateHeadsign', async () => {
+        mutateStatic.mockResolvedValue({ data: { updateHeadsign: tripId } });
+        const result = await updateHeadsign({ ...tripId, headsign: 'new destination', stopCodes: ['9001', '9002'] });
+        expect(result).toEqual(tripId);
     });
 });

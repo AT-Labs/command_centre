@@ -82,6 +82,7 @@ export const updateStopsModalTypes = {
     SKIP: 'skip',
     REINSTATE: 'reinstate',
     MOVE_SERVICE: 'move-service',
+    UPDATE_HEADSIGN: 'update-headsign',
 };
 
 export const updateTripsStatusModalOrigins = {
