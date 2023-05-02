@@ -8,6 +8,7 @@ const config = {
     tenant: AD_TENANT,
     clientId: AD_CLIENT_ID,
     cacheLocation: 'sessionStorage',
+    loadFrameTimeout: 30000,
     endpoints: {
         api: AD_CLIENT_ID,
     },
