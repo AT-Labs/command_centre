@@ -493,6 +493,9 @@ const getFilters = (model, state) => {
     const routeFilters = getRouteFilters(state);
     filters.routeType = routeFilters.routeType;
     filters.delayRange = routeFilters.delayRange;
+    filters.agencyId = routeFilters.agencyId;
+    filters.depotIds = routeFilters.depotIds;
+    filters.tripStatus = routeFilters.tripStatus;
 
     const { routeShortName, routeVariantId } = routeFilters;
     if (routeVariantId) {

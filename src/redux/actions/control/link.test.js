@@ -169,6 +169,9 @@ describe('Link actions', () => {
                 payload: {
                     lastFilterRequest: {
                         delayRange: undefined,
+                        agencyId: undefined,
+                        depotIds: undefined,
+                        tripStatus: undefined,
                         limit: undefined,
                         page: NaN,
                         routeType: 3,

@@ -529,16 +529,17 @@ describe('Trip instances actions', () => {
                     lastFilterRequest: {
                         routeType: 3,
                         delayRange: undefined,
+                        agencyId: undefined,
+                        depotIds: undefined,
+                        tripStatus: undefined,
                         serviceDate: '20230320',
                         startTime: "23:00",
                         startTimeFrom: "21:00",
                         startTimeTo: "23:00",
-                        status: "COMPLETED",
                         trackingStatus: ["STOPPED"],
                         trackingStatuses: ["STOPPED"],
                         tripId: ["1327-86502-75600-2-96e917d1"],
                         tripIds: ["1327-86502-75600-2-96e917d1"],
-                        tripStatus: "COMPLETED",
                         page: 1,
                         limit: 15,
                         sorting: {
@@ -596,11 +597,6 @@ describe('Trip instances actions', () => {
                                 id: 41345,
                                 value: ["1327-86502-75600-2-96e917d1"]
                             },{
-                                columnField: "status",
-                                operatorValue: "is",
-                                id: 37143,
-                                value: "COMPLETED"
-                            },{
                                 columnField: "trackingStatus",
                                 operatorValue: "isAnyOf",
                                 id: 37471,
@@ -638,6 +634,9 @@ describe('Trip instances actions', () => {
                         startTimeFrom: '00:00',
                         routeType: 3,
                         delayRange: undefined,
+                        agencyId: undefined,
+                        depotIds: undefined,
+                        tripStatus: undefined,
                         serviceDate: '20230320',
                         routeVariantIds: [50101],
                         page: 1,
@@ -719,6 +718,9 @@ describe('Trip instances actions', () => {
                         startTimeFrom: '00:00',
                         routeType: 3,
                         delayRange: undefined,
+                        agencyId: undefined,
+                        depotIds: undefined,
+                        tripStatus: undefined,
                         routeVariantIds: ['27001'],
                         serviceDate: '20230320',
                         page: 1,

@@ -114,8 +114,8 @@ export const TripsDataGrid = (props) => {
         },
         {
             field: 'routeVariantId',
-            headerName: 'Route #',
-            width: 100,
+            headerName: 'Route Variant',
+            width: 150,
             type: 'string',
             filterable: false,
         },
@@ -134,6 +134,7 @@ export const TripsDataGrid = (props) => {
             ),
             hide: true,
             sortable: false,
+            filterable: false,
         },
         {
             field: 'depotIds',
@@ -150,6 +151,7 @@ export const TripsDataGrid = (props) => {
             ),
             hide: true,
             sortable: false,
+            filterable: false,
         },
         {
             field: 'tripId',
@@ -216,6 +218,7 @@ export const TripsDataGrid = (props) => {
                 operator => operator.value === 'is',
             ),
             renderCell: params => formatStatusColumn(params.row),
+            filterable: false,
         },
         {
             field: 'delay',
@@ -226,7 +229,7 @@ export const TripsDataGrid = (props) => {
         },
         {
             field: 'routeShortName',
-            headerName: 'Route Name',
+            headerName: 'Route Variant Name',
             width: 500,
             valueGetter: ({ row }) => {
                 const routeLongName = get(row.tripInstance, 'routeLongName');

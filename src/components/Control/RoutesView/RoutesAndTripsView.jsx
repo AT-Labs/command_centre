@@ -47,7 +47,7 @@ export const RoutesAndTripsView = (props) => {
                 clearTimeout(loadingTimerRef.current);
             }
         };
-    }, [props.filters, props.activeRoute, props.activeRouteVariant]);
+    }, [props.filters, props.activeRoute, props.activeRouteVariant, props.serviceDate]);
 
     useEffect(() => {
         setCurrentPage(1);
