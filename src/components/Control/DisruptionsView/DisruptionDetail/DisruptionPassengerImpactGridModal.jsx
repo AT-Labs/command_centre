@@ -7,6 +7,7 @@ import PassengerImpactGrid from '../PassengerImpact/PassengerImpactGrid';
 const DisruptionPassengerImpactGridModal = props => (
     <>
         <CustomMuiDialog
+            title=""
             onClose={ props.onClose }
             isOpen={ props.isOpen }
             maxWidth="md"

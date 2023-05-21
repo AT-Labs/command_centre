@@ -660,7 +660,7 @@ const DisruptionDetailView = (props) => {
 
             <div className="row">
                 <div className="col-5 disruption-detail__contributors">
-                    <LastNoteView label={ LABEL_LAST_NOTE } note={ lastNote } />
+                    <LastNoteView label={ LABEL_LAST_NOTE } note={ lastNote } id="disruption-detail__last-note-view" />
                     <DisruptionLabelAndText id="disruption-detail__created-by" label={ LABEL_CREATED_BY } text={ `${disruption.createdBy}, ${formatCreatedUpdatedTime(disruption.createdTime)}` } />
                     <DisruptionLabelAndText id="disruption-detail__last-updated" label={ LABEL_LAST_UPDATED_BY } text={ `${disruption.lastUpdatedBy}, ${formatCreatedUpdatedTime(disruption.lastUpdatedTime)}` } />
                 </div>

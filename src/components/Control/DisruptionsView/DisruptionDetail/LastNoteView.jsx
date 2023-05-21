@@ -30,7 +30,11 @@ const LastNoteView = (props) => {
 LastNoteView.propTypes = {
     id: PropTypes.string.isRequired,
     label: PropTypes.string.isRequired,
-    note: PropTypes.object.isRequired,
+    note: PropTypes.object,
+};
+
+LastNoteView.defaultProps = {
+    note: undefined,
 };
 
 export { LastNoteView };

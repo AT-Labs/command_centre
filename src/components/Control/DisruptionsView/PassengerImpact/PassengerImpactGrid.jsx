@@ -120,6 +120,23 @@ export const PassengerImpactGrid = (props) => {
 
     const disruptionType = disruptionData.disruptionType || (isEmpty(affectedRoutes) && !isEmpty(affectedStops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES);
 
+    const routesWithoutStopsSeletected = disruptionData.affectedEntities.filter(entity => entity.routeId && !entity.stopCode).map(entity => entity.routeId);
+    const stopsWithoutRoutesSelected = disruptionData.affectedEntities.filter(entity => !entity.routeId && entity.stopCode).map(entity => entity.stopCode);
+
+    let filteredDataSource = passengerCountData.grid;
+
+    routesWithoutStopsSeletected.forEach((routeId) => {
+        filteredDataSource = filteredDataSource.filter(
+            row => row.id === routeId || !(row.id.startsWith(routeId)),
+        );
+    });
+
+    stopsWithoutRoutesSelected.forEach((stopCode) => {
+        filteredDataSource = filteredDataSource.filter(
+            row => row.id === stopCode || !(row.id.startsWith(stopCode)),
+        );
+    });
+
     return (
         <Container className="passenger-imact-grid">
             <h2 className="pl-4 pr-4">Passenger Impact</h2>
@@ -128,7 +145,7 @@ export const PassengerImpactGrid = (props) => {
             <CustomDataGrid
                 columns={ PASSENGER_IMPACT_GRID_COLUMNS[disruptionType] }
                 datagridConfig={ datagridConfig }
-                dataSource={ passengerCountData.grid }
+                dataSource={ filteredDataSource }
                 getRowId={ row => row.id }
                 toolbar={ () => null }
                 updateDatagridConfig={ () => null }

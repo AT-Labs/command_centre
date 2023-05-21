@@ -144,17 +144,17 @@ export class CreateDisruption extends React.Component {
     };
 
     setupDataEdit = () => {
-        const { workarounds, startTime, endTime, passengerCount } = this.props.disruptionToEdit;
+        const { disruptionToEdit } = this.props;
+        const { startTime, endTime } = disruptionToEdit;
 
         const disruptionType = isEmpty(this.props.routes) && !isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
         this.setState({
             disruptionData: {
                 ...INIT_STATE,
                 disruptionType,
-                workarounds,
+                ...disruptionToEdit,
                 ...(startTime && { startTime: startTime.toISOString() }),
                 ...(endTime && { endTime: endTime.toISOString() }),
-                passengerCount,
             },
         });
     };

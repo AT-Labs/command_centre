@@ -4,6 +4,7 @@ import { DISRUPTION_TYPE } from '../../types/disruptions-types';
 import { momentFromDateTime } from './disruptions';
 import { getPassengerCountData } from '../transmitters/passenger-count-api';
 import { STOP_NOT_AVAILABLE, TIME_FORMAT } from '../../constants/disruptions';
+import { DATE_FORMAT_DDMMYYYY as DATE_FORMAT } from '../dateUtils';
 
 export const WEEKDAYS = {
     0: { init: 'M', name: 'monday' },
@@ -279,6 +280,15 @@ export const fetchAndProcessPassengerImpactData = async (disruptionData, affecte
     if (!isEmpty(disruptionData.endDate) && !isEmpty(disruptionData.endTime)) {
         endTime = momentFromDateTime(disruptionData.endDate, disruptionData.endTime).toString();
     }
+
+    if (!disruptionData.recurrent) {
+        if (disruptionData.endDate?.length === 0 && disruptionData.endTime?.length === 0) {
+            endTime = momentFromDateTime(disruptionData.startDate, '23:00').add(7, 'days').toString();
+        } else if (!disruptionData.endDate?.length > 0 && !disruptionData.endTime) {
+            endTime = momentFromDateTime(moment(disruptionData.startTime).format(DATE_FORMAT), '23:00').add(7, 'days').toString();
+        }
+    }
+
     affectedEntities = fillAffectedEntitiesWithData(disruptionData, affectedEntities, startTime, endTime);
 
     let rawPassengerCountData = await getPassengerCountData(affectedEntities);
