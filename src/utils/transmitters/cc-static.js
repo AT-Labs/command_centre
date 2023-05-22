@@ -81,3 +81,8 @@ export const geoSearch = (body, searchEntityType) => {
         },
     ).then(response => jsonResponseHandling(response));
 };
+
+export const getRailHeadsignsStops = () => fetch(
+    `${CC_STATIC_QUERY_URL}/operational/rail/headsigns`,
+    { method: 'GET' },
+).then(response => jsonResponseHandling(response));
