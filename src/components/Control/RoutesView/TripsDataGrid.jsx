@@ -277,6 +277,7 @@ export const TripsDataGrid = (props) => {
                 const stop = props.allStops[get(row.tripInstance, 'firstStopCode')];
                 return stop?.stop_name || '';
             },
+            hide: true,
         },
         {
             field: 'lastStopCode',
@@ -294,6 +295,7 @@ export const TripsDataGrid = (props) => {
                 const stop = props.allStops[get(row.tripInstance, 'lastStopCode')];
                 return stop?.stop_name || '';
             },
+            hide: true,
         },
     ];
 
