@@ -25,7 +25,19 @@ export const CustomDataGrid = (props) => {
     );
 
     const getColumns = () => {
-        if (props.datagridConfig?.columns?.length > 0) return props.datagridConfig.columns;
+        if (props.datagridConfig?.columns?.length > 0) {
+            return props.datagridConfig.columns.map((column) => {
+                const foundColumn = props.columns.find(col => column.field === col.field && column.valueOptions !== col.valueOptions);
+                if (foundColumn) {
+                    const { valueOptions } = foundColumn;
+                    return {
+                        ...column,
+                        valueOptions,
+                    };
+                }
+                return column;
+            });
+        }
 
         if (!props.getDetailPanelContent) return props.columns;
 

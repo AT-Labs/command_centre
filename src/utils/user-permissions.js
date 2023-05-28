@@ -2,7 +2,7 @@ import { findIndex, some, get } from 'lodash-es';
 
 import USER_PERMISSIONS from '../types/user-permissions-types';
 
-const { ROUTES, BLOCKS, STOP_MESSAGING, ALERTS } = USER_PERMISSIONS;
+const { ROUTES, BLOCKS, STOP_MESSAGING, ALERTS, RECURRING_CANCELLATIONS } = USER_PERMISSIONS;
 export const isGlobalActionPermitted = (permissions, action) => some(permissions, { _rel: action });
 const isContainingPermission = (instance, permission) => {
     const userPermissions = get(instance, '_links.permissions', []);
@@ -17,6 +17,7 @@ export const isUpdateStopHeadsignPermitted = stopInstance => isContainingPermiss
 export const isMoveToStopPermitted = instance => isContainingPermission(instance, ROUTES.ADVANCER); // instance might be trip or stop
 export const isSkipStopPermitted = stopInstance => isContainingPermission(stopInstance, ROUTES.SKIP_STOP);
 export const isChangeStopPermitted = stopInstance => isContainingPermission(stopInstance, ROUTES.CHANGE_STOP);
+export const isRecurringCancellationUpdatePermitted = recurring => isContainingPermission(recurring, RECURRING_CANCELLATIONS.UPDATE_RECURRING_CANCELLATIONS);
 
 // Blocks
 export const isGlobalAddBlocksPermitted = permissions => isGlobalActionPermitted(permissions, BLOCKS.ADD_BLOCK);

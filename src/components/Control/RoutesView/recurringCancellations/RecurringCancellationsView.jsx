@@ -36,6 +36,7 @@ import { displayRecurrentDays } from '../../../../utils/recurrence';
 import { SERVICE_DATE_FORMAT, PAGE_SIZE } from '../../../../utils/control/routes';
 import DATE_TYPE from '../../../../types/date-types';
 import { DATE_FORMAT_DDMMYYYY, dateTimeFormat } from '../../../../utils/dateUtils';
+import { isRecurringCancellationUpdatePermitted } from '../../../../utils/user-permissions';
 
 import './RecurringCancellationsView.scss';
 
@@ -51,7 +52,6 @@ export const RecurringCancellationsView = (props) => {
     const [rowData, setRowData] = useState(null);
     const [multipleRowData, setMultipleRowRowData] = useState([]);
     const [selectedRow, setSelectedRow] = React.useState([]);
-    const [operatorsList, setOperatorsList] = useState([]);
 
     const onNewCancellationModalOpen = () => {
         setActionState({
@@ -155,7 +155,7 @@ export const RecurringCancellationsView = (props) => {
                         View Trip
                     </Button>
                 </div>
-                { props.isRecurringCancellationUpdateAllowed && (
+                { isRecurringCancellationUpdatePermitted(allData) && (
                     <>
                         <div id="recurring-cancellation-edit-button">
                             <IconButton
@@ -181,72 +181,13 @@ export const RecurringCancellationsView = (props) => {
         );
     };
 
-    const RECURRING_CANCELLATION_COLUMNS = [
-        {
-            field: 'routeVariantId',
-            headerName: 'ROUTE VARIANT',
-            width: 150,
-        },
-        { field: 'operator', headerName: 'OPERATOR', width: 200 },
-        {
-            field: 'route',
-            headerName: 'ROUTE',
-            width: 150,
-        },
-        {
-            field: 'startTime',
-            headerName: 'START TIME',
-            width: 150,
-        },
-        {
-            field: 'cancel_from',
-            headerName: 'CANCEL FROM',
-            width: 150,
-            type: 'date',
-            valueFormatter: params => params.value.format(DATE_FORMAT_DDMMYYYY),
-        },
-        {
-            field: 'cancel_to',
-            headerName: 'CANCEL TO',
-            width: 150,
-            type: 'date',
-            valueFormatter: params => params.value.format(DATE_FORMAT_DDMMYYYY),
-        },
-        {
-            field: 'recurrence',
-            headerName: 'RECURRENCE',
-            width: 200,
-        },
-        {
-            field: 'lastUpdated',
-            headerName: 'LAST UPDATED',
-            width: 150,
-            type: 'dateTime',
-            valueFormatter: params => params.value.format(dateTimeFormat),
-        },
-        {
-            field: 'updatedBy',
-            headerName: 'UPDATED BY',
-            width: 200,
-        },
-        {
-            field: 'action',
-            headerName: 'ACTION',
-            width: 200,
-            renderCell: getActionsButtons,
-        },
-    ];
-
     useEffect(() => {
         props.retrieveRecurringCancellations();
     }, [props.recurringCancellationMessage]);
 
     useEffect(() => {
-        const operators = [];
         if (isEmpty(props.operators)) props.retrieveAgencies();
-        props.operators.forEach(element => operators.push(element.agencyName));
-        setOperatorsList(operators);
-    }, [props.operators]);
+    }, []);
 
     useEffect(() => {
         const { status, data } = props.redirectionStatus;
@@ -313,25 +254,67 @@ export const RecurringCancellationsView = (props) => {
         allData: recurringCancellation,
     }));
 
-    const getColumns = () => {
-        if (props.recurringCancellationDatagridConfig.columns.length > 0) return props.recurringCancellationDatagridConfig.columns;
-
-        const operatorColumn = RECURRING_CANCELLATION_COLUMNS.find(
-            column => column.field === 'operator',
-        );
-
-        const operatorColIndex = RECURRING_CANCELLATION_COLUMNS.findIndex(
-            col => col.field === 'operator',
-        );
-
-        RECURRING_CANCELLATION_COLUMNS[operatorColIndex] = {
-            ...operatorColumn,
-            valueOptions: operatorsList,
+    const getColumns = () => [
+        {
+            field: 'routeVariantId',
+            headerName: 'ROUTE VARIANT',
+            width: 150,
+        },
+        {
+            field: 'operator',
+            headerName: 'OPERATOR',
+            width: 200,
+            valueOptions: props.operators?.map(agency => agency.agencyName) || [],
             type: 'singleSelect',
-        };
-
-        return RECURRING_CANCELLATION_COLUMNS;
-    };
+        },
+        {
+            field: 'route',
+            headerName: 'ROUTE',
+            width: 150,
+        },
+        {
+            field: 'startTime',
+            headerName: 'START TIME',
+            width: 150,
+        },
+        {
+            field: 'cancel_from',
+            headerName: 'CANCEL FROM',
+            width: 150,
+            type: 'date',
+            valueFormatter: params => params.value.format(DATE_FORMAT_DDMMYYYY),
+        },
+        {
+            field: 'cancel_to',
+            headerName: 'CANCEL TO',
+            width: 150,
+            type: 'date',
+            valueFormatter: params => params.value.format(DATE_FORMAT_DDMMYYYY),
+        },
+        {
+            field: 'recurrence',
+            headerName: 'RECURRENCE',
+            width: 200,
+        },
+        {
+            field: 'lastUpdated',
+            headerName: 'LAST UPDATED',
+            width: 150,
+            type: 'dateTime',
+            valueFormatter: params => params.value.format(dateTimeFormat),
+        },
+        {
+            field: 'updatedBy',
+            headerName: 'UPDATED BY',
+            width: 200,
+        },
+        {
+            field: 'action',
+            headerName: 'ACTION',
+            width: 200,
+            renderCell: getActionsButtons,
+        },
+    ];
 
     const renderCustomFooter = () => (
         <GridFooterContainer>
