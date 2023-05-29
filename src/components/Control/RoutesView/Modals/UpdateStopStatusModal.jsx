@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import React, { useState, useEffect } from 'react';
 import { FormGroup, FormText, Input } from 'reactstrap';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 
 import UpdateStatusModalsBtn from './UpdateStatusModalsBtn';
 import { StopStatus, updateStopsModalTypes } from '../Types';
@@ -10,7 +12,9 @@ import CustomModal from '../../../Common/CustomModal/CustomModal';
 import ConfirmationModalBody from '../../Common/ConfirmationModal/ConfirmationModalBody';
 import { updateSelectedStopsStatus, moveTripToStop, updateDestination } from '../../../../redux/actions/control/routes/trip-instances';
 import { getSelectedStopsByTripKey, getSelectedStopsUpdatingState } from '../../../../redux/selectors/control/routes/trip-instances';
-import { STOP_DESTINATION_MAX_LENGTH } from '../../../../constants/trips';
+import { TRAIN_TYPE_ID } from '../../../../types/vehicle-types';
+import { getRailHeadsignsStops } from '../../../../utils/transmitters/cc-static';
+import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 
 const UpdateStopStatusModal = (props) => {
     const { skipped, notPassed } = StopStatus;
@@ -22,6 +26,13 @@ const UpdateStopStatusModal = (props) => {
     const hasUpdatingFinished = hasUpdateBeenTriggered && !areSelectedStopsUpdating;
     const selectedStops = props.selectedStopsByTripKey(tripInstance);
     const firstSelectedStop = !isEmpty(selectedStops) && selectedStops[findKey(selectedStops)];
+    const [railHeadsigns, setRailHeadsigns] = useState([]);
+    const [selectedPidCustomization, setSelectedPidCustomization] = useState('None');
+
+    useEffect(async () => {
+        const railHeadsignsStops = await getRailHeadsignsStops();
+        setRailHeadsigns(railHeadsignsStops.map(({ headsign }) => headsign));
+    }, []);
 
     const modalProps = {
         [SKIP]: {
@@ -57,6 +68,21 @@ const UpdateStopStatusModal = (props) => {
         },
     };
 
+    const pidCustomizationOptions = [
+        { key: '/N', value: '/N' },
+        { key: '/PAN', value: '/PAN' },
+        { key: '/LS', value: '/LS' },
+        { key: 'None', value: 'None' },
+    ];
+
+    const handlePidCustomizationChange = (pidCustomization) => {
+        setSelectedPidCustomization(pidCustomization);
+    };
+
+    const handleRailDestinationChange = (event) => {
+        setNewDestination(event.target.textContent);
+    };
+
     const onClose = () => {
         props.onClose();
         setHasUpdateBeenTriggered(false);
@@ -80,7 +106,7 @@ const UpdateStopStatusModal = (props) => {
                 serviceDate: tripInstance.serviceDate,
                 startTime: tripInstance.startTime,
                 stopCodes: Object.values(selectedStops).map(stop => stop.stopCode),
-                headsign: newDestination,
+                headsign: selectedPidCustomization !== 'None' ? newDestination + selectedPidCustomization : newDestination,
             };
             props.updateDestination(options, modalProps[activeModal].successMessage, tripInstance);
         } else {
@@ -108,19 +134,44 @@ const UpdateStopStatusModal = (props) => {
                     </p>
                     <div className="col-12">
                         <FormGroup>
-                            <Input
-                                id="updateStopStatusModal-headsign__new-headsign"
-                                className="w-100 border border-dark"
-                                placeholder="Enter the new destination"
-                                maxLength={ STOP_DESTINATION_MAX_LENGTH }
-                                onChange={ event => setNewDestination(event.target.value) }
-                                value={ newDestination }
-                            />
-                            <FormText>
-                                {newDestination.length}
-                                /
-                                {STOP_DESTINATION_MAX_LENGTH}
-                            </FormText>
+                            { tripInstance.routeType === TRAIN_TYPE_ID && (
+                                <>
+                                    <FormText className="mb-3">
+                                        Select new destination (rail only)
+                                    </FormText>
+                                    <Autocomplete
+                                        id="updateStopStatusModal-headsign__new-headsign"
+                                        options={ railHeadsigns }
+                                        onChange={ handleRailDestinationChange }
+                                        renderInput={ params => <TextField { ...params } label="Enter the new destination" /> }
+                                    />
+                                    <FormText className="mt-3">
+                                        Customise PID (optional for rail)
+                                    </FormText>
+                                    <RadioButtons
+                                        title=""
+                                        formGroupClass="update-stop-status-modal__pid-customization mt-3"
+                                        checkedKey={ selectedPidCustomization }
+                                        itemOptions={ pidCustomizationOptions }
+                                        disabled={ false }
+                                        onChange={ handlePidCustomizationChange }
+                                    />
+                                </>
+                            )}
+                            { tripInstance.routeType !== TRAIN_TYPE_ID && (
+                                <>
+                                    <Input
+                                        id="updateStopStatusModal-headsign__new-headsign"
+                                        className="w-100 border border-dark"
+                                        placeholder="Enter the new destination"
+                                        onChange={ event => setNewDestination(event.target.value) }
+                                        value={ newDestination }
+                                    />
+                                    <FormText>
+                                        {newDestination.length}
+                                    </FormText>
+                                </>
+                            )}
                         </FormGroup>
                     </div>
                 </>
