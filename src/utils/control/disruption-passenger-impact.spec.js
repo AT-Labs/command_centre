@@ -96,6 +96,11 @@ const rawPassengerCountData = [{
     sunday: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 }];
 
+const affectedRoutes = [
+    { stopCode: '133', routeId: 'EAST-201', directionId: 0 },
+    { routeId: 'WEST-201' },
+];
+
 describe('transformPassengerCountToTreeData', () => {
     test('Should summarise impact passenger count in 24 hours for each day', () => {
         const result = transformPassengerCountToTreeData(rawPassengerCountData, DISRUPTION_TYPE.ROUTES);
@@ -323,16 +328,142 @@ describe('extendPassengerCountData', () => {
 });
 
 describe('fetchAndProcessPassengerImpactData', () => {
-    it('Should call getPassengerCountData with expected entities', async () => {
-        const affectedRoutes = [
-            { stopCode: '133', routeId: 'EAST-201', directionId: 0 },
-            { routeId: 'WEST-201' },
-        ];
-        const disruptionData = {
+    it('Should call getPassengerCountData with expected entities(when disruption start and end in the same day)', async () => {
+        const disruptionDataFirst = {
             disruptionType: 'Routes',
             startDate: '10/02/2023',
             startTime: '09:00',
             endDate: '10/02/2023',
+            endTime: '20:00',
+            recurrent: false,
+        };
+
+        const disruptionDataSecond = {
+            disruptionType: 'Routes',
+            startDate: '15/02/2023',
+            startTime: '05:00',
+            endDate: '15/02/2023',
+            endTime: '22:00',
+            recurrent: false,
+        };
+
+        const expectedResult = [
+            {
+                stopCode: '9001',
+                routeId: 'EAST-201',
+                friday: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+            },
+            {
+                routeId: 'WEST-201',
+                friday: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+            },
+        ];
+
+        await expect(fetchAndProcessPassengerImpactData(disruptionDataFirst, affectedRoutes, [], allChildStops, allRoutes, allStops, stopsByRoute)).resolves.toEqual({
+            grid: [],
+            total: 0,
+        });
+        expect(passengerCountApi.getPassengerCountData).toBeCalledWith(expectedResult);
+
+        await expect(fetchAndProcessPassengerImpactData(disruptionDataSecond, affectedRoutes, [], allChildStops, allRoutes, allStops, stopsByRoute)).resolves.toEqual({
+            grid: [],
+            total: 0,
+        });
+        expect(passengerCountApi.getPassengerCountData).toBeCalledWith(expectedResult);
+    });
+
+    it('Should call getPassengerCountData with expected entities(when disruption is over 5 days)', async () => {
+        const disruptionData = {
+            disruptionType: 'Routes',
+            startDate: '10/02/2023',
+            startTime: '09:00',
+            endDate: '15/02/2023',
+            endTime: '12:00',
+            recurrent: false,
+        };
+        await expect(fetchAndProcessPassengerImpactData(disruptionData, affectedRoutes, [], allChildStops, allRoutes, allStops, stopsByRoute)).resolves.toEqual({
+            grid: [],
+            total: 0,
+        });
+        expect(passengerCountApi.getPassengerCountData).toBeCalledWith(
+            [
+                {
+                    stopCode: '9001',
+                    routeId: 'EAST-201',
+                    friday: [
+                        9, 10, 11, 12, 13, 14,
+                        15, 16, 17, 18, 19, 20,
+                        21, 22, 23,
+                    ],
+                    saturday: [
+                        0, 1, 2, 3, 4, 5, 6, 7,
+                        8, 9, 10, 11, 12, 13, 14, 15,
+                        16, 17, 18, 19, 20, 21, 22, 23,
+                    ],
+                    sunday: [
+                        0, 1, 2, 3, 4, 5, 6, 7,
+                        8, 9, 10, 11, 12, 13, 14, 15,
+                        16, 17, 18, 19, 20, 21, 22, 23,
+                    ],
+                    monday: [
+                        0, 1, 2, 3, 4, 5, 6, 7,
+                        8, 9, 10, 11, 12, 13, 14, 15,
+                        16, 17, 18, 19, 20, 21, 22, 23,
+                    ],
+                    tuesday: [
+                        0, 1, 2, 3, 4, 5, 6, 7,
+                        8, 9, 10, 11, 12, 13, 14, 15,
+                        16, 17, 18, 19, 20, 21, 22, 23,
+                    ],
+                    wednesday: [
+                        0, 1, 2, 3, 4,
+                        5, 6, 7, 8, 9,
+                        10, 11,
+                    ],
+                },
+                {
+                    routeId: 'WEST-201',
+                    friday: [
+                        9, 10, 11, 12, 13, 14,
+                        15, 16, 17, 18, 19, 20,
+                        21, 22, 23,
+                    ],
+                    saturday: [
+                        0, 1, 2, 3, 4, 5, 6, 7,
+                        8, 9, 10, 11, 12, 13, 14, 15,
+                        16, 17, 18, 19, 20, 21, 22, 23,
+                    ],
+                    sunday: [
+                        0, 1, 2, 3, 4, 5, 6, 7,
+                        8, 9, 10, 11, 12, 13, 14, 15,
+                        16, 17, 18, 19, 20, 21, 22, 23,
+                    ],
+                    monday: [
+                        0, 1, 2, 3, 4, 5, 6, 7,
+                        8, 9, 10, 11, 12, 13, 14, 15,
+                        16, 17, 18, 19, 20, 21, 22, 23,
+                    ],
+                    tuesday: [
+                        0, 1, 2, 3, 4, 5, 6, 7,
+                        8, 9, 10, 11, 12, 13, 14, 15,
+                        16, 17, 18, 19, 20, 21, 22, 23,
+                    ],
+                    wednesday: [
+                        0, 1, 2, 3, 4,
+                        5, 6, 7, 8, 9,
+                        10, 11,
+                    ],
+                },
+            ],
+        );
+    });
+
+    it('Should call getPassengerCountData with expected entities(when disruption is more than a week)', async () => {
+        const disruptionData = {
+            disruptionType: 'Routes',
+            startDate: '10/02/2023',
+            startTime: '09:00',
+            endDate: '18/02/2023',
             endTime: '12:00',
             recurrent: false,
         };
@@ -345,11 +476,79 @@ describe('fetchAndProcessPassengerImpactData', () => {
             {
                 stopCode: '9001',
                 routeId: 'EAST-201',
-                friday: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+                sunday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
+                monday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
+                tuesday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
+                wednesday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
+                thursday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
+                friday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
+                saturday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
             },
             {
                 routeId: 'WEST-201',
-                friday: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+                sunday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
+                monday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
+                tuesday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
+                wednesday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
+                thursday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
+                friday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
+                saturday: [
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    8, 9, 10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23,
+                ],
             },
         ]);
     });

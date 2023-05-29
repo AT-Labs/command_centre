@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { sum, isEmpty } from 'lodash-es';
+import { sum, isEmpty, range } from 'lodash-es';
 import { DISRUPTION_TYPE } from '../../types/disruptions-types';
 import { momentFromDateTime } from './disruptions';
 import { getPassengerCountData } from '../transmitters/passenger-count-api';
@@ -107,18 +107,16 @@ export const isPeriodLongerThanWeek = (startDate, endDate) => {
 
 const parseHoursNonRecurrentDisruption = (weekDays, startDayInWeek, startHour, endDayInWeek, endHour) => {
     const weekDayWithHours = {};
-    weekDays.forEach((weekDay) => {
+    weekDays?.forEach((weekDay) => {
         const hours = [];
-        if (weekDay === startDayInWeek) {
-            for (let i = startHour; i <= 23; i++) {
-                hours.push(i);
-            }
+        if (weekDays.length === 1) {
+            hours.push(...range(startHour, endHour));
+        } else if (weekDay === startDayInWeek) {
+            hours.push(...range(startHour, 24));
         } else if (weekDay === endDayInWeek) {
-            for (let i = 0; i < endHour; i++) {
-                hours.push(i);
-            }
+            hours.push(...range(0, endHour));
         } else {
-            hours.push(...Array.from(Array(24).keys()));
+            hours.push(...range(24));
         }
         weekDayWithHours[weekdayNamesISO[weekDay]] = hours;
     });
