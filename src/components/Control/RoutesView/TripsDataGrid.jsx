@@ -40,6 +40,7 @@ import { getAgencies } from '../../../redux/selectors/control/agencies';
 import { CustomSelectionHeader } from './CustomSelectionHeader';
 import { getAllStops } from '../../../redux/selectors/static/stops';
 import { omniSearchDataGridOperator } from '../Common/DataGrid/omniSearchDataGridOperator';
+import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
 
@@ -257,7 +258,7 @@ export const TripsDataGrid = (props) => {
             field: 'vehicleLabel',
             headerName: 'Vehicle Label',
             width: 150,
-            valueGetter: ({ row }) => get(row.tripInstance, 'vehicleLabel'),
+            valueGetter: ({ row }) => getVehicleAllocationLabelByTrip(row.tripInstance, props.vehicleAllocations) || get(row.tripInstance, 'vehicleLabel'),
             hide: true,
             filterable: false,
         },
@@ -381,6 +382,7 @@ TripsDataGrid.propTypes = {
     allStops: PropTypes.object.isRequired,
     startStopInputValue: PropTypes.string,
     endStopInputValue: PropTypes.string,
+    vehicleAllocations: PropTypes.object.isRequired,
 };
 
 TripsDataGrid.defaultProps = {
@@ -404,6 +406,7 @@ export default connect(
         allStops: getAllStops(state),
         startStopInputValue: getStartStopInputValue(state),
         endStopInputValue: getEndStopInputValue(state),
+        vehicleAllocations: getAllocations(state),
     }),
     {
         updateTripsDatagridConfig, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances,
