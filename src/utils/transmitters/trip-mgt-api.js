@@ -33,7 +33,9 @@ export const getTrips = ({
     agencyId, routeType, serviceDate,
     routeVariantIds, page, limit,
     startTimeFrom, startTimeTo, tripIds,
+    endTimeFrom, endTimeTo,
     tripStatus, depotIds,
+    vehicleLabels, referenceIds,
     trackingStatuses,
     trackingStatus,
     sorting,
@@ -52,7 +54,11 @@ export const getTrips = ({
     if (limit) { variables.limit = limit; }
     if (startTimeFrom) { variables.startTimeFrom = `${startTimeFrom}:00`; }
     if (startTimeTo) { variables.startTimeTo = `${startTimeTo}:00`; }
+    if (endTimeFrom) { variables.endTimeFrom = `${endTimeFrom}:00`; }
+    if (endTimeTo) { variables.endTimeTo = `${endTimeTo}:00`; }
     if (tripIds) { variables.tripIds = tripIds; }
+    if (vehicleLabels) { variables.vehicleLabels = vehicleLabels; }
+    if (referenceIds) { variables.referenceIds = referenceIds; }
     if (tripStatus) { variables.tripStatus = tripStatus; }
     if (TRIP_STATUS_TYPES.inProgress === tripStatus && trackingStatuses) { variables.trackingStatuses = trackingStatuses; }
     if (trackingStatus) { variables.trackingStatuses = trackingStatus; }

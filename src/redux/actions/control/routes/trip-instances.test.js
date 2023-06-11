@@ -536,6 +536,13 @@ describe('Trip instances actions', () => {
                         startTime: "23:00",
                         startTimeFrom: "21:00",
                         startTimeTo: "23:00",
+                        endTime: "24:00",
+                        endTimeFrom: "22:00",
+                        endTimeTo: "24:00",
+                        vehicleLabel: ["Label_Test"],
+                        vehicleLabels: ["Label_Test"],
+                        referenceId: ["9111"],
+                        referenceIds: ["9111"],
                         trackingStatus: ["STOPPED"],
                         trackingStatuses: ["STOPPED"],
                         tripId: ["1327-86502-75600-2-96e917d1"],
@@ -591,6 +598,26 @@ describe('Trip instances actions', () => {
                                 operatorValue: "onOrBefore",
                                 id: 33259,
                                 value: "23:00"
+                            },{
+                                columnField: "endTime",
+                                operatorValue: "onOrAfter",
+                                id: 14456,
+                                value: "22:00"
+                            },{
+                                columnField: "endTime",
+                                operatorValue: "onOrBefore",
+                                id: 24456,
+                                value: "24:00"
+                            },{
+                                columnField: "vehicleLabel",
+                                operatorValue: "isAnyOf",
+                                id: 55123,
+                                value: ["Label_Test"]
+                            },{
+                                columnField: "referenceId",
+                                operatorValue: "isAnyOf",
+                                id: 44512,
+                                value: ["9111"]
                             },{
                                 columnField: "tripId",
                                 operatorValue: "isAnyOf",

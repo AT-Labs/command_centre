@@ -54,6 +54,23 @@ const formatDelayColumn = (row) => {
     return <TripDelay delayInSeconds={ get(trip, 'delay', 0) } noDelayText="-" status={ get(trip, 'status', '') } />;
 };
 
+const isAnyOfStringOperators = getGridStringOperators(true).filter(
+    operator => operator.value === 'isAnyOf',
+);
+
+const dateOperators = [
+    { label: 'is on or after', value: 'onOrAfter' },
+    { label: 'is on or before', value: 'onOrBefore' },
+].map((filterOperator) => {
+    const selectOperator = getGridSingleSelectOperators(true).find(
+        operator => operator.value === 'is',
+    );
+    return {
+        ...selectOperator,
+        ...filterOperator,
+    };
+});
+
 export const TripsDataGrid = (props) => {
     const isDateServiceTodayOrTomorrow = () => moment(props.serviceDate).isBetween(moment(), moment().add(1, 'd'), 'd', '[]');
 
@@ -159,9 +176,7 @@ export const TripsDataGrid = (props) => {
             headerName: 'Trip ID',
             width: 250,
             type: 'string',
-            filterOperators: getGridStringOperators(true).filter(
-                operator => operator.value === 'isAnyOf',
-            ),
+            filterOperators: isAnyOfStringOperators,
             hide: true,
         },
         ...(isTrainMode() ? [{
@@ -169,7 +184,7 @@ export const TripsDataGrid = (props) => {
             headerName: 'Ref #',
             width: 100,
             type: 'string',
-            filterable: false,
+            filterOperators: isAnyOfStringOperators,
         }] : []),
         ...(isTrainMode() ? [{
             field: 'blockId',
@@ -182,29 +197,19 @@ export const TripsDataGrid = (props) => {
         }] : []),
         {
             field: 'startTime',
-            headerName: 'Start',
-            width: 120,
+            headerName: 'Start Time',
+            width: 150,
             type: 'singleSelect',
             valueOptions: getTimePickerOptions(28),
-            filterOperators: [
-                { label: 'is on or after', value: 'onOrAfter' },
-                { label: 'is on or before', value: 'onOrBefore' },
-            ].map((filterOperator) => {
-                const selectOperator = getGridSingleSelectOperators(true).find(
-                    operator => operator.value === 'is',
-                );
-                return {
-                    ...selectOperator,
-                    ...filterOperator,
-                };
-            }),
+            filterOperators: dateOperators,
         },
         {
             field: 'endTime',
-            headerName: 'End',
-            width: 120,
-            type: 'string',
-            filterable: false,
+            headerName: 'End Time',
+            width: 150,
+            type: 'singleSelect',
+            valueOptions: getTimePickerOptions(28),
+            filterOperators: dateOperators,
         },
         {
             field: 'status',
@@ -260,11 +265,11 @@ export const TripsDataGrid = (props) => {
             width: 150,
             valueGetter: ({ row }) => getVehicleAllocationLabelByTrip(row.tripInstance, props.vehicleAllocations) || get(row.tripInstance, 'vehicleLabel'),
             hide: true,
-            filterable: false,
+            filterOperators: isAnyOfStringOperators,
         },
         {
             field: 'firstStopCode',
-            headerName: 'Start Stop',
+            headerName: 'First Stop',
             width: 200,
             type: 'string',
             filterOperators: omniSearchDataGridOperator.map(operator => ({
@@ -282,7 +287,7 @@ export const TripsDataGrid = (props) => {
         },
         {
             field: 'lastStopCode',
-            headerName: 'End Stop',
+            headerName: 'Last Stop',
             width: 200,
             type: 'string',
             filterOperators: omniSearchDataGridOperator.map(operator => ({
