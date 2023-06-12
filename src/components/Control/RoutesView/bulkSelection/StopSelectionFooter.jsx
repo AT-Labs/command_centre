@@ -24,7 +24,7 @@ const StopSelectionFooter = (props) => {
 
     const { tripInstance } = props;
     const isBeforeTomorrow = moment(tripInstance.serviceDate).isBefore(moment().add(1, 'days'), 'day');
-    const selectedStops = props.selectedStopsByTripKey(tripInstance);
+    const selectedStops = props.selectedStopsByTripKey(tripInstance) || {};
     const isOnlyOneStopSelected = size(selectedStops) === 1;
     const onlySelectedStop = selectedStops && selectedStops[findKey(selectedStops)];
     const isMoveTripToStopPossible = isBeforeTomorrow && isOnlyOneStopSelected && (IS_LOGIN_NOT_REQUIRED || isMoveToStopPermitted(onlySelectedStop));
