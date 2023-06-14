@@ -265,7 +265,7 @@ export const TripsDataGrid = (props) => {
             width: 150,
             valueGetter: ({ row }) => getVehicleAllocationLabelByTrip(row.tripInstance, props.vehicleAllocations) || get(row.tripInstance, 'vehicleLabel'),
             hide: true,
-            filterOperators: isAnyOfStringOperators,
+            filterable: false,
         },
         {
             field: 'firstStopCode',
