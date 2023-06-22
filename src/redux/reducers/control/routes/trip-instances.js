@@ -31,6 +31,7 @@ export const INIT_STATE = {
         density: 'standard',
         routeSelection: '',
         filterModel: { items: [{
+            id: 'startTimeFilter',
             columnField: 'startTime',
             operatorValue: 'onOrAfter',
             value: getStartTimeFromFilterInitialTime(moment()),

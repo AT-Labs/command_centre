@@ -14,7 +14,6 @@ import { getActiveRoute } from '../../../redux/selectors/control/routes/routes';
 import { getActiveRouteVariant } from '../../../redux/selectors/control/routes/routeVariants';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
-import { TRAIN_TYPE_ID } from '../../../types/vehicle-types';
 import { formatTripDelay } from '../../../utils/control/routes';
 import { getTripInstanceId, getTripTimeDisplay, getTimePickerOptions } from '../../../utils/helpers';
 import TripIcon from '../Common/Trip/TripIcon';
@@ -22,24 +21,20 @@ import TripDelay from '../Common/Trip/TripDelay';
 import {
     selectTrips, selectAllTrips, updateTripsDatagridConfig, filterTripInstances, updateActiveTripInstances,
 } from '../../../redux/actions/control/routes/trip-instances';
-import {
-    RouteFiltersType, TripSubIconType,
-} from './Types';
+import { TripSubIconType } from './Types';
 import {
     getAllTripInstancesList,
     getSelectedTripsKeys,
     getTripsDatagridConfig,
     getTotalTripInstancesCount,
     getActiveTripInstance,
-    getStartStopInputValue,
-    getEndStopInputValue,
 } from '../../../redux/selectors/control/routes/trip-instances';
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
 import './TripsDataGrid.scss';
 import { getAgencies } from '../../../redux/selectors/control/agencies';
 import { CustomSelectionHeader } from './CustomSelectionHeader';
 import { getAllStops } from '../../../redux/selectors/static/stops';
-import { omniSearchDataGridOperator } from '../Common/DataGrid/omniSearchDataGridOperator';
+import { StopSearchDataGridOperators } from '../Common/DataGrid/OmniSearchDataGridOperator';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
@@ -116,8 +111,6 @@ export const TripsDataGrid = (props) => {
         );
     };
 
-    const isTrainMode = () => get(props.filters, 'routeType') === TRAIN_TYPE_ID;
-
     const GRID_COLUMNS = [
         {
             ...GRID_CHECKBOX_SELECTION_COL_DEF,
@@ -179,14 +172,14 @@ export const TripsDataGrid = (props) => {
             filterOperators: isAnyOfStringOperators,
             hide: true,
         },
-        ...(isTrainMode() ? [{
+        {
             field: 'referenceId',
             headerName: 'Ref #',
             width: 100,
             type: 'string',
             filterOperators: isAnyOfStringOperators,
-        }] : []),
-        ...(isTrainMode() ? [{
+        },
+        {
             field: 'blockId',
             headerName: 'Block',
             width: 100,
@@ -194,7 +187,7 @@ export const TripsDataGrid = (props) => {
             hide: true,
             filterable: false,
             sortable: false,
-        }] : []),
+        },
         {
             field: 'startTime',
             headerName: 'Start Time',
@@ -272,13 +265,7 @@ export const TripsDataGrid = (props) => {
             headerName: 'First Stop',
             width: 200,
             type: 'string',
-            filterOperators: omniSearchDataGridOperator.map(operator => ({
-                ...operator,
-                InputComponentProps: {
-                    ...operator.InputComponentProps,
-                    inputValue: props.startStopInputValue,
-                },
-            })),
+            filterOperators: StopSearchDataGridOperators,
             valueGetter: ({ row }) => {
                 const stop = props.allStops[get(row.tripInstance, 'firstStopCode')];
                 return stop?.stop_name || '';
@@ -290,13 +277,7 @@ export const TripsDataGrid = (props) => {
             headerName: 'Last Stop',
             width: 200,
             type: 'string',
-            filterOperators: omniSearchDataGridOperator.map(operator => ({
-                ...operator,
-                InputComponentProps: {
-                    ...operator.InputComponentProps,
-                    inputValue: props.endStopInputValue,
-                },
-            })),
+            filterOperators: StopSearchDataGridOperators,
             valueGetter: ({ row }) => {
                 const stop = props.allStops[get(row.tripInstance, 'lastStopCode')];
                 return stop?.stop_name || '';
@@ -379,21 +360,16 @@ TripsDataGrid.propTypes = {
     serviceDate: PropTypes.string.isRequired,
     // eslint-disable-next-line
     selectAllTrips: PropTypes.func.isRequired,
-    filters: RouteFiltersType.isRequired,
     agencies: PropTypes.array.isRequired,
     rowCount: PropTypes.number.isRequired,
     updateActiveTripInstances: PropTypes.func.isRequired,
     activeTripInstance: PropTypes.array,
     allStops: PropTypes.object.isRequired,
-    startStopInputValue: PropTypes.string,
-    endStopInputValue: PropTypes.string,
     vehicleAllocations: PropTypes.object.isRequired,
 };
 
 TripsDataGrid.defaultProps = {
     activeTripInstance: [],
-    startStopInputValue: '',
-    endStopInputValue: '',
 };
 
 export default connect(
@@ -409,8 +385,6 @@ export default connect(
         rowCount: getTotalTripInstancesCount(state),
         activeTripInstance: getActiveTripInstance(state),
         allStops: getAllStops(state),
-        startStopInputValue: getStartStopInputValue(state),
-        endStopInputValue: getEndStopInputValue(state),
         vehicleAllocations: getAllocations(state),
     }),
     {
