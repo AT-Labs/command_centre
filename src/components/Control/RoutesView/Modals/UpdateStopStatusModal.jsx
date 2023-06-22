@@ -130,7 +130,8 @@ const UpdateStopStatusModal = (props) => {
             return (
                 <>
                     <p className="font-weight-light text-center mb-4">
-                        Updating the destination for the selected stops will inform the destination on PIDs & PA announcements.
+                        Updating the destination for the selected stop(s) will change the destination on PIDs,
+                        Live Departures on AT Mobile & Website and Train Station PA Announcements.
                     </p>
                     <div className="col-12">
                         <FormGroup>
