@@ -195,7 +195,7 @@ const UpdateStopStatusModal = (props) => {
             title={ modalProps[activeModal].title }
             okButton={ {
                 onClick,
-                isDisabled: isUpdatingOnGoing || (activeModal === UPDATE_HEADSIGN && newDestination.length === 0),
+                isDisabled: isUpdatingOnGoing || (activeModal === UPDATE_HEADSIGN && newDestination.trim().length === 0),
                 label: modalProps[activeModal].label,
                 className: 'top-status-update-modal__ok-btn',
             } }>
