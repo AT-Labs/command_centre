@@ -5,6 +5,8 @@ import { useHistory, useLocation } from 'react-router-dom';
 import moment from 'moment';
 import { find, isEmpty } from 'lodash-es';
 import { Alert } from 'reactstrap';
+import { IconButton } from '@mui/material';
+import BorderOuterOutlinedIcon from '@mui/icons-material/BorderOuterOutlined';
 import Filters from './Filters/Filters';
 import { getTripReplayFilters } from '../../../redux/selectors/control/tripReplays/filters';
 import { getTripInfo, getRouteColor, getShape, getStops } from '../../../redux/selectors/control/tripReplays/currentTrip';
@@ -50,6 +52,9 @@ import StopThresholdsLayer from '../../Common/Map/StopThresholdsLayer/StopThresh
 import StopsReplayLayer from '../../Common/Map/StopsReplayLayer/StopsReplayLayer';
 import VehicleReplayStatusLayer from '../../Common/Map/VehicleReplayStatusLayer/VehicleReplayStatusLayer';
 import VehiclePositionsReplayLayer from '../../Common/Map/VehiclePositionsReplayLayer/VehiclePositionsReplayLayer';
+import StopThresholdCircle from '../../Common/Map/StopThresholdsLayer/StopThresholdCircle';
+import { getAllRoutes } from '../../../redux/selectors/static/routes';
+import { BUS_TYPE_ID } from '../../../types/vehicle-types';
 
 const TripReplaysView = (props) => {
     const history = useHistory();
@@ -67,6 +72,10 @@ const TripReplaysView = (props) => {
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
     const [shouldShowMissingDataNotification, setShouldShowMissingDataNotification] = useState(false);
     const [shouldNotificationBeClosed, setShouldNotificationBeClosed] = useState(true);
+    const [hideExitCircle, setHideExitCircle] = useState(false);
+
+    const routeId = trips?.[0]?.routeId;
+    const routeType = Object.values(props.allRoutes).find(route => route.route_id === routeId)?.route_type || null;
 
     const handleUrlChange = (inputLocation) => {
         if (inputLocation.pathname !== `/${VIEW_TYPE.MAIN.CONTROL}/${VIEW_TYPE.CONTROL_DETAIL.TRIP_REPLAYS}`) {
@@ -294,6 +303,10 @@ const TripReplaysView = (props) => {
 
     const toggleNotification = () => setShouldNotificationBeClosed(true);
 
+    const toggleThresholdView = () => {
+        setHideExitCircle(!hideExitCircle);
+    };
+
     return (
         <div className="sidepanel-control-component-view d-flex trip-replay">
             <SidePanel
@@ -313,7 +326,15 @@ const TripReplaysView = (props) => {
                 <ShapeLayer
                     shapes={ [props.shape] }
                     routeColors={ [props.routeColor] } />
-                <StopThresholdsLayer route={ props.shape } stops={ props.stops } />
+                <StopThresholdCircle
+                    stops={ props.stops }
+                    routeType={ routeType }
+                    hideExitCircle={ hideExitCircle }
+                    onToggleExitCircle={ toggleThresholdView } />
+                <StopThresholdsLayer
+                    route={ props.shape }
+                    stops={ props.stops }
+                    routeType={ routeType } />
                 <StopsReplayLayer
                     stops={ props.stops }
                     selectedKeyEvent={ selectedKeyEventDetail }
@@ -335,6 +356,11 @@ const TripReplaysView = (props) => {
                     hoveredKeyEvent={ hoveredKeyEvent }
                     clearSelectedKeyEvent={ clearSelectedKeyEvent } />
             </Map>
+            {routeType === BUS_TYPE_ID && (
+                <IconButton className="threshold-button" onClick={ toggleThresholdView }>
+                    <BorderOuterOutlinedIcon className="threshold-button-icon" />
+                </IconButton>
+            )}
             <Alert
                 color="warning position-fixed"
                 toggle={ toggleNotification }
@@ -387,6 +413,7 @@ TripReplaysView.propTypes = {
     isVehicleViewTabActive: PropTypes.bool,
     vehicletPositions: PropTypes.array,
     setVehicleViewTabStatus: PropTypes.func.isRequired,
+    allRoutes: PropTypes.object.isRequired,
 };
 
 TripReplaysView.defaultProps = {
@@ -421,6 +448,7 @@ export default connect(
         eventPositions: getVehicleEvents(state),
         vehicletPositions: getVehiclePositions(state),
         isVehicleViewTabActive: getvehicleViewTabStatus(state),
+        allRoutes: getAllRoutes(state),
     }),
     {
         updateTripReplayDisplayFilters,

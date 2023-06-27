@@ -5,6 +5,7 @@ import { LeafletConsumer } from 'react-leaflet';
 import * as L from 'leaflet';
 import StopThreshold from './StopThreshold';
 import 'leaflet-geometryutil';
+import { FERRY_TYPE_ID } from '../../../../types/vehicle-types';
 
 const findStopIndexInRoute = (stop, route) => findIndex(route, point => point[0] === stop.stopLat && point[1] === stop.stopLon);
 
@@ -112,7 +113,11 @@ const getThresholds = (leafletMap, stops, route) => map(stops, (stop) => {
     return threshold;
 });
 
-function StopThresholdsLayer({ leafletMap, stops, route }) {
+function StopThresholdsLayer({ leafletMap, stops, route, routeType }) {
+    if (routeType === FERRY_TYPE_ID) {
+        return null;
+    }
+
     return route.length && (
         <>
             {
@@ -126,6 +131,11 @@ StopThresholdsLayer.propTypes = {
     leafletMap: PropTypes.object.isRequired,
     stops: PropTypes.array.isRequired,
     route: PropTypes.array.isRequired,
+    routeType: PropTypes.number,
+};
+
+StopThresholdsLayer.defaultProps = {
+    routeType: 0,
 };
 
 export default (props => (

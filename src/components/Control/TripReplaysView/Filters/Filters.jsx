@@ -70,7 +70,7 @@ const isTripId = value => (value.indexOf('-') > 0 && value.indexOf(' ') < 0);
 const Filters = (props) => {
     const { ROUTE, BUS, TRAIN, FERRY, STOP } = SEARCH_RESULT_TYPE;
     const { searchTerm, searchDate, startTime, endTime, timeType } = props;
-    const tripIdStatus = isTripId(searchTerm.label);
+    const tripIdStatus = isTripId(searchTerm.type);
 
     const actionHandlers = {
         selection: {

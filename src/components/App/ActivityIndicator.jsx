@@ -6,8 +6,12 @@ import Loader from '../Common/Loader/Loader';
 import { isLoading } from '../../redux/selectors/activity';
 
 const ActivityIndicator = props => (
-    <div className="activity-loader position-fixed">
-        {props.isLoading && <Loader /> }
+    <div>
+        { props.isLoading && (
+            <div className="activity-loader position-fixed">
+                <Loader />
+            </div>
+        )}
     </div>
 );
 
