@@ -50,3 +50,10 @@ form.magnify {
 div.custom-filter-value-input {
     width: 400px;
 }
+
+.trips-data-grid {
+    & .MuiDataGrid-virtualScrollerRenderZone,
+    & .MuiDataGrid-pinnedColumns {
+        background-color: #F3F4F5;
+    }
+}
