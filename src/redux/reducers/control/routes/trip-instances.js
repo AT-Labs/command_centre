@@ -166,9 +166,10 @@ const handleSelectSingleTrip = (state, { payload: { trip } }) => {
 };
 
 const handleSelectTrips = (state, { payload: { tripKeys } }) => {
+    const selectedClone = { ...state.selected };
     const selected = tripKeys.reduce((obj, tripKey) => ({
         ...obj,
-        [tripKey]: state.all[tripKey],
+        [tripKey]: state.all[tripKey] || selectedClone[tripKey],
     }), {});
 
     return {
