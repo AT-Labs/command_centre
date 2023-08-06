@@ -335,4 +335,87 @@ describe('<Stop />', () => {
             expect(wrapper.instance().isChangePlatformDisabled()).to.be.true; // eslint-disable-line
         });
     });
+
+    describe('isUpdateStopHeadsignPossible', () => {
+        it('allows update when trip is not started and it is today', () => {
+            wrapper = setup({
+                tripInstance: { ...trip, status: 'NOT_STARTED' },
+                stop: { ...stop, status: 'NOT_PASSED' },
+                serviceDate: moment().format(),
+            });
+            expect(wrapper.instance().isUpdateStopHeadsignPossible()).to.be.true; // eslint-disable-line
+        });
+
+        it('allows update when trip is in progress', () => {
+            wrapper = setup({
+                tripInstance: { ...trip, status: 'IN_PROGRESS' },
+                stop: { ...stop, status: 'NOT_PASSED' },
+                serviceDate: moment().format(),
+            });
+            expect(wrapper.instance().isUpdateStopHeadsignPossible()).to.be.true; // eslint-disable-line
+        });
+
+        it('does not allow update when trip is missed', () => {
+            wrapper = setup({
+                tripInstance: { ...trip, status: 'MISSED' },
+                stop: { ...stop, status: 'NOT_PASSED' },
+                serviceDate: moment().format(),
+            });
+            expect(wrapper.instance().isUpdateStopHeadsignPossible()).to.be.false; // eslint-disable-line
+        });
+
+        it('does not allow update when trip is cancelled', () => {
+            wrapper = setup({
+                tripInstance: { ...trip, status: 'CANCELLED' },
+                stop: { ...stop, status: 'NOT_PASSED' },
+                serviceDate: moment().format(),
+            });
+            expect(wrapper.instance().isUpdateStopHeadsignPossible()).to.be.false; // eslint-disable-line
+        });
+
+        it('does not allow update when trip is completed', () => {
+            wrapper = setup({
+                tripInstance: { ...trip, status: 'COMPLETED' },
+                stop: { ...stop, status: 'NOT_PASSED' },
+                serviceDate: moment().format(),
+            });
+            expect(wrapper.instance().isUpdateStopHeadsignPossible()).to.be.false; // eslint-disable-line
+        });
+
+        it('does allow update when stop is skipped', () => {
+            wrapper = setup({
+                tripInstance: { ...trip, status: 'NOT_STARTED' },
+                stop: { ...stop, status: 'SKIPPED' },
+                serviceDate: moment().format(),
+            });
+            expect(wrapper.instance().isUpdateStopHeadsignPossible()).to.be.true; // eslint-disable-line
+        });
+
+        it('does not allow update after today', () => {
+            wrapper = setup({
+                tripInstance: { ...trip, status: 'NOT_STARTED' },
+                stop: { ...stop, status: 'NOT_PASSED' },
+                serviceDate: moment().add(1, 'days').format(),
+            });
+            expect(wrapper.instance().isUpdateStopHeadsignPossible()).to.be.false; // eslint-disable-line
+        });
+
+        it('does not allow update when it is yesterday', () => {
+            wrapper = setup({
+                tripInstance: { ...trip, status: 'NOT_STARTED' },
+                stop: { ...stop, status: 'NOT_PASSED' },
+                serviceDate: moment().subtract(1, 'days').format(),
+            });
+            expect(wrapper.instance().isUpdateStopHeadsignPossible()).to.be.false; // eslint-disable-line
+        });
+
+        it('does not allow update when it is yesterday, except overnight trips', () => {
+            wrapper = setup({
+                tripInstance: { ...trip, status: 'NOT_STARTED', endTime: '24:00:01' },
+                stop: { ...stop, status: 'NOT_PASSED' },
+                serviceDate: moment().subtract(1, 'days').format(),
+            });
+            expect(wrapper.instance().isUpdateStopHeadsignPossible()).to.be.true; // eslint-disable-line
+        });
+    });
 });

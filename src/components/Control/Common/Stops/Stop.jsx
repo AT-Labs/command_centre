@@ -66,7 +66,8 @@ export class Stop extends React.Component {
             || (moment(this.props.serviceDate).isBefore(moment(), 'day') && this.props.tripInstance.endTime > '24:00:00'));
 
     isUpdateStopHeadsignPossible = () => (this.isNotStartedTrip() || this.isInProgressTrip())
-        && (moment(this.props.serviceDate).isSame(moment(), 'day'));
+        && (moment(this.props.serviceDate).isSame(moment(), 'day')
+            || (moment(this.props.serviceDate).isBefore(moment(), 'day') && this.props.tripInstance.endTime > '24:00:00'));
 
     isStopSkippingPermitted = () => IS_LOGIN_NOT_REQUIRED || isSkipStopPermitted(this.props.stop);
 
