@@ -131,6 +131,13 @@ export const TripsDataGrid = (props) => {
             filterable: false,
         },
         {
+            field: 'vehicleLabel',
+            headerName: 'Vehicle Label',
+            width: 150,
+            valueGetter: ({ row }) => getVehicleAllocationLabelByTrip(row.tripInstance, props.vehicleAllocations) || get(row.tripInstance, 'vehicleLabel'),
+            filterable: false,
+        },
+        {
             field: 'agencyId',
             headerName: 'Operator',
             width: 250,
@@ -253,14 +260,6 @@ export const TripsDataGrid = (props) => {
             hide: true,
         },
         {
-            field: 'vehicleLabel',
-            headerName: 'Vehicle Label',
-            width: 150,
-            valueGetter: ({ row }) => getVehicleAllocationLabelByTrip(row.tripInstance, props.vehicleAllocations) || get(row.tripInstance, 'vehicleLabel'),
-            hide: true,
-            filterable: false,
-        },
-        {
             field: 'firstStopCode',
             headerName: 'First Stop',
             width: 200,
@@ -321,7 +320,7 @@ export const TripsDataGrid = (props) => {
 
     return (
         <>
-            <div className="trips-data-grid">
+            <div className="trips-data-grid flex-grow-1">
                 <CustomDataGrid
                     columns={ GRID_COLUMNS }
                     datagridConfig={ props.datagridConfig }
@@ -331,7 +330,7 @@ export const TripsDataGrid = (props) => {
                     getRowId={ row => getTripInstanceId(row.tripInstance) }
                     getRowClassName={ getRowClassName }
                     calculateDetailPanelHeight={ () => 'auto' }
-                    gridClassNames="vh-70"
+                    gridClassNames={ props.gridClassNames }
                     rowCount={ props.rowCount }
                     serverSideData
                     multipleDetailPanelOpen
@@ -366,10 +365,12 @@ TripsDataGrid.propTypes = {
     activeTripInstance: PropTypes.array,
     allStops: PropTypes.object.isRequired,
     vehicleAllocations: PropTypes.object.isRequired,
+    gridClassNames: PropTypes.string,
 };
 
 TripsDataGrid.defaultProps = {
     activeTripInstance: [],
+    gridClassNames: 'grid-height',
 };
 
 export default connect(

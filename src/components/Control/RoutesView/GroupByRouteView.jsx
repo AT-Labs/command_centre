@@ -52,7 +52,7 @@ export const GroupByRouteView = (props) => {
         }
         return (
             <div className="route-row-body">
-                <TripsDataGrid />
+                <TripsDataGrid gridClassNames="vh-70" />
             </div>
         );
     };

@@ -87,32 +87,34 @@ export const RoutesAndTripsView = (props) => {
 
     return (
         <>
-            <TableTitle tableTitle="Routes & Trips" />
+            <div className="d-flex flex-column h-100">
+                <TableTitle tableTitle="Routes & Trips" />
 
-            <Filters />
+                <Filters />
 
-            {(isRoutesTripsView() || isRoutesRouteVariantsTripsView()) && <GroupByRouteView page={ currentPage } />}
+                {(isRoutesTripsView() || isRoutesRouteVariantsTripsView()) && <GroupByRouteView page={ currentPage } />}
 
-            {isRouteVariantsTripsView() && <GroupByRouteVariantView page={ currentPage } />}
+                {isRouteVariantsTripsView() && <GroupByRouteVariantView page={ currentPage } />}
 
-            {isTripsOnlyView() && <TripsDataGrid />}
+                {isTripsOnlyView() && <TripsDataGrid />}
 
-            <div className={ `${shouldSelectionToolsFooterBeVisible ? 'pb-5' : ''}` }>
-                {!isLoading() && !isTripsOnlyView() && (
-                    <>
-                        <PageInfo
-                            currentPage={ currentPage }
-                            itemsPerPage={ PAGE_SIZE }
-                            itemsTotal={ getTotal() }
-                        />
-                        <Pagination
-                            currentPage={ currentPage }
-                            itemsPerPage={ PAGE_SIZE }
-                            itemsTotal={ getTotal() }
-                            onPageClick={ page => setCurrentPage(page) }
-                        />
-                    </>
-                )}
+                <div className={ `${shouldSelectionToolsFooterBeVisible ? 'pb-5' : ''}` }>
+                    {!isLoading() && !isTripsOnlyView() && (
+                        <>
+                            <PageInfo
+                                currentPage={ currentPage }
+                                itemsPerPage={ PAGE_SIZE }
+                                itemsTotal={ getTotal() }
+                            />
+                            <Pagination
+                                currentPage={ currentPage }
+                                itemsPerPage={ PAGE_SIZE }
+                                itemsTotal={ getTotal() }
+                                onPageClick={ page => setCurrentPage(page) }
+                            />
+                        </>
+                    )}
+                </div>
             </div>
 
             { shouldSelectionToolsFooterBeVisible && <SelectionToolsFooter /> }

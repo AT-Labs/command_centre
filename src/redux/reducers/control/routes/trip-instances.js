@@ -23,7 +23,7 @@ export const INIT_STATE = {
     datagridConfig: {
         columns: [],
         page: 0,
-        pageSize: 15,
+        pageSize: 100,
         sortModel: [{
             field: 'startTime',
             sort: 'asc',

@@ -34,7 +34,7 @@ export const GroupByRouteVariantView = (props) => {
 
     const renderRowBody = () => (
         <div className="route-variant-row-body">
-            <TripsDataGrid />
+            <TripsDataGrid gridClassNames="vh-70" />
         </div>
     );
 

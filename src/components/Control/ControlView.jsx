@@ -20,6 +20,10 @@ import TripReplaysView from './TripReplaysView/TripReplaysView';
 import DataManagement from './DataManagement/DataManagement';
 import NotificationsView from './Notifications/NotificationsView';
 import { useRoutesTripsDatagrid } from '../../redux/selectors/appSettings';
+import {
+    getGroupedByRouteFilter,
+    getGroupedByRouteVariantFilter,
+} from '../../redux/selectors/control/routes/filters';
 
 const ControlView = (props) => {
     const isBlocksView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.BLOCKS;
@@ -33,11 +37,13 @@ const ControlView = (props) => {
     const isNotificationsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS;
     const isRecurringCancellationsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.RECURRING_CANCELLATIONS;
 
+    const isHeight100Percent = (isRoutesView && props.useRoutesTripsDatagrid && !props.isGroupedByRouteVariant && !props.isGroupedByRoute);
+
     return (
         <OffCanvasLayout>
             <Main className="control-view">
                 <ErrorBanner />
-                <div className={ classNames({ 'p-4': (!isTripReplaysView && !isDisruptionsView) }) }>
+                <div className={ classNames({ 'p-4': (!isTripReplaysView && !isDisruptionsView), 'h-100': isHeight100Percent }) }>
                     { isBlocksView && <BlocksView /> }
                     { isRoutesView && !props.useRoutesTripsDatagrid && <CommonView /> }
                     { isRoutesView && props.useRoutesTripsDatagrid && <RoutesAndTripsView /> }
@@ -59,11 +65,15 @@ const ControlView = (props) => {
 ControlView.propTypes = {
     activeControlDetailView: PropTypes.string.isRequired,
     useRoutesTripsDatagrid: PropTypes.bool.isRequired,
+    isGroupedByRouteVariant: PropTypes.bool.isRequired,
+    isGroupedByRoute: PropTypes.bool.isRequired,
 };
 
 export default connect(
     state => ({
         activeControlDetailView: getActiveControlDetailView(state),
         useRoutesTripsDatagrid: useRoutesTripsDatagrid(state),
+        isGroupedByRouteVariant: getGroupedByRouteVariantFilter(state),
+        isGroupedByRoute: getGroupedByRouteFilter(state),
     }),
 )(ControlView);
