@@ -19,7 +19,7 @@ import { getTripInstanceId, getTripTimeDisplay, getTimePickerOptions } from '../
 import TripIcon from '../Common/Trip/TripIcon';
 import TripDelay from '../Common/Trip/TripDelay';
 import {
-    selectTrips, selectAllTrips, updateTripsDatagridConfig, filterTripInstances, updateActiveTripInstances,
+    selectSingleTrip, selectTrips, selectAllTrips, updateTripsDatagridConfig, filterTripInstances, updateActiveTripInstances,
 } from '../../../redux/actions/control/routes/trip-instances';
 import { TripSubIconType } from './Types';
 import {
@@ -102,7 +102,7 @@ export const TripsDataGrid = (props) => {
                     checked={ shouldCheckboxBeChecked }
                     disabled={ shouldCheckboxBeDisabled }
                     className={ `select-trip-checkbox mr-2 select-trip-checkbox__${row.status.toLowerCase()}` }
-                    onChange={ event => api.selectRow(tripKey, event.target.checked) } />
+                    onChange={ event => props.selectSingleTrip({ [event.target.name]: row.tripInstance }) } />
                 <TripIcon
                     type={ row.routeType }
                     className={ iconColor }
@@ -114,6 +114,7 @@ export const TripsDataGrid = (props) => {
     const GRID_COLUMNS = [
         {
             ...GRID_CHECKBOX_SELECTION_COL_DEF,
+            type: 'string',
             width: 80,
             renderHeader: () => (
                 <CustomSelectionHeader
@@ -354,6 +355,7 @@ TripsDataGrid.propTypes = {
     datagridConfig: PropTypes.object.isRequired,
     tripInstances: PropTypes.array.isRequired,
     updateTripsDatagridConfig: PropTypes.func.isRequired,
+    selectSingleTrip: PropTypes.func.isRequired,
     selectTrips: PropTypes.func.isRequired,
     selectedTrips: PropTypes.array.isRequired,
     serviceDate: PropTypes.string.isRequired,
@@ -389,6 +391,6 @@ export default connect(
         vehicleAllocations: getAllocations(state),
     }),
     {
-        updateTripsDatagridConfig, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances,
+        updateTripsDatagridConfig, selectSingleTrip, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances,
     },
 )(TripsDataGrid);
