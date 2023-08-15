@@ -30,7 +30,7 @@ import RoutesView from './RoutesView';
 import RouteVariantView from './RouteVariantView';
 import TripsView from './TripsView';
 import TableTitle from '../../Common/ControlTable/TableTitle';
-import Filters from '../Filters/Filters';
+import Filters from '../Filters/legacy/Filters';
 import { SERVICE_DATE_FORMAT, PAGE_SIZE, TRIPS_POLLING_INTERVAL } from '../../../../utils/control/routes';
 import { RouteFiltersType } from '../Types';
 import { PageInfo, Pagination } from '../../../Common/Pagination/Pagination';

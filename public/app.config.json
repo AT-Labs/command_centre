@@ -3,5 +3,6 @@
     "useRecurringCancellationsGridView": "false",
     "usePassengerImpact": "false",
     "useRoutesTripsDatagrid": "false",
-    "useHeadsignUpdate": "false"
+    "useHeadsignUpdate": "false",
+    "useRoutesTripsFilterCollapse": "false"
 }

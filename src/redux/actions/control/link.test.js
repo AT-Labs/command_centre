@@ -172,6 +172,8 @@ describe('Link actions', () => {
                         agencyId: undefined,
                         depotIds: undefined,
                         tripStatus: undefined,
+                        startTimeFrom: undefined,
+                        startTimeTo: undefined,
                         limit: undefined,
                         page: NaN,
                         routeType: 3,

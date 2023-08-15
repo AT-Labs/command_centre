@@ -36,6 +36,7 @@ import { CustomSelectionHeader } from './CustomSelectionHeader';
 import { getAllStops } from '../../../redux/selectors/static/stops';
 import { StopSearchDataGridOperators } from '../Common/DataGrid/OmniSearchDataGridOperator';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
+import { useRoutesTripsFilterCollapse } from '../../../redux/selectors/appSettings';
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
 
@@ -203,6 +204,7 @@ export const TripsDataGrid = (props) => {
             type: 'singleSelect',
             valueOptions: getTimePickerOptions(28),
             filterOperators: dateOperators,
+            filterable: !props.useRoutesTripsFilterCollapse,
         },
         {
             field: 'endTime',
@@ -368,6 +370,7 @@ TripsDataGrid.propTypes = {
     allStops: PropTypes.object.isRequired,
     vehicleAllocations: PropTypes.object.isRequired,
     gridClassNames: PropTypes.string,
+    useRoutesTripsFilterCollapse: PropTypes.bool.isRequired,
 };
 
 TripsDataGrid.defaultProps = {
@@ -389,6 +392,7 @@ export default connect(
         activeTripInstance: getActiveTripInstance(state),
         allStops: getAllStops(state),
         vehicleAllocations: getAllocations(state),
+        useRoutesTripsFilterCollapse: useRoutesTripsFilterCollapse(state),
     }),
     {
         updateTripsDatagridConfig, selectSingleTrip, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances,

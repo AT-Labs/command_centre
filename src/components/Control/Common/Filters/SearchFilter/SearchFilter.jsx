@@ -12,19 +12,29 @@ const SearchFilter = (props) => {
     };
 
     return (
-        <OmniSearch
-            inputRef={ props.inputRef }
-            theme={ SearchTheme }
-            placeholder={ props.placeholder }
-            value={ props.value }
-            isSelectedValueShown
-            searchInCategory={ props.searchInCategory }
-            selectionHandlers={ { ...props.selectionHandlers } }
-            clearHandlers={ { ...props.clearHandlers } }
-            onClearCallBack={ props.onClearCallBack }
-            isDisabled={ props.isDisabled }
-            isValid={ props.isValid }
-            onInputValueChange={ handleInputValueChange } />
+        <div>
+            { props.label && (
+                <label // eslint-disable-line
+                    htmlFor="control-filters-search"
+                    className="font-size-md font-weight-bold">
+                    {props.label}
+                </label>
+            ) }
+            <OmniSearch
+                id="control-filters-search"
+                inputRef={ props.inputRef }
+                theme={ SearchTheme }
+                placeholder={ props.placeholder }
+                value={ props.value }
+                isSelectedValueShown
+                searchInCategory={ props.searchInCategory }
+                selectionHandlers={ { ...props.selectionHandlers } }
+                clearHandlers={ { ...props.clearHandlers } }
+                onClearCallBack={ props.onClearCallBack }
+                isDisabled={ props.isDisabled }
+                isValid={ props.isValid }
+                onInputValueChange={ handleInputValueChange } />
+        </div>
     );
 };
 
@@ -39,6 +49,7 @@ SearchFilter.propTypes = {
     isDisabled: PropTypes.bool,
     isValid: PropTypes.bool,
     inputRef: PropTypes.object,
+    label: PropTypes.string,
 };
 
 SearchFilter.defaultProps = {
@@ -48,6 +59,7 @@ SearchFilter.defaultProps = {
     isValid: true,
     inputRef: {},
     onHandleInputValueChange: () => {},
+    label: '',
 };
 
 export default SearchFilter;

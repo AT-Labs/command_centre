@@ -5,6 +5,7 @@ import VIEW_TYPE from '../../../types/view-types';
 import { RoutesAndTripsView } from './RoutesAndTripsView';
 import TableTitle from '../Common/ControlTable/TableTitle';
 import Filters from './Filters/Filters';
+import LegacyFilters from './Filters/legacy/Filters';
 import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
 import GroupByRouteView from './GroupByRouteView';
 import GroupByRouteVariantView from './GroupByRouteVariantView';
@@ -22,6 +23,7 @@ const componentPropsMock = {
     fetchRoutes: jest.fn(),
     retrieveAgencies: jest.fn(),
     serivceDate: '2023-01-01',
+    useRoutesTripsFilterCollapse: true,
 };
 
 const setup = (customProps) => {
@@ -37,6 +39,15 @@ describe('<RoutesAndTripsView />', () => {
             expect(wrapper).toMatchSnapshot();
             expect(wrapper.find(TableTitle).length).toEqual(1);
             expect(wrapper.find(Filters).length).toEqual(1);
+        });
+    });
+
+    test('should render and display TableTitle, LegacyFilters when useRoutesTripsFilterCollapse is false', () => {
+        withHooks(() => {
+            const wrapper = setup({ useRoutesTripsFilterCollapse: false });
+            expect(wrapper).toMatchSnapshot();
+            expect(wrapper.find(TableTitle).length).toEqual(1);
+            expect(wrapper.find(LegacyFilters).length).toEqual(1);
         });
     });
 

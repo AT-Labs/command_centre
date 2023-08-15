@@ -500,6 +500,11 @@ const getFilters = (model, state) => {
     filters.agencyId = routeFilters.agencyId;
     filters.depotIds = routeFilters.depotIds;
     filters.tripStatus = routeFilters.tripStatus;
+    filters = {
+        ...filters,
+        ...(!filters.startTimeFrom && { startTimeFrom: routeFilters.startTimeFrom }),
+        ...(!filters.startTimeTo && { startTimeTo: routeFilters.startTimeTo }),
+    };
 
     const { routeShortName, routeVariantId } = routeFilters;
     if (routeVariantId) {

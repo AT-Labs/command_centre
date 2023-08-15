@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { IconButton } from '@mui/material';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
 
 import { retrieveAgencies } from '../../../redux/actions/control/agencies';
 import { fetchRoutes } from '../../../redux/actions/control/routes/routes';
-import { getControlDetailRoutesViewType, getRouteFilters } from '../../../redux/selectors/control/routes/filters';
+import { getControlDetailRoutesViewType, getRouteFilters, getModeRouteFilter } from '../../../redux/selectors/control/routes/filters';
+import { mergeRouteFilters } from '../../../redux/actions/control/routes/filters';
 import VIEW_TYPE from '../../../types/view-types';
 import { PAGE_SIZE, TRIPS_POLLING_INTERVAL } from '../../../utils/control/routes';
 import { filterTripInstances } from '../../../redux/actions/control/routes/trip-instances';
@@ -17,9 +20,12 @@ import {
 } from '../../../redux/selectors/control/routes/routeVariants';
 import { getSelectedTripsKeys } from '../../../redux/selectors/control/routes/trip-instances';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
+import { useRoutesTripsFilterCollapse } from '../../../redux/selectors/appSettings';
 import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
 import TableTitle from '../Common/ControlTable/TableTitle';
 import Filters from './Filters/Filters';
+import LegacyFilters from './Filters/legacy/Filters';
+import FilterByMode from '../Common/Filters/FilterByMode';
 import SelectionToolsFooter from './bulkSelection/TripsSelectionFooter';
 import GroupByRouteView from './GroupByRouteView';
 import GroupByRouteVariantView from './GroupByRouteVariantView';
@@ -30,6 +36,7 @@ import './TripsDataGrid.scss';
 export const RoutesAndTripsView = (props) => {
     const [currentPage, setCurrentPage] = useState(1);
     const loadingTimerRef = useRef(null);
+    const [isExpanded, setIsExpanded] = useState(true);
 
     const getTripInstances = () => {
         props.filterTripInstances(true);
@@ -85,12 +92,46 @@ export const RoutesAndTripsView = (props) => {
         return props.routesTotal;
     };
 
+    const renderCollapseFiltersButton = () => (
+        <IconButton disableRipple color="primary" onClick={ () => setIsExpanded(!isExpanded) }>
+            {isExpanded && (
+                <>
+                    <span className="font-size-md">Hide filters</span>
+                    <ExpandLess sx={ { color: 'black' } } />
+                </>
+            )}
+            {!isExpanded && (
+                <>
+                    <span className="font-size-md">Show filters</span>
+                    <ExpandMore sx={ { color: 'black' } } />
+                </>
+            )}
+        </IconButton>
+    );
+
     return (
         <>
-            <div className="d-flex flex-column h-100">
-                <TableTitle tableTitle="Routes & Trips" />
+            <div className="routes-trips-view d-flex flex-column h-100">
+                { !props.useRoutesTripsFilterCollapse && (
+                    <>
+                        <TableTitle tableTitle="Routes & Trips" />
+                        <LegacyFilters />
+                    </>
+                ) }
+                { props.useRoutesTripsFilterCollapse && (
+                    <>
+                        <TableTitle tableTitle="Routes & Trips">
+                            { renderCollapseFiltersButton() }
+                            <div className="d-flex align-items-center col-auto">
+                                <FilterByMode
+                                    selectedOption={ props.routeType }
+                                    onSelection={ selectedOption => props.mergeRouteFilters({ routeType: selectedOption }) } />
+                            </div>
+                        </TableTitle>
 
-                <Filters />
+                        {isExpanded && <Filters />}
+                    </>
+                ) }
 
                 {(isRoutesTripsView() || isRoutesRouteVariantsTripsView()) && <GroupByRouteView page={ currentPage } />}
 
@@ -138,11 +179,15 @@ RoutesAndTripsView.propTypes = {
     retrieveAgencies: PropTypes.func.isRequired,
     fetchRoutes: PropTypes.func.isRequired,
     serviceDate: PropTypes.string.isRequired,
+    mergeRouteFilters: PropTypes.func.isRequired,
+    routeType: PropTypes.number,
+    useRoutesTripsFilterCollapse: PropTypes.bool.isRequired,
 };
 
 RoutesAndTripsView.defaultProps = {
     activeRoute: null,
     activeRouteVariant: null,
+    routeType: null,
 };
 
 export default connect(
@@ -159,8 +204,10 @@ export default connect(
         activeRoute: getActiveRoute(state),
         activeRouteVariant: getActiveRouteVariant(state),
         serviceDate: getServiceDate(state),
+        routeType: getModeRouteFilter(state),
+        useRoutesTripsFilterCollapse: useRoutesTripsFilterCollapse(state),
     }),
     {
-        fetchRoutes, filterTripInstances, retrieveAgencies,
+        fetchRoutes, filterTripInstances, retrieveAgencies, mergeRouteFilters,
     },
 )(RoutesAndTripsView);

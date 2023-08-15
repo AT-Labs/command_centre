@@ -8,7 +8,8 @@ const TableTitle = props => (
         <div>
             <h1>{ props.tableTitle }</h1>
         </div>
-        <div>
+        <div className="d-flex">
+            { props.children }
             <ServiceDatePicker isServiceDatePickerDisabled={ props.isServiceDatePickerDisabled } />
         </div>
     </div>
@@ -17,10 +18,12 @@ const TableTitle = props => (
 TableTitle.propTypes = {
     tableTitle: PropTypes.string.isRequired,
     isServiceDatePickerDisabled: PropTypes.bool,
+    children: PropTypes.node,
 };
 
 TableTitle.defaultProps = {
     isServiceDatePickerDisabled: false,
+    children: null,
 };
 
 export default TableTitle;

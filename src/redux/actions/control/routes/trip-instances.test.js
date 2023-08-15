@@ -533,7 +533,6 @@ describe('Trip instances actions', () => {
                         depotIds: undefined,
                         tripStatus: undefined,
                         serviceDate: '20230320',
-                        startTime: "23:00",
                         startTimeFrom: "21:00",
                         startTimeTo: "23:00",
                         endTime: "24:00",
@@ -576,6 +575,8 @@ describe('Trip instances actions', () => {
                 routes: {
                     filters: {
                         routeType: 3,
+                        startTimeFrom: "21:00",
+                        startTimeTo: "23:00",
                     },
                     tripInstances: {
                         datagridConfig: {
@@ -589,16 +590,6 @@ describe('Trip instances actions', () => {
                             density: 'standard',
                             routeSelection: '',
                             filterModel: { items: [{
-                                columnField: "startTime",
-                                operatorValue: "onOrAfter",
-                                value: "21:00",
-                                id: 77389
-                            },{
-                                columnField: "startTime",
-                                operatorValue: "onOrBefore",
-                                id: 33259,
-                                value: "23:00"
-                            },{
                                 columnField: "endTime",
                                 operatorValue: "onOrAfter",
                                 id: 14456,
@@ -657,13 +648,13 @@ describe('Trip instances actions', () => {
                 type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LAST_FILTER,
                 payload: {
                     lastFilterRequest: {
-                        startTime: '00:00',
-                        startTimeFrom: '00:00',
                         routeType: 3,
                         delayRange: undefined,
                         agencyId: undefined,
                         depotIds: undefined,
                         tripStatus: undefined,
+                        startTimeFrom: undefined,
+                        startTimeTo: undefined,
                         serviceDate: '20230320',
                         routeVariantIds: [50101],
                         page: 1,
@@ -708,12 +699,7 @@ describe('Trip instances actions', () => {
                             }],
                             density: 'standard',
                             routeSelection: '',
-                            filterModel: { items: [{
-                                columnField: 'startTime',
-                                operatorValue: 'onOrAfter',
-                                value: '00:00',
-                            }],
-                            linkOperator: 'and' },
+                            filterModel: { items: [], linkOperator: 'and' },
                             pinnedColumns: { right: ['__detail_panel_toggle__'] },
                         },
                     },
@@ -741,13 +727,13 @@ describe('Trip instances actions', () => {
                 type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LAST_FILTER,
                 payload: {
                     lastFilterRequest: {
-                        startTime: '00:00',
-                        startTimeFrom: '00:00',
                         routeType: 3,
                         delayRange: undefined,
                         agencyId: undefined,
                         depotIds: undefined,
                         tripStatus: undefined,
+                        startTimeFrom: undefined,
+                        startTimeTo: undefined,
                         routeVariantIds: ['27001'],
                         serviceDate: '20230320',
                         page: 1,
@@ -792,12 +778,7 @@ describe('Trip instances actions', () => {
                             }],
                             density: 'standard',
                             routeSelection: '',
-                            filterModel: { items: [{
-                                columnField: 'startTime',
-                                operatorValue: 'onOrAfter',
-                                value: '00:00',
-                            }],
-                            linkOperator: 'and' },
+                            filterModel: { items: [], linkOperator: 'and' },
                             pinnedColumns: { right: ['__detail_panel_toggle__'] },
                         },
                     },

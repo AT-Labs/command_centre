@@ -6,6 +6,7 @@ import { getTimePickerOptions } from '../../../../utils/helpers';
 import { mergeRouteFilters } from '../../../../redux/actions/control/routes/filters';
 import { getStartTimeFromFilter, getStartTimeToFilter } from '../../../../redux/selectors/control/routes/filters';
 import ControlSearch from '../../Common/ControlSearch/ControlSearch';
+import { useRoutesTripsFilterCollapse } from '../../../../redux/selectors/appSettings';
 
 const OPTIONS = getTimePickerOptions(28);
 
@@ -14,6 +15,7 @@ class FilterByStartTime extends React.Component {
         startTimeFrom: PropTypes.string.isRequired,
         startTimeTo: PropTypes.string.isRequired,
         mergeRouteFilters: PropTypes.func.isRequired,
+        useRoutesTripsFilterCollapse: PropTypes.bool.isRequired,
     };
 
     constructor(props) {
@@ -69,7 +71,7 @@ class FilterByStartTime extends React.Component {
                     <ControlSearch
                         id="control-filters-start-time-from"
                         inputId="control-filters-start-time-from-input"
-                        label="From"
+                        label={ this.props.useRoutesTripsFilterCollapse ? 'Start from' : 'From' }
                         data={ this.getStartTimeFromOptions() }
                         pathToProperty="label"
                         placeholder="Select time"
@@ -82,7 +84,7 @@ class FilterByStartTime extends React.Component {
                     <ControlSearch
                         id="control-filters-start-time-to"
                         inputId="control-filters-start-time-to-input"
-                        label="To"
+                        label={ this.props.useRoutesTripsFilterCollapse ? 'Start to' : 'To' }
                         data={ this.getStartTimeToOptions() }
                         pathToProperty="label"
                         placeholder="Select time"
@@ -100,6 +102,7 @@ export default connect(
     state => ({
         startTimeFrom: getStartTimeFromFilter(state),
         startTimeTo: getStartTimeToFilter(state),
+        useRoutesTripsFilterCollapse: useRoutesTripsFilterCollapse(state),
     }),
     { mergeRouteFilters },
 )(FilterByStartTime);
