@@ -4,13 +4,14 @@ import { connect } from 'react-redux';
 import { FormGroup, Input, Label } from 'reactstrap';
 import { mergeVehicleFilters } from '../../../redux/actions/realtime/vehicles';
 import { getVehiclesFilterShowingTags } from '../../../redux/selectors/realtime/vehicles';
-
-export const VehicleTag = {
-    SMARTRAK: 'Smartrak',
-    TORUTEK: 'Torutek',
-};
+import { useCAFMapFilter } from '../../../redux/selectors/appSettings';
 
 export const VehicleFilterByTag = (props) => {
+    const VehicleTag = {
+        SMARTRAK: 'Smartrak',
+        TORUTEK: 'Torutek',
+        ...(props.useCAFMapFilter && { CAF: 'CAF' }),
+    };
     const handleShowingTagChange = (e) => {
         const { name, checked } = e.target;
         const tags = checked ? props.showingTags.concat(name) : props.showingTags.filter(tag => tag !== name);
@@ -41,11 +42,13 @@ export const VehicleFilterByTag = (props) => {
 VehicleFilterByTag.propTypes = {
     mergeVehicleFilters: PropTypes.func.isRequired,
     showingTags: PropTypes.arrayOf(PropTypes.string).isRequired,
+    useCAFMapFilter: PropTypes.bool.isRequired,
 };
 
 export default connect(
     state => ({
         showingTags: getVehiclesFilterShowingTags(state),
+        useCAFMapFilter: useCAFMapFilter(state),
     }),
     { mergeVehicleFilters },
 )(VehicleFilterByTag);
