@@ -38,6 +38,7 @@ $theme-colors: (
     'at-magenta':           $at-magenta,
     'at-magenta-tint-5':    tint($at-magenta, 5%),
     'at-magenta-tint-80':   tint($at-magenta, 80%),
+    'ice-blue':             $ice-blue,
 );
 
 $sizes: () !default;

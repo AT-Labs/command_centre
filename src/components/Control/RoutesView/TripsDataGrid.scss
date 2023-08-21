@@ -61,4 +61,41 @@ div.custom-filter-value-input {
     & .MuiDataGrid-pinnedColumns {
         background-color: #F3F4F5;
     }
+
+    & .MuiDataGrid-row {
+        &.trips-data-grid__row--completed {
+            background-color: tint($at-ocean, 5%);
+            &.Mui-hovered {
+                background-color: darken(tint($at-ocean, 5%), 10%);
+            }
+        }
+
+        &.trips-data-grid__row--not-started {
+            background-color: $ice-blue;
+            &.Mui-hovered {
+                background-color: darken($ice-blue, 10%);
+            }
+        }
+
+        &.trips-data-grid__row--cancelled {
+            background-color: tint($at-ocean, 5%);
+            &.Mui-hovered {
+                background-color: darken(tint($at-ocean, 5%), 10%);
+            }
+        }
+
+        &.trips-data-grid__row--missed {
+            background-color: tint($at-magenta, 5%);
+            &.Mui-hovered {
+                background-color: darken(tint($at-magenta, 5%), 10%);
+            }
+        }
+
+        &.trips-data-grid__row--in-progress {
+            background-color: $white;
+            &.Mui-hovered {
+                background-color: darken($white, 10%);
+            }
+        }
+    }
 }

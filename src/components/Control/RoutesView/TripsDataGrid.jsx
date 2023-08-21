@@ -307,14 +307,20 @@ export const TripsDataGrid = (props) => {
 
     const getRowClassName = ({ row: { tripInstance } }) => {
         const status = get(tripInstance, 'status', null);
-        if (isTripCompleted(status) || status === TRIP_STATUS_TYPES.notStarted) {
-            return 'bg-at-ocean-tint-5 text-muted';
+        if (isTripCompleted(status)) {
+            return 'text-muted trips-data-grid__row--completed';
+        }
+        if (status === TRIP_STATUS_TYPES.notStarted) {
+            return 'text-muted trips-data-grid__row--not-started';
         }
         if (status === TRIP_STATUS_TYPES.cancelled) {
-            return 'bg-at-ocean-tint-5';
+            return 'trips-data-grid__row--cancelled';
         }
         if (status === TRIP_STATUS_TYPES.missed) {
-            return 'bg-at-magenta-tint-5';
+            return 'trips-data-grid__row--missed';
+        }
+        if (status === TRIP_STATUS_TYPES.inProgress) {
+            return 'trips-data-grid__row--in-progress';
         }
         return '';
     };
