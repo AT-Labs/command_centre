@@ -1,13 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { findIndex, map, has } from 'lodash-es';
+import { findIndex, findLastIndex, map, has } from 'lodash-es';
 import { LeafletConsumer } from 'react-leaflet';
 import * as L from 'leaflet';
 import StopThreshold from './StopThreshold';
 import 'leaflet-geometryutil';
 import { FERRY_TYPE_ID } from '../../../../types/vehicle-types';
 
-const findStopIndexInRoute = (stop, route) => findIndex(route, point => point[0] === stop.stopLat && point[1] === stop.stopLon);
+const findStopIndexInRoute = (stop, route) => {
+    const findStopIndex = stop.stopSequence === 1 ? findIndex : findLastIndex;
+    return findStopIndex(route, point => point[0] === stop.stopLat && point[1] === stop.stopLon);
+};
 
 /**
  * This function is used to get stop thresholds
