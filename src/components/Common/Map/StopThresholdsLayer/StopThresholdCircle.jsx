@@ -12,7 +12,7 @@ const StopThresholdCircle = ({ stops, routeType, hideExitCircle }) => {
     if (stops.length && routeType === BUS_TYPE_ID) {
         const firstStop = stops[0];
         const { stopLat, stopLon } = firstStop;
-        const innerCircleBusThreshold = firstStop.entryDistance || 30;
+        const innerCircleBusThreshold = firstStop.innerRadius || firstStop.entryDistance || 30;
 
         const entryCircle = (
             <Circle
@@ -83,6 +83,7 @@ StopThresholdCircle.propTypes = {
             stopLon: PropTypes.number.isRequired,
             entryDistance: PropTypes.number.isRequired,
             exitDistance: PropTypes.number.isRequired,
+            innerRadius: PropTypes.number,
         }),
     ).isRequired,
     routeType: PropTypes.number,
