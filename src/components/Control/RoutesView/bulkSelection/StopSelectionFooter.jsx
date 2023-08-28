@@ -18,7 +18,7 @@ import { useHeadsignUpdate } from '../../../../redux/selectors/appSettings';
 
 import './styles.scss';
 
-const StopSelectionFooter = (props) => {
+export const StopSelectionFooter = (props) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeModal, setActiveModal] = useState(updateStopsModalTypes.SKIP);
 
@@ -32,8 +32,9 @@ const StopSelectionFooter = (props) => {
     const areUpdateHeadsignsPermitted = IS_LOGIN_NOT_REQUIRED || Object.values(selectedStops).every(stop => isUpdateStopHeadsignPermitted(stop));
     const notStartedTrip = tripInstance.status === TRIP_STATUS_TYPES.notStarted;
     const inProgressTrip = tripInstance.status === TRIP_STATUS_TYPES.inProgress;
-    const isTodayTrip = tripInstance.serviceDate === moment().format(SERVICE_DATE_FORMAT);
-    const isUpdateHeadsignPossible = areUpdateHeadsignsPermitted && isTodayTrip && (notStartedTrip || inProgressTrip);
+    const isTripRunningToday = tripInstance.serviceDate === moment().format(SERVICE_DATE_FORMAT)
+        || (moment(tripInstance.serviceDate).isBefore(moment(), 'day') && tripInstance.endTime > '24:00:00');
+    const isUpdateHeadsignPossible = areUpdateHeadsignsPermitted && isTripRunningToday && (notStartedTrip || inProgressTrip);
 
     const handleModalOnToggle = (activeModalName) => {
         setIsModalOpen(!isModalOpen);
