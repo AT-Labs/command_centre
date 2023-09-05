@@ -83,7 +83,7 @@ const CellExpand = React.memo((props) => {
                         id="popper"
                         open={ showFullCell && anchorEl != null }
                         anchorEl={ anchorEl }
-                        style={ { width, marginLeft: -17 } }
+                        style={ { width, marginLeft: -17, pointerEvents: 'none' } }
                     >
                         <Paper
                             elevation={ 1 }
