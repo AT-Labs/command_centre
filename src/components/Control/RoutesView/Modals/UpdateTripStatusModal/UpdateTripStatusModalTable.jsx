@@ -7,9 +7,11 @@ import { IoIosCloseCircle } from 'react-icons/io';
 
 import ControlTable from '../../../Common/ControlTable/ControlTable';
 import { selectSingleTrip } from '../../../../../redux/actions/control/routes/trip-instances';
+import { getTripStatusModalOriginState } from '../../../../../redux/selectors/control/routes/trip-instances';
+import { updateTripsStatusModalOrigins } from '../../Types';
 
 const UpdateTripStatusModalTable = (props) => {
-    const { selectedTrips } = props;
+    const { selectedTrips, tripStatusModalOrigin } = props;
 
     const onTripDeselect = trip => props.selectSingleTrip({ [trip.tripKey]: selectedTrips[trip.tripKey] });
 
@@ -39,13 +41,16 @@ const UpdateTripStatusModalTable = (props) => {
             key: 'routeLongName',
             cols: 'col-4',
         },
-        {
+    ];
+
+    if (tripStatusModalOrigin === updateTripsStatusModalOrigins.FOOTER) {
+        SELECTED_TRIPS_COLUMNS.push({
             label: 'Remove',
             key: '',
             cols: 'col-2',
             getContent: row => renderTableRemoveButtons(row),
-        },
-    ];
+        });
+    }
 
     return (
         <ControlTable
@@ -65,6 +70,13 @@ const UpdateTripStatusModalTable = (props) => {
 UpdateTripStatusModalTable.propTypes = {
     selectedTrips: PropTypes.object.isRequired,
     selectSingleTrip: PropTypes.func.isRequired,
+    tripStatusModalOrigin: PropTypes.string,
 };
 
-export default connect(null, { selectSingleTrip })(UpdateTripStatusModalTable);
+UpdateTripStatusModalTable.defaultProps = {
+    tripStatusModalOrigin: null,
+};
+
+export default connect(state => ({
+    tripStatusModalOrigin: getTripStatusModalOriginState(state),
+}), { selectSingleTrip })(UpdateTripStatusModalTable);

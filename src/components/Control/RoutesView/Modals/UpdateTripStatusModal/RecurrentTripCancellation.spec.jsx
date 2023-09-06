@@ -3,25 +3,38 @@ import { assert } from 'chai';
 import React, { useEffect } from 'react';
 import moment from 'moment';
 import { act } from 'react-dom/test-utils';
-import { shallow } from 'enzyme';
+import createCache from '@emotion/cache';
+import { CacheProvider } from '@emotion/react';
+import { mount } from 'enzyme';
+import { Provider } from 'react-redux';
+import thunk from 'redux-thunk';
+import configureMockStore from 'redux-mock-store';
 import sinon from 'sinon';
 import { withHooks } from 'jest-react-hooks-shallow';
 import RecurrentTripCancellation from './RecurrentTripCancellation';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
 import { DATE_FORMAT_DDMMYYYY } from '../../../../../utils/dateUtils';
 
+const mockStore = configureMockStore([thunk]);
+const cache = createCache({ key: 'blah' });
+
 let sandbox;
 let wrapper;
+
+const defaultStates = {
+    appSettings: {
+        useHideTrip: 'true',
+    },
+};
 
 const componentPropsMock = {
     onChange: jest.fn(),
 };
 
-const setup = (customProps) => {
-    let props = componentPropsMock;
-    props = Object.assign(props, customProps);
-
-    return shallow(<RecurrentTripCancellation { ...props } />);
+const setup = (customProps, customStates) => {
+    const props = { ...componentPropsMock, ...customProps };
+    const store = mockStore(customStates || defaultStates);
+    return mount(<CacheProvider value={ cache }><Provider store={ store }><RecurrentTripCancellation { ...props } /></Provider></CacheProvider>);
 };
 
 describe('<RecurrentTripCancellation />', () => {
@@ -66,6 +79,10 @@ describe('<RecurrentTripCancellation />', () => {
                     startDate: '01/03/2022',
                     endDate: '',
                     selectedWeekdays: [0, 1, 2, 3, 4, 5, 6],
+                },
+                options: {
+                    startDatePickerMinimumDate: '01/03/2022',
+                    endDatePickerMinimumDate: '01/03/2022',
                 },
             },
         );

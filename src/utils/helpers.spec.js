@@ -118,6 +118,9 @@ describe('getClosestTimeValueForFilter', () => {
     it('format when rounding up minute', () => {
         expect(getClosestTimeValueForFilter('23:15:00')).to.equal('23:00');
     });
+    it('format when no seconds specified', () => {
+        expect(getClosestTimeValueForFilter('23:15')).to.equal('23:00');
+    });
     it('return empty when unexpected string is given', () => {
         expect(getClosestTimeValueForFilter('2022-12-12 22:15:00')).to.equal('');
     });

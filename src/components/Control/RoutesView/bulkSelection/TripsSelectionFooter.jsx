@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 import React, { useState } from 'react';
-import { IoIosCloseCircle, IoMdCheckmarkCircle } from 'react-icons/io';
+import { IoIosCloseCircle, IoMdCheckmarkCircle, IoMdEyeOff } from 'react-icons/io';
+import moment from 'moment';
 
 import Message from '../../Common/Message/Message';
 import Footer from '../../../Common/Footer/Footer';
@@ -15,7 +16,9 @@ import { deselectAllTrips, removeBulkUpdateMessages, setTripStatusModalOrigin } 
 import {
     getSelectedTripInstances, getTripInstancesActionResults, getTripInstancesActionLoading, getBulkUpdateMessagesByType, getTripStatusModalOriginState,
 } from '../../../../redux/selectors/control/routes/trip-instances';
+import { useHideTrip } from '../../../../redux/selectors/appSettings';
 import './styles.scss';
+import { isHideCancellationPermitted } from '../../../../utils/user-permissions';
 
 const SelectionToolsFooter = (props) => {
     const [activeModal, setActiveModal] = useState(updateTripsStatusModalTypes.CANCEL_MODAL);
@@ -33,16 +36,19 @@ const SelectionToolsFooter = (props) => {
         if (!isModalOpen) props.removeBulkUpdateMessages(CONFIRMATION_MESSAGE_TYPE);
     };
 
-    const checkIfButtonsShouldBeDisabled = () => {
-        const getTripsByStatus = comparator => filter(selectedTrips, trip => comparator(trip.status, TRIP_STATUS_TYPES.cancelled));
-        return {
-            isThereACancelledTrip: getTripsByStatus((tripStatus, status) => tripStatus === status).length > 0,
-            isThereANotCancelledTrip: getTripsByStatus((tripStatus, status) => tripStatus !== status).length > 0,
-        };
-    };
+    const ifCancelButtonShouldBeDisabled = filter(selectedTrips, trip => trip.status !== TRIP_STATUS_TYPES.cancelled).length <= 0;
+
+    const ifReinsteButtonShouldBeDisabled = filter(selectedTrips, trip => trip.status === TRIP_STATUS_TYPES.cancelled).length <= 0;
+
+    const ifHideTripsButtonShouldBeDisabled = filter(selectedTrips, trip => (
+        trip.status === TRIP_STATUS_TYPES.cancelled
+        && !!trip.display
+        && (moment(trip.serviceDate).isSame(moment(), 'day'))
+        && isHideCancellationPermitted(trip)
+    )).length <= 0;
 
     return (
-        <Footer className="selection-tools-footer fixed-bottom border-top">
+        <Footer className="selection-tools-footer fixed-bottom border-top on-top">
             {
                 tripStatusModalOrigin === updateTripsStatusModalOrigins.FOOTER
                 && !isModalOpen
@@ -82,7 +88,7 @@ const SelectionToolsFooter = (props) => {
                         size="sm"
                         className="selection-tools-footer__btn-cancel cc-btn-secondary d-flex align-items-center mr-3"
                         onClick={ () => handleModalOnToggle(updateTripsStatusModalTypes.CANCEL_MODAL) }
-                        disabled={ !checkIfButtonsShouldBeDisabled().isThereANotCancelledTrip }>
+                        disabled={ ifCancelButtonShouldBeDisabled }>
                         <IoIosCloseCircle size={ 20 } />
                         Cancel
                     </Button>
@@ -90,13 +96,27 @@ const SelectionToolsFooter = (props) => {
                 <li>
                     <Button
                         size="sm"
-                        className="selection-tools-footer__btn-reinstate cc-btn-secondary d-flex align-items-center"
+                        className="selection-tools-footer__btn-reinstate cc-btn-secondary d-flex align-items-center mr-3"
                         onClick={ () => handleModalOnToggle(updateTripsStatusModalTypes.REINSTATE_MODAL) }
-                        disabled={ !checkIfButtonsShouldBeDisabled().isThereACancelledTrip }>
+                        disabled={ ifReinsteButtonShouldBeDisabled }>
                         <IoMdCheckmarkCircle size={ 20 } />
                         Reinstate cancelled trip
                     </Button>
                 </li>
+                {
+                    props.useHideTrip && (
+                        <li>
+                            <Button
+                                size="sm"
+                                className="selection-tools-footer__btn-hide cc-btn-secondary d-flex align-items-center"
+                                onClick={ () => handleModalOnToggle(updateTripsStatusModalTypes.HIDE_TRIP_MODAL) }
+                                disabled={ ifHideTripsButtonShouldBeDisabled }>
+                                <IoMdEyeOff size={ 20 } />
+                                Hide cancellation
+                            </Button>
+                        </li>
+                    )
+                }
             </ul>
             <UpdateTripStatusModal
                 className="update-trip-status-modal"
@@ -116,6 +136,7 @@ SelectionToolsFooter.propTypes = {
     actionResults: PropTypes.array.isRequired,
     tripStatusModalOrigin: PropTypes.string,
     setTripStatusModalOrigin: PropTypes.func.isRequired,
+    useHideTrip: PropTypes.bool.isRequired,
 };
 
 SelectionToolsFooter.defaultProps = {
@@ -127,4 +148,5 @@ export default connect(state => ({
     actionResults: getTripInstancesActionResults(state),
     actionLoadingStatesByTripId: getTripInstancesActionLoading(state),
     tripStatusModalOrigin: getTripStatusModalOriginState(state),
+    useHideTrip: useHideTrip(state),
 }), { deselectAllTrips, removeBulkUpdateMessages, setTripStatusModalOrigin })(SelectionToolsFooter);

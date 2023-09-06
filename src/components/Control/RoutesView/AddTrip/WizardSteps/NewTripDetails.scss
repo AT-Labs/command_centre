@@ -1,0 +1,51 @@
+@import '../../../../../assets/styles/variables';
+
+.add-trip-new-trip-details {
+    height: calc(60vh + 40px);
+    overflow: auto;
+    background-color: $at-bk-gray;
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+    max-width: 100%;
+
+    &__container {
+        background-color: $at-bk-gray;
+    }
+
+    & &__start-time {
+        width: fit-content;
+    }
+
+    & &__reference-id {
+        width: fit-content;
+    }
+
+    & &__content {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        overflow: hidden;
+
+        & form {
+            flex-grow: 1;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        & footer {
+            border-style: none;
+            display: flex;
+            justify-content: left;
+        }
+
+        & div.form-group {
+            align-items: center;
+            display: flex;
+        }
+
+        & label {
+            margin: 0;
+        }
+    }
+}

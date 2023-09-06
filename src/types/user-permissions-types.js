@@ -9,6 +9,8 @@ export default {
         VIEW_TRIP: 'view',
         RECURRENT_CANCEL: 'recurrent_cancel',
         UPDATE_HEADSIGN: 'update_headsign',
+        HIDE_TRIP: 'hide',
+        NEW_TRIP: 'new',
     },
     BLOCKS: {
         ADD_BLOCK: 'add',

@@ -1,3 +1,4 @@
+import { connect } from 'react-redux';
 import React, { useEffect } from 'react';
 import { isEmpty } from 'lodash-es';
 import moment from 'moment';
@@ -5,16 +6,17 @@ import PropTypes from 'prop-types';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { BsArrowRepeat } from 'react-icons/bs';
 import Flatpickr from 'react-flatpickr';
-import { FormGroup, Label } from 'reactstrap';
+import { FormGroup, Label, Input } from 'reactstrap';
 import { DATE_FORMAT_DDMMYYYY, getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { getRecurringTextWithFrom } from '../../../../../utils/recurrence';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
+import { useHideTrip } from '../../../../../redux/selectors/appSettings';
 import './RecurrentTripCancellation.scss';
 
 const RecurrentTripCancellation = (props) => {
     const { startDate, endDate, selectedWeekdays } = props.setting;
     const { startDatePickerMinimumDate, endDatePickerMinimumDate } = props.options;
-    const { allowUpdate } = props;
+    const { allowUpdate, allowHideTrip } = props;
 
     useEffect(() => {
         if (startDate && endDate && moment(startDate, DATE_FORMAT_DDMMYYYY).isAfter(moment(endDate, DATE_FORMAT_DDMMYYYY))) {
@@ -32,6 +34,10 @@ const RecurrentTripCancellation = (props) => {
 
     const handleWeekdaysUpdate = (inputSelectedWeekdays) => {
         props.onChange({ selectedWeekdays: inputSelectedWeekdays });
+    };
+
+    const handleHideTrip = (event) => {
+        props.onChange({ display: !event.currentTarget.checked });
     };
 
     const datePickerOptions = getDatePickerOptions(startDatePickerMinimumDate);
@@ -88,6 +94,21 @@ const RecurrentTripCancellation = (props) => {
                     </FormGroup>
                 )}
             </div>
+            {
+                props.useHideTrip && allowHideTrip && (
+                    <div className="text-center">
+                        <FormGroup className="recurrent-trip-cancellation__checkbox">
+                            <Input
+                                type="checkbox"
+                                className="ml-0"
+                                disabled={ !allowUpdate }
+                                onChange={ handleHideTrip }
+                            />
+                            <span className="pl-2">Hide cancelled trip (only applies for today&apos;s trips)</span>
+                        </FormGroup>
+                    </div>
+                )
+            }
         </>
     );
 };
@@ -104,6 +125,8 @@ RecurrentTripCancellation.propTypes = {
         endDatePickerMinimumDate: PropTypes.string.isRequired,
     }).isRequired,
     allowUpdate: PropTypes.bool,
+    allowHideTrip: PropTypes.bool.isRequired,
+    useHideTrip: PropTypes.bool.isRequired,
 };
 
 RecurrentTripCancellation.defaultProps = {
@@ -113,4 +136,9 @@ RecurrentTripCancellation.defaultProps = {
     allowUpdate: false,
 };
 
-export default RecurrentTripCancellation;
+export default connect(
+    state => ({
+        useHideTrip: useHideTrip(state),
+    }),
+    null,
+)(RecurrentTripCancellation);

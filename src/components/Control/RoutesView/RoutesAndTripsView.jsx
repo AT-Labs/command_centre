@@ -1,27 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import { connect } from 'react-redux';
-import { IconButton } from '@mui/material';
+import { Button } from 'reactstrap';
+import { Dialog, DialogContent, IconButton } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 
-import { retrieveAgencies } from '../../../redux/actions/control/agencies';
-import { fetchRoutes } from '../../../redux/actions/control/routes/routes';
-import { getControlDetailRoutesViewType, getRouteFilters, getModeRouteFilter } from '../../../redux/selectors/control/routes/filters';
-import { mergeRouteFilters } from '../../../redux/actions/control/routes/filters';
 import VIEW_TYPE from '../../../types/view-types';
-import { PAGE_SIZE, TRIPS_POLLING_INTERVAL } from '../../../utils/control/routes';
-import { filterTripInstances } from '../../../redux/actions/control/routes/trip-instances';
-import { RouteFiltersType, RouteType, RouteVariantType } from './Types';
-import {
-    getRoutesLoadingState, getFilteredRoutesTotal, getAllRoutesTotal, getActiveRoute,
-} from '../../../redux/selectors/control/routes/routes';
-import {
-    getRouteVariantsLoadingState, getFilteredRouteVariantsTotal, getAllRouteVariantsTotal, getActiveRouteVariant,
-} from '../../../redux/selectors/control/routes/routeVariants';
-import { getSelectedTripsKeys } from '../../../redux/selectors/control/routes/trip-instances';
-import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
-import { useRoutesTripsFilterCollapse } from '../../../redux/selectors/appSettings';
-import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
 import TableTitle from '../Common/ControlTable/TableTitle';
 import Filters from './Filters/Filters';
 import LegacyFilters from './Filters/legacy/Filters';
@@ -30,6 +15,25 @@ import SelectionToolsFooter from './bulkSelection/TripsSelectionFooter';
 import GroupByRouteView from './GroupByRouteView';
 import GroupByRouteVariantView from './GroupByRouteVariantView';
 import TripsDataGrid from './TripsDataGrid';
+import AddTrip from './AddTrip';
+
+import { retrieveAgencies } from '../../../redux/actions/control/agencies';
+import { fetchRoutes } from '../../../redux/actions/control/routes/routes';
+import { getControlDetailRoutesViewType, getRouteFilters, getModeRouteFilter } from '../../../redux/selectors/control/routes/filters';
+import { mergeRouteFilters } from '../../../redux/actions/control/routes/filters';
+import { PAGE_SIZE, TRIPS_POLLING_INTERVAL, SERVICE_DATE_FORMAT } from '../../../utils/control/routes';
+import { filterTripInstances, updateEnabledAddTripModal } from '../../../redux/actions/control/routes/trip-instances';
+import { RouteFiltersType, RouteType, RouteVariantType } from './Types';
+import {
+    getRoutesLoadingState, getFilteredRoutesTotal, getAllRoutesTotal, getActiveRoute,
+} from '../../../redux/selectors/control/routes/routes';
+import {
+    getRouteVariantsLoadingState, getFilteredRouteVariantsTotal, getAllRouteVariantsTotal, getActiveRouteVariant,
+} from '../../../redux/selectors/control/routes/routeVariants';
+import { getSelectedTripsKeys, isAddTripModalEnabled, isAddTripAllowed } from '../../../redux/selectors/control/routes/trip-instances';
+import { useAddTrip, useRoutesTripsFilterCollapse } from '../../../redux/selectors/appSettings';
+import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
+import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
 
 import './TripsDataGrid.scss';
 
@@ -92,6 +96,14 @@ export const RoutesAndTripsView = (props) => {
         return props.routesTotal;
     };
 
+    const showAddTripButton = props.useAddTrip && props.isAddTripAllowed && moment(props.serviceDate).format(SERVICE_DATE_FORMAT) === moment().format(SERVICE_DATE_FORMAT);
+
+    const getAddTripActionButton = () => (
+        <div className="mr-4">
+            <Button className="cc-btn-primary" onClick={ () => props.updateEnabledAddTripModal(true) } aria-label="Add trip"> Add trip </Button>
+        </div>
+    );
+
     const renderCollapseFiltersButton = () => (
         <IconButton disableRipple color="primary" onClick={ () => setIsExpanded(!isExpanded) }>
             {isExpanded && (
@@ -114,7 +126,11 @@ export const RoutesAndTripsView = (props) => {
             <div className="routes-trips-view d-flex flex-column h-100">
                 { !props.useRoutesTripsFilterCollapse && (
                     <>
-                        <TableTitle tableTitle="Routes & Trips" />
+                        <TableTitle tableTitle="Routes & Trips">
+                            <div className="d-flex align-items-center col-auto">
+                                { showAddTripButton && getAddTripActionButton() }
+                            </div>
+                        </TableTitle>
                         <LegacyFilters />
                     </>
                 ) }
@@ -123,6 +139,7 @@ export const RoutesAndTripsView = (props) => {
                         <TableTitle tableTitle="Routes & Trips">
                             { renderCollapseFiltersButton() }
                             <div className="d-flex align-items-center col-auto">
+                                { showAddTripButton && getAddTripActionButton() }
                                 <FilterByMode
                                     selectedOption={ props.routeType }
                                     onSelection={ selectedOption => props.mergeRouteFilters({ routeType: selectedOption }) } />
@@ -159,6 +176,13 @@ export const RoutesAndTripsView = (props) => {
             </div>
 
             { shouldSelectionToolsFooterBeVisible && <SelectionToolsFooter /> }
+            { props.useAddTrip && (
+                <Dialog open={ props.addTripModalIsOpen } fullScreen scroll="body" style={ { zIndex: 1029 } }>
+                    <DialogContent className="p-0">
+                        <AddTrip />
+                    </DialogContent>
+                </Dialog>
+            ) }
         </>
     );
 };
@@ -179,6 +203,10 @@ RoutesAndTripsView.propTypes = {
     retrieveAgencies: PropTypes.func.isRequired,
     fetchRoutes: PropTypes.func.isRequired,
     serviceDate: PropTypes.string.isRequired,
+    addTripModalIsOpen: PropTypes.bool.isRequired,
+    updateEnabledAddTripModal: PropTypes.func.isRequired,
+    useAddTrip: PropTypes.bool.isRequired,
+    isAddTripAllowed: PropTypes.bool.isRequired,
     mergeRouteFilters: PropTypes.func.isRequired,
     routeType: PropTypes.number,
     useRoutesTripsFilterCollapse: PropTypes.bool.isRequired,
@@ -204,10 +232,13 @@ export default connect(
         activeRoute: getActiveRoute(state),
         activeRouteVariant: getActiveRouteVariant(state),
         serviceDate: getServiceDate(state),
+        addTripModalIsOpen: isAddTripModalEnabled(state),
+        useAddTrip: useAddTrip(state),
+        isAddTripAllowed: isAddTripAllowed(state),
         routeType: getModeRouteFilter(state),
         useRoutesTripsFilterCollapse: useRoutesTripsFilterCollapse(state),
     }),
     {
-        fetchRoutes, filterTripInstances, retrieveAgencies, mergeRouteFilters,
+        fetchRoutes, filterTripInstances, retrieveAgencies, updateEnabledAddTripModal, mergeRouteFilters,
     },
 )(RoutesAndTripsView);

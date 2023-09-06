@@ -24,6 +24,11 @@ export class Stops extends React.Component {
         deselectAllStopsByTrip: PropTypes.func.isRequired,
         updateSelectedStopsByTrip: PropTypes.func.isRequired,
         useHeadsignUpdate: PropTypes.bool.isRequired,
+        showActuals: PropTypes.bool,
+    };
+
+    static defaultProps = {
+        showActuals: true,
     };
 
     constructor(props) {
@@ -120,11 +125,13 @@ export class Stops extends React.Component {
                             </div>
                         ) }
                         <div>Scheduled</div>
-                        <div>
-                            <span className="text-muted">Actual</span>
-                            /
-                            <span className="text-prediction">Prediction</span>
-                        </div>
+                        { this.props.showActuals && (
+                            <div>
+                                <span className="text-muted">Actual</span>
+                                /
+                                <span className="text-prediction">Prediction</span>
+                            </div>
+                        ) }
                     </div>
                     <div className="overflow-x-auto" ref={ this.containerRef }>
                         <div className="stop-control-container d-flex" style={ { width: `${stopContainerWidth}px` } }>
@@ -138,7 +145,8 @@ export class Stops extends React.Component {
                                         onHover={ hoveredStop => this.setState({ hoveredStop }) }
                                         isStopInSelectionRange={ this.isStopInSelectionRange(stop) }
                                         isCurrent={ stop.stopSequence === get(currentStop, 'stopSequence') }
-                                        lineInteractionClasses={ `${selectedEventClasses} ${hoverEventClasses}` } />
+                                        lineInteractionClasses={ `${selectedEventClasses} ${hoverEventClasses}` }
+                                        showActuals={ this.props.showActuals } />
                                 );
                             })}
                         </div>

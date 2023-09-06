@@ -10,6 +10,7 @@ import { getStartTimeFromFilterInitialTime } from '../../../../utils/control/rou
 export const INIT_STATE = {
     isLoading: false,
     isUpdating: false,
+    permissions: [],
     all: {},
     allLastUpdated: null,
     active: [],
@@ -41,6 +42,27 @@ export const INIT_STATE = {
     },
     lastFilterRequest: null,
     totalTripInstancesCount: 0,
+    addTrip: {
+        isAddTripEnabled: false,
+        activeStep: 0,
+        datagridConfig: {
+            columns: [],
+            page: 0,
+            pageSize: 15,
+            sortModel: [],
+            density: 'standard',
+            pinnedColumns: { right: ['actions'] },
+        },
+        selectedTrip: null,
+        isNewTripModalOpen: false,
+        action: {
+            isRequesting: false,
+            result: null,
+            resultStatus: null,
+            resultMessage: null,
+        },
+        isNewTripDetailsFormEmpty: true,
+    },
 };
 
 const handleTripInstancesUpdate = (state, { payload: { tripInstances, timestamp } }) => {
@@ -260,6 +282,52 @@ const handleLastFilterUpdate = (state, { payload: { lastFilterRequest } }) => ({
 
 const handleTotalCountUpdate = (state, { payload: { totalTripInstancesCount } }) => ({ ...state, totalTripInstancesCount });
 
+const handleOpenAddTrip = (state, { payload: { isAddTripEnabled } }) => ({ ...state, addTrip: { ...state.addTrip, isAddTripEnabled } });
+
+const handleUpdateCurrentStep = (state, { payload: { activeStep } }) => ({ ...state, addTrip: { ...state.addTrip, activeStep } });
+
+const handleAddTripDatagridConfig = (state, action) => ({ ...state, addTrip: { ...state.addTrip, datagridConfig: { ...state.addTrip.datagridConfig, ...action.payload } } });
+
+const handleSetSelectedTrip = (state, { payload: { selectedTrip } }) => ({ ...state, addTrip: { ...state.addTrip, selectedTrip } });
+
+const handleResetAddTripStep = state => ({ ...state, addTrip: { ...state.addTrip, activeStep: 0 } });
+
+const handleTripInstancesPermissionsUpdate = (state, { payload: { permissions } }) => ({ ...state, permissions });
+
+const handleAddTripModal = (state, { payload: { type, isOpen } }) => ({
+    ...state,
+    addTrip: {
+        ...state.addTrip,
+        [type]: isOpen,
+    },
+});
+
+const handleAddTripRequestingUpdate = (state, { payload: { isRequesting } }) => ({
+    ...state,
+    addTrip: {
+        ...state.addTrip,
+        action: {
+            ...state.addTrip.action,
+            isRequesting,
+        },
+    },
+});
+
+const handleAddTripResultUpdate = (state, { payload: { result, resultStatus, resultMessage } }) => ({
+    ...state,
+    addTrip: {
+        ...state.addTrip,
+        action: {
+            ...state.addTrip.action,
+            result,
+            resultStatus,
+            resultMessage,
+        },
+    },
+});
+
+const handleUpdateIsNewTripDetailsFormEmpty = (state, { payload: { isNewTripDetailsFormEmpty } }) => ({ ...state, addTrip: { ...state.addTrip, isNewTripDetailsFormEmpty } });
+
 export default handleActions({
     [ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES]: handleTripInstancesUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LOADING]: handleLoadingUpdate,
@@ -286,4 +354,14 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_DATAGRID_CONFIG]: handleDatagridConfig,
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LAST_FILTER]: handleLastFilterUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT]: handleTotalCountUpdate,
+    [ACTION_TYPE.OPEN_ADD_TRIP_MODAL]: handleOpenAddTrip,
+    [ACTION_TYPE.UPDATE_CURRENT_STEP]: handleUpdateCurrentStep,
+    [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_ADD_TRIP_DATAGRID_CONFIG]: handleAddTripDatagridConfig,
+    [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_SELECTED_ADD_TRIP]: handleSetSelectedTrip,
+    [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_RESET_ADD_TRIP_STATE]: handleResetAddTripStep,
+    [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_PERMISSIONS]: handleTripInstancesPermissionsUpdate,
+    [ACTION_TYPE.SET_ADD_TRIP_MODAL_STATUS]: handleAddTripModal,
+    [ACTION_TYPE.UPDATE_ADD_TRIP_ACTION_REQUESTING]: handleAddTripRequestingUpdate,
+    [ACTION_TYPE.UPDATE_ADD_TRIP_ACTION_RESULT]: handleAddTripResultUpdate,
+    [ACTION_TYPE.UPDATE_IS_NEW_TRIP_DETAILS_FORM_EMPTY]: handleUpdateIsNewTripDetailsFormEmpty,
 }, INIT_STATE);

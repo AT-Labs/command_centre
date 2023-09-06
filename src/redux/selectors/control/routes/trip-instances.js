@@ -7,6 +7,9 @@ import { getTripInstanceId } from '../../../../utils/helpers';
 import { ERROR_MESSAGE_TYPE, CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES } from '../../../../types/message-types';
 
 export const getTripsState = state => result(state, 'control.routes.tripInstances');
+
+export const getAddTripState = state => result(state, 'control.routes.tripInstances.addTrip');
+
 export const getAllTripInstances = createSelector(getTripsState, tripInstancesState => result(tripInstancesState, 'all'));
 export const getAllTripIds = createSelector(getAllTripInstances, tripInstances => values(tripInstances).map(tripInstance => tripInstance.tripId));
 export const getAllTripInstancesList = createSelector(getAllTripInstances, tripInstances => values(tripInstances));
@@ -18,6 +21,8 @@ export const getTripInstancesActionLoading = createSelector(getTripsState, tripI
 export const getActiveTripInstance = createSelector(getTripsState, ({ all, active }) => compact(active.map(tripId => all[tripId])));
 export const getSelectedTripInstances = createSelector(getTripsState, tripInstancesState => result(tripInstancesState, 'selected'));
 export const getSelectedTripsKeys = createSelector(getTripsState, tripInstancesState => Object.keys(result(tripInstancesState, 'selected')));
+export const getTripInstancesPermissions = createSelector(getTripsState, state => result(state, 'permissions'));
+
 // eslint-disable-next-line no-underscore-dangle,max-len
 export const getAllNotCompletedTrips = allTrips => pickBy(allTrips, value => (value.status !== TRIP_STATUS_TYPES.completed && value._links && value._links.permissions.map(permission => permission._rel).indexOf(USER_PERMISSIONS.ROUTES.CANCEL_TRIP) !== -1));
 export const getBulkUpdateMessagesByType = (actionResults, selectedTrips, messageType, messageActionType) => actionResults
@@ -44,6 +49,8 @@ export const getBulkUpdateErrorMessagesForStops = createSelector(
 
 export const getTripStatusModalOriginState = createSelector(getTripsState, tripInstancesState => result(tripInstancesState, 'tripStatusModalOrigin'));
 
+export const isAddTripAllowed = createSelector(getTripInstancesPermissions, permissions => !!find(permissions, { _rel: USER_PERMISSIONS.ROUTES.NEW_TRIP }));
+
 export const isTripReccuringUpdateAllowed = trip => !!find(result(trip, '_links.permissions'), { _rel: USER_PERMISSIONS.ROUTES.RECURRENT_CANCEL });
 
 export const getTripsDatagridConfig = createSelector(getTripsState, tripInstancesState => result(tripInstancesState, 'datagridConfig'));
@@ -51,3 +58,17 @@ export const getTripsDatagridConfig = createSelector(getTripsState, tripInstance
 export const getLastFilterRequest = createSelector(getTripsState, tripInstancesState => result(tripInstancesState, 'lastFilterRequest'));
 
 export const getTotalTripInstancesCount = createSelector(getTripsState, tripInstancesState => result(tripInstancesState, 'totalTripInstancesCount'));
+
+export const isAddTripModalEnabled = createSelector(getAddTripState, state => result(state, 'isAddTripEnabled'));
+
+export const getAddTripStep = createSelector(getAddTripState, state => result(state, 'activeStep'));
+
+export const getAddTripDatagridConfig = createSelector(getAddTripState, state => result(state, 'datagridConfig'));
+
+export const getSelectedAddTrip = createSelector(getAddTripState, state => result(state, 'selectedTrip'));
+
+export const isNewTripModalOpen = createSelector(getAddTripState, state => result(state, 'isNewTripModalOpen'));
+
+export const getAddTripAction = createSelector(getAddTripState, state => result(state, 'action'));
+
+export const isNewTripDetailsFormEmpty = createSelector(getAddTripState, state => result(state, 'isNewTripDetailsFormEmpty'));

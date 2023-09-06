@@ -1,0 +1,160 @@
+@import '../../../../assets/styles/variables';
+
+.add-trip__wizard {
+    background-color: #FFF;
+}
+
+.control-routes-view {
+    .search-trips-section {
+        overflow: auto;
+        margin-top: 60px;
+        width: 100%;
+        height: calc(100vh - 145px);
+        border: 1px solid $at-light-gray;
+    }
+
+    .select-add-trip-section {
+        position: fixed;
+        top: 60px;
+        right: 0;
+        left: 0;
+        height: calc(100vh - 60px);
+
+        .add-trip__steps {
+            justify-content: flex-start;
+        }
+
+        .bg-selected-trip {
+            background-color: map-get($theme-colors, "at-yellow-tint-20");
+        }
+
+        .vh-60 {
+            height: 60vh;
+        }
+
+        & .customDataGrid {
+            .MuiDataGrid-virtualScroller {
+                overflow-x: hidden;
+            }
+
+            .MuiTablePagination-root {
+                overflow-x: hidden;
+            }
+        }
+    }
+
+    .search__clear {
+        top: 5px;
+    }
+
+    .footer-container {
+        width: 100%;
+        position: fixed;
+        background-color: #FFF;
+        bottom: 0;
+        left: 0;
+
+        .container {
+            border: 1px solid $at-light-gray;
+        }
+    }
+}
+
+.close-add-trip__modal {
+    z-index: 2;
+}
+
+.add-trip__container {
+    background-color: #FFF;
+    & .border-primary {
+        border: none !important;
+    }
+}
+
+.add-trip__steps {
+    & ol {
+        display: flex;
+        margin: 0;
+        list-style: none;
+        justify-content: flex-start;
+        padding: 0;
+
+        li {
+            --size: 32px;
+            counter-increment: step-counter;
+            display: block;
+            font-weight: lighter;
+            font-size: 14px;
+            height: var(--size);
+            line-height: var(--size);
+            position: relative;
+            padding-left: var(--size);
+            margin-right: 100px;
+
+            &:before {
+                border-radius: 50%;
+                content: counter(step-counter);
+                color: $at-dark-blue;
+                background-color: $at-light-gray;
+                height: var(--size);
+                left: -12px; //calc(-1 * var(--size) - 10px);
+                line-height: var(--size);
+                position: absolute;
+                text-align: center;
+                top: 0;
+                width: var(--size);
+            }
+
+            &.active:before {
+                background-color: $at-dark-blue;
+                color: $at-light-gray;
+                font-weight: 400;
+            }
+
+            &:not(:last-of-type):after {
+                content: '';
+                border-bottom: 1px solid $at-light-gray;
+                height: 1px;
+                width: 40px;
+                vertical-align: middle;
+                position: absolute;
+                right: -50px;
+                top: 50%;
+                bottom: 50%;
+            }
+
+            hr {
+                display: inline-block;
+                border: 1px solid $at-light-gray;
+                height: 0;
+                margin: 0 0 0 30px;
+                width: 20px;
+                vertical-align: middle;
+            }
+        }
+    }
+}
+
+.add-trip__wizard-select-details {
+    &__icon {
+        color: $at-shore;
+        right: 10px;
+        top: 40px;
+        z-index: 0;
+    }
+
+    & &__select:hover,
+    &__icon {
+        cursor: pointer;
+    }
+}
+
+button.search {
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+.toggle-button-space {
+    display: inline-block;
+    width: 32px;
+}

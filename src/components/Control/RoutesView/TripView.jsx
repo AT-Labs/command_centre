@@ -2,7 +2,7 @@ import { capitalize, find, get, filter, some, toNumber } from 'lodash-es';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { FaCheckCircle, FaRegClock, FaTimesCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaRegClock, FaTimesCircle, FaEyeSlash } from 'react-icons/fa';
 import { connect } from 'react-redux';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
 import { goToBlocksView } from '../../../redux/actions/control/link';
@@ -19,7 +19,7 @@ import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
 import VEHICLE_TYPE, { TRAIN_TYPE_ID } from '../../../types/vehicle-types';
 import { formatTripDelay } from '../../../utils/control/routes';
 import { getTripInstanceId, getTripTimeDisplay } from '../../../utils/helpers';
-import { isMoveToStopPermitted, isTripCancelPermitted, isTripCopyPermitted, isTripDelayPermitted } from '../../../utils/user-permissions';
+import { isMoveToStopPermitted, isTripCancelPermitted, isTripCopyPermitted, isTripDelayPermitted, isHideCancellationPermitted } from '../../../utils/user-permissions';
 import ButtonBar from '../Common/ButtonBar/ButtonBar';
 import ConfirmationModal from '../Common/ConfirmationModal/ConfirmationModal';
 import Message from '../Common/Message/Message';
@@ -30,6 +30,7 @@ import SetTripDelayModal from './Modals/SetTripDelayModal';
 import UpdateTripStatusModal from './Modals/UpdateTripStatusModal';
 import { AgencyType, TripInstanceType, updateTripsStatusModalOrigins, updateTripsStatusModalTypes } from './Types';
 import StopSelectionMessages from './bulkSelection/StopSelectionMessages';
+import { useHideTrip } from '../../../redux/selectors/appSettings';
 
 export class TripView extends React.Component {
     static propTypes = {
@@ -52,6 +53,7 @@ export class TripView extends React.Component {
         vehicleAllocations: PropTypes.object.isRequired,
         tripStatusModalOrigin: PropTypes.string,
         setTripStatusModalOrigin: PropTypes.func.isRequired,
+        useHideTrip: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -123,6 +125,8 @@ export class TripView extends React.Component {
         const isCancelPermitted = IS_LOGIN_NOT_REQUIRED || isTripCancelPermitted(tripInstance);
         const isCancelPossible = isNotStarted || isMissed || isInProgress;
         const isReinstatePossible = isCancelled;
+        const isHideTripPermitted = IS_LOGIN_NOT_REQUIRED || isHideCancellationPermitted(tripInstance);
+        const isHideCancellationPossible = isCancelled && !!tripInstance.display && moment(tripInstance.serviceDate).isSame(moment(), 'day');
         const isDelayEditPermitted = isBeforeTomorrow && (IS_LOGIN_NOT_REQUIRED || isTripDelayPermitted(tripInstance));
         const isDelayEditPossible = isInProgress || isNotStarted || isMissed;
         const isMoveTripToNextStopPermitted = IS_LOGIN_NOT_REQUIRED || isMoveToStopPermitted(tripInstance);
@@ -147,6 +151,18 @@ export class TripView extends React.Component {
                 action: () => {
                     this.setState({ isSetTripStatusModalOpen: true });
                     this.setState({ tripStatusModalType: updateTripsStatusModalTypes.REINSTATE_MODAL });
+                    this.props.setTripStatusModalOrigin(updateTripsStatusModalOrigins.TRIP_VIEW);
+                },
+            });
+        }
+
+        if (this.props.useHideTrip && isHideCancellationPossible && isHideTripPermitted) {
+            buttonBarConfig.push({
+                label: 'Hide cancellation',
+                icon: <FaEyeSlash />,
+                action: () => {
+                    this.setState({ isSetTripStatusModalOpen: true });
+                    this.setState({ tripStatusModalType: updateTripsStatusModalTypes.HIDE_TRIP_MODAL });
                     this.props.setTripStatusModalOrigin(updateTripsStatusModalOrigins.TRIP_VIEW);
                 },
             });
@@ -313,4 +329,5 @@ export default connect(state => ({
     isControlBlockViewPermitted: getControlBlockViewPermission(state),
     vehicleAllocations: getAllocations(state),
     tripStatusModalOrigin: getTripStatusModalOriginState(state),
+    useHideTrip: useHideTrip(state),
 }), { clearTripInstanceActionResult, updateTripInstanceDelay, goToBlocksView, copyTrip, moveTripToNextStop, setTripStatusModalOrigin })(TripView);

@@ -40,8 +40,10 @@ export const getTimePickerOptions = (hoursThreshold = 24) => {
     return options;
 };
 export const getClosestTimeValueForFilter = (time) => {
-    if (!time || !moment(time, 'HH:mm:ss', true).isValid()) return '';
-    const timeMoment = moment(time, 'HH:mm:ss', true);
+    if (!time || (!moment(time, 'HH:mm:ss', true).isValid() && !moment(time, 'HH:mm', true).isValid())) {
+        return '';
+    }
+    const timeMoment = moment(time, 'HH:mm:ss');
     const minute = timeMoment.minute();
     if (minute < 30) {
         timeMoment.set('minute', 0);

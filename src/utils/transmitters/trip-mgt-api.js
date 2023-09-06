@@ -44,6 +44,8 @@ export const getTrips = ({
     delayRange,
     firstStopCode,
     lastStopCode,
+    source,
+    display,
 }) => {
     const variables = { serviceDate };
     if (agencyId) { variables.agencyId = agencyId; }
@@ -69,6 +71,8 @@ export const getTrips = ({
     if (delayRange && delayRange.max != null) { variables.delayMax = delayRange.max * 60; }
     if (firstStopCode) { variables.firstStopCode = firstStopCode; }
     if (lastStopCode) { variables.lastStopCode = lastStopCode; }
+    if (source) { variables.source = source; }
+    if (display) { variables.display = display; }
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
     return fetchWithAuthHeader(
@@ -103,6 +107,7 @@ const tripInstanceFields = `
     status
     delay
     referenceId
+    display
     stops {
         stopId
         stopSequence
@@ -131,6 +136,30 @@ const copyTripGqlMutation = gql`
 const updateHeadsignGqlMutation = gql`
     mutation($tripId: String!, $serviceDate: Moment!, $startTime: String!, $headsign: String!, $stopCodes: [String!]!) {
         updateHeadsign(tripId: $tripId, serviceDate: $serviceDate, startTime: $startTime, headsign: $headsign, stopCodes: $stopCodes) {
+            ${tripInstanceFields}
+        }
+    }`;
+
+const addTripGqlMutation = gql`
+    mutation($tripId: String!, $serviceDate: Moment!, $startTime: String!, $routeId: String!, $routeShortName: String!, $routeType: Int!, $routeVariantId: String!, $directionId: Int!, $routeLongName: String!, $agencyId: String!, $depotId: String!, $endTime: String!, $stops: [StopInput!]!, $shapeId: String!, $tripHeadsign: String!, $referenceId: String!) {
+        addNewTrip(
+            tripId: $tripId
+            serviceDate: $serviceDate
+            startTime: $startTime
+            routeId: $routeId
+            routeShortName: $routeShortName
+            routeType: $routeType
+            routeVariantId: $routeVariantId
+            directionId: $directionId
+            routeLongName: $routeLongName
+            agencyId: $agencyId
+            depotId: $depotId
+            endTime: $endTime
+            stops: $stops
+            shapeId: $shapeId
+            tripHeadsign: $tripHeadsign
+            referenceId: $referenceId
+        ) {
             ${tripInstanceFields}
         }
     }`;
@@ -188,6 +217,25 @@ export const updateTripDelay = (options) => {
         params: 'setDelayTrip',
         authToken: getAuthToken(),
     }).then(response => result(response, 'data.setDelayTrip', {}));
+};
+
+const updateTripDisplayGqlMutation = gql`
+    mutation($tripId: String!, $serviceDate: Moment!, $startTime: String!, $display: Boolean!) {
+        updateTripDisplay( tripId: $tripId, serviceDate: $serviceDate, startTime: $startTime, display: $display) {
+            ${tripInstanceFields}
+        }
+    }`;
+
+export const updateTripDisplay = (options) => {
+    const { tripId, serviceDate, startTime, display } = options;
+
+    return mutateStatic({
+        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+        mutation: updateTripDisplayGqlMutation,
+        variables: { tripId, serviceDate, startTime, display },
+        params: 'updateTripDisplay',
+        authToken: getAuthToken(),
+    }).then(response => result(response, 'data.updateTripDisplay', {}));
 };
 
 const updateStopStatusGqlMutation = gql`
@@ -320,4 +368,65 @@ export const recurringCancellationUploadFile = (variables) => {
             body: formData,
         },
     ).then(response => jsonResponseHandling(response));
+};
+
+export const searchTrip = (params) => {
+    const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(params),
+        },
+    ).then(response => jsonResponseHandling(response));
+};
+
+export const addTrip = (options) => {
+    const {
+        tripId,
+        serviceDate,
+        startTime,
+        routeId,
+        routeShortName,
+        routeType,
+        routeVariantId,
+        directionId,
+        routeLongName,
+        agencyId,
+        depotId,
+        endTime,
+        stops,
+        shapeId,
+        tripHeadsign,
+        referenceId,
+    } = options;
+
+    return mutateStatic({
+        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+        mutation: addTripGqlMutation,
+        variables: {
+            tripId,
+            serviceDate,
+            startTime,
+            routeId,
+            routeShortName,
+            routeType,
+            routeVariantId,
+            directionId,
+            routeLongName,
+            agencyId,
+            depotId,
+            endTime,
+            stops,
+            shapeId,
+            tripHeadsign,
+            referenceId,
+        },
+        params: 'addNewTrip',
+        authToken: getAuthToken(),
+    });
 };

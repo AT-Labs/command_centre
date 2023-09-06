@@ -160,6 +160,18 @@ export default {
     UPDATE_CONTROL_TRIP_INSTANCES_DATAGRID_CONFIG: 'update-trip-instances-datagrid-config',
     UPDATE_CONTROL_TRIP_INSTANCES_LAST_FILTER: 'update-trip-instances-last-filter',
     UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT: 'update-trip-instances-total-count',
+    UPDATE_CONTROL_TRIP_INSTANCES_PERMISSIONS: 'update-control-trip-instances-permissions',
+
+    // Control: tripInstance: AddTrip
+    OPEN_ADD_TRIP_MODAL: 'open-add-trip-modal',
+    UPDATE_CONTROL_TRIP_INSTANCES_ADD_TRIP_DATAGRID_CONFIG: 'update-trip-instances-add-trip-datagrid-config',
+    UPDATE_CONTROL_TRIP_INSTANCES_SELECTED_ADD_TRIP: 'update-trip-instances-selected-add-trip',
+    UPDATE_CONTROL_TRIP_INSTANCES_RESET_ADD_TRIP_STATE: 'update-trip-instances-reset-add-trip-step',
+    SET_ADD_TRIP_MODAL_STATUS: 'set-add-trip-modal-status',
+    UPDATE_ADD_TRIP_ACTION_REQUESTING: 'update-add-trip-action-requesting',
+    UPDATE_ADD_TRIP_ACTION_RESULT: 'update-add-trip-action-result',
+    UPDATE_IS_NEW_TRIP_DETAILS_FORM_EMPTY: 'update-is-new-trip-details-form-empty',
+
     // Control: Cross Link
     UPDATE_TRIP_CROSS_LINK: 'update-trip-cross-link',
     CLEAR_TRIP_CROSS_LINK: 'clear-trip-cross-link',

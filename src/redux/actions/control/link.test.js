@@ -43,6 +43,31 @@ const mockTrips = {
         routeType: 3,
         status: 'NOT_STARTED',
     }],
+    _links: {
+        permissions: [
+            {
+                _rel: "cancel"
+            },
+            {
+                _rel: "copy"
+            },
+            {
+                _rel: "delay"
+            },
+            {
+                _rel: "view"
+            },
+            {
+                _rel: "advancer"
+            },
+            {
+                _rel: "recurrent_cancel"
+            },
+            {
+                _rel: "new"
+            }
+        ]
+    }
 };
 const mockTrip = {
     agencyId: '',
@@ -194,6 +219,34 @@ describe('Link actions', () => {
                 payload: {
                     totalTripInstancesCount: 2,
                 }
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_PERMISSIONS,
+                payload: {
+                    permissions: [
+                        {
+                            _rel: "cancel"
+                        },
+                        {
+                            _rel: "copy"
+                        },
+                        {
+                            _rel: "delay"
+                        },
+                        {
+                            _rel: "view"
+                        },
+                        {
+                            _rel: "advancer"
+                        },
+                        {
+                            _rel: "recurrent_cancel"
+                        },
+                        {
+                            _rel: "new"
+                        }
+                    ]
+                },
             },
         ];
 

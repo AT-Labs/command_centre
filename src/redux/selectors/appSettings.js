@@ -10,5 +10,7 @@ export const useRecurringCancellationsGridView = createSelector(
 export const usePassengerImpact = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'usePassengerImpact') === 'true'));
 export const useRoutesTripsDatagrid = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRoutesTripsDatagrid') === 'true'));
 export const useHeadsignUpdate = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useHeadsignUpdate') === 'true'));
+export const useAddTrip = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useAddTrip') === 'true'));
+export const useHideTrip = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useHideTrip') === 'true'));
 export const useCAFMapFilter = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useCAFMapFilter') === 'true'));
 export const useRoutesTripsFilterCollapse = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRoutesTripsFilterCollapse') === 'true'));

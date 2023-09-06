@@ -4,6 +4,8 @@
     "usePassengerImpact": "false",
     "useRoutesTripsDatagrid": "false",
     "useHeadsignUpdate": "false",
+    "useAddTrip": "false",
+    "useHideTrip": "false",
     "useRoutesTripsFilterCollapse": "false",
     "useCAFMapFilter": "false"
 }

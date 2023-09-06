@@ -9,9 +9,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { isEqual, isEmpty } from 'lodash-es';
 import moment from 'moment';
+import { Button } from 'reactstrap';
+import { Dialog, DialogContent } from '@mui/material';
 
 import { fetchRoutes } from '../../../../redux/actions/control/routes/routes';
-import { fetchTripInstances } from '../../../../redux/actions/control/routes/trip-instances';
+import { fetchTripInstances, updateEnabledAddTripModal } from '../../../../redux/actions/control/routes/trip-instances';
 import { getStops } from '../../../../redux/actions/static/stops';
 import { getControlDetailRoutesViewType, getRouteFilters } from '../../../../redux/selectors/control/routes/filters';
 import {
@@ -21,7 +23,7 @@ import {
     getRouteVariantsLoadingState, getFilteredRouteVariantsTotal, getAllRouteVariantsTotal,
 } from '../../../../redux/selectors/control/routes/routeVariants';
 import {
-    getTripInstancesLoadingState, getTripInstancesUpdatingState, getAllTripInstancesTotal, getSelectedTripsKeys,
+    getTripInstancesLoadingState, getTripInstancesUpdatingState, getAllTripInstancesTotal, getSelectedTripsKeys, isAddTripModalEnabled, isAddTripAllowed,
 } from '../../../../redux/selectors/control/routes/trip-instances';
 import { getServiceDate } from '../../../../redux/selectors/control/serviceDate';
 import { getAllStops } from '../../../../redux/selectors/static/stops';
@@ -36,6 +38,8 @@ import { RouteFiltersType } from '../Types';
 import { PageInfo, Pagination } from '../../../Common/Pagination/Pagination';
 import { LoadMore } from '../../Common/LoadMore/LoadMore';
 import SelectionToolsFooter from '../bulkSelection/TripsSelectionFooter';
+import AddTrip from '../AddTrip';
+import { useAddTrip } from '../../../../redux/selectors/appSettings';
 
 const INIT_STATE = {
     page: 1,
@@ -66,6 +70,10 @@ export class CommonView extends React.Component {
         routeVariantsTotal: PropTypes.number.isRequired,
         allRouteVariantsTotal: PropTypes.number.isRequired,
         tripsTotal: PropTypes.number.isRequired,
+        updateEnabledAddTripModal: PropTypes.func.isRequired,
+        useAddTrip: PropTypes.bool.isRequired,
+        addTripModalIsOpen: PropTypes.bool.isRequired,
+        isAddTripAllowed: PropTypes.bool.isRequired,
     };
 
     constructor(props) {
@@ -199,6 +207,16 @@ export class CommonView extends React.Component {
         return 0;
     };
 
+    showAddTripButton = () => this.props.useAddTrip
+        && this.props.isAddTripAllowed
+        && moment(this.props.serviceDate).format(SERVICE_DATE_FORMAT) === moment().format(SERVICE_DATE_FORMAT);
+
+    getAddTripActionButton = () => (
+        <div className="mr-4">
+            <Button className="cc-btn-primary" onClick={ () => this.props.updateEnabledAddTripModal(true) } aria-label="Add trip"> Add trip </Button>
+        </div>
+    );
+
     render() {
         const { isRoutesLoading, isRouteVariantsLoading, isTripsLoading, selectedTrips } = this.props;
         const shouldSelectionToolsFooterBeVisible = selectedTrips.length > 0;
@@ -207,7 +225,12 @@ export class CommonView extends React.Component {
             <>
                 <TableTitle
                     tableTitle="Routes & Trips"
-                    isServiceDatePickerDisabled={ isRoutesLoading || isRouteVariantsLoading || isTripsLoading } />
+                    isServiceDatePickerDisabled={ isRoutesLoading || isRouteVariantsLoading || isTripsLoading }
+                >
+                    <div className="d-flex align-items-center col-auto">
+                        { this.showAddTripButton() && this.getAddTripActionButton() }
+                    </div>
+                </TableTitle>
 
                 <Filters />
 
@@ -251,6 +274,13 @@ export class CommonView extends React.Component {
                     )}
                 </div>
                 { shouldSelectionToolsFooterBeVisible && <SelectionToolsFooter /> }
+                { this.props.useAddTrip && (
+                    <Dialog open={ this.props.addTripModalIsOpen } fullScreen scroll="body" style={ { zIndex: 2 } }>
+                        <DialogContent className="p-0">
+                            <AddTrip />
+                        </DialogContent>
+                    </Dialog>
+                ) }
             </>
         );
     }
@@ -273,6 +303,10 @@ export default connect(
         platforms: getAllStops(state),
         allRoutes: getAllRoutesArray(state),
         selectedTrips: getSelectedTripsKeys(state),
+        useAddTrip: useAddTrip(state),
+        addTripModalIsOpen: isAddTripModalEnabled(state),
+        isAddTripAllowed: isAddTripAllowed(state),
+
     }),
-    { fetchRoutes, fetchTripInstances, getStops },
+    { fetchRoutes, fetchTripInstances, getStops, updateEnabledAddTripModal },
 )(CommonView);

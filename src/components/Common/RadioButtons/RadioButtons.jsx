@@ -32,7 +32,7 @@ const RadioButtons = (props) => {
 
 RadioButtons.propTypes = {
     title: PropTypes.string,
-    checkedKey: PropTypes.string.isRequired,
+    checkedKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     onChange: PropTypes.func,
     itemOptions: PropTypes.array.isRequired,
     formGroupClass: PropTypes.string,

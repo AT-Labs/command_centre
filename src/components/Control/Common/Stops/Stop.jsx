@@ -33,10 +33,12 @@ export class Stop extends React.Component {
         isStopInSelectionRange: PropTypes.bool,
         lineInteractionClasses: PropTypes.string.isRequired,
         useHeadsignUpdate: PropTypes.bool.isRequired,
+        showActuals: PropTypes.bool,
     };
 
     static defaultProps = {
         isStopInSelectionRange: false,
+        showActuals: true,
     };
 
     constructor(props) {
@@ -229,7 +231,7 @@ export class Stop extends React.Component {
                 <div className="stop-control__footer text-center">
                     <div>{getTripTimeDisplay(stop.scheduledDepartureTime || stop.departureTime || stop.scheduledArrivalTime || stop.arrivalTime)}</div>
                     <div className={ isStopNotPassed ? 'text-prediction' : 'text-muted' }>
-                        { (this.props.tripInstance.status !== TRIP_STATUS_TYPES.cancelled) && actualOrPredictedStopTime }
+                        { this.props.showActuals && this.props.tripInstance.status !== TRIP_STATUS_TYPES.cancelled && actualOrPredictedStopTime }
                     </div>
                 </div>
             </div>

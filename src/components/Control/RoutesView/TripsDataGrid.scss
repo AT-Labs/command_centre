@@ -25,12 +25,33 @@ form.magnify {
     padding-bottom: 30px;
 }
 
+.selectCell {
+    right: 1vh;
+}
+
 .icon-in-progress {
     color: #E30084;
 }
 
 .icon-not-started {
     color: #DC831A;
+}
+
+.icon-blue-check {
+    fill: map-get($theme-colors, "at-shore");
+}
+
+.icon-green-check {
+    fill: map-get($theme-colors, "at-green");
+}
+
+.icon-red-check {
+    fill: map-get($theme-colors, "at-red");
+}
+
+.icon-black-invisible {
+    fill: map-get($theme-colors, "dark");
+    transform: scaleX(-1) rotate(180deg);
 }
 
 .vh-70 {

@@ -16,6 +16,7 @@ export default {
     routesFetchEnabled: false,
     routeVariantsFetch: 'Route variants data unavailable, please try again.',
     tripUpdateFailed: tripId => `Sorry, the modification of trip ${tripId} failed`,
+    addTripFailed: 'Failed to add trip',
     tripNotFound: tripId => `Sorry, we can't find the trip ${tripId}`,
     blockExisted: 'The block you are trying to add already exists',
     addBlock: 'Unable to add a new block, please try again',

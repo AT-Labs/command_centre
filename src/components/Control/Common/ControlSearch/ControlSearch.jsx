@@ -27,6 +27,7 @@ class ControlSearch extends React.Component {
         updateOnPropsValueChange: PropTypes.bool,
         shouldRenderSuggestions: PropTypes.func,
         shouldShowArrow: PropTypes.bool,
+        isOptional: PropTypes.bool,
         focusInputBackOnClickOut: PropTypes.bool,
         onClose: PropTypes.func,
         // focusInputBackOnClickOut: This prop is meant to give us the flexibility to choose
@@ -54,6 +55,7 @@ class ControlSearch extends React.Component {
         updateOnPropsValueChange: false,
         focusInputBackOnClickOut: false,
         onClose: null,
+        isOptional: false,
     };
 
     constructor(props) {
@@ -189,6 +191,8 @@ class ControlSearch extends React.Component {
                         htmlFor={ this.props.inputId }
                         className="font-size-md font-weight-bold">
                         { this.props.label }
+                        {' '}
+                        { this.props.isOptional && <small className="text-muted">optional</small> }
                     </label> // eslint-disable-line
                 )}
                 <Autosuggest

@@ -6,10 +6,12 @@ import CancelReinstateTripsModalTable from './UpdateTripStatusModalTable';
 import ConfirmationModalBody from '../../../Common/ConfirmationModal/ConfirmationModalBody';
 import RecurrentTripCancellation from './RecurrentTripCancellation';
 import { isTripReccuringUpdateAllowed } from '../../../../../redux/selectors/control/routes/trip-instances';
+import { isHideCancellationPermitted } from '../../../../../utils/user-permissions';
 
 const UpdateTripStatusModalContent = (props) => {
     const { className, confirmationMessage, errorMessage, shouldErrorAlertBeShown, selectedTrips, recurringProps } = props;
     const canEditRecurringField = isTripReccuringUpdateAllowed(selectedTrips[Object.keys(selectedTrips)[0]]);
+    const isHideTripAllowed = isHideCancellationPermitted(selectedTrips[Object.keys(selectedTrips)[0]]);
 
     return (
         <>
@@ -26,6 +28,7 @@ const UpdateTripStatusModalContent = (props) => {
                         options={ recurringProps.options }
                         onChange={ recurringProps.onChange }
                         allowUpdate={ canEditRecurringField }
+                        allowHideTrip={ isHideTripAllowed }
                     />
                 )
             }
@@ -48,7 +51,10 @@ const UpdateTripStatusModalContent = (props) => {
 UpdateTripStatusModalContent.propTypes = {
     className: PropTypes.string,
     errorMessage: PropTypes.string,
-    confirmationMessage: PropTypes.string,
+    confirmationMessage: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.array,
+    ]),
     selectedTrips: PropTypes.object.isRequired,
     shouldErrorAlertBeShown: PropTypes.bool.isRequired,
     recurringProps: PropTypes.object.isRequired,

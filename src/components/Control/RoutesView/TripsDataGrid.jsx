@@ -5,6 +5,7 @@ import { Box } from '@mui/material';
 import { getGridSingleSelectOperators, getGridStringOperators, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid-pro';
 import { lowerCase, get, words, upperFirst, map } from 'lodash-es';
 import moment from 'moment';
+import { FaCheckCircle, FaEyeSlash } from 'react-icons/fa';
 
 import TripView from './TripView';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
@@ -36,9 +37,29 @@ import { CustomSelectionHeader } from './CustomSelectionHeader';
 import { getAllStops } from '../../../redux/selectors/static/stops';
 import { StopSearchDataGridOperators } from '../Common/DataGrid/OmniSearchDataGridOperator';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
-import { useRoutesTripsFilterCollapse } from '../../../redux/selectors/appSettings';
+import { useAddTrip, useHideTrip, useRoutesTripsFilterCollapse } from '../../../redux/selectors/appSettings';
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
+
+const formatSourceColumn = (row) => {
+    const lowerCaseSource = lowerCase(row.source);
+    return lowerCaseSource === 'manual' ? <FaCheckCircle className="icon-blue-check" size={ 18 } /> : '';
+};
+
+const formatHideColumn = (row) => {
+    const display = get(row.tripInstance, 'display');
+    return display === false ? <FaCheckCircle className="icon-red-check" size={ 18 } /> : '';
+};
+
+const getTripSourceOptions = () => [
+    { value: 'manual', label: 'Yes' },
+    { value: 'gtfs', label: 'No' },
+];
+
+const getHideOptions = () => [
+    { value: 'true', label: 'No' },
+    { value: 'false', label: 'Yes' },
+];
 
 const formatStatusColumn = (row) => {
     const lowerCaseStatus = lowerCase(row.status);
@@ -94,6 +115,8 @@ export const TripsDataGrid = (props) => {
         const shouldCheckboxBeRemoved = isTripSelected && isCompleted;
         if (shouldCheckboxBeRemoved) api.selectRow(tripKey, false);
 
+        const display = get(row.tripInstance, 'display');
+
         return (
             <>
                 <input
@@ -108,6 +131,7 @@ export const TripsDataGrid = (props) => {
                     type={ row.routeType }
                     className={ iconColor }
                     subIcon={ subIcon } />
+                { props.useHideTrip && !display && <FaEyeSlash className="icon-black-invisible" size={ 18 } />}
             </>
         );
     };
@@ -115,8 +139,11 @@ export const TripsDataGrid = (props) => {
     const GRID_COLUMNS = [
         {
             ...GRID_CHECKBOX_SELECTION_COL_DEF,
+            width: 100,
+            cellClassName: 'selectCell',
+            headerAlign: 'center',
+            align: 'left',
             type: 'string',
-            width: 80,
             renderHeader: () => (
                 <CustomSelectionHeader
                     serviceDate={ props.serviceDate }
@@ -132,6 +159,17 @@ export const TripsDataGrid = (props) => {
             type: 'string',
             filterable: false,
         },
+        ...props.useAddTrip ? [{
+            field: 'source',
+            headerName: 'New',
+            width: 100,
+            type: 'singleSelect',
+            valueOptions: getTripSourceOptions(),
+            filterOperators: getGridSingleSelectOperators(true).filter(
+                operator => operator.value === 'is',
+            ),
+            renderCell: params => formatSourceColumn(params.row),
+        }] : [],
         {
             field: 'vehicleLabel',
             headerName: 'Vehicle Label',
@@ -188,6 +226,17 @@ export const TripsDataGrid = (props) => {
             type: 'string',
             filterOperators: isAnyOfStringOperators,
         },
+        ...props.useHideTrip ? [{
+            field: 'display',
+            headerName: 'Hidden',
+            width: 100,
+            type: 'singleSelect',
+            valueOptions: getHideOptions(),
+            filterOperators: getGridSingleSelectOperators(true).filter(
+                operator => operator.value === 'is',
+            ),
+            renderCell: params => formatHideColumn(params.row),
+        }] : [],
         {
             field: 'blockId',
             headerName: 'Block',
@@ -297,6 +346,8 @@ export const TripsDataGrid = (props) => {
         routeLongName: tripInstance.routeLongName,
         referenceId: tripInstance.referenceId,
         tripId: tripInstance.tripId,
+        ...(props.useHideTrip && { display: tripInstance.display }),
+        ...(props.useAddTrip && { source: tripInstance.source }),
         tripInstance,
     }));
 
@@ -375,6 +426,8 @@ TripsDataGrid.propTypes = {
     activeTripInstance: PropTypes.array,
     allStops: PropTypes.object.isRequired,
     vehicleAllocations: PropTypes.object.isRequired,
+    useAddTrip: PropTypes.bool.isRequired,
+    useHideTrip: PropTypes.bool.isRequired,
     gridClassNames: PropTypes.string,
     useRoutesTripsFilterCollapse: PropTypes.bool.isRequired,
 };
@@ -398,6 +451,8 @@ export default connect(
         activeTripInstance: getActiveTripInstance(state),
         allStops: getAllStops(state),
         vehicleAllocations: getAllocations(state),
+        useAddTrip: useAddTrip(state),
+        useHideTrip: useHideTrip(state),
         useRoutesTripsFilterCollapse: useRoutesTripsFilterCollapse(state),
     }),
     {

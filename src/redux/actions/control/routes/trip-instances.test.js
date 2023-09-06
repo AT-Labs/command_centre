@@ -8,6 +8,7 @@ import MockDate from 'mockdate';
 import {
     fetchTripInstances, clearActiveTripInstanceId, updateActiveTripInstanceId, collectTripsDataAndUpdateTripsStatus,
     updateTripInstanceStatus, updateTripInstanceStopStatus, updateTripInstanceStopPlatform, updateTripInstanceDelay, filterTripInstances, updateDestination,
+    updateEnabledAddTripModal, updateCurrentStepHandler, updateAddTripDatagridConfig, updateSelectedAddTrip, resetAddTripStep
 } from './trip-instances';
 import * as tripMgtApi from '../../../../utils/transmitters/trip-mgt-api';
 import * as blockMgtApi from '../../../../utils/transmitters/block-mgt-api';
@@ -39,6 +40,31 @@ const mockTrips = {
         routeType: 3,
         status: 'NOT_STARTED',
     }],
+    _links: {
+        permissions: [
+            {
+                _rel: "cancel"
+            },
+            {
+                _rel: "copy"
+            },
+            {
+                _rel: "delay"
+            },
+            {
+                _rel: "view"
+            },
+            {
+                _rel: "advancer"
+            },
+            {
+                _rel: "recurrent_cancel"
+            },
+            {
+                _rel: "new"
+            }
+        ]
+    }
 };
 
 const mockStoreTrips = {
@@ -129,6 +155,34 @@ describe('Trip instances actions', () => {
                     totalTripInstancesCount: 2,
                 },
             },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_PERMISSIONS,
+                payload: {
+                    permissions: [
+                        {
+                            _rel: "cancel"
+                        },
+                        {
+                            _rel: "copy"
+                        },
+                        {
+                            _rel: "delay"
+                        },
+                        {
+                            _rel: "view"
+                        },
+                        {
+                            _rel: "advancer"
+                        },
+                        {
+                            _rel: "recurrent_cancel"
+                        },
+                        {
+                            _rel: "new"
+                        }
+                    ]
+                },
+            },
         ];
 
         const storeWithFilter = mockStore({
@@ -178,6 +232,34 @@ describe('Trip instances actions', () => {
                 type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT,
                 payload: {
                     totalTripInstancesCount: 2,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_PERMISSIONS,
+                payload: {
+                    permissions: [
+                        {
+                            _rel: "cancel"
+                        },
+                        {
+                            _rel: "copy"
+                        },
+                        {
+                            _rel: "delay"
+                        },
+                        {
+                            _rel: "view"
+                        },
+                        {
+                            _rel: "advancer"
+                        },
+                        {
+                            _rel: "recurrent_cancel"
+                        },
+                        {
+                            _rel: "new"
+                        }
+                    ]
                 },
             },
         ];
@@ -234,6 +316,34 @@ describe('Trip instances actions', () => {
                 type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT,
                 payload: {
                     totalTripInstancesCount: 2,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_PERMISSIONS,
+                payload: {
+                    permissions: [
+                        {
+                            _rel: "cancel"
+                        },
+                        {
+                            _rel: "copy"
+                        },
+                        {
+                            _rel: "delay"
+                        },
+                        {
+                            _rel: "view"
+                        },
+                        {
+                            _rel: "advancer"
+                        },
+                        {
+                            _rel: "recurrent_cancel"
+                        },
+                        {
+                            _rel: "new"
+                        }
+                    ]
                 },
             },
             {
@@ -546,6 +656,7 @@ describe('Trip instances actions', () => {
                         trackingStatuses: ["STOPPED"],
                         tripId: ["1327-86502-75600-2-96e917d1"],
                         tripIds: ["1327-86502-75600-2-96e917d1"],
+                        source: "manual",
                         page: 1,
                         limit: 15,
                         sorting: {
@@ -566,6 +677,34 @@ describe('Trip instances actions', () => {
                 type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT,
                 payload: {
                     totalTripInstancesCount: 2,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_PERMISSIONS,
+                payload: {
+                    permissions: [
+                        {
+                            _rel: "cancel"
+                        },
+                        {
+                            _rel: "copy"
+                        },
+                        {
+                            _rel: "delay"
+                        },
+                        {
+                            _rel: "view"
+                        },
+                        {
+                            _rel: "advancer"
+                        },
+                        {
+                            _rel: "recurrent_cancel"
+                        },
+                        {
+                            _rel: "new"
+                        }
+                    ]
                 },
             },
         ];
@@ -619,6 +758,11 @@ describe('Trip instances actions', () => {
                                 operatorValue: "isAnyOf",
                                 id: 37471,
                                 value: ["STOPPED"]
+                            },{
+                                columnField: "source",
+                                operatorValue: "is",
+                                id: 54423,
+                                value: "manual"
                             }],
                             linkOperator: 'and' },
                             pinnedColumns: { right: ['__detail_panel_toggle__'] },
@@ -677,6 +821,34 @@ describe('Trip instances actions', () => {
                 type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT,
                 payload: {
                     totalTripInstancesCount: 2,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_PERMISSIONS,
+                payload: {
+                    permissions: [
+                        {
+                            _rel: "cancel"
+                        },
+                        {
+                            _rel: "copy"
+                        },
+                        {
+                            _rel: "delay"
+                        },
+                        {
+                            _rel: "view"
+                        },
+                        {
+                            _rel: "advancer"
+                        },
+                        {
+                            _rel: "recurrent_cancel"
+                        },
+                        {
+                            _rel: "new"
+                        }
+                    ]
                 },
             },
         ];
@@ -758,6 +930,34 @@ describe('Trip instances actions', () => {
                     totalTripInstancesCount: 2,
                 },
             },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_PERMISSIONS,
+                payload: {
+                    permissions: [
+                        {
+                            _rel: "cancel"
+                        },
+                        {
+                            _rel: "copy"
+                        },
+                        {
+                            _rel: "delay"
+                        },
+                        {
+                            _rel: "view"
+                        },
+                        {
+                            _rel: "advancer"
+                        },
+                        {
+                            _rel: "recurrent_cancel"
+                        },
+                        {
+                            _rel: "new"
+                        }
+                    ]
+                },
+            },
         ];
 
         const storeWithFilter = mockStore({
@@ -823,4 +1023,67 @@ describe('Trip instances actions', () => {
         await store.dispatch(updateDestination(options, "successMessage", trip));
         expect(store.getActions()).to.eql(expectedActions);
     });
+
+    it('toggle on add trip model', async () => {
+        await store.dispatch(updateEnabledAddTripModal(true));
+        expect(store.getActions()).to.eql(
+            [
+                { type: 'open-add-trip-modal', payload: { isAddTripEnabled: true } }
+            ]
+        );
+    })
+
+    it('toggle off add trip model', async () => {
+        await store.dispatch(updateEnabledAddTripModal(false));
+        expect(store.getActions()).to.eql(
+            [
+                { type: 'open-add-trip-modal', payload: { isAddTripEnabled: false } }
+            ]
+        );
+    })
+
+    it('update add trip step', async () => {
+        await store.dispatch(updateCurrentStepHandler(1));
+        expect(store.getActions()).to.eql(
+            [
+                { type: 'update-current-step', payload: { activeStep: 1 } }
+            ]
+        );
+    })
+
+    it('update add trip datagrid config', async () => {
+        const fakeConfigData =  {
+            columns: [],
+            page: 0,
+            pageSize: 15,
+            density: 'standard',
+            routeSelection: '',
+            pinnedColumns: { right: ['actions'] },
+        };
+
+        await store.dispatch(updateAddTripDatagridConfig(fakeConfigData));
+        expect(store.getActions()).to.eql(
+            [
+                { type: 'update-trip-instances-add-trip-datagrid-config', payload: fakeConfigData }
+            ]
+        );
+    })
+
+    it('update selected trip', async () => {
+        await store.dispatch(updateSelectedAddTrip(mockTrip));
+        expect(store.getActions()).to.eql(
+            [
+                { type: 'update-trip-instances-selected-add-trip', payload: { selectedTrip: mockTrip } }
+            ]
+        );
+    })
+
+    it('reset add trip step', async () => {
+        await store.dispatch(resetAddTripStep());
+        expect(store.getActions()).to.eql(
+            [
+                { type: 'update-trip-instances-reset-add-trip-step' }
+            ]
+        );
+    })
 });

@@ -33,7 +33,8 @@ const SearchFilter = (props) => {
                 onClearCallBack={ props.onClearCallBack }
                 isDisabled={ props.isDisabled }
                 isValid={ props.isValid }
-                onInputValueChange={ handleInputValueChange } />
+                onInputValueChange={ handleInputValueChange }
+                inputId={ props.inputId } />
         </div>
     );
 };
@@ -42,6 +43,7 @@ SearchFilter.propTypes = {
     selectionHandlers: PropTypes.object.isRequired,
     clearHandlers: PropTypes.object.isRequired,
     value: PropTypes.string,
+    inputId: PropTypes.string,
     placeholder: PropTypes.string,
     searchInCategory: PropTypes.array.isRequired,
     onClearCallBack: PropTypes.func.isRequired,
@@ -55,6 +57,7 @@ SearchFilter.propTypes = {
 SearchFilter.defaultProps = {
     placeholder: '',
     value: '',
+    inputId: '',
     isDisabled: false,
     isValid: true,
     inputRef: {},

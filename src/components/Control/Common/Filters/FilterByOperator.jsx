@@ -22,6 +22,7 @@ class FilterByOperator extends React.Component {
         placeholder: PropTypes.string,
         customData: PropTypes.array,
         isDisabled: PropTypes.bool,
+        isOptional: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -31,6 +32,7 @@ class FilterByOperator extends React.Component {
         placeholder: 'Select operator',
         customData: null,
         isDisabled: false,
+        isOptional: false,
     };
 
     componentDidMount() { if (isEmpty(this.props.agencies)) this.props.retrieveAgencies(); }
@@ -55,6 +57,7 @@ class FilterByOperator extends React.Component {
                 onInputValueChange={ this.onInputValueChange }
                 value={ this.getSelectedOption().label || '' }
                 disabled={ this.props.isDisabled }
+                isOptional={ this.props.isOptional }
                 updateOnPropsValueChange />
         );
     }

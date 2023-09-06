@@ -7,4 +7,16 @@
         top: 40px;
         z-index: 0;
     }
+
+    &__checkbox {
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            position: relative;
+        }
+
+        span {
+            vertical-align: text-bottom;
+        }
+    }
 }

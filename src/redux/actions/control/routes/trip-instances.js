@@ -27,6 +27,7 @@ import { DATE_FORMAT_DDMMYYYY } from '../../../../utils/dateUtils';
 import { StopStatus } from '../../../../components/Control/RoutesView/Types';
 import { getFilteredRouteVariants, getActiveRouteVariant } from '../../../selectors/control/routes/routeVariants';
 import { getAllRoutesArray, getActiveRoute } from '../../../selectors/control/routes/routes';
+import { ACTION_RESULT } from '../../../../types/add-trip-types';
 
 const loadTripInstances = (tripInstances, timestamp) => ({
     type: ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES,
@@ -40,6 +41,13 @@ const totalTripInstancesCount = count => ({
     type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT,
     payload: {
         totalTripInstancesCount: count,
+    },
+});
+
+const updateTripInstancesPermissions = permissions => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_PERMISSIONS,
+    payload: {
+        permissions,
     },
 });
 
@@ -119,12 +127,13 @@ export const fetchTripInstances = (variables, { isUpdate }) => (dispatch, getSta
     const timestamp = moment().valueOf();
 
     TRIP_MGT_API.getTrips(variables)
-        .then(async ({ tripInstances, totalCount }) => {
+        .then(async ({ tripInstances, totalCount, _links: { permissions } }) => {
             if (filters.routeType === TRAIN_TYPE_ID) {
                 await assignBlockIdToTrips(tripInstances, serviceDate);
             }
             dispatch(loadTripInstances(tripInstances, timestamp));
             dispatch(totalTripInstancesCount(totalCount));
+            dispatch(updateTripInstancesPermissions(permissions));
             if (linkStartTime) {
                 const activeTrip = find(tripInstances, { startTime: linkStartTime });
                 dispatch(updateActiveTripInstanceId(activeTrip && getTripInstanceId(activeTrip)));
@@ -240,11 +249,16 @@ const handleTripInstanceCreated = (action, dispatch, data) => {
         .finally(() => dispatch(setTripInstanceActionLoading(tripInstanceId, false)));
 };
 
-export const updateTripInstanceStatus = (options, successMessage, actionType, errorMessage) => (dispatch, getState) => handleTripInstanceUpdate(
+export const updateTripInstanceStatus = (options, successMessage, actionType, errorMessage) => dispatch => handleTripInstanceUpdate(
     () => TRIP_MGT_API.recurringUpdateTripStatus(options),
     { ...options, successMessage, actionType, errorMessage },
     dispatch,
-    getState,
+);
+
+export const updateTripInstanceDisplay = (options, successMessage, actionType, errorMessage) => dispatch => handleTripInstanceUpdate(
+    () => TRIP_MGT_API.updateTripDisplay(options),
+    { ...options, successMessage, actionType, errorMessage },
+    dispatch,
 );
 
 export const updateTripInstanceDelay = (options, successMessage) => (dispatch) => {
@@ -311,8 +325,16 @@ export const fetchAndUpdateSelectedTrips = selectedTripInstances => (dispatch, g
         .catch(() => ErrorType.tripsFetch && dispatch(setBannerError(ErrorType.tripsFetch)));
 };
 
+const bulkTripInstanceActions = (operateTrips, action, selectedTrips) => async (dispatch) => {
+    const tripUpdateCalls = map(operateTrips, trip => dispatch(action(trip)));
+    await Promise.all(tripUpdateCalls);
+    if (values(selectedTrips).length > 0) {
+        await dispatch(fetchAndUpdateSelectedTrips(selectedTrips));
+    }
+};
+
 export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, successMessage, errorMessage, recurrenceSetting, selectedTrips) => async (dispatch) => {
-    const tripUpdateCalls = map(operateTrips, trip => dispatch(updateTripInstanceStatus(
+    const action = trip => updateTripInstanceStatus(
         {
             tripStatus,
             tripId: trip.tripId,
@@ -324,17 +346,30 @@ export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, s
             cancelTo: recurrenceSetting.endDate ? moment(recurrenceSetting.endDate, DATE_FORMAT_DDMMYYYY) : undefined,
             dayPattern: JSON.stringify(recurrenceSetting.selectedWeekdays),
             isRecurringOperation: recurrenceSetting.isRecurringOperation,
+            display: recurrenceSetting.display,
             agencyId: trip.agencyId,
             routeShortName: trip.routeShortName,
         },
         successMessage,
         MESSAGE_ACTION_TYPES.bulkStatusUpdate,
         errorMessage,
-    )));
-    await Promise.all(tripUpdateCalls);
-    if (values(selectedTrips).length > 0) {
-        await dispatch(fetchAndUpdateSelectedTrips(selectedTrips));
-    }
+    );
+    await dispatch(bulkTripInstanceActions(operateTrips, action, selectedTrips));
+};
+
+export const bulkUpdateTripsDisplay = (operateTrips, successMessage, errorMessage, selectedTrips) => async (dispatch) => {
+    const action = trip => updateTripInstanceDisplay(
+        {
+            display: false,
+            tripId: trip.tripId,
+            startTime: trip.startTime,
+            serviceDate: trip.serviceDate,
+        },
+        successMessage,
+        MESSAGE_ACTION_TYPES.bulkStatusUpdate,
+        errorMessage,
+    );
+    await dispatch(bulkTripInstanceActions(operateTrips, action, selectedTrips));
 };
 
 export const removeBulkUpdateMessages = type => (dispatch, getState) => {
@@ -557,3 +592,102 @@ export const updateTripsDatagridConfig = dataGridConfig => (dispatch) => {
     });
     dispatch(filterTripInstances());
 };
+
+export const updateEnabledAddTripModal = isAddTripEnabled => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.OPEN_ADD_TRIP_MODAL,
+        payload: {
+            isAddTripEnabled,
+        },
+    });
+};
+
+export const updateCurrentStepHandler = activeStep => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.UPDATE_CURRENT_STEP,
+        payload: {
+            activeStep,
+        },
+    });
+};
+
+export const updateAddTripDatagridConfig = dataGridConfig => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_ADD_TRIP_DATAGRID_CONFIG,
+        payload: dataGridConfig,
+    });
+};
+
+export const updateSelectedAddTrip = selectedTrip => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_SELECTED_ADD_TRIP,
+        payload: {
+            selectedTrip,
+        },
+    });
+};
+
+export const resetAddTripStep = () => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_RESET_ADD_TRIP_STATE,
+    });
+};
+
+export const clearAddTripActionResult = () => ({
+    type: ACTION_TYPE.UPDATE_ADD_TRIP_ACTION_RESULT,
+    payload: {
+        result: null,
+        resultStatus: null,
+        resultMessage: null,
+    },
+});
+
+export const updateRequestingAddTripActionResult = isRequesting => ({
+    type: ACTION_TYPE.UPDATE_ADD_TRIP_ACTION_REQUESTING,
+    payload: {
+        isRequesting,
+    },
+});
+
+export const updateAddTripActionResult = (result, { resultStatus, resultMessage }) => ({
+    type: ACTION_TYPE.UPDATE_ADD_TRIP_ACTION_RESULT,
+    payload: {
+        result,
+        resultStatus,
+        resultMessage,
+    },
+});
+
+const handleAddTrip = (action, dispatch) => {
+    dispatch(updateRequestingAddTripActionResult(true));
+    action()
+        .then((response) => {
+            dispatch(updateAddTripActionResult(response.data.addNewTrip, ACTION_RESULT.SUCCESS()));
+        })
+        .catch(() => {
+            dispatch(updateAddTripActionResult(null, ACTION_RESULT.ERROR()));
+        })
+        .finally(() => dispatch(updateRequestingAddTripActionResult(false)));
+};
+
+export const addTrip = options => (dispatch) => {
+    handleAddTrip(
+        () => TRIP_MGT_API.addTrip(options),
+        dispatch,
+    );
+};
+
+export const toggleAddTripModals = (type, isOpen) => ({
+    type: ACTION_TYPE.SET_ADD_TRIP_MODAL_STATUS,
+    payload: {
+        type,
+        isOpen,
+    },
+});
+
+export const updateIsNewTripDetailsFormEmpty = isNewTripDetailsFormEmpty => ({
+    type: ACTION_TYPE.UPDATE_IS_NEW_TRIP_DETAILS_FORM_EMPTY,
+    payload: {
+        isNewTripDetailsFormEmpty,
+    },
+});
