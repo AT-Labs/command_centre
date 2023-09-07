@@ -2,6 +2,7 @@
 // import logger from 'redux-logger';
 import { applyMiddleware, combineReducers, compose, createStore } from 'redux';
 import thunk from 'redux-thunk';
+import * as Sentry from '@sentry/react';
 import activity from './reducers/activity';
 import blocks from './reducers/control/blocks';
 import link from './reducers/control/link';
@@ -38,6 +39,8 @@ import analytics from './reducers/analytics/analytics';
 import dataManagement from './reducers/control/dataManagement';
 import appSettings from './reducers/appSettings';
 import notifications from './reducers/control/notifications';
+
+const sentryReduxEnhancer = Sentry.createReduxEnhancer();
 
 const middleware = [thunk];
 let composeEnhancers = compose;
@@ -102,5 +105,6 @@ export default createStore(
     {},
     composeEnhancers(
         applyMiddleware(...middleware),
+        sentryReduxEnhancer,
     ),
 );

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import { AuthenticationContext, adalFetch } from 'react-adal';
 
 export const IS_LOGIN_NOT_REQUIRED = process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN === 'true';
@@ -27,9 +28,16 @@ export const fetchWithAuthHeader = (url, options) => {
 
 export const getAuthUser = () => {
     if (IS_LOGIN_NOT_REQUIRED) { return { profile: { name: 'Guest User' } }; }
-    return authContext.getCachedUser();
+    const userInfo = authContext.getCachedUser();
+    Sentry.setUser({
+        username: userInfo.userName,
+    });
+    return userInfo;
 };
 
 export const getAuthToken = () => authContext.getCachedToken(AD_CLIENT_ID);
 
-export const logout = () => authContext.logOut();
+export const logout = () => {
+    authContext.logOut();
+    Sentry.setUser(null);
+};
