@@ -141,3 +141,9 @@ export const isDelayBetweenRange = (delay, range) => {
 export const getNumbersSequence = (from, to) => [...Array(to).keys()].map(i => i + from);
 export const formatRealtimeDetailListItemKey = (entityType, entityId) => (`${entityType}-${entityId}`);
 export const idFromString = string => string.replace(/[^a-zA-Z0-9]/g, '');
+export const convertTimeToMinutes = (time) => {
+    const [hoursStr, minutesStr] = time.split(':');
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    return hours * 60 + minutes;
+};

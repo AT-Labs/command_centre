@@ -17,6 +17,7 @@ import CustomDataGrid from '../../../../Common/CustomDataGrid/CustomDataGrid';
 import RenderCellExpand from '../../../Alerts/RenderCellExpand/RenderCellExpand';
 import Message from '../../../Common/Message/Message';
 import vehicleTypes from '../../../../../types/vehicle-types';
+import { getTripTimeDisplay } from '../../../../../utils/helpers';
 
 import { searchTrip } from '../../../../../utils/transmitters/trip-mgt-api';
 import { getAddTripDatagridConfig, getSelectedAddTrip, isNewTripDetailsFormEmpty } from '../../../../../redux/selectors/control/routes/trip-instances';
@@ -91,8 +92,8 @@ export const SelectAndAddTrip = (props) => {
             tripId: tripInstance.tripId,
             routeVariant: tripInstance.routeVariantId,
             routeVariantName: tripInstance.routeLongName,
-            startTime: tripInstance.startTime,
-            endTime: tripInstance.endTime,
+            startTime: getTripTimeDisplay(tripInstance.startTime),
+            endTime: getTripTimeDisplay(tripInstance.endTime),
             tripInstance,
         }
     );

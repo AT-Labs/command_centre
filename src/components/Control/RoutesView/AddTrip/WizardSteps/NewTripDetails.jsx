@@ -10,6 +10,8 @@ import VEHICLE_TYPES, { TRAIN_TYPE_ID } from '../../../../../types/vehicle-types
 import Stops from '../../../Common/Stops/Stops';
 import { TripInstanceType } from '../../Types';
 import { SERVICE_DATE_FORMAT } from '../../../../../utils/control/routes';
+import { TIME_PATTERN } from '../../../../../constants/time';
+import { getTripTimeDisplay, convertTimeToMinutes } from '../../../../../utils/helpers';
 
 import './NewTripDetails.scss';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
@@ -36,11 +38,7 @@ export const NewTripDetails = (props) => {
         props.updateIsNewTripDetailsFormEmpty(true);
     }, [props.tripInstance]);
 
-    const getDelayInMinutes = (originalStartTime, newStartTime) => {
-        const startMoment = moment(originalStartTime, 'HH:mm:ss');
-        const newStartMoment = moment(newStartTime, 'HH:mm:ss');
-        return newStartMoment.diff(startMoment, 'minutes');
-    };
+    const getDelayInMinutes = (originalStartTime, newStartTime) => convertTimeToMinutes(newStartTime) - convertTimeToMinutes(originalStartTime);
 
     const addMinutesToTime = (timeString, minutesToAdd) => {
         const [hours, minutes, seconds] = timeString.split(':');
@@ -56,7 +54,9 @@ export const NewTripDetails = (props) => {
 
     const isReferenceIdRequired = () => props.tripInstance.routeType === TRAIN_TYPE_ID;
 
-    const isStartTimeValid = start => start.match('^(([0-3][0-9])|40):[0-5][0-9]:[0-5][0-9]$') && getDelayInMinutes(moment().format('HH:mm:ss'), start) >= 10;
+    const isStartTimeValid = start => (TIME_PATTERN.test(start)
+     && convertTimeToMinutes(start) <= convertTimeToMinutes('28:00'))
+     && getDelayInMinutes(moment().format('HH:mm'), start) >= 10;
 
     const isReferenceIdValid = refId => !!refId.trim();
 
@@ -161,7 +161,7 @@ export const NewTripDetails = (props) => {
                                 <Input
                                     id="add-trip-new-trip-details__start-time"
                                     className="add-trip-new-trip-details__start-time"
-                                    placeholder={ props.tripInstance.startTime }
+                                    placeholder={ getTripTimeDisplay(props.tripInstance.startTime) }
                                     value={ startTime }
                                     onChange={ handleStartTimeChange }
                                     invalid={ isStartTimeInvalid }
@@ -171,7 +171,7 @@ export const NewTripDetails = (props) => {
                                 <Label for="add-trip-new-trip-details__end-time">
                                     <span className="font-size-md font-weight-bold pr-2">End time:</span>
                                 </Label>
-                                <div id="add-trip-new-trip-details__end-time">{ endTime }</div>
+                                <div id="add-trip-new-trip-details__end-time">{ endTime ? getTripTimeDisplay(endTime) : '' }</div>
                             </FormGroup>
                         </div>
                         <div className="row">

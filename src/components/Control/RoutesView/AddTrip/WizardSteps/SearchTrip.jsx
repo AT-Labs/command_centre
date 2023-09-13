@@ -14,8 +14,10 @@ import FilterByOperator from '../../../Common/Filters/FilterByOperator';
 
 import { updateEnabledAddTripModal } from '../../../../../redux/actions/control/routes/trip-instances';
 import { DATE_FORMAT } from '../../../../../constants/disruptions';
-import { getDatePickerOptions, TIME_FORMAT_HHMM } from '../../../../../utils/dateUtils';
+import { TIME_PATTERN } from '../../../../../constants/time';
+import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { modeRadioOptions, directionRadioOptions } from '../../Types';
+import { convertTimeToMinutes } from '../../../../../utils/helpers';
 
 export const SearchTrip = (props) => {
     const { route, serviceDateFrom, startTimeFrom, startTimeTo } = props.data;
@@ -65,11 +67,14 @@ export const SearchTrip = (props) => {
 
     const serviceDateToPickerOptions = getDatePickerOptions(serviceDateFrom);
 
-    const isStartTimeFromValid = () => startTimeFrom && !moment(startTimeFrom, TIME_FORMAT_HHMM).isValid();
+    const isStartTimeFromValid = () => (TIME_PATTERN.test(startTimeFrom) && convertTimeToMinutes(startTimeFrom) <= convertTimeToMinutes('28:00')) || startTimeFrom === '';
 
-    const isStartTimeToValid = () => (startTimeTo
-        && (!moment(startTimeFrom, TIME_FORMAT_HHMM).isValid()
-        || !moment(startTimeFrom, TIME_FORMAT_HHMM).isSameOrBefore(moment(startTimeTo, TIME_FORMAT_HHMM))));
+    const isStartTimeToValid = () => {
+        if (startTimeFrom !== '' && TIME_PATTERN.test(startTimeFrom)) {
+            return startTimeTo === '' || (TIME_PATTERN.test(startTimeTo) && convertTimeToMinutes(startTimeTo) >= convertTimeToMinutes(startTimeFrom));
+        }
+        return TIME_PATTERN.test(startTimeTo) || startTimeTo === '';
+    };
 
     return (
         <div className="p-3 search-trips-section">
@@ -167,7 +172,7 @@ export const SearchTrip = (props) => {
                             className="border border-dark"
                             value={ props.data.startTimeFrom }
                             onChange={ event => props.onDataUpdate('startTimeFrom', event.target.value) }
-                            invalid={ isStartTimeFromValid() }
+                            invalid={ !isStartTimeFromValid() }
                         />
                         <FormFeedback>Not valid value</FormFeedback>
                     </FormGroup>
@@ -182,7 +187,7 @@ export const SearchTrip = (props) => {
                             className="border border-dark"
                             value={ props.data.startTimeTo }
                             onChange={ event => props.onDataUpdate('startTimeTo', event.target.value) }
-                            invalid={ isStartTimeToValid() }
+                            invalid={ !isStartTimeToValid() }
                         />
                         <FormFeedback>Not valid value</FormFeedback>
                     </FormGroup>
