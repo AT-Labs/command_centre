@@ -54,15 +54,11 @@ export const SearchTrip = (props) => {
     );
 
     const onChangeServiceDateFrom = (date) => {
-        if (date.length !== 0) {
-            props.onDataUpdate('serviceDateFrom', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
-        }
+        props.onDataUpdate('serviceDateFrom', (date.length !== 0) ? moment(date[0]).format(DATE_FORMAT) : '');
     };
 
     const onChangeServiceDateTo = (date) => {
-        if (date.length !== 0) {
-            props.onDataUpdate('serviceDateTo', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
-        }
+        props.onDataUpdate('serviceDateTo', (date.length !== 0) ? moment(date[0]).format(DATE_FORMAT) : '');
     };
 
     const serviceDateToPickerOptions = getDatePickerOptions(serviceDateFrom);
