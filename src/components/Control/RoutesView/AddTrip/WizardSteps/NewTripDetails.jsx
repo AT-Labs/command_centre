@@ -24,10 +24,15 @@ export const NewTripDetails = (props) => {
     const [isActionDisabled, setIsActionDisabled] = useState(true);
     const [isStartTimeInvalid, setIsStartTimeInvalid] = useState(false);
     const [referenceId, setReferenceId] = useState('');
+    const [isFormEmpty, setIsFormEmpty] = useState(true);
 
     useEffect(() => {
-        props.updateIsNewTripDetailsFormEmpty(startTime === '' && referenceId === '');
+        setIsFormEmpty(startTime === '' && referenceId === '');
     }, [startTime, referenceId]);
+
+    useEffect(() => {
+        props.updateIsNewTripDetailsFormEmpty(isFormEmpty);
+    }, [isFormEmpty]);
 
     useEffect(() => {
         setStartTime('');
@@ -64,11 +69,8 @@ export const NewTripDetails = (props) => {
 
     const handleStartTimeChange = (event) => {
         const { value } = event.target;
-
-        const delayInMinutes = getDelayInMinutes(props.tripInstance.startTime, value);
-
         const isNewStartTimeInvalid = !isStartTimeValid(value);
-        const newEndTime = isNewStartTimeInvalid ? '' : addMinutesToTime(props.tripInstance.endTime, delayInMinutes);
+        const newEndTime = isNewStartTimeInvalid ? '' : addMinutesToTime(props.tripInstance.endTime, getDelayInMinutes(props.tripInstance.startTime, value));
 
         setStartTime(value);
         setEndTime(newEndTime);
