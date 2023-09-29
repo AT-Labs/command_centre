@@ -108,7 +108,7 @@ export const NewTripDetails = (props) => {
     const newTrip = {
         ...props.tripInstance,
         serviceDate: moment(props.serviceDate).format(SERVICE_DATE_FORMAT),
-        startTime,
+        startTime: startTime ? `${startTime}:00` : '', // We only accept HH:mm for startTime input on add trip screen. We need to make sure we also send seconds to backend.
         endTime,
         stops: getUpdatedStopTimes(props.tripInstance, startTime),
         referenceId,
