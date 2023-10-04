@@ -11,6 +11,8 @@ import {
     openCreateDisruption, deleteAffectedEntities, updateDisruptionsDatagridConfig } from '../../../../../redux/actions/control/disruptions';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
 import { getDisruptionsDatagridConfig } from '../../../../../redux/selectors/control/disruptions';
+import { goToNotificationsView } from '../../../../../redux/actions/control/link';
+import { useDisruptionsNotificationsDirectLink } from '../../../../../redux/selectors/appSettings';
 
 const Confirmation = (props) => {
     const { isRequesting, resultDisruptionId, resultMessage, resultCreateNotification } = props.response;
@@ -44,6 +46,13 @@ const Confirmation = (props) => {
             );
     };
 
+    const getDisruptionDetailsButtonLabel = () => {
+        if (props.useDisruptionsNotificationsDirectLink) {
+            return 'View disruption details';
+        }
+        return 'View and add more information';
+    };
+
     return (
         <div className="disruption-creation__wizard-confirmation">
             <div className="row">
@@ -53,21 +62,21 @@ const Confirmation = (props) => {
             </div>
             { !isRequesting && (
                 <footer className="row justify-content-between mt-3">
-                    <div className="col-4">
+                    <div className={ props.useDisruptionsNotificationsDirectLink && resultDisruptionId ? 'col-12 mb-4' : 'col-4' }>
                         {
                             resultDisruptionId && (
                                 <Button
-                                    className="btn cc-btn-secondary"
+                                    className="btn cc-btn-primary btn-block"
                                     onClick={ () => {
                                         props.openCreateDisruption(false);
                                         props.deleteAffectedEntities();
                                     } }>
-                                    View all
+                                    { props.useDisruptionsNotificationsDirectLink ? 'View all disruptions' : 'View all' }
                                 </Button>
                             )
                         }
                     </div>
-                    <div className="col-8">
+                    <div className={ props.useDisruptionsNotificationsDirectLink && resultDisruptionId ? 'col-6' : 'col-8' }>
                         <Button
                             className="btn cc-btn-primary btn-block"
                             onClick={ () => {
@@ -78,9 +87,27 @@ const Confirmation = (props) => {
                                     setTimeout(() => props.updateActiveDisruptionId(resultDisruptionId), 0);
                                 }
                             } }>
-                            { resultDisruptionId ? 'View and add more information' : 'Close' }
+                            { resultDisruptionId ? getDisruptionDetailsButtonLabel() : 'Close' }
                         </Button>
                     </div>
+                    { props.useDisruptionsNotificationsDirectLink && resultDisruptionId && (
+                        <div className="col-6">
+                            <Button
+                                className="btn cc-btn-primary btn-block"
+                                onClick={ () => {
+                                    props.openCreateDisruption(false);
+                                    props.deleteAffectedEntities();
+                                    props.goToNotificationsView({
+                                        version: props.response.resultDisruptionVersion,
+                                        disruptionId: props.response.resultDisruptionId,
+                                        source: 'DISR',
+                                        new: true,
+                                    });
+                                } }>
+                                View notification details
+                            </Button>
+                        </div>
+                    ) }
                 </footer>
             )}
         </div>
@@ -96,6 +123,8 @@ Confirmation.propTypes = {
     deleteAffectedEntities: PropTypes.func.isRequired,
     datagridConfig: PropTypes.object.isRequired,
     updateDisruptionsDatagridConfig: PropTypes.func.isRequired,
+    goToNotificationsView: PropTypes.func.isRequired,
+    useDisruptionsNotificationsDirectLink: PropTypes.bool.isRequired,
 };
 
 Confirmation.defaultProps = {
@@ -106,6 +135,7 @@ export default connect(
     state => ({
         isModalOpen: isModalOpen(state),
         datagridConfig: getDisruptionsDatagridConfig(state),
+        useDisruptionsNotificationsDirectLink: useDisruptionsNotificationsDirectLink(state),
     }),
     {
         clearDisruptionActionResult,
@@ -113,5 +143,6 @@ export default connect(
         openCreateDisruption,
         deleteAffectedEntities,
         updateDisruptionsDatagridConfig,
+        goToNotificationsView,
     },
 )(Confirmation);

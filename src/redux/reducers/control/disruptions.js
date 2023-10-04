@@ -52,7 +52,7 @@ export const INIT_STATE = {
         density: 'standard',
         routeSelection: '',
         filterModel: { items: [], linkOperator: 'and' },
-        pinnedColumns: { right: ['__detail_panel_toggle__'] },
+        pinnedColumns: { right: ['__go_to_notification__', '__detail_panel_toggle__'] },
     },
 };
 
@@ -72,7 +72,7 @@ const handleDisruptionActionRequestingUpdate = (state, { payload: { isRequesting
         resultDisruptionId,
     },
 });
-const handleDisruptionActionResultUpdate = (state, { payload: { resultDisruptionId, resultMessage, resultStatus, resultCreateNotification } }) => ({
+const handleDisruptionActionResultUpdate = (state, { payload: { resultDisruptionId, resultMessage, resultStatus, resultCreateNotification, resultDisruptionVersion } }) => ({
     ...state,
     action: {
         ...state.action,
@@ -80,6 +80,7 @@ const handleDisruptionActionResultUpdate = (state, { payload: { resultDisruption
         resultStatus,
         resultDisruptionId,
         resultCreateNotification,
+        resultDisruptionVersion,
     },
 });
 

@@ -7,5 +7,6 @@
     "useAddTrip": "false",
     "useHideTrip": "false",
     "useRoutesTripsFilterCollapse": "false",
-    "useCAFMapFilter": "false"
+    "useCAFMapFilter": "false",
+    "useDisruptionsNotificationsDirectLink": "false"
 }

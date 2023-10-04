@@ -65,13 +65,17 @@ const updateRequestingDisruptionState = (isRequesting, resultDisruptionId) => ({
     },
 });
 
-export const updateRequestingDisruptionResult = (resultDisruptionId, { resultStatus, resultMessage, resultCreateNotification }) => ({
+export const updateRequestingDisruptionResult = (
+    resultDisruptionId,
+    { resultStatus, resultMessage, resultCreateNotification, resultDisruptionVersion },
+) => ({
     type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
     payload: {
         resultDisruptionId,
         resultStatus,
         resultMessage,
         resultCreateNotification,
+        resultDisruptionVersion,
     },
 });
 
@@ -175,6 +179,7 @@ export const clearDisruptionActionResult = () => ({
         disruptionId: null,
         resultStatus: null,
         resultMessage: null,
+        resultDisruptionVersion: null,
     },
 });
 
@@ -197,11 +202,20 @@ export const createDisruption = disruption => async (dispatch, getState) => {
     dispatch(updateRequestingDisruptionState(true));
     try {
         response = await disruptionsMgtApi.createDisruption(disruption);
-
         if (myEditMode === EDIT_TYPE.COPY) {
-            dispatch(updateRequestingDisruptionResult(response.disruptionId, ACTION_RESULT.COPY_SUCCESS(response.incidentNo, response.createNotification, sourceIncidentNo)));
+            dispatch(
+                updateRequestingDisruptionResult(
+                    response.disruptionId,
+                    ACTION_RESULT.COPY_SUCCESS(response.incidentNo, response.version, response.createNotification, sourceIncidentNo),
+                ),
+            );
         } else {
-            dispatch(updateRequestingDisruptionResult(response.disruptionId, ACTION_RESULT.CREATE_SUCCESS(response.incidentNo, response.createNotification)));
+            dispatch(
+                updateRequestingDisruptionResult(
+                    response.disruptionId,
+                    ACTION_RESULT.CREATE_SUCCESS(response.incidentNo, response.version, response.createNotification),
+                ),
+            );
         }
     } catch (error) {
         dispatch(updateRequestingDisruptionResult(null, ACTION_RESULT.CREATE_ERROR(error.code)));

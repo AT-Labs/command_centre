@@ -14,3 +14,7 @@ export const useAddTrip = createSelector(getAppSettingsState, appSettingState =>
 export const useHideTrip = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useHideTrip') === 'true'));
 export const useCAFMapFilter = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useCAFMapFilter') === 'true'));
 export const useRoutesTripsFilterCollapse = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRoutesTripsFilterCollapse') === 'true'));
+export const useDisruptionsNotificationsDirectLink = createSelector(
+    getAppSettingsState,
+    appSettingState => (result(appSettingState, 'useDisruptionsNotificationsDirectLink') === 'true'),
+);

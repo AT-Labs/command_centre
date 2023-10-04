@@ -33,3 +33,8 @@ export const getShouldShowSearchBox = createSelector(
     getActiveRealTimeDetailView,
     activeRealTimeDetailView => [VIEW_TYPE.REAL_TIME_DETAIL.LIST, VIEW_TYPE.REAL_TIME_DETAIL.DEFAULT, VIEW_TYPE.REAL_TIME_DETAIL.ROUTE].includes(activeRealTimeDetailView),
 );
+
+export const getQueryParams = createSelector(
+    getNavigationState,
+    navigationState => result(navigationState, 'queryParams'),
+);

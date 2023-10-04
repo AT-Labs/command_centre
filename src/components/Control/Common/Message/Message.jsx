@@ -17,6 +17,7 @@ export default class Message extends React.Component {
             tripId: PropTypes.string,
         }),
         onClose: PropTypes.func,
+        zIndex: PropTypes.number,
     };
 
     static defaultProps = {
@@ -25,6 +26,7 @@ export default class Message extends React.Component {
         isDismissible: true,
         timeout: 3150,
         onClose: () => {},
+        zIndex: null,
     };
 
     constructor(props) {
@@ -66,7 +68,8 @@ export default class Message extends React.Component {
                 color={ this.props.message.type || CONFIRMATION_MESSAGE_TYPE }
                 isOpen={ this.state.isVisible }
                 toggle={ this.props.isDismissible ? this.handleDismiss : null }
-                transition={ transitionOptions }>
+                transition={ transitionOptions }
+                style={ this.props.zIndex ? { zIndex: this.props.zIndex } : {} }>
                 { this.props.message.body }
             </Alert>
         );

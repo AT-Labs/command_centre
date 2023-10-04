@@ -1,6 +1,6 @@
 import ACTION_TYPE from '../../action-types';
 import VIEW_TYPE from '../../../types/view-types';
-import { updateControlDetailView, updateMainView } from '../navigation';
+import { updateControlDetailView, updateMainView, updateQueryParams } from '../navigation';
 import { mergeRouteFilters } from './routes/filters';
 import { setActiveRoute } from './routes/routes';
 import { setActiveRouteVariant } from './routes/routeVariants';
@@ -55,6 +55,14 @@ export const goToBlocksView = trip => (dispatch) => {
         },
     });
     dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.BLOCKS));
+};
+
+export const goToNotificationsView = queryParams => (dispatch) => {
+    if (queryParams) {
+        dispatch(updateQueryParams(queryParams));
+    }
+    dispatch(updateMainView(VIEW_TYPE.MAIN.CONTROL));
+    dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS));
 };
 
 export const goToDisruptionsView = (message, { setActiveDisruption }) => (dispatch) => {

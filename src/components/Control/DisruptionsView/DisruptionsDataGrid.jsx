@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { FaPaperclip } from 'react-icons/fa';
 import { RiMailCheckLine } from 'react-icons/ri';
-import { BsArrowRepeat, BsAlarm } from 'react-icons/bs';
+import { BsArrowRepeat, BsAlarm, BsFillChatTextFill } from 'react-icons/bs';
 import moment from 'moment';
 import { GoAlert } from 'react-icons/go';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
-import { Box } from '@mui/material';
+import { Box, IconButton, Tooltip } from '@mui/material';
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
 import DisruptionDetail from './DisruptionDetail';
 import {
@@ -28,7 +28,8 @@ import './DisruptionsDataGrid.scss';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
 import { getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops, getPassengerCountRange } from '../../../utils/control/disruptions';
 import { getWorkaroundsAsText } from '../../../utils/control/disruption-workarounds';
-import { usePassengerImpact } from '../../../redux/selectors/appSettings';
+import { usePassengerImpact, useDisruptionsNotificationsDirectLink } from '../../../redux/selectors/appSettings';
+import { goToNotificationsView } from '../../../redux/actions/control/link';
 
 const getDisruptionLabel = (disruption) => {
     const { uploadedFiles, incidentNo, createNotification, recurrent } = disruption;
@@ -54,6 +55,20 @@ const getStatusIcon = (value) => {
         return <BsAlarm className="icon-not-started mr-1" />;
     }
     return <HiOutlineCheckCircle className="mr-1" />;
+};
+
+const getViewNotificationButton = (row, source, callback = () => {}) => {
+    const { disruptionId, version } = row;
+    return (
+        <Tooltip title="View notification" placement="top-end">
+            <IconButton aria-label="view-notification"
+                onClick={ () => {
+                    callback({ disruptionId, version, source });
+                } }>
+                <BsFillChatTextFill />
+            </IconButton>
+        </Tooltip>
+    );
 };
 
 export const DisruptionsDataGrid = (props) => {
@@ -198,6 +213,17 @@ export const DisruptionsDataGrid = (props) => {
         },
     ];
 
+    if (props.useDisruptionsNotificationsDirectLink) {
+        GRID_COLUMNS.push(
+            {
+                field: '__go_to_notification__',
+                headerName: '',
+                width: 55,
+                renderCell: params => getViewNotificationButton(params.row, 'DISR', props.goToNotificationsView),
+            },
+        );
+    }
+
     if (props.usePassengerImpact) {
         GRID_COLUMNS.push(
             {
@@ -254,6 +280,8 @@ DisruptionsDataGrid.propTypes = {
     updateActiveDisruptionId: PropTypes.func.isRequired,
     updateCopyDisruptionState: PropTypes.func.isRequired,
     usePassengerImpact: PropTypes.bool.isRequired,
+    goToNotificationsView: PropTypes.func.isRequired,
+    useDisruptionsNotificationsDirectLink: PropTypes.bool.isRequired,
 };
 
 DisruptionsDataGrid.defaultProps = {
@@ -266,8 +294,9 @@ export default connect(
         datagridConfig: getDisruptionsDatagridConfig(state),
         activeDisruptionId: getActiveDisruptionId(state),
         usePassengerImpact: usePassengerImpact(state),
+        useDisruptionsNotificationsDirectLink: useDisruptionsNotificationsDirectLink(state),
     }),
     {
-        updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState,
+        updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState, goToNotificationsView,
     },
 )(DisruptionsDataGrid);

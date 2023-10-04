@@ -8,6 +8,7 @@ export const INIT_STATE = {
     activeSecondaryPanelView: '',
     activeControlDetailView: '',
     isSidePanelOpen: true,
+    queryParams: null,
 };
 
 const handleUpdateMainView = (state, { payload: { activeMainView } }) => ({ ...state, activeMainView });
@@ -16,6 +17,7 @@ const handleResetRealTimeSidePanel = state => ({ ...state, isSidePanelOpen: true
 const handleUpdateSecondaryPanelView = (state, { payload: { activeSecondaryPanelView } }) => ({ ...state, activeSecondaryPanelView });
 const handleUpdateRealTimeDetailView = (state, { payload: { activeRealTimeDetailView } }) => ({ ...state, activeRealTimeDetailView });
 const handleUpdateControlDetailView = (state, { payload: { activeControlDetailView } }) => ({ ...state, activeControlDetailView });
+const handleUpdateQueryParams = (state, { payload: { queryParams } }) => ({ ...state, queryParams });
 
 export default handleActions({
     [ACTION_TYPE.UPDATE_MAIN_VIEW]: handleUpdateMainView,
@@ -24,4 +26,5 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_SECONDARY_PANEL_VIEW]: handleUpdateSecondaryPanelView,
     [ACTION_TYPE.DISPLAY_REAL_TIME_DETAIL]: handleUpdateRealTimeDetailView,
     [ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW]: handleUpdateControlDetailView,
+    [ACTION_TYPE.UPDATE_QUERY_PARAMS]: handleUpdateQueryParams,
 }, INIT_STATE);

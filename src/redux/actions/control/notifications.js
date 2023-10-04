@@ -226,3 +226,11 @@ export const saveAndPublishNotification = (notification, title = null, descripti
         dispatch(publishNotification(notification));
     }
 };
+
+export const updateSelectedNotification = selectedNotification => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.UPDATE_CONTROL_NOTIFICATION_SELECTED,
+        payload: { selectedNotification },
+    });
+    dispatch(filterNotifications());
+};

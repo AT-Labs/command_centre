@@ -29,6 +29,7 @@ export const INIT_STATE = {
         resultMessage: null,
         resultAction: null,
     },
+    selectedNotification: null,
 };
 
 const handleNotificationsUpdate = (state, { payload: { notifications } }) => ({ ...state, notifications });
@@ -61,6 +62,8 @@ const handleNotificationActionResultUpdate = (state, { payload: { resultNotifica
     },
 });
 
+const handleUpdateSelectedNotification = (state, { payload: { selectedNotification } }) => ({ ...state, selectedNotification });
+
 export default handleActions({
     [ACTION_TYPE.FETCH_CONTROL_NOTIFICATIONS]: handleNotificationsUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_NOTIFICATIONS_DATAGRID_CONFIG]: handleDatagridConfig,
@@ -69,4 +72,5 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_NOTIFICATIONS_PERMISSIONS]: handleUpdateNotificationsPermissions,
     [ACTION_TYPE.UPDATE_CONTROL_NOTIFICATION_ACTION_REQUESTING]: handleNotificationActionRequestingUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_NOTIFICATION_ACTION_RESULT]: handleNotificationActionResultUpdate,
+    [ACTION_TYPE.UPDATE_CONTROL_NOTIFICATION_SELECTED]: handleUpdateSelectedNotification,
 }, INIT_STATE);

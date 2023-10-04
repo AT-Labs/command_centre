@@ -22,15 +22,17 @@ export const ACTION_RESULT = {
         resultStatus: ACTION_RESULT_TYPES.ERROR,
         resultMessage: ERROR_TYPE.disruptionUpdate(incidentNo),
     }),
-    CREATE_SUCCESS: (incidentNo, createNotification = false) => ({
+    CREATE_SUCCESS: (incidentNo, version, createNotification = false) => ({
         resultStatus: ACTION_RESULT_TYPES.SUCCESS,
         resultMessage: `Disruption number #${incidentNo} created successfully.`,
         resultCreateNotification: createNotification,
+        resultDisruptionVersion: version,
     }),
-    COPY_SUCCESS: (incidentNo, createNotification, sourceDisruptionID = false) => ({
+    COPY_SUCCESS: (incidentNo, version, createNotification, sourceDisruptionID = false) => ({
         resultStatus: ACTION_RESULT_TYPES.SUCCESS,
         resultMessage: `Disruption #${incidentNo} copied from #${sourceDisruptionID}`,
         resultCreateNotification: createNotification,
+        resultDisruptionVersion: version,
     }),
     CREATE_ERROR: () => ({
         resultStatus: ACTION_RESULT_TYPES.ERROR,

@@ -36,3 +36,10 @@ export const updateSecondaryPanelView = activeSecondaryPanelView => ({
         activeSecondaryPanelView,
     },
 });
+
+export const updateQueryParams = queryParams => ({
+    type: ACTION_TYPE.UPDATE_QUERY_PARAMS,
+    payload: {
+        queryParams,
+    },
+});

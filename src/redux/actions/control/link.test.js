@@ -340,6 +340,7 @@ describe('Link actions', () => {
                     disruptionId: null,
                     resultStatus: null,
                     resultMessage: null,
+                    resultDisruptionVersion: null,
                 },
             },
         ];

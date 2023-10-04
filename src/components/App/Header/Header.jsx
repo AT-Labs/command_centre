@@ -12,7 +12,7 @@ import atLogo from '../../../assets/img/at_logo.png';
 import { IS_LOGIN_NOT_REQUIRED, logout } from '../../../auth';
 import { updateControlDetailView, updateMainView, updateSecondaryPanelView } from '../../../redux/actions/navigation';
 import { isAlertsEmpty } from '../../../redux/selectors/control/alerts';
-import { getActiveControlDetailView, getActiveMainView, getActiveSecondaryPanelView } from '../../../redux/selectors/navigation';
+import { getActiveControlDetailView, getActiveMainView, getActiveSecondaryPanelView, getQueryParams } from '../../../redux/selectors/navigation';
 import { getStopMessagesPermissions } from '../../../redux/selectors/control/stopMessaging/stopMessages';
 import { getStopMessagesAndPermissions } from '../../../redux/actions/control/stopMessaging';
 import { isGlobalEditStopMessagesPermitted } from '../../../utils/user-permissions';
@@ -24,6 +24,8 @@ import Icon from '../../Common/Icon/Icon';
 import { HelpInformationModal } from '../HelpInformationModal/HelpInformationModal';
 import { resetRealtimeToDefault } from '../../../redux/actions/realtime/common';
 import { useRecurringCancellationsGridView } from '../../../redux/selectors/appSettings';
+import { goToNotificationsView } from '../../../redux/actions/control/link';
+
 import './Header.scss';
 
 function Header(props) {
@@ -78,7 +80,8 @@ function Header(props) {
     }, []);
 
     useEffect(() => {
-        const locationToPush = `/${props.activeView}/${props.controlActiveView}`;
+        const stringQueryParams = props.controlActiveView === VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS && props.queryParams ? `?${new URLSearchParams(props.queryParams).toString()}` : '';
+        const locationToPush = `/${props.activeView}/${props.controlActiveView}${stringQueryParams}`;
         if (locationToPush !== location.pathname
             && [
                 VIEW_TYPE.CONTROL_DETAIL.BLOCKS,
@@ -235,8 +238,7 @@ function Header(props) {
                                 tabIndex="0"
                                 ariaLabel="Notifications button"
                                 onClick={ () => {
-                                    props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
-                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS);
+                                    props.goToNotificationsView();
                                 } }>
                                 NOTIFICATIONS
                             </CustomButton>
@@ -416,11 +418,14 @@ Header.propTypes = {
     }).isRequired,
     resetRealtimeToDefault: PropTypes.func.isRequired,
     useRecurringCancellationsGridView: PropTypes.bool.isRequired,
+    queryParams: PropTypes.object,
+    goToNotificationsView: PropTypes.func.isRequired,
 };
 
 Header.defaultProps = {
     hasAlerts: false,
     controlActiveView: '',
+    queryParams: null,
 };
 
 export default connect(
@@ -433,6 +438,7 @@ export default connect(
         hasAlerts: isAlertsEmpty(state),
         stopMessagesPermissions: getStopMessagesPermissions(state),
         useRecurringCancellationsGridView: useRecurringCancellationsGridView(state),
+        queryParams: getQueryParams(state),
     }),
     {
         resetRealtimeToDefault,
@@ -440,5 +446,6 @@ export default connect(
         updateControlDetailView,
         updateSecondaryPanelView,
         getStopMessagesAndPermissions,
+        goToNotificationsView,
     },
 )(Header);

@@ -25,6 +25,7 @@ export default {
         DISRUPTIONS: 'control-disruptions',
         TRIP_REPLAYS: 'control-trip-replay',
         DATA_MANAGEMENT: 'control-data-management',
+        STOP_MESSAGES: 'control-messages',
         NOTIFICATIONS: 'control-notifications',
     },
     CONTROL_DETAIL_ROUTES: {

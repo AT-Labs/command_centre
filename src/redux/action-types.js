@@ -78,6 +78,7 @@ export default {
     TOGGLE_RT_SIDE_PANEL: 'toggle-rt-side-panel',
     RESET_RT_SIDE_PANEL: 'reset-rt-side-panel',
     UPDATE_SECONDARY_PANEL_VIEW: 'update-secondary-panel-view',
+    UPDATE_QUERY_PARAMS: 'update-query-params',
     // Blocks
     FETCH_CONTROL_BLOCKS: 'fetch-control-blocks',
     FETCH_CONTROL_VEHICLE_ALLOCATIONS: 'fetch-control-vehicle-allocations',
@@ -270,4 +271,5 @@ export default {
     UPDATE_CONTROL_NOTIFICATIONS_PERMISSIONS: 'update-control-notifications-permissions',
     UPDATE_CONTROL_NOTIFICATION_ACTION_REQUESTING: 'update-control-notification-action-requesting',
     UPDATE_CONTROL_NOTIFICATION_ACTION_RESULT: 'update-control-notification-action-result',
+    UPDATE_CONTROL_NOTIFICATION_SELECTED: 'update-control-notification-selected',
 };

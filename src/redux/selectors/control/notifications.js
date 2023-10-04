@@ -11,3 +11,4 @@ export const getLastFilterRequest = createSelector(getNotificationsState, notifi
 export const getNotificationAction = createSelector(getNotificationsState, ({ action }) => action);
 
 export const isNotificationUpdateAllowed = notification => !!find(result(notification, '_links.permissions'), { _rel: USER_PERMISSIONS.NOTIFICATIONS.EDIT_NOTIFICATION });
+export const getSelectedNotification = createSelector(getNotificationsState, notificationsState => result(notificationsState, 'selectedNotification'));

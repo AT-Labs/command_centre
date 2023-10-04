@@ -97,6 +97,7 @@ describe('Disruptions actions', () => {
             resultStatus: 202,
             resultMessage: 'Sample message',
             resultCreateNotification: true,
+            resultDisruptionVersion: 3,
         };
 
         const expectedActions = [

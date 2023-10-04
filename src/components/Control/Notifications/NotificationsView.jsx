@@ -3,10 +3,13 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import moment from 'moment-timezone';
 import { GoCheck } from 'react-icons/go';
+import { Button } from '@mui/material';
 import { getGridDateOperators, getGridNumericOperators, getGridStringOperators } from '@mui/x-data-grid-pro';
+import { useLocation } from 'react-router-dom';
+import { uniqueId } from 'lodash-es';
 import DATE_TYPE from '../../../types/date-types';
-import { getAllNotifications, getNotificationsDatagridConfig, getNotificationsFilterCount } from '../../../redux/selectors/control/notifications';
-import { updateNotificationsDatagridConfig, filterNotifications } from '../../../redux/actions/control/notifications';
+import { getAllNotifications, getNotificationsDatagridConfig, getNotificationsFilterCount, getSelectedNotification } from '../../../redux/selectors/control/notifications';
+import { updateNotificationsDatagridConfig, filterNotifications, updateSelectedNotification } from '../../../redux/actions/control/notifications';
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
 import NotificationsDetailView from './NotificationsDetailView';
 import { transformIncidentNo } from '../../../utils/control/disruptions';
@@ -17,22 +20,49 @@ import { getStopGroups } from '../../../redux/actions/control/dataManagement';
 import { OLD_CAUSES, CAUSES, DEFAULT_CAUSE } from '../../../types/disruption-cause-and-effect';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
 import { flatInformedEntities } from '../../../utils/control/notifications';
+import { updateQueryParams } from '../../../redux/actions/navigation';
+import Message from '../Common/Message/Message';
+import { goToDisruptionsView } from '../../../redux/actions/control/link';
+import { ALERT_MESSAGE_TYPE } from '../../../types/message-types';
+import { useDisruptionsNotificationsDirectLink } from '../../../redux/selectors/appSettings';
+import Loader from '../../Common/Loader/Loader';
 
 import './NotificationsView.scss';
 
 export const NotificationsView = (props) => {
     const loadingTimerRef = useRef(null);
+    const location = useLocation();
+    const query = new URLSearchParams(location.search);
     const NOTIFICATIONS_POLLING_INTERVAL = 10000;
     const isActiveNoti = notification => notification.condition === 'published' && notification.status === 'in-progress';
     const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
+    const disruptionId = query.get('disruptionId');
+    const version = query.get('version');
+    const source = query.get('source');
+    const isNew = query.get('new') === 'true';
+
+    const isQueryParamsValid = disruptionId && version && source;
 
     const GRID_COLUMNS = [
         {
             field: 'sourceId',
             headerName: '#DISRUPTION',
             flex: 1,
-            valueGetter: params => transformIncidentNo(params.row?.source?.identifier),
             filterOperators: sourceIdDataGridOperator,
+            ...(props.useDisruptionsNotificationsDirectLink ? {
+                renderCell: ({ row: { source: { identifier: incidentId } } }) => (
+                    <Button
+                        aria-label="go-to-disruptions"
+                        variant="text"
+                        onClick={ () => {
+                            props.goToDisruptionsView({ incidentId }, { setActiveDisruption: true });
+                        } }>
+                        {transformIncidentNo(incidentId)}
+                    </Button>
+                ),
+            } : {
+                valueGetter: ({ row: { source: { identifier: incidentId } } }) => transformIncidentNo(incidentId),
+            }),
         },
         {
             field: 'sourceVersion',
@@ -148,8 +178,43 @@ export const NotificationsView = (props) => {
             if (loadingTimerRef.current) {
                 clearTimeout(loadingTimerRef.current);
             }
+            if (props.useDisruptionsNotificationsDirectLink) {
+                props.updateQueryParams(null);
+                props.updateSelectedNotification(null);
+                props.updateNotificationsDatagridConfig({
+                    ...props.datagridConfig,
+                    filterModel: {
+                        ...props.datagridConfig.filterModel,
+                        items: [],
+                    },
+                });
+            }
         };
     }, []);
+
+    useEffect(() => {
+        if (isQueryParamsValid) {
+            props.updateNotificationsDatagridConfig({
+                ...props.datagridConfig,
+                filterModel: {
+                    ...props.datagridConfig.filterModel,
+                    items: [
+                        { id: uniqueId(), columnField: 'sourceId', operatorValue: '==', value: { id: disruptionId, source: 'DISR' } },
+                        { id: uniqueId(), columnField: 'sourceType', operatorValue: '==', value: source },
+                    ],
+                },
+            });
+        }
+    }, [disruptionId, version, source]);
+
+    useEffect(() => {
+        if (isQueryParamsValid) {
+            const notification = props.notifications.find(n => n.source.identifier === Number(disruptionId) && n.source.version === Number(version));
+            if (notification) {
+                props.updateSelectedNotification(notification);
+            }
+        }
+    }, [props.notifications]);
 
     const getDetailPanelContent = React.useCallback(
         ({ row }) => <NotificationsDetailView notification={ row } />,
@@ -158,11 +223,36 @@ export const NotificationsView = (props) => {
 
     const setOverwrittenClassName = params => (params.row.status === NOTIFICATION_STATUS.overwritten ? 'row-overwritten' : '');
 
+    const updateActiveNotification = (ids) => {
+        const notification = ids.length > 0 ? props.notifications.find(({ notificationContentId }) => notificationContentId === ids[0]) : null;
+        props.updateSelectedNotification(notification);
+    };
+
     return (
         <div className="control-notifications-view">
             <div className="mb-3">
                 <h1>Notifications - Service Alerts</h1>
             </div>
+            { props.useDisruptionsNotificationsDirectLink && isQueryParamsValid && isNew && !props.selectedNotification && (
+                <>
+                    <div className="row mb-3">
+                        <div className="col-md-6 offset-md-3">
+                            <Message
+                                autoDismiss={ false }
+                                isDismissible={ false }
+                                zIndex={ 1000 }
+                                message={ {
+                                    id: uniqueId(),
+                                    type: ALERT_MESSAGE_TYPE,
+                                    body: `Notification for Disruption ${transformIncidentNo(disruptionId)} version ${version} is being created...`,
+                                } } />
+                        </div>
+                    </div>
+                    <div className="notification-page-overlay">
+                        <Loader className="position-fixed" />
+                    </div>
+                </>
+            ) }
             <CustomDataGrid
                 columns={ GRID_COLUMNS }
                 datagridConfig={ props.datagridConfig }
@@ -171,9 +261,12 @@ export const NotificationsView = (props) => {
                 getDetailPanelContent={ getDetailPanelContent }
                 getRowId={ row => row.notificationContentId }
                 rowCount={ props.rowCount }
-                serverSideData
                 getRowClassName={ setOverwrittenClassName }
                 detailPanelHeight={ 470 }
+                expandedDetailPanels={ props.selectedNotification ? [props.selectedNotification.notificationContentId] : null }
+                loading={ isQueryParamsValid && !isNew && props.notifications.length === 0 && !props.selectedNotification }
+                onRowExpanded={ ids => updateActiveNotification(ids) }
+                serverSideData
             />
         </div>
     );
@@ -186,9 +279,15 @@ NotificationsView.propTypes = {
     notifications: PropTypes.array.isRequired,
     rowCount: PropTypes.number.isRequired,
     getStopGroups: PropTypes.func.isRequired,
+    updateQueryParams: PropTypes.func.isRequired,
+    updateSelectedNotification: PropTypes.func.isRequired,
+    selectedNotification: PropTypes.object,
+    goToDisruptionsView: PropTypes.func.isRequired,
+    useDisruptionsNotificationsDirectLink: PropTypes.bool.isRequired,
 };
 
 NotificationsView.defaultProps = {
+    selectedNotification: null,
 };
 
 export default connect(
@@ -196,10 +295,15 @@ export default connect(
         notifications: getAllNotifications(state),
         datagridConfig: getNotificationsDatagridConfig(state),
         rowCount: getNotificationsFilterCount(state),
+        selectedNotification: getSelectedNotification(state),
+        useDisruptionsNotificationsDirectLink: useDisruptionsNotificationsDirectLink(state),
     }),
     {
         updateNotificationsDatagridConfig,
         filterNotifications,
         getStopGroups,
+        updateQueryParams,
+        updateSelectedNotification,
+        goToDisruptionsView,
     },
 )(NotificationsView);
