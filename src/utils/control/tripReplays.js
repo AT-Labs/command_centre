@@ -17,6 +17,8 @@ export const isCopyTrip = ({ operationalEvents }) => (
     !!find(operationalEvents, { type: TRIP_UPDATE_TYPE.COPY_TRIP })
 );
 
+export const isTripAdded = ({ isAdded }) => isAdded;
+
 export const getCanceledEvent = (operationalEvents) => {
     if (!operationalEvents) return undefined;
     let result;

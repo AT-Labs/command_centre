@@ -19,3 +19,8 @@ export const TIME_TYPE = {
     Scheduled: 'scheduledTime',
     Actual: 'actualTime',
 };
+
+export const TRIP_DETAIL_ICON_TYPE = {
+    ADDED: 'ADDED',
+    DISRUPTION: 'DISRUPTION',
+};

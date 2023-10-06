@@ -1,0 +1,34 @@
+@import '../../../assets/styles/variables';
+
+.trip-detail-icon {
+    &__tooltip {
+        .tooltip-inner {
+            border-color: #B8BCC3;
+            border-style: solid;
+            border-width: thin;
+            color: $at-dark-blue;
+            background: $white;
+            font-size: $font-size-sm;
+            text-align: left;
+        }
+
+        &.tooltip.show {
+            opacity: 1;
+        }
+
+        &.bs-tooltip-top .arrow:before {
+            border-top-color: #B8BCC3;
+        }
+
+        &.bs-tooltip-top .arrow:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            border-width: .4rem .4rem 0;
+            transform: translateY(-1px);
+            border-color: transparent;
+            border-style: solid;
+            border-top-color: $white;
+        }
+    }
+}

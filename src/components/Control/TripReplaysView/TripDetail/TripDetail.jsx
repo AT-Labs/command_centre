@@ -17,13 +17,14 @@ import { getSearchResults } from '../../../../redux/selectors/search';
 import KeyEventList from './KeyEventList';
 import { formatTime, formatUnixTime } from '../../../../utils/helpers';
 import TripUpdateTag from '../../Common/Trip/TripUpdateTag';
-import { TRIP_UPDATE_TYPE } from '../../../../constants/tripReplays';
-import { isTripMissed, isCopyTrip, tripHasDisruption } from '../../../../utils/control/tripReplays';
+import { TRIP_DETAIL_ICON_TYPE, TRIP_UPDATE_TYPE } from '../../../../constants/tripReplays';
+import { isTripMissed, isCopyTrip, tripHasDisruption, isTripAdded } from '../../../../utils/control/tripReplays';
 import { updateControlDetailView, updateMainView } from '../../../../redux/actions/navigation';
 import VIEW_TYPE from '../../../../types/view-types';
 import { updateDisruptionFilters } from '../../../../redux/actions/control/disruptions';
 import Icon from '../../../Common/Icon/Icon';
 import './TripDetail.scss';
+import { TripDetailIcon } from '../TripDetailIcon';
 
 const renderDate = date => (date && moment(date).format('dddd, DD MMMM YYYY'));
 
@@ -117,7 +118,15 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
     return (
         <section className="flex-grow-1 overflow-y-auto">
             <div className="pl-3 pr-3 pb-3 border-bottom">
-                <h3>{`${routeShortName}: ${tripHeadsign}`}</h3>
+                <h3>
+                    { isTripAdded(summary) && (
+                        <TripDetailIcon
+                            className="mr-1"
+                            type={ TRIP_DETAIL_ICON_TYPE.ADDED }
+                            size={ 20 } />
+                    ) }
+                    {`${routeShortName}: ${tripHeadsign}`}
+                </h3>
                 { isTripMissed(summary) && <TripUpdateTag type={ TRIP_UPDATE_TYPE.MISSED } /> }
                 <p className="font-size-sm font-weight-light mt-0 mb-0">
                     { renderDate(tripStart) }
