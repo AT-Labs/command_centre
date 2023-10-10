@@ -4,19 +4,23 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { Form, FormGroup, Input, Label, Button } from 'reactstrap';
 
-import { addTrip, toggleAddTripModals, updateIsNewTripDetailsFormEmpty } from '../../../../../redux/actions/control/routes/trip-instances';
+import { isEmpty } from 'lodash-es';
+import { addTrip, deselectAllStopsByTrip, toggleAddTripModals, updateIsNewTripDetailsFormEmpty } from '../../../../../redux/actions/control/routes/trip-instances';
 import { getServiceDate } from '../../../../../redux/selectors/control/serviceDate';
 import VEHICLE_TYPES, { TRAIN_TYPE_ID } from '../../../../../types/vehicle-types';
 import Stops from '../../../Common/Stops/Stops';
-import { TripInstanceType } from '../../Types';
+import { TripInstanceType, updateStopsModalTypes } from '../../Types';
 import { SERVICE_DATE_FORMAT } from '../../../../../utils/control/routes';
 import { TIME_PATTERN } from '../../../../../constants/time';
 import { getTripTimeDisplay, convertTimeToMinutes } from '../../../../../utils/helpers';
+import TRIP_STATUS_TYPES from '../../../../../types/trip-status-types';
 
 import './NewTripDetails.scss';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
-import { isNewTripModalOpen, getAddTripAction } from '../../../../../redux/selectors/control/routes/trip-instances';
+import { isNewTripModalOpen, getAddTripAction, getSelectedStopsByTripKey } from '../../../../../redux/selectors/control/routes/trip-instances';
 import NewTripModal from './NewTripModal';
+import StopSelectionFooter from '../../bulkSelection/StopSelectionFooter';
+import { useAddTripStopUpdate } from '../../../../../redux/selectors/appSettings';
 
 export const NewTripDetails = (props) => {
     const [startTime, setStartTime] = useState('');
@@ -25,6 +29,7 @@ export const NewTripDetails = (props) => {
     const [isStartTimeInvalid, setIsStartTimeInvalid] = useState(false);
     const [referenceId, setReferenceId] = useState('');
     const [isFormEmpty, setIsFormEmpty] = useState(true);
+    const [stops, setStops] = useState(props.tripInstance.stops);
 
     useEffect(() => {
         setIsFormEmpty(startTime === '' && referenceId === '');
@@ -40,7 +45,9 @@ export const NewTripDetails = (props) => {
         setIsActionDisabled(true);
         setIsStartTimeInvalid(false);
         setReferenceId('');
+        setStops(props.tripInstance.stops);
         props.updateIsNewTripDetailsFormEmpty(true);
+        props.deselectAllStopsByTrip({ tripId: null });
     }, [props.tripInstance]);
 
     const getDelayInMinutes = (originalStartTime, newStartTime) => convertTimeToMinutes(newStartTime) - convertTimeToMinutes(originalStartTime);
@@ -84,13 +91,41 @@ export const NewTripDetails = (props) => {
         setIsActionDisabled(!isMainActionEnabled(startTime, value.trim()));
     };
 
+    const handleStopUpdate = (options) => {
+        setStops(stops.map((stop) => {
+            if (options.stopCodes.includes(stop.stopCode)) {
+                setIsFormEmpty(false);
+                if (options.action === updateStopsModalTypes.UPDATE_HEADSIGN) {
+                    return { ...stop, stopHeadsign: options.headsign };
+                }
+            }
+            return stop;
+        }));
+    };
+
+    const addPermissions = trip => ({
+        ...trip,
+        tripId: null, // set the trip id to null so the stops component knows it is a new trip.
+        stops: trip.stops.map(stop => ({
+            ...stop,
+            _links: {
+                permissions: [
+                    {
+                        _rel: 'update_headsign',
+                    },
+                ],
+            },
+        })),
+        status: TRIP_STATUS_TYPES.notStarted,
+    });
+
     const getUpdatedStopTimes = (tripInstance, newStartTime) => {
         if (!isStartTimeValid(newStartTime)) {
-            return tripInstance.stops;
+            return stops;
         }
         const delayInMinutes = getDelayInMinutes(tripInstance.startTime, newStartTime);
 
-        return tripInstance.stops.map((stop) => {
+        return stops.map((stop) => {
             const updatedArrivalTime = addMinutesToTime(stop.scheduledArrivalTime, delayInMinutes);
             const updatedDepartureTime = addMinutesToTime(stop.scheduledDepartureTime, delayInMinutes);
             return {
@@ -113,6 +148,8 @@ export const NewTripDetails = (props) => {
         stops: getUpdatedStopTimes(props.tripInstance, startTime),
         referenceId,
     };
+
+    const shouldStopSelectionFooterBeShown = props.useAddTripStopUpdate && !isEmpty(props.selectedStopsByTripKey(addPermissions(newTrip)));
 
     return props.tripInstance && (
         <div className="add-trip-new-trip-details p-3">
@@ -191,25 +228,32 @@ export const NewTripDetails = (props) => {
                         </div>
                         <div className="col-12">
                             <Stops
-                                tripInstance={ newTrip }
-                                showActuals={ false } />
+                                tripInstance={ props.useAddTripStopUpdate ? addPermissions(newTrip) : newTrip }
+                                showActuals={ false }
+                                hideFooter />
                         </div>
                     </div>
                 </Form>
-                <footer className="mt-3">
-                    <Button
-                        id="add-trip-new-trip-details__add-trip"
-                        className="btn cc-btn-primary continue ml-3"
-                        aria-label="Add Trip"
-                        disabled={ isActionDisabled }
-                        onClick={ () => {
-                            props.addTrip(newTrip);
-                            props.toggleAddTripModals('isNewTripModalOpen', true);
-                        } }
-                    >
-                        Add Trip
-                    </Button>
-                </footer>
+                { shouldStopSelectionFooterBeShown
+                    ? (
+                        <StopSelectionFooter tripInstance={ addPermissions(newTrip) } stopUpdatedHandler={ handleStopUpdate } />
+                    )
+                    : (
+                        <footer className="mt-3">
+                            <Button
+                                id="add-trip-new-trip-details__add-trip"
+                                className="btn cc-btn-primary continue ml-3"
+                                aria-label="Add Trip"
+                                disabled={ isActionDisabled }
+                                onClick={ () => {
+                                    props.addTrip(newTrip);
+                                    props.toggleAddTripModals('isNewTripModalOpen', true);
+                                } }
+                            >
+                                Add Trip
+                            </Button>
+                        </footer>
+                    )}
             </div>
             <CustomModal
                 className="add-trip-new-trip-details__modal"
@@ -229,10 +273,15 @@ NewTripDetails.propTypes = {
     action: PropTypes.object.isRequired,
     toggleAddTripModals: PropTypes.func.isRequired,
     updateIsNewTripDetailsFormEmpty: PropTypes.func.isRequired,
+    selectedStopsByTripKey: PropTypes.func.isRequired,
+    useAddTripStopUpdate: PropTypes.bool.isRequired,
+    deselectAllStopsByTrip: PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
     serviceDate: getServiceDate(state),
     isNewTripModalOpen: isNewTripModalOpen(state),
     action: getAddTripAction(state),
-}), { addTrip, toggleAddTripModals, updateIsNewTripDetailsFormEmpty })(NewTripDetails);
+    selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
+    useAddTripStopUpdate: useAddTripStopUpdate(state),
+}), { addTrip, toggleAddTripModals, updateIsNewTripDetailsFormEmpty, deselectAllStopsByTrip })(NewTripDetails);

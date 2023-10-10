@@ -108,7 +108,11 @@ const UpdateStopStatusModal = (props) => {
                 stopCodes: Object.values(selectedStops).map(stop => stop.stopCode),
                 headsign: selectedPidCustomization !== 'None' ? newDestination + selectedPidCustomization : newDestination,
             };
-            props.updateDestination(options, modalProps[activeModal].successMessage, tripInstance);
+            if (props.stopUpdatedHandler) {
+                props.stopUpdatedHandler({ ...options, action: UPDATE_HEADSIGN });
+            } else {
+                props.updateDestination(options, modalProps[activeModal].successMessage, tripInstance);
+            }
         } else {
             const filterSelectedStopsByModalType = status => ((activeModal === SKIP && status !== skipped) || (activeModal === REINSTATE && status === skipped));
             const selectedStopsByModalType = pickBy(selectedStops, stop => filterSelectedStopsByModalType(stop.status));
@@ -214,6 +218,11 @@ UpdateStopStatusModal.propTypes = {
     areSelectedStopsUpdating: PropTypes.bool.isRequired,
     updateSelectedStopsStatus: PropTypes.func.isRequired,
     updateDestination: PropTypes.func.isRequired,
+    stopUpdatedHandler: PropTypes.func,
+};
+
+UpdateStopStatusModal.defaultProps = {
+    stopUpdatedHandler: undefined,
 };
 
 export default connect(state => ({

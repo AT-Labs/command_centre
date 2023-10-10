@@ -25,10 +25,12 @@ export class Stops extends React.Component {
         updateSelectedStopsByTrip: PropTypes.func.isRequired,
         useHeadsignUpdate: PropTypes.bool.isRequired,
         showActuals: PropTypes.bool,
+        hideFooter: PropTypes.bool,
     };
 
     static defaultProps = {
         showActuals: true,
+        hideFooter: false,
     };
 
     constructor(props) {
@@ -106,7 +108,7 @@ export class Stops extends React.Component {
 
         if (!stops || !stops.length) return null;
 
-        const shouldStopSelectionFooterBeShown = !isEmpty(this.props.selectedStopsByTripKey(this.props.tripInstance));
+        const shouldStopSelectionFooterBeShown = !this.props.hideFooter && !isEmpty(this.props.selectedStopsByTripKey(this.props.tripInstance));
         const stopContainerWidth = STOP_WIDTH * stops.length;
         const currentStop = stops[this.getCurrentStopIndex()];
         const StopLinesHelper = new StopLinesHelperClass(

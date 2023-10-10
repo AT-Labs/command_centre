@@ -61,7 +61,7 @@ export const getViewPermission = url => fetchWithAuthHeader(
     url,
     { method: 'GET' },
 ).then(response => response.ok && response.status === 200); // TODO: block, trips, trip replays and messages should expect the same (200 or 204)
-export const getTripInstanceId = trip => `${trip.tripId}-${trip.serviceDate}-${trip.startTime}`;
+export const getTripInstanceId = trip => (trip.tripId ? `${trip.tripId}-${trip.serviceDate}-${trip.startTime}` : 'new-trip');
 export const getStopKey = stop => `${stop.stopId}-${stop.stopSequence}-${stop.departureTime || stop.arrivalTime}`;
 const browserDetection = () => {
     const { userAgent } = navigator;

@@ -116,6 +116,7 @@ export const StopSelectionFooter = (props) => {
                 isModalOpen={ isModalOpen }
                 activeModal={ activeModal }
                 tripInstance={ tripInstance }
+                stopUpdatedHandler={ props.stopUpdatedHandler }
                 onClose={ () => handleModalOnToggle(updateStopsModalTypes.SKIP) } />
         </Footer>
     );
@@ -126,6 +127,11 @@ StopSelectionFooter.propTypes = {
     selectedStopsByTripKey: PropTypes.func.isRequired,
     deselectAllStopsByTrip: PropTypes.func.isRequired,
     useHeadsignUpdate: PropTypes.bool.isRequired,
+    stopUpdatedHandler: PropTypes.func,
+};
+
+StopSelectionFooter.defaultProps = {
+    stopUpdatedHandler: undefined,
 };
 
 export default connect(state => ({
