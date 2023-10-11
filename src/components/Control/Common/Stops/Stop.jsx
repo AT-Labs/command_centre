@@ -13,7 +13,7 @@ import { getParentStopsWithPlatform } from '../../../../redux/selectors/static/s
 import { transformStopName } from '../../../../utils/control/routes';
 import { getTripTimeDisplay, getStopKey } from '../../../../utils/helpers';
 import ConfirmationModal from '../ConfirmationModal/ConfirmationModal';
-import { StopStatus, StopType, TripInstanceType } from '../../RoutesView/Types';
+import { StopStatus, StopType, TripInstanceType, updateStopsModalTypes } from '../../RoutesView/Types';
 import { isChangeStopPermitted, isSkipStopPermitted, isUpdateStopHeadsignPermitted } from '../../../../utils/user-permissions';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../../auth';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
@@ -34,11 +34,13 @@ export class Stop extends React.Component {
         lineInteractionClasses: PropTypes.string.isRequired,
         useHeadsignUpdate: PropTypes.bool.isRequired,
         showActuals: PropTypes.bool,
+        stopUpdatedHandler: PropTypes.func,
     };
 
     static defaultProps = {
         isStopInSelectionRange: false,
         showActuals: true,
+        stopUpdatedHandler: undefined,
     };
 
     constructor(props) {
@@ -92,16 +94,24 @@ export class Stop extends React.Component {
     hideChangePlatformModal = () => this.setState({ isChangePlatformModalOpen: false, newPlatform: {} });
 
     handleChangePlatform = () => {
-        this.props.updateTripInstanceStopPlatform(
-            {
-                tripId: this.props.tripInstance.tripId,
-                serviceDate: this.props.tripInstance.serviceDate,
-                startTime: this.props.tripInstance.startTime,
-                stopSequence: this.props.stop.stopSequence,
-                stopId: this.state.newPlatform.stop_id,
-            },
-            `Platform for stop #${this.props.stop.stopSequence} has been changed`,
-        );
+        if (this.props.stopUpdatedHandler) {
+            this.props.stopUpdatedHandler({
+                stopCodes: [this.props.stop.stopCode],
+                newPlatform: this.state.newPlatform,
+                action: updateStopsModalTypes.CHANGE_PLATFORM,
+            });
+        } else {
+            this.props.updateTripInstanceStopPlatform(
+                {
+                    tripId: this.props.tripInstance.tripId,
+                    serviceDate: this.props.tripInstance.serviceDate,
+                    startTime: this.props.tripInstance.startTime,
+                    stopSequence: this.props.stop.stopSequence,
+                    stopId: this.state.newPlatform.stop_id,
+                },
+                `Platform for stop #${this.props.stop.stopSequence} has been changed`,
+            );
+        }
         this.hideChangePlatformModal();
     };
 

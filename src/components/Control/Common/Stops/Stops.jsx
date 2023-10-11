@@ -26,11 +26,13 @@ export class Stops extends React.Component {
         useHeadsignUpdate: PropTypes.bool.isRequired,
         showActuals: PropTypes.bool,
         hideFooter: PropTypes.bool,
+        stopUpdatedHandler: PropTypes.func,
     };
 
     static defaultProps = {
         showActuals: true,
         hideFooter: false,
+        stopUpdatedHandler: undefined,
     };
 
     constructor(props) {
@@ -148,13 +150,14 @@ export class Stops extends React.Component {
                                         isStopInSelectionRange={ this.isStopInSelectionRange(stop) }
                                         isCurrent={ stop.stopSequence === get(currentStop, 'stopSequence') }
                                         lineInteractionClasses={ `${selectedEventClasses} ${hoverEventClasses}` }
-                                        showActuals={ this.props.showActuals } />
+                                        showActuals={ this.props.showActuals }
+                                        stopUpdatedHandler={ this.props.stopUpdatedHandler } />
                                 );
                             })}
                         </div>
                     </div>
                 </div>
-                { shouldStopSelectionFooterBeShown && <StopSelectionFooter tripInstance={ this.props.tripInstance } /> }
+                { shouldStopSelectionFooterBeShown && <StopSelectionFooter tripInstance={ this.props.tripInstance } stopUpdatedHandler={ this.props.stopUpdatedHandler } /> }
             </section>
         );
     }

@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { shallow } from 'enzyme';
 import { Stop } from './Stop';
+import ConfirmationModal from '../ConfirmationModal/ConfirmationModal';
 
 const trip = {
     tripId: 'test1',
@@ -169,7 +170,6 @@ describe('<Stop />', () => {
             expect(wrapper.instance().isSkipStopDisabled()).to.be.false; // eslint-disable-line
         });
     });
-
 
     describe('isReinstateStopDisabled', () => {
         it('does allow to reinstate stop when stop is skipped', () => {
@@ -416,6 +416,25 @@ describe('<Stop />', () => {
                 serviceDate: moment().subtract(1, 'days').format(),
             });
             expect(wrapper.instance().isUpdateStopHeadsignPossible()).to.be.true; // eslint-disable-line
+        });
+    });
+
+    describe('is stopUpdatedHandler being called', () => {
+        it('call stopUpdatedHandler if it is not undefined when changing platform', () => {
+            const mockStopUpdatedHandler = jest.fn();
+            wrapper = setup({
+                tripInstance: { ...trip, status: 'NOT_STARTED' },
+                stop: { ...stop, status: 'NOT_PASSED' },
+                serviceDate: moment().format(),
+                stopUpdatedHandler: mockStopUpdatedHandler,
+            });
+
+            const confirmationModal = wrapper.find(ConfirmationModal);
+
+            // change platform
+            confirmationModal.invoke('onAction')();
+
+            expect(mockStopUpdatedHandler.mock.calls.length).to.be.equal(1);
         });
     });
 });

@@ -98,11 +98,23 @@ export const NewTripDetails = (props) => {
                 if (options.action === updateStopsModalTypes.UPDATE_HEADSIGN) {
                     return { ...stop, stopHeadsign: options.headsign };
                 }
+                if (options.action === updateStopsModalTypes.CHANGE_PLATFORM) {
+                    return {
+                        ...stop,
+                        platformCode: options.newPlatform.platform_code,
+                        stopCode: options.newPlatform.stop_code,
+                        stopId: options.newPlatform.stop_id,
+                        stopLat: options.newPlatform.stop_lat,
+                        stopLon: options.newPlatform.stop_lon,
+                        stopName: options.newPlatform.stop_name,
+                    };
+                }
             }
             return stop;
         }));
     };
 
+    // This method add temporary permissions to the stops so that stops are editable in the Stops component.
     const addPermissions = trip => ({
         ...trip,
         tripId: null, // set the trip id to null so the stops component knows it is a new trip.
@@ -112,6 +124,9 @@ export const NewTripDetails = (props) => {
                 permissions: [
                     {
                         _rel: 'update_headsign',
+                    },
+                    {
+                        _rel: 'change',
                     },
                 ],
             },
@@ -229,6 +244,7 @@ export const NewTripDetails = (props) => {
                         <div className="col-12">
                             <Stops
                                 tripInstance={ props.useAddTripStopUpdate ? addPermissions(newTrip) : newTrip }
+                                stopUpdatedHandler={ handleStopUpdate }
                                 showActuals={ false }
                                 hideFooter />
                         </div>

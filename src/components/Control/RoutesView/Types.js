@@ -86,6 +86,7 @@ export const updateStopsModalTypes = {
     REINSTATE: 'reinstate',
     MOVE_SERVICE: 'move-service',
     UPDATE_HEADSIGN: 'update-headsign',
+    CHANGE_PLATFORM: 'change-platform',
 };
 
 export const updateTripsStatusModalOrigins = {

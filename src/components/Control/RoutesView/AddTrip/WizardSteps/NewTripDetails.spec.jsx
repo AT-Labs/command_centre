@@ -7,6 +7,7 @@ import { withHooks } from 'jest-react-hooks-shallow';
 import { NewTripDetails } from './NewTripDetails';
 import { SERVICE_DATE_FORMAT } from '../../../../../utils/control/routes';
 import StopSelectionFooter from '../../bulkSelection/StopSelectionFooter';
+import Stops from '../../../Common/Stops/Stops';
 
 describe('NewTripDetails', () => {
     let mockTripInstance;
@@ -30,13 +31,13 @@ describe('NewTripDetails', () => {
             endTime: '11:00:00',
             stops: [{
                 stopCode: 'Stop1',
-                stopHeadsign: 'Albany',
+                stopHeadsign: 'Britomart',
                 scheduledArrivalTime: '12:00:00',
                 scheduledDepartureTime: '12:02:00',
             },
             {
                 stopCode: 'Stop2',
-                stopHeadsign: 'Somewhere',
+                stopHeadsign: 'Britomart',
                 scheduledArrivalTime: '12:10:00',
                 scheduledDepartureTime: '12:12:00',
             }],
@@ -129,13 +130,13 @@ describe('NewTripDetails', () => {
             endTime: '',
             stops: [{
                 stopCode: 'Stop1',
-                stopHeadsign: 'Albany',
+                stopHeadsign: 'Britomart',
                 scheduledArrivalTime: '12:00:00',
                 scheduledDepartureTime: '12:02:00',
             },
             {
                 stopCode: 'Stop2',
-                stopHeadsign: 'Somewhere',
+                stopHeadsign: 'Britomart',
                 scheduledArrivalTime: '12:10:00',
                 scheduledDepartureTime: '12:12:00',
             }],
@@ -177,7 +178,7 @@ describe('NewTripDetails', () => {
         stopSelectionFooter.invoke('stopUpdatedHandler')({
             stopCodes: ['Stop1', 'Stop3'],
             action: 'update-headsign',
-            headsign: 'Constellation',
+            headsign: 'Henderson',
         });
 
         // Unselect stops
@@ -195,13 +196,13 @@ describe('NewTripDetails', () => {
             endTime: '',
             stops: [{
                 stopCode: 'Stop1',
-                stopHeadsign: 'Constellation',
+                stopHeadsign: 'Henderson',
                 scheduledArrivalTime: '12:00:00',
                 scheduledDepartureTime: '12:02:00',
             },
             {
                 stopCode: 'Stop2',
-                stopHeadsign: 'Somewhere',
+                stopHeadsign: 'Britomart',
                 scheduledArrivalTime: '12:10:00',
                 scheduledDepartureTime: '12:12:00',
             }],
@@ -224,5 +225,55 @@ describe('NewTripDetails', () => {
         expect(stopSelectionFooter.exists()).toBe(false);
         const addButton = wrapper.find(Button);
         expect(addButton.exists()).toBe(true);
+    });
+
+    it('handle platform change when the stops component invokes stopUpdatedHandler', () => {
+        wrapper.setProps({ useAddTripStopUpdate: true });
+        // Select some stop
+        const stops = wrapper.find(Stops);
+
+        // change platform
+        stops.invoke('stopUpdatedHandler')({
+            stopCodes: ['Stop1'],
+            action: 'change-platform',
+            newPlatform: {
+                platform_code: '2',
+                stop_code: '9321',
+                stop_id: '9321-50b6fd55',
+                stop_lat: -36.89687,
+                stop_lon: 174.63186,
+                stop_name: 'Sunnyvale Train Station 2',
+            },
+        });
+
+        // Click add
+        const addButton = wrapper.find(Button);
+        addButton.simulate('click');
+
+        expect(mockAddTrip).toHaveBeenCalledTimes(1);
+        expect(mockAddTrip).toHaveBeenCalledWith({
+            ...mockTripInstance,
+            serviceDate: moment(mockServiceDate).format(SERVICE_DATE_FORMAT),
+            startTime: '',
+            endTime: '',
+            stops: [{
+                platformCode: '2',
+                stopHeadsign: 'Britomart',
+                scheduledArrivalTime: '12:00:00',
+                scheduledDepartureTime: '12:02:00',
+                stopCode: '9321',
+                stopId: '9321-50b6fd55',
+                stopLat: -36.89687,
+                stopLon: 174.63186,
+                stopName: 'Sunnyvale Train Station 2',
+            },
+            {
+                stopCode: 'Stop2',
+                stopHeadsign: 'Britomart',
+                scheduledArrivalTime: '12:10:00',
+                scheduledDepartureTime: '12:12:00',
+            }],
+            referenceId: '',
+        });
     });
 });
