@@ -19,13 +19,13 @@ export const NewTripModal = (props) => {
     const { isRequesting, result, resultMessage } = props.response;
     const renderContent = () => {
         if (isRequesting) return <DetailLoader />;
-        return result
+        return result && result[0]
             ? (
                 <div>
                     <span className="d-block mb-3 font-weight-bold">{ `New trip was successfully added for today ${moment().format('DD/MM/YYYY')}` }</span>
-                    <span className="d-block mb-2">{ `Trip ID: ${result.tripId}` }</span>
-                    <span className="d-block mb-2">{ `Route Variant Name: ${result.routeLongName}` }</span>
-                    <span className="d-block mb-2">{ `Start time: ${result.startTime}` }</span>
+                    <span className="d-block mb-2">{ `Trip ID: ${result[0].tripId}` }</span>
+                    <span className="d-block mb-2">{ `Route Variant Name: ${result[0].routeLongName}` }</span>
+                    <span className="d-block mb-2">{ `Start time: ${result[0].startTime}` }</span>
                 </div>
             )
             : (
@@ -50,7 +50,7 @@ export const NewTripModal = (props) => {
             { !isRequesting && (
                 <footer className="row justify-content-between mt-3">
                     {
-                        result && (
+                        result && result[0] && (
                             <div className="col-4">
                                 <Button
                                     className="btn cc-btn-secondary"
@@ -69,22 +69,22 @@ export const NewTripModal = (props) => {
                         <Button
                             className="btn cc-btn-primary btn-block"
                             onClick={ () => {
-                                if (result) {
+                                if (result && result[0]) {
                                     props.updateEnabledAddTripModal(false);
-                                    props.goToRoutesView(result, {
-                                        routeType: result.routeType,
-                                        startTimeFrom: getClosestTimeValueForFilter(result.startTime),
-                                        tripStatus: result.status,
-                                        agencyId: result.agencyId,
-                                        routeShortName: result.routeShortName,
-                                        routeVariantId: result.routeVariantId,
+                                    props.goToRoutesView(result[0], {
+                                        routeType: result[0].routeType,
+                                        startTimeFrom: getClosestTimeValueForFilter(result[0].startTime),
+                                        tripStatus: result[0].status,
+                                        agencyId: result[0].agencyId,
+                                        routeShortName: result[0].routeShortName,
+                                        routeVariantId: result[0].routeVariantId,
                                     });
                                     props.updateSelectedAddTrip(null);
                                 }
                                 props.clearAddTripActionResult();
                                 props.toggleAddTripModals('isNewTripModalOpen', false);
                             } }>
-                            { result ? 'View Details' : 'Close' }
+                            { result && result[0] ? 'View Details' : 'Close' }
                         </Button>
                     </div>
                 </footer>

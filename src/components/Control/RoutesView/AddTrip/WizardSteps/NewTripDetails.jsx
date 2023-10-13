@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { Form, FormGroup, Input, Label, Button } from 'reactstrap';
 
 import { isEmpty } from 'lodash-es';
-import { addTrip, deselectAllStopsByTrip, toggleAddTripModals, updateIsNewTripDetailsFormEmpty } from '../../../../../redux/actions/control/routes/trip-instances';
+import { addTrips, deselectAllStopsByTrip, toggleAddTripModals, updateIsNewTripDetailsFormEmpty } from '../../../../../redux/actions/control/routes/trip-instances';
 import { getServiceDate } from '../../../../../redux/selectors/control/serviceDate';
 import VEHICLE_TYPES, { TRAIN_TYPE_ID } from '../../../../../types/vehicle-types';
 import Stops from '../../../Common/Stops/Stops';
@@ -156,11 +156,21 @@ export const NewTripDetails = (props) => {
     const mode = VEHICLE_TYPES[props.tripInstance.routeType].type;
 
     const newTrip = {
-        ...props.tripInstance,
         serviceDate: moment(props.serviceDate).format(SERVICE_DATE_FORMAT),
+        tripId: props.tripInstance.tripId,
+        routeId: props.tripInstance.routeShortName,
+        routeShortName: props.tripInstance.routeShortName,
+        routeType: props.tripInstance.routeType,
+        routeVariantId: props.tripInstance.routeVariantId,
+        directionId: props.tripInstance.directionId,
+        routeLongName: props.tripInstance.routeLongName,
+        agencyId: props.tripInstance.agencyId,
+        depotId: props.tripInstance.depotId,
+        stops: getUpdatedStopTimes(props.tripInstance, startTime),
+        shapeId: props.tripInstance.shapeId,
+        tripHeadsign: props.tripInstance.tripHeadsign,
         startTime: startTime ? `${startTime}:00` : '', // We only accept HH:mm for startTime input on add trip screen. We need to make sure we also send seconds to backend.
         endTime,
-        stops: getUpdatedStopTimes(props.tripInstance, startTime),
         referenceId,
     };
 
@@ -262,7 +272,7 @@ export const NewTripDetails = (props) => {
                                 aria-label="Add Trip"
                                 disabled={ isActionDisabled }
                                 onClick={ () => {
-                                    props.addTrip(newTrip);
+                                    props.addTrips([newTrip]);
                                     props.toggleAddTripModals('isNewTripModalOpen', true);
                                 } }
                             >
@@ -284,7 +294,7 @@ export const NewTripDetails = (props) => {
 NewTripDetails.propTypes = {
     tripInstance: TripInstanceType.isRequired,
     serviceDate: PropTypes.string.isRequired,
-    addTrip: PropTypes.func.isRequired,
+    addTrips: PropTypes.func.isRequired,
     isNewTripModalOpen: PropTypes.bool.isRequired,
     action: PropTypes.object.isRequired,
     toggleAddTripModals: PropTypes.func.isRequired,
@@ -300,4 +310,4 @@ export default connect(state => ({
     action: getAddTripAction(state),
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
     useAddTripStopUpdate: useAddTripStopUpdate(state),
-}), { addTrip, toggleAddTripModals, updateIsNewTripDetailsFormEmpty, deselectAllStopsByTrip })(NewTripDetails);
+}), { addTrips, toggleAddTripModals, updateIsNewTripDetailsFormEmpty, deselectAllStopsByTrip })(NewTripDetails);

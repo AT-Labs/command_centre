@@ -12,7 +12,7 @@ import Stops from '../../../Common/Stops/Stops';
 describe('NewTripDetails', () => {
     let mockTripInstance;
     let mockServiceDate;
-    let mockAddTrip;
+    let mockAddTrips;
     let mockToggleAddTripModals;
     let mockUpdateIsNewTripDetailsFormEmpty;
     let mockIsNewTripModalOpen;
@@ -41,9 +41,18 @@ describe('NewTripDetails', () => {
                 scheduledArrivalTime: '12:10:00',
                 scheduledDepartureTime: '12:12:00',
             }],
+            agencyId: '',
+            depotId: '',
+            directionId: '',
+            routeId: '',
+            routeLongName: '',
+            routeShortName: '',
+            routeVariantId: '',
+            shapeId: '',
+            tripHeadsign: '',
         };
         mockServiceDate = '2023-07-04';
-        mockAddTrip = jest.fn();
+        mockAddTrips = jest.fn();
         mockToggleAddTripModals = jest.fn();
         mockUpdateIsNewTripDetailsFormEmpty = jest.fn();
         mockIsNewTripModalOpen = false;
@@ -56,7 +65,7 @@ describe('NewTripDetails', () => {
             <NewTripDetails
                 tripInstance={ mockTripInstance }
                 serviceDate={ mockServiceDate }
-                addTrip={ mockAddTrip }
+                addTrips={ mockAddTrips }
                 toggleAddTripModals={ mockToggleAddTripModals }
                 updateIsNewTripDetailsFormEmpty={
                     mockUpdateIsNewTripDetailsFormEmpty
@@ -122,8 +131,8 @@ describe('NewTripDetails', () => {
 
         addButton.simulate('click');
 
-        expect(mockAddTrip).toHaveBeenCalledTimes(1);
-        expect(mockAddTrip).toHaveBeenCalledWith({
+        expect(mockAddTrips).toHaveBeenCalledTimes(1);
+        expect(mockAddTrips).toHaveBeenCalledWith([{
             ...mockTripInstance,
             serviceDate: moment(mockServiceDate).format(SERVICE_DATE_FORMAT),
             startTime: '',
@@ -141,7 +150,16 @@ describe('NewTripDetails', () => {
                 scheduledDepartureTime: '12:12:00',
             }],
             referenceId: '',
-        });
+            agencyId: '',
+            depotId: '',
+            directionId: '',
+            routeId: '',
+            routeLongName: '',
+            routeShortName: '',
+            routeVariantId: '',
+            shapeId: '',
+            tripHeadsign: '',
+        }]);
 
         expect(mockToggleAddTripModals).toHaveBeenCalledTimes(1);
         expect(mockToggleAddTripModals).toHaveBeenCalledWith(
@@ -188,8 +206,8 @@ describe('NewTripDetails', () => {
         const addButton = wrapper.find(Button);
         addButton.simulate('click');
 
-        expect(mockAddTrip).toHaveBeenCalledTimes(1);
-        expect(mockAddTrip).toHaveBeenCalledWith({
+        expect(mockAddTrips).toHaveBeenCalledTimes(1);
+        expect(mockAddTrips).toHaveBeenCalledWith([{
             ...mockTripInstance,
             serviceDate: moment(mockServiceDate).format(SERVICE_DATE_FORMAT),
             startTime: '',
@@ -207,7 +225,16 @@ describe('NewTripDetails', () => {
                 scheduledDepartureTime: '12:12:00',
             }],
             referenceId: '',
-        });
+            agencyId: '',
+            depotId: '',
+            directionId: '',
+            routeId: '',
+            routeLongName: '',
+            routeShortName: '',
+            routeVariantId: '',
+            shapeId: '',
+            tripHeadsign: '',
+        }]);
     });
 
     it('should not render the stop selection footer component when no stops are selected', () => {
@@ -250,8 +277,8 @@ describe('NewTripDetails', () => {
         const addButton = wrapper.find(Button);
         addButton.simulate('click');
 
-        expect(mockAddTrip).toHaveBeenCalledTimes(1);
-        expect(mockAddTrip).toHaveBeenCalledWith({
+        expect(mockAddTrips).toHaveBeenCalledTimes(1);
+        expect(mockAddTrips).toHaveBeenCalledWith([{
             ...mockTripInstance,
             serviceDate: moment(mockServiceDate).format(SERVICE_DATE_FORMAT),
             startTime: '',
@@ -274,6 +301,15 @@ describe('NewTripDetails', () => {
                 scheduledDepartureTime: '12:12:00',
             }],
             referenceId: '',
-        });
+            agencyId: '',
+            depotId: '',
+            directionId: '',
+            routeId: '',
+            routeLongName: '',
+            routeShortName: '',
+            routeVariantId: '',
+            shapeId: '',
+            tripHeadsign: '',
+        }]);
     });
 });

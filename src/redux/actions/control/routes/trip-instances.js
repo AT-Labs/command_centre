@@ -662,7 +662,7 @@ const handleAddTrip = (action, dispatch) => {
     dispatch(updateRequestingAddTripActionResult(true));
     action()
         .then((response) => {
-            dispatch(updateAddTripActionResult(response.data.addNewTrip, ACTION_RESULT.SUCCESS()));
+            dispatch(updateAddTripActionResult(response.data.addNewTrips, ACTION_RESULT.SUCCESS()));
         })
         .catch(() => {
             dispatch(updateAddTripActionResult(null, ACTION_RESULT.ERROR()));
@@ -670,9 +670,9 @@ const handleAddTrip = (action, dispatch) => {
         .finally(() => dispatch(updateRequestingAddTripActionResult(false)));
 };
 
-export const addTrip = options => (dispatch) => {
+export const addTrips = options => (dispatch) => {
     handleAddTrip(
-        () => TRIP_MGT_API.addTrip(options),
+        () => TRIP_MGT_API.addTrips(options),
         dispatch,
     );
 };

@@ -27,11 +27,11 @@ describe('<NewTripModal />', () => {
 
     const mockResponse = {
         isRequesting: false,
-        result: {
+        result: [{
             tripId: '123',
             routeLongName: 'Test Route',
             startTime: '10:00',
-        },
+        }],
         resultMessage: 'Test error message',
     };
 
@@ -53,11 +53,11 @@ describe('<NewTripModal />', () => {
     it('should render the success state when result is truthy', () => {
         const successResponse = {
             ...mockResponse,
-            result: {
+            result: [{
                 tripId: '123',
                 routeLongName: 'Test Route',
                 startTime: '10:00 AM',
-            },
+            }],
         };
         const wrapper = setup({ response: successResponse });
         expect(wrapper.find(DetailLoader)).toHaveLength(0);
@@ -93,7 +93,7 @@ describe('<NewTripModal />', () => {
     });
 
     it('should call the necessary functions and navigate to routes view when "View Details" button is clicked', () => {
-        const result = {
+        const result = [{
             tripId: '123',
             routeType: 'Test Route Type',
             startTime: '10:00',
@@ -101,7 +101,7 @@ describe('<NewTripModal />', () => {
             agencyId: 'Test Agency ID',
             routeShortName: 'Test Route Short Name',
             routeVariantId: 'Test Route Variant ID',
-        };
+        }];
         const successResponse = {
             ...mockResponse,
             result,
@@ -109,13 +109,13 @@ describe('<NewTripModal />', () => {
         const wrapper = setup({ response: successResponse });
         wrapper.find(Button).at(1).simulate('click');
         expect(componentPropsMock.updateEnabledAddTripModal).toHaveBeenCalledWith(false);
-        expect(componentPropsMock.goToRoutesView).toHaveBeenCalledWith(result, {
-            routeType: result.routeType,
+        expect(componentPropsMock.goToRoutesView).toHaveBeenCalledWith(result[0], {
+            routeType: result[0].routeType,
             startTimeFrom: '10:00',
-            tripStatus: result.status,
-            agencyId: result.agencyId,
-            routeShortName: result.routeShortName,
-            routeVariantId: result.routeVariantId,
+            tripStatus: result[0].status,
+            agencyId: result[0].agencyId,
+            routeShortName: result[0].routeShortName,
+            routeVariantId: result[0].routeVariantId,
         });
         expect(componentPropsMock.updateSelectedAddTrip).toHaveBeenCalledWith(null);
         expect(componentPropsMock.clearAddTripActionResult).toHaveBeenCalledTimes(1);

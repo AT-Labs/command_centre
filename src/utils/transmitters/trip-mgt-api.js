@@ -140,26 +140,9 @@ const updateHeadsignGqlMutation = gql`
         }
     }`;
 
-const addTripGqlMutation = gql`
-    mutation($tripId: String!, $serviceDate: Moment!, $startTime: String!, $routeId: String!, $routeShortName: String!, $routeType: Int!, $routeVariantId: String!, $directionId: Int!, $routeLongName: String!, $agencyId: String!, $depotId: String!, $endTime: String!, $stops: [StopInput!]!, $shapeId: String!, $tripHeadsign: String!, $referenceId: String!) {
-        addNewTrip(
-            tripId: $tripId
-            serviceDate: $serviceDate
-            startTime: $startTime
-            routeId: $routeId
-            routeShortName: $routeShortName
-            routeType: $routeType
-            routeVariantId: $routeVariantId
-            directionId: $directionId
-            routeLongName: $routeLongName
-            agencyId: $agencyId
-            depotId: $depotId
-            endTime: $endTime
-            stops: $stops
-            shapeId: $shapeId
-            tripHeadsign: $tripHeadsign
-            referenceId: $referenceId
-        ) {
+const addTripsGqlMutation = gql`
+    mutation($trips: [AddNewTrip!]!) {
+        addNewTrips(trips: $trips) {
             ${tripInstanceFields}
         }
     }`;
@@ -385,48 +368,12 @@ export const searchTrip = (params) => {
     ).then(response => jsonResponseHandling(response));
 };
 
-export const addTrip = (options) => {
-    const {
-        tripId,
-        serviceDate,
-        startTime,
-        routeId,
-        routeShortName,
-        routeType,
-        routeVariantId,
-        directionId,
-        routeLongName,
-        agencyId,
-        depotId,
-        endTime,
-        stops,
-        shapeId,
-        tripHeadsign,
-        referenceId,
-    } = options;
-
-    return mutateStatic({
+export const addTrips = options => (
+    mutateStatic({
         url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
-        mutation: addTripGqlMutation,
-        variables: {
-            tripId,
-            serviceDate,
-            startTime,
-            routeId,
-            routeShortName,
-            routeType,
-            routeVariantId,
-            directionId,
-            routeLongName,
-            agencyId,
-            depotId,
-            endTime,
-            stops,
-            shapeId,
-            tripHeadsign,
-            referenceId,
-        },
-        params: 'addNewTrip',
+        mutation: addTripsGqlMutation,
+        variables: { trips: options },
+        params: 'addNewTrips',
         authToken: getAuthToken(),
-    });
-};
+    })
+);
