@@ -7,6 +7,7 @@ import { BsArrowRepeat, BsAlarm, BsFillChatTextFill } from 'react-icons/bs';
 import moment from 'moment';
 import { GoAlert } from 'react-icons/go';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
+import { uniqueId } from 'lodash-es';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
 import DisruptionDetail from './DisruptionDetail';
@@ -57,17 +58,19 @@ const getStatusIcon = (value) => {
     return <HiOutlineCheckCircle className="mr-1" />;
 };
 
-const getViewNotificationButton = (row, source, callback = () => {}) => {
+const getViewNotificationButtons = (row, source, callback = () => {}) => {
     const { disruptionId, version } = row;
     return (
-        <Tooltip title="View notification" placement="top-end">
-            <IconButton aria-label="view-notification"
-                onClick={ () => {
-                    callback({ disruptionId, version, source });
-                } }>
-                <BsFillChatTextFill />
-            </IconButton>
-        </Tooltip>
+        [
+            <Tooltip title="View notification" placement="top-end" key={ uniqueId(disruptionId) }>
+                <IconButton aria-label="view-notification"
+                    onClick={ () => {
+                        callback({ disruptionId, version, source });
+                    } }>
+                    <BsFillChatTextFill />
+                </IconButton>
+            </Tooltip>,
+        ]
     );
 };
 
@@ -217,9 +220,11 @@ export const DisruptionsDataGrid = (props) => {
         GRID_COLUMNS.push(
             {
                 field: '__go_to_notification__',
-                headerName: '',
+                type: 'actions',
+                headerName: 'OPEN NOTIFICATION ACTION',
                 width: 55,
-                renderCell: params => getViewNotificationButton(params.row, 'DISR', props.goToNotificationsView),
+                renderHeader: () => (<span />),
+                renderCell: params => getViewNotificationButtons(params.row, 'DISR', props.goToNotificationsView),
             },
         );
     }
