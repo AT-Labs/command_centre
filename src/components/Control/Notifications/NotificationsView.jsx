@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import moment from 'moment-timezone';
@@ -30,6 +30,7 @@ import Loader from '../../Common/Loader/Loader';
 import './NotificationsView.scss';
 
 export const NotificationsView = (props) => {
+    const [showFeedbackMessage, setShowFeedbackMessage] = useState(true);
     const loadingTimerRef = useRef(null);
     const location = useLocation();
     const query = new URLSearchParams(location.search);
@@ -212,6 +213,7 @@ export const NotificationsView = (props) => {
             const notification = props.notifications.find(n => n.source.identifier === Number(disruptionId) && n.source.version === Number(version));
             if (notification) {
                 props.updateSelectedNotification(notification);
+                setShowFeedbackMessage(false);
             }
         }
     }, [props.notifications]);
@@ -233,7 +235,7 @@ export const NotificationsView = (props) => {
             <div className="mb-3">
                 <h1>Notifications - Service Alerts</h1>
             </div>
-            { props.useDisruptionsNotificationsDirectLink && isQueryParamsValid && isNew && !props.selectedNotification && (
+            { props.useDisruptionsNotificationsDirectLink && isQueryParamsValid && isNew && showFeedbackMessage && (
                 <>
                     <div className="row mb-3">
                         <div className="col-md-6 offset-md-3">
@@ -242,7 +244,7 @@ export const NotificationsView = (props) => {
                                 isDismissible={ false }
                                 zIndex={ 1000 }
                                 message={ {
-                                    id: uniqueId(),
+                                    id: uniqueId(disruptionId),
                                     type: ALERT_MESSAGE_TYPE,
                                     body: `Notification for Disruption ${transformIncidentNo(disruptionId)} version ${version} is being created...`,
                                 } } />
