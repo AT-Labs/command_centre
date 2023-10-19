@@ -1,10 +1,10 @@
 import moment from 'moment-timezone';
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { connect } from 'react-redux';
 import { Form, FormGroup, Input, Label, Button } from 'reactstrap';
 
-import { isEmpty } from 'lodash-es';
+import { isEmpty, some } from 'lodash-es';
 import { addTrips, deselectAllStopsByTrip, toggleAddTripModals, updateIsNewTripDetailsFormEmpty } from '../../../../../redux/actions/control/routes/trip-instances';
 import { getServiceDate } from '../../../../../redux/selectors/control/serviceDate';
 import VEHICLE_TYPES, { TRAIN_TYPE_ID } from '../../../../../types/vehicle-types';
@@ -15,14 +15,15 @@ import { TIME_PATTERN } from '../../../../../constants/time';
 import { getTripTimeDisplay, convertTimeToMinutes } from '../../../../../utils/helpers';
 import TRIP_STATUS_TYPES from '../../../../../types/trip-status-types';
 
-import './NewTripDetails.scss';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import { isNewTripModalOpen, getAddTripAction, getSelectedStopsByTripKey } from '../../../../../redux/selectors/control/routes/trip-instances';
 import NewTripModal from './NewTripModal';
 import StopSelectionFooter from '../../bulkSelection/StopSelectionFooter';
 import { useAddTripStopUpdate } from '../../../../../redux/selectors/appSettings';
 
-export const NewTripDetails = (props) => {
+import './NewTripDetails.scss';
+
+export const NewTripDetails = forwardRef((props, ref) => {
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
     const [isActionDisabled, setIsActionDisabled] = useState(true);
@@ -30,6 +31,10 @@ export const NewTripDetails = (props) => {
     const [referenceId, setReferenceId] = useState('');
     const [isFormEmpty, setIsFormEmpty] = useState(true);
     const [stops, setStops] = useState(props.tripInstance.stops);
+
+    useImperativeHandle(ref, () => ({
+        shouldShowConfirmationModal: () => some([startTime, referenceId], value => !isEmpty(value?.trim())),
+    }));
 
     useEffect(() => {
         setIsFormEmpty(startTime === '' && referenceId === '');
@@ -289,7 +294,7 @@ export const NewTripDetails = (props) => {
             </CustomModal>
         </div>
     );
-};
+});
 
 NewTripDetails.propTypes = {
     tripInstance: TripInstanceType.isRequired,
@@ -310,4 +315,4 @@ export default connect(state => ({
     action: getAddTripAction(state),
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
     useAddTripStopUpdate: useAddTripStopUpdate(state),
-}), { addTrips, toggleAddTripModals, updateIsNewTripDetailsFormEmpty, deselectAllStopsByTrip })(NewTripDetails);
+}), { addTrips, toggleAddTripModals, updateIsNewTripDetailsFormEmpty, deselectAllStopsByTrip }, null, { forwardRef: true })(NewTripDetails);

@@ -5,10 +5,8 @@ import { connect } from 'react-redux';
 import Wizard from '../../../Common/wizard/Wizard';
 import SearchTrip from './WizardSteps/SearchTrip';
 import SelectAndAddTrip from './WizardSteps/SelectAndAddTrip';
-import CloseConfirmation from './WizardSteps/CloseConfirmation';
-import CustomModal from '../../../Common/CustomModal/CustomModal';
 
-import { updateCurrentStepHandler, resetAddTripStep } from '../../../../redux/actions/control/routes/trip-instances';
+import { updateCurrentStepHandler, resetAddTripStep, updateSelectedAddTrip, updateEnabledAddTripModal } from '../../../../redux/actions/control/routes/trip-instances';
 import { getAddTripStep } from '../../../../redux/selectors/control/routes/trip-instances';
 import { getModeRouteFilter } from '../../../../redux/selectors/control/routes/filters';
 import { TRIP_DIRECTION_INBOUND } from '../../../../types/vehicle-types';
@@ -35,7 +33,6 @@ const INIT_STATE = {
 
 export const AddTrip = (props) => {
     const [data, setData] = useState({ ...INIT_STATE, mode: props.routeType });
-    const [isCloseConfirmationOpen, setIsCloseConfirmationOpen] = useState(false);
 
     const updateData = (key, value) => {
         setData({
@@ -86,7 +83,8 @@ export const AddTrip = (props) => {
     );
 
     const handlerCloseAddTripModal = () => {
-        setIsCloseConfirmationOpen(true);
+        props.updateEnabledAddTripModal(false);
+        props.updateSelectedAddTrip(null);
     };
 
     return (
@@ -104,14 +102,8 @@ export const AddTrip = (props) => {
                             onSubmit={ onSubmit }
                             onSubmitUpdate={ onSubmitUpdate }>
                             <SearchTrip header={ getHeader() } toggleAddTripModals={ handlerCloseAddTripModal } />
-                            <SelectAndAddTrip header={ getHeader() } toggleAddTripModals={ handlerCloseAddTripModal } />
+                            <SelectAndAddTrip header={ getHeader() } />
                         </Wizard>
-                        <CustomModal
-                            className="close-add-trip__modal"
-                            title="Add Trip"
-                            isModalOpen={ isCloseConfirmationOpen }>
-                            <CloseConfirmation onCloseConfirmation={ () => setIsCloseConfirmationOpen(false) } />
-                        </CustomModal>
                     </div>
                 </div>
             </div>
@@ -124,6 +116,8 @@ AddTrip.propTypes = {
     resetAddTripStep: PropTypes.func.isRequired,
     activeStep: PropTypes.number,
     routeType: PropTypes.number,
+    updateEnabledAddTripModal: PropTypes.func.isRequired,
+    updateSelectedAddTrip: PropTypes.func.isRequired,
 };
 
 AddTrip.defaultProps = {
@@ -135,5 +129,5 @@ export default connect(state => ({
     activeStep: getAddTripStep(state),
     routeType: getModeRouteFilter(state),
 }), {
-    updateCurrentStepHandler, resetAddTripStep,
+    updateCurrentStepHandler, resetAddTripStep, updateSelectedAddTrip, updateEnabledAddTripModal,
 })(AddTrip);

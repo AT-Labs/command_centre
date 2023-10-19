@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
@@ -21,7 +21,7 @@ import { getTripTimeDisplay } from '../../../../../utils/helpers';
 
 import { searchTrip } from '../../../../../utils/transmitters/trip-mgt-api';
 import { getAddTripDatagridConfig, getSelectedAddTrip, isNewTripDetailsFormEmpty } from '../../../../../redux/selectors/control/routes/trip-instances';
-import { updateAddTripDatagridConfig, updateSelectedAddTrip } from '../../../../../redux/actions/control/routes/trip-instances';
+import { updateAddTripDatagridConfig, updateSelectedAddTrip, updateEnabledAddTripModal } from '../../../../../redux/actions/control/routes/trip-instances';
 import { TIME_FORMAT_HHMM, TIME_FORMAT_HHMMSS, DATE_FORMAT_GTFS, DATE_FORMAT_DDMMYYYY } from '../../../../../utils/dateUtils';
 import { ERROR_MESSAGE_TYPE } from '../../../../../types/message-types';
 import { DIRECTIONS } from '../../../DisruptionsView/types';
@@ -29,6 +29,7 @@ import { DATE_FORMAT } from '../../../../../constants/disruptions';
 import NewTripDetails from './NewTripDetails';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import ChangeSelectedTripModal from './ChangeSelectedTripModal';
+import CloseConfirmation from './CloseConfirmation';
 
 const drawerWidthOpen = '700px';
 const drawerWidthClose = '200px';
@@ -85,6 +86,9 @@ export const SelectAndAddTrip = (props) => {
     const [drawerOpen, setDrawerOpen] = useState(true);
     const [isChangeSelectedTripModalOpen, setIsChangeSelectedTripModalOpen] = useState(false);
     const [selectedAddTrip, setSelectedAddTrip] = useState(null);
+    const [isCloseConfirmationOpen, setIsCloseConfirmationOpen] = useState(false);
+
+    const newTripDetailsRef = useRef(null);
 
     const parseTripInstance = tripInstance => (
         {
@@ -213,6 +217,15 @@ export const SelectAndAddTrip = (props) => {
 
     const toggleDrawerView = () => setDrawerOpen(!drawerOpen);
 
+    const handleClose = () => {
+        if (newTripDetailsRef.current?.shouldShowConfirmationModal()) {
+            setIsCloseConfirmationOpen(true);
+        } else {
+            props.updateEnabledAddTripModal(false);
+            props.updateSelectedAddTrip(null);
+        }
+    };
+
     return (
         <div>
             <div className="p-3 m-3 select-add-trip-section overflow-auto">
@@ -234,7 +247,8 @@ export const SelectAndAddTrip = (props) => {
                         <Button
                             aria-label="Close"
                             className="btn cc-btn-primary"
-                            onClick={ props.toggleAddTripModals }>
+                            onClick={ handleClose }
+                            disabled={ loading }>
                             Close
                             <FaTimes className="ml-2" />
                         </Button>
@@ -277,6 +291,7 @@ export const SelectAndAddTrip = (props) => {
                         <Box className="add-trip-new-trip-details__container" sx={ { width: `calc(100% - ${drawerOpen ? drawerWidthOpen : drawerWidthClose})` } }>
                             { !loading && props.selectedTrip && props.selectedTrip.tripInstance && (
                                 <NewTripDetails
+                                    ref={ newTripDetailsRef }
                                     tripInstance={ props.selectedTrip.tripInstance }
                                 />
                             ) }
@@ -295,6 +310,12 @@ export const SelectAndAddTrip = (props) => {
                         onCancel={ () => setIsChangeSelectedTripModalOpen(false) }
                     />
                 </CustomModal>
+                <CustomModal
+                    className="close-add-trip__modal"
+                    title="Add Trip"
+                    isModalOpen={ isCloseConfirmationOpen }>
+                    <CloseConfirmation onCloseConfirmation={ () => setIsCloseConfirmationOpen(false) } />
+                </CustomModal>
             </div>
         </div>
     );
@@ -308,8 +329,8 @@ SelectAndAddTrip.propTypes = {
     updateAddTripDatagridConfig: PropTypes.func.isRequired,
     updateSelectedAddTrip: PropTypes.func.isRequired,
     header: PropTypes.node,
-    toggleAddTripModals: PropTypes.func.isRequired,
     isNewTripDetailsFormEmpty: PropTypes.bool.isRequired,
+    updateEnabledAddTripModal: PropTypes.func.isRequired,
 };
 
 SelectAndAddTrip.defaultProps = {
@@ -323,4 +344,4 @@ export default connect(state => ({
     datagridConfig: getAddTripDatagridConfig(state),
     selectedTrip: getSelectedAddTrip(state),
     isNewTripDetailsFormEmpty: isNewTripDetailsFormEmpty(state),
-}), { updateAddTripDatagridConfig, updateSelectedAddTrip })(SelectAndAddTrip);
+}), { updateAddTripDatagridConfig, updateSelectedAddTrip, updateEnabledAddTripModal })(SelectAndAddTrip);
