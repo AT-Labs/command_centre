@@ -1,4 +1,4 @@
-@import '../../../../../assets/styles/variables';
+@import '../../../../../../assets/styles/variables';
 
 .add-trip-new-trip-details {
     height: calc(60vh + 40px);
@@ -46,15 +46,6 @@
 
         & label {
             margin: 0;
-        }
-    }
-
-    & &__warning {
-        &__icon {
-            width: 20px;
-            height: 20px;
-            margin-right: 5px;
-            margin-bottom: 3px;
         }
     }
 }

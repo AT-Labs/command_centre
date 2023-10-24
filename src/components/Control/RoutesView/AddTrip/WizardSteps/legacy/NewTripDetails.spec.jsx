@@ -5,13 +5,11 @@ import { Button } from 'reactstrap';
 import { withHooks } from 'jest-react-hooks-shallow';
 
 import { NewTripDetails } from './NewTripDetails';
-import { SERVICE_DATE_FORMAT } from '../../../../../utils/control/routes';
-import StopSelectionFooter from '../../bulkSelection/StopSelectionFooter';
-import Stops from '../../../Common/Stops/Stops';
-import { NewTripsTable } from './NewTripsTable';
-import NewTripModal from './NewTripModal';
+import { SERVICE_DATE_FORMAT } from '../../../../../../utils/control/routes';
+import StopSelectionFooter from '../../../bulkSelection/StopSelectionFooter';
+import Stops from '../../../../Common/Stops/Stops';
 
-describe('NewTripDetails', () => {
+describe('NewTripDetails (Legacy)', () => {
     let mockTripInstance;
     let mockServiceDate;
     let mockAddTrips;
@@ -89,46 +87,34 @@ describe('NewTripDetails', () => {
         expect(wrapper).toHaveLength(1);
     });
 
-    it('updates isNewTripDetailsFormEmpty to false when there are trips in the table', () => {
+    it('updates isNewTripDetailsFormEmpty to false on startTime change', () => {
         withHooks(() => {
-            // add one trip in the table
-            const table = wrapper.find(NewTripsTable);
-            table.invoke('onAddedTripsChange')([
-                {
-                    id: 'id',
-                    startTime: '23:00',
-                    endTime: '24:00:00',
-                    referenceId: 'ref1',
-                },
-            ]);
+            const startTimeInput = wrapper.find(
+                '#add-trip-new-trip-details__start-time',
+            );
 
+            const refIdInput = wrapper.find(
+                '#add-trip-new-trip-details__reference-id',
+            );
+
+            startTimeInput.simulate('change', { target: { value: '23:59' } });
+            refIdInput.simulate('change', { target: { value: 'ref-id-abc' } });
             expect(mockUpdateIsNewTripDetailsFormEmpty).toHaveBeenCalledWith(
                 false,
             );
         });
     });
 
-    it('updates isNewTripDetailsFormEmpty to true when no trips in the table', () => {
+    it('updates isNewTripDetailsFormEmpty to true when startTime is empty', () => {
         withHooks(() => {
-            const table = wrapper.find(NewTripsTable);
-            table.invoke('onAddedTripsChange')([]);
+            const startTimeInput = wrapper.find(
+                '#add-trip-new-trip-details__start-time',
+            );
+
+            startTimeInput.simulate('change', { target: { value: '' } });
             expect(mockUpdateIsNewTripDetailsFormEmpty).toHaveBeenCalledWith(
                 true,
             );
-        });
-    });
-
-    it('show scheduled stop times when the NewTripsTable invokes onStopsPreview ', () => {
-        withHooks(() => {
-            const table = wrapper.find(NewTripsTable);
-            table.invoke('onStopsPreview')({
-                id: '',
-                startTime: '',
-                endTime: '',
-                referenceId: '',
-            });
-            const previewModal = wrapper.find('.add-trip-new-trip-details__preview');
-            expect(previewModal.prop('isModalOpen')).toEqual(true);
         });
     });
 
@@ -141,17 +127,6 @@ describe('NewTripDetails', () => {
     });
 
     it('calls addTrip and toggleAddTripModals on Add Trip button click', () => {
-        // add one trip in the table
-        const table = wrapper.find(NewTripsTable);
-        table.invoke('onAddedTripsChange')([
-            {
-                id: 'id',
-                startTime: '23:00',
-                endTime: '24:00:00',
-                referenceId: 'ref1',
-            },
-        ]);
-
         const addButton = wrapper.find(Button);
 
         addButton.simulate('click');
@@ -160,25 +135,21 @@ describe('NewTripDetails', () => {
         expect(mockAddTrips).toHaveBeenCalledWith([{
             ...mockTripInstance,
             serviceDate: moment(mockServiceDate).format(SERVICE_DATE_FORMAT),
-            startTime: '23:00:00',
-            endTime: '24:00:00',
+            startTime: '',
+            endTime: '',
             stops: [{
                 stopCode: 'Stop1',
                 stopHeadsign: 'Britomart',
-                arrivalTime: '25:00:00',
-                departureTime: '25:02:00',
-                scheduledArrivalTime: '25:00:00',
-                scheduledDepartureTime: '25:02:00',
+                scheduledArrivalTime: '12:00:00',
+                scheduledDepartureTime: '12:02:00',
             },
             {
                 stopCode: 'Stop2',
                 stopHeadsign: 'Britomart',
-                arrivalTime: '25:10:00',
-                departureTime: '25:12:00',
-                scheduledArrivalTime: '25:10:00',
-                scheduledDepartureTime: '25:12:00',
+                scheduledArrivalTime: '12:10:00',
+                scheduledDepartureTime: '12:12:00',
             }],
-            referenceId: 'ref1',
+            referenceId: '',
             agencyId: '',
             depotId: '',
             directionId: '',
@@ -200,30 +171,10 @@ describe('NewTripDetails', () => {
     it('renders the CustomModal component when isNewTripModalOpen is true', () => {
         wrapper.setProps({ isNewTripModalOpen: true });
 
-        const customModal = wrapper.find('.add-trip-new-trip-details__modal');
+        const customModal = wrapper.find('CustomModal');
 
         expect(customModal).toHaveLength(1);
         expect(customModal.prop('isModalOpen')).toEqual(true);
-    });
-
-    it('reset the trips after NewTripModal closes without any parameters (by default)', () => {
-        wrapper.setProps({ isNewTripModalOpen: true });
-
-        // add one trip in the table
-        const table = wrapper.find(NewTripsTable);
-        table.invoke('onAddedTripsChange')([
-            {
-                id: 'id',
-                startTime: '23:00',
-                endTime: '24:00:00',
-                referenceId: 'ref1',
-            },
-        ]);
-
-        const newTripModal = wrapper.find(NewTripModal);
-        newTripModal.invoke('onClose')();
-
-        expect(table.prop('trips')).toEqual([]);
     });
 
     it('renders the stop selection footer component when stop(s) are selected', () => {
@@ -237,18 +188,6 @@ describe('NewTripDetails', () => {
 
     it('handle headsign update when the footer invokes stopUpdatedHandler', () => {
         wrapper.setProps({ useAddTripStopUpdate: true });
-
-        // add one trip in the table
-        const table = wrapper.find(NewTripsTable);
-        table.invoke('onAddedTripsChange')([
-            {
-                id: 'id',
-                startTime: '23:00',
-                endTime: '24:00:00',
-                referenceId: 'ref1',
-            },
-        ]);
-
         // Select some stop
         wrapper.setProps({ selectedStopsByTripKey: jest.fn(() => ({ mockStopKey: { status: true } })) });
         const stopSelectionFooter = wrapper.find(StopSelectionFooter);
@@ -271,25 +210,21 @@ describe('NewTripDetails', () => {
         expect(mockAddTrips).toHaveBeenCalledWith([{
             ...mockTripInstance,
             serviceDate: moment(mockServiceDate).format(SERVICE_DATE_FORMAT),
-            startTime: '23:00:00',
-            endTime: '24:00:00',
+            startTime: '',
+            endTime: '',
             stops: [{
                 stopCode: 'Stop1',
                 stopHeadsign: 'Henderson',
-                arrivalTime: '25:00:00',
-                departureTime: '25:02:00',
-                scheduledArrivalTime: '25:00:00',
-                scheduledDepartureTime: '25:02:00',
+                scheduledArrivalTime: '12:00:00',
+                scheduledDepartureTime: '12:02:00',
             },
             {
                 stopCode: 'Stop2',
                 stopHeadsign: 'Britomart',
-                arrivalTime: '25:10:00',
-                departureTime: '25:12:00',
-                scheduledArrivalTime: '25:10:00',
-                scheduledDepartureTime: '25:12:00',
+                scheduledArrivalTime: '12:10:00',
+                scheduledDepartureTime: '12:12:00',
             }],
-            referenceId: 'ref1',
+            referenceId: '',
             agencyId: '',
             depotId: '',
             directionId: '',
@@ -321,19 +256,8 @@ describe('NewTripDetails', () => {
 
     it('handle platform change when the stops component invokes stopUpdatedHandler', () => {
         wrapper.setProps({ useAddTripStopUpdate: true });
-        // add one trip in the table
-        const table = wrapper.find(NewTripsTable);
-        table.invoke('onAddedTripsChange')([
-            {
-                id: 'id',
-                startTime: '23:00',
-                endTime: '24:00:00',
-                referenceId: 'ref1',
-            },
-        ]);
-
-        // select some stop
-        const stops = wrapper.find(Stops).at(0);
+        // Select some stop
+        const stops = wrapper.find(Stops);
 
         // change platform
         stops.invoke('stopUpdatedHandler')({
@@ -357,15 +281,13 @@ describe('NewTripDetails', () => {
         expect(mockAddTrips).toHaveBeenCalledWith([{
             ...mockTripInstance,
             serviceDate: moment(mockServiceDate).format(SERVICE_DATE_FORMAT),
-            startTime: '23:00:00',
-            endTime: '24:00:00',
+            startTime: '',
+            endTime: '',
             stops: [{
                 platformCode: '2',
                 stopHeadsign: 'Britomart',
-                arrivalTime: '25:00:00',
-                departureTime: '25:02:00',
-                scheduledArrivalTime: '25:00:00',
-                scheduledDepartureTime: '25:02:00',
+                scheduledArrivalTime: '12:00:00',
+                scheduledDepartureTime: '12:02:00',
                 stopCode: '9321',
                 stopId: '9321-50b6fd55',
                 stopLat: -36.89687,
@@ -375,12 +297,10 @@ describe('NewTripDetails', () => {
             {
                 stopCode: 'Stop2',
                 stopHeadsign: 'Britomart',
-                arrivalTime: '25:10:00',
-                departureTime: '25:12:00',
-                scheduledArrivalTime: '25:10:00',
-                scheduledDepartureTime: '25:12:00',
+                scheduledArrivalTime: '12:10:00',
+                scheduledDepartureTime: '12:12:00',
             }],
-            referenceId: 'ref1',
+            referenceId: '',
             agencyId: '',
             depotId: '',
             directionId: '',

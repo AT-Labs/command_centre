@@ -2,8 +2,8 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import { Button } from 'reactstrap';
 
-import Message from '../../../Common/Message/Message';
-import DetailLoader from '../../../../Common/Loader/DetailLoader';
+import Message from '../../../../Common/Message/Message';
+import DetailLoader from '../../../../../Common/Loader/DetailLoader';
 
 import { NewTripModal } from './NewTripModal';
 
@@ -20,7 +20,7 @@ const setup = (customProps) => {
     return shallow(<NewTripModal { ...props } />);
 };
 
-describe('<NewTripModal />', () => {
+describe('NewTripModal (Legacy)', () => {
     afterEach(() => {
         jest.clearAllMocks();
     });

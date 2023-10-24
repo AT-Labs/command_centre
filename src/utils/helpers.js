@@ -147,3 +147,15 @@ export const convertTimeToMinutes = (time) => {
     const minutes = parseInt(minutesStr, 10);
     return hours * 60 + minutes;
 };
+export const getDifferenceInMinutes = (time1, time2) => convertTimeToMinutes(time2) - convertTimeToMinutes(time1);
+export const addMinutesToTime = (timeString, minutesToAdd) => {
+    const [hours, minutes, seconds] = timeString.split(':');
+    let totalMinutes = Number(hours) * 60 + Number(minutes);
+    totalMinutes += minutesToAdd;
+    const updatedHours = Math.floor(totalMinutes / 60);
+    const updatedMinutes = totalMinutes % 60;
+    return [updatedHours, updatedMinutes, seconds]
+        .filter(time => time !== undefined)
+        .map(time => `${String(time).padStart(2, '0')}`)
+        .join(':');
+};

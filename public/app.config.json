@@ -5,6 +5,7 @@
     "useRoutesTripsDatagrid": "false",
     "useHeadsignUpdate": "false",
     "useAddTrip": "false",
+    "useAddMultipleTrips": "false",
     "useAddTripStopUpdate": "false",
     "useHideTrip": "false",
     "useRoutesTripsFilterCollapse": "false",

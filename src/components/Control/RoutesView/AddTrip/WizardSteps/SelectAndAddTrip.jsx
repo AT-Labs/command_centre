@@ -27,8 +27,10 @@ import { ERROR_MESSAGE_TYPE } from '../../../../../types/message-types';
 import { DIRECTIONS } from '../../../DisruptionsView/types';
 import { DATE_FORMAT } from '../../../../../constants/disruptions';
 import NewTripDetails from './NewTripDetails';
+import NewTripDetailsLegacy from './legacy/NewTripDetails';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import ChangeSelectedTripModal from './ChangeSelectedTripModal';
+import { useAddMultipleTrips } from '../../../../../redux/selectors/appSettings';
 import CloseConfirmation from './CloseConfirmation';
 
 const drawerWidthOpen = '700px';
@@ -289,8 +291,14 @@ export const SelectAndAddTrip = (props) => {
                             />
                         </Drawer>
                         <Box className="add-trip-new-trip-details__container" sx={ { width: `calc(100% - ${drawerOpen ? drawerWidthOpen : drawerWidthClose})` } }>
-                            { !loading && props.selectedTrip && props.selectedTrip.tripInstance && (
+                            { !loading && props.selectedTrip && props.selectedTrip.tripInstance && props.useAddMultipleTrips && (
                                 <NewTripDetails
+                                    ref={ newTripDetailsRef }
+                                    tripInstance={ props.selectedTrip.tripInstance }
+                                />
+                            ) }
+                            { !loading && props.selectedTrip && props.selectedTrip.tripInstance && !props.useAddMultipleTrips && (
+                                <NewTripDetailsLegacy
                                     ref={ newTripDetailsRef }
                                     tripInstance={ props.selectedTrip.tripInstance }
                                 />
@@ -330,6 +338,7 @@ SelectAndAddTrip.propTypes = {
     updateSelectedAddTrip: PropTypes.func.isRequired,
     header: PropTypes.node,
     isNewTripDetailsFormEmpty: PropTypes.bool.isRequired,
+    useAddMultipleTrips: PropTypes.bool.isRequired,
     updateEnabledAddTripModal: PropTypes.func.isRequired,
 };
 
@@ -344,4 +353,5 @@ export default connect(state => ({
     datagridConfig: getAddTripDatagridConfig(state),
     selectedTrip: getSelectedAddTrip(state),
     isNewTripDetailsFormEmpty: isNewTripDetailsFormEmpty(state),
+    useAddMultipleTrips: useAddMultipleTrips(state),
 }), { updateAddTripDatagridConfig, updateSelectedAddTrip, updateEnabledAddTripModal })(SelectAndAddTrip);

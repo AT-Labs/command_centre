@@ -25,12 +25,14 @@ export class Stops extends React.Component {
         updateSelectedStopsByTrip: PropTypes.func.isRequired,
         useHeadsignUpdate: PropTypes.bool.isRequired,
         showActuals: PropTypes.bool,
+        showScheduled: PropTypes.bool,
         hideFooter: PropTypes.bool,
         stopUpdatedHandler: PropTypes.func,
     };
 
     static defaultProps = {
         showActuals: true,
+        showScheduled: true,
         hideFooter: false,
         stopUpdatedHandler: undefined,
     };
@@ -128,7 +130,9 @@ export class Stops extends React.Component {
                                 Destination
                             </div>
                         ) }
-                        <div>Scheduled</div>
+                        { this.props.showScheduled && (
+                            <div>Scheduled</div>
+                        ) }
                         { this.props.showActuals && (
                             <div>
                                 <span className="text-muted">Actual</span>
@@ -150,6 +154,7 @@ export class Stops extends React.Component {
                                         isStopInSelectionRange={ this.isStopInSelectionRange(stop) }
                                         isCurrent={ stop.stopSequence === get(currentStop, 'stopSequence') }
                                         lineInteractionClasses={ `${selectedEventClasses} ${hoverEventClasses}` }
+                                        showScheduled={ this.props.showScheduled }
                                         showActuals={ this.props.showActuals }
                                         stopUpdatedHandler={ this.props.stopUpdatedHandler } />
                                 );
