@@ -107,6 +107,7 @@ export default {
     CLEAR_SEARCH_VEHICLE_RESULTS: 'clear-search-vehicle-results',
     // Control
     UPDATE_CONTROL_DETAIL_VIEW: 'update-control-detail-view',
+    UPDATE_ACTIVE_CONTROL_ENTITY_ID: 'update-active-control-entity-id',
     // Control: agencies
     FETCH_CONTROL_AGENCIES: 'fetch-control-agencies',
     // Control: routes

@@ -47,12 +47,12 @@ export const INIT_STATE = {
     datagridConfig: {
         columns: [],
         page: 0,
-        pageSize: 15,
+        pageSize: 100,
         sortModel: [],
         density: 'standard',
         routeSelection: '',
         filterModel: { items: [], linkOperator: 'and' },
-        pinnedColumns: { right: ['__go_to_notification__', '__detail_panel_toggle__'] },
+        pinnedColumns: { right: ['__go_to_disruption_details__', '__go_to_notification__', '__detail_panel_toggle__'] },
     },
 };
 

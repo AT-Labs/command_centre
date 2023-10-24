@@ -1,7 +1,33 @@
 @import '../../../../assets/styles/variables';
 
+.disruption-details__page {
+    select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    /* Remove the default arrow for IE */
+    select::-ms-expand {
+        display: none;
+    }
+
+    .read-only-container {
+        input:disabled,
+        input[readonly],
+        select:disabled {
+            background-color: white !important;
+            border: none !important;
+            padding: 0;
+        }
+        svg {
+            display: none !important;
+        }
+    }
+}
+
 .disruption-detail__map {
-    height: 392px;
+    height: 592px;
 
     & .loader {
         $loaderSize: 50px;

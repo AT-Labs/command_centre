@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { FaPaperclip } from 'react-icons/fa';
 import { RiMailCheckLine } from 'react-icons/ri';
-import { BsArrowRepeat, BsAlarm, BsFillChatTextFill } from 'react-icons/bs';
+import { BsArrowRepeat, BsAlarm, BsFillChatTextFill, BsPencilSquare } from 'react-icons/bs';
 import moment from 'moment';
 import { GoAlert } from 'react-icons/go';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
@@ -11,6 +11,7 @@ import { uniqueId } from 'lodash-es';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
 import DisruptionDetail from './DisruptionDetail';
+import MinimizeDisruptionDetail from './DisruptionDetailView/MinimizeDisruptionDetail';
 import {
     LABEL_AFFECTED_ROUTES, LABEL_AFFECTED_STOPS,
     LABEL_CAUSE, LABEL_CREATED_AT, LABEL_CREATED_BY, LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_DISRUPTION, LABEL_END_TIME,
@@ -29,7 +30,7 @@ import './DisruptionsDataGrid.scss';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
 import { getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops, getPassengerCountRange } from '../../../utils/control/disruptions';
 import { getWorkaroundsAsText } from '../../../utils/control/disruption-workarounds';
-import { usePassengerImpact, useDisruptionsNotificationsDirectLink } from '../../../redux/selectors/appSettings';
+import { usePassengerImpact, useDisruptionsNotificationsDirectLink, useViewDisruptionDetailsPage } from '../../../redux/selectors/appSettings';
 import { goToNotificationsView } from '../../../redux/actions/control/link';
 
 const getDisruptionLabel = (disruption) => {
@@ -73,6 +74,19 @@ const getViewNotificationButtons = (row, source, callback = () => {}) => {
         ]
     );
 };
+
+const getViewDisruptionDetailsButton = row => (
+    [
+        <Tooltip title="Open & Edit Disruption" placement="top-end" key={ uniqueId(row.disruptionId) }>
+            <IconButton aria-label="open-edit-disruption"
+                onClick={ () => {
+                    window.open(`/control-main-view/control-disruptions/${row.disruptionId.toString()}`, '_blank');
+                } }>
+                <BsPencilSquare />
+            </IconButton>
+        </Tooltip>,
+    ]
+);
 
 export const DisruptionsDataGrid = (props) => {
     const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
@@ -244,8 +258,25 @@ export const DisruptionsDataGrid = (props) => {
         );
     }
 
+    if (props.useViewDisruptionDetailsPage) {
+        GRID_COLUMNS.push(
+            {
+                field: '__go_to_disruption_details__',
+                headerName: 'OPEN DISRUPTION DETAILS',
+                type: 'actions',
+                width: 55,
+                renderHeader: () => (<span />),
+                getActions: params => getViewDisruptionDetailsButton(params.row),
+            },
+        );
+    }
+
     const getDetailPanelContent = React.useCallback(
-        ({ row }) => (<Box sx={ { padding: '16px 16px 10px 16px' } }><DisruptionDetail disruption={ row } /></Box>),
+        ({ row }) => (
+            <Box sx={ { padding: '16px 16px 10px 16px' } }>
+                { props.useViewDisruptionDetailsPage ? <MinimizeDisruptionDetail disruption={ row } /> : <DisruptionDetail disruption={ row } /> }
+            </Box>
+        ),
         [],
     );
 
@@ -269,7 +300,7 @@ export const DisruptionsDataGrid = (props) => {
                 updateDatagridConfig={ config => props.updateDisruptionsDatagridConfig(config) }
                 getDetailPanelContent={ getDetailPanelContent }
                 getRowId={ row => row.disruptionId }
-                calculateDetailPanelHeight={ calculateDetailPanelHeight }
+                calculateDetailPanelHeight={ props.useViewDisruptionDetailsPage ? () => 400 : calculateDetailPanelHeight }
                 expandedDetailPanels={ props.activeDisruptionId ? [props.activeDisruptionId] : null }
                 onRowExpanded={ ids => updateActiveDisruption(ids) }
             />
@@ -287,6 +318,7 @@ DisruptionsDataGrid.propTypes = {
     usePassengerImpact: PropTypes.bool.isRequired,
     goToNotificationsView: PropTypes.func.isRequired,
     useDisruptionsNotificationsDirectLink: PropTypes.bool.isRequired,
+    useViewDisruptionDetailsPage: PropTypes.bool.isRequired,
 };
 
 DisruptionsDataGrid.defaultProps = {
@@ -300,6 +332,7 @@ export default connect(
         activeDisruptionId: getActiveDisruptionId(state),
         usePassengerImpact: usePassengerImpact(state),
         useDisruptionsNotificationsDirectLink: useDisruptionsNotificationsDirectLink(state),
+        useViewDisruptionDetailsPage: useViewDisruptionDetailsPage(state),
     }),
     {
         updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState, goToNotificationsView,

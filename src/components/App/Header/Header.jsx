@@ -10,9 +10,9 @@ import { Button, Collapse, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, Pop
     Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import atLogo from '../../../assets/img/at_logo.png';
 import { IS_LOGIN_NOT_REQUIRED, logout } from '../../../auth';
-import { updateControlDetailView, updateMainView, updateSecondaryPanelView } from '../../../redux/actions/navigation';
+import { updateControlDetailView, updateMainView, updateSecondaryPanelView, updateActiveControlEntityId } from '../../../redux/actions/navigation';
 import { isAlertsEmpty } from '../../../redux/selectors/control/alerts';
-import { getActiveControlDetailView, getActiveMainView, getActiveSecondaryPanelView, getQueryParams } from '../../../redux/selectors/navigation';
+import { getActiveControlDetailView, getActiveMainView, getActiveSecondaryPanelView, getQueryParams, getActiveControlEntityId } from '../../../redux/selectors/navigation';
 import { getStopMessagesPermissions } from '../../../redux/selectors/control/stopMessaging/stopMessages';
 import { getStopMessagesAndPermissions } from '../../../redux/actions/control/stopMessaging';
 import { isGlobalEditStopMessagesPermitted } from '../../../utils/user-permissions';
@@ -58,6 +58,7 @@ function Header(props) {
                 props.updateControlDetailView();
             } else {
                 props.updateControlDetailView(paths[2]);
+                props.updateActiveControlEntityId(paths[3]);
             }
         }
     };
@@ -80,8 +81,9 @@ function Header(props) {
     }, []);
 
     useEffect(() => {
+        const entityId = props.activeControlEntityId ? `/${props.activeControlEntityId}` : '';
         const stringQueryParams = props.controlActiveView === VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS && props.queryParams ? `?${new URLSearchParams(props.queryParams).toString()}` : '';
-        const locationToPush = `/${props.activeView}/${props.controlActiveView}${stringQueryParams}`;
+        const locationToPush = `/${props.activeView}/${props.controlActiveView}${entityId}${stringQueryParams}`;
         if (locationToPush !== location.pathname
             && [
                 VIEW_TYPE.CONTROL_DETAIL.BLOCKS,
@@ -96,7 +98,7 @@ function Header(props) {
             ].includes(props.controlActiveView)) {
             history.push(locationToPush);
         }
-    }, [props.controlActiveView]);
+    }, [props.controlActiveView, props.activeControlEntityId]);
 
     useEffect(() => {
         const locationToPush = props.activeView === VIEW_TYPE.MAIN.REAL_TIME ? '/' : `/${props.activeView}`;
@@ -206,10 +208,11 @@ function Header(props) {
                                 className="header__btn header__disruption rounded-0 px-3"
                                 active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS }
                                 tabIndex="0"
-                                ariaLabel="Messaging section button"
+                                ariaLabel="Disruption section button"
                                 onClick={ () => {
                                     props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
                                     props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS);
+                                    props.updateActiveControlEntityId(undefined);
                                 } }>
                                 DISRUPTIONS
                             </CustomButton>
@@ -418,6 +421,8 @@ Header.propTypes = {
     }).isRequired,
     resetRealtimeToDefault: PropTypes.func.isRequired,
     useRecurringCancellationsGridView: PropTypes.bool.isRequired,
+    updateActiveControlEntityId: PropTypes.func.isRequired,
+    activeControlEntityId: PropTypes.string,
     queryParams: PropTypes.object,
     goToNotificationsView: PropTypes.func.isRequired,
 };
@@ -425,6 +430,7 @@ Header.propTypes = {
 Header.defaultProps = {
     hasAlerts: false,
     controlActiveView: '',
+    activeControlEntityId: '',
     queryParams: null,
 };
 
@@ -438,6 +444,7 @@ export default connect(
         hasAlerts: isAlertsEmpty(state),
         stopMessagesPermissions: getStopMessagesPermissions(state),
         useRecurringCancellationsGridView: useRecurringCancellationsGridView(state),
+        activeControlEntityId: getActiveControlEntityId(state),
         queryParams: getQueryParams(state),
     }),
     {
@@ -446,6 +453,7 @@ export default connect(
         updateControlDetailView,
         updateSecondaryPanelView,
         getStopMessagesAndPermissions,
+        updateActiveControlEntityId,
         goToNotificationsView,
     },
 )(Header);

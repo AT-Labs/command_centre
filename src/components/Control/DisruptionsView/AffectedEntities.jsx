@@ -93,7 +93,7 @@ export const AffectedEntities = (props) => {
                                     <div>
                                         <Button
                                             className="btn cc-btn-link pr-0 font-weight-bold"
-                                            id="view-workarounds-btn"
+                                            id="view-passenger-impact-btn"
                                             onClick={ props.viewPassengerImpactAction }
                                         >
                                             View passenger impact

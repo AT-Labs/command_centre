@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
-import { getActiveControlDetailView } from '../../redux/selectors/navigation';
+import { getActiveControlDetailView, getActiveControlEntityId } from '../../redux/selectors/navigation';
 import VIEW_TYPE from '../../types/view-types';
 import ErrorBanner from './ErrorBanner/ErrorBanner';
 import BlocksView from './BlocksView/BlocksView';
@@ -14,6 +14,7 @@ import OffCanvasLayout from '../Common/OffCanvasLayout/OffCanvasLayout';
 import SecondarySidePanel from '../Common/OffCanvasLayout/SecondarySidePanel/SecondarySidePanel';
 import StopMessagesView from './StopMessagingView/StopMessagesView';
 import DisruptionsView from './DisruptionsView';
+import DisruptionDetailView from './DisruptionsView/DisruptionDetailView';
 import AlertsView from './Alerts/AlertsView';
 import FleetsView from './Fleets/FleetsView';
 import TripReplaysView from './TripReplaysView/TripReplaysView';
@@ -36,6 +37,7 @@ const ControlView = (props) => {
     const isDataManagementView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT;
     const isNotificationsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS;
     const isRecurringCancellationsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.RECURRING_CANCELLATIONS;
+    const isDisruptionDetailsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS && props.activeControlEntityId;
 
     const isHeight100Percent = (isRoutesView && props.useRoutesTripsDatagrid && !props.isGroupedByRouteVariant && !props.isGroupedByRoute);
 
@@ -51,7 +53,8 @@ const ControlView = (props) => {
                     { isStopMessagesView && <StopMessagesView /> }
                     { isAlertsView && <AlertsView /> }
                     { isFleetsView && <FleetsView /> }
-                    { isDisruptionsView && <DisruptionsView /> }
+                    { isDisruptionsView && !isDisruptionDetailsView && <DisruptionsView /> }
+                    { isDisruptionDetailsView && <DisruptionDetailView /> }
                     { isTripReplaysView && <TripReplaysView /> }
                     { isDataManagementView && <DataManagement /> }
                     { isNotificationsView && <NotificationsView /> }
@@ -67,6 +70,11 @@ ControlView.propTypes = {
     useRoutesTripsDatagrid: PropTypes.bool.isRequired,
     isGroupedByRouteVariant: PropTypes.bool.isRequired,
     isGroupedByRoute: PropTypes.bool.isRequired,
+    activeControlEntityId: PropTypes.string,
+};
+
+ControlView.defaultProps = {
+    activeControlEntityId: '',
 };
 
 export default connect(
@@ -75,5 +83,6 @@ export default connect(
         useRoutesTripsDatagrid: useRoutesTripsDatagrid(state),
         isGroupedByRouteVariant: getGroupedByRouteVariantFilter(state),
         isGroupedByRoute: getGroupedByRouteFilter(state),
+        activeControlEntityId: getActiveControlEntityId(state),
     }),
 )(ControlView);

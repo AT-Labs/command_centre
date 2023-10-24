@@ -29,13 +29,6 @@ const loadDisruptions = disruptions => ({
     },
 });
 
-const updateDisruptionsPermissions = permissions => ({
-    type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_PERMISSIONS,
-    payload: {
-        permissions,
-    },
-});
-
 const updateLoadingDisruptionsState = isLoading => ({
     type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_LOADING,
     payload: {
@@ -64,6 +57,17 @@ const updateRequestingDisruptionState = (isRequesting, resultDisruptionId) => ({
         resultDisruptionId,
     },
 });
+
+const updateDisruptionsPermissionsAction = permissions => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_PERMISSIONS,
+    payload: {
+        permissions,
+    },
+});
+
+export const updateDisruptionsPermissions = permissions => (dispatch) => {
+    dispatch(updateDisruptionsPermissionsAction(permissions));
+};
 
 export const updateRequestingDisruptionResult = (
     resultDisruptionId,
@@ -147,7 +151,7 @@ export const updateRoutesByStop = (routesByStop, isLoadingRoutesByStop = false) 
 export const getDisruptions = () => dispatch => disruptionsMgtApi.getDisruptions()
     .then((response) => {
         const { disruptions, _links: { permissions } } = response;
-        dispatch(updateDisruptionsPermissions(permissions));
+        dispatch(updateDisruptionsPermissionsAction(permissions));
         dispatch(loadDisruptions(disruptions));
     })
     .catch(() => {

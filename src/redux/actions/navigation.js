@@ -43,3 +43,10 @@ export const updateQueryParams = queryParams => ({
         queryParams,
     },
 });
+
+export const updateActiveControlEntityId = activeControlEntityId => ({
+    type: ACTION_TYPE.UPDATE_ACTIVE_CONTROL_ENTITY_ID,
+    payload: {
+        activeControlEntityId,
+    },
+});

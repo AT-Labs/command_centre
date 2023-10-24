@@ -158,7 +158,7 @@ const DisruptionDetailView = (props) => {
         });
 
         const startDateTime = momentFromDateTime(startDate, startTime, now);
-        if (startDateTime && startDateTime.isValid() && status !== STATUSES.RESOLVED) {
+        if (startDateTime?.isValid() && status !== STATUSES.RESOLVED) {
             if (startDateTime.isAfter(now) && status === STATUSES.IN_PROGRESS) {
                 setStatus(STATUSES.NOT_STARTED);
             } else if (startDateTime.isSameOrBefore(now) && status === STATUSES.NOT_STARTED) {

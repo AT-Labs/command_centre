@@ -20,3 +20,4 @@ export const useDisruptionsNotificationsDirectLink = createSelector(
     appSettingState => (result(appSettingState, 'useDisruptionsNotificationsDirectLink') === 'true'),
 );
 export const useAddMultipleTrips = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useAddMultipleTrips') === 'true'));
+export const useViewDisruptionDetailsPage = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useViewDisruptionDetailsPage') === 'true'));

@@ -17,6 +17,12 @@ export const getActiveControlDetailView = createSelector(
     getNavigationState,
     navigationState => result(navigationState, 'activeControlDetailView'),
 );
+
+export const getActiveControlEntityId = createSelector(
+    getNavigationState,
+    navigationState => result(navigationState, 'activeControlEntityId'),
+);
+
 export const getRealTimeSidePanelIsOpen = createSelector(getNavigationState, navigationState => result(navigationState, 'isSidePanelOpen'));
 export const getRealTimeSidePanelIsActive = createSelector(
     getActiveRealTimeDetailView,
