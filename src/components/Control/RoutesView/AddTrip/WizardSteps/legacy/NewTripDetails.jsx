@@ -149,7 +149,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
     const newTrip = {
         serviceDate: moment(props.serviceDate).format(SERVICE_DATE_FORMAT),
         tripId: props.tripInstance.tripId,
-        routeId: props.tripInstance.routeShortName,
+        routeId: props.tripInstance.routeId,
         routeShortName: props.tripInstance.routeShortName,
         routeType: props.tripInstance.routeType,
         routeVariantId: props.tripInstance.routeVariantId,

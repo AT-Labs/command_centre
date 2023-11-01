@@ -159,7 +159,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
 
     const createNewTripObject = trip => ({
         tripId: tripTemplate.tripId,
-        routeId: tripTemplate.routeShortName,
+        routeId: tripTemplate.routeId,
         routeShortName: tripTemplate.routeShortName,
         routeType: tripTemplate.routeType,
         routeVariantId: tripTemplate.routeVariantId,
