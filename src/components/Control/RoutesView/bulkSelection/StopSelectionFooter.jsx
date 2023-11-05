@@ -49,6 +49,7 @@ export const StopSelectionFooter = (props) => {
         return {
             isThereSkippedStop: getStopsByStatus((stopStatus, status) => stopStatus === status).length > 0,
             isThereANotSkippedStop: getStopsByStatus((stopStatus, status) => stopStatus !== status).length > 0,
+            isThereANonStoppingStop: filter(selectedStops, stop => stop.status === StopStatus.nonStopping).length > 0,
         };
     };
 
@@ -67,6 +68,19 @@ export const StopSelectionFooter = (props) => {
                         Deselect all
                     </Button>
                 </li>
+                { props.onStopUpdated && (
+                    <>
+                        <li>
+                            <Button
+                                size="sm"
+                                className="selection-tools-footer__btn-non-stopping cc-btn-secondary d-flex align-items-center mr-3"
+                                onClick={ () => handleModalOnToggle(updateStopsModalTypes.SET_NON_STOPPING) }
+                                disabled={ checkIfButtonsShouldBeDisabled().isThereANonStoppingStop }>
+                                Non-stopping
+                            </Button>
+                        </li>
+                    </>
+                ) }
                 { areSkipStopsPermitted && (
                     <>
                         <li>
@@ -116,7 +130,7 @@ export const StopSelectionFooter = (props) => {
                 isModalOpen={ isModalOpen }
                 activeModal={ activeModal }
                 tripInstance={ tripInstance }
-                stopUpdatedHandler={ props.stopUpdatedHandler }
+                onStopUpdated={ props.onStopUpdated }
                 onClose={ () => handleModalOnToggle(updateStopsModalTypes.SKIP) } />
         </Footer>
     );
@@ -127,11 +141,11 @@ StopSelectionFooter.propTypes = {
     selectedStopsByTripKey: PropTypes.func.isRequired,
     deselectAllStopsByTrip: PropTypes.func.isRequired,
     useHeadsignUpdate: PropTypes.bool.isRequired,
-    stopUpdatedHandler: PropTypes.func,
+    onStopUpdated: PropTypes.func,
 };
 
 StopSelectionFooter.defaultProps = {
-    stopUpdatedHandler: undefined,
+    onStopUpdated: undefined,
 };
 
 export default connect(state => ({

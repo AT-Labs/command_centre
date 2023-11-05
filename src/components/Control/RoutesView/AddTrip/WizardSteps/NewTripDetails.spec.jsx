@@ -235,7 +235,7 @@ describe('NewTripDetails', () => {
         expect(addButton.exists()).toBe(false);
     });
 
-    it('handle headsign update when the footer invokes stopUpdatedHandler', () => {
+    it('handle headsign update when the footer invokes onStopUpdated', () => {
         wrapper.setProps({ useAddTripStopUpdate: true });
 
         // add one trip in the table
@@ -254,7 +254,7 @@ describe('NewTripDetails', () => {
         const stopSelectionFooter = wrapper.find(StopSelectionFooter);
 
         // Update headsign
-        stopSelectionFooter.invoke('stopUpdatedHandler')({
+        stopSelectionFooter.invoke('onStopUpdated')({
             stopCodes: ['Stop1', 'Stop3'],
             action: 'update-headsign',
             headsign: 'Henderson',
@@ -319,7 +319,7 @@ describe('NewTripDetails', () => {
         expect(addButton.exists()).toBe(true);
     });
 
-    it('handle platform change when the stops component invokes stopUpdatedHandler', () => {
+    it('handle platform change when the stops component invokes onStopUpdated', () => {
         wrapper.setProps({ useAddTripStopUpdate: true });
         // add one trip in the table
         const table = wrapper.find(NewTripsTable);
@@ -336,7 +336,7 @@ describe('NewTripDetails', () => {
         const stops = wrapper.find(Stops).at(0);
 
         // change platform
-        stops.invoke('stopUpdatedHandler')({
+        stops.invoke('onStopUpdated')({
             stopCodes: ['Stop1'],
             action: 'change-platform',
             newPlatform: {
@@ -371,6 +371,73 @@ describe('NewTripDetails', () => {
                 stopLat: -36.89687,
                 stopLon: 174.63186,
                 stopName: 'Sunnyvale Train Station 2',
+            },
+            {
+                stopCode: 'Stop2',
+                stopHeadsign: 'Britomart',
+                arrivalTime: '25:10:00',
+                departureTime: '25:12:00',
+                scheduledArrivalTime: '25:10:00',
+                scheduledDepartureTime: '25:12:00',
+            }],
+            referenceId: 'ref1',
+            agencyId: '',
+            depotId: '',
+            directionId: '',
+            routeId: '',
+            routeLongName: '',
+            routeShortName: '',
+            routeVariantId: '',
+            shapeId: '',
+            tripHeadsign: '',
+        }]);
+    });
+
+    it('handle set-non-stopping when the footer invokes onStopUpdated', () => {
+        wrapper.setProps({ useAddTripStopUpdate: true });
+
+        // add one trip in the table
+        const table = wrapper.find(NewTripsTable);
+        table.invoke('onAddedTripsChange')([
+            {
+                id: 'id',
+                startTime: '23:00',
+                endTime: '24:00:00',
+                referenceId: 'ref1',
+            },
+        ]);
+
+        // Select some stop
+        wrapper.setProps({ selectedStopsByTripKey: jest.fn(() => ({ mockStopKey: { status: true } })) });
+        const stopSelectionFooter = wrapper.find(StopSelectionFooter);
+
+        // Update headsign
+        stopSelectionFooter.invoke('onStopUpdated')({
+            stopCodes: ['Stop1'],
+            action: 'set-non-stopping',
+        });
+
+        // Unselect stops
+        wrapper.setProps({ selectedStopsByTripKey: jest.fn(() => ({})) });
+
+        // Click add
+        const addButton = wrapper.find(Button);
+        addButton.simulate('click');
+
+        expect(mockAddTrips).toHaveBeenCalledTimes(1);
+        expect(mockAddTrips).toHaveBeenCalledWith([{
+            ...mockTripInstance,
+            serviceDate: moment(mockServiceDate).format(SERVICE_DATE_FORMAT),
+            startTime: '23:00:00',
+            endTime: '24:00:00',
+            stops: [{
+                stopCode: 'Stop1',
+                stopHeadsign: 'Britomart',
+                arrivalTime: '25:00:00',
+                departureTime: '25:02:00',
+                scheduledArrivalTime: '25:00:00',
+                scheduledDepartureTime: '25:02:00',
+                status: 'NON_STOPPING',
             },
             {
                 stopCode: 'Stop2',

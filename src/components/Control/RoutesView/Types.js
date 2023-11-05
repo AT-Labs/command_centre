@@ -87,6 +87,7 @@ export const updateStopsModalTypes = {
     MOVE_SERVICE: 'move-service',
     UPDATE_HEADSIGN: 'update-headsign',
     CHANGE_PLATFORM: 'change-platform',
+    SET_NON_STOPPING: 'set-non-stopping',
 };
 
 export const updateTripsStatusModalOrigins = {

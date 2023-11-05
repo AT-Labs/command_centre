@@ -27,14 +27,14 @@ export class Stops extends React.Component {
         showActuals: PropTypes.bool,
         showScheduled: PropTypes.bool,
         hideFooter: PropTypes.bool,
-        stopUpdatedHandler: PropTypes.func,
+        onStopUpdated: PropTypes.func,
     };
 
     static defaultProps = {
         showActuals: true,
         showScheduled: true,
         hideFooter: false,
-        stopUpdatedHandler: undefined,
+        onStopUpdated: undefined,
     };
 
     constructor(props) {
@@ -156,13 +156,13 @@ export class Stops extends React.Component {
                                         lineInteractionClasses={ `${selectedEventClasses} ${hoverEventClasses}` }
                                         showScheduled={ this.props.showScheduled }
                                         showActuals={ this.props.showActuals }
-                                        stopUpdatedHandler={ this.props.stopUpdatedHandler } />
+                                        onStopUpdated={ this.props.onStopUpdated } />
                                 );
                             })}
                         </div>
                     </div>
                 </div>
-                { shouldStopSelectionFooterBeShown && <StopSelectionFooter tripInstance={ this.props.tripInstance } stopUpdatedHandler={ this.props.stopUpdatedHandler } /> }
+                { shouldStopSelectionFooterBeShown && <StopSelectionFooter tripInstance={ this.props.tripInstance } onStopUpdated={ this.props.onStopUpdated } /> }
             </section>
         );
     }

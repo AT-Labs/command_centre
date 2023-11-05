@@ -419,14 +419,14 @@ describe('<Stop />', () => {
         });
     });
 
-    describe('is stopUpdatedHandler being called', () => {
-        it('call stopUpdatedHandler if it is not undefined when changing platform', () => {
+    describe('is onStopUpdated being called', () => {
+        it('call onStopUpdated if it is not undefined when changing platform', () => {
             const mockStopUpdatedHandler = jest.fn();
             wrapper = setup({
                 tripInstance: { ...trip, status: 'NOT_STARTED' },
                 stop: { ...stop, status: 'NOT_PASSED' },
                 serviceDate: moment().format(),
-                stopUpdatedHandler: mockStopUpdatedHandler,
+                onStopUpdated: mockStopUpdatedHandler,
             });
 
             const confirmationModal = wrapper.find(ConfirmationModal);
@@ -435,6 +435,24 @@ describe('<Stop />', () => {
             confirmationModal.invoke('onAction')();
 
             expect(mockStopUpdatedHandler.mock.calls.length).to.be.equal(1);
+        });
+
+        it('should call updateTripInstanceStopPlatform if onStopUpdated is undefined when changing platform', () => {
+            const updateTripInstanceStopPlatformMock = jest.fn();
+            wrapper = setup({
+                tripInstance: { ...trip, status: 'NOT_STARTED' },
+                stop: { ...stop, status: 'NOT_PASSED' },
+                serviceDate: moment().format(),
+                onStopUpdated: undefined,
+                updateTripInstanceStopPlatform: updateTripInstanceStopPlatformMock,
+            });
+
+            const confirmationModal = wrapper.find(ConfirmationModal);
+
+            // change platform
+            confirmationModal.invoke('onAction')();
+
+            expect(updateTripInstanceStopPlatformMock.mock.calls.length).to.be.equal(1);
         });
     });
 });

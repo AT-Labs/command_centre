@@ -84,4 +84,12 @@ describe('StopSelectionFooter', () => {
             });
         });
     });
+
+    it('render non-stopping button when onStopUpdated is not undefined', () => {
+        const onStopUpdatedMock = jest.fn();
+        wrapper = setup({ onStopUpdated: onStopUpdatedMock });
+        const button = wrapper.find('.selection-tools-footer__btn-non-stopping');
+        expect(button.exists()).toEqual(true);
+        button.simulate('click');
+    });
 });

@@ -10,7 +10,7 @@ import { addTrips, deselectAllStopsByTrip, toggleAddTripModals, updateIsNewTripD
 import { getServiceDate } from '../../../../../redux/selectors/control/serviceDate';
 import VEHICLE_TYPES, { TRAIN_TYPE_ID } from '../../../../../types/vehicle-types';
 import Stops from '../../../Common/Stops/Stops';
-import { TripInstanceType, updateStopsModalTypes } from '../../Types';
+import { StopStatus, TripInstanceType, updateStopsModalTypes } from '../../Types';
 import { SERVICE_DATE_FORMAT } from '../../../../../utils/control/routes';
 import { TIME_PATTERN } from '../../../../../constants/time';
 import { convertTimeToMinutes, getDifferenceInMinutes, addMinutesToTime } from '../../../../../utils/helpers';
@@ -94,6 +94,12 @@ export const NewTripDetails = forwardRef((props, ref) => {
                         stopLat: options.newPlatform.stop_lat,
                         stopLon: options.newPlatform.stop_lon,
                         stopName: options.newPlatform.stop_name,
+                    };
+                }
+                if (options.action === updateStopsModalTypes.SET_NON_STOPPING) {
+                    return {
+                        ...stop,
+                        status: StopStatus.nonStopping,
                     };
                 }
             }
@@ -234,7 +240,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
                         <div className="col-12">
                             <Stops
                                 tripInstance={ props.useAddTripStopUpdate ? addPermissions(tripTemplate) : tripTemplate }
-                                stopUpdatedHandler={ handleStopUpdate }
+                                onStopUpdated={ handleStopUpdate }
                                 showScheduled={ false }
                                 showActuals={ false }
                                 hideFooter />
@@ -253,7 +259,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
                 </Form>
                 { shouldStopSelectionFooterBeShown
                     ? (
-                        <StopSelectionFooter tripInstance={ addPermissions(tripTemplate) } stopUpdatedHandler={ handleStopUpdate } />
+                        <StopSelectionFooter tripInstance={ addPermissions(tripTemplate) } onStopUpdated={ handleStopUpdate } />
                     )
                     : (
                         <footer className="mt-3">

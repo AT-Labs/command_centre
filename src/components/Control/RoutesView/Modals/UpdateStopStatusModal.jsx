@@ -16,9 +16,9 @@ import { TRAIN_TYPE_ID } from '../../../../types/vehicle-types';
 import { getRailHeadsignsStops } from '../../../../utils/transmitters/cc-static';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 
-const UpdateStopStatusModal = (props) => {
-    const { skipped, notPassed } = StopStatus;
-    const { SKIP, REINSTATE, MOVE_SERVICE, UPDATE_HEADSIGN } = updateStopsModalTypes;
+export const UpdateStopStatusModal = (props) => {
+    const { skipped, notPassed, nonStopping } = StopStatus;
+    const { SKIP, REINSTATE, MOVE_SERVICE, UPDATE_HEADSIGN, SET_NON_STOPPING } = updateStopsModalTypes;
     const { isModalOpen, activeModal, tripInstance, areSelectedStopsUpdating } = props;
     const [hasUpdateBeenTriggered, setHasUpdateBeenTriggered] = useState(false);
     const [newDestination, setNewDestination] = useState('');
@@ -66,6 +66,15 @@ const UpdateStopStatusModal = (props) => {
             label: <UpdateStatusModalsBtn label="Update destination" isLoading={ isUpdatingOnGoing } />,
             successMessage: 'Destination updated for the selected stops.',
         },
+        [SET_NON_STOPPING]: {
+            stopStatus: nonStopping,
+            className: `${SET_NON_STOPPING}-modal`,
+            title: 'Set non-stopping stop(s)',
+            errorMessage: 'stop(s) could not be set to non-stopping',
+            successMessage: 'stop(s) successfully set to non-stopping',
+            confirmationMessage: 'Are you sure you want to set the selected stops as non-stopping?',
+            label: <UpdateStatusModalsBtn label="Set stop(s) as non-stopping" isLoading={ isUpdatingOnGoing } />,
+        },
     };
 
     const pidCustomizationOptions = [
@@ -108,22 +117,34 @@ const UpdateStopStatusModal = (props) => {
                 stopCodes: Object.values(selectedStops).map(stop => stop.stopCode),
                 headsign: selectedPidCustomization !== 'None' ? newDestination + selectedPidCustomization : newDestination,
             };
-            if (props.stopUpdatedHandler) {
-                props.stopUpdatedHandler({ ...options, action: UPDATE_HEADSIGN });
+            if (props.onStopUpdated) {
+                props.onStopUpdated({ ...options, action: UPDATE_HEADSIGN });
             } else {
                 props.updateDestination(options, modalProps[activeModal].successMessage, tripInstance);
             }
         } else {
-            const filterSelectedStopsByModalType = status => ((activeModal === SKIP && status !== skipped) || (activeModal === REINSTATE && status === skipped));
+            const filterSelectedStopsByModalType = status => ((activeModal === SKIP && status !== skipped)
+            || (activeModal === REINSTATE && status === skipped) || (activeModal === SET_NON_STOPPING && status !== nonStopping));
             const selectedStopsByModalType = pickBy(selectedStops, stop => filterSelectedStopsByModalType(stop.status));
 
-            props.updateSelectedStopsStatus(
-                tripInstance,
-                selectedStopsByModalType,
-                modalProps[activeModal].stopStatus,
-                modalProps[activeModal].successMessage,
-                modalProps[activeModal].errorMessage,
-            );
+            if (props.onStopUpdated) {
+                const options = {
+                    tripId: tripInstance.tripId,
+                    serviceDate: tripInstance.serviceDate,
+                    startTime: tripInstance.startTime,
+                    stopCodes: Object.values(selectedStopsByModalType).map(stop => stop.stopCode),
+                    status: modalProps[activeModal].stopStatus,
+                };
+                props.onStopUpdated({ ...options, action: activeModal });
+            } else {
+                props.updateSelectedStopsStatus(
+                    tripInstance,
+                    selectedStopsByModalType,
+                    modalProps[activeModal].stopStatus,
+                    modalProps[activeModal].successMessage,
+                    modalProps[activeModal].errorMessage,
+                );
+            }
         }
     };
 
@@ -218,11 +239,11 @@ UpdateStopStatusModal.propTypes = {
     areSelectedStopsUpdating: PropTypes.bool.isRequired,
     updateSelectedStopsStatus: PropTypes.func.isRequired,
     updateDestination: PropTypes.func.isRequired,
-    stopUpdatedHandler: PropTypes.func,
+    onStopUpdated: PropTypes.func,
 };
 
 UpdateStopStatusModal.defaultProps = {
-    stopUpdatedHandler: undefined,
+    onStopUpdated: undefined,
 };
 
 export default connect(state => ({

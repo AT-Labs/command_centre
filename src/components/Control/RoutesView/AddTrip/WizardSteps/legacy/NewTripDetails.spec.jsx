@@ -186,14 +186,14 @@ describe('NewTripDetails (Legacy)', () => {
         expect(addButton.exists()).toBe(false);
     });
 
-    it('handle headsign update when the footer invokes stopUpdatedHandler', () => {
+    it('handle headsign update when the footer invokes onStopUpdated', () => {
         wrapper.setProps({ useAddTripStopUpdate: true });
         // Select some stop
         wrapper.setProps({ selectedStopsByTripKey: jest.fn(() => ({ mockStopKey: { status: true } })) });
         const stopSelectionFooter = wrapper.find(StopSelectionFooter);
 
         // Update headsign
-        stopSelectionFooter.invoke('stopUpdatedHandler')({
+        stopSelectionFooter.invoke('onStopUpdated')({
             stopCodes: ['Stop1', 'Stop3'],
             action: 'update-headsign',
             headsign: 'Henderson',
@@ -254,13 +254,13 @@ describe('NewTripDetails (Legacy)', () => {
         expect(addButton.exists()).toBe(true);
     });
 
-    it('handle platform change when the stops component invokes stopUpdatedHandler', () => {
+    it('handle platform change when the stops component invokes onStopUpdated', () => {
         wrapper.setProps({ useAddTripStopUpdate: true });
         // Select some stop
         const stops = wrapper.find(Stops);
 
         // change platform
-        stops.invoke('stopUpdatedHandler')({
+        stops.invoke('onStopUpdated')({
             stopCodes: ['Stop1'],
             action: 'change-platform',
             newPlatform: {
@@ -293,6 +293,57 @@ describe('NewTripDetails (Legacy)', () => {
                 stopLat: -36.89687,
                 stopLon: 174.63186,
                 stopName: 'Sunnyvale Train Station 2',
+            },
+            {
+                stopCode: 'Stop2',
+                stopHeadsign: 'Britomart',
+                scheduledArrivalTime: '12:10:00',
+                scheduledDepartureTime: '12:12:00',
+            }],
+            referenceId: '',
+            agencyId: '',
+            depotId: '',
+            directionId: '',
+            routeId: '',
+            routeLongName: '',
+            routeShortName: '',
+            routeVariantId: '',
+            shapeId: '',
+            tripHeadsign: '',
+        }]);
+    });
+
+    it('handle set-non-stopping update when the footer invokes onStopUpdated', () => {
+        wrapper.setProps({ useAddTripStopUpdate: true });
+        // Select some stop
+        wrapper.setProps({ selectedStopsByTripKey: jest.fn(() => ({ mockStopKey: { status: true } })) });
+        const stopSelectionFooter = wrapper.find(StopSelectionFooter);
+
+        // Update headsign
+        stopSelectionFooter.invoke('onStopUpdated')({
+            stopCodes: ['Stop1'],
+            action: 'set-non-stopping',
+        });
+
+        // Unselect stops
+        wrapper.setProps({ selectedStopsByTripKey: jest.fn(() => ({})) });
+
+        // Click add
+        const addButton = wrapper.find(Button);
+        addButton.simulate('click');
+
+        expect(mockAddTrips).toHaveBeenCalledTimes(1);
+        expect(mockAddTrips).toHaveBeenCalledWith([{
+            ...mockTripInstance,
+            serviceDate: moment(mockServiceDate).format(SERVICE_DATE_FORMAT),
+            startTime: '',
+            endTime: '',
+            stops: [{
+                stopCode: 'Stop1',
+                stopHeadsign: 'Britomart',
+                scheduledArrivalTime: '12:00:00',
+                scheduledDepartureTime: '12:02:00',
+                status: 'NON_STOPPING',
             },
             {
                 stopCode: 'Stop2',

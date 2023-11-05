@@ -35,14 +35,14 @@ export class Stop extends React.Component {
         useHeadsignUpdate: PropTypes.bool.isRequired,
         showActuals: PropTypes.bool,
         showScheduled: PropTypes.bool,
-        stopUpdatedHandler: PropTypes.func,
+        onStopUpdated: PropTypes.func,
     };
 
     static defaultProps = {
         isStopInSelectionRange: false,
         showActuals: true,
         showScheduled: true,
-        stopUpdatedHandler: undefined,
+        onStopUpdated: undefined,
     };
 
     constructor(props) {
@@ -96,8 +96,8 @@ export class Stop extends React.Component {
     hideChangePlatformModal = () => this.setState({ isChangePlatformModalOpen: false, newPlatform: {} });
 
     handleChangePlatform = () => {
-        if (this.props.stopUpdatedHandler) {
-            this.props.stopUpdatedHandler({
+        if (this.props.onStopUpdated) {
+            this.props.onStopUpdated({
                 stopCodes: [this.props.stop.stopCode],
                 newPlatform: this.state.newPlatform,
                 action: updateStopsModalTypes.CHANGE_PLATFORM,
