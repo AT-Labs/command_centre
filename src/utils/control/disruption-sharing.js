@@ -45,7 +45,9 @@ function generateHtmlNotes(notes) {
                 ${[...notes].reverse().map(note => (`<tr>
                 <td style="vertical-align: top; width: 25%;">${formatCreatedUpdatedTime(note.createdTime)}</td>
                 <td style="vertical-align: top; width: 25%;">${note.createdBy}</td>
-                <td style="vertical-align: top; width: 100%; white-space: pre-wrap">${note.description}</td>
+                <td style="vertical-align: top; width: 100%;">
+                    <pre style="font-family: inherit;">${note.description}</pre>
+                </td>
                 </tr>`)).join('')}
             </tbody>
         </table>`;
