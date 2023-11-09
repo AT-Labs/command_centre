@@ -17,7 +17,7 @@ import { getControlBlockViewPermission } from '../../../redux/selectors/user';
 import MESSAGE_TYPES, { MESSAGE_ACTION_TYPES } from '../../../types/message-types';
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
 import VEHICLE_TYPE, { TRAIN_TYPE_ID } from '../../../types/vehicle-types';
-import { formatTripDelay } from '../../../utils/control/routes';
+import { formatTripDelay, isTripAdded } from '../../../utils/control/routes';
 import { getTripInstanceId, getTripTimeDisplay } from '../../../utils/helpers';
 import { isMoveToStopPermitted, isTripCancelPermitted, isTripCopyPermitted, isTripDelayPermitted, isHideCancellationPermitted } from '../../../utils/user-permissions';
 import ButtonBar from '../Common/ButtonBar/ButtonBar';
@@ -189,7 +189,7 @@ export class TripView extends React.Component {
             }
         }
 
-        if (isTripCopyPermitted(tripInstance)) {
+        if (isTripCopyPermitted(tripInstance) && !isTripAdded(tripInstance)) {
             buttonBarConfig.push({
                 label: 'Duplicate trip',
                 action: () => this.setState({ isCopyTripModalOpen: true }),

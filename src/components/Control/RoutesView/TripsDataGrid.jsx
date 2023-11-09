@@ -15,7 +15,7 @@ import { getActiveRoute } from '../../../redux/selectors/control/routes/routes';
 import { getActiveRouteVariant } from '../../../redux/selectors/control/routes/routeVariants';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
-import { formatTripDelay } from '../../../utils/control/routes';
+import { formatTripDelay, isTripAdded } from '../../../utils/control/routes';
 import { getTripInstanceId, getTripTimeDisplay, getTimePickerOptions } from '../../../utils/helpers';
 import TripIcon from '../Common/Trip/TripIcon';
 import TripDelay from '../Common/Trip/TripDelay';
@@ -41,10 +41,7 @@ import { useAddTrip, useHideTrip, useRoutesTripsFilterCollapse } from '../../../
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
 
-const formatSourceColumn = (row) => {
-    const lowerCaseSource = lowerCase(row.source);
-    return lowerCaseSource === 'manual' ? <FaCheckCircle className="icon-blue-check" size={ 18 } /> : '';
-};
+const formatSourceColumn = row => (isTripAdded(row) ? <FaCheckCircle className="icon-blue-check" size={ 18 } /> : '');
 
 const formatHideColumn = (row) => {
     const display = get(row.tripInstance, 'display');
