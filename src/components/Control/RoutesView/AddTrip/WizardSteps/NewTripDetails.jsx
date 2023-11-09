@@ -34,6 +34,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
         serviceDate: moment(props.serviceDate).format(SERVICE_DATE_FORMAT),
     });
     const [currentTrip, setCurrentTrip] = useState();
+    const [currentTime, setCurrentTime] = useState(new Date());
 
     useImperativeHandle(ref, () => ({
         shouldShowConfirmationModal: () => !isFormEmpty,
@@ -53,6 +54,16 @@ export const NewTripDetails = forwardRef((props, ref) => {
         props.deselectAllStopsByTrip({ tripId: null });
         setTripsToAdd([]);
     }, [props.tripInstance]);
+
+    useEffect(() => {
+        const secondsUntilNextMinute = 60 - currentTime.getSeconds();
+
+        const intervalId = setInterval(() => {
+            setCurrentTime(new Date());
+        }, secondsUntilNextMinute * 1000);
+
+        return () => clearInterval(intervalId);
+    }, [currentTime]);
 
     const isReferenceIdRequired = () => tripTemplate.routeType === TRAIN_TYPE_ID;
 
@@ -136,7 +147,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
         setIsActionDisabled(
             tripsToAdd.some(trip => !isTripValid(trip.startTime, trip.referenceId)) || hasDuplicateStartTime(tripsToAdd),
         );
-    }, [tripsToAdd]);
+    }, [tripsToAdd, currentTime]);
 
     const getUpdatedStopTimes = (tripInstance, newStartTime) => {
         if (!isStartTimeValid(newStartTime)) {

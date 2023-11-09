@@ -31,6 +31,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
     const [referenceId, setReferenceId] = useState('');
     const [isFormEmpty, setIsFormEmpty] = useState(true);
     const [stops, setStops] = useState(props.tripInstance.stops);
+    const [currentTime, setCurrentTime] = useState(new Date());
 
     useImperativeHandle(ref, () => ({
         shouldShowConfirmationModal: () => some([startTime, referenceId], value => !isEmpty(value?.trim())),
@@ -110,6 +111,21 @@ export const NewTripDetails = forwardRef((props, ref) => {
             return stop;
         }));
     };
+
+    useEffect(() => {
+        const secondsUntilNextMinute = 60 - currentTime.getSeconds();
+
+        const intervalId = setInterval(() => {
+            setCurrentTime(new Date());
+        }, secondsUntilNextMinute * 1000);
+
+        if (!isStartTimeValid(startTime)) {
+            setIsStartTimeInvalid(true);
+            setIsActionDisabled(true);
+        }
+
+        return () => clearInterval(intervalId);
+    }, [currentTime]);
 
     // This method add temporary permissions to the stops so that stops are editable in the Stops component.
     const addPermissions = trip => ({
