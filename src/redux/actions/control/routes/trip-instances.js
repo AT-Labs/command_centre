@@ -28,6 +28,8 @@ import { StopStatus } from '../../../../components/Control/RoutesView/Types';
 import { getFilteredRouteVariants, getActiveRouteVariant } from '../../../selectors/control/routes/routeVariants';
 import { getAllRoutesArray, getActiveRoute } from '../../../selectors/control/routes/routes';
 import { ACTION_RESULT } from '../../../../types/add-trip-types';
+import { captureError } from '../../../../utils/logger';
+import { UpdateStopPlatformError } from '../../../../types/exception-types';
 
 const loadTripInstances = (tripInstances, timestamp) => ({
     type: ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES,
@@ -276,11 +278,25 @@ export const updateTripInstanceStopStatus = (options, successMessage, actionType
 );
 
 export const updateTripInstanceStopPlatform = (options, successMessage) => (dispatch) => {
-    handleTripInstanceUpdate(
-        () => TRIP_MGT_API.updateStopId(options),
-        { ...options, successMessage, actionType: MESSAGE_ACTION_TYPES.stopPlatformUpdate },
-        dispatch,
-    );
+    if (options.stopId) {
+        handleTripInstanceUpdate(
+            () => TRIP_MGT_API.updateStopId(options),
+            { ...options, successMessage, actionType: MESSAGE_ACTION_TYPES.stopPlatformUpdate },
+            dispatch,
+        );
+    } else {
+        captureError(
+            new UpdateStopPlatformError('Failed to update stop platform as the new platform is not valid.'),
+            options,
+        );
+        const tripInstanceId = getTripInstanceId(options);
+        dispatch(setTripInstanceActionResult(
+            'Failed to update the stop platform.',
+            ERROR_MESSAGE_TYPE,
+            tripInstanceId,
+            MESSAGE_ACTION_TYPES.stopPlatformUpdate,
+        ));
+    }
 };
 
 export const copyTrip = (options, successMessage) => (dispatch) => {

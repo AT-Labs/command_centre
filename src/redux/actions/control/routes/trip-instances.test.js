@@ -13,7 +13,7 @@ import {
 import * as tripMgtApi from '../../../../utils/transmitters/trip-mgt-api';
 import * as blockMgtApi from '../../../../utils/transmitters/block-mgt-api';
 import ACTION_TYPE from '../../../action-types';
-import { CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES } from '../../../../types/message-types';
+import { CONFIRMATION_MESSAGE_TYPE, ERROR_MESSAGE_TYPE, MESSAGE_ACTION_TYPES } from '../../../../types/message-types';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
 import { getTripInstanceId } from '../../../../utils/helpers';
 
@@ -593,6 +593,7 @@ describe('Trip instances actions', () => {
             tripId: mockTrip.tripId,
             serviceDate: '20190608',
             startTime: '10:00:00',
+            stopId: '9102-40006383'
         };
         const successMessage = 'success';
         const tripInstanceId = getTripInstanceId(mockTrip);
@@ -619,6 +620,35 @@ describe('Trip instances actions', () => {
         ];
 
         await store.dispatch(updateTripInstanceStopPlatform(options, successMessage));
+        expect(store.getActions()).to.eql(expectedActions);
+    });
+
+    it('Fail to update stop platform when stopId is null', async () => {
+        const fakeUpdateStopId = sandbox.fake.resolves(mockTrip);
+        sandbox.stub(tripMgtApi, 'updateStopId').callsFake(fakeUpdateStopId);
+
+        const options = {
+            tripId: mockTrip.tripId,
+            serviceDate: '20190608',
+            startTime: '10:00:00',
+        };
+        const errorMessage = 'Failed to update the stop platform.';
+        const tripInstanceId = getTripInstanceId(mockTrip);
+
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
+                payload: {
+                    actionType: MESSAGE_ACTION_TYPES.stopPlatformUpdate,
+                    id: 'actionResult6',
+                    body: errorMessage,
+                    type: ERROR_MESSAGE_TYPE,
+                    tripId: tripInstanceId,
+                },
+            },
+        ];
+
+        await store.dispatch(updateTripInstanceStopPlatform(options, ''));
         expect(store.getActions()).to.eql(expectedActions);
     });
 

@@ -110,6 +110,7 @@ export class Stop extends React.Component {
                     startTime: this.props.tripInstance.startTime,
                     stopSequence: this.props.stop.stopSequence,
                     stopId: this.state.newPlatform.stop_id,
+                    stopCode: this.state.newPlatform.stop_code,
                 },
                 `Platform for stop #${this.props.stop.stopSequence} has been changed`,
             );
