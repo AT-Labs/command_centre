@@ -7,14 +7,14 @@ import { connect } from 'react-redux';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
 import { goToBlocksView } from '../../../redux/actions/control/link';
 import {
-    clearTripInstanceActionResult, copyTrip, moveTripToNextStop, updateTripInstanceDelay, setTripStatusModalOrigin,
+    clearTripInstanceActionResult, copyTrip, moveTripToNextStop, updateTripInstanceDelay, setTripStatusModalOrigin, removeBulkUpdateMessages,
 } from '../../../redux/actions/control/routes/trip-instances';
 import { getAgencies } from '../../../redux/selectors/control/agencies';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
 import { getTripInstancesActionLoading, getTripInstancesActionResults, getTripStatusModalOriginState } from '../../../redux/selectors/control/routes/trip-instances';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import { getControlBlockViewPermission } from '../../../redux/selectors/user';
-import MESSAGE_TYPES, { MESSAGE_ACTION_TYPES } from '../../../types/message-types';
+import MESSAGE_TYPES, { CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES } from '../../../types/message-types';
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
 import VEHICLE_TYPE, { TRAIN_TYPE_ID } from '../../../types/vehicle-types';
 import { formatTripDelay, isTripAdded } from '../../../utils/control/routes';
@@ -54,6 +54,7 @@ export class TripView extends React.Component {
         tripStatusModalOrigin: PropTypes.string,
         setTripStatusModalOrigin: PropTypes.func.isRequired,
         useHideTrip: PropTypes.bool.isRequired,
+        removeBulkUpdateMessages: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -137,6 +138,7 @@ export class TripView extends React.Component {
                 label: 'Cancel trip',
                 icon: <FaTimesCircle className="text-danger" />,
                 action: () => {
+                    this.props.removeBulkUpdateMessages(CONFIRMATION_MESSAGE_TYPE);
                     this.setState({ isSetTripStatusModalOpen: true });
                     this.setState({ tripStatusModalType: updateTripsStatusModalTypes.CANCEL_MODAL });
                     this.props.setTripStatusModalOrigin(updateTripsStatusModalOrigins.TRIP_VIEW);
@@ -149,6 +151,7 @@ export class TripView extends React.Component {
                 label: 'Reinstate trip',
                 icon: <FaCheckCircle className="text-success" />,
                 action: () => {
+                    this.props.removeBulkUpdateMessages(CONFIRMATION_MESSAGE_TYPE);
                     this.setState({ isSetTripStatusModalOpen: true });
                     this.setState({ tripStatusModalType: updateTripsStatusModalTypes.REINSTATE_MODAL });
                     this.props.setTripStatusModalOrigin(updateTripsStatusModalOrigins.TRIP_VIEW);
@@ -161,6 +164,7 @@ export class TripView extends React.Component {
                 label: 'Hide cancellation',
                 icon: <FaEyeSlash />,
                 action: () => {
+                    this.props.removeBulkUpdateMessages(CONFIRMATION_MESSAGE_TYPE);
                     this.setState({ isSetTripStatusModalOpen: true });
                     this.setState({ tripStatusModalType: updateTripsStatusModalTypes.HIDE_TRIP_MODAL });
                     this.props.setTripStatusModalOrigin(updateTripsStatusModalOrigins.TRIP_VIEW);
@@ -330,4 +334,4 @@ export default connect(state => ({
     vehicleAllocations: getAllocations(state),
     tripStatusModalOrigin: getTripStatusModalOriginState(state),
     useHideTrip: useHideTrip(state),
-}), { clearTripInstanceActionResult, updateTripInstanceDelay, goToBlocksView, copyTrip, moveTripToNextStop, setTripStatusModalOrigin })(TripView);
+}), { clearTripInstanceActionResult, updateTripInstanceDelay, goToBlocksView, copyTrip, moveTripToNextStop, setTripStatusModalOrigin, removeBulkUpdateMessages })(TripView);

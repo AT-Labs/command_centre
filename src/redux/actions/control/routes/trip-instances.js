@@ -1,4 +1,4 @@
-import { get, keyBy, find, uniqueId, filter, size, findKey, inRange, map, isEmpty, values, findIndex, reduce, findLastIndex, sortBy, isEqual } from 'lodash-es';
+import { get, keyBy, find, uniqueId, filter, size, findKey, inRange, map, values, findIndex, reduce, findLastIndex, sortBy, isEqual } from 'lodash-es';
 import moment from 'moment';
 
 import VIEW_TYPE from '../../../../types/view-types';
@@ -11,7 +11,6 @@ import { ERROR_MESSAGE_TYPE, CONFIRMATION_MESSAGE_TYPE, MESSAGE_ACTION_TYPES } f
 import { getTripInstanceId } from '../../../../utils/helpers';
 import { setBannerError } from '../../activity';
 import {
-    getSelectedTripInstances,
     getTripInstancesActionResults,
     getSelectedStops,
     getSelectedStopsByTripKey,
@@ -389,11 +388,10 @@ export const bulkUpdateTripsDisplay = (operateTrips, successMessage, errorMessag
 };
 
 export const removeBulkUpdateMessages = type => (dispatch, getState) => {
-    const selected = getSelectedTripInstances(getState());
     const actionResult = getTripInstancesActionResults(getState());
 
     actionResult.forEach((action) => {
-        if (action.type === type && !isEmpty(selected[action.tripId])) {
+        if (action.type === type) {
             dispatch(clearTripInstanceActionResult(action.id));
         }
     });
