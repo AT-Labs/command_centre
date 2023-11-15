@@ -126,9 +126,26 @@ async function generateAttachment(uploadFile) {
     return attachment;
 }
 
+function getSubjectMode(mode) {
+    if (mode.includes('Bus') && mode.includes('Train') && mode.includes('Ferry')) {
+        return 'Multi-Modal';
+    }
+    if (mode.includes('Bus') && mode.includes('Train')) {
+        return 'Bus & Train';
+    }
+    if (mode.includes('Bus') && mode.includes('Ferry')) {
+        return 'Bus & Ferry';
+    }
+    if (mode.includes('Train') && mode.includes('Ferry')) {
+        return 'Ferry & Train';
+    }
+
+    return mode;
+}
+
 export async function shareToEmail(disruption) {
-    const mode = disruption.mode ? `-${disruption.mode}` : '';
-    const subject = `Re: ${disruption.incidentNo}-${disruption.severity}${mode}-${disruption.header}`;
+    const mode = disruption.mode ? `${getSubjectMode(disruption.mode)} ` : '';
+    const subject = `Re: ${mode}Disruption Notification - ${disruption.header} - ${disruption.incidentNo}`;
     const boundary = '--disruption_email_boundary_string';
     const { REACT_APP_DISRUPTION_SHARING_EMAIL_FROM, REACT_APP_DISRUPTION_SHARING_EMAIL_CC } = process.env;
     let emailFile = 'data:message/rfc822 eml;charset=utf-8,'

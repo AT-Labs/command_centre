@@ -128,12 +128,32 @@ describe('shareToEmail', () => {
 
     test('should generate subject', async () => {
         await shareToEmail(disruption);
-        expect(link.href).toContain('Subject: Re: DISR0001-UNKNOWN-Train-Holidays for everyone');
+        expect(link.href).toContain('Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should handle empty mode', async () => {
         await shareToEmail({ ...disruption, mode: null });
-        expect(link.href).toContain('Subject: Re: DISR0001-UNKNOWN-Holidays for everyone');
+        expect(link.href).toContain('Subject: Re: Disruption Notification - Holidays for everyone - DISR0001');
+    });
+
+    test('should generate subject for multiple modes', async () => {
+        await shareToEmail({ ...disruption, mode: 'Bus, Train, Ferry' });
+        expect(link.href).toContain('Subject: Re: Multi-Modal Disruption Notification - Holidays for everyone - DISR0001');
+    });
+
+    test('should generate subject for Bus and Train', async () => {
+        await shareToEmail({ ...disruption, mode: 'Bus, Train' });
+        expect(link.href).toContain('Subject: Re: Bus & Train Disruption Notification - Holidays for everyone - DISR0001');
+    });
+
+    test('should generate subject for Bus and Ferry', async () => {
+        await shareToEmail({ ...disruption, mode: 'Bus, Ferry' });
+        expect(link.href).toContain('Subject: Re: Bus & Ferry Disruption Notification - Holidays for everyone - DISR0001');
+    });
+
+    test('should generate subject for Ferry and Train', async () => {
+        await shareToEmail({ ...disruption, mode: 'Train, Ferry' });
+        expect(link.href).toContain('Subject: Re: Ferry & Train Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should handle empty workaround', async () => {
