@@ -6,7 +6,7 @@ import {
     LABEL_CAUSE, LABEL_CREATED_AT, LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_END_DATE, LABEL_END_TIME,
     LABEL_HEADER, LABEL_LAST_UPDATED_AT, LABEL_SEVERITY,
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME,
-    LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_CREATED_BY, LABEL_LAST_UPDATED_BY, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
+    LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
 } from '../../constants/disruptions';
 import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES } from '../../types/disruptions-types';
 import { CAUSES, IMPACTS, OLD_CAUSES, OLD_IMPACTS } from '../../types/disruption-cause-and-effect';
@@ -43,8 +43,7 @@ function generateHtmlNotes(notes) {
         return `<table style="display: table; border-spacing: 2px; border-color: grey;">
             <tbody>
                 ${[...notes].reverse().map(note => (`<tr>
-                <td style="vertical-align: top; width: 25%;">${formatCreatedUpdatedTime(note.createdTime)}</td>
-                <td style="vertical-align: top; width: 25%;">${note.createdBy}</td>
+                <td style="vertical-align: top; width: 40%;">${formatCreatedUpdatedTime(note.createdTime)}</td>
                 <td style="vertical-align: top; width: 100%;">
                     <pre style="font-family: inherit;">${note.description}</pre>
                 </td>
@@ -103,9 +102,7 @@ function generateHtmlEmailBody(disruption) {
             ${createHtmlLine(LABEL_END_TIME, endDateTimeMoment.isValid() ? endDateTimeMoment.format(TIME_FORMAT) : '')}
             ${createHtmlLine(LABEL_URL, disruption.url)}
             ${createHtmlLine(LABEL_CREATED_AT, formatCreatedUpdatedTime(disruption.createdTime))}
-            ${createHtmlLine(LABEL_CREATED_BY, disruption.createdBy)}
             ${createHtmlLine(LABEL_LAST_UPDATED_AT, formatCreatedUpdatedTime(disruption.lastUpdatedTime))}
-            ${createHtmlLine(LABEL_LAST_UPDATED_BY, disruption.lastUpdatedBy)}
             ${createHtmlLine(LABEL_DISRUPTION_NOTES, disruption.notes)}
             ${createHtmlLine(LABEL_WORKAROUNDS, disruption.workarounds)}
         </tbody>
