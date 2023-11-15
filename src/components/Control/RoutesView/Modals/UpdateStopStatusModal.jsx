@@ -124,7 +124,7 @@ export const UpdateStopStatusModal = (props) => {
             }
         } else {
             const filterSelectedStopsByModalType = status => ((activeModal === SKIP && status !== skipped)
-            || (activeModal === REINSTATE && status === skipped) || (activeModal === SET_NON_STOPPING && status !== nonStopping));
+            || (activeModal === REINSTATE && (status === skipped || status === nonStopping)) || (activeModal === SET_NON_STOPPING && status !== nonStopping));
             const selectedStopsByModalType = pickBy(selectedStops, stop => filterSelectedStopsByModalType(stop.status));
 
             if (props.onStopUpdated) {

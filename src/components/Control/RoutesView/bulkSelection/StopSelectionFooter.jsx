@@ -48,7 +48,7 @@ export const StopSelectionFooter = (props) => {
         const getStopsByStatus = comparator => filter(selectedStops, stop => comparator(stop.status, StopStatus.skipped));
         return {
             isThereSkippedStop: getStopsByStatus((stopStatus, status) => stopStatus === status).length > 0,
-            isThereANotSkippedStop: getStopsByStatus((stopStatus, status) => stopStatus !== status).length > 0,
+            isThereANotSkippedStop: filter(selectedStops, stop => stop.status !== StopStatus.skipped && stop.status !== StopStatus.nonStopping).length > 0,
             isThereANonStoppingStop: filter(selectedStops, stop => stop.status === StopStatus.nonStopping).length > 0,
         };
     };
@@ -69,17 +69,15 @@ export const StopSelectionFooter = (props) => {
                     </Button>
                 </li>
                 { props.onStopUpdated && (
-                    <>
-                        <li>
-                            <Button
-                                size="sm"
-                                className="selection-tools-footer__btn-non-stopping cc-btn-secondary d-flex align-items-center mr-3"
-                                onClick={ () => handleModalOnToggle(updateStopsModalTypes.SET_NON_STOPPING) }
-                                disabled={ checkIfButtonsShouldBeDisabled().isThereANonStoppingStop }>
-                                Non-stopping
-                            </Button>
-                        </li>
-                    </>
+                    <li>
+                        <Button
+                            size="sm"
+                            className="selection-tools-footer__btn-non-stopping cc-btn-secondary d-flex align-items-center mr-3"
+                            onClick={ () => handleModalOnToggle(updateStopsModalTypes.SET_NON_STOPPING) }
+                            disabled={ checkIfButtonsShouldBeDisabled().isThereANonStoppingStop }>
+                            Non-stopping
+                        </Button>
+                    </li>
                 ) }
                 { areSkipStopsPermitted && (
                     <>
@@ -97,7 +95,7 @@ export const StopSelectionFooter = (props) => {
                                 size="sm"
                                 className="selection-tools-footer__btn-reinstate cc-btn-secondary d-flex align-items-center mr-3"
                                 onClick={ () => handleModalOnToggle(updateStopsModalTypes.REINSTATE) }
-                                disabled={ !checkIfButtonsShouldBeDisabled().isThereSkippedStop }>
+                                disabled={ !(checkIfButtonsShouldBeDisabled().isThereSkippedStop || checkIfButtonsShouldBeDisabled().isThereANonStoppingStop) }>
                                 Reinstate stop
                             </Button>
                         </li>
@@ -113,7 +111,7 @@ export const StopSelectionFooter = (props) => {
                             Move service to this stop
                         </Button>
                     </li>
-                )}
+                ) }
                 { props.useHeadsignUpdate && areUpdateHeadsignsPermitted && (
                     <li>
                         <Button

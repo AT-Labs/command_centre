@@ -79,9 +79,9 @@ export class Stop extends React.Component {
 
     isStopMutationPermitted = () => IS_LOGIN_NOT_REQUIRED || isChangeStopPermitted(this.props.stop);
 
-    isSkipStopDisabled = () => this.isSkipped() || !this.isStopSkippingPermitted() || !this.isStopMutationPossible();
+    isSkipStopDisabled = () => (this.isSkipped() || this.isNonStoppingStop()) || !this.isStopSkippingPermitted() || !this.isStopMutationPossible();
 
-    isReinstateStopDisabled = () => !this.isSkipped() || !this.isStopSkippingPermitted() || !this.isStopMutationPossible();
+    isReinstateStopDisabled = () => !(this.isSkipped() || this.isNonStoppingStop()) || !this.isStopSkippingPermitted() || !this.isStopMutationPossible();
 
     shouldSelectStopButtonBeDisabled = () => !((this.isStopSkippingPermitted() && this.isStopMutationPossible())
         || (this.isUpdateStopHeadsignPossible() && this.isUpdateHeadsignPermitted()));
@@ -120,7 +120,8 @@ export class Stop extends React.Component {
 
     getStopControlClassNames = () => {
         let stopControlClassNames = 'stop-control';
-        if (this.isSkipped() || this.isNonStoppingStop()) { stopControlClassNames += ' stop-control--skipped'; }
+        if (this.isSkipped()) { stopControlClassNames += ' stop-control--skipped'; }
+        if (this.isNonStoppingStop()) { stopControlClassNames += ' stop-control--non-stopping'; }
         if (this.props.isCurrent) { stopControlClassNames += ' stop-control--current'; }
         if (this.isSkipStopDisabled()) { stopControlClassNames += ' stop-control--disabled'; }
         return stopControlClassNames;
