@@ -13,6 +13,10 @@
     color: $at-light-gray;
 }
 
+.row-highlight {
+    background-color: tint($at-orange, 15%);
+}
+
 .notification-page-overlay {
     position: absolute;
     top: 0;

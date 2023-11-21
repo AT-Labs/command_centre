@@ -13,6 +13,55 @@ const mockStore = configureMockStore([thunk]);
 let store;
 let sandbox;
 
+const mockNotifications = {
+    items: [
+        {
+            notificationContentId: 'cd00a067-1249-4ad9-9ffb-f365937a447b',
+            startTime: 1669777740,
+            endTime: null,
+            condition: 'draft',
+            status: 'in-progress',
+            source: {
+                identifier: 131113,
+                type: 'DISR',
+                version: 1,
+                title: 'New cause (congestion) new effect (lift not working)',
+            },
+            cause: 'CONGESTION',
+            informedEntities: [
+                {
+                    informedEntityType: 'route',
+                    stops: [],
+                    routeId: 'NX1-203',
+                    routeShortName: 'NX1',
+                    routeType: 3,
+                },
+            ],
+            _links: {
+                permissions: [
+                    {
+                        _rel: 'view',
+                    },
+                    {
+                        _rel: 'edit',
+                    },
+                ],
+            },
+        },
+    ],
+    totalResults: 2194,
+    _links: {
+        permissions: [
+            {
+                _rel: 'view',
+            },
+            {
+                _rel: 'edit',
+            },
+        ],
+    },
+};
+
 const defaultNotiStore = {
     datagridConfig: {
         columns: [],
@@ -68,6 +117,108 @@ describe('Notifications actions', () => {
             sandbox.stub(notificationsApi, 'getNotifications').rejects();
             await store.dispatch(notifications.filterNotifications(true));
             expect(store.getActions().length).toEqual(0);
+        });
+
+        it('Should filter notifications by endTime isEmpty', async () => {
+            const fakeGetNotifications = sandbox.fake.resolves(mockNotifications);
+            sandbox.stub(notificationsApi, 'getNotifications').callsFake(fakeGetNotifications);
+
+            const storeWithFilter = mockStore({
+                control: {
+                    notifications: {
+                        datagridConfig: {
+                            columns: [],
+                            page: 0,
+                            pageSize: 15,
+                            sortModel: [],
+                            density: 'standard',
+                            routeSelection: '',
+                            filterModel: { items: [{
+                                columnField: 'endTime',
+                                operatorValue: 'isEmpty',
+                            }],
+                            linkOperator: 'and' },
+                            pinnedColumns: { right: ['action'] },
+                        },
+                        totalFilterCount: 0,
+                        lastFilterRequest: null,
+                    },
+                },
+            });
+
+            const expectedFilterAction = {
+                payload: {
+                    lastFilterRequest: {
+                        filters: [
+                            {
+                                field: 'endTime',
+                                operator: 'IS',
+                                value: 'NULL',
+                            },
+                        ],
+                        limit: 15,
+                        offset: 0,
+                        sorts: [],
+                    },
+                },
+                type: 'update-control-notifications-last-filter',
+            };
+
+            await storeWithFilter.dispatch(notifications.filterNotifications(true));
+            const actualActions = storeWithFilter.getActions();
+            const actualFilterAction = actualActions.find(a => a.payload.lastFilterRequest);
+            expect(actualFilterAction).toEqual(expectedFilterAction);
+        });
+
+        it('Should filter notifications by endTime isNotEmpty', async () => {
+            const fakeGetNotifications = sandbox.fake.resolves(mockNotifications);
+            sandbox.stub(notificationsApi, 'getNotifications').callsFake(fakeGetNotifications);
+
+            const storeWithFilter = mockStore({
+                control: {
+                    notifications: {
+                        datagridConfig: {
+                            columns: [],
+                            page: 0,
+                            pageSize: 15,
+                            sortModel: [],
+                            density: 'standard',
+                            routeSelection: '',
+                            filterModel: { items: [{
+                                columnField: 'endTime',
+                                operatorValue: 'isNotEmpty',
+                            }],
+                            linkOperator: 'and' },
+                            pinnedColumns: { right: ['action'] },
+                        },
+                        totalFilterCount: 0,
+                        lastFilterRequest: null,
+                    },
+                },
+            });
+
+            const expectedFilterAction = {
+                payload: {
+                    lastFilterRequest: {
+                        filters: [
+                            {
+                                field: 'endTime',
+                                operator: 'IS',
+                                value: 'NOT NULL',
+                            },
+                        ],
+                        limit: 15,
+                        offset: 0,
+                        sorts: [],
+                    },
+                },
+                type: 'update-control-notifications-last-filter',
+            };
+
+            await storeWithFilter.dispatch(notifications.filterNotifications(true));
+            const actualActions = storeWithFilter.getActions();
+            const actualFilterAction = actualActions.find(a => a.payload.lastFilterRequest);
+            expect(actualFilterAction).toEqual(expectedFilterAction);
         });
     });
 });

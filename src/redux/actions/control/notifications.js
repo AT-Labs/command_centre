@@ -56,6 +56,9 @@ const parseOperatorValue = (operatorToParse) => {
         return '!=';
     case 'isAnyOf':
         return 'IN';
+    case 'isEmpty':
+    case 'isNotEmpty':
+        return 'IS';
     default:
         return operatorToParse;
     }
@@ -71,7 +74,10 @@ const parseFilterValue = (fieldName, value) => {
     }
 };
 
-const removeNonNullableFilters = model => model?.items?.filter(item => !!item.value && (!Array.isArray(item.value) || item.value.length > 0));
+const removeNonNullableFilters = model => model?.items?.filter((item) => {
+    if (item.operatorValue === 'isEmpty' || item.operatorValue === 'isNotEmpty') return true; // value is not needed
+    return !!item.value && (!Array.isArray(item.value) || item.value.length > 0);
+});
 
 const convertFilter = model => removeNonNullableFilters(model).flatMap((item) => {
     if (item.columnField === 'sourceId') {
@@ -83,6 +89,22 @@ const convertFilter = model => removeNonNullableFilters(model).flatMap((item) =>
             field: item.columnField,
             operator: parseOperatorValue(item.operatorValue),
             value: parseFilterValue(item.columnField, item.value.id),
+        }];
+    }
+
+    if (item.operatorValue === 'isEmpty') {
+        return [{
+            field: item.columnField,
+            operator: parseOperatorValue(item.operatorValue),
+            value: 'NULL',
+        }];
+    }
+
+    if (item.operatorValue === 'isNotEmpty') {
+        return [{
+            field: item.columnField,
+            operator: parseOperatorValue(item.operatorValue),
+            value: 'NOT NULL',
         }];
     }
 

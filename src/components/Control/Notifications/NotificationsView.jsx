@@ -143,7 +143,7 @@ export const NotificationsView = (props) => {
             valueFormatter: params => ((params.value && params.value !== 0) ? moment(params.value).tz(DATE_TYPE.TIME_ZONE).format(dateTimeFormat) : null),
             valueGetter: params => ((params.value && params.value !== 0) ? moment.unix(params.value) : null),
             filterOperators: getGridDateOperators(true).filter(
-                operator => operator.value === 'onOrAfter' || operator.value === 'onOrBefore',
+                operator => operator.value === 'onOrAfter' || operator.value === 'onOrBefore' || operator.value === 'isEmpty' || operator.value === 'isNotEmpty',
             ),
         },
         {
@@ -223,7 +223,16 @@ export const NotificationsView = (props) => {
         [],
     );
 
-    const setOverwrittenClassName = params => (params.row.status === NOTIFICATION_STATUS.overwritten ? 'row-overwritten' : '');
+    const getRowClassName = (params) => {
+        const { status, condition, endTime } = params.row;
+        if (status === NOTIFICATION_STATUS.overwritten) {
+            return 'row-overwritten';
+        }
+        if (status === NOTIFICATION_STATUS.inProgress && condition === NOTIFICATION_CONDITION.published && endTime === null) {
+            return 'row-highlight';
+        }
+        return '';
+    };
 
     const updateActiveNotification = (ids) => {
         const notification = ids.length > 0 ? props.notifications.find(({ notificationContentId }) => notificationContentId === ids[0]) : null;
@@ -263,7 +272,7 @@ export const NotificationsView = (props) => {
                 getDetailPanelContent={ getDetailPanelContent }
                 getRowId={ row => row.notificationContentId }
                 rowCount={ props.rowCount }
-                getRowClassName={ setOverwrittenClassName }
+                getRowClassName={ getRowClassName }
                 detailPanelHeight={ 470 }
                 expandedDetailPanels={ props.selectedNotification ? [props.selectedNotification.notificationContentId] : null }
                 loading={ isQueryParamsValid && !isNew && props.notifications.length === 0 && !props.selectedNotification }
