@@ -17,7 +17,7 @@ import { StopStatus, StopType, TripInstanceType, updateStopsModalTypes } from '.
 import { isChangeStopPermitted, isSkipStopPermitted, isUpdateStopHeadsignPermitted } from '../../../../utils/user-permissions';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../../auth';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
-import { useHeadsignUpdate } from '../../../../redux/selectors/appSettings';
+import { useHeadsignUpdate, useAddTripStopUpdate } from '../../../../redux/selectors/appSettings';
 
 export class Stop extends React.Component {
     static propTypes = {
@@ -36,6 +36,7 @@ export class Stop extends React.Component {
         showActuals: PropTypes.bool,
         showScheduled: PropTypes.bool,
         onStopUpdated: PropTypes.func,
+        useAddTripStopUpdate: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -79,11 +80,13 @@ export class Stop extends React.Component {
 
     isStopMutationPermitted = () => IS_LOGIN_NOT_REQUIRED || isChangeStopPermitted(this.props.stop);
 
-    isSkipStopDisabled = () => (this.isSkipped() || this.isNonStoppingStop()) || !this.isStopSkippingPermitted() || !this.isStopMutationPossible();
+    isSkipStopDisabled = () => (this.isSkipped() || (this.props.useAddTripStopUpdate && this.isNonStoppingStop()))
+        || !this.isStopSkippingPermitted() || !this.isStopMutationPossible();
 
-    isReinstateStopDisabled = () => !(this.isSkipped() || this.isNonStoppingStop()) || !this.isStopSkippingPermitted() || !this.isStopMutationPossible();
+    isReinstateStopDisabled = () => !(this.isSkipped() || (this.props.useAddTripStopUpdate && this.isNonStoppingStop()))
+        || !this.isStopSkippingPermitted() || !this.isStopMutationPossible();
 
-    shouldSelectStopButtonBeDisabled = () => !((this.isStopSkippingPermitted() && this.isStopMutationPossible())
+    shouldSelectStopButtonBeDisabled = () => (!this.props.useAddTripStopUpdate && this.isNonStoppingStop()) || !((this.isStopSkippingPermitted() && this.isStopMutationPossible())
         || (this.isUpdateStopHeadsignPossible() && this.isUpdateHeadsignPermitted()));
 
     isChangePlatformDisabled = () => !this.isStopMutationPermitted()
@@ -260,4 +263,5 @@ export default connect(state => ({
     platforms: getParentStopsWithPlatform(state),
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
     useHeadsignUpdate: useHeadsignUpdate(state),
+    useAddTripStopUpdate: useAddTripStopUpdate(state),
 }), { updateTripInstanceStopPlatform, selectStops })(Stop);

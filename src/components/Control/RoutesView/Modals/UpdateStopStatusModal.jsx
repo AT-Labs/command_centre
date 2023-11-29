@@ -1,4 +1,4 @@
-import { isEmpty, findKey, capitalize, pickBy } from 'lodash-es';
+import { isEmpty, findKey, capitalize, pickBy, size } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import React, { useState, useEffect } from 'react';
@@ -141,8 +141,8 @@ export const UpdateStopStatusModal = (props) => {
                     tripInstance,
                     selectedStopsByModalType,
                     modalProps[activeModal].stopStatus,
-                    modalProps[activeModal].successMessage,
-                    modalProps[activeModal].errorMessage,
+                    `${size(selectedStopsByModalType)} ${modalProps[activeModal].successMessage}`,
+                    `${size(selectedStopsByModalType)} ${modalProps[activeModal].errorMessage}`,
                 );
             }
         }

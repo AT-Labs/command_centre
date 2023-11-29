@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 
 import Message from '../../Common/Message/Message';
 import { removeBulkStopsUpdateMessages, deselectAllStopsByTrip } from '../../../../redux/actions/control/routes/trip-instances';
-import { CONFIRMATION_MESSAGE_TYPE } from '../../../../types/message-types';
 import { getBulkUpdateErrorMessagesForStops, getSelectedStopsUpdatingState, getBulkUpdateSuccessMessagesForStops } from '../../../../redux/selectors/control/routes/trip-instances';
 
 const StopSelectionMessages = (props) => {
@@ -14,8 +13,6 @@ const StopSelectionMessages = (props) => {
         last(bulkUpdateConfirmationMessages),
         last(bulkUpdateErrorMessages),
     ]);
-
-    const getMessageBody = (type, body) => `${type === CONFIRMATION_MESSAGE_TYPE ? bulkUpdateConfirmationMessages.length : bulkUpdateErrorMessages.length} ${body}`;
 
     return lastMessagesByType.length > 0 && !areSelectedStopsUpdating
         ? lastMessagesByType.map(message => (
@@ -28,7 +25,7 @@ const StopSelectionMessages = (props) => {
                     message={ {
                         id: message.id,
                         type: message.type,
-                        body: getMessageBody(message.type, message.body),
+                        body: message.body,
                     } } />
             </div>
         ))

@@ -1,4 +1,4 @@
-import { get, keyBy, find, uniqueId, filter, size, findKey, inRange, map, values, findIndex, reduce, findLastIndex, sortBy, isEqual } from 'lodash-es';
+import { get, keyBy, find, uniqueId, filter, size, findKey, inRange, map, values, findIndex, reduce, findLastIndex, sortBy, isEqual, compact } from 'lodash-es';
 import moment from 'moment';
 
 import VIEW_TYPE from '../../../../types/view-types';
@@ -444,20 +444,18 @@ export const removeBulkStopsUpdateMessages = tripInstance => (dispatch, getState
 
 export const updateSelectedStopsStatus = (tripInstance, selectedStops, stopStatus, successMessage, errorMessage) => async (dispatch) => {
     dispatch(updateSelectedStopsUpdatingState(true));
-    const stopUpdateCalls = map(selectedStops, stop => stop.status !== StopStatus.passed && dispatch(updateTripInstanceStopStatus(
+    await dispatch(updateTripInstanceStopStatus(
         {
             stopStatus,
             tripId: tripInstance.tripId,
-            stopSequence: stop.stopSequence,
+            stopSequences: compact(map(selectedStops, stop => (stop.status !== StopStatus.passed ? stop.stopSequence : undefined))),
             startTime: tripInstance.startTime,
             serviceDate: tripInstance.serviceDate,
         },
         successMessage,
         MESSAGE_ACTION_TYPES.bulkStopStatusUpdate,
         errorMessage,
-    )));
-
-    await Promise.all(stopUpdateCalls);
+    ));
     dispatch(updateSelectedStopsUpdatingState(false));
     // Regarding the next two lines, refer to selectors/trip-instances.js -> ABOUT REMOVING SELECTED STOPS AFTER UPDATE
     // dispatch(fetchAndUpdateSelectedStops(tripInstance));
