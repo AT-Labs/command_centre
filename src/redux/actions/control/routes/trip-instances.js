@@ -499,7 +499,7 @@ export const selectStops = (tripInstance, stop) => (dispatch, getState) => {
 
     if (isRangeSelection) {
         const stopToKeep = stop.stopSequence < onlySelectedStop.stopSequence ? onlySelectedStop : stop;
-        const stopsInBetween = filter(allStopsInTrip, unselectedStop => unselectedStop.status !== StopStatus.nonStopping && inRange(
+        const stopsInBetween = filter(allStopsInTrip, unselectedStop => inRange(
             unselectedStop.stopSequence,
             stop.stopSequence,
             onlySelectedStop.stopSequence,
