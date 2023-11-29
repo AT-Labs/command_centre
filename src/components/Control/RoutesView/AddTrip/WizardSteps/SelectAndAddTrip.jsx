@@ -112,7 +112,6 @@ export const SelectAndAddTrip = (props) => {
             limit: pageSize,
             routeId: route.routeId,
             routeType: mode,
-            distinctOnStartDate: true,
             ...(agency.agencyId && { agencyId: agency.agencyId }),
             ...(serviceDateFrom && { serviceDateFrom: moment(serviceDateFrom, DATE_FORMAT_DDMMYYYY).format(DATE_FORMAT_GTFS) }),
             ...(serviceDateTo && { serviceDateTo: moment(serviceDateTo, DATE_FORMAT_DDMMYYYY).format(DATE_FORMAT_GTFS) }),
