@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 
 import Message from '../../Common/Message/Message';
@@ -14,26 +14,53 @@ import { updateActiveControlEntityId } from '../../../../redux/actions/navigatio
 import { getActiveControlEntityId } from '../../../../redux/selectors/navigation';
 import { getDisruption as getDisruptionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
 import { transformIncidentNo } from '../../../../utils/control/disruptions';
+import { DISRUPTION_POLLING_INTERVAL } from '../../../../constants/disruptions';
 
 const DisruptionDetailsPage = (props) => {
     const { resultStatus, resultMessage, resultDisruptionId, resultCreateNotification, isCopied } = props;
     const [disruption, setDisruption] = useState(null);
     const [loading, setLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState('');
+    const abortControllerRef = useRef(null);
 
-    useEffect(async () => {
-        try {
-            const result = await getDisruptionAPI(props.activeControlEntityId);
-            const { _links: { permissions } } = result;
-            setDisruption(result);
-            props.updateDisruptionsPermissions(permissions);
-        } catch (error) {
-            setErrorMessage(`An error has occurred while getting the disruption(${transformIncidentNo(props.activeControlEntityId)})`);
-        } finally {
-            setLoading(false);
-        }
+    useEffect(() => {
+        const fetchData = async (showLoading) => {
+            const abortController = new AbortController();
+            abortControllerRef.current = abortController;
+            try {
+                if (showLoading) {
+                    setLoading(true);
+                }
+                const result = await getDisruptionAPI(props.activeControlEntityId, abortController.signal);
+                const { _links: { permissions } } = result;
+                setDisruption(result);
+                props.updateDisruptionsPermissions(permissions);
+            } catch (error) {
+                setErrorMessage(`An error has occurred while getting the disruption(${transformIncidentNo(props.activeControlEntityId)})`);
+            } finally {
+                if (showLoading) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        // fetch the disruption data and show the loading screen for the first time.
+        fetchData(true);
+
+        const refreshInterval = setInterval(() => {
+            // make sure all the pending calls are cancelled before making the next one
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+            fetchData(false);
+        }, DISRUPTION_POLLING_INTERVAL);
+
         return () => {
             props.updateActiveControlEntityId('');
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+            clearInterval(refreshInterval);
         };
     }, []);
 

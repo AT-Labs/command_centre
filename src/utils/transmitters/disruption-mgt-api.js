@@ -12,7 +12,7 @@ export const getDisruptionsViewPermission = () => getViewPermission(`${REACT_APP
 export const getDisruptions = () => fetchWithAuthHeader(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions`, { method: GET })
     .then(response => jsonResponseHandling(response));
 
-export const getDisruption = disruptionId => fetchWithAuthHeader(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions/${disruptionId}`, { method: GET })
+export const getDisruption = (disruptionId, signal) => fetchWithAuthHeader(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions/${disruptionId}`, { method: GET, signal })
     .then(response => jsonResponseHandling(response));
 
 export const updateDisruption = (disruption) => {
