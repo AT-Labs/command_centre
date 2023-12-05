@@ -53,13 +53,6 @@ export function App(props) {
         [VIEW_TYPE.MAIN.ANALYTICS]: <AnalyticsView />,
     };
 
-    const injectTracingSnippet = () => {
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = `/nr/nr-${process.env.NODE_ENV}.js`;
-        document.head.appendChild(script);
-    };
-
     const { REACT_APP_MUI_LICENSE } = process.env;
 
     useEffect(() => {
@@ -92,9 +85,6 @@ export function App(props) {
                 props.getFleets();
             }
             props.startPollingSiteStatus();
-            if (!window.Cypress) {
-                injectTracingSnippet();
-            }
         });
         props.getApplicationSettings();
     }, []);
