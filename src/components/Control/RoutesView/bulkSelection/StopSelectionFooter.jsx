@@ -80,26 +80,26 @@ export const StopSelectionFooter = (props) => {
                     </li>
                 ) }
                 { areSkipStopsPermitted && (
-                    <>
-                        <li>
-                            <Button
-                                size="sm"
-                                className="selection-tools-footer__btn-skip cc-btn-secondary d-flex align-items-center mr-3"
-                                onClick={ () => handleModalOnToggle(updateStopsModalTypes.SKIP) }
-                                disabled={ !checkIfButtonsShouldBeDisabled().isThereANotSkippedStop }>
-                                Skip stop
-                            </Button>
-                        </li>
-                        <li>
-                            <Button
-                                size="sm"
-                                className="selection-tools-footer__btn-reinstate cc-btn-secondary d-flex align-items-center mr-3"
-                                onClick={ () => handleModalOnToggle(updateStopsModalTypes.REINSTATE) }
-                                disabled={ !(checkIfButtonsShouldBeDisabled().isThereSkippedStop || checkIfButtonsShouldBeDisabled().isThereANonStoppingStop) }>
-                                Reinstate stop
-                            </Button>
-                        </li>
-                    </>
+                    <li>
+                        <Button
+                            size="sm"
+                            className="selection-tools-footer__btn-skip cc-btn-secondary d-flex align-items-center mr-3"
+                            onClick={ () => handleModalOnToggle(updateStopsModalTypes.SKIP) }
+                            disabled={ !checkIfButtonsShouldBeDisabled().isThereANotSkippedStop }>
+                            Skip stop
+                        </Button>
+                    </li>
+                ) }
+                { (areSkipStopsPermitted || props.onStopUpdated) && (
+                    <li>
+                        <Button
+                            size="sm"
+                            className="selection-tools-footer__btn-reinstate cc-btn-secondary d-flex align-items-center mr-3"
+                            onClick={ () => handleModalOnToggle(updateStopsModalTypes.REINSTATE) }
+                            disabled={ !(checkIfButtonsShouldBeDisabled().isThereSkippedStop || checkIfButtonsShouldBeDisabled().isThereANonStoppingStop) }>
+                            Reinstate stop
+                        </Button>
+                    </li>
                 ) }
                 { areMoveTripToStopsPermitted && (
                     <li>

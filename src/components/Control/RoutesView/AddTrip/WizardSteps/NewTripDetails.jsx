@@ -113,6 +113,12 @@ export const NewTripDetails = forwardRef((props, ref) => {
                         status: StopStatus.nonStopping,
                     };
                 }
+                if (options.action === updateStopsModalTypes.REINSTATE) {
+                    return {
+                        ...stop,
+                        status: StopStatus.notPassed,
+                    };
+                }
             }
             return stop;
         });
