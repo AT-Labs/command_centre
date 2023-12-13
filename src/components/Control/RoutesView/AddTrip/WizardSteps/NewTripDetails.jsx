@@ -122,6 +122,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
             }
             return stop;
         });
+        props.deselectAllStopsByTrip({ tripId: null });
 
         setTripTemplate({ ...tripTemplate, stops: updatedStops });
     };
