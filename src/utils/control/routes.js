@@ -1,5 +1,6 @@
 import { lowerCase } from 'lodash-es';
 import moment from 'moment';
+import { getGridSingleSelectOperators } from '@mui/x-data-grid-pro';
 
 export const PAGE_SIZE = 100;
 
@@ -51,3 +52,16 @@ export const unformatTripDelay = formattedDelay => formattedDelay * 60;
 export const transformStopName = name => name && name.replace('Train Station', 'Platform');
 
 export const isTripAdded = tripInstance => lowerCase(tripInstance.source) === 'manual';
+
+export const dateOperators = [
+    { label: 'is on or after', value: 'onOrAfter' },
+    { label: 'is on or before', value: 'onOrBefore' },
+].map((filterOperator) => {
+    const selectOperator = getGridSingleSelectOperators(true).find(
+        operator => operator.value === 'is',
+    );
+    return {
+        ...selectOperator,
+        ...filterOperator,
+    };
+});

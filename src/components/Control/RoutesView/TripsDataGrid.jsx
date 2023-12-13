@@ -15,7 +15,7 @@ import { getActiveRoute } from '../../../redux/selectors/control/routes/routes';
 import { getActiveRouteVariant } from '../../../redux/selectors/control/routes/routeVariants';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
-import { formatTripDelay, isTripAdded } from '../../../utils/control/routes';
+import { formatTripDelay, isTripAdded, dateOperators } from '../../../utils/control/routes';
 import { getTripInstanceId, getTripTimeDisplay, getTimePickerOptions } from '../../../utils/helpers';
 import TripIcon from '../Common/Trip/TripIcon';
 import TripDelay from '../Common/Trip/TripDelay';
@@ -71,19 +71,6 @@ const formatDelayColumn = (row) => {
 const isAnyOfStringOperators = getGridStringOperators(true).filter(
     operator => operator.value === 'isAnyOf',
 );
-
-const dateOperators = [
-    { label: 'is on or after', value: 'onOrAfter' },
-    { label: 'is on or before', value: 'onOrBefore' },
-].map((filterOperator) => {
-    const selectOperator = getGridSingleSelectOperators(true).find(
-        operator => operator.value === 'is',
-    );
-    return {
-        ...selectOperator,
-        ...filterOperator,
-    };
-});
 
 export const TripsDataGrid = (props) => {
     const isDateServiceTodayOrTomorrow = () => moment(props.serviceDate).isBetween(moment(), moment().add(1, 'd'), 'd', '[]');
@@ -376,34 +363,32 @@ export const TripsDataGrid = (props) => {
     const handleRowExpanded = ids => props.updateActiveTripInstances(ids);
 
     return (
-        <>
-            <div className="trips-data-grid flex-grow-1">
-                <CustomDataGrid
-                    columns={ GRID_COLUMNS }
-                    datagridConfig={ props.datagridConfig }
-                    dataSource={ rows }
-                    updateDatagridConfig={ config => props.updateTripsDatagridConfig(config) }
-                    getDetailPanelContent={ getDetailPanelContent }
-                    getRowId={ row => getTripInstanceId(row.tripInstance) }
-                    getRowClassName={ getRowClassName }
-                    calculateDetailPanelHeight={ () => 'auto' }
-                    gridClassNames={ props.gridClassNames }
-                    rowCount={ props.rowCount }
-                    serverSideData
-                    multipleDetailPanelOpen
-                    expandedDetailPanels={ map(props.activeTripInstance, getTripInstanceId) }
-                    onRowExpanded={ ids => handleRowExpanded(ids) }
-                    checkboxSelection
-                    selectionModel={ props.selectedTrips }
-                    onChangeSelectedData={ x => props.selectTrips(x) }
-                    keepNonExistentRowsSelected
-                    classes={ {
-                        panelContent: 'custom-panel-content',
-                        filterFormValueInput: 'custom-filter-value-input',
-                    } }
-                />
-            </div>
-        </>
+        <div className="trips-data-grid flex-grow-1">
+            <CustomDataGrid
+                columns={ GRID_COLUMNS }
+                datagridConfig={ props.datagridConfig }
+                dataSource={ rows }
+                updateDatagridConfig={ config => props.updateTripsDatagridConfig(config) }
+                getDetailPanelContent={ getDetailPanelContent }
+                getRowId={ row => getTripInstanceId(row.tripInstance) }
+                getRowClassName={ getRowClassName }
+                calculateDetailPanelHeight={ () => 'auto' }
+                gridClassNames={ props.gridClassNames }
+                rowCount={ props.rowCount }
+                serverSideData
+                multipleDetailPanelOpen
+                expandedDetailPanels={ map(props.activeTripInstance, getTripInstanceId) }
+                onRowExpanded={ ids => handleRowExpanded(ids) }
+                checkboxSelection
+                selectionModel={ props.selectedTrips }
+                onChangeSelectedData={ x => props.selectTrips(x) }
+                keepNonExistentRowsSelected
+                classes={ {
+                    panelContent: 'custom-panel-content',
+                    filterFormValueInput: 'custom-filter-value-input',
+                } }
+            />
+        </div>
     );
 };
 

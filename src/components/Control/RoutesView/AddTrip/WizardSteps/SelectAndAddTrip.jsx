@@ -8,6 +8,7 @@ import { IconButton } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+import { getGridStringOperators } from '@mui/x-data-grid-pro';
 import moment from 'moment';
 import { uniqueId } from 'lodash-es';
 import { Button } from 'reactstrap';
@@ -17,7 +18,7 @@ import CustomDataGrid from '../../../../Common/CustomDataGrid/CustomDataGrid';
 import RenderCellExpand from '../../../Alerts/RenderCellExpand/RenderCellExpand';
 import Message from '../../../Common/Message/Message';
 import vehicleTypes from '../../../../../types/vehicle-types';
-import { getTripTimeDisplay } from '../../../../../utils/helpers';
+import { getTripTimeDisplay, getTimePickerOptions } from '../../../../../utils/helpers';
 
 import { searchTrip } from '../../../../../utils/transmitters/trip-mgt-api';
 import { getAddTripDatagridConfig, getSelectedAddTrip, isNewTripDetailsFormEmpty } from '../../../../../redux/selectors/control/routes/trip-instances';
@@ -32,6 +33,8 @@ import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import ChangeSelectedTripModal from './ChangeSelectedTripModal';
 import { useAddMultipleTrips } from '../../../../../redux/selectors/appSettings';
 import CloseConfirmation from './CloseConfirmation';
+import { OPERATORS } from '../../../../../constants/datagrid';
+import { dateOperators } from '../../../../../utils/control/routes';
 
 const drawerWidthOpen = '700px';
 const drawerWidthClose = '200px';
@@ -105,8 +108,32 @@ export const SelectAndAddTrip = (props) => {
     );
 
     useEffect(async () => {
-        const { page, pageSize } = props.datagridConfig;
-        const { mode, route, agency, serviceDateFrom, serviceDateTo, startTimeFrom, startTimeTo, directionId } = props.data;
+        const { page, pageSize, sortModel, filterModel } = props.datagridConfig;
+        const { mode, route, agency, serviceDateFrom, serviceDateTo, directionId } = props.data;
+        let { startTimeFrom, startTimeTo } = props.data;
+        let routeVariantNameContains;
+        let routeVariantNameEquals;
+
+        filterModel?.items.forEach((filter) => {
+            const { value, columnField, operatorValue } = filter;
+
+            if (value && columnField === 'startTime' && operatorValue === OPERATORS.onOrAfter) {
+                startTimeFrom = value;
+            }
+
+            if (value && columnField === 'startTime' && operatorValue === OPERATORS.onOrBefore) {
+                startTimeTo = value;
+            }
+
+            if (value && columnField === 'routeVariantName' && operatorValue === OPERATORS.contains) {
+                routeVariantNameContains = value;
+            }
+
+            if (value && columnField === 'routeVariantName' && operatorValue === OPERATORS.equals) {
+                routeVariantNameEquals = value;
+            }
+        });
+
         const payload = {
             page: page + 1,
             limit: pageSize,
@@ -117,6 +144,9 @@ export const SelectAndAddTrip = (props) => {
             ...(serviceDateTo && { serviceDateTo: moment(serviceDateTo, DATE_FORMAT_DDMMYYYY).format(DATE_FORMAT_GTFS) }),
             ...(startTimeFrom && { startTimeFrom: moment(startTimeFrom, TIME_FORMAT_HHMM).format(TIME_FORMAT_HHMMSS) }),
             ...(startTimeTo && { startTimeTo: moment(startTimeTo, TIME_FORMAT_HHMM).format(TIME_FORMAT_HHMMSS) }),
+            ...(sortModel.length > 0 && { sorting: { sortBy: sortModel[0].field, order: sortModel[0].sort } }),
+            ...(routeVariantNameContains && { routeVariantNameContains }),
+            ...(routeVariantNameEquals && { routeVariantNameEquals }),
             directionId,
         };
         try {
@@ -136,7 +166,7 @@ export const SelectAndAddTrip = (props) => {
         } finally {
             setLoading(false);
         }
-    }, [props.datagridConfig.pageSize, props.datagridConfig.page]);
+    }, [props.datagridConfig.pageSize, props.datagridConfig.page, props.datagridConfig.sortModel, props.datagridConfig.filterModel]);
 
     const getActionsButtons = params => (
         <IconButton aria-label="open"
@@ -160,6 +190,7 @@ export const SelectAndAddTrip = (props) => {
             width: 150,
             type: 'string',
             renderCell: RenderCellExpand,
+            filterable: false,
         },
         {
             field: 'routeVariantName',
@@ -167,6 +198,9 @@ export const SelectAndAddTrip = (props) => {
             width: 260,
             type: 'string',
             renderCell: RenderCellExpand,
+            filterOperators: getGridStringOperators().filter(
+                operator => operator.value === 'equals' || operator.value === 'contains',
+            ),
         },
         {
             field: 'startTime',
@@ -174,6 +208,8 @@ export const SelectAndAddTrip = (props) => {
             width: 110,
             type: 'string',
             renderCell: RenderCellExpand,
+            valueOptions: getTimePickerOptions(28),
+            filterOperators: dateOperators,
         },
         {
             field: 'endTime',
@@ -181,6 +217,7 @@ export const SelectAndAddTrip = (props) => {
             width: 110,
             type: 'string',
             renderCell: RenderCellExpand,
+            filterable: false,
         },
         {
             field: 'actions',
