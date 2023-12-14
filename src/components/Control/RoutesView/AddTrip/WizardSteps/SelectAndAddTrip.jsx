@@ -107,6 +107,14 @@ export const SelectAndAddTrip = (props) => {
         }
     );
 
+    const fieldNameMappings = (field) => {
+        const fieldMappings = {
+            routeVariantName: 'routeLongName',
+            routeVariant: 'routeVariantId',
+        };
+        return fieldMappings[field] || field;
+    };
+
     useEffect(async () => {
         const { page, pageSize, sortModel, filterModel } = props.datagridConfig;
         const { mode, route, agency, serviceDateFrom, serviceDateTo, directionId } = props.data;
@@ -144,7 +152,7 @@ export const SelectAndAddTrip = (props) => {
             ...(serviceDateTo && { serviceDateTo: moment(serviceDateTo, DATE_FORMAT_DDMMYYYY).format(DATE_FORMAT_GTFS) }),
             ...(startTimeFrom && { startTimeFrom: moment(startTimeFrom, TIME_FORMAT_HHMM).format(TIME_FORMAT_HHMMSS) }),
             ...(startTimeTo && { startTimeTo: moment(startTimeTo, TIME_FORMAT_HHMM).format(TIME_FORMAT_HHMMSS) }),
-            ...(sortModel.length > 0 && { sorting: { sortBy: sortModel[0].field, order: sortModel[0].sort } }),
+            ...(sortModel.length > 0 && { sorting: { sortBy: fieldNameMappings(sortModel[0].field), order: sortModel[0].sort } }),
             ...(routeVariantNameContains && { routeVariantNameContains }),
             ...(routeVariantNameEquals && { routeVariantNameEquals }),
             directionId,
