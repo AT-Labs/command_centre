@@ -16,6 +16,7 @@ const config = {
 };
 
 const authContext = new AuthenticationContext(config);
+const guestUserName = 'Guest User';
 
 export const getAuthContext = () => authContext;
 
@@ -27,11 +28,12 @@ export const fetchWithAuthHeader = (url, options) => {
 };
 
 export const getAuthUser = () => {
-    if (IS_LOGIN_NOT_REQUIRED) { return { profile: { name: 'Guest User' } }; }
+    if (IS_LOGIN_NOT_REQUIRED) { return { profile: { name: guestUserName } }; }
     const userInfo = authContext.getCachedUser();
     Sentry.setUser({
-        username: userInfo.userName,
+        username: userInfo ? userInfo.userName : guestUserName,
     });
+
     return userInfo;
 };
 
