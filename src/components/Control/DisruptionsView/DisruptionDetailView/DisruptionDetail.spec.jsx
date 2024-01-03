@@ -111,7 +111,7 @@ describe('<DisruptionDetailView />', () => {
             });
             wrapper.update();
 
-            const saveButton = findElement(wrapper, 'button', 'Save Changes');
+            const saveButton = findElement(wrapper, 'button', 'Save');
             expect(saveButton.hasClass('disabled')).to.equal(false);
         });
 
@@ -132,7 +132,7 @@ describe('<DisruptionDetailView />', () => {
             });
             wrapper.update();
 
-            const saveButton = findElement(wrapper, 'button', 'Save Changes');
+            const saveButton = findElement(wrapper, 'button', 'Save');
             expect(saveButton.hasClass('disabled')).to.equal(true);
         });
     });
@@ -158,7 +158,7 @@ describe('<DisruptionDetailView />', () => {
             const viewAllButton = findElement(wrapper, 'button', 'View all');
             expect(viewAllButton.hasClass('disabled')).to.equal(true);
 
-            const saveButton = findElement(wrapper, 'button', 'Save Changes');
+            const saveButton = findElement(wrapper, 'button', 'Save');
             expect(saveButton.hasClass('disabled')).to.equal(true);
         });
     });

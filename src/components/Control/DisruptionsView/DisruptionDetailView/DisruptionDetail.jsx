@@ -92,6 +92,7 @@ import { SelectedStopsMarker } from '../../../Common/Map/StopsLayer/SelectedStop
 import { DisruptionPassengerImpactGridModal } from '../DisruptionDetail/DisruptionPassengerImpactGridModal';
 import { usePassengerImpact } from '../../../../redux/selectors/appSettings';
 import { updateActiveControlEntityId } from '../../../../redux/actions/navigation';
+import { shareToEmail } from '../../../../utils/control/disruption-sharing';
 
 import '../DisruptionDetail/styles.scss';
 
@@ -426,6 +427,11 @@ const DisruptionDetailView = (props) => {
         setIsRecurrenceDirty(true);
     };
 
+    const saveAndShareHandler = () => {
+        handleUpdateDisruption();
+        shareToEmail(setDisruption());
+    };
+
     return (
         <Form className={ props.className }>
             <div className={ isReadOnlyMode ? 'read-only-container' : '' }>
@@ -715,9 +721,15 @@ const DisruptionDetailView = (props) => {
                                 </Button>
                                 <Button
                                     className="cc-btn-primary ml-1 mr-1 mb-2"
+                                    onClick={ saveAndShareHandler }
+                                    disabled={ isSaveDisabled }>
+                                    Save & Share
+                                </Button>
+                                <Button
+                                    className="cc-btn-primary ml-1 mr-1 mb-2"
                                     onClick={ handleUpdateDisruption }
                                     disabled={ isSaveDisabled }>
-                                    Save Changes
+                                    Save
                                 </Button>
                                 <DisruptionSummaryModal
                                     disruption={ disruption }

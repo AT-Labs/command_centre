@@ -195,4 +195,9 @@ describe('shareToEmail', () => {
         await shareToEmail({ ...disruption, uploadedFiles: disruptionDiversion });
         expect(link.href).not.toContain('Content-Disposition: attachment');
     });
+
+    test('should generate subject for resolved disruption', async () => {
+        await shareToEmail({ ...disruption, status: 'resolved' });
+        expect(link.href).toContain('Subject: Re: RESOLVED - Train Disruption Notification - Holidays for everyone - DISR0001');
+    });
 });

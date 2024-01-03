@@ -8,7 +8,7 @@ import {
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME,
     LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
 } from '../../constants/disruptions';
-import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES } from '../../types/disruptions-types';
+import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES } from '../../types/disruptions-types';
 import { CAUSES, IMPACTS, OLD_CAUSES, OLD_IMPACTS } from '../../types/disruption-cause-and-effect';
 import { getWorkaroundsAsText } from './disruption-workarounds';
 import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from './disruptions';
@@ -142,7 +142,7 @@ function getSubjectMode(mode) {
 
 export async function shareToEmail(disruption) {
     const mode = disruption.mode ? `${getSubjectMode(disruption.mode)} ` : '';
-    const subject = `Re: ${mode}Disruption Notification - ${disruption.header} - ${disruption.incidentNo}`;
+    const subject = `Re: ${disruption.status === STATUSES.RESOLVED ? 'RESOLVED - ' : ''}${mode}Disruption Notification - ${disruption.header} - ${disruption.incidentNo}`;
     const boundary = '--disruption_email_boundary_string';
     const { REACT_APP_DISRUPTION_SHARING_EMAIL_FROM, REACT_APP_DISRUPTION_SHARING_EMAIL_CC } = process.env;
     let emailFile = 'data:message/rfc822 eml;charset=utf-8,'
