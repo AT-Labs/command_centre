@@ -7,7 +7,12 @@ import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
 
 let wrapper;
 const componentPropsMock = {
-    tripInstance: {},
+    tripInstance: {
+        stops: [
+            { stopCode: '1' },
+            { stopCode: '2' },
+        ],
+    },
     selectedStopsByTripKey: () => {},
     deselectAllStopsByTrip: () => {},
     useHeadsignUpdate: true,
@@ -77,6 +82,10 @@ describe('StopSelectionFooter', () => {
                         status: TRIP_STATUS_TYPES.notStarted,
                         serviceDate,
                         endTime,
+                        stops: [
+                            { stopCode: '1' },
+                            { stopCode: '2' },
+                        ],
                     },
                 });
                 const updateDestinationButton = wrapper.find('.selection-tools-footer__btn-update-destination');

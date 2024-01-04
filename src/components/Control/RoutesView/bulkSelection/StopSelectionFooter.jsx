@@ -45,11 +45,13 @@ export const StopSelectionFooter = (props) => {
     const areMoveTripToStopsPermitted = IS_LOGIN_NOT_REQUIRED || Object.values(selectedStops).every(stop => isMoveToStopPermitted(stop));
 
     const checkIfButtonsShouldBeDisabled = () => {
+        const lastStopSequence = tripInstance.stops.length;
         const getStopsByStatus = comparator => filter(selectedStops, stop => comparator(stop.status, StopStatus.skipped));
         return {
             isThereSkippedStop: getStopsByStatus((stopStatus, status) => stopStatus === status).length > 0,
             isThereANotSkippedStop: filter(selectedStops, stop => stop.status !== StopStatus.skipped && stop.status !== StopStatus.nonStopping).length > 0,
             isThereANonStoppingStop: filter(selectedStops, stop => stop.status === StopStatus.nonStopping).length > 0,
+            isFirstOrLastStopSelected: filter(selectedStops, stop => [1, lastStopSequence].includes(stop.stopSequence)).length > 0,
         };
     };
 
@@ -74,7 +76,7 @@ export const StopSelectionFooter = (props) => {
                             size="sm"
                             className="selection-tools-footer__btn-non-stopping cc-btn-secondary d-flex align-items-center mr-3"
                             onClick={ () => handleModalOnToggle(updateStopsModalTypes.SET_NON_STOPPING) }
-                            disabled={ checkIfButtonsShouldBeDisabled().isThereANonStoppingStop }>
+                            disabled={ checkIfButtonsShouldBeDisabled().isThereANonStoppingStop || checkIfButtonsShouldBeDisabled().isFirstOrLastStopSelected }>
                             Non-stopping
                         </Button>
                     </li>
