@@ -43,6 +43,10 @@ export const RoutesAndTripsView = (props) => {
     const [isExpanded, setIsExpanded] = useState(true);
 
     const getTripInstances = () => {
+        if (props.addTripModalIsOpen) {
+            clearTimeout(loadingTimerRef.current);
+            return;
+        }
         props.filterTripInstances(true);
         const timer = setTimeout(() => {
             getTripInstances();
@@ -58,7 +62,7 @@ export const RoutesAndTripsView = (props) => {
                 clearTimeout(loadingTimerRef.current);
             }
         };
-    }, [props.filters, props.activeRoute, props.activeRouteVariant, props.serviceDate]);
+    }, [props.filters, props.activeRoute, props.activeRouteVariant, props.serviceDate, props.addTripModalIsOpen]);
 
     useEffect(() => {
         setCurrentPage(1);
