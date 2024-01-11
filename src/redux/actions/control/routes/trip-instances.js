@@ -676,8 +676,10 @@ const handleAddTrip = (action, dispatch) => {
         .then((response) => {
             dispatch(updateAddTripActionResult(response.data.addNewTrips, ACTION_RESULT.SUCCESS()));
         })
-        .catch(() => {
-            dispatch(updateAddTripActionResult(null, ACTION_RESULT.ERROR()));
+        .catch((error) => {
+            const result = ACTION_RESULT.ERROR();
+            result.resultMessage = error.networkError?.result?.message || result.resultMessage;
+            dispatch(updateAddTripActionResult(null, result));
         })
         .finally(() => dispatch(updateRequestingAddTripActionResult(false)));
 };
