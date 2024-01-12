@@ -149,11 +149,23 @@ export const NewTripDetails = forwardRef((props, ref) => {
 
     const mode = VEHICLE_TYPES[tripTemplate.routeType].type;
 
+    const isStartTimeInvalid = () => tripsToAdd.some(trip => !isTripValid(trip.startTime, trip.referenceId)) || hasDuplicateStartTime(tripsToAdd);
+
+    const isReferenceIdsInvalid = () => {
+        const referenceIds = new Set();
+        return tripsToAdd.some((trip) => {
+            if (trip.referenceId) {
+                const hasDuplicate = referenceIds.has(trip.referenceId);
+                referenceIds.add(trip.referenceId);
+                return hasDuplicate;
+            }
+            return false;
+        });
+    };
+
     useEffect(() => {
         setIsFormEmpty(!tripsToAdd.some(trip => !isTripEmpty(trip.startTime, trip.referenceId)));
-        setIsActionDisabled(
-            tripsToAdd.some(trip => !isTripValid(trip.startTime, trip.referenceId)) || hasDuplicateStartTime(tripsToAdd),
-        );
+        setIsActionDisabled(isStartTimeInvalid() || isReferenceIdsInvalid());
     }, [tripsToAdd, currentTime]);
 
     const getUpdatedStopTimes = (tripInstance, newStartTime) => {

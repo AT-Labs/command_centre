@@ -2,7 +2,7 @@ import moment from 'moment-timezone';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { uniqueId } from 'lodash-es';
-import { Input, Button } from 'reactstrap';
+import { Input, Button, FormGroup, FormFeedback } from 'reactstrap';
 import { AiOutlinePlusCircle, AiOutlineMinusCircle, AiOutlineSearch } from 'react-icons/ai';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -45,6 +45,8 @@ export const NewTripsTable = (props) => {
         };
         props.onAddedTripsChange([...props.trips, newRow]);
     };
+
+    const referenceIdValid = (id, ref) => !props.trips.find(row => row.id !== id && row.referenceId === ref);
 
     const removeRow = (id) => {
         const updatedAddedTrips = props.trips.filter(row => row.id !== id);
@@ -126,12 +128,16 @@ export const NewTripsTable = (props) => {
                                         <div id="add-trips-table__end-time">{ row.endTime ? getTripTimeDisplay(row.endTime) : '' }</div>
                                     </TableCell>
                                     <TableCell>
-                                        <Input
-                                            id="add-trips-table__reference-id"
-                                            className="add-trips-table__reference-id"
-                                            value={ row.referenceId }
-                                            onChange={ e => handleReferenceIdChange(row.id, e.target.value) }
-                                        />
+                                        <FormGroup className="add-trips-table__reference-id-group">
+                                            <Input
+                                                id="add-trips-table__reference-id"
+                                                className="add-trips-table__reference-id"
+                                                value={ row.referenceId }
+                                                onChange={ e => handleReferenceIdChange(row.id, e.target.value) }
+                                                invalid={ row.referenceId && !referenceIdValid(row.id, row.referenceId) }
+                                            />
+                                            <FormFeedback>Reference Id should be unique</FormFeedback>
+                                        </FormGroup>
                                     </TableCell>
                                     <TableCell>
                                         <Button title="View scheduled stop times" className="add-trips-table__preview-button" onClick={ () => onStopsPreviewClicked(row.id) }>
