@@ -11,5 +11,6 @@
     "useRoutesTripsFilterCollapse": "false",
     "useCAFMapFilter": "false",
     "useDisruptionsNotificationsDirectLink": "false",
-    "useViewDisruptionDetailsPage": "false"
+    "useViewDisruptionDetailsPage": "false",
+    "useTripHistory": "false"
 }

@@ -7,6 +7,8 @@ import { updateTripReplayDisplaySingleTrip } from './tripReplayView';
 import { updatePrevTripValue } from './prevFilterValue';
 import { getAllRoutes } from '../../../selectors/static/routes';
 import { vehicleReplayEvents } from '../vehicleReplays/vehicleReplay';
+import { useTripHistory } from '../../../selectors/appSettings';
+import { getTripReplayTrips } from '../../../selectors/control/tripReplays/tripReplayView';
 
 const updateTripReplayCurrentTripDetail = detail => ({
     type: ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_CURRENT_TRIP_DETAIL,
@@ -30,14 +32,27 @@ export const clearCurrentTrip = () => ({
 });
 
 export const selectTrip = trip => (dispatch, getState) => {
+    const state = getState();
     dispatch(vehicleReplayEvents(null, null, 0, false));
     dispatch(updatePrevTripValue(trip));
     dispatch(updateLoadingTripReplayState(true));
     // update current trip detail with the existing information passed from list
     dispatch(updateTripReplayCurrentTripDetail(trip));
-    return tripReplayApi.getTripById(trip.id)
+
+    if (useTripHistory(state)) {
+        const tripDetail = getTripReplayTrips(state).find(tripReplayTrip => tripReplayTrip.id === trip.id);
+        const allRoutes = getAllRoutes(state);
+        const routeColor = get(find(allRoutes, { route_short_name: get(tripDetail, 'routeShortName') }), 'route_color');
+        const tripDetailWithRouteColor = { ...tripDetail, route: { ...tripDetail.route, routeColor } };
+        dispatch(updateTripReplayCurrentTripDetail(tripDetailWithRouteColor));
+        dispatch(updateTripReplayDisplaySingleTrip(true));
+        dispatch(updateLoadingTripReplayState(false));
+        return;
+    }
+
+    tripReplayApi.getTripById(trip.id)
         .then((tripDetail) => {
-            const allRoutes = getAllRoutes(getState());
+            const allRoutes = getAllRoutes(state);
             const routeColor = get(find(allRoutes, { route_short_name: get(tripDetail, 'routeShortName') }), 'route_color');
             const tripDetailWithRouteColor = { ...tripDetail, route: { ...tripDetail.route, routeColor } };
             // enrich current trip detail with data fetched from backend

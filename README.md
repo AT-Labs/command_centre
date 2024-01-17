@@ -125,6 +125,7 @@ When the app starts, it loads the user from the cache or it forces to log in bef
 | REACT_APP_REALTIME_HEALTH_API                 | string | Realtime health API URL                         |
 | REACT_APP_ALERTS_API                          | string | Alerts API URL                                  |
 | REACT_APP_TRIP_REPLAY_API_URL                 | string | Trip replay API URL                             |
+| REACT_APP_TRIP_HISTORY_API_URL                | string | Trip history API URL                            |
 | REACT_APP_ACTIVE_DIRECTORY_TENANT             | string | Active directory tenant                         |
 | REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN      | string | 'true' to disable Active directory login        /
 | REACT_APP_ACTIVE_DIRECTORY_CLIENT_ID          | string | Active directory client ID                      |

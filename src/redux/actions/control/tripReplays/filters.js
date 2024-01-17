@@ -7,6 +7,7 @@ import { updateTripReplayDisplayFilters, updateTrips } from './tripReplayView';
 import { getTripReplayFilters } from '../../../selectors/control/tripReplays/filters';
 import { getTripReplayRedirected } from '../../../selectors/control/tripReplays/tripReplayView';
 import { getPreviousTripReplayFilterValues } from '../../../selectors/control/tripReplays/prevFilterValue';
+import { useTripHistory } from '../../../selectors/appSettings';
 
 export const updateTripReplayFilterData = filterData => ({
     type: ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_FILTER_DATA,
@@ -70,14 +71,21 @@ export const handleSearchDateChange = searchDate => (dispatch) => {
 };
 
 export const search = () => (dispatch, getState) => {
+    const state = getState();
     let filters;
     dispatch(updateTripReplayDisplayFilters(false));
-    if (getTripReplayRedirected(getState())) {
-        filters = getPreviousTripReplayFilterValues(getState());
+    if (getTripReplayRedirected(state)) {
+        filters = getPreviousTripReplayFilterValues(state);
     } else {
-        filters = getTripReplayFilters(getState());
+        filters = getTripReplayFilters(state);
     }
-    return TRIP_REPLAY_API.getTripReplayTrips(filters)
+
+    let getTripsHistory = TRIP_REPLAY_API.getTripReplayTrips;
+    if (useTripHistory(state)) {
+        getTripsHistory = TRIP_REPLAY_API.getTripsHistory;
+    }
+
+    return getTripsHistory(filters)
         .then((response) => {
             const { trips, hasMore, totalResults } = response;
             dispatch(updateTrips(trips, hasMore, totalResults));
