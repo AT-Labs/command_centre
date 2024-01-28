@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
 import { toString, omit, isEmpty, uniqBy, uniqWith } from 'lodash-es';
+import moment from 'moment';
 import Message from '../../Common/Message/Message';
 import { SEVERITIES } from '../../../../types/disruptions-types';
 import { CAUSES, IMPACTS } from '../../../../types/disruption-cause-and-effect';
@@ -16,6 +17,8 @@ import {
     DESCRIPTION_NOTE_MAX_LENGTH,
     LABEL_LAST_NOTE,
     LABEL_SEVERITY,
+    DATE_FORMAT,
+    TIME_FORMAT,
 } from '../../../../constants/disruptions';
 import {
     getRoutesByShortName,
@@ -40,6 +43,7 @@ import DisruptionLabelAndText from '../DisruptionDetail/DisruptionLabelAndText';
 import {
     formatCreatedUpdatedTime,
     recurrenceRadioOptions,
+    momentFromDateTime,
 } from '../../../../utils/control/disruptions';
 import DisruptionSummaryModal from '../DisruptionDetail/DisruptionSummaryModal';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
@@ -47,6 +51,7 @@ import EDIT_TYPE from '../../../../types/edit-types';
 import ConfirmationModal from '../../Common/ConfirmationModal/ConfirmationModal';
 import { confirmationModalTypes } from '../types';
 import { LastNoteView } from '../DisruptionDetail/LastNoteView';
+import { fetchEndDateFromRecurrence } from '../../../../utils/recurrence';
 
 import '../DisruptionDetail/styles.scss';
 
@@ -57,6 +62,8 @@ const MinimizeDisruptionDetail = (props) => {
         affectedEntities, incidentNo, cause, impact, disruptionId,
         lastUpdatedTime, recurrent, mode, severity, lastUpdatedBy, createdTime, createdBy,
     } = disruption;
+    const formatEndDateFromEndTime = disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '';
+    const fetchEndDate = () => (disruption.recurrent ? fetchEndDateFromRecurrence(disruption.recurrencePattern) : formatEndDateFromEndTime);
 
     const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
     const [notes, setNotes] = useState(disruption.notes);
@@ -96,6 +103,8 @@ const MinimizeDisruptionDetail = (props) => {
 
     const setDisruption = () => ({
         ...disruption,
+        startTime: momentFromDateTime(moment(disruption.startTime).format(DATE_FORMAT), moment(disruption.startTime).format(TIME_FORMAT)),
+        endTime: momentFromDateTime(fetchEndDate(), disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : ''),
         notes: [...notes, { description: descriptionNote }],
     });
 
