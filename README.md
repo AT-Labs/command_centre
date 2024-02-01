@@ -133,3 +133,4 @@ When the app starts, it loads the user from the cache or it forces to log in bef
 | REACT_APP_FEATURE_DISRUPTIONS                 | bool   | Turn on disruptions                             |
 | REACT_APP_FEATURE_TRIP_REPLAYS                | bool   | Turn on trip replays                            |
 | REACT_APP_GOOGLE_TAG_MANAGER_ID               | string | Google Tag Manager ID                           |
+| REACT_APP_REALTIME_TRAFFIC_API_URL            | string | Realtime Traffic API URL                   |

@@ -12,5 +12,6 @@
     "useCAFMapFilter": "false",
     "useDisruptionsNotificationsDirectLink": "false",
     "useViewDisruptionDetailsPage": "false",
-    "useTripHistory": "false"
+    "useTripHistory": "false",
+    "useCongestionLayer": "false"
 }

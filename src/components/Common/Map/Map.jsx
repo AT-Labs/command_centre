@@ -50,7 +50,18 @@ export const Map = (props) => {
 
     const handleResize = () => mapRef.current.leafletElement.invalidateSize();
 
-    const handleMove = () => setNeedBoundsFit(false);
+    const handleMove = () => {
+        setNeedBoundsFit(false);
+        if (props.onViewChanged) {
+            const map = mapRef.current.leafletElement;
+            const update = {
+                center: map.getCenter(),
+                zoom: map.getZoom(),
+                bounds: map.getBounds(),
+            };
+            props.onViewChanged(update);
+        }
+    };
 
     const handleZoom = () => setNeedBoundsFit(false);
 
@@ -98,6 +109,7 @@ Map.propTypes = {
     handlePopupClose: PropTypes.func,
     sidePanelWidthPX: PropTypes.number,
     tabIndexOverride: PropTypes.number,
+    onViewChanged: PropTypes.func,
 };
 
 Map.defaultProps = {
@@ -109,4 +121,5 @@ Map.defaultProps = {
     handlePopupClose: () => {},
     sidePanelWidthPX: SIDE_PANEL_WIDTH_PX,
     tabIndexOverride: -1,
+    onViewChanged: undefined,
 };
