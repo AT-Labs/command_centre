@@ -28,7 +28,6 @@ class StopsLayer extends React.Component {
 
         this.state = {
             zoomLevel: props.leafletMap.getZoom(),
-            bounds: props.leafletMap.getBounds(),
         };
     }
 
@@ -40,6 +39,8 @@ class StopsLayer extends React.Component {
         this.props.leafletMap.on('moveend', ({ sourceTarget }) => {
             this.setState({ bounds: sourceTarget.getBounds() });
         });
+
+        this.setState({ bounds: this.props.leafletMap.getBounds() });
     }
 
     // stop renamed to stp to prevent cypress from changing it https://github.com/cypress-io/cypress/issues/5330
@@ -50,7 +51,7 @@ class StopsLayer extends React.Component {
         const { zoomLevel, bounds } = this.state;
         let stopsInBoundary = [];
         if (zoomLevel > focusZoom) {
-            stopsInBoundary = filter(childStops, stop => bounds.contains(getStopLatLng(stop)));
+            stopsInBoundary = filter(childStops, stop => bounds?.contains(getStopLatLng(stop)));
         }
         return (!isEmpty(visibleStops)) ? visibleStops : stopsInBoundary.filter(stop => !this.isChildTrainPlatform(stop));
     };
