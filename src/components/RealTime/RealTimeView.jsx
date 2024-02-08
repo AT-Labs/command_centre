@@ -45,7 +45,7 @@ import { getChildStops } from '../../redux/selectors/static/stops';
 
 import './RealTimeView.scss';
 import { SelectedAddressMarker } from '../Common/Map/SelectedAddressMarker/SelectedAddressMarker';
-import { TripShapeLayer } from '../Common/Map/TripShapeLayer/TripShapeLayer';
+import TripShapeLayer from '../Common/Map/TripShapeLayer/TripShapeLayer';
 import StopsLayer from '../Common/Map/StopsLayer/StopsLayer';
 import { HighlightingLayer } from '../Common/Map/HighlightingLayer/HighlightingLayer';
 import { SelectedStopsMarker } from '../Common/Map/StopsLayer/SelectedStopsMarker';

@@ -1,19 +1,22 @@
 import { isEmpty, find, get } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { FeatureGroup, Polyline } from 'react-leaflet';
+import { connect } from 'react-redux';
+import { FeatureGroup, LeafletConsumer, Polyline } from 'react-leaflet';
 import { ROUTE_COLOR, HIGHLIGHTED_ROUTE_COLOR } from '../constants';
 import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import { getAllCoordinatesFromWKT, generateUniqueID } from '../../../../utils/helpers';
 import EntityPopup from '../popup/EntityPopup';
+import { useRealtimeMapRouteColors } from '../../../../redux/selectors/appSettings';
 
 const { ROUTE, STOP, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
-export class TripShapeLayer extends React.PureComponent {
+class TripShapeLayer extends React.PureComponent {
     static propTypes = {
         visibleEntities: PropTypes.array,
         currentDetailKey: PropTypes.string,
         hoveredEntityKey: PropTypes.string,
         updateHoveredEntityKey: PropTypes.func.isRequired,
+        useRealtimeMapRouteColors: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -78,7 +81,10 @@ export class TripShapeLayer extends React.PureComponent {
                         const shapes = this.getShapes(entity);
                         const routeColors = this.getRouteColors(entity);
                         return !isEmpty(shapes) && shapes.map((shape, index) => {
-                            const routeColor = routeColors.length === 1 ? routeColors[0] : routeColors[index];
+                            let routeColor = routeColors.length === 1 ? routeColors[0] : routeColors[index];
+                            if (!this.props.useRealtimeMapRouteColors) {
+                                routeColor = ROUTE_COLOR;
+                            }
                             return (
                                 <Polyline
                                     positions={ [shape] }
@@ -105,3 +111,14 @@ export class TripShapeLayer extends React.PureComponent {
             : null;
     }
 }
+
+export default connect(
+    state => ({
+        useRealtimeMapRouteColors: useRealtimeMapRouteColors(state),
+    }),
+    { },
+)(props => (
+    <LeafletConsumer>
+        {({ map }) => <TripShapeLayer { ...props } leafletMap={ map } />}
+    </LeafletConsumer>
+));

@@ -23,3 +23,4 @@ export const useAddMultipleTrips = createSelector(getAppSettingsState, appSettin
 export const useViewDisruptionDetailsPage = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useViewDisruptionDetailsPage') === 'true'));
 export const useTripHistory = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useTripHistory') === 'true'));
 export const useCongestionLayer = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useCongestionLayer') === 'true'));
+export const useRealtimeMapRouteColors = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRealtimeMapRouteColors') === 'true'));
