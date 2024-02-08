@@ -24,7 +24,9 @@ export const fetchWithAuthHeader = (url, options) => {
     if (IS_LOGIN_NOT_REQUIRED) {
         return fetch(url, options);
     }
-    return adalFetch(authContext, config.endpoints.api, fetch, url, options);
+    return adalFetch(authContext, config.endpoints.api, fetch, url, options).catch((error) => {
+        Sentry.captureException(error);
+    });
 };
 
 export const getAuthUser = () => {
