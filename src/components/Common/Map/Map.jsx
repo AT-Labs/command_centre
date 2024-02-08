@@ -14,6 +14,7 @@ export const Map = (props) => {
     const mapRef = React.useRef();
     const [needBoundsFit, setNeedBoundsFit] = useState(true);
     const [boundsToFit, setBoundsToFit] = useState([]);
+    const [mapLoaded, setMapLoaded] = useState(false);
 
     const fitBounds = () => {
         const leafletInstance = mapRef.current.leafletElement;
@@ -48,11 +49,16 @@ export const Map = (props) => {
         setBoundsToFit(props.boundsToFit);
     }, [props.boundsToFit]);
 
+    useEffect(() => {
+        const map = mapRef.current.leafletElement;
+        map.whenReady(() => setMapLoaded(true));
+    }, []);
+
     const handleResize = () => mapRef.current.leafletElement.invalidateSize();
 
     const handleMove = () => {
         setNeedBoundsFit(false);
-        if (props.onViewChanged) {
+        if (props.onViewChanged && mapLoaded) {
             const map = mapRef.current.leafletElement;
             const update = {
                 center: map.getCenter(),
