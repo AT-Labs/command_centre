@@ -27,6 +27,9 @@ const CongestionFilters = (props) => {
 
     return (
         <div className="traffic-filters position-fixed">
+            <div className="text-center rounded-0 live-traffic-bg">
+                Live Traffic
+            </div>
             <ButtonGroup>
                 <Button
                     size="sm"

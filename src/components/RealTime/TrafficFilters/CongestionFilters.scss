@@ -1,5 +1,12 @@
+@import '../../../assets/styles/variables';
+
 .traffic-filters {
     right: 80px;
     bottom: 40px;
     z-index: 1000;
+
+    .live-traffic-bg {
+        background-color: rgba($gray-100, .7);
+        border: solid 1px #979E9E;
+    }
 }
