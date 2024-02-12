@@ -14,5 +14,6 @@
     "useViewDisruptionDetailsPage": "false",
     "useTripHistory": "false",
     "useCongestionLayer": "false",
-    "useRealtimeMapRouteColors": "false"
+    "useRealtimeMapRouteColors": "false",
+    "useNonStopping": "false"
 }

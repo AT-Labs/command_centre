@@ -70,7 +70,7 @@ export const StopSelectionFooter = (props) => {
                         Deselect all
                     </Button>
                 </li>
-                { props.onStopUpdated && (
+                { props.showNonStoppingButton && (
                     <li>
                         <Button
                             size="sm"
@@ -92,7 +92,7 @@ export const StopSelectionFooter = (props) => {
                         </Button>
                     </li>
                 ) }
-                { (areSkipStopsPermitted || props.onStopUpdated) && (
+                { (areSkipStopsPermitted || props.showNonStoppingButton) && (
                     <li>
                         <Button
                             size="sm"
@@ -142,10 +142,12 @@ StopSelectionFooter.propTypes = {
     deselectAllStopsByTrip: PropTypes.func.isRequired,
     useHeadsignUpdate: PropTypes.bool.isRequired,
     onStopUpdated: PropTypes.func,
+    showNonStoppingButton: PropTypes.bool,
 };
 
 StopSelectionFooter.defaultProps = {
     onStopUpdated: undefined,
+    showNonStoppingButton: false,
 };
 
 export default connect(state => ({

@@ -24,3 +24,4 @@ export const useViewDisruptionDetailsPage = createSelector(getAppSettingsState, 
 export const useTripHistory = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useTripHistory') === 'true'));
 export const useCongestionLayer = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useCongestionLayer') === 'true'));
 export const useRealtimeMapRouteColors = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRealtimeMapRouteColors') === 'true'));
+export const useNonStopping = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useNonStopping') === 'true'));

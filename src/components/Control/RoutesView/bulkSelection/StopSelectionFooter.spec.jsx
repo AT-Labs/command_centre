@@ -94,9 +94,8 @@ describe('StopSelectionFooter', () => {
         });
     });
 
-    it('render non-stopping button when onStopUpdated is not undefined', () => {
-        const onStopUpdatedMock = jest.fn();
-        wrapper = setup({ onStopUpdated: onStopUpdatedMock });
+    it('render non-stopping button when showNonStoppingButton is true', () => {
+        wrapper = setup({ showNonStoppingButton: true });
         const button = wrapper.find('.selection-tools-footer__btn-non-stopping');
         expect(button.exists()).toEqual(true);
         button.simulate('click');

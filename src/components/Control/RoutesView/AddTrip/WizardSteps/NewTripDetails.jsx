@@ -22,7 +22,7 @@ import { isNewTripModalOpen, getAddTripAction, getSelectedStopsByTripKey } from 
 import NewTripModal from './NewTripModal';
 import { NewTripsTable } from './NewTripsTable';
 import StopSelectionFooter from '../../bulkSelection/StopSelectionFooter';
-import { useAddTripStopUpdate } from '../../../../../redux/selectors/appSettings';
+import { useAddTripStopUpdate, useNonStopping } from '../../../../../redux/selectors/appSettings';
 
 export const NewTripDetails = forwardRef((props, ref) => {
     const [isActionDisabled, setIsActionDisabled] = useState(true);
@@ -289,7 +289,11 @@ export const NewTripDetails = forwardRef((props, ref) => {
                 </Form>
                 { shouldStopSelectionFooterBeShown
                     ? (
-                        <StopSelectionFooter tripInstance={ addPermissions(tripTemplate) } onStopUpdated={ handleStopUpdate } />
+                        <StopSelectionFooter
+                            tripInstance={ addPermissions(tripTemplate) }
+                            onStopUpdated={ handleStopUpdate }
+                            showNonStoppingButton={ props.useNonStopping }
+                        />
                     )
                     : (
                         <footer className="mt-3">
@@ -336,6 +340,7 @@ NewTripDetails.propTypes = {
     selectedStopsByTripKey: PropTypes.func.isRequired,
     useAddTripStopUpdate: PropTypes.bool.isRequired,
     deselectAllStopsByTrip: PropTypes.func.isRequired,
+    useNonStopping: PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({
@@ -344,4 +349,5 @@ export default connect(state => ({
     action: getAddTripAction(state),
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
     useAddTripStopUpdate: useAddTripStopUpdate(state),
+    useNonStopping: useNonStopping(state),
 }), { addTrips, toggleAddTripModals, updateIsNewTripDetailsFormEmpty, deselectAllStopsByTrip }, null, { forwardRef: true })(NewTripDetails);
