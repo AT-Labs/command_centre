@@ -69,7 +69,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
 
     const isStartTimeValid = start => (TIME_PATTERN.test(start)
      && convertTimeToMinutes(start) <= convertTimeToMinutes('28:00'))
-     && getDifferenceInMinutes(moment().format('HH:mm'), start) >= 10;
+     && getDifferenceInMinutes(moment().format('HH:mm'), start) >= 0;
 
     const isReferenceIdValid = refId => !!refId.trim();
 

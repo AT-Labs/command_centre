@@ -34,7 +34,7 @@ export const NewTripsTable = (props) => {
 
     const isStartTimeValid = start => (TIME_PATTERN.test(start)
      && convertTimeToMinutes(start) <= convertTimeToMinutes('28:00'))
-     && getDelayInMinutes(moment().format('HH:mm'), start) >= 10;
+     && getDelayInMinutes(moment().format('HH:mm'), start) >= 0;
 
     const addRow = () => {
         const newRow = {
