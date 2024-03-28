@@ -77,7 +77,7 @@ function KeyEventList({ tripId, tripSignOn, stops, status, handleMouseEnter, han
     const tripSignOnCoordinates = [get(tripSignOnPosition, 'position.latitude'), get(tripSignOnPosition, 'position.longitude')];
     const keyEventDetail = {
         id: moment(tripSignOn).unix().toString(),
-        latlon: tripSignOnCoordinates,
+        latlon: tripSignOnPosition ? tripSignOnCoordinates : undefined,
         title: `Trip: ${tripId}`,
         type: EVENT_TYPES.SIGN_ON,
     };

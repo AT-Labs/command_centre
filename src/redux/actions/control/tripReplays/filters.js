@@ -7,7 +7,7 @@ import { updateTripReplayDisplayFilters, updateTrips } from './tripReplayView';
 import { getTripReplayFilters } from '../../../selectors/control/tripReplays/filters';
 import { getTripReplayRedirected } from '../../../selectors/control/tripReplays/tripReplayView';
 import { getPreviousTripReplayFilterValues } from '../../../selectors/control/tripReplays/prevFilterValue';
-import { useTripHistory } from '../../../selectors/appSettings';
+import { useTripHistory, tripHistoryEnabledFromDate } from '../../../selectors/appSettings';
 
 export const updateTripReplayFilterData = filterData => ({
     type: ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_FILTER_DATA,
@@ -81,7 +81,9 @@ export const search = () => (dispatch, getState) => {
     }
 
     let getTripsHistory = TRIP_REPLAY_API.getTripReplayTrips;
-    if (useTripHistory(state)) {
+    if (useTripHistory(state)
+        && (!tripHistoryEnabledFromDate(state) || moment(filters.searchDate) >= moment(tripHistoryEnabledFromDate(state)))
+    ) {
         getTripsHistory = TRIP_REPLAY_API.getTripsHistory;
     }
 

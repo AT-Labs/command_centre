@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { get, find } from 'lodash-es';
 import * as tripReplayApi from '../../../../utils/transmitters/trip-replay-api';
 import ACTION_TYPE from '../../../action-types';
@@ -7,7 +8,7 @@ import { updateTripReplayDisplaySingleTrip } from './tripReplayView';
 import { updatePrevTripValue } from './prevFilterValue';
 import { getAllRoutes } from '../../../selectors/static/routes';
 import { vehicleReplayEvents } from '../vehicleReplays/vehicleReplay';
-import { useTripHistory } from '../../../selectors/appSettings';
+import { useTripHistory, tripHistoryEnabledFromDate } from '../../../selectors/appSettings';
 import { getTripReplayTrips } from '../../../selectors/control/tripReplays/tripReplayView';
 
 const updateTripReplayCurrentTripDetail = detail => ({
@@ -39,7 +40,9 @@ export const selectTrip = trip => (dispatch, getState) => {
     // update current trip detail with the existing information passed from list
     dispatch(updateTripReplayCurrentTripDetail(trip));
 
-    if (useTripHistory(state)) {
+    if (useTripHistory(state)
+        && (!tripHistoryEnabledFromDate(state) || moment(trip.serviceDate) >= moment(tripHistoryEnabledFromDate(state)))
+    ) {
         const tripDetail = getTripReplayTrips(state).find(tripReplayTrip => tripReplayTrip.id === trip.id);
         const allRoutes = getAllRoutes(state);
         const routeColor = get(find(allRoutes, { route_short_name: get(tripDetail, 'routeShortName') }), 'route_color');

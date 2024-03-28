@@ -13,6 +13,7 @@
     "useDisruptionsNotificationsDirectLink": "false",
     "useViewDisruptionDetailsPage": "false",
     "useTripHistory": "false",
+    "tripHistoryEnabledFromDate": "",
     "useCongestionLayer": "false",
     "useRealtimeMapRouteColors": "false",
     "useNonStopping": "false"
