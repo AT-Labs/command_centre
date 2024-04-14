@@ -29,6 +29,7 @@ const INIT_STATE = {
     startTimeFrom: '',
     startTimeTo: '',
     directionId: TRIP_DIRECTION_INBOUND,
+    viewType: 0,
 };
 
 export const AddTrip = (props) => {
@@ -102,7 +103,7 @@ export const AddTrip = (props) => {
                             onSubmit={ onSubmit }
                             onSubmitUpdate={ onSubmitUpdate }>
                             <SearchTrip header={ getHeader() } toggleAddTripModals={ handlerCloseAddTripModal } />
-                            <SelectAndAddTrip header={ getHeader() } />
+                            <SelectAndAddTrip header={ getHeader() } viewType="Routes" />
                         </Wizard>
                     </div>
                 </div>

@@ -16,7 +16,6 @@ describe('NewTripDetails', () => {
     let mockServiceDate;
     let mockAddTrips;
     let mockToggleAddTripModals;
-    let mockUpdateIsNewTripDetailsFormEmpty;
     let mockIsNewTripModalOpen;
     let mockAction;
     let mockSelectedStopsByTripKey;
@@ -56,7 +55,6 @@ describe('NewTripDetails', () => {
         mockServiceDate = '2023-07-04';
         mockAddTrips = jest.fn();
         mockToggleAddTripModals = jest.fn();
-        mockUpdateIsNewTripDetailsFormEmpty = jest.fn();
         mockIsNewTripModalOpen = false;
         mockAction = {};
         mockSelectedStopsByTripKey = jest.fn();
@@ -69,9 +67,6 @@ describe('NewTripDetails', () => {
                 serviceDate={ mockServiceDate }
                 addTrips={ mockAddTrips }
                 toggleAddTripModals={ mockToggleAddTripModals }
-                updateIsNewTripDetailsFormEmpty={
-                    mockUpdateIsNewTripDetailsFormEmpty
-                }
                 isNewTripModalOpen={ mockIsNewTripModalOpen }
                 action={ mockAction }
                 selectedStopsByTripKey={ mockSelectedStopsByTripKey }
@@ -87,35 +82,6 @@ describe('NewTripDetails', () => {
 
     it('renders without crashing', () => {
         expect(wrapper).toHaveLength(1);
-    });
-
-    it('updates isNewTripDetailsFormEmpty to false when there are trips in the table', () => {
-        withHooks(() => {
-            // add one trip in the table
-            const table = wrapper.find(NewTripsTable);
-            table.invoke('onAddedTripsChange')([
-                {
-                    id: 'id',
-                    startTime: '23:00',
-                    endTime: '24:00:00',
-                    referenceId: 'ref1',
-                },
-            ]);
-
-            expect(mockUpdateIsNewTripDetailsFormEmpty).toHaveBeenCalledWith(
-                false,
-            );
-        });
-    });
-
-    it('updates isNewTripDetailsFormEmpty to true when no trips in the table', () => {
-        withHooks(() => {
-            const table = wrapper.find(NewTripsTable);
-            table.invoke('onAddedTripsChange')([]);
-            expect(mockUpdateIsNewTripDetailsFormEmpty).toHaveBeenCalledWith(
-                true,
-            );
-        });
     });
 
     it('show scheduled stop times when the NewTripsTable invokes onStopsPreview ', () => {

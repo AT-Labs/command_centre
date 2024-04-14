@@ -19,10 +19,10 @@ export const useDisruptionsNotificationsDirectLink = createSelector(
     getAppSettingsState,
     appSettingState => (result(appSettingState, 'useDisruptionsNotificationsDirectLink') === 'true'),
 );
-export const useAddMultipleTrips = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useAddMultipleTrips') === 'true'));
 export const useViewDisruptionDetailsPage = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useViewDisruptionDetailsPage') === 'true'));
 export const useTripHistory = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useTripHistory') === 'true'));
 export const tripHistoryEnabledFromDate = createSelector(getAppSettingsState, appSettingState => result(appSettingState, 'tripHistoryEnabledFromDate'));
 export const useCongestionLayer = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useCongestionLayer') === 'true'));
 export const useRealtimeMapRouteColors = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRealtimeMapRouteColors') === 'true'));
 export const useNonStopping = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useNonStopping') === 'true'));
+export const useRouteView = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRouteView') === 'true'));

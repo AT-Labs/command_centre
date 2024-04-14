@@ -698,10 +698,3 @@ export const toggleAddTripModals = (type, isOpen) => ({
         isOpen,
     },
 });
-
-export const updateIsNewTripDetailsFormEmpty = isNewTripDetailsFormEmpty => ({
-    type: ACTION_TYPE.UPDATE_IS_NEW_TRIP_DETAILS_FORM_EMPTY,
-    payload: {
-        isNewTripDetailsFormEmpty,
-    },
-});

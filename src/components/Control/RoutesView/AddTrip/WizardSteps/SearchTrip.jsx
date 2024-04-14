@@ -16,7 +16,7 @@ import { updateEnabledAddTripModal } from '../../../../../redux/actions/control/
 import { DATE_FORMAT } from '../../../../../constants/disruptions';
 import { TIME_PATTERN } from '../../../../../constants/time';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
-import { modeRadioOptions, directionRadioOptions } from '../../Types';
+import { directionRadioOptions } from '../../Types';
 import { convertTimeToMinutes } from '../../../../../utils/helpers';
 
 export const SearchTrip = (props) => {
@@ -94,14 +94,6 @@ export const SearchTrip = (props) => {
                             clearHandlers={ actionHandlers.clear }
                             onClearCallBack={ () => props.onDataUpdate('route', valuesOnClear) } />
                     </FormGroup>
-                </div>
-                <div className="col-12 mt-2">
-                    <RadioButtons
-                        { ...modeRadioOptions(props.data.mode, 'add-trip__wizard-mode') }
-                        disabled={ false }
-                        checkedKey={ props.data.mode }
-                        onChange={ checkedButtonKey => props.onDataUpdate('mode', checkedButtonKey) }
-                    />
                 </div>
                 <div className="col-12 mt-2">
                     <FormGroup className="position-relative">

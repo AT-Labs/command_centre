@@ -5,7 +5,6 @@
     "useRoutesTripsDatagrid": "false",
     "useHeadsignUpdate": "false",
     "useAddTrip": "false",
-    "useAddMultipleTrips": "false",
     "useAddTripStopUpdate": "false",
     "useHideTrip": "false",
     "useRoutesTripsFilterCollapse": "false",
@@ -16,5 +15,6 @@
     "tripHistoryEnabledFromDate": "",
     "useCongestionLayer": "false",
     "useRealtimeMapRouteColors": "false",
-    "useNonStopping": "false"
+    "useNonStopping": "false",
+    "useRouteView": "false"
 }

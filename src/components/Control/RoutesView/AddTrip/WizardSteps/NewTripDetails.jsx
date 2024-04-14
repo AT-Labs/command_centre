@@ -6,7 +6,7 @@ import { Form, FormGroup, Label, Button } from 'reactstrap';
 import { AiFillInfoCircle } from 'react-icons/ai';
 
 import { isEmpty } from 'lodash-es';
-import { addTrips, deselectAllStopsByTrip, toggleAddTripModals, updateIsNewTripDetailsFormEmpty } from '../../../../../redux/actions/control/routes/trip-instances';
+import { addTrips, deselectAllStopsByTrip, toggleAddTripModals } from '../../../../../redux/actions/control/routes/trip-instances';
 import { getServiceDate } from '../../../../../redux/selectors/control/serviceDate';
 import VEHICLE_TYPES, { TRAIN_TYPE_ID } from '../../../../../types/vehicle-types';
 import Stops from '../../../Common/Stops/Stops';
@@ -38,11 +38,8 @@ export const NewTripDetails = forwardRef((props, ref) => {
 
     useImperativeHandle(ref, () => ({
         shouldShowConfirmationModal: () => !isFormEmpty,
+        isFormEmpty: () => isFormEmpty,
     }));
-
-    useEffect(() => {
-        props.updateIsNewTripDetailsFormEmpty(isFormEmpty);
-    }, [isFormEmpty]);
 
     useEffect(() => {
         setIsActionDisabled(true);
@@ -50,7 +47,6 @@ export const NewTripDetails = forwardRef((props, ref) => {
             ...props.tripInstance,
             serviceDate: moment(props.serviceDate).format(SERVICE_DATE_FORMAT),
         });
-        props.updateIsNewTripDetailsFormEmpty(true);
         props.deselectAllStopsByTrip({ tripId: null });
         setTripsToAdd([]);
     }, [props.tripInstance]);
@@ -336,7 +332,6 @@ NewTripDetails.propTypes = {
     isNewTripModalOpen: PropTypes.bool.isRequired,
     action: PropTypes.object.isRequired,
     toggleAddTripModals: PropTypes.func.isRequired,
-    updateIsNewTripDetailsFormEmpty: PropTypes.func.isRequired,
     selectedStopsByTripKey: PropTypes.func.isRequired,
     useAddTripStopUpdate: PropTypes.bool.isRequired,
     deselectAllStopsByTrip: PropTypes.func.isRequired,
@@ -350,4 +345,4 @@ export default connect(state => ({
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
     useAddTripStopUpdate: useAddTripStopUpdate(state),
     useNonStopping: useNonStopping(state),
-}), { addTrips, toggleAddTripModals, updateIsNewTripDetailsFormEmpty, deselectAllStopsByTrip }, null, { forwardRef: true })(NewTripDetails);
+}), { addTrips, toggleAddTripModals, deselectAllStopsByTrip }, null, { forwardRef: true })(NewTripDetails);

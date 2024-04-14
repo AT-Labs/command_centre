@@ -61,7 +61,6 @@ export const INIT_STATE = {
             resultStatus: null,
             resultMessage: null,
         },
-        isNewTripDetailsFormEmpty: true,
     },
 };
 
@@ -326,8 +325,6 @@ const handleAddTripResultUpdate = (state, { payload: { result, resultStatus, res
     },
 });
 
-const handleUpdateIsNewTripDetailsFormEmpty = (state, { payload: { isNewTripDetailsFormEmpty } }) => ({ ...state, addTrip: { ...state.addTrip, isNewTripDetailsFormEmpty } });
-
 export default handleActions({
     [ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES]: handleTripInstancesUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LOADING]: handleLoadingUpdate,
@@ -363,5 +360,4 @@ export default handleActions({
     [ACTION_TYPE.SET_ADD_TRIP_MODAL_STATUS]: handleAddTripModal,
     [ACTION_TYPE.UPDATE_ADD_TRIP_ACTION_REQUESTING]: handleAddTripRequestingUpdate,
     [ACTION_TYPE.UPDATE_ADD_TRIP_ACTION_RESULT]: handleAddTripResultUpdate,
-    [ACTION_TYPE.UPDATE_IS_NEW_TRIP_DETAILS_FORM_EMPTY]: handleUpdateIsNewTripDetailsFormEmpty,
 }, INIT_STATE);

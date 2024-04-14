@@ -17,24 +17,24 @@ import { FaArrowLeft, FaTimes } from 'react-icons/fa';
 import CustomDataGrid from '../../../../Common/CustomDataGrid/CustomDataGrid';
 import RenderCellExpand from '../../../Alerts/RenderCellExpand/RenderCellExpand';
 import Message from '../../../Common/Message/Message';
-import vehicleTypes from '../../../../../types/vehicle-types';
 import { getTripTimeDisplay, getTimePickerOptions } from '../../../../../utils/helpers';
 
 import { searchTrip } from '../../../../../utils/transmitters/trip-mgt-api';
-import { getAddTripDatagridConfig, getSelectedAddTrip, isNewTripDetailsFormEmpty } from '../../../../../redux/selectors/control/routes/trip-instances';
+import { getAddTripDatagridConfig, getSelectedAddTrip } from '../../../../../redux/selectors/control/routes/trip-instances';
 import { updateAddTripDatagridConfig, updateSelectedAddTrip, updateEnabledAddTripModal } from '../../../../../redux/actions/control/routes/trip-instances';
 import { TIME_FORMAT_HHMM, TIME_FORMAT_HHMMSS, DATE_FORMAT_GTFS, DATE_FORMAT_DDMMYYYY } from '../../../../../utils/dateUtils';
 import { ERROR_MESSAGE_TYPE } from '../../../../../types/message-types';
 import { DIRECTIONS } from '../../../DisruptionsView/types';
 import { DATE_FORMAT } from '../../../../../constants/disruptions';
 import NewTripDetails from './NewTripDetails';
-import NewTripDetailsLegacy from './legacy/NewTripDetails';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import ChangeSelectedTripModal from './ChangeSelectedTripModal';
-import { useAddMultipleTrips } from '../../../../../redux/selectors/appSettings';
 import CloseConfirmation from './CloseConfirmation';
 import { OPERATORS } from '../../../../../constants/datagrid';
 import { dateOperators } from '../../../../../utils/control/routes';
+import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
+import { viewRadioOptions } from '../../Types';
+import { useRouteView } from '../../../../../redux/selectors/appSettings';
 
 const drawerWidthOpen = '700px';
 const drawerWidthClose = '200px';
@@ -83,13 +83,20 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: prop => prop !== 'open' })
     }),
 );
 
+const ViewType = {
+    Route: 'Route',
+    Trip: 'Trip',
+};
+
 export const SelectAndAddTrip = (props) => {
     const [loading, setLoading] = useState(false);
+    const [viewType, setViewType] = useState(props.useRouteView ? ViewType.Route : ViewType.Trip);
     const [trips, setTrips] = useState([]);
     const [tripsTotal, setTripsTotal] = useState(0);
     const [requestError, setRequestError] = useState(false);
     const [drawerOpen, setDrawerOpen] = useState(true);
     const [isChangeSelectedTripModalOpen, setIsChangeSelectedTripModalOpen] = useState(false);
+    const [isChangeViewModalOpen, setIsChangeViewModalOpen] = useState(false);
     const [selectedAddTrip, setSelectedAddTrip] = useState(null);
     const [isCloseConfirmationOpen, setIsCloseConfirmationOpen] = useState(false);
 
@@ -107,6 +114,17 @@ export const SelectAndAddTrip = (props) => {
         }
     );
 
+    const groupByRouteVariantId = (tripsToGroup) => {
+        const groupedTripsMap = tripsToGroup.reduce((acc, trip) => {
+            if (!acc.has(trip.routeVariantId)) {
+                acc.set(trip.routeVariantId, trip);
+            }
+            return acc;
+        }, new Map());
+
+        return Array.from(groupedTripsMap.values());
+    };
+
     const fieldNameMappings = (field) => {
         const fieldMappings = {
             routeVariantName: 'routeLongName',
@@ -117,7 +135,7 @@ export const SelectAndAddTrip = (props) => {
 
     useEffect(async () => {
         const { page, pageSize, sortModel, filterModel } = props.datagridConfig;
-        const { mode, route, agency, serviceDateFrom, serviceDateTo, directionId } = props.data;
+        const { route, agency, serviceDateFrom, serviceDateTo, directionId } = props.data;
         let { startTimeFrom, startTimeTo } = props.data;
         let routeVariantNameContains;
         let routeVariantNameEquals;
@@ -146,7 +164,6 @@ export const SelectAndAddTrip = (props) => {
             page: page + 1,
             limit: pageSize,
             routeId: route.routeId,
-            routeType: mode,
             ...(agency.agencyId && { agencyId: agency.agencyId }),
             ...(serviceDateFrom && { serviceDateFrom: moment(serviceDateFrom, DATE_FORMAT_DDMMYYYY).format(DATE_FORMAT_GTFS) }),
             ...(serviceDateTo && { serviceDateTo: moment(serviceDateTo, DATE_FORMAT_DDMMYYYY).format(DATE_FORMAT_GTFS) }),
@@ -159,14 +176,35 @@ export const SelectAndAddTrip = (props) => {
         };
         try {
             setLoading(true);
-            const result = await searchTrip(payload);
-            if (result?.trips && result?.totalCount) {
-                setTrips(result.trips);
-                setTripsTotal(Number(result.totalCount));
-                if (result.trips.length > 0) {
-                    props.updateSelectedAddTrip(parseTripInstance(result.trips[0]));
-                } else {
-                    props.updateSelectedAddTrip(null);
+
+            if (viewType === ViewType.Trip) {
+                // Trip View
+                const result = await searchTrip(payload);
+                if (result?.trips && result?.totalCount) {
+                    setTrips(result.trips);
+                    setTripsTotal(Number(result.totalCount));
+                    if (result.trips.length > 0) {
+                        props.updateSelectedAddTrip(parseTripInstance(result.trips[0]));
+                    } else {
+                        props.updateSelectedAddTrip(null);
+                    }
+                }
+            } else if (viewType === ViewType.Route) {
+                // Route View
+                // Get all the trips for the query using the existing endpoint.
+                // 1000 limit should return all the trips for a given route and direction.
+                // The call is fast enough, and normally no need to call second time as one page is enough to show the result
+                // grouped by variant id for the same route.
+                const result = await searchTrip({ ...payload, page: 1, limit: 1000 });
+                if (result?.trips && result?.totalCount) {
+                    const tripsForRouteView = groupByRouteVariantId(result.trips);
+                    setTrips(tripsForRouteView);
+                    setTripsTotal(tripsForRouteView.length);
+                    if (tripsForRouteView.length > 0) {
+                        props.updateSelectedAddTrip(parseTripInstance(tripsForRouteView[0]));
+                    } else {
+                        props.updateSelectedAddTrip(null);
+                    }
                 }
             }
         } catch (e) {
@@ -174,13 +212,13 @@ export const SelectAndAddTrip = (props) => {
         } finally {
             setLoading(false);
         }
-    }, [props.datagridConfig.pageSize, props.datagridConfig.page, props.datagridConfig.sortModel, props.datagridConfig.filterModel]);
+    }, [props.datagridConfig.pageSize, props.datagridConfig.page, props.datagridConfig.sortModel, props.datagridConfig.filterModel, viewType]);
 
     const getActionsButtons = params => (
         <IconButton aria-label="open"
             onClick={ () => {
                 const selectedTrip = parseTripInstance(params.row.tripInstance);
-                if (props.isNewTripDetailsFormEmpty) {
+                if (newTripDetailsRef.current?.isFormEmpty()) {
                     props.updateSelectedAddTrip(selectedTrip);
                 } else {
                     setSelectedAddTrip(selectedTrip);
@@ -191,7 +229,32 @@ export const SelectAndAddTrip = (props) => {
         </IconButton>
     );
 
-    const GRID_COLUMNS = [
+    const GRID_COLUMNS = viewType === ViewType.Route ? [
+        {
+            field: 'routeVariant',
+            headerName: 'ROUTE VARIANT',
+            width: 150,
+            type: 'string',
+            renderCell: RenderCellExpand,
+            filterable: false,
+        },
+        {
+            field: 'routeVariantName',
+            headerName: 'ROUTE VARIANT NAME',
+            width: 480,
+            type: 'string',
+            renderCell: RenderCellExpand,
+            filterOperators: getGridStringOperators().filter(
+                operator => operator.value === 'equals' || operator.value === 'contains',
+            ),
+        },
+        {
+            field: 'actions',
+            type: 'actions',
+            width: 50,
+            renderCell: getActionsButtons,
+        },
+    ] : [
         {
             field: 'routeVariant',
             headerName: 'ROUTE VARIANT',
@@ -240,13 +303,11 @@ export const SelectAndAddTrip = (props) => {
     const rows = trips.map(tripInstance => parseTripInstance(tripInstance));
 
     const renderSearchSummary = () => {
-        const { startTimeFrom, startTimeTo, serviceDateFrom, serviceDateTo, directionId, mode, route } = props.data;
+        const { startTimeFrom, startTimeTo, serviceDateFrom, serviceDateTo, directionId, route } = props.data;
         return (
             <span className="d-flex flex-column align-items-start mb-2">
                 <span className="text-muted">
                     Showing results for
-                    {' '}
-                    { vehicleTypes[mode].type }
                     {' '}
                     {route.routeShortName }
                     {' '}
@@ -260,6 +321,24 @@ export const SelectAndAddTrip = (props) => {
             </span>
         );
     };
+
+    const renderViewRadioButtons = () => (
+        <div>
+            <RadioButtons
+                { ...viewRadioOptions(viewType, 'add-trip__wizard-view-type') }
+                disabled={ false }
+                checkedKey={ viewType }
+                onChange={ (checkedButtonKey) => {
+                    if (newTripDetailsRef.current?.isFormEmpty()) {
+                        setViewType(checkedButtonKey);
+                        props.updateAddTripDatagridConfig({ page: 0, pageSize: 15, sortModel: [], columns: [] });
+                    } else {
+                        setIsChangeViewModalOpen(true);
+                    }
+                } }
+            />
+        </div>
+    );
 
     const toggleDrawerView = () => setDrawerOpen(!drawerOpen);
 
@@ -302,6 +381,7 @@ export const SelectAndAddTrip = (props) => {
                 </div>
                 { props.header }
                 {renderSearchSummary()}
+                { props.useRouteView ? renderViewRadioButtons() : '' }
                 { requestError && (
                     <Message
                         message={ {
@@ -335,14 +415,8 @@ export const SelectAndAddTrip = (props) => {
                             />
                         </Drawer>
                         <Box className="add-trip-new-trip-details__container" sx={ { width: `calc(100% - ${drawerOpen ? drawerWidthOpen : drawerWidthClose})` } }>
-                            { !loading && props.selectedTrip && props.selectedTrip.tripInstance && props.useAddMultipleTrips && (
+                            { !loading && props.selectedTrip?.tripInstance && (
                                 <NewTripDetails
-                                    ref={ newTripDetailsRef }
-                                    tripInstance={ props.selectedTrip.tripInstance }
-                                />
-                            ) }
-                            { !loading && props.selectedTrip && props.selectedTrip.tripInstance && !props.useAddMultipleTrips && (
-                                <NewTripDetailsLegacy
                                     ref={ newTripDetailsRef }
                                     tripInstance={ props.selectedTrip.tripInstance }
                                 />
@@ -355,11 +429,25 @@ export const SelectAndAddTrip = (props) => {
                     title="Change Selected Trip"
                     isModalOpen={ isChangeSelectedTripModalOpen }>
                     <ChangeSelectedTripModal
+                        changeType="Trip"
                         onConfirmation={ () => {
                             props.updateSelectedAddTrip(selectedAddTrip);
                             setIsChangeSelectedTripModalOpen(false);
                         } }
                         onCancel={ () => setIsChangeSelectedTripModalOpen(false) }
+                    />
+                </CustomModal>
+                <CustomModal
+                    className="change-view-modal"
+                    title="Change View"
+                    isModalOpen={ isChangeViewModalOpen }>
+                    <ChangeSelectedTripModal
+                        changeType="View"
+                        onConfirmation={ () => {
+                            setViewType(viewType === ViewType.Route ? ViewType.Trip : ViewType.Route);
+                            setIsChangeViewModalOpen(false);
+                        } }
+                        onCancel={ () => setIsChangeViewModalOpen(false) }
                     />
                 </CustomModal>
                 <CustomModal
@@ -381,9 +469,8 @@ SelectAndAddTrip.propTypes = {
     updateAddTripDatagridConfig: PropTypes.func.isRequired,
     updateSelectedAddTrip: PropTypes.func.isRequired,
     header: PropTypes.node,
-    isNewTripDetailsFormEmpty: PropTypes.bool.isRequired,
-    useAddMultipleTrips: PropTypes.bool.isRequired,
     updateEnabledAddTripModal: PropTypes.func.isRequired,
+    useRouteView: PropTypes.bool.isRequired,
 };
 
 SelectAndAddTrip.defaultProps = {
@@ -396,6 +483,5 @@ SelectAndAddTrip.defaultProps = {
 export default connect(state => ({
     datagridConfig: getAddTripDatagridConfig(state),
     selectedTrip: getSelectedAddTrip(state),
-    isNewTripDetailsFormEmpty: isNewTripDetailsFormEmpty(state),
-    useAddMultipleTrips: useAddMultipleTrips(state),
+    useRouteView: useRouteView(state),
 }), { updateAddTripDatagridConfig, updateSelectedAddTrip, updateEnabledAddTripModal })(SelectAndAddTrip);

@@ -70,5 +70,3 @@ export const getSelectedAddTrip = createSelector(getAddTripState, state => resul
 export const isNewTripModalOpen = createSelector(getAddTripState, state => result(state, 'isNewTripModalOpen'));
 
 export const getAddTripAction = createSelector(getAddTripState, state => result(state, 'action'));
-
-export const isNewTripDetailsFormEmpty = createSelector(getAddTripState, state => result(state, 'isNewTripDetailsFormEmpty'));

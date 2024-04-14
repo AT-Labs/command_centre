@@ -113,3 +113,9 @@ export const directionRadioOptions = (directionId, formGroupClass) => ({
     checkedKey: directionId,
     itemOptions: [{ key: 0, value: DIRECTIONS[0] }, { key: 1, value: DIRECTIONS[1] }],
 });
+
+export const viewRadioOptions = (viewType, formGroupClass) => ({
+    formGroupClass,
+    checkedKey: viewType,
+    itemOptions: [{ key: 'Route', value: 'Route View' }, { key: 'Trip', value: 'Trips View' }],
+});
