@@ -13,7 +13,7 @@ const isContainingPermission = (instance, permission) => {
 export const isHideCancellationPermitted = tripInstance => isContainingPermission(tripInstance, ROUTES.HIDE_TRIP);
 export const isTripCancelPermitted = tripInstance => isContainingPermission(tripInstance, ROUTES.CANCEL_TRIP);
 export const isTripDelayPermitted = tripInstance => isContainingPermission(tripInstance, ROUTES.EDIT_TRIP_DELAY);
-export const isTripCopyPermitted = tripInstance => isContainingPermission(tripInstance, ROUTES.COPY_TRIP);
+export const isTripCopyPermitted = tripInstance => isContainingPermission(tripInstance, ROUTES.NEW_TRIP);
 export const isUpdateStopHeadsignPermitted = stopInstance => isContainingPermission(stopInstance, ROUTES.UPDATE_HEADSIGN);
 export const isMoveToStopPermitted = instance => isContainingPermission(instance, ROUTES.ADVANCER); // instance might be trip or stop
 export const isSkipStopPermitted = stopInstance => isContainingPermission(stopInstance, ROUTES.SKIP_STOP);

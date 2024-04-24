@@ -17,7 +17,7 @@ it('isTripCancelPermitted', () => {
 it('isTripCopyPermitted', () => {
     expect(isTripCopyPermitted({})).to.equal(false);
     expect(isTripCopyPermitted({ _links: { permissions: [] } })).to.equal(false);
-    expect(isTripCopyPermitted({ _links: { permissions: [{ _rel: ROUTES.COPY_TRIP }] } })).to.equal(true);
+    expect(isTripCopyPermitted({ _links: { permissions: [{ _rel: ROUTES.NEW_TRIP }] } })).to.equal(true);
 });
 
 it('isTripDelayPermitted', () => {
