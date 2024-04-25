@@ -16,5 +16,6 @@
     "useCongestionLayer": "false",
     "useRealtimeMapRouteColors": "false",
     "useNonStopping": "false",
-    "useRouteView": "false"
+    "useRouteView": "false",
+    "useIncidentLayer": "false"
 }

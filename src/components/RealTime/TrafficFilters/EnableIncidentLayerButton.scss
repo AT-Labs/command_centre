@@ -1,0 +1,9 @@
+@import '../../../assets/styles/variables';
+
+.enable-incident-block {
+    background-color: $at-magenta;
+    border-radius: .2rem;
+    right: 250px;
+    bottom: 40px;
+    z-index: 1000;
+}

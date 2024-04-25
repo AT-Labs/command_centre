@@ -51,11 +51,17 @@ import { HighlightingLayer } from '../Common/Map/HighlightingLayer/HighlightingL
 import { SelectedStopsMarker } from '../Common/Map/StopsLayer/SelectedStopsMarker';
 import VehicleLayer from '../Common/Map/VehicleLayer/VehicleLayer';
 import { CongestionLayer } from '../Common/Map/TrafficLayer/CongestionLayer';
+import { IncidentLayer } from '../Common/Map/TrafficLayer/IncidentLayer';
 import CongestionFilters from './TrafficFilters/CongestionFilters';
+import EnableIncidentLayerButton from './TrafficFilters/EnableIncidentLayerButton';
 import * as trafficApi from '../../utils/transmitters/traffic-api';
-import { useCongestionLayer } from '../../redux/selectors/appSettings';
+import { useCongestionLayer, useIncidentLayer } from '../../redux/selectors/appSettings';
 import { haversineDistance } from '../../utils/map-helpers';
-import { CONGESTION_REFRESH_INTERVAL, CONGESTION_SHAPE_WEIGHT_BOLD, CONGESTION_SHAPE_WEIGHT_DEFAULT, CONGESTION_ZOOM_LEVEL_THRESHOLD } from '../../constants/traffic';
+import {
+    CONGESTION_REFRESH_INTERVAL, CONGESTION_SHAPE_WEIGHT_BOLD, CONGESTION_SHAPE_WEIGHT_DEFAULT,
+    CONGESTION_ZOOM_LEVEL_THRESHOLD, INCIDENTS_REFRESH_INTERVAL, INCIDENTS_SHAPE_WEIGHT,
+} from '../../constants/traffic';
+import * as incidenstApi from '../../utils/transmitters/incidents-api';
 
 function RealTimeView(props) {
     const { ADDRESS, ROUTE, STOP, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
@@ -64,10 +70,24 @@ function RealTimeView(props) {
     const [mapCenter, setMapCenter] = useState(MAP_DATA.centerLocation);
     const [mapRadius, setMapRadius] = useState(50);
     const [selectedCongestionFilters, setSelectedCongestionFilters] = useState([]);
+    const [showIncidents, setShowIncidents] = useState(false);
+    const [incidents, setIncidents] = useState([]);
     const abortControllerRef = useRef(null);
+
+    const fetchIncidentsData = async () => {
+        try {
+            const data = await incidenstApi.fetchIncidents();
+            setIncidents(data);
+        } catch (error) {
+            setIncidents([]);
+        }
+    };
 
     useEffect(() => {
         const realtimeTracker = props.startTrackingVehicles();
+        if (props.useIncidentLayer) {
+            fetchIncidentsData();
+        }
         return () => {
             realtimeTracker.stop();
         };
@@ -104,11 +124,23 @@ function RealTimeView(props) {
         };
     }, [selectedCongestionFilters]);
 
+    useEffect(() => {
+        const refreshIncidentsInterval = setInterval(() => {
+            if (props.useIncidentLayer) {
+                fetchIncidentsData();
+            }
+        }, INCIDENTS_REFRESH_INTERVAL);
+
+        return () => {
+            clearInterval(refreshIncidentsInterval);
+        };
+    }, [showIncidents]);
+
     const onMapViewChanged = (event) => {
+        const center = [event.center.lat, event.center.lng];
+        const nw = event.bounds.getNorthWest();
+        const radius = haversineDistance(center, [nw.lat, nw.lng]);
         if (shouldFetchTrafficData()) {
-            const center = [event.center.lat, event.center.lng];
-            const nw = event.bounds.getNorthWest();
-            const radius = haversineDistance(center, [nw.lat, nw.lng]);
             setMapCenter(center);
             setMapZoomLevel(event.zoom);
             setMapRadius(radius);
@@ -252,6 +284,12 @@ function RealTimeView(props) {
                         data={ trafficFlows }
                         weight={ mapZoomLevel > CONGESTION_ZOOM_LEVEL_THRESHOLD ? CONGESTION_SHAPE_WEIGHT_BOLD : CONGESTION_SHAPE_WEIGHT_DEFAULT }
                         filters={ selectedCongestionFilters } />
+                    { props.useIncidentLayer && showIncidents && (
+                        <IncidentLayer
+                            data={ incidents }
+                            weight={ INCIDENTS_SHAPE_WEIGHT }
+                        />
+                    ) }
                     <SelectedAddressMarker address={ props.selectedAddress } />
                     <TripShapeLayer
                         visibleEntities={ props.visibleEntities }
@@ -288,6 +326,7 @@ function RealTimeView(props) {
                 <VehicleFilters />
                 <Feedback />
                 { props.useCongestionLayer ? <CongestionFilters selectedFilters={ selectedCongestionFilters } onFiltersChanged={ onCongestionFiltersChanged } /> : ''}
+                { props.useIncidentLayer ? <EnableIncidentLayerButton isEnabled={ showIncidents } onClick={ () => setShowIncidents(!showIncidents) } /> : ''}
             </Main>
             <SecondarySidePanel />
         </OffCanvasLayout>
@@ -326,6 +365,7 @@ RealTimeView.propTypes = {
     stopSelected: PropTypes.func.isRequired,
     shouldMapBeRecentered: PropTypes.bool.isRequired,
     useCongestionLayer: PropTypes.bool.isRequired,
+    useIncidentLayer: PropTypes.bool.isRequired,
 };
 
 RealTimeView.defaultProps = {
@@ -357,6 +397,7 @@ export default connect(
         visibleStops: getVisibleStops(state),
         shouldMapBeRecentered: getMapRecenterStatus(state),
         useCongestionLayer: useCongestionLayer(state),
+        useIncidentLayer: useIncidentLayer(state),
     }),
     {
         addressSelected,

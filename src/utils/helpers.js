@@ -12,9 +12,8 @@ export const parseTime = (time, date) => {
     const [hour, minute = 0, second = 0, millisecond = 0] = time.split(':').map(part => parseInt(part, 10));
     return moment(date).set({ hour, minute, second, millisecond });
 };
-export const generateUniqueID = () => {
+export const generateUniqueID = (length = 16) => {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const length = 16;
     let result = '';
     for (let i = 0; i < length; i++) {
         result += alphabet[crypto.randomBytes(4).readUInt32LE(0) % alphabet.length];

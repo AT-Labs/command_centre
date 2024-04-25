@@ -26,3 +26,4 @@ export const useCongestionLayer = createSelector(getAppSettingsState, appSetting
 export const useRealtimeMapRouteColors = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRealtimeMapRouteColors') === 'true'));
 export const useNonStopping = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useNonStopping') === 'true'));
 export const useRouteView = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRouteView') === 'true'));
+export const useIncidentLayer = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useIncidentLayer') === 'true'));
