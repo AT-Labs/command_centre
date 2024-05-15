@@ -1,4 +1,4 @@
-import { last, filter, size, some } from 'lodash-es';
+import { last, filter, size, some, values } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
@@ -16,13 +16,16 @@ import { deselectAllTrips, removeBulkUpdateMessages, setTripStatusModalOrigin } 
 import {
     getSelectedTripInstances, getTripInstancesActionResults, getTripInstancesActionLoading, getBulkUpdateMessagesByType, getTripStatusModalOriginState,
 } from '../../../../redux/selectors/control/routes/trip-instances';
-import { useHideTrip } from '../../../../redux/selectors/appSettings';
+import { useHideTrip, useBulkStopsUpdate } from '../../../../redux/selectors/appSettings';
 import './styles.scss';
 import { isHideCancellationPermitted } from '../../../../utils/user-permissions';
+import UpdateTripStopsModal from '../Modals/UpdateTripStopsModal';
 
 const SelectionToolsFooter = (props) => {
     const [activeModal, setActiveModal] = useState(updateTripsStatusModalTypes.CANCEL_MODAL);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isBulkUpdateTripStopsModalOpen, setIsBulkUpdateTripStopsModalOpen] = useState(false);
+    const [bulkUpdateTripStopsConfirmationMessage, setBulkUpdateTripStopsConfirmationMessage] = useState('');
 
     const { selectedTrips, actionLoadingStatesByTripId, actionResults, tripStatusModalOrigin } = props;
 
@@ -36,6 +39,13 @@ const SelectionToolsFooter = (props) => {
         if (!isModalOpen) props.removeBulkUpdateMessages(CONFIRMATION_MESSAGE_TYPE);
     };
 
+    const handleBulkUpdateStopsModalOnToggle = (result) => {
+        setIsBulkUpdateTripStopsModalOpen(!isBulkUpdateTripStopsModalOpen);
+        if (result && result.actionType === 'success') {
+            setBulkUpdateTripStopsConfirmationMessage(result.message);
+        }
+    };
+
     const ifCancelButtonShouldBeDisabled = filter(selectedTrips, trip => trip.status !== TRIP_STATUS_TYPES.cancelled).length <= 0;
 
     const ifReinsteButtonShouldBeDisabled = filter(selectedTrips, trip => trip.status === TRIP_STATUS_TYPES.cancelled).length <= 0;
@@ -47,11 +57,25 @@ const SelectionToolsFooter = (props) => {
         && isHideCancellationPermitted(trip)
     )).length <= 0;
 
+    const ifUpdateStopsButtonShouldBeEnabled = () => {
+        const trips = values(selectedTrips);
+        if (trips.length === 0) {
+            return false;
+        }
+        // Get the routeVariantId of the first selected trip
+        const { routeVariantId } = trips[0];
+
+        // Check if the selected trips have the same routeVariantId as the first one
+        // Check if all the selected trips are not started
+        return trips.every(trip => trip.routeVariantId === routeVariantId && trip.status === TRIP_STATUS_TYPES.notStarted);
+    };
+
     return (
         <Footer className="selection-tools-footer fixed-bottom border-top on-top">
             {
                 tripStatusModalOrigin === updateTripsStatusModalOrigins.FOOTER
                 && !isModalOpen
+                && !isBulkUpdateTripStopsModalOpen
                 && bulkUpdateConfirmationMessages.length > 0
                 && !some(actionLoadingStatesByTripId, Boolean)
                 && (
@@ -66,6 +90,23 @@ const SelectionToolsFooter = (props) => {
                                 id: lastBulkConfirmationMessage.id,
                                 type: lastBulkConfirmationMessage.type,
                                 body: `${bulkUpdateConfirmationMessages.length} ${lastBulkConfirmationMessage.body}`,
+                            } } />
+                    </div>
+                )
+            }
+            {
+                bulkUpdateTripStopsConfirmationMessage && (
+                    <div className="col-12 mt-3">
+                        <Message
+                            autoDismiss
+                            timeout={ 5000 }
+                            isDismissible={ false }
+                            key="bulk-update-trip-stops-result"
+                            onClose={ () => setBulkUpdateTripStopsConfirmationMessage('') }
+                            message={ {
+                                id: 'bulk-update-trip-stops-result',
+                                type: 'success',
+                                body: bulkUpdateTripStopsConfirmationMessage,
                             } } />
                     </div>
                 )
@@ -108,11 +149,24 @@ const SelectionToolsFooter = (props) => {
                         <li>
                             <Button
                                 size="sm"
-                                className="selection-tools-footer__btn-hide cc-btn-secondary d-flex align-items-center"
+                                className="selection-tools-footer__btn-hide cc-btn-secondary d-flex align-items-center mr-3"
                                 onClick={ () => handleModalOnToggle(updateTripsStatusModalTypes.HIDE_TRIP_MODAL) }
                                 disabled={ ifHideTripsButtonShouldBeDisabled }>
                                 <IoMdEyeOff size={ 20 } />
                                 Hide cancellation
+                            </Button>
+                        </li>
+                    )
+                }
+                {
+                    props.useBulkStopsUpdate && (
+                        <li>
+                            <Button
+                                size="sm"
+                                className="selection-tools-footer__btn-update cc-btn-secondary d-flex align-items-center"
+                                onClick={ () => handleBulkUpdateStopsModalOnToggle() }
+                                disabled={ !ifUpdateStopsButtonShouldBeEnabled() }>
+                                Update Stops
                             </Button>
                         </li>
                     )
@@ -124,6 +178,12 @@ const SelectionToolsFooter = (props) => {
                 isModalOpen={ isModalOpen }
                 operateTrips={ selectedTrips }
                 onClose={ handleModalOnToggle } />
+            { isBulkUpdateTripStopsModalOpen ? (
+                <UpdateTripStopsModal
+                    className="update-trip-stops-modal"
+                    operateTrips={ selectedTrips }
+                    onClose={ handleBulkUpdateStopsModalOnToggle } />
+            ) : '' }
         </Footer>
     );
 };
@@ -137,6 +197,7 @@ SelectionToolsFooter.propTypes = {
     tripStatusModalOrigin: PropTypes.string,
     setTripStatusModalOrigin: PropTypes.func.isRequired,
     useHideTrip: PropTypes.bool.isRequired,
+    useBulkStopsUpdate: PropTypes.bool.isRequired,
 };
 
 SelectionToolsFooter.defaultProps = {
@@ -149,4 +210,5 @@ export default connect(state => ({
     actionLoadingStatesByTripId: getTripInstancesActionLoading(state),
     tripStatusModalOrigin: getTripStatusModalOriginState(state),
     useHideTrip: useHideTrip(state),
+    useBulkStopsUpdate: useBulkStopsUpdate(state),
 }), { deselectAllTrips, removeBulkUpdateMessages, setTripStatusModalOrigin })(SelectionToolsFooter);

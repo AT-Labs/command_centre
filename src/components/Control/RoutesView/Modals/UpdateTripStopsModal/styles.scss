@@ -1,0 +1,12 @@
+@import "../../../../../assets/styles/variables";
+
+.scrollable-div {
+    height: 500px; /* Define the height of the div */
+    overflow: auto; /* Set overflow property to auto for both horizontal and vertical scrolling */
+}
+
+.update-stops-trips-table__remove-button {
+    > svg {
+        color: $danger;
+    }
+}

@@ -17,5 +17,6 @@
     "useRealtimeMapRouteColors": "false",
     "useNonStopping": "false",
     "useRouteView": "false",
-    "useIncidentLayer": "false"
+    "useIncidentLayer": "false",
+    "useBulkStopsUpdate": "false"
 }

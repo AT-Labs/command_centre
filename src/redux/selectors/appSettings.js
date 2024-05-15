@@ -27,3 +27,4 @@ export const useRealtimeMapRouteColors = createSelector(getAppSettingsState, app
 export const useNonStopping = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useNonStopping') === 'true'));
 export const useRouteView = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRouteView') === 'true'));
 export const useIncidentLayer = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useIncidentLayer') === 'true'));
+export const useBulkStopsUpdate = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useBulkStopsUpdate') === 'true'));

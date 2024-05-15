@@ -147,6 +147,13 @@ const addTripsGqlMutation = gql`
         }
     }`;
 
+const bulkUpdateTripStopsGqlMutation = gql`
+    mutation($stopUpdates: UpdateBulkStops!) {
+        bulkUpdateTripStops(stopUpdates: $stopUpdates) {
+            ${tripInstanceFields}
+        }
+    }`;
+
 export const updateTripStatus = (options) => {
     const { tripId, serviceDate, tripStatus, startTime } = options;
 
@@ -374,6 +381,16 @@ export const addTrips = options => (
         mutation: addTripsGqlMutation,
         variables: { trips: options },
         params: 'addNewTrips',
+        authToken: getAuthToken(),
+    })
+);
+
+export const bulkUpdateTripStops = options => (
+    mutateStatic({
+        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+        mutation: bulkUpdateTripStopsGqlMutation,
+        variables: { stopUpdates: options },
+        params: 'bulkUpdateTripStops',
         authToken: getAuthToken(),
     })
 );

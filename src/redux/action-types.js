@@ -173,6 +173,8 @@ export default {
     UPDATE_ADD_TRIP_ACTION_REQUESTING: 'update-add-trip-action-requesting',
     UPDATE_ADD_TRIP_ACTION_RESULT: 'update-add-trip-action-result',
     UPDATE_IS_NEW_TRIP_DETAILS_FORM_EMPTY: 'update-is-new-trip-details-form-empty',
+    BULK_UPDATE_TRIP_STOPS_ACTION_REQUESTING: 'bulk-update-trip-stops-action-requesting',
+    BULK_UPDATE_TRIP_STOPS_ACTION_RESULT: 'bulk-update-trip-stops-action-result',
 
     // Control: Cross Link
     UPDATE_TRIP_CROSS_LINK: 'update-trip-cross-link',

@@ -46,7 +46,7 @@ export const StopType = PropTypes.shape({
 });
 
 export const TripInstanceType = PropTypes.shape({
-    tripId: PropTypes.string.isRequired,
+    tripId: PropTypes.string,
     routeId: PropTypes.string,
     routeVariantId: PropTypes.string,
     routeLongName: PropTypes.string,
