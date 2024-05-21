@@ -1,5 +1,7 @@
 /* eslint-disable camelcase */
 import { result, uniqBy, map, orderBy, compact, groupBy, keyBy, unionBy, each, indexof, filter, intersectionBy, join } from 'lodash-es';
+import moment from 'moment-timezone';
+import DATE_TYPE from '../../../../types/date-types';
 import ACTION_TYPE from '../../../action-types';
 import VIEW_TYPE from '../../../../types/view-types';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
@@ -45,8 +47,9 @@ export const getStopsByRoute = (entityKey, routeTrips) => (dispatch, getState) =
 export const getRoutesByRouteShortName = route => (dispatch, getState) => {
     const routeShortName = result(route, 'route_short_name');
     const entityKey = result(route, 'key');
+    const serviceDate = moment().tz(DATE_TYPE.TIME_ZONE).format('YYYYMMDD');
     dispatch(updateDataLoading(true));
-    return ccStatic.getRoutesByShortName(routeShortName)
+    return ccStatic.getRoutesByShortName(routeShortName, serviceDate)
         .then((routes) => {
             const tripsInAllRoutes = [];
             const routeIds = [];

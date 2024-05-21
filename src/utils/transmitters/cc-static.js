@@ -35,8 +35,10 @@ export const getTripHeadsignById = tripId => fetch(
     { method: 'GET' },
 ).then(response => jsonResponseHandling(response));
 
-export const getRoutesByShortName = routeShortName => fetch(
-    `${CC_STATIC_QUERY_URL}/trips?route_short_name=${routeShortName}`,
+export const getRoutesByShortName = (routeShortName, date) => fetch(
+    date
+        ? `${CC_STATIC_QUERY_URL}/trips?route_short_name=${routeShortName}&date=${date}`
+        : `${CC_STATIC_QUERY_URL}/trips?route_short_name=${routeShortName}`,
     { method: 'GET' },
 ).then(response => jsonResponseHandling(response)).then(routes => (routes.length && routes) || []);
 
