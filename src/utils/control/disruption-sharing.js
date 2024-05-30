@@ -13,25 +13,15 @@ import { CAUSES, IMPACTS, OLD_CAUSES, OLD_IMPACTS } from '../../types/disruption
 import { getWorkaroundsAsText } from './disruption-workarounds';
 import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from './disruptions';
 
-function getImageBase64(url) {
+async function getFileBase64(url) {
+    const response = await fetch(url);
+    const blob = await response.blob();
     return new Promise((resolve) => {
-        try {
-            const img = new Image();
-            img.crossOrigin = 'Anonymous';
-            // eslint-disable-next-line func-names
-            img.onload = function () {
-                const canvas = document.createElement('CANVAS');
-                const ctx = canvas.getContext('2d');
-                canvas.height = this.naturalHeight;
-                canvas.width = this.naturalWidth;
-                ctx.drawImage(this, 0, 0);
-                const dataURL = canvas.toDataURL('image/png');
-                resolve(dataURL);
-            };
-            img.src = url;
-        } catch (err) {
-            resolve();
-        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            resolve({ content: reader.result, contentType: response.headers.get('content-type') });
+        };
+        reader.readAsDataURL(blob);
     });
 }
 
@@ -111,15 +101,16 @@ function generateHtmlEmailBody(disruption) {
     return encodeURIComponent(`<html><head></head><body>${htmlBody}</body></html>`);
 }
 
-async function generateAttachment(uploadFile) {
-    const base64Img = await getImageBase64(uploadFile.storageUrl);
-    if (!base64Img) {
+async function generateAttachment(uploadFile, getAttachmentFileAsync = undefined) {
+    const base64File = getAttachmentFileAsync ? await getAttachmentFileAsync() : await getFileBase64(uploadFile.storageUrl);
+    if (!base64File?.content?.includes(',')) {
         return '';
     }
-    const attachment = `Content-Type: image/png; name="${uploadFile.fileName}"\n`
+    const contentType = `Content-Type: ${base64File.contentType}; name="${uploadFile.fileName}"\n`;
+    const attachment = contentType
         + 'Content-Transfer-Encoding: base64\n'
         + 'Content-Disposition: attachment\n'
-        + `\n${base64Img.replace('data:image/png;base64,', '')} \n`;
+        + `\n${base64File.content.split(',')[1]} \n`;
     return attachment;
 }
 
@@ -140,7 +131,7 @@ function getSubjectMode(mode) {
     return mode;
 }
 
-export async function shareToEmail(disruption) {
+export async function shareToEmail(disruption, getAttachmentFileAsync = undefined) {
     const mode = disruption.mode ? `${getSubjectMode(disruption.mode)} ` : '';
     const subject = `Re: ${disruption.status === STATUSES.RESOLVED ? 'RESOLVED - ' : ''}${mode}Disruption Notification - ${disruption.header} - ${disruption.incidentNo}`;
     const boundary = '--disruption_email_boundary_string';
@@ -155,7 +146,7 @@ export async function shareToEmail(disruption) {
         + 'Content-Type: text/html; charset=UTF-8\n'
         + `\n${generateHtmlEmailBody(disruption)}\n`;
     if (disruption.uploadedFiles?.length) {
-        emailFile += `\n--${boundary}\n${await generateAttachment(disruption.uploadedFiles[0])}\n--${boundary}`;
+        emailFile += `\n--${boundary}\n${await generateAttachment(disruption.uploadedFiles[0], getAttachmentFileAsync)}`;
     }
     const link = document.createElement('a');
     link.href = emailFile;

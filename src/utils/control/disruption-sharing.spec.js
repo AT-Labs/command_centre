@@ -65,40 +65,14 @@ const link = {
     click: jest.fn(),
 };
 
-const canvas = {
-    toDataURL: jest.fn(),
-    getContext: jest.fn().mockReturnValue({ drawImage: jest.fn() }),
-};
-
 Object.defineProperty(
     global.document,
     'createElement',
     {
-        value: (type) => {
-            let element;
-            switch (type) {
-            case 'a':
-                element = link;
-                break;
-            case 'CANVAS':
-                element = canvas;
-                break;
-            default:
-                break;
-            }
-            return element;
-        },
+        value: () => link,
         writable: true,
     },
 );
-
-global.Image = class {
-    constructor() {
-        setTimeout(() => {
-            this.onload();
-        }, 100);
-    }
-};
 
 describe('shareToEmail', () => {
     test('should export email by setting the content to the link href', async () => {
@@ -178,21 +152,23 @@ describe('shareToEmail', () => {
     });
 
     test('should generate attachment if there is a diversion', async () => {
-        const imgBase64Content = 'mock image url to base64 code';
-        canvas.toDataURL.mockReturnValueOnce(imgBase64Content);
-        await shareToEmail({ ...disruption, uploadedFiles: disruptionDiversion });
+        const file = {
+            content: ',mock image url to base64 code',
+            contentType: 'image/png',
+        };
+
+        await shareToEmail({ ...disruption, uploadedFiles: disruptionDiversion }, jest.fn().mockResolvedValue(file));
         const boundary = '----disruption_email_boundary_string';
         const parts = link.href.split(boundary);
-        expect(parts.length).toEqual(4);
-        expect(parts[2]).toContain('Content-Type: image/png; name="test upload.png"');
+        expect(parts.length).toEqual(3);
+        expect(parts[2]).toContain(`Content-Type: ${file.contentType}; name="test upload.png"`);
         expect(parts[2]).toContain('Content-Transfer-Encoding: base64');
         expect(parts[2]).toContain('Content-Disposition: attachment');
-        expect(parts[2]).toContain(imgBase64Content);
+        expect(parts[2]).toContain(file.content.substring(1));
     });
 
-    test('should not generate attachment if there is something wrong during the image download process', async () => {
-        global.Image = undefined;
-        await shareToEmail({ ...disruption, uploadedFiles: disruptionDiversion });
+    test('should not generate attachment if there is something wrong during the file download process', async () => {
+        await shareToEmail({ ...disruption, uploadedFiles: disruptionDiversion }, jest.fn().mockResolvedValue(''));
         expect(link.href).not.toContain('Content-Disposition: attachment');
     });
 
