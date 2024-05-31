@@ -240,6 +240,15 @@ module.exports = {
                 enforce: 'post',
                 exclude: /node_modules|\.spec\.js$/,
             },
+            {
+                test: /\.mjs$/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env'],
+                    },
+                },
+            },
             // ** STOP ** Are you adding a new loader?
             // Make sure to add the new loader(s) before the "file" loader.
         ],

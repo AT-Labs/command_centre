@@ -15,9 +15,9 @@ const mockStore = configureMockStore([thunk]);
 const store = mockStore({});
 let sandbox;
 const mockedUser = {
-    userName: 'test@user.com',
-    profile: {
-        name: 'Test User',
+    username: 'test@user.com',
+    name: 'Test User',
+    idTokenClaims: {
         roles: ['role_1', 'role_2'],
     },
 };
@@ -38,9 +38,9 @@ describe('Link actions', () => {
                 type: ACTION_TYPE.UPDATE_USER_PROFILE,
                 payload: {
                     profile: {
-                        userName: mockedUser.userName,
-                        name: mockedUser.profile.name,
-                        roles: mockedUser.profile.roles,
+                        userName: mockedUser.username,
+                        name: mockedUser.name,
+                        roles: mockedUser.idTokenClaims.roles,
                     },
                 },
             },

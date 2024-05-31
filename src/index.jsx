@@ -1,12 +1,12 @@
-import { runWithAdal } from 'react-adal';
-import { getAuthContext, IS_LOGIN_NOT_REQUIRED } from './auth';
+/* eslint-disable no-console */
+import { getMsalInstance, IS_LOGIN_NOT_REQUIRED } from './auth';
 
 let localVersion;
 function loadApp() { }
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms)); // eslint-disable-line
 }
-(function checkVersion() {
+function checkVersion() {
     const headers = new Headers();
     headers.append('pragma', 'no-cache');
     headers.append('cache-control', 'no-cache, no-store');
@@ -39,5 +39,35 @@ function sleep(ms) {
             }
         })
         .catch(() => sleep(1000 * 60).then(checkVersion));
-}());
-runWithAdal(getAuthContext(), loadApp, IS_LOGIN_NOT_REQUIRED);
+}
+
+async function initializeMsal() {
+    const msalInstance = getMsalInstance();
+    await msalInstance.initialize();
+    await msalInstance.handleRedirectPromise().then(() => {
+        const account = msalInstance.getAllAccounts()[0];
+        if (!account) {
+            msalInstance.loginRedirect();
+        }
+    }).catch((err) => {
+        console.error(err);
+    });
+    return msalInstance;
+}
+
+async function checkAuthentication() {
+    if (IS_LOGIN_NOT_REQUIRED) {
+        loadApp();
+        return;
+    }
+
+    const msalInstance = await initializeMsal();
+    if (msalInstance.getAllAccounts().length > 0) {
+        loadApp();
+    } else {
+        msalInstance.loginRedirect();
+    }
+}
+
+checkVersion();
+checkAuthentication();

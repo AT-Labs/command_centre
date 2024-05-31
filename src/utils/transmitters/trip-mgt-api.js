@@ -157,37 +157,46 @@ const bulkUpdateTripStopsGqlMutation = gql`
 export const updateTripStatus = (options) => {
     const { tripId, serviceDate, tripStatus, startTime } = options;
 
-    return mutateStatic({
-        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
-        mutation: updateTripGqlMutation,
-        variables: { tripId, serviceDate, tripStatus, startTime },
-        params: 'updateTripStatus',
-        authToken: getAuthToken(),
-    }).then(response => result(response, 'data.updateTripStatus', {}));
+    return getAuthToken()
+        .then(token => (
+            mutateStatic({
+                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+                mutation: updateTripGqlMutation,
+                variables: { tripId, serviceDate, tripStatus, startTime },
+                params: 'updateTripStatus',
+                authToken: token,
+            }).then(response => result(response, 'data.updateTripStatus', {}))
+        ));
 };
 
 export const updateHeadsign = (options) => {
     const { tripId, serviceDate, startTime, stopCodes, headsign } = options;
 
-    return mutateStatic({
-        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
-        mutation: updateHeadsignGqlMutation,
-        variables: { tripId, serviceDate, startTime, stopCodes, headsign },
-        params: 'updateHeadsign',
-        authToken: getAuthToken(),
-    }).then(response => result(response, 'data.updateHeadsign', {}));
+    return getAuthToken()
+        .then(token => (
+            mutateStatic({
+                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+                mutation: updateHeadsignGqlMutation,
+                variables: { tripId, serviceDate, startTime, stopCodes, headsign },
+                params: 'updateHeadsign',
+                authToken: token,
+            }).then(response => result(response, 'data.updateHeadsign', {}))
+        ));
 };
 
 export const copyTrip = (options) => {
     const { tripId, serviceDate, startTime, newStartTime, referenceId } = options;
 
-    return mutateStatic({
-        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
-        mutation: copyTripGqlMutation,
-        variables: { tripId, serviceDate, startTime, newStartTime, referenceId },
-        params: 'copyTrip',
-        authToken: getAuthToken(),
-    });
+    return getAuthToken()
+        .then(token => (
+            mutateStatic({
+                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+                mutation: copyTripGqlMutation,
+                variables: { tripId, serviceDate, startTime, newStartTime, referenceId },
+                params: 'copyTrip',
+                authToken: token,
+            })
+        ));
 };
 
 const setDelayTripGqlMutation = gql`
@@ -200,13 +209,16 @@ const setDelayTripGqlMutation = gql`
 export const updateTripDelay = (options) => {
     const { tripId, serviceDate, startTime, delay } = options;
 
-    return mutateStatic({
-        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
-        mutation: setDelayTripGqlMutation,
-        variables: { tripId, serviceDate, startTime, delay },
-        params: 'setDelayTrip',
-        authToken: getAuthToken(),
-    }).then(response => result(response, 'data.setDelayTrip', {}));
+    return getAuthToken()
+        .then(token => (
+            mutateStatic({
+                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+                mutation: setDelayTripGqlMutation,
+                variables: { tripId, serviceDate, startTime, delay },
+                params: 'setDelayTrip',
+                authToken: token,
+            }).then(response => result(response, 'data.setDelayTrip', {}))
+        ));
 };
 
 const updateTripDisplayGqlMutation = gql`
@@ -219,13 +231,16 @@ const updateTripDisplayGqlMutation = gql`
 export const updateTripDisplay = (options) => {
     const { tripId, serviceDate, startTime, display } = options;
 
-    return mutateStatic({
-        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
-        mutation: updateTripDisplayGqlMutation,
-        variables: { tripId, serviceDate, startTime, display },
-        params: 'updateTripDisplay',
-        authToken: getAuthToken(),
-    }).then(response => result(response, 'data.updateTripDisplay', {}));
+    return getAuthToken()
+        .then(token => (
+            mutateStatic({
+                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+                mutation: updateTripDisplayGqlMutation,
+                variables: { tripId, serviceDate, startTime, display },
+                params: 'updateTripDisplay',
+                authToken: token,
+            }).then(response => result(response, 'data.updateTripDisplay', {}))
+        ));
 };
 
 const updateStopStatusGqlMutation = gql`
@@ -240,15 +255,18 @@ export const updateStopStatus = (options) => {
         tripId, serviceDate, startTime, stopSequences, stopStatus,
     } = options;
 
-    return mutateStatic({
-        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
-        mutation: updateStopStatusGqlMutation,
-        variables: {
-            tripId, serviceDate, startTime, stopSequences, stopStatus,
-        },
-        params: 'updateStopStatus',
-        authToken: getAuthToken(),
-    }).then(response => result(response, 'data.updateStopStatus', {}));
+    return getAuthToken()
+        .then(token => (
+            mutateStatic({
+                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+                mutation: updateStopStatusGqlMutation,
+                variables: {
+                    tripId, serviceDate, startTime, stopSequences, stopStatus,
+                },
+                params: 'updateStopStatus',
+                authToken: token,
+            }).then(response => result(response, 'data.updateStopStatus', {}))
+        ));
 };
 
 const updateStopIdGqlMutation = gql`
@@ -263,15 +281,18 @@ export const updateStopId = (options) => {
         tripId, serviceDate, startTime, stopSequence, stopId,
     } = options;
 
-    return mutateStatic({
-        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
-        mutation: updateStopIdGqlMutation,
-        variables: {
-            tripId, serviceDate, startTime, stopSequence, stopId,
-        },
-        params: 'updateStopId',
-        authToken: getAuthToken(),
-    }).then(response => result(response, 'data.updateStopId', {}));
+    return getAuthToken()
+        .then(token => (
+            mutateStatic({
+                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+                mutation: updateStopIdGqlMutation,
+                variables: {
+                    tripId, serviceDate, startTime, stopSequence, stopId,
+                },
+                params: 'updateStopId',
+                authToken: token,
+            }).then(response => result(response, 'data.updateStopId', {}))
+        ));
 };
 
 const moveToNextStopGqlMutation = gql`
@@ -283,13 +304,16 @@ const moveToNextStopGqlMutation = gql`
 
 export const moveToNextStop = (options) => {
     const { tripId, serviceDate, startTime } = options;
-    return mutateStatic({
-        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
-        mutation: moveToNextStopGqlMutation,
-        variables: { tripId, serviceDate, startTime },
-        params: 'moveToNextStop',
-        authToken: getAuthToken(),
-    }).then(response => result(response, 'data.moveToNextStop', {}));
+    return getAuthToken()
+        .then(token => (
+            mutateStatic({
+                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+                mutation: moveToNextStopGqlMutation,
+                variables: { tripId, serviceDate, startTime },
+                params: 'moveToNextStop',
+                authToken: token,
+            }).then(response => result(response, 'data.moveToNextStop', {}))
+        ));
 };
 
 const moveToStopGqlMutation = gql`
@@ -302,13 +326,16 @@ const moveToStopGqlMutation = gql`
 export const moveTotStop = (options) => {
     const { tripId, serviceDate, startTime, stopSequence } = options;
 
-    return mutateStatic({
-        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
-        mutation: moveToStopGqlMutation,
-        variables: { tripId, serviceDate, startTime, stopSequence },
-        params: 'moveToStop',
-        authToken: getAuthToken(),
-    }).then(response => result(response, 'data.moveToStop', {}));
+    return getAuthToken()
+        .then(token => (
+            mutateStatic({
+                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+                mutation: moveToStopGqlMutation,
+                variables: { tripId, serviceDate, startTime, stopSequence },
+                params: 'moveToStop',
+                authToken: token,
+            }).then(response => result(response, 'data.moveToStop', {}))
+        ));
 };
 
 export const recurringUpdateTripStatus = (variables) => {
@@ -376,21 +403,27 @@ export const searchTrip = (params) => {
 };
 
 export const addTrips = options => (
-    mutateStatic({
-        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
-        mutation: addTripsGqlMutation,
-        variables: { trips: options },
-        params: 'addNewTrips',
-        authToken: getAuthToken(),
-    })
+    getAuthToken()
+        .then(token => (
+            mutateStatic({
+                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+                mutation: addTripsGqlMutation,
+                variables: { trips: options },
+                params: 'addNewTrips',
+                authToken: token,
+            })
+        ))
 );
 
 export const bulkUpdateTripStops = options => (
-    mutateStatic({
-        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
-        mutation: bulkUpdateTripStopsGqlMutation,
-        variables: { stopUpdates: options },
-        params: 'bulkUpdateTripStops',
-        authToken: getAuthToken(),
-    })
+    getAuthToken()
+        .then(token => (
+            mutateStatic({
+                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+                mutation: bulkUpdateTripStopsGqlMutation,
+                variables: { stopUpdates: options },
+                params: 'bulkUpdateTripStops',
+                authToken: token,
+            })
+        ))
 );

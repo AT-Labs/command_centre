@@ -1,20 +1,92 @@
-import * as adal from 'react-adal';
-import * as Sentry from '@sentry/react';
-import { fetchWithAuthHeader } from './auth';
+/* eslint-disable global-require */
+describe('Environment Configuration', () => {
+    beforeEach(() => {
+        jest.resetModules();
+    });
 
-global.fetch = jest.fn();
+    it('should set IS_LOGIN_NOT_REQUIRED correctly when env variable is true', () => {
+        process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN = 'true';
+        const { IS_LOGIN_NOT_REQUIRED } = require('./auth');
+        expect(IS_LOGIN_NOT_REQUIRED).toBe(true);
+    });
 
-describe('fetchWithAuthHeader', () => {
-    it('should call adalFetch with provided url and options when adalFetch throws error call sentry captureException', async () => {
-        const url = 'https://test.com';
-        const options = { method: 'GET' };
+    it('should set IS_LOGIN_NOT_REQUIRED correctly when env variable is false', () => {
+        process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN = 'false';
+        const { IS_LOGIN_NOT_REQUIRED } = require('./auth');
+        expect(IS_LOGIN_NOT_REQUIRED).toBe(false);
+    });
+});
 
-        const captureExceptionSpy = jest.spyOn(Sentry, 'captureException');
-        jest.spyOn(global, 'fetch').mockResolvedValue({});
-        jest.spyOn(adal, 'adalFetch').mockRejectedValue(new Error('Some error'));
+describe('Authentication Functions', () => {
+    beforeEach(() => {
+        jest.resetModules();
+    });
 
-        await fetchWithAuthHeader(url, options);
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
 
-        expect(captureExceptionSpy).toHaveBeenCalled();
+    it('fetchWithAuthHeader should fetch without auth header if login not required', async () => {
+        process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN = 'true';
+        global.fetch = jest.fn().mockResolvedValue({ status: 200 });
+        const { fetchWithAuthHeader } = require('./auth');
+
+        const response = await fetchWithAuthHeader('http://example.com', {});
+        expect(response.status).toBe(200);
+    });
+
+    it('fetchWithAuthHeader should fetch with auth header if login is required', async () => {
+        process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN = 'false';
+        const { getMsalInstance, fetchWithAuthHeader } = require('./auth');
+        const msalInstance = getMsalInstance();
+        msalInstance.initialize = jest.fn(() => Promise.resolve());
+        msalInstance.getAllAccounts = jest.fn().mockReturnValue([{ username: 'test-user' }]);
+        msalInstance.acquireTokenSilent = jest.fn().mockResolvedValue({ idToken: 'test-token' });
+        global.fetch = jest.fn().mockImplementation((url, options) => {
+            expect(options.headers.Authorization).toBe('Bearer test-token');
+            return Promise.resolve({ status: 200 });
+        });
+
+        const response = await fetchWithAuthHeader('http://example.com', { headers: {} });
+        expect(response.status).toBe(200);
+    });
+
+    it('getAuthUser should return guest user if login not required', () => {
+        process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN = 'true';
+        const { getAuthUser } = require('./auth');
+
+        const user = getAuthUser();
+        expect(user.profile.name).toBe('Guest User');
+    });
+
+    it('getAuthUser should return account user if login is required', () => {
+        process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN = 'false';
+        const { getMsalInstance, getAuthUser } = require('./auth');
+        const msalInstance = getMsalInstance();
+        msalInstance.getAllAccounts = jest.fn().mockReturnValue([{ username: 'test-user' }]);
+
+        const user = getAuthUser();
+        expect(user.username).toBe('test-user');
+    });
+
+    it('getAuthToken should return token if user is logged in', async () => {
+        process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN = 'false';
+        const { getMsalInstance, getAuthToken } = require('./auth');
+        const msalInstance = getMsalInstance();
+        msalInstance.getAllAccounts = jest.fn().mockReturnValue([{ username: 'test-user' }]);
+        msalInstance.acquireTokenSilent = jest.fn().mockResolvedValue({ idToken: 'test-token' });
+
+        const token = await getAuthToken();
+        expect(token).toBe('test-token');
+    });
+
+    it('logout should call msalInstance.logoutRedirect and clear Sentry user', () => {
+        const { getMsalInstance, logout } = require('./auth');
+        const msalInstance = getMsalInstance();
+        msalInstance.getAllAccounts = jest.fn().mockReturnValue([{ username: 'test-user' }]);
+        msalInstance.logoutRedirect = jest.fn();
+
+        logout();
+        expect(msalInstance.logoutRedirect).toHaveBeenCalledWith({ account: { username: 'test-user' } });
     });
 });

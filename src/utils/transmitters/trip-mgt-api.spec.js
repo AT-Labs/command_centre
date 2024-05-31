@@ -4,7 +4,7 @@ import * as auth from '../../auth';
 import * as jsonHandling from '../fetch';
 
 const mutateStatic = jest.spyOn(graphql, 'mutateStatic');
-jest.spyOn(auth, 'getAuthToken').mockReturnValue('auth_token');
+jest.spyOn(auth, 'getAuthToken').mockResolvedValue('auth_token');
 
 const tripId = {
     tripId: 'trip-id-1',

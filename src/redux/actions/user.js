@@ -12,9 +12,9 @@ import { reportError } from './activity';
 
 export const updateUserProfile = user => (dispatch) => {
     const profile = {
-        userName: result(user, 'userName', ''),
-        name: result(user, 'profile.name', ''),
-        roles: result(user, 'profile.roles', []),
+        userName: result(user, 'username', ''),
+        name: result(user, 'name', ''),
+        roles: result(user, 'idTokenClaims.roles', []),
     };
     dispatch({
         type: ACTION_TYPE.UPDATE_USER_PROFILE,
