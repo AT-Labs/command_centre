@@ -107,8 +107,8 @@ async function generateAttachment(uploadFile, getAttachmentFileAsync = undefined
         return '';
     }
     const contentType = `Content-Type: ${base64File.contentType}; name="${uploadFile.fileName}"\n`;
-    const attachment = contentType
-        + 'Content-Transfer-Encoding: base64\n'
+    const attachment = `${contentType
+    }Content-Transfer-Encoding: base64\n`
         + 'Content-Disposition: attachment\n'
         + `\n${base64File.content.split(',')[1]} \n`;
     return attachment;
