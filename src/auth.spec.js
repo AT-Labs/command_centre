@@ -18,6 +18,8 @@ describe('Environment Configuration', () => {
 });
 
 describe('Authentication Functions', () => {
+    const account = { username: 'test-user', idTokenClaims: { exp: 1717638821 } };
+
     beforeEach(() => {
         jest.resetModules();
     });
@@ -40,7 +42,7 @@ describe('Authentication Functions', () => {
         const { getMsalInstance, fetchWithAuthHeader } = require('./auth');
         const msalInstance = getMsalInstance();
         msalInstance.initialize = jest.fn(() => Promise.resolve());
-        msalInstance.getAllAccounts = jest.fn().mockReturnValue([{ username: 'test-user' }]);
+        msalInstance.getAllAccounts = jest.fn().mockReturnValue([account]);
         msalInstance.acquireTokenSilent = jest.fn().mockResolvedValue({ idToken: 'test-token' });
         global.fetch = jest.fn().mockImplementation((url, options) => {
             expect(options.headers.Authorization).toBe('Bearer test-token');
@@ -63,7 +65,7 @@ describe('Authentication Functions', () => {
         process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN = 'false';
         const { getMsalInstance, getAuthUser } = require('./auth');
         const msalInstance = getMsalInstance();
-        msalInstance.getAllAccounts = jest.fn().mockReturnValue([{ username: 'test-user' }]);
+        msalInstance.getAllAccounts = jest.fn().mockReturnValue([account]);
 
         const user = getAuthUser();
         expect(user.username).toBe('test-user');
@@ -73,7 +75,7 @@ describe('Authentication Functions', () => {
         process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN = 'false';
         const { getMsalInstance, getAuthToken } = require('./auth');
         const msalInstance = getMsalInstance();
-        msalInstance.getAllAccounts = jest.fn().mockReturnValue([{ username: 'test-user' }]);
+        msalInstance.getAllAccounts = jest.fn().mockReturnValue([account]);
         msalInstance.acquireTokenSilent = jest.fn().mockResolvedValue({ idToken: 'test-token' });
 
         const token = await getAuthToken();
@@ -83,10 +85,10 @@ describe('Authentication Functions', () => {
     it('logout should call msalInstance.logoutRedirect and clear Sentry user', () => {
         const { getMsalInstance, logout } = require('./auth');
         const msalInstance = getMsalInstance();
-        msalInstance.getAllAccounts = jest.fn().mockReturnValue([{ username: 'test-user' }]);
+        msalInstance.getAllAccounts = jest.fn().mockReturnValue([account]);
         msalInstance.logoutRedirect = jest.fn();
 
         logout();
-        expect(msalInstance.logoutRedirect).toHaveBeenCalledWith({ account: { username: 'test-user' } });
+        expect(msalInstance.logoutRedirect).toHaveBeenCalledWith({ account });
     });
 });

@@ -25,32 +25,6 @@ const guestUserName = 'Guest User';
 
 export const getMsalInstance = () => msalInstance;
 
-export const fetchWithAuthHeader = async (url, options) => {
-    if (IS_LOGIN_NOT_REQUIRED) {
-        return fetch(url, options);
-    }
-
-    await msalInstance.initialize();
-    const allAccounts = msalInstance.getAllAccounts();
-    const account = allAccounts[0];
-    try {
-        const tokenResponse = await msalInstance.acquireTokenSilent({
-            ...loginRequest,
-            account,
-        });
-        const optionsWithToken = {
-            ...options,
-            headers: {
-                ...options.headers,
-                Authorization: `Bearer ${tokenResponse.idToken}`,
-            },
-        };
-        return fetch(url, optionsWithToken);
-    } catch (error) {
-        return Sentry.captureException(error);
-    }
-};
-
 export const getAuthUser = () => {
     if (IS_LOGIN_NOT_REQUIRED) { return { profile: { name: guestUserName } }; }
     const account = msalInstance.getAllAccounts()[0];
@@ -68,11 +42,34 @@ export const getAuthToken = async () => {
     if (!account) {
         throw new Error('No user account found');
     }
+    const forceRefresh = new Date() >= new Date(account.idTokenClaims.exp * 1000);
     const response = await msalInstance.acquireTokenSilent({
         ...loginRequest,
         account,
+        forceRefresh,
     });
     return response.idToken;
+};
+
+export const fetchWithAuthHeader = async (url, options) => {
+    if (IS_LOGIN_NOT_REQUIRED) {
+        return fetch(url, options);
+    }
+
+    await msalInstance.initialize();
+    try {
+        const idToken = await getAuthToken();
+        const optionsWithToken = {
+            ...options,
+            headers: {
+                ...options.headers,
+                Authorization: `Bearer ${idToken}`,
+            },
+        };
+        return fetch(url, optionsWithToken);
+    } catch (error) {
+        return Sentry.captureException(error);
+    }
 };
 
 export const logout = () => {
