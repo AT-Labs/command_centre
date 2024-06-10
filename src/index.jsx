@@ -62,7 +62,9 @@ async function checkAuthentication() {
     }
 
     const msalInstance = await initializeMsal();
-    if (msalInstance.getAllAccounts().length > 0) {
+    const account = msalInstance.getAllAccounts()[0];
+    if (account) {
+        msalInstance.setActiveAccount(account);
         loadApp();
     } else {
         msalInstance.loginRedirect();

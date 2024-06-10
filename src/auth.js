@@ -21,13 +21,18 @@ const msalInstance = new PublicClientApplication(msalConfig);
 const loginRequest = {
     scopes: ['User.Read'],
 };
+
 const guestUserName = 'Guest User';
 
 export const getMsalInstance = () => msalInstance;
 
 export const getAuthUser = () => {
     if (IS_LOGIN_NOT_REQUIRED) { return { profile: { name: guestUserName } }; }
-    const account = msalInstance.getAllAccounts()[0];
+    const account = msalInstance.getActiveAccount();
+    if (!account) {
+        msalInstance.loginRedirect();
+        return undefined;
+    }
     Sentry.setUser({
         username: account ? account.username : guestUserName,
     });
@@ -38,7 +43,7 @@ export const getAuthUser = () => {
 export const getAuthToken = async () => {
     if (IS_LOGIN_NOT_REQUIRED) { return ''; }
 
-    const account = msalInstance.getAllAccounts()[0];
+    const account = msalInstance.getActiveAccount();
     if (!account) {
         throw new Error('No user account found');
     }
@@ -56,7 +61,6 @@ export const fetchWithAuthHeader = async (url, options) => {
         return fetch(url, options);
     }
 
-    await msalInstance.initialize();
     try {
         const idToken = await getAuthToken();
         const optionsWithToken = {
@@ -68,12 +72,14 @@ export const fetchWithAuthHeader = async (url, options) => {
         };
         return fetch(url, optionsWithToken);
     } catch (error) {
-        return Sentry.captureException(error);
+        Sentry.captureException(error);
+        return undefined;
     }
 };
 
 export const logout = () => {
-    const account = msalInstance.getAllAccounts()[0];
+    const account = msalInstance.getActiveAccount();
+    msalInstance.setActiveAccount(null);
     msalInstance.logoutRedirect({ account });
     Sentry.setUser(null);
 };

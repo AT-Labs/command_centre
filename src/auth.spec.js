@@ -43,6 +43,7 @@ describe('Authentication Functions', () => {
         const msalInstance = getMsalInstance();
         msalInstance.initialize = jest.fn(() => Promise.resolve());
         msalInstance.getAllAccounts = jest.fn().mockReturnValue([account]);
+        msalInstance.getActiveAccount = jest.fn().mockReturnValue(account);
         msalInstance.acquireTokenSilent = jest.fn().mockResolvedValue({ idToken: 'test-token' });
         global.fetch = jest.fn().mockImplementation((url, options) => {
             expect(options.headers.Authorization).toBe('Bearer test-token');
@@ -66,6 +67,7 @@ describe('Authentication Functions', () => {
         const { getMsalInstance, getAuthUser } = require('./auth');
         const msalInstance = getMsalInstance();
         msalInstance.getAllAccounts = jest.fn().mockReturnValue([account]);
+        msalInstance.getActiveAccount = jest.fn().mockReturnValue(account);
 
         const user = getAuthUser();
         expect(user.username).toBe('test-user');
@@ -76,6 +78,7 @@ describe('Authentication Functions', () => {
         const { getMsalInstance, getAuthToken } = require('./auth');
         const msalInstance = getMsalInstance();
         msalInstance.getAllAccounts = jest.fn().mockReturnValue([account]);
+        msalInstance.getActiveAccount = jest.fn().mockReturnValue(account);
         msalInstance.acquireTokenSilent = jest.fn().mockResolvedValue({ idToken: 'test-token' });
 
         const token = await getAuthToken();
@@ -86,6 +89,7 @@ describe('Authentication Functions', () => {
         const { getMsalInstance, logout } = require('./auth');
         const msalInstance = getMsalInstance();
         msalInstance.getAllAccounts = jest.fn().mockReturnValue([account]);
+        msalInstance.getActiveAccount = jest.fn().mockReturnValue(account);
         msalInstance.logoutRedirect = jest.fn();
 
         logout();
