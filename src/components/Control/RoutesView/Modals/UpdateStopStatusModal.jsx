@@ -16,25 +16,11 @@ import { TRAIN_TYPE_ID } from '../../../../types/vehicle-types';
 import { getRailHeadsignsStops } from '../../../../utils/transmitters/cc-static';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 
-export const UpdateStopStatusModal = (props) => {
-    const { skipped, notPassed, nonStopping } = StopStatus;
-    const { SKIP, REINSTATE, MOVE_SERVICE, UPDATE_HEADSIGN, SET_NON_STOPPING } = updateStopsModalTypes;
-    const { isModalOpen, activeModal, tripInstance, areSelectedStopsUpdating } = props;
-    const [hasUpdateBeenTriggered, setHasUpdateBeenTriggered] = useState(false);
-    const [newDestination, setNewDestination] = useState('');
-    const isUpdatingOnGoing = hasUpdateBeenTriggered && areSelectedStopsUpdating;
-    const hasUpdatingFinished = hasUpdateBeenTriggered && !areSelectedStopsUpdating;
-    const selectedStops = props.selectedStopsByTripKey(tripInstance);
-    const firstSelectedStop = !isEmpty(selectedStops) && selectedStops[findKey(selectedStops)];
-    const [railHeadsigns, setRailHeadsigns] = useState([]);
-    const [selectedPidCustomization, setSelectedPidCustomization] = useState('None');
+const { SKIP, REINSTATE, MOVE_SERVICE, UPDATE_HEADSIGN, SET_NON_STOPPING, SET_FIRST_STOP, SET_LAST_STOP } = updateStopsModalTypes;
 
-    useEffect(async () => {
-        const railHeadsignsStops = await getRailHeadsignsStops();
-        setRailHeadsigns(railHeadsignsStops.map(({ headsign }) => headsign));
-    }, []);
-
-    const modalProps = {
+const modalPropsMapping = (data) => {
+    const { firstSelectedStop, tripInstance, isUpdatingOnGoing, skipped, notPassed, nonStopping } = data;
+    return {
         [SKIP]: {
             stopStatus: skipped,
             className: `${SKIP}-modal`,
@@ -75,7 +61,144 @@ export const UpdateStopStatusModal = (props) => {
             confirmationMessage: 'Are you sure you want to set the selected stops as non-stopping?',
             label: <UpdateStatusModalsBtn label="Set stop(s) as non-stopping" isLoading={ isUpdatingOnGoing } />,
         },
+        [SET_FIRST_STOP]: {
+            className: `${SET_FIRST_STOP}-modal`,
+            title: 'Set first stop',
+            confirmationMessage: `Are you sure you want to set stop ${firstSelectedStop.stopCode} as the first stop of this trip?`,
+            label: <UpdateStatusModalsBtn label="Set first stop" isLoading={ isUpdatingOnGoing } />,
+        },
+        [SET_LAST_STOP]: {
+            className: `${SET_LAST_STOP}-modal`,
+            title: 'Set last stop',
+            confirmationMessage: `Are you sure you want to set stop ${firstSelectedStop.stopCode} as the last stop of this trip?`,
+            label: <UpdateStatusModalsBtn label="Set last stop" isLoading={ isUpdatingOnGoing } />,
+        },
     };
+};
+
+const handleMoveService = (tripInstance, firstSelectedStop, modalProps, activeModal, handlers) => {
+    const options = {
+        tripId: tripInstance.tripId,
+        serviceDate: tripInstance.serviceDate,
+        startTime: tripInstance.startTime,
+        stopSequence: firstSelectedStop.stopSequence,
+    };
+
+    handlers.moveTripToStopHandler(options, modalProps[activeModal].successMessage(firstSelectedStop), tripInstance);
+};
+
+const handleUpdateHeadsign = (tripInstance, selectedStops, newDestination, selectedPidCustomization, modalProps, activeModal, handlers) => {
+    const options = {
+        tripId: tripInstance.tripId,
+        serviceDate: tripInstance.serviceDate,
+        startTime: tripInstance.startTime,
+        stopCodes: Object.values(selectedStops).map(stop => stop.stopCode),
+        headsign: selectedPidCustomization !== 'None' ? newDestination + selectedPidCustomization : newDestination,
+    };
+    if (handlers.onStopUpdatedHandler) {
+        handlers.onStopUpdatedHandler({ ...options, action: UPDATE_HEADSIGN });
+    } else {
+        handlers.updateDestinationHandler(options, modalProps[activeModal].successMessage, tripInstance);
+    }
+};
+
+const handleSetFirstStop = (tripInstance, firstSelectedStop, handlers, activeModal) => {
+    if (handlers.onStopUpdatedHandler) {
+        const options = {
+            tripId: tripInstance.tripId,
+            serviceDate: tripInstance.serviceDate,
+            startTime: firstSelectedStop.departureTime,
+            stopCodes: Object.values(tripInstance.stops).map(stop => stop.stopCode),
+            firstStop: firstSelectedStop,
+        };
+        handlers.onStopUpdatedHandler({ ...options, action: activeModal });
+    }
+};
+
+const handleSetLastStop = (tripInstance, firstSelectedStop, handlers, activeModal) => {
+    if (handlers.onStopUpdatedHandler) {
+        const options = {
+            tripId: tripInstance.tripId,
+            serviceDate: tripInstance.serviceDate,
+            endTime: firstSelectedStop.arrivalTime,
+            stopCodes: Object.values(tripInstance.stops).map(stop => stop.stopCode),
+            lastStop: firstSelectedStop,
+        };
+        handlers.onStopUpdatedHandler({ ...options, action: activeModal });
+    }
+};
+
+const handleDefaultCase = (tripInstance, selectedStops, modalProps, activeModal, skipped, nonStopping, handlers) => {
+    const filterSelectedStopsByModalType = status => ((activeModal === SKIP && status !== skipped)
+    || (activeModal === REINSTATE && (status === skipped || status === nonStopping)) || (activeModal === SET_NON_STOPPING && status !== nonStopping));
+    const selectedStopsByModalType = pickBy(selectedStops, stop => filterSelectedStopsByModalType(stop.status));
+
+    if (handlers.onStopUpdatedHandler) {
+        const options = {
+            tripId: tripInstance.tripId,
+            serviceDate: tripInstance.serviceDate,
+            startTime: tripInstance.startTime,
+            stopCodes: Object.values(selectedStopsByModalType).map(stop => stop.stopCode),
+            status: modalProps[activeModal].stopStatus,
+        };
+        handlers.onStopUpdatedHandler({ ...options, action: activeModal });
+    } else {
+        handlers.updateSelectedStopsStatusHandler(
+            tripInstance,
+            selectedStopsByModalType,
+            modalProps[activeModal].stopStatus,
+            `${size(selectedStopsByModalType)} ${modalProps[activeModal].successMessage}`,
+            `${size(selectedStopsByModalType)} ${modalProps[activeModal].errorMessage}`,
+        );
+    }
+};
+
+const onClickHandler = (
+    setHasUpdateBeenTriggered,
+    activeModal,
+    tripData,
+    modalProps,
+    handlers,
+) => {
+    setHasUpdateBeenTriggered(true);
+    const { tripInstance, selectedStops, firstSelectedStop, selectedPidCustomization, newDestination, skipped, nonStopping } = tripData;
+
+    switch (activeModal) {
+    case MOVE_SERVICE:
+        handleMoveService(tripInstance, firstSelectedStop, modalProps, activeModal, handlers);
+        break;
+    case UPDATE_HEADSIGN:
+        handleUpdateHeadsign(tripInstance, selectedStops, newDestination, selectedPidCustomization, modalProps, activeModal, handlers);
+        break;
+    case SET_FIRST_STOP:
+        handleSetFirstStop(tripInstance, firstSelectedStop, handlers, activeModal);
+        break;
+    case SET_LAST_STOP:
+        handleSetLastStop(tripInstance, firstSelectedStop, handlers, activeModal);
+        break;
+    default:
+        handleDefaultCase(tripInstance, selectedStops, modalProps, activeModal, skipped, nonStopping, handlers);
+    }
+};
+
+export const UpdateStopStatusModal = (props) => {
+    const { skipped, notPassed, nonStopping } = StopStatus;
+    const { isModalOpen, activeModal, tripInstance, areSelectedStopsUpdating } = props;
+    const [hasUpdateBeenTriggered, setHasUpdateBeenTriggered] = useState(false);
+    const [newDestination, setNewDestination] = useState('');
+    const isUpdatingOnGoing = hasUpdateBeenTriggered && areSelectedStopsUpdating;
+    const hasUpdatingFinished = hasUpdateBeenTriggered && !areSelectedStopsUpdating;
+    const selectedStops = props.selectedStopsByTripKey(tripInstance);
+    const firstSelectedStop = !isEmpty(selectedStops) && selectedStops[findKey(selectedStops)];
+    const [railHeadsigns, setRailHeadsigns] = useState([]);
+    const [selectedPidCustomization, setSelectedPidCustomization] = useState('None');
+
+    useEffect(async () => {
+        const railHeadsignsStops = await getRailHeadsignsStops();
+        setRailHeadsigns(railHeadsignsStops.map(({ headsign }) => headsign));
+    }, []);
+
+    const modalProps = modalPropsMapping({ firstSelectedStop, tripInstance, isUpdatingOnGoing, skipped, notPassed, nonStopping });
 
     const pidCustomizationOptions = [
         { key: '/N', value: '/N' },
@@ -97,58 +220,28 @@ export const UpdateStopStatusModal = (props) => {
         setHasUpdateBeenTriggered(false);
     };
 
-    const onClick = () => {
-        setHasUpdateBeenTriggered(true);
-
-        if (activeModal === MOVE_SERVICE) {
-            const options = {
-                tripId: tripInstance.tripId,
-                serviceDate: tripInstance.serviceDate,
-                startTime: tripInstance.startTime,
-                stopSequence: firstSelectedStop.stopSequence,
-            };
-
-            props.moveTripToStop(options, modalProps[activeModal].successMessage(firstSelectedStop), tripInstance);
-        } else if (activeModal === UPDATE_HEADSIGN) {
-            const options = {
-                tripId: tripInstance.tripId,
-                serviceDate: tripInstance.serviceDate,
-                startTime: tripInstance.startTime,
-                stopCodes: Object.values(selectedStops).map(stop => stop.stopCode),
-                headsign: selectedPidCustomization !== 'None' ? newDestination + selectedPidCustomization : newDestination,
-            };
-            if (props.onStopUpdated) {
-                props.onStopUpdated({ ...options, action: UPDATE_HEADSIGN });
-            } else {
-                props.updateDestination(options, modalProps[activeModal].successMessage, tripInstance);
-            }
-        } else {
-            const filterSelectedStopsByModalType = status => ((activeModal === SKIP && status !== skipped)
-            || (activeModal === REINSTATE && (status === skipped || status === nonStopping)) || (activeModal === SET_NON_STOPPING && status !== nonStopping));
-            const selectedStopsByModalType = pickBy(selectedStops, stop => filterSelectedStopsByModalType(stop.status));
-
-            if (props.onStopUpdated) {
-                const options = {
-                    tripId: tripInstance.tripId,
-                    serviceDate: tripInstance.serviceDate,
-                    startTime: tripInstance.startTime,
-                    stopCodes: Object.values(selectedStopsByModalType).map(stop => stop.stopCode),
-                    status: modalProps[activeModal].stopStatus,
-                };
-                props.onStopUpdated({ ...options, action: activeModal });
-            } else {
-                props.updateSelectedStopsStatus(
-                    tripInstance,
-                    selectedStopsByModalType,
-                    modalProps[activeModal].stopStatus,
-                    `${size(selectedStopsByModalType)} ${modalProps[activeModal].successMessage}`,
-                    `${size(selectedStopsByModalType)} ${modalProps[activeModal].errorMessage}`,
-                );
-            }
-        }
-    };
-
     useEffect(() => { if (hasUpdatingFinished) onClose(); });
+
+    const onClick = () => onClickHandler(
+        setHasUpdateBeenTriggered,
+        activeModal,
+        {
+            tripInstance,
+            selectedStops,
+            firstSelectedStop,
+            selectedPidCustomization,
+            newDestination,
+            skipped,
+            nonStopping,
+        },
+        modalProps,
+        {
+            moveTripToStopHandler: props.moveTripToStop,
+            onStopUpdatedHandler: props.onStopUpdated,
+            updateDestinationHandler: props.updateDestination,
+            updateSelectedStopsStatusHandler: props.updateSelectedStopsStatus,
+        },
+    );
 
     const getModalBody = () => {
         if (activeModal === UPDATE_HEADSIGN) {

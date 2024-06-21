@@ -28,3 +28,4 @@ export const useNonStopping = createSelector(getAppSettingsState, appSettingStat
 export const useRouteView = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRouteView') === 'true'));
 export const useIncidentLayer = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useIncidentLayer') === 'true'));
 export const useBulkStopsUpdate = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useBulkStopsUpdate') === 'true'));
+export const useRemoveStops = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRemoveStops') === 'true'));

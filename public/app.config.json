@@ -18,5 +18,6 @@
     "useNonStopping": "false",
     "useRouteView": "false",
     "useIncidentLayer": "false",
-    "useBulkStopsUpdate": "false"
+    "useBulkStopsUpdate": "false",
+    "useRemoveStops": "false"
 }

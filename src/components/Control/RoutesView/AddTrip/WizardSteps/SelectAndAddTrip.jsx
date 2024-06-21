@@ -31,7 +31,7 @@ import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import ChangeSelectedTripModal from './ChangeSelectedTripModal';
 import CloseConfirmation from './CloseConfirmation';
 import { OPERATORS } from '../../../../../constants/datagrid';
-import { dateOperators } from '../../../../../utils/control/routes';
+import { dateOperators, markStopsAsFirstOrLast } from '../../../../../utils/control/routes';
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { viewRadioOptions } from '../../Types';
 import { useRouteView } from '../../../../../redux/selectors/appSettings';
@@ -110,7 +110,7 @@ export const SelectAndAddTrip = (props) => {
             routeVariantName: tripInstance.routeLongName,
             startTime: getTripTimeDisplay(tripInstance.startTime),
             endTime: getTripTimeDisplay(tripInstance.endTime),
-            tripInstance,
+            tripInstance: { ...tripInstance, stops: markStopsAsFirstOrLast(tripInstance.stops) },
         }
     );
 
@@ -181,10 +181,11 @@ export const SelectAndAddTrip = (props) => {
                 // Trip View
                 const result = await searchTrip(payload);
                 if (result?.trips && result?.totalCount) {
-                    setTrips(result.trips);
+                    const parsedTrips = result.trips.map(trip => ({ ...trip, stops: markStopsAsFirstOrLast(trip.stops) }));
+                    setTrips(parsedTrips);
                     setTripsTotal(Number(result.totalCount));
-                    if (result.trips.length > 0) {
-                        props.updateSelectedAddTrip(parseTripInstance(result.trips[0]));
+                    if (parsedTrips.length > 0) {
+                        props.updateSelectedAddTrip(parseTripInstance(parsedTrips[0]));
                     } else {
                         props.updateSelectedAddTrip(null);
                     }
@@ -197,7 +198,7 @@ export const SelectAndAddTrip = (props) => {
                 // grouped by variant id for the same route.
                 const result = await searchTrip({ ...payload, page: 1, limit: 1000 });
                 if (result?.trips && result?.totalCount) {
-                    const tripsForRouteView = groupByRouteVariantId(result.trips);
+                    const tripsForRouteView = groupByRouteVariantId(result.trips.map(trip => ({ ...trip, stops: markStopsAsFirstOrLast(trip.stops) })));
                     setTrips(tripsForRouteView);
                     setTripsTotal(tripsForRouteView.length);
                     if (tripsForRouteView.length > 0) {
@@ -329,11 +330,11 @@ export const SelectAndAddTrip = (props) => {
                 disabled={ false }
                 checkedKey={ viewType }
                 onChange={ (checkedButtonKey) => {
-                    if (newTripDetailsRef.current?.isFormEmpty()) {
+                    if (newTripDetailsRef.current && !newTripDetailsRef.current.isFormEmpty()) {
+                        setIsChangeViewModalOpen(true);
+                    } else {
                         setViewType(checkedButtonKey);
                         props.updateAddTripDatagridConfig({ page: 0, pageSize: 15, sortModel: [], columns: [] });
-                    } else {
-                        setIsChangeViewModalOpen(true);
                     }
                 } }
             />

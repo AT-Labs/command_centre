@@ -65,6 +65,10 @@ export class Stop extends React.Component {
 
     isMissedTrip = () => this.props.tripInstance.status === TRIP_STATUS_TYPES.missed;
 
+    getFirstStop = () => this.props.tripInstance.stops.find(s => s.firstStop === true);
+
+    getLastStop = () => this.props.tripInstance.stops.find(s => s.lastStop === true);
+
     isUpdateHeadsignPermitted = () => IS_LOGIN_NOT_REQUIRED || isUpdateStopHeadsignPermitted(this.props.stop);
 
     isStopMutationPossible = () => (this.isNotStartedTrip() || this.isInProgressTrip() || this.isMissedTrip())
@@ -121,12 +125,18 @@ export class Stop extends React.Component {
         this.hideChangePlatformModal();
     };
 
+    isFirstOrLastStop = () => this.props.stop.stopCode === this.getFirstStop().stopCode || this.props.stop.stopCode === this.getLastStop().stopCode;
+
+    isRemovedStop = () => (this.props.stop.stopSequence < this.getFirstStop().stopSequence || this.props.stop.stopSequence > this.getLastStop().stopSequence);
+
     getStopControlClassNames = () => {
         let stopControlClassNames = 'stop-control';
         if (this.isSkipped()) { stopControlClassNames += ' stop-control--skipped'; }
         if (this.isNonStoppingStop()) { stopControlClassNames += ' stop-control--non-stopping'; }
         if (this.props.isCurrent) { stopControlClassNames += ' stop-control--current'; }
         if (this.isSkipStopDisabled()) { stopControlClassNames += ' stop-control--disabled'; }
+        if (this.isRemovedStop()) { stopControlClassNames += ' stop-control--removed'; }
+        if (this.isFirstOrLastStop()) { stopControlClassNames += ' stop-control--first-or-last-stop'; }
         return stopControlClassNames;
     };
 
@@ -230,6 +240,7 @@ export class Stop extends React.Component {
                                     id={ actionButtonId }
                                     className={ stopControlActionClassName }
                                     aria-label={ `Stop ${stopFullName} selected` }
+                                    data-testid={ stop.stopCode }
                                     onMouseEnter={ () => this.props.onHover({ stop }) }
                                     onMouseLeave={ () => this.props.onHover(null) }
                                     onClick={ () => this.props.selectStops(tripInstance, stop) }>

@@ -14,12 +14,13 @@ import { updateStopsModalTypes } from '../../Types';
 import Stops from '../../../Common/Stops/Stops';
 import './styles.scss';
 import { bulkUpdateTripStops } from '../../../../../utils/transmitters/trip-mgt-api';
+import { markStopsAsFirstOrLast } from '../../../../../utils/control/routes';
 
 const UpdateTripStopsModal = (props) => {
     const maxTripsToUpdate = 30;
     const [areTripsUpdating, setAreTripsUpdating] = useState(false);
     const [errorMessage, setErrorMessage] = useState(values(props.operateTrips).length <= maxTripsToUpdate ? '' : `The maximum number of trips that can be updated at once is ${maxTripsToUpdate}.`);
-    const [selectedTrips, setSelectedTrips] = useState(values(props.operateTrips));
+    const [selectedTrips, setSelectedTrips] = useState(values(props.operateTrips).map(trip => ({ ...trip, stops: markStopsAsFirstOrLast(trip.stops) })));
     const [tripTemplate, setTripTemplate] = useState({
         ...selectedTrips[0],
         tripId: null,

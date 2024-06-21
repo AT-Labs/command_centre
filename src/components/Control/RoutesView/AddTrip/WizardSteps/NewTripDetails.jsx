@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { Form, FormGroup, Label, Button } from 'reactstrap';
 import { AiFillInfoCircle } from 'react-icons/ai';
 
-import { isEmpty } from 'lodash-es';
+import { isEmpty, omit } from 'lodash-es';
 import { addTrips, deselectAllStopsByTrip, toggleAddTripModals } from '../../../../../redux/actions/control/routes/trip-instances';
 import { getServiceDate } from '../../../../../redux/selectors/control/serviceDate';
 import VEHICLE_TYPES, { TRAIN_TYPE_ID } from '../../../../../types/vehicle-types';
@@ -22,7 +22,32 @@ import { isNewTripModalOpen, getAddTripAction, getSelectedStopsByTripKey } from 
 import NewTripModal from './NewTripModal';
 import { NewTripsTable } from './NewTripsTable';
 import StopSelectionFooter from '../../bulkSelection/StopSelectionFooter';
-import { useAddTripStopUpdate, useNonStopping } from '../../../../../redux/selectors/appSettings';
+import { useAddTripStopUpdate, useNonStopping, useRemoveStops } from '../../../../../redux/selectors/appSettings';
+
+const updateStopHeadsign = (stop, headsign) => ({
+    ...stop,
+    stopHeadsign: headsign,
+});
+
+const changePlatform = (stop, newPlatform) => ({
+    ...stop,
+    platformCode: newPlatform.platform_code,
+    stopCode: newPlatform.stop_code,
+    stopId: newPlatform.stop_id,
+    stopLat: newPlatform.stop_lat,
+    stopLon: newPlatform.stop_lon,
+    stopName: newPlatform.stop_name,
+});
+
+const setNonStopping = stop => ({
+    ...stop,
+    status: StopStatus.nonStopping,
+});
+
+const reinstateStop = stop => ({
+    ...stop,
+    status: StopStatus.notPassed,
+});
 
 export const NewTripDetails = forwardRef((props, ref) => {
     const [isActionDisabled, setIsActionDisabled] = useState(true);
@@ -87,39 +112,53 @@ export const NewTripDetails = forwardRef((props, ref) => {
 
     const handleStopUpdate = (options) => {
         const updatedStops = tripTemplate.stops.map((stop) => {
-            if (options.stopCodes.includes(stop.stopCode)) {
-                setIsFormEmpty(false);
-                if (options.action === updateStopsModalTypes.UPDATE_HEADSIGN) {
-                    return { ...stop, stopHeadsign: options.headsign };
-                }
-                if (options.action === updateStopsModalTypes.CHANGE_PLATFORM) {
-                    return {
-                        ...stop,
-                        platformCode: options.newPlatform.platform_code,
-                        stopCode: options.newPlatform.stop_code,
-                        stopId: options.newPlatform.stop_id,
-                        stopLat: options.newPlatform.stop_lat,
-                        stopLon: options.newPlatform.stop_lon,
-                        stopName: options.newPlatform.stop_name,
-                    };
-                }
-                if (options.action === updateStopsModalTypes.SET_NON_STOPPING) {
-                    return {
-                        ...stop,
-                        status: StopStatus.nonStopping,
-                    };
-                }
-                if (options.action === updateStopsModalTypes.REINSTATE) {
-                    return {
-                        ...stop,
-                        status: StopStatus.notPassed,
-                    };
-                }
+            if (!options.stopCodes.includes(stop.stopCode)) {
+                return stop;
             }
-            return stop;
-        });
-        props.deselectAllStopsByTrip({ tripId: null });
 
+            setIsFormEmpty(false);
+
+            switch (options.action) {
+            case updateStopsModalTypes.UPDATE_HEADSIGN:
+                return updateStopHeadsign(stop, options.headsign);
+            case updateStopsModalTypes.CHANGE_PLATFORM:
+                return changePlatform(stop, options.newPlatform);
+            case updateStopsModalTypes.SET_NON_STOPPING:
+                return setNonStopping(stop);
+            case updateStopsModalTypes.REINSTATE:
+                return reinstateStop(stop);
+            case updateStopsModalTypes.SET_FIRST_STOP:
+                if (stop.stopCode === options.firstStop.stopCode) {
+                    tripTemplate.startTime = options.startTime;
+                    return {
+                        ...stop,
+                        firstStop: true,
+                        lastStop: false,
+                    };
+                }
+                return {
+                    ...stop,
+                    firstStop: false,
+                };
+            case updateStopsModalTypes.SET_LAST_STOP:
+                if (stop.stopCode === options.lastStop.stopCode) {
+                    tripTemplate.endTime = options.endTime;
+                    return {
+                        ...stop,
+                        firstStop: false,
+                        lastStop: true,
+                    };
+                }
+                return {
+                    ...stop,
+                    lastStop: false,
+                };
+            default:
+                return stop;
+            }
+        });
+
+        props.deselectAllStopsByTrip({ tripId: null });
         setTripTemplate({ ...tripTemplate, stops: updatedStops });
     };
 
@@ -189,6 +228,10 @@ export const NewTripDetails = forwardRef((props, ref) => {
         }
     };
 
+    const getStopsBetweenFirstAndLast = stops => stops.slice(stops.findIndex(stop => stop.firstStop), stops.findIndex(stop => stop.lastStop) + 1);
+
+    const sanitizeStops = stops => getStopsBetweenFirstAndLast(stops).map((stop, index) => ({ ...omit(stop, ['firstStop', 'lastStop']), stopSequence: index + 1 }));
+
     const createNewTripObject = trip => ({
         tripId: tripTemplate.tripId,
         routeId: tripTemplate.routeId,
@@ -210,7 +253,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
 
     const showStopsPreview = (trip) => {
         const tripObject = createNewTripObject(trip);
-        setCurrentTrip(tripObject);
+        setCurrentTrip({ ...tripObject, stops: getStopsBetweenFirstAndLast(tripObject.stops).map((stop, index) => ({ ...stop, stopSequence: index + 1 })) });
         setIsStopsPreviewOpen(true);
     };
 
@@ -219,7 +262,15 @@ export const NewTripDetails = forwardRef((props, ref) => {
     };
 
     const addNewTrips = () => {
-        props.addTrips(tripsToAdd.map(trip => createNewTripObject(trip)));
+        props.addTrips(
+            tripsToAdd.map((trip) => {
+                const newTrip = createNewTripObject(trip);
+                return {
+                    ...newTrip,
+                    stops: sanitizeStops(newTrip.stops),
+                };
+            }),
+        );
         props.toggleAddTripModals('isNewTripModalOpen', true);
     };
 
@@ -289,6 +340,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
                             tripInstance={ addPermissions(tripTemplate) }
                             onStopUpdated={ handleStopUpdate }
                             showNonStoppingButton={ props.useNonStopping }
+                            showRemoveStopsButtons={ props.useRemoveStops }
                         />
                     )
                     : (
@@ -336,6 +388,7 @@ NewTripDetails.propTypes = {
     useAddTripStopUpdate: PropTypes.bool.isRequired,
     deselectAllStopsByTrip: PropTypes.func.isRequired,
     useNonStopping: PropTypes.bool.isRequired,
+    useRemoveStops: PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({
@@ -345,4 +398,5 @@ export default connect(state => ({
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
     useAddTripStopUpdate: useAddTripStopUpdate(state),
     useNonStopping: useNonStopping(state),
+    useRemoveStops: useRemoveStops(state),
 }), { addTrips, toggleAddTripModals, deselectAllStopsByTrip }, null, { forwardRef: true })(NewTripDetails);

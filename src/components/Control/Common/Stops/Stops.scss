@@ -114,9 +114,6 @@ $body-height: 40px;
             width: 50%;
             left: auto;
         }
-        #{$self}__body__actions__circle {
-            background: $white;
-        }
     }
 
     &:last-child {
@@ -124,6 +121,9 @@ $body-height: 40px;
             width: 50%;
             right: auto;
         }
+    }
+
+    &--first-or-last-stop {
         #{$self}__body__actions__circle {
             background: $white;
         }
@@ -160,6 +160,15 @@ $body-height: 40px;
     &--disabled:last-child {
         #{$self}__body__actions__circle {
             cursor: default;
+        }
+    }
+
+    &--removed,
+    &--removed:first-child,
+    &--removed:last-child {
+        #{$self}__body__actions__circle {
+            background: map-get($theme-colors, "at-ocean-tint-30");
+            border-color: map-get($theme-colors, "at-ocean-tint-30");
         }
     }
 }

@@ -22,6 +22,31 @@ const tripInstances = [{
     serviceId: 'test11',
     status: TRIP_STATUS_TYPES.notStarted,
     serviceDate: moment().format(SERVICE_DATE_FORMAT),
+    stops: [
+        {
+            platformCode: '2',
+            stopHeadsign: 'Britomart',
+            arrivalTime: '25:00:00',
+            departureTime: '25:02:00',
+            scheduledArrivalTime: '25:00:00',
+            scheduledDepartureTime: '25:02:00',
+            stopCode: '9321',
+            stopId: '9321-50b6fd55',
+            stopLat: -36.89687,
+            stopLon: 174.63186,
+            stopName: 'Sunnyvale Train Station 2',
+            stopSequence: 1,
+        },
+        {
+            stopCode: 'Stop2',
+            stopHeadsign: 'Britomart',
+            arrivalTime: '25:10:00',
+            departureTime: '25:12:00',
+            scheduledArrivalTime: '25:10:00',
+            scheduledDepartureTime: '25:12:00',
+            stopSequence: 2,
+        },
+    ],
 }, {
     tripId: 'test2',
     routeVariantId: 'test2',
@@ -33,6 +58,31 @@ const tripInstances = [{
     serviceId: 'test2',
     status: TRIP_STATUS_TYPES.notStarted,
     serviceDate: moment().format(SERVICE_DATE_FORMAT),
+    stops: [
+        {
+            platformCode: '2',
+            stopHeadsign: 'Britomart',
+            arrivalTime: '25:00:00',
+            departureTime: '25:02:00',
+            scheduledArrivalTime: '25:00:00',
+            scheduledDepartureTime: '25:02:00',
+            stopCode: '9321',
+            stopId: '9321-50b6fd55',
+            stopLat: -36.89687,
+            stopLon: 174.63186,
+            stopName: 'Sunnyvale Train Station 2',
+            stopSequence: 1,
+        },
+        {
+            stopCode: 'Stop2',
+            stopHeadsign: 'Britomart',
+            arrivalTime: '25:10:00',
+            departureTime: '25:12:00',
+            scheduledArrivalTime: '25:10:00',
+            scheduledDepartureTime: '25:12:00',
+            stopSequence: 2,
+        },
+    ],
 }];
 
 let wrapper;

@@ -1,4 +1,4 @@
-import { size, findKey, filter } from 'lodash-es';
+import { size, findKey, filter, isEmpty } from 'lodash-es';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
@@ -18,6 +18,27 @@ import { useHeadsignUpdate } from '../../../../redux/selectors/appSettings';
 
 import './styles.scss';
 
+const getStopStatusState = (selectedStops) => {
+    const getCheckIfButtonsShouldBeDisabled = (lastStopSequence) => {
+        const getStopsByStatus = comparator => filter(selectedStops, stop => comparator(stop.status, StopStatus.skipped));
+        return {
+            isThereSkippedStop: getStopsByStatus((stopStatus, status) => stopStatus === status).length > 0,
+            isThereANotSkippedStop: filter(selectedStops, stop => stop.status !== StopStatus.skipped && stop.status !== StopStatus.nonStopping).length > 0,
+            isThereANonStoppingStop: filter(selectedStops, stop => stop.status === StopStatus.nonStopping).length > 0,
+            isFirstOrLastStopSelected: filter(selectedStops, stop => [1, lastStopSequence].includes(stop.stopSequence)).length > 0,
+        };
+    };
+
+    return getCheckIfButtonsShouldBeDisabled;
+};
+
+const getPermissionsState = (selectedStops) => {
+    const areSkipStopsPermitted = IS_LOGIN_NOT_REQUIRED || Object.values(selectedStops).every(stop => isSkipStopPermitted(stop));
+    const areMoveTripToStopsPermitted = IS_LOGIN_NOT_REQUIRED || Object.values(selectedStops).every(stop => isMoveToStopPermitted(stop));
+
+    return { areSkipStopsPermitted, areMoveTripToStopsPermitted };
+};
+
 export const StopSelectionFooter = (props) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeModal, setActiveModal] = useState(updateStopsModalTypes.SKIP);
@@ -27,6 +48,11 @@ export const StopSelectionFooter = (props) => {
     const selectedStops = props.selectedStopsByTripKey(tripInstance) || {};
     const isOnlyOneStopSelected = size(selectedStops) === 1;
     const onlySelectedStop = selectedStops && selectedStops[findKey(selectedStops)];
+
+    const { areSkipStopsPermitted, areMoveTripToStopsPermitted } = getPermissionsState(selectedStops);
+
+    const getCheckIfButtonsShouldBeDisabled = getStopStatusState(selectedStops);
+
     const isMoveTripToStopPossible = isBeforeTomorrow && isOnlyOneStopSelected && (IS_LOGIN_NOT_REQUIRED || isMoveToStopPermitted(onlySelectedStop));
 
     const areUpdateHeadsignsPermitted = IS_LOGIN_NOT_REQUIRED || Object.values(selectedStops).every(stop => isUpdateStopHeadsignPermitted(stop));
@@ -41,19 +67,16 @@ export const StopSelectionFooter = (props) => {
         setActiveModal(activeModalName);
     };
 
-    const areSkipStopsPermitted = IS_LOGIN_NOT_REQUIRED || Object.values(selectedStops).every(stop => isSkipStopPermitted(stop));
-    const areMoveTripToStopsPermitted = IS_LOGIN_NOT_REQUIRED || Object.values(selectedStops).every(stop => isMoveToStopPermitted(stop));
+    const getFirstStop = () => tripInstance.stops.find(s => s.firstStop === true);
+    const getLastStop = () => tripInstance.stops.find(s => s.lastStop === true);
+    const selectedStopsCount = filter(selectedStops, stop => stop).length;
+    const firstSelectedStop = !isEmpty(selectedStops) && selectedStops[findKey(selectedStops)];
+    const isSetAsFirstStopDisabled = (selectedStopsCount !== 1 || firstSelectedStop.lastStop === true
+        || firstSelectedStop.stopSequence > getLastStop().stopSequence || firstSelectedStop.status !== StopStatus.notPassed);
+    const isSetAsLastStopDisabled = (selectedStopsCount !== 1 || firstSelectedStop.firstStop === true
+        || firstSelectedStop.stopSequence < getFirstStop().stopSequence || firstSelectedStop.status !== StopStatus.notPassed);
 
-    const checkIfButtonsShouldBeDisabled = () => {
-        const lastStopSequence = tripInstance.stops.length;
-        const getStopsByStatus = comparator => filter(selectedStops, stop => comparator(stop.status, StopStatus.skipped));
-        return {
-            isThereSkippedStop: getStopsByStatus((stopStatus, status) => stopStatus === status).length > 0,
-            isThereANotSkippedStop: filter(selectedStops, stop => stop.status !== StopStatus.skipped && stop.status !== StopStatus.nonStopping).length > 0,
-            isThereANonStoppingStop: filter(selectedStops, stop => stop.status === StopStatus.nonStopping).length > 0,
-            isFirstOrLastStopSelected: filter(selectedStops, stop => [1, lastStopSequence].includes(stop.stopSequence)).length > 0,
-        };
-    };
+    const checkIfButtonsShouldBeDisabled = getCheckIfButtonsShouldBeDisabled(tripInstance.stops.length);
 
     return (
         <Footer className="selection-tools-footer border m-3">
@@ -76,7 +99,7 @@ export const StopSelectionFooter = (props) => {
                             size="sm"
                             className="selection-tools-footer__btn-non-stopping cc-btn-secondary d-flex align-items-center mr-3"
                             onClick={ () => handleModalOnToggle(updateStopsModalTypes.SET_NON_STOPPING) }
-                            disabled={ checkIfButtonsShouldBeDisabled().isThereANonStoppingStop || checkIfButtonsShouldBeDisabled().isFirstOrLastStopSelected }>
+                            disabled={ checkIfButtonsShouldBeDisabled.isThereANonStoppingStop || checkIfButtonsShouldBeDisabled.isFirstOrLastStopSelected }>
                             Non-stopping
                         </Button>
                     </li>
@@ -87,7 +110,7 @@ export const StopSelectionFooter = (props) => {
                             size="sm"
                             className="selection-tools-footer__btn-skip cc-btn-secondary d-flex align-items-center mr-3"
                             onClick={ () => handleModalOnToggle(updateStopsModalTypes.SKIP) }
-                            disabled={ !checkIfButtonsShouldBeDisabled().isThereANotSkippedStop }>
+                            disabled={ !checkIfButtonsShouldBeDisabled.isThereANotSkippedStop }>
                             Skip stop
                         </Button>
                     </li>
@@ -98,7 +121,7 @@ export const StopSelectionFooter = (props) => {
                             size="sm"
                             className="selection-tools-footer__btn-reinstate cc-btn-secondary d-flex align-items-center mr-3"
                             onClick={ () => handleModalOnToggle(updateStopsModalTypes.REINSTATE) }
-                            disabled={ !(checkIfButtonsShouldBeDisabled().isThereSkippedStop || checkIfButtonsShouldBeDisabled().isThereANonStoppingStop) }>
+                            disabled={ !(checkIfButtonsShouldBeDisabled.isThereSkippedStop || checkIfButtonsShouldBeDisabled.isThereANonStoppingStop) }>
                             Reinstate stop
                         </Button>
                     </li>
@@ -118,12 +141,36 @@ export const StopSelectionFooter = (props) => {
                     <li>
                         <Button
                             size="sm"
-                            className="selection-tools-footer__btn-update-destination cc-btn-secondary d-flex align-items-center"
+                            className="selection-tools-footer__btn-update-destination cc-btn-secondary d-flex align-items-center mr-3"
                             disabled={ !isUpdateHeadsignPossible }
                             onClick={ () => handleModalOnToggle(updateStopsModalTypes.UPDATE_HEADSIGN) }>
                             Update destination
                         </Button>
                     </li>
+                ) }
+                { props.showRemoveStopsButtons && (
+                    <>
+                        <li>
+                            <Button
+                                size="sm"
+                                className="selection-tools-footer__btn-update-destination cc-btn-secondary d-flex align-items-center mr-3"
+                                disabled={ isSetAsFirstStopDisabled }
+                                onClick={ () => handleModalOnToggle(updateStopsModalTypes.SET_FIRST_STOP) }
+                                aria-label="Set as first stop">
+                                Set as first stop
+                            </Button>
+                        </li>
+                        <li>
+                            <Button
+                                size="sm"
+                                className="selection-tools-footer__btn-update-destination cc-btn-secondary d-flex align-items-center"
+                                disabled={ isSetAsLastStopDisabled }
+                                onClick={ () => handleModalOnToggle(updateStopsModalTypes.SET_LAST_STOP) }
+                                aria-label="Set as last stop">
+                                Set as last stop
+                            </Button>
+                        </li>
+                    </>
                 ) }
             </ul>
             <UpdateStopStatusModal
@@ -143,11 +190,13 @@ StopSelectionFooter.propTypes = {
     useHeadsignUpdate: PropTypes.bool.isRequired,
     onStopUpdated: PropTypes.func,
     showNonStoppingButton: PropTypes.bool,
+    showRemoveStopsButtons: PropTypes.bool,
 };
 
 StopSelectionFooter.defaultProps = {
     onStopUpdated: undefined,
     showNonStoppingButton: false,
+    showRemoveStopsButtons: false,
 };
 
 export default connect(state => ({

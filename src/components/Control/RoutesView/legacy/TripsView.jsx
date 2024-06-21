@@ -15,7 +15,7 @@ import { getServiceDate } from '../../../../redux/selectors/control/serviceDate'
 import VIEW_TYPE from '../../../../types/view-types';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
 import { TRAIN_TYPE_ID } from '../../../../types/vehicle-types';
-import { formatTripDelay, SERVICE_DATE_FORMAT, TRIPS_POLLING_INTERVAL } from '../../../../utils/control/routes';
+import { formatTripDelay, SERVICE_DATE_FORMAT, TRIPS_POLLING_INTERVAL, markStopsAsFirstOrLast } from '../../../../utils/control/routes';
 import { getTripInstanceId, getTripTimeDisplay, checkIfAllTripsAreSelected } from '../../../../utils/helpers';
 import ControlTable from '../../Common/ControlTable/ControlTable';
 import TripIcon from '../../Common/Trip/TripIcon';
@@ -299,7 +299,10 @@ export class TripsView extends React.Component {
             status: tripInstance.status,
             routeLongName: tripInstance.routeLongName,
             referenceId: tripInstance.referenceId,
-            tripInstance,
+            tripInstance: {
+                ...tripInstance,
+                stops: markStopsAsFirstOrLast(tripInstance.stops),
+            },
         }));
 
         return (

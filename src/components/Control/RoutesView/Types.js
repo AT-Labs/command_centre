@@ -88,6 +88,8 @@ export const updateStopsModalTypes = {
     UPDATE_HEADSIGN: 'update-headsign',
     CHANGE_PLATFORM: 'change-platform',
     SET_NON_STOPPING: 'set-non-stopping',
+    SET_FIRST_STOP: 'set-first-stop',
+    SET_LAST_STOP: 'set-last-stop',
 };
 
 export const updateTripsStatusModalOrigins = {

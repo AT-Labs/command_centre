@@ -65,3 +65,9 @@ export const dateOperators = [
         ...filterOperator,
     };
 });
+
+export const markStopsAsFirstOrLast = stops => stops.map((stop, index) => ({
+    ...stop,
+    firstStop: (index === 0),
+    lastStop: (index === stops.length - 1),
+}));

@@ -15,7 +15,7 @@ import { getActiveRoute } from '../../../redux/selectors/control/routes/routes';
 import { getActiveRouteVariant } from '../../../redux/selectors/control/routes/routeVariants';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
-import { formatTripDelay, isTripAdded, dateOperators } from '../../../utils/control/routes';
+import { formatTripDelay, isTripAdded, dateOperators, markStopsAsFirstOrLast } from '../../../utils/control/routes';
 import { getTripInstanceId, getTripTimeDisplay, getTimePickerOptions } from '../../../utils/helpers';
 import TripIcon from '../Common/Trip/TripIcon';
 import TripDelay from '../Common/Trip/TripDelay';
@@ -332,7 +332,10 @@ export const TripsDataGrid = (props) => {
         tripId: tripInstance.tripId,
         ...(props.useHideTrip && { display: tripInstance.display }),
         ...(props.useAddTrip && { source: tripInstance.source }),
-        tripInstance,
+        tripInstance: {
+            ...tripInstance,
+            stops: markStopsAsFirstOrLast(tripInstance.stops),
+        },
     }));
 
     const getDetailPanelContent = React.useCallback(
