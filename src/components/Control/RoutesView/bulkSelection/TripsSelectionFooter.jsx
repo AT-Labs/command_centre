@@ -67,7 +67,7 @@ const SelectionToolsFooter = (props) => {
 
         // Check if the selected trips have the same routeVariantId as the first one
         // Check if all the selected trips are not started
-        return trips.every(trip => trip.routeVariantId === routeVariantId && trip.status === TRIP_STATUS_TYPES.notStarted);
+        return trips.every(trip => (moment(trip.serviceDate).isSame(moment(), 'day')) && trip.routeVariantId === routeVariantId && trip.status === TRIP_STATUS_TYPES.notStarted);
     };
 
     return (
