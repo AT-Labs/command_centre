@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 import { Dialog, DialogContent, IconButton } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
+import * as Sentry from '@sentry/react';
 
 import VIEW_TYPE from '../../../types/view-types';
 import TableTitle from '../Common/ControlTable/TableTitle';
@@ -31,13 +32,15 @@ import {
     getRouteVariantsLoadingState, getFilteredRouteVariantsTotal, getAllRouteVariantsTotal, getActiveRouteVariant,
 } from '../../../redux/selectors/control/routes/routeVariants';
 import { getSelectedTripsKeys, isAddTripModalEnabled, isAddTripAllowed } from '../../../redux/selectors/control/routes/trip-instances';
-import { useAddTrip, useRoutesTripsFilterCollapse } from '../../../redux/selectors/appSettings';
+import { useAddTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences } from '../../../redux/selectors/appSettings';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
+import * as COMMAND_CENTER_API from '../../../utils/transmitters/command-center-api';
 
 import './TripsDataGrid.scss';
 
 export const RoutesAndTripsView = (props) => {
+    const isFirstRender = useRef(true);
     const [currentPage, setCurrentPage] = useState(1);
     const loadingTimerRef = useRef(null);
     const [isExpanded, setIsExpanded] = useState(true);
@@ -75,6 +78,16 @@ export const RoutesAndTripsView = (props) => {
 
         props.retrieveAgencies();
     }, []);
+
+    useEffect(() => {
+        if (props.useRoutesTripsPreferences) {
+            if (isFirstRender.current) {
+                isFirstRender.current = false;
+                return;
+            }
+            COMMAND_CENTER_API.updateUserPreferences({ routeType: props.routeType }).catch(error => Sentry.captureException(`Failed to update user preferences(RouteType). Error: ${error})`));
+        }
+    }, [props.routeType]);
 
     const isRoutesRouteVariantsTripsView = () => props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_ROUTE_VARIANTS_TRIPS;
     const isRouteVariantsTripsView = () => props.viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTE_VARIANTS_TRIPS;
@@ -214,6 +227,7 @@ RoutesAndTripsView.propTypes = {
     mergeRouteFilters: PropTypes.func.isRequired,
     routeType: PropTypes.number,
     useRoutesTripsFilterCollapse: PropTypes.bool.isRequired,
+    useRoutesTripsPreferences: PropTypes.bool.isRequired,
 };
 
 RoutesAndTripsView.defaultProps = {
@@ -241,6 +255,7 @@ export default connect(
         isAddTripAllowed: isAddTripAllowed(state),
         routeType: getModeRouteFilter(state),
         useRoutesTripsFilterCollapse: useRoutesTripsFilterCollapse(state),
+        useRoutesTripsPreferences: useRoutesTripsPreferences(state),
     }),
     {
         fetchRoutes, filterTripInstances, retrieveAgencies, updateEnabledAddTripModal, mergeRouteFilters,

@@ -31,6 +31,7 @@ export default {
     fetchAgenciesEnabled: false,
     fetchAlerts: 'Alerts data unavailable, please try again.',
     userPermissions: 'User permission details unavailable, please try again.',
+    userPreferences: 'Error while getting user preferences',
     fetchFleetEnabled: true,
     fetchDisruptions: 'Unable to load disruptions, please try again',
     fetchNotifications: 'Unable to load notifications, please try again',

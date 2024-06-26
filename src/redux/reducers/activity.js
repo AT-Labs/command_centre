@@ -17,6 +17,7 @@ export const INIT_STATE = {
         upcomingStops: null,
         vehicleFleetInfo: null,
         userPermissions: null,
+        userPreferences: null,
         // The following items (out of realtime) don't use bannerError for being rendered inside a modal
         addBlock: null,
         moveTrips: null,

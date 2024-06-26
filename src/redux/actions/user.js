@@ -8,7 +8,9 @@ import * as TRIP_REPLAY_API from '../../utils/transmitters/trip-replay-api';
 import * as NOTIFICATIONS_API from '../../utils/transmitters/notifications-api';
 import { getAlertsViewPermission } from '../../utils/transmitters/alerts-api';
 import { getFleetsViewPermission } from '../../utils/transmitters/fleets-api';
+import * as COMMAND_CENTER_API from '../../utils/transmitters/command-center-api';
 import { reportError } from './activity';
+import { mergeRouteFilters } from './control/routes/filters';
 
 export const updateUserProfile = user => (dispatch) => {
     const profile = {
@@ -43,3 +45,6 @@ export const fetchAlertsViewPermission = () => fetchViewPermission('controlAlert
 export const fetchTripReplaysViewPermission = () => fetchViewPermission('controlTripReplaysView', TRIP_REPLAY_API.getTripReplaysViewPermission);
 export const fetchFleetsViewPermission = () => fetchViewPermission('controlFleetsView', getFleetsViewPermission);
 export const fetchNotificationsViewPermission = () => fetchViewPermission('controlNotificationsView', NOTIFICATIONS_API.getNotificationsViewPermission);
+export const fetchPreferences = () => dispatch => COMMAND_CENTER_API.getUserPreferences()
+    .then(preferences => dispatch(mergeRouteFilters({ ...preferences })))
+    .catch(error => dispatch(reportError({ error: { userPreferences: error } })));

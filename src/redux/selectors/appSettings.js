@@ -29,3 +29,4 @@ export const useRouteView = createSelector(getAppSettingsState, appSettingState 
 export const useIncidentLayer = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useIncidentLayer') === 'true'));
 export const useBulkStopsUpdate = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useBulkStopsUpdate') === 'true'));
 export const useRemoveStops = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRemoveStops') === 'true'));
+export const useRoutesTripsPreferences = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRoutesTripsPreferences') === 'true'));

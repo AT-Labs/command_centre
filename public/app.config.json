@@ -19,5 +19,6 @@
     "useRouteView": "false",
     "useIncidentLayer": "false",
     "useBulkStopsUpdate": "false",
-    "useRemoveStops": "false"
+    "useRemoveStops": "false",
+    "useRoutesTripsPreferences": "false"
 }
