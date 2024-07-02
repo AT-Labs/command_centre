@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { uniqueId } from 'lodash-es';
 import { Input, Button, FormGroup, FormFeedback } from 'reactstrap';
 import { AiOutlinePlusCircle, AiOutlineMinusCircle, AiOutlineSearch } from 'react-icons/ai';
@@ -92,6 +92,17 @@ export const NewTripsTable = (props) => {
     if (!props.trips.length) {
         addRow();
     }
+
+    useEffect(() => {
+        const updatedAddedTrips = props.trips.map((row) => {
+            const newEndTime = !isStartTimeValid(row.startTime) ? '' : addMinutesToTime(props.tripInstance.endTime, getDelayInMinutes(props.tripInstance.startTime, row.startTime));
+            return {
+                ...row,
+                endTime: newEndTime,
+            };
+        });
+        props.onAddedTripsChange(updatedAddedTrips);
+    }, [props.tripInstance]);
 
     return (
         <div>
