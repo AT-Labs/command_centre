@@ -3,14 +3,14 @@ import { getVehicleBearing, getVehicleRouteType, getVehicleRouteName } from '../
 import VEHICLE_TYPE from '../../../../types/vehicle-types';
 import VEHICLE_OCCUPANCY_STATUS_TYPE from '../../../../types/vehicle-occupancy-status-types';
 
-const getVehicleIconWithoutArrow = (vehicleTypeClass, opacityClass) => new L.DivIcon({
+const getVehicleIconWithoutRouteName = (vehicleTypeClass, opacityClass) => new L.DivIcon({
     html: `<svg width="30" height="30" class="${vehicleTypeClass}"><circle cx="15" cy="15" r="12" stroke-width="3" /></svg>`,
     iconAnchor: [15, 15],
     className: `vehicle-marker ${opacityClass}`,
 });
 
-const getVehicleIconWithArrow = (bearing, vehicleTypeClass, routeName) => {
-    const showArrow = bearing > 0 ? '<div class="arrow"></div>' : '';
+const getVehicleIconWithRouteName = (bearing, vehicleTypeClass, routeName) => {
+    const showArrow = bearing && bearing > 0 ? '<div class="arrow"></div>' : '';
     return new L.DivIcon({
         html: `<div class="icon-wrapper ${vehicleTypeClass}">`
         + `<div class="rotate" style="transform: rotate(${bearing}deg)">${showArrow}</div>`
@@ -30,5 +30,5 @@ export const getVehicleIcon = (vehicle, opacityClass) => {
         || vehicle.vehicle.occupancyStatus === full
         ? 'vehicle-occupancy-highlight' : '';
     const routeName = getVehicleRouteName(vehicle) || '';
-    return newBearing !== undefined && routeTypeId ? getVehicleIconWithArrow(newBearing, `${vehicleTypeClass} ${vehicleOccupancyStatusClass} ${opacityClass}`, routeName) : getVehicleIconWithoutArrow(vehicleTypeClass, opacityClass);
+    return routeTypeId ? getVehicleIconWithRouteName(newBearing, `${vehicleTypeClass} ${vehicleOccupancyStatusClass} ${opacityClass}`, routeName) : getVehicleIconWithoutRouteName(vehicleTypeClass, opacityClass);
 };
