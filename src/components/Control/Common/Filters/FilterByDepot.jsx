@@ -57,7 +57,7 @@ class FilterByDepot extends React.Component {
                     id={ this.props.id }
                     theme={ SearchTheme }
                     options={ this.getOptions() }
-                    selectedValues={ isEmpty(this.props.agencies) ? [] : this.props.selectedOptions }
+                    selectedValues={ this.props.selectedOptions }
                     onSelectionChange={ this.props.onSelection }
                     disabled={ !this.props.selectedAgency }
                     displayProps={ {

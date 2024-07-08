@@ -61,7 +61,7 @@ import {
     CONGESTION_REFRESH_INTERVAL, CONGESTION_SHAPE_WEIGHT_BOLD, CONGESTION_SHAPE_WEIGHT_DEFAULT,
     CONGESTION_ZOOM_LEVEL_THRESHOLD, INCIDENTS_REFRESH_INTERVAL, INCIDENTS_SHAPE_WEIGHT,
 } from '../../constants/traffic';
-import * as incidenstApi from '../../utils/transmitters/incidents-api';
+import * as incidentsApi from '../../utils/transmitters/incidents-api';
 
 function RealTimeView(props) {
     const { ADDRESS, ROUTE, STOP, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
@@ -76,7 +76,7 @@ function RealTimeView(props) {
 
     const fetchIncidentsData = async () => {
         try {
-            const data = await incidenstApi.fetchIncidents();
+            const data = await incidentsApi.fetchIncidents();
             setIncidents(data);
         } catch (error) {
             setIncidents([]);
@@ -85,9 +85,6 @@ function RealTimeView(props) {
 
     useEffect(() => {
         const realtimeTracker = props.startTrackingVehicles();
-        if (props.useIncidentLayer) {
-            fetchIncidentsData();
-        }
         return () => {
             realtimeTracker.stop();
         };
@@ -125,11 +122,14 @@ function RealTimeView(props) {
     }, [selectedCongestionFilters]);
 
     useEffect(() => {
-        const refreshIncidentsInterval = setInterval(() => {
-            if (props.useIncidentLayer) {
+        let refreshIncidentsInterval;
+
+        if (props.useIncidentLayer && showIncidents) {
+            fetchIncidentsData();
+            refreshIncidentsInterval = setInterval(() => {
                 fetchIncidentsData();
-            }
-        }, INCIDENTS_REFRESH_INTERVAL);
+            }, INCIDENTS_REFRESH_INTERVAL);
+        }
 
         return () => {
             clearInterval(refreshIncidentsInterval);

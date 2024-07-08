@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { noop, get, debounce } from 'lodash-es';
+import { noop, get } from 'lodash-es';
 
 import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
@@ -18,8 +18,6 @@ import {
 import { mergeRouteFilters, resetSorting } from '../../../../redux/actions/control/routes/filters';
 import { clearSelectedStops } from '../../../../redux/actions/control/routes/trip-instances';
 import FilterByDepot from '../../Common/Filters/FilterByDepot';
-import { updateUserPreferences } from '../../../../utils/transmitters/command-centre-config-api';
-import { useRoutesTripsPreferences } from '../../../../redux/selectors/appSettings';
 
 const STATUS = [
     TRIP_STATUS_TYPES.notStarted,
@@ -35,9 +33,6 @@ const DELAY_RANGE_LIMITS = {
 };
 
 const Filters = (props) => {
-    const isFirstRender = useRef(true);
-    const updateUserPreferencesQueryDebounced = useRef(debounce(q => updateUserPreferences(q), 700)).current;
-    const { agencyId, depotIds } = props;
     const valuesOnClear = {
         routeShortName: '',
         routeVariantId: '',
@@ -74,16 +69,6 @@ const Filters = (props) => {
         }
         props.mergeRouteFilters(status);
     };
-
-    useEffect(() => {
-        if (props.useRoutesTripsPreferences) {
-            if (isFirstRender.current) {
-                isFirstRender.current = false;
-                return;
-            }
-            updateUserPreferencesQueryDebounced({ routesFilters: { agencyId, depotIds } });
-        }
-    }, [agencyId, depotIds]);
 
     return (
         <section className="search-filters bg-at-ocean-tint-10 border border-at-ocean-tint-20 mb-3">
@@ -156,7 +141,6 @@ Filters.propTypes = {
     sorting: PropTypes.object.isRequired,
     resetSorting: PropTypes.func.isRequired,
     delayRange: PropTypes.object.isRequired,
-    useRoutesTripsPreferences: PropTypes.bool.isRequired,
 };
 
 Filters.defaultProps = {
@@ -173,7 +157,6 @@ export default connect(
         routeShortName: getRouteShortNameFilter(state),
         routeVariantId: getRouteVariantIdFilter(state),
         sorting: getSorting(state),
-        useRoutesTripsPreferences: useRoutesTripsPreferences(state),
     }),
     { mergeRouteFilters, clearSelectedStops, resetSorting },
 )(Filters);

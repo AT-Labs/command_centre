@@ -4,11 +4,10 @@ import sinon from 'sinon';
 import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 
-import { updateUserProfile, fetchRoutesViewPermission, fetchBlocksViewPermission, fetchPreferences } from './user';
+import { updateUserProfile, fetchRoutesViewPermission, fetchBlocksViewPermission } from './user';
 import ACTION_TYPE from '../action-types';
 import * as tripMgtApi from '../../utils/transmitters/trip-mgt-api';
 import * as blockMgtApi from '../../utils/transmitters/block-mgt-api';
-import * as ccConfigApi from '../../utils/transmitters/command-centre-config-api';
 
 chai.use(sinonChai);
 
@@ -86,25 +85,6 @@ describe('Link actions', () => {
         ];
 
         await store.dispatch(fetchBlocksViewPermission());
-        expect(store.getActions()).to.eql(expectedActions);
-    });
-
-    it('gets UserPreferences(routesFilters) and updates R&T filters in redux store', async () => {
-        const fakeGetUserPreferences = sandbox.fake.resolves({ routesFilters: { routeType: 3 } });
-        sandbox.stub(ccConfigApi, 'getUserPreferences').callsFake(fakeGetUserPreferences);
-
-        const expectedActions = [
-            {
-                type: ACTION_TYPE.MERGE_CONTROL_ROUTES_FILTERS,
-                payload: {
-                    filters: {
-                        routeType: 3,
-                    },
-                },
-            },
-        ];
-
-        await store.dispatch(fetchPreferences());
         expect(store.getActions()).to.eql(expectedActions);
     });
 });

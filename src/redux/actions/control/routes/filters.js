@@ -17,15 +17,13 @@ export const delayRangeAllowedTripStatuses = [
     TRIP_STATUS_TYPES.completed,
 ];
 
-export const mergeRouteFilters = (filters, isCleanUpActiveNeeded, avoidReset) => (dispatch) => {
+export const mergeRouteFilters = (filters, isCleanUpActiveNeeded) => (dispatch) => {
     if (isCleanUpActiveNeeded !== false) {
         dispatch(clearActiveRoute());
         dispatch(clearActiveTripInstanceId());
     }
 
-    if (avoidReset) {
-        dispatch(mergeRouteFiltersAction(filters));
-    } else if (Object.prototype.hasOwnProperty.call(filters, 'agencyId')) {
+    if (Object.prototype.hasOwnProperty.call(filters, 'agencyId')) {
         dispatch(mergeRouteFiltersAction({ ...filters, depotIds: [] }));
     } else if (Object.prototype.hasOwnProperty.call(filters, 'tripStatus') && !delayRangeAllowedTripStatuses.includes(filters.tripStatus)) {
         dispatch(mergeRouteFiltersAction({ ...filters, delayRange: {} }));
