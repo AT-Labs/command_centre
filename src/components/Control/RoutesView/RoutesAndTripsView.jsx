@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 import { Dialog, DialogContent, IconButton } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import * as Sentry from '@sentry/react';
+import { debounce } from 'lodash-es';
 
 import VIEW_TYPE from '../../../types/view-types';
 import TableTitle from '../Common/ControlTable/TableTitle';
@@ -35,12 +35,13 @@ import { getSelectedTripsKeys, isAddTripModalEnabled, isAddTripAllowed } from '.
 import { useAddTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences } from '../../../redux/selectors/appSettings';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
-import * as COMMAND_CENTER_API from '../../../utils/transmitters/command-center-api';
+import { updateUserPreferences } from '../../../utils/transmitters/command-centre-config-api';
 
 import './TripsDataGrid.scss';
 
 export const RoutesAndTripsView = (props) => {
     const isFirstRender = useRef(true);
+    const updateUserPreferencesQueryDebounced = useRef(debounce(q => updateUserPreferences(q), 700)).current;
     const [currentPage, setCurrentPage] = useState(1);
     const loadingTimerRef = useRef(null);
     const [isExpanded, setIsExpanded] = useState(true);
@@ -85,7 +86,7 @@ export const RoutesAndTripsView = (props) => {
                 isFirstRender.current = false;
                 return;
             }
-            COMMAND_CENTER_API.updateUserPreferences({ routeType: props.routeType }).catch(error => Sentry.captureException(`Failed to update user preferences(RouteType). Error: ${error})`));
+            updateUserPreferencesQueryDebounced({ routesFilters: { routeType: props.routeType } });
         }
     }, [props.routeType]);
 
