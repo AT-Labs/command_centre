@@ -159,7 +159,6 @@ export default {
     UPDATE_CONTROL_SELECTED_STOPS_UPDATING: 'update-control-selected-stops-updating',
     CLEAR_CONTROL_SELECTED_STOPS: 'clear-control-selected-stops',
     SET_TRIP_STATUS_MODAL_ORIGIN: 'set-trip-status-modal-origin',
-    UPDATE_CONTROL_TRIP_INSTANCES_DATAGRID_CONFIG: 'update-trip-instances-datagrid-config',
     UPDATE_CONTROL_TRIP_INSTANCES_LAST_FILTER: 'update-trip-instances-last-filter',
     UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT: 'update-trip-instances-total-count',
     UPDATE_CONTROL_TRIP_INSTANCES_PERMISSIONS: 'update-control-trip-instances-permissions',
@@ -275,4 +274,7 @@ export default {
     UPDATE_CONTROL_NOTIFICATION_ACTION_REQUESTING: 'update-control-notification-action-requesting',
     UPDATE_CONTROL_NOTIFICATION_ACTION_RESULT: 'update-control-notification-action-result',
     UPDATE_CONTROL_NOTIFICATION_SELECTED: 'update-control-notification-selected',
+
+    // Datagrid
+    UPDATE_ROUTES_TRIPS_DATAGRID_CONFIG: 'update-routes-trips-datagrid-config',
 };

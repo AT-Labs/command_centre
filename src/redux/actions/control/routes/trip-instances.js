@@ -14,7 +14,6 @@ import {
     getTripInstancesActionResults,
     getSelectedStops,
     getSelectedStopsByTripKey,
-    getTripsDatagridConfig,
     getLastFilterRequest,
 } from '../../../selectors/control/routes/trip-instances';
 import { getLinkStartTime } from '../../../selectors/control/link';
@@ -29,6 +28,7 @@ import { getAllRoutesArray, getActiveRoute } from '../../../selectors/control/ro
 import { ACTION_RESULT } from '../../../../types/add-trip-types';
 import { captureError } from '../../../../utils/logger';
 import { UpdateStopPlatformError } from '../../../../types/exception-types';
+import { getRoutesTripsDatagridConfig } from '../../../selectors/datagrid';
 
 const loadTripInstances = (tripInstances, timestamp) => ({
     type: ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES,
@@ -569,15 +569,15 @@ const parseSortModel = sortModel => sortModel.map(model => ({ sortBy: model.fiel
 
 export const filterTripInstances = forceLoad => (dispatch, getState) => {
     const state = getState();
-    const datagridConfig = getTripsDatagridConfig(state);
+    const routesTripsDatagridConfig = getRoutesTripsDatagridConfig(state);
     const lastFilterRequest = getLastFilterRequest(state);
-    const filters = getFilters(datagridConfig.filterModel, state);
+    const filters = getFilters(routesTripsDatagridConfig.filterModel, state);
     const filterRequest = {
         ...filters,
         serviceDate: moment(getServiceDate(state)).format(SERVICE_DATE_FORMAT),
-        page: datagridConfig.page + 1,
-        limit: datagridConfig.pageSize,
-        sorting: parseSortModel(datagridConfig.sortModel),
+        page: routesTripsDatagridConfig.page + 1,
+        limit: routesTripsDatagridConfig.pageSize,
+        sorting: parseSortModel(routesTripsDatagridConfig.sortModel),
     };
 
     const viewType = getControlDetailRoutesViewType(state);
@@ -595,14 +595,6 @@ export const filterTripInstances = forceLoad => (dispatch, getState) => {
         dispatch(fetchTripInstances(filterRequest, { isUpdate: true }));
         dispatch(updateLastFilterRequest(filterRequest));
     }
-};
-
-export const updateTripsDatagridConfig = dataGridConfig => (dispatch) => {
-    dispatch({
-        type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_DATAGRID_CONFIG,
-        payload: dataGridConfig,
-    });
-    dispatch(filterTripInstances());
 };
 
 export const updateEnabledAddTripModal = isAddTripEnabled => (dispatch) => {

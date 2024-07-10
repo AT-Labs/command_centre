@@ -747,59 +747,60 @@ describe('Trip instances actions', () => {
                         startTimeFrom: "21:00",
                         startTimeTo: "23:00",
                     },
-                    tripInstances: {
-                        datagridConfig: {
-                            columns: [],
-                            page: 0,
-                            pageSize: 15,
-                            sortModel: [{
-                                field: 'startTime',
-                                sort: 'asc',
-                            }],
-                            density: 'standard',
-                            routeSelection: '',
-                            filterModel: { items: [{
-                                columnField: "endTime",
-                                operatorValue: "onOrAfter",
-                                id: 14456,
-                                value: "22:00"
-                            },{
-                                columnField: "endTime",
-                                operatorValue: "onOrBefore",
-                                id: 24456,
-                                value: "24:00"
-                            },{
-                                columnField: "vehicleLabel",
-                                operatorValue: "isAnyOf",
-                                id: 55123,
-                                value: ["Label_Test"]
-                            },{
-                                columnField: "referenceId",
-                                operatorValue: "isAnyOf",
-                                id: 44512,
-                                value: ["9111"]
-                            },{
-                                columnField: "tripId",
-                                operatorValue: "isAnyOf",
-                                id: 41345,
-                                value: ["1327-86502-75600-2-96e917d1"]
-                            },{
-                                columnField: "trackingStatus",
-                                operatorValue: "isAnyOf",
-                                id: 37471,
-                                value: ["STOPPED"]
-                            },{
-                                columnField: "source",
-                                operatorValue: "is",
-                                id: 54423,
-                                value: "manual"
-                            }],
-                            linkOperator: 'and' },
-                            pinnedColumns: { right: ['__detail_panel_toggle__'] },
-                        },
-                    },
+                    tripInstances: {},
                 },
             },
+            datagridConfig: {
+                routesTripsDatagridConfig: {
+                    columns: [],
+                    page: 0,
+                    pageSize: 15,
+                    sortModel: [{
+                        field: 'startTime',
+                        sort: 'asc',
+                    }],
+                    density: 'standard',
+                    routeSelection: '',
+                    filterModel: { items: [{
+                        columnField: "endTime",
+                        operatorValue: "onOrAfter",
+                        id: 14456,
+                        value: "22:00"
+                    },{
+                        columnField: "endTime",
+                        operatorValue: "onOrBefore",
+                        id: 24456,
+                        value: "24:00"
+                    },{
+                        columnField: "vehicleLabel",
+                        operatorValue: "isAnyOf",
+                        id: 55123,
+                        value: ["Label_Test"]
+                    },{
+                        columnField: "referenceId",
+                        operatorValue: "isAnyOf",
+                        id: 44512,
+                        value: ["9111"]
+                    },{
+                        columnField: "tripId",
+                        operatorValue: "isAnyOf",
+                        id: 41345,
+                        value: ["1327-86502-75600-2-96e917d1"]
+                    },{
+                        columnField: "trackingStatus",
+                        operatorValue: "isAnyOf",
+                        id: 37471,
+                        value: ["STOPPED"]
+                    },{
+                        columnField: "source",
+                        operatorValue: "is",
+                        id: 54423,
+                        value: "manual"
+                    }],
+                    linkOperator: 'and' },
+                    pinnedColumns: { right: ['__detail_panel_toggle__'] },
+                },
+            }
         });
 
         await storeWithFilter.dispatch(filterTripInstances());
@@ -890,21 +891,22 @@ describe('Trip instances actions', () => {
                         routeType: 3,
                         routeVariantId: 50101,
                     },
-                    tripInstances: {
-                        datagridConfig: {
-                            columns: [],
-                            page: 0,
-                            pageSize: 15,
-                            sortModel: [{
-                                field: 'startTime',
-                                sort: 'asc',
-                            }],
-                            density: 'standard',
-                            routeSelection: '',
-                            filterModel: { items: [], linkOperator: 'and' },
-                            pinnedColumns: { right: ['__detail_panel_toggle__'] },
-                        },
-                    },
+                    tripInstances: {},
+                },
+            },
+            datagridConfig: {
+                routesTripsDatagridConfig: {
+                    columns: [],
+                    page: 0,
+                    pageSize: 15,
+                    sortModel: [{
+                        field: 'startTime',
+                        sort: 'asc',
+                    }],
+                    density: 'standard',
+                    routeSelection: '',
+                    filterModel: { items: [], linkOperator: 'and' },
+                    pinnedColumns: { right: ['__detail_panel_toggle__'] },
                 },
             },
         });
@@ -997,21 +999,7 @@ describe('Trip instances actions', () => {
                         routeType: 3,
                         routeShortName: 'NX1',
                     },
-                    tripInstances: {
-                        datagridConfig: {
-                            columns: [],
-                            page: 0,
-                            pageSize: 15,
-                            sortModel: [{
-                                field: 'startTime',
-                                sort: 'asc',
-                            }],
-                            density: 'standard',
-                            routeSelection: '',
-                            filterModel: { items: [], linkOperator: 'and' },
-                            pinnedColumns: { right: ['__detail_panel_toggle__'] },
-                        },
-                    },
+                    tripInstances: {},
                     routes: {
                         all: [{
                             routeShortName: 'NX1',
@@ -1021,6 +1009,21 @@ describe('Trip instances actions', () => {
                             ],
                         }],
                     },
+                },
+            },
+            datagridConfig: {
+                routesTripsDatagridConfig: {
+                    columns: [],
+                    page: 0,
+                    pageSize: 15,
+                    sortModel: [{
+                        field: 'startTime',
+                        sort: 'asc',
+                    }],
+                    density: 'standard',
+                    routeSelection: '',
+                    filterModel: { items: [], linkOperator: 'and' },
+                    pinnedColumns: { right: ['__detail_panel_toggle__'] },
                 },
             },
         });

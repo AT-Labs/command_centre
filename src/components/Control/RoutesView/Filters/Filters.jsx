@@ -18,6 +18,7 @@ import {
 import { mergeRouteFilters, resetSorting } from '../../../../redux/actions/control/routes/filters';
 import { clearSelectedStops } from '../../../../redux/actions/control/routes/trip-instances';
 import FilterByDepot from '../../Common/Filters/FilterByDepot';
+import { useRoutesTripsPreferences } from '../../../../redux/selectors/appSettings';
 
 const STATUS = [
     TRIP_STATUS_TYPES.notStarted,
@@ -89,14 +90,14 @@ const Filters = (props) => {
                             <FilterByOperator
                                 id="control-filters-operators-search"
                                 selectedOption={ props.agencyId }
-                                onSelection={ selectedOption => props.mergeRouteFilters({ agencyId: selectedOption.value }) } />
+                                onSelection={ selectedOption => props.mergeRouteFilters({ agencyId: selectedOption.value }, false, false, props.useRoutesTripsPreferences) } />
                         </div>
                         <div className="col-md-6 col-lg-3 col-xl-3">
                             <FilterByDepot
                                 id="control-filters-depot"
                                 selectedAgency={ props.agencyId }
                                 selectedOptions={ props.depotIds }
-                                onSelection={ selectedOptions => props.mergeRouteFilters({ depotIds: selectedOptions }) } />
+                                onSelection={ selectedOptions => props.mergeRouteFilters({ depotIds: selectedOptions }, false, false, props.useRoutesTripsPreferences) } />
                         </div>
                         <div className="col-md-6 col-lg-3 col-xl-3">
                             <StandardFilter
@@ -141,6 +142,7 @@ Filters.propTypes = {
     sorting: PropTypes.object.isRequired,
     resetSorting: PropTypes.func.isRequired,
     delayRange: PropTypes.object.isRequired,
+    useRoutesTripsPreferences: PropTypes.bool.isRequired,
 };
 
 Filters.defaultProps = {
@@ -157,6 +159,7 @@ export default connect(
         routeShortName: getRouteShortNameFilter(state),
         routeVariantId: getRouteVariantIdFilter(state),
         sorting: getSorting(state),
+        useRoutesTripsPreferences: useRoutesTripsPreferences(state),
     }),
     { mergeRouteFilters, clearSelectedStops, resetSorting },
 )(Filters);

@@ -1,11 +1,9 @@
 import { handleActions } from 'redux-actions';
 import { filter, concat, includes, isNull, has, unset, difference, pick, keyBy, isEmpty } from 'lodash-es';
-import moment from 'moment';
 
 import ACTION_TYPE from '../../../action-types';
 import { getTripInstanceId, getStopKey, checkIfAllTripsAreSelected } from '../../../../utils/helpers';
 import { getAllNotCompletedTrips } from '../../../selectors/control/routes/trip-instances';
-import { getStartTimeFromFilterInitialTime } from '../../../../utils/control/routes';
 
 export const INIT_STATE = {
     isLoading: false,
@@ -21,25 +19,6 @@ export const INIT_STATE = {
     selectedStops: {},
     areSelectedStopsUpdating: false,
     tripStatusModalOrigin: null,
-    datagridConfig: {
-        columns: [],
-        page: 0,
-        pageSize: 100,
-        sortModel: [{
-            field: 'startTime',
-            sort: 'asc',
-        }],
-        density: 'standard',
-        routeSelection: '',
-        filterModel: { items: [{
-            id: 'startTimeFilter',
-            columnField: 'startTime',
-            operatorValue: 'onOrAfter',
-            value: getStartTimeFromFilterInitialTime(moment()),
-        }],
-        linkOperator: 'and' },
-        pinnedColumns: { right: ['__detail_panel_toggle__'] },
-    },
     lastFilterRequest: null,
     totalTripInstancesCount: 0,
     addTrip: {
@@ -275,8 +254,6 @@ const handleClearSelectedStops = state => ({ ...state, selectedStops: {} });
 
 const handleSetTripStatusModalOrigin = (state, { payload: { origin } }) => ({ ...state, tripStatusModalOrigin: origin });
 
-const handleDatagridConfig = (state, action) => ({ ...state, datagridConfig: { ...state.datagridConfig, ...action.payload } });
-
 const handleLastFilterUpdate = (state, { payload: { lastFilterRequest } }) => ({ ...state, lastFilterRequest });
 
 const handleTotalCountUpdate = (state, { payload: { totalTripInstancesCount } }) => ({ ...state, totalTripInstancesCount });
@@ -348,7 +325,6 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_SELECTED_STOPS_UPDATING]: handleSelectedStopsLoadingUpdate,
     [ACTION_TYPE.CLEAR_CONTROL_SELECTED_STOPS]: handleClearSelectedStops,
     [ACTION_TYPE.SET_TRIP_STATUS_MODAL_ORIGIN]: handleSetTripStatusModalOrigin,
-    [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_DATAGRID_CONFIG]: handleDatagridConfig,
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LAST_FILTER]: handleLastFilterUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT]: handleTotalCountUpdate,
     [ACTION_TYPE.OPEN_ADD_TRIP_MODAL]: handleOpenAddTrip,

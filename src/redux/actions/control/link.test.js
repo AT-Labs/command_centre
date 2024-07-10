@@ -13,19 +13,26 @@ import VIEW_TYPE from '../../../types/view-types';
 chai.use(sinonChai);
 
 const mockStore = configureMockStore([thunk]);
-const store = mockStore({ 
+
+const store = mockStore({
     control: {
         routes: {
-            tripInstances: {
-                datagridConfig: { filterModel: { items: [] }, sortModel: [] }
-            },
+            tripInstances: {},
             filters: {
                 routeType: 3,
             },
         },
     },
+    datagridConfig: {
+        routesTripsDatagridConfig: {
+            filterModel: { items: [] },
+            sortModel: [],
+        },
+    },
 });
+
 let sandbox;
+
 const mockTrips = {
     totalCount: 2,
     tripInstances: [{
@@ -158,35 +165,37 @@ describe('Link actions', () => {
                 type: ACTION_TYPE.MERGE_CONTROL_ROUTES_FILTERS,
                 payload: {
                     filters: {
-                        agencyId: '',
+                        agencyId: "",
                         depotIds: [],
                         routeType: mockTrip.routeType,
                         isGroupedByRoute: true,
                         isGroupedByRouteVariant: true,
-                        startTimeFrom: '',
-                        startTimeTo: '',
-                        tripStatus: '',
-                        routeShortName: '',
-                        routeVariantId: '',
+                        startTimeFrom: "",
+                        startTimeTo: "",
+                        tripStatus: "",
+                        routeShortName: "",
+                        routeVariantId: "",
                     },
                 },
             },
             {
-                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_DATAGRID_CONFIG,
+                type: ACTION_TYPE.UPDATE_ROUTES_TRIPS_DATAGRID_CONFIG,
                 payload: {
                     filterModel: {
-                        items: [{
-                            columnField: "startTime",
-                            operatorValue: "onOrAfter",
-                            value: "",
-                        }]
-                    }
-                }
+                        items: [
+                            {
+                                columnField: "startTime",
+                                operatorValue: "onOrAfter",
+                                value: "",
+                            },
+                        ],
+                    },
+                },
             },
             {
                 type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_UPDATING,
                 payload: {
-                    isUpdating: true
+                    isUpdating: true,
                 },
             },
             {
@@ -212,40 +221,40 @@ describe('Link actions', () => {
                 payload: {
                     timestamp: 1677628800000,
                     tripInstances: mockStoreTrips,
-                }
+                },
             },
             {
                 type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_TOTAL_COUNT,
                 payload: {
                     totalTripInstancesCount: 2,
-                }
+                },
             },
             {
                 type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_PERMISSIONS,
                 payload: {
                     permissions: [
                         {
-                            _rel: "cancel"
+                            _rel: "cancel",
                         },
                         {
-                            _rel: "copy"
+                            _rel: "copy",
                         },
                         {
-                            _rel: "delay"
+                            _rel: "delay",
                         },
                         {
-                            _rel: "view"
+                            _rel: "view",
                         },
                         {
-                            _rel: "advancer"
+                            _rel: "advancer",
                         },
                         {
-                            _rel: "recurrent_cancel"
+                            _rel: "recurrent_cancel",
                         },
                         {
-                            _rel: "new"
-                        }
-                    ]
+                            _rel: "new",
+                        },
+                    ],
                 },
             },
         ];

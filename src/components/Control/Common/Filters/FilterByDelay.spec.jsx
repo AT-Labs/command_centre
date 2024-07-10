@@ -11,7 +11,7 @@ import FilterByDelay from './FilterByDelay';
 import tripStatusTypes from '../../../../types/trip-status-types';
 
 const reduxSelectors = require('../../../../redux/selectors/control/routes/filters');
-const reduxTripInstancesSelectors = require('../../../../redux/selectors/control/routes/trip-instances');
+const reduxDatagridSelectors = require('../../../../redux/selectors/datagrid');
 
 let sandbox;
 
@@ -44,7 +44,7 @@ const setup = (customState, customProps, tripStatusFilterInit, datagridConfigIni
         sandbox.stub(reduxSelectors, 'getTripStatusFilter').returns(tripStatusFilterInit);
     }
     if (datagridConfigInit) {
-        sandbox.stub(reduxTripInstancesSelectors, 'getTripsDatagridConfig').returns(datagridConfigInit);
+        sandbox.stub(reduxDatagridSelectors, 'getRoutesTripsDatagridConfig').returns(datagridConfigInit);
     }
 
     sandbox.stub(React, 'useState').callsFake((value) => {

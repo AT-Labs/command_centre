@@ -39,6 +39,7 @@ import analytics from './reducers/analytics/analytics';
 import dataManagement from './reducers/control/dataManagement';
 import appSettings from './reducers/appSettings';
 import notifications from './reducers/control/notifications';
+import datagridConfig from './reducers/datagrid';
 
 const sentryReduxEnhancer = Sentry.createReduxEnhancer();
 
@@ -101,6 +102,7 @@ export default createStore(
         search,
         user,
         appSettings,
+        datagridConfig,
     }),
     {},
     composeEnhancers(

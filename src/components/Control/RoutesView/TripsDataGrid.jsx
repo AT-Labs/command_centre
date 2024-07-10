@@ -1,16 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Box } from '@mui/material';
 import { getGridSingleSelectOperators, getGridStringOperators, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid-pro';
-import { lowerCase, get, words, upperFirst, map } from 'lodash-es';
+import { lowerCase, get, words, upperFirst, map, isArray, isEmpty, find } from 'lodash-es';
 import moment from 'moment';
 import { FaCheckCircle, FaEyeSlash } from 'react-icons/fa';
 
 import TripView from './TripView';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
 import { isTripCancelPermitted } from '../../../utils/user-permissions';
-import { getRouteFilters } from '../../../redux/selectors/control/routes/filters';
 import { getActiveRoute } from '../../../redux/selectors/control/routes/routes';
 import { getActiveRouteVariant } from '../../../redux/selectors/control/routes/routeVariants';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
@@ -20,13 +19,12 @@ import { getTripInstanceId, getTripTimeDisplay, getTimePickerOptions } from '../
 import TripIcon from '../Common/Trip/TripIcon';
 import TripDelay from '../Common/Trip/TripDelay';
 import {
-    selectSingleTrip, selectTrips, selectAllTrips, updateTripsDatagridConfig, filterTripInstances, updateActiveTripInstances,
+    selectSingleTrip, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances,
 } from '../../../redux/actions/control/routes/trip-instances';
 import { TripSubIconType } from './Types';
 import {
     getAllTripInstancesList,
     getSelectedTripsKeys,
-    getTripsDatagridConfig,
     getTotalTripInstancesCount,
     getActiveTripInstance,
 } from '../../../redux/selectors/control/routes/trip-instances';
@@ -37,7 +35,10 @@ import { CustomSelectionHeader } from './CustomSelectionHeader';
 import { getAllStops } from '../../../redux/selectors/static/stops';
 import { StopSearchDataGridOperators } from '../Common/DataGrid/OmniSearchDataGridOperator';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
-import { useAddTrip, useHideTrip, useRoutesTripsFilterCollapse } from '../../../redux/selectors/appSettings';
+import { useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences } from '../../../redux/selectors/appSettings';
+import { getUserPreferences } from '../../../utils/transmitters/command-centre-config-api';
+import { updateRoutesTripsDatagridConfig } from '../../../redux/actions/datagrid';
+import { getRoutesTripsDatagridConfig } from '../../../redux/selectors/datagrid';
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
 
@@ -74,6 +75,7 @@ const isAnyOfStringOperators = getGridStringOperators(true).filter(
 
 export const TripsDataGrid = (props) => {
     const isDateServiceTodayOrTomorrow = () => moment(props.serviceDate).isBetween(moment(), moment().add(1, 'd'), 'd', '[]');
+    const [savedDatagridConfigChanges, setSavedDatagridConfigChanges] = useState();
 
     const renderIconColumnContent = ({ row, api }) => {
         let iconColor = '';
@@ -365,13 +367,59 @@ export const TripsDataGrid = (props) => {
 
     const handleRowExpanded = ids => props.updateActiveTripInstances(ids);
 
+    useEffect(() => {
+        if (props.useRoutesTripsPreferences) {
+            getUserPreferences()
+                .then((preferences) => {
+                    const { routesTripsDatagrid } = preferences;
+                    if (routesTripsDatagrid) {
+                        setSavedDatagridConfigChanges(routesTripsDatagrid);
+                    }
+                });
+        }
+    }, []);
+
+    const getUpdatedColumns = (gridColumns) => {
+        if (props.useRoutesTripsPreferences && savedDatagridConfigChanges?.columns) {
+            const { columns } = savedDatagridConfigChanges;
+            if (isArray(columns) && !isEmpty(columns)) {
+                return columns
+                    .map((column) => {
+                        const foundColumn = find(gridColumns, { field: column.field });
+                        if (foundColumn) {
+                            return {
+                                ...foundColumn,
+                                ...column,
+                            };
+                        }
+                        return null;
+                    })
+                    .filter(column => column !== null);
+            }
+        }
+        return gridColumns;
+    };
+
+    const getUpdatedRoutesTripsDatagridConfig = () => {
+        if (props.useRoutesTripsPreferences && savedDatagridConfigChanges) {
+            const { columns, ...rest } = savedDatagridConfigChanges;
+            return ({ ...props.routesTripsDatagridConfig, ...rest });
+        }
+        return props.routesTripsDatagridConfig;
+    };
+
+    const handleUpdateDatagridConfig = (config) => {
+        props.updateRoutesTripsDatagridConfig(config, props.useRoutesTripsPreferences);
+        if (props.useRoutesTripsPreferences && savedDatagridConfigChanges) setSavedDatagridConfigChanges(undefined);
+    };
+
     return (
         <div className="trips-data-grid flex-grow-1">
             <CustomDataGrid
-                columns={ GRID_COLUMNS }
-                datagridConfig={ props.datagridConfig }
+                columns={ getUpdatedColumns(GRID_COLUMNS) }
+                datagridConfig={ getUpdatedRoutesTripsDatagridConfig() }
                 dataSource={ rows }
-                updateDatagridConfig={ config => props.updateTripsDatagridConfig(config) }
+                updateDatagridConfig={ handleUpdateDatagridConfig }
                 getDetailPanelContent={ getDetailPanelContent }
                 getRowId={ row => getTripInstanceId(row.tripInstance) }
                 getRowClassName={ getRowClassName }
@@ -396,9 +444,9 @@ export const TripsDataGrid = (props) => {
 };
 
 TripsDataGrid.propTypes = {
-    datagridConfig: PropTypes.object.isRequired,
+    routesTripsDatagridConfig: PropTypes.object.isRequired,
     tripInstances: PropTypes.array.isRequired,
-    updateTripsDatagridConfig: PropTypes.func.isRequired,
+    updateRoutesTripsDatagridConfig: PropTypes.func.isRequired,
     selectSingleTrip: PropTypes.func.isRequired,
     selectTrips: PropTypes.func.isRequired,
     selectedTrips: PropTypes.array.isRequired,
@@ -415,6 +463,7 @@ TripsDataGrid.propTypes = {
     useHideTrip: PropTypes.bool.isRequired,
     gridClassNames: PropTypes.string,
     useRoutesTripsFilterCollapse: PropTypes.bool.isRequired,
+    useRoutesTripsPreferences: PropTypes.bool.isRequired,
 };
 
 TripsDataGrid.defaultProps = {
@@ -424,13 +473,12 @@ TripsDataGrid.defaultProps = {
 
 export default connect(
     state => ({
-        datagridConfig: getTripsDatagridConfig(state),
+        routesTripsDatagridConfig: getRoutesTripsDatagridConfig(state),
         tripInstances: getAllTripInstancesList(state),
         activeRoute: getActiveRoute(state),
         activeRouteVariant: getActiveRouteVariant(state),
         selectedTrips: getSelectedTripsKeys(state),
         serviceDate: getServiceDate(state),
-        filters: getRouteFilters(state),
         agencies: getAgencies(state),
         rowCount: getTotalTripInstancesCount(state),
         activeTripInstance: getActiveTripInstance(state),
@@ -439,8 +487,9 @@ export default connect(
         useAddTrip: useAddTrip(state),
         useHideTrip: useHideTrip(state),
         useRoutesTripsFilterCollapse: useRoutesTripsFilterCollapse(state),
+        useRoutesTripsPreferences: useRoutesTripsPreferences(state),
     }),
     {
-        updateTripsDatagridConfig, selectSingleTrip, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances,
+        updateRoutesTripsDatagridConfig, selectSingleTrip, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances,
     },
 )(TripsDataGrid);
