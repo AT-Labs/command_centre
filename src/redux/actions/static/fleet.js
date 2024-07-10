@@ -27,17 +27,17 @@ const loadFerries = fleet => ({
 
 const tokenizeBuses = buses => buses.map(bus => ({
     ...bus,
-    tokens: [bus.label.toLowerCase(), bus.registration ? bus.registration.toLowerCase() : bus.registration, bus.id],
+    tokens: [bus.label?.toLowerCase(), bus.registration?.toLowerCase(), bus.id],
 }));
 
 const tokenizeTrains = trains => trains.map(train => ({
     ...train,
-    tokens: train.label.toLowerCase().split(/  +/g),
+    tokens: train.label?.toLowerCase().split(/  +/g),
 }));
 
 const tokenizeFerries = ferries => ferries.map(ferry => ({
     ...ferry,
-    tokens: [...ferry.label && ferry.label.toLowerCase().split(' '), ferry.id],
+    tokens: [ferry.label?.toLowerCase().split(' '), ferry.id],
 }));
 
 export const getTrains = () => dispatch => fleetApi.fetchTrains()
