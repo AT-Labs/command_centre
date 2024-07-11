@@ -16,6 +16,7 @@ import GroupByRouteView from './GroupByRouteView';
 import GroupByRouteVariantView from './GroupByRouteVariantView';
 import TripsDataGrid from './TripsDataGrid';
 import AddTrip from './AddTrip';
+import ClearUserPreferencesModal from './Modals/clearUserPreferencesModal';
 
 import { retrieveAgencies } from '../../../redux/actions/control/agencies';
 import { fetchRoutes } from '../../../redux/actions/control/routes/routes';
@@ -34,6 +35,7 @@ import { getSelectedTripsKeys, isAddTripModalEnabled, isAddTripAllowed } from '.
 import { useAddTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences } from '../../../redux/selectors/appSettings';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
+import CustomModal from '../../Common/CustomModal/CustomModal';
 
 import './TripsDataGrid.scss';
 
@@ -41,6 +43,7 @@ export const RoutesAndTripsView = (props) => {
     const [currentPage, setCurrentPage] = useState(1);
     const loadingTimerRef = useRef(null);
     const [isExpanded, setIsExpanded] = useState(true);
+    const [isClearUserPreferencesModalOpen, setIsClearUserPreferencesModalOpen] = useState(false);
 
     const getTripInstances = () => {
         if (props.addTripModalIsOpen) {
@@ -130,7 +133,11 @@ export const RoutesAndTripsView = (props) => {
             <div className="routes-trips-view d-flex flex-column h-100">
                 { !props.useRoutesTripsFilterCollapse && (
                     <>
-                        <TableTitle tableTitle="Routes & Trips">
+                        <TableTitle
+                            tableTitle="Routes & Trips"
+                            subTitle={ props.useRoutesTripsPreferences ? 'Clear user preferences' : undefined }
+                            onSubTitleClick={ props.useRoutesTripsPreferences ? () => setIsClearUserPreferencesModalOpen(true) : undefined }
+                        >
                             <div className="d-flex align-items-center col-auto">
                                 { showAddTripButton && getAddTripActionButton() }
                             </div>
@@ -140,7 +147,11 @@ export const RoutesAndTripsView = (props) => {
                 ) }
                 { props.useRoutesTripsFilterCollapse && (
                     <>
-                        <TableTitle tableTitle="Routes & Trips">
+                        <TableTitle
+                            tableTitle="Routes & Trips"
+                            subTitle={ props.useRoutesTripsPreferences ? 'Clear user preferences' : undefined }
+                            onSubTitleClick={ props.useRoutesTripsPreferences ? () => setIsClearUserPreferencesModalOpen(true) : undefined }
+                        >
                             { renderCollapseFiltersButton() }
                             <div className="d-flex align-items-center col-auto">
                                 { showAddTripButton && getAddTripActionButton() }
@@ -186,6 +197,16 @@ export const RoutesAndTripsView = (props) => {
                         <AddTrip />
                     </DialogContent>
                 </Dialog>
+            ) }
+
+            { props.useRoutesTripsPreferences && (
+                <CustomModal
+                    className="confirm-clear-user-preferences__modal"
+                    title="Clear User Preferences"
+                    isModalOpen={ isClearUserPreferencesModalOpen }
+                >
+                    <ClearUserPreferencesModal className="" onClose={ () => setIsClearUserPreferencesModalOpen(false) } />
+                </CustomModal>
             ) }
         </>
     );

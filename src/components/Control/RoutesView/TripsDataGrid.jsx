@@ -37,7 +37,7 @@ import { StopSearchDataGridOperators } from '../Common/DataGrid/OmniSearchDataGr
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
 import { useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences } from '../../../redux/selectors/appSettings';
 import { getUserPreferences } from '../../../utils/transmitters/command-centre-config-api';
-import { updateRoutesTripsDatagridConfig } from '../../../redux/actions/datagrid';
+import { updateRoutesTripsDatagridConfig, updateDefaultRoutesTripsDatagridConfig } from '../../../redux/actions/datagrid';
 import { getRoutesTripsDatagridConfig } from '../../../redux/selectors/datagrid';
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
@@ -369,6 +369,7 @@ export const TripsDataGrid = (props) => {
 
     useEffect(() => {
         if (props.useRoutesTripsPreferences) {
+            props.updateDefaultRoutesTripsDatagridConfig({ columns: GRID_COLUMNS });
             getUserPreferences()
                 .then((preferences) => {
                     const { routesTripsDatagrid } = preferences;
@@ -464,6 +465,7 @@ TripsDataGrid.propTypes = {
     gridClassNames: PropTypes.string,
     useRoutesTripsFilterCollapse: PropTypes.bool.isRequired,
     useRoutesTripsPreferences: PropTypes.bool.isRequired,
+    updateDefaultRoutesTripsDatagridConfig: PropTypes.func.isRequired,
 };
 
 TripsDataGrid.defaultProps = {
@@ -490,6 +492,6 @@ export default connect(
         useRoutesTripsPreferences: useRoutesTripsPreferences(state),
     }),
     {
-        updateRoutesTripsDatagridConfig, selectSingleTrip, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances,
+        selectSingleTrip, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances, updateRoutesTripsDatagridConfig, updateDefaultRoutesTripsDatagridConfig,
     },
 )(TripsDataGrid);

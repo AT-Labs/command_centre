@@ -289,19 +289,6 @@ const handleAddTripRequestingUpdate = (state, { payload: { isRequesting } }) => 
     },
 });
 
-const handleAddTripResultUpdate = (state, { payload: { result, resultStatus, resultMessage } }) => ({
-    ...state,
-    addTrip: {
-        ...state.addTrip,
-        action: {
-            ...state.addTrip.action,
-            result,
-            resultStatus,
-            resultMessage,
-        },
-    },
-});
-
 export default handleActions({
     [ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES]: handleTripInstancesUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_LOADING]: handleLoadingUpdate,
@@ -335,5 +322,4 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCES_PERMISSIONS]: handleTripInstancesPermissionsUpdate,
     [ACTION_TYPE.SET_ADD_TRIP_MODAL_STATUS]: handleAddTripModal,
     [ACTION_TYPE.UPDATE_ADD_TRIP_ACTION_REQUESTING]: handleAddTripRequestingUpdate,
-    [ACTION_TYPE.UPDATE_ADD_TRIP_ACTION_RESULT]: handleAddTripResultUpdate,
 }, INIT_STATE);

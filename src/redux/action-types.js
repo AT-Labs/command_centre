@@ -275,6 +275,7 @@ export default {
     UPDATE_CONTROL_NOTIFICATION_ACTION_RESULT: 'update-control-notification-action-result',
     UPDATE_CONTROL_NOTIFICATION_SELECTED: 'update-control-notification-selected',
 
-    // Datagrid
+    // Datagrid Config
     UPDATE_ROUTES_TRIPS_DATAGRID_CONFIG: 'update-routes-trips-datagrid-config',
+    UPDATE_DEFAULT_ROUTES_TRIPS_DATAGRID_CONFIG: 'update-default-routes-trips-datagrid-config',
 };
