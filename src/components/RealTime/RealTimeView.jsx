@@ -119,7 +119,7 @@ function RealTimeView(props) {
         return () => {
             clearInterval(refreshTrafficInterval);
         };
-    }, [selectedCongestionFilters]);
+    }, [selectedCongestionFilters, mapCenter, mapRadius]);
 
     useEffect(() => {
         let refreshIncidentsInterval;
