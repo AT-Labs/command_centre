@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Box } from '@mui/material';
 import { getGridSingleSelectOperators, getGridStringOperators, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid-pro';
-import { lowerCase, get, words, upperFirst, map, isArray, isEmpty, find } from 'lodash-es';
+import { lowerCase, get, words, upperFirst, map, isEqual } from 'lodash-es';
 import moment from 'moment';
 import { FaCheckCircle, FaEyeSlash } from 'react-icons/fa';
 
@@ -16,6 +16,7 @@ import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
 import { formatTripDelay, isTripAdded, dateOperators, markStopsAsFirstOrLast } from '../../../utils/control/routes';
 import { getTripInstanceId, getTripTimeDisplay, getTimePickerOptions } from '../../../utils/helpers';
+import { mergeDatagridColumns } from '../../../utils/datagrid';
 import TripIcon from '../Common/Trip/TripIcon';
 import TripDelay from '../Common/Trip/TripDelay';
 import {
@@ -75,7 +76,8 @@ const isAnyOfStringOperators = getGridStringOperators(true).filter(
 
 export const TripsDataGrid = (props) => {
     const isDateServiceTodayOrTomorrow = () => moment(props.serviceDate).isBetween(moment(), moment().add(1, 'd'), 'd', '[]');
-    const [savedDatagridConfigChanges, setSavedDatagridConfigChanges] = useState();
+    const [isSavedDatagridConfigReady, setIsSavedDatagridConfigReady] = useState(false);
+    const isSavedDatagridConfigReadyRef = useRef(isSavedDatagridConfigReady);
 
     const renderIconColumnContent = ({ row, api }) => {
         let iconColor = '';
@@ -368,59 +370,37 @@ export const TripsDataGrid = (props) => {
     const handleRowExpanded = ids => props.updateActiveTripInstances(ids);
 
     useEffect(() => {
+        isSavedDatagridConfigReadyRef.current = isSavedDatagridConfigReady;
+    }, [isSavedDatagridConfigReady]);
+
+    useEffect(() => {
         if (props.useRoutesTripsPreferences) {
             props.updateDefaultRoutesTripsDatagridConfig({ columns: GRID_COLUMNS });
             getUserPreferences()
                 .then((preferences) => {
                     const { routesTripsDatagrid } = preferences;
                     if (routesTripsDatagrid) {
-                        setSavedDatagridConfigChanges(routesTripsDatagrid);
+                        const { columns, ...rest } = routesTripsDatagrid;
+                        const updatedColumns = mergeDatagridColumns(GRID_COLUMNS, columns);
+                        props.updateRoutesTripsDatagridConfig({ ...rest, ...(updatedColumns ? { columns: updatedColumns } : undefined) }, false);
                     }
+                    setIsSavedDatagridConfigReady(true);
                 });
         }
     }, []);
 
-    const getUpdatedColumns = (gridColumns) => {
-        if (props.useRoutesTripsPreferences && savedDatagridConfigChanges?.columns) {
-            const { columns } = savedDatagridConfigChanges;
-            if (isArray(columns) && !isEmpty(columns)) {
-                return columns
-                    .map((column) => {
-                        const foundColumn = find(gridColumns, { field: column.field });
-                        if (foundColumn) {
-                            return {
-                                ...foundColumn,
-                                ...column,
-                            };
-                        }
-                        return null;
-                    })
-                    .filter(column => column !== null);
-            }
-        }
-        return gridColumns;
-    };
-
-    const getUpdatedRoutesTripsDatagridConfig = () => {
-        if (props.useRoutesTripsPreferences && savedDatagridConfigChanges) {
-            const { columns, ...rest } = savedDatagridConfigChanges;
-            return ({ ...props.routesTripsDatagridConfig, ...rest });
-        }
-        return props.routesTripsDatagridConfig;
-    };
-
-    const handleUpdateDatagridConfig = (config) => {
-        props.updateRoutesTripsDatagridConfig(config, props.useRoutesTripsPreferences);
-        if (props.useRoutesTripsPreferences && savedDatagridConfigChanges) setSavedDatagridConfigChanges(undefined);
+    const updateDatagridConfigHandler = (config) => {
+        const isOnlyDefaultFilterModelConfig = isEqual(config, { filterModel: { items: [], linkOperator: 'and' } });
+        props.updateRoutesTripsDatagridConfig(config, props.useRoutesTripsPreferences && isSavedDatagridConfigReadyRef.current && !isOnlyDefaultFilterModelConfig);
     };
 
     return (
         <div className="trips-data-grid flex-grow-1">
             <CustomDataGrid
-                columns={ getUpdatedColumns(GRID_COLUMNS) }
-                datagridConfig={ getUpdatedRoutesTripsDatagridConfig() }
+                columns={ GRID_COLUMNS }
+                datagridConfig={ props.routesTripsDatagridConfig }
                 dataSource={ rows }
-                updateDatagridConfig={ handleUpdateDatagridConfig }
+                updateDatagridConfig={ updateDatagridConfigHandler }
                 getDetailPanelContent={ getDetailPanelContent }
                 getRowId={ row => getTripInstanceId(row.tripInstance) }
                 getRowClassName={ getRowClassName }
