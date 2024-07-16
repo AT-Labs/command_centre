@@ -15,7 +15,7 @@ module.exports = defineConfig({
     requestTimeout: 10000,
     responseTimeout: 60000,
     experimentalFetchPolyfill: true,
-    numTestsKeptInMemory: 5,
+    numTestsKeptInMemory: 3,
     retries: {
         runMode: 2,
         openMode: 0,
@@ -27,4 +27,5 @@ module.exports = defineConfig({
         baseUrl: 'http://localhost:3000/',
         testIsolation: false,
     },
+    experimentalMemoryManagement: true,
 });

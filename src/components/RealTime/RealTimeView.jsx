@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { filter } from 'lodash-es';
 
 import { getSearchTerms } from '../../redux/selectors/search';
 import { addressSelected } from '../../redux/actions/realtime/detail/address';
@@ -62,6 +63,7 @@ import {
     CONGESTION_ZOOM_LEVEL_THRESHOLD, INCIDENTS_REFRESH_INTERVAL, INCIDENTS_SHAPE_WEIGHT,
 } from '../../constants/traffic';
 import * as incidentsApi from '../../utils/transmitters/incidents-api';
+import { Category } from '../../types/incidents';
 
 function RealTimeView(props) {
     const { ADDRESS, ROUTE, STOP, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
@@ -77,7 +79,8 @@ function RealTimeView(props) {
     const fetchIncidentsData = async () => {
         try {
             const data = await incidentsApi.fetchIncidents();
-            setIncidents(data);
+            const filteredIncidents = filter(data, incident => incident.type.category !== Category.RoadConditions && incident.type.category !== Category.RoadMaintenance);
+            setIncidents(filteredIncidents);
         } catch (error) {
             setIncidents([]);
         }
