@@ -10,6 +10,7 @@ import {
     getExpiredMessageRowClassName,
     generateUniqueID,
     getTimesFromStop,
+    parseIncidentEndTime,
 } from './helpers';
 
 const time = '2021-11-16 18:43:30.000Z';
@@ -180,5 +181,21 @@ describe('getTimesFromStop', () => {
         expect(result.scheduledTime.departure).to.equal(expected.scheduledTime.departure);
         expect(result.time.arrival).to.equal(expected.time.arrival);
         expect(result.time.departure).to.equal(expected.time.departure);
+    });
+});
+
+describe('parseIncidentEndTime', () => {
+    it('should return Unknown when end time is undifined', () => {
+        expect(parseIncidentEndTime(undefined)).to.equal('Unknown');
+    });
+
+    it('should return Unknown when end time is invalid', () => {
+        expect(parseIncidentEndTime('invalid date')).to.equal('Unknown');
+    });
+
+    it('should return Unknown when end time is equal to current date', () => {
+        const currentDate = '2024-07-17T02:30:37.000Z';
+        Date.now = jest.fn(() => new Date(currentDate));
+        expect(parseIncidentEndTime(currentDate)).to.equal('Unknown');
     });
 });

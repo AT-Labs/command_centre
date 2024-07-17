@@ -5,6 +5,7 @@ import isURL from 'validator/lib/isURL';
 import crypto from 'crypto';
 import { fetchWithAuthHeader } from '../auth';
 import DATE_TYPE from '../types/date-types';
+import { dateTimeFormat } from './dateUtils';
 
 export const getJSONFromWKT = text => wellknown.parse(text);
 export const getAllCoordinatesFromWKT = text => getJSONFromWKT(text).coordinates.map(c => c.reverse());
@@ -157,4 +158,11 @@ export const addMinutesToTime = (timeString, minutesToAdd) => {
         .filter(time => time !== undefined)
         .map(time => `${String(time).padStart(2, '0')}`)
         .join(':');
+};
+
+export const parseIncidentEndTime = (endTime) => {
+    if (!endTime || !moment(endTime).isValid() || moment(endTime).isSame(moment(), 'minute')) {
+        return 'Unknown';
+    }
+    return moment(endTime).format(dateTimeFormat);
 };

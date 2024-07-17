@@ -5,7 +5,7 @@ import moment from 'moment';
 import React, { useRef, useState, useEffect } from 'react';
 import { FeatureGroup, Polyline, Tooltip } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { generateUniqueID } from '../../../../utils/helpers';
+import { generateUniqueID, parseIncidentEndTime } from '../../../../utils/helpers';
 import IconMarker from '../../IconMarker/IconMarker';
 import { dateTimeFormat } from '../../../../utils/dateUtils';
 import { INCIDENTS_MARKER_CLUSTER_FOCUS_ZOOM } from '../../../../constants/traffic';
@@ -104,7 +104,7 @@ export const IncidentLayer = (props) => {
                 {getShowLabel('Average speed(Km/h)', incident.averageSpeed)}
                 {getShowLabel('Delay time(sec)', incident.delayTime)}
                 {getShowLabel('Start time', moment(incident.validity.overallStartTime).format(dateTimeFormat))}
-                {getShowLabel('End time', moment(incident.validity.overallEndTime).format(dateTimeFormat))}
+                {getShowLabel('End time', parseIncidentEndTime(incident.validity.overallEndTime))}
                 {getShowLabel('General public comment', incident.generalPublicComment)}
             </Tooltip>
         </IconMarker>
