@@ -45,6 +45,7 @@ import Header from './Header/Header';
 import ERROR_TYPE from '../../types/error-types';
 import { getApplicationSettings } from '../../redux/actions/appSettings';
 import { useRoutesTripsPreferences } from '../../redux/selectors/appSettings';
+import { retrieveAgencies } from '../../redux/actions/control/agencies';
 
 import 'flatpickr/dist/flatpickr.css';
 
@@ -94,6 +95,7 @@ export function App(props) {
 
     useEffect(() => {
         if (props.useRoutesTripsPreferences) {
+            props.retrieveAgencies();
             props.fetchPreferences();
         }
     }, [props.useRoutesTripsPreferences]);
@@ -136,6 +138,7 @@ App.propTypes = {
     getStops: PropTypes.func.isRequired,
     fetchPreferences: PropTypes.func.isRequired,
     useRoutesTripsPreferences: PropTypes.bool.isRequired,
+    retrieveAgencies: PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
@@ -164,4 +167,5 @@ export default connect(state => ({
     getApplicationSettings,
     getStops,
     fetchPreferences,
+    retrieveAgencies,
 })(App);

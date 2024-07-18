@@ -1,4 +1,4 @@
-import { result } from 'lodash-es';
+import { result, map, difference } from 'lodash-es';
 import ACTION_TYPE from '../action-types';
 import * as TRIP_MGT_API from '../../utils/transmitters/trip-mgt-api';
 import * as BLOCK_MGT_API from '../../utils/transmitters/block-mgt-api';
@@ -11,6 +11,8 @@ import { getFleetsViewPermission } from '../../utils/transmitters/fleets-api';
 import { getUserPreferences } from '../../utils/transmitters/command-centre-config-api';
 import { reportError } from './activity';
 import { mergeRouteFilters } from './control/routes/filters';
+import { getAgencies } from '../selectors/control/agencies';
+import { getAgencyDepotsOptions } from '../../utils/helpers';
 
 export const updateUserProfile = user => (dispatch) => {
     const profile = {
@@ -45,10 +47,16 @@ export const fetchAlertsViewPermission = () => fetchViewPermission('controlAlert
 export const fetchTripReplaysViewPermission = () => fetchViewPermission('controlTripReplaysView', TRIP_REPLAY_API.getTripReplaysViewPermission);
 export const fetchFleetsViewPermission = () => fetchViewPermission('controlFleetsView', getFleetsViewPermission);
 export const fetchNotificationsViewPermission = () => fetchViewPermission('controlNotificationsView', NOTIFICATIONS_API.getNotificationsViewPermission);
-export const fetchPreferences = () => dispatch => getUserPreferences()
+export const fetchPreferences = () => (dispatch, getState) => getUserPreferences()
     .then((preferences) => {
         const { routesFilters } = preferences;
         if (routesFilters) {
+            const { agencyId, depotIds } = routesFilters;
+            if (agencyId && depotIds?.length > 0) {
+                if (difference(depotIds, map(getAgencyDepotsOptions(agencyId, getAgencies(getState())), 'value')).length > 0) {
+                    routesFilters.depotIds = [];
+                }
+            }
             dispatch(mergeRouteFilters({ ...routesFilters }, false, true));
         }
     })

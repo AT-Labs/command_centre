@@ -6,6 +6,7 @@ import TokenMultiSelect from '../../../Common/TokenMultiSelect/TokenMultiSelect'
 import SearchTheme from '../search-theme';
 import { getAgencies } from '../../../../redux/selectors/control/agencies';
 import { retrieveAgencies } from '../../../../redux/actions/control/agencies';
+import { getAgencyDepotsOptions } from '../../../../utils/helpers';
 
 const DepotType = PropTypes.shape({
     depotId: PropTypes.string.isRequired,
@@ -37,14 +38,6 @@ class FilterByDepot extends React.Component {
 
     componentDidMount() { if (isEmpty(this.props.agencies)) this.props.retrieveAgencies(); }
 
-    getOptions() {
-        if (this.props.selectedAgency) {
-            const agency = this.props.agencies.find(a => a.agencyId === this.props.selectedAgency);
-            return agency ? agency.depots.map(depot => ({ value: depot.depotId, label: depot.depotName })) : [];
-        }
-        return [];
-    }
-
     render() {
         return (
             <section className={ `control-search ${this.props.className}` }>
@@ -56,7 +49,7 @@ class FilterByDepot extends React.Component {
                 <TokenMultiSelect
                     id={ this.props.id }
                     theme={ SearchTheme }
-                    options={ this.getOptions() }
+                    options={ getAgencyDepotsOptions(this.props.selectedAgency, this.props.agencies) }
                     selectedValues={ isEmpty(this.props.agencies) ? [] : this.props.selectedOptions }
                     onSelectionChange={ this.props.onSelection }
                     disabled={ !this.props.selectedAgency }

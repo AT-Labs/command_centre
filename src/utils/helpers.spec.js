@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, assert } from 'chai';
 import {
     formatTime,
     formatUnixTime,
@@ -11,10 +11,76 @@ import {
     generateUniqueID,
     getTimesFromStop,
     parseIncidentEndTime,
+    getAgencyDepotsOptions,
 } from './helpers';
 
 const time = '2021-11-16 18:43:30.000Z';
 const timestamp = 1637088210;
+const agencies = [
+    {
+        agencyId: 'AM',
+        agencyName: 'AT Metro',
+        depots: [
+            {
+                depotId: '31',
+                depotName: 'AT Metro West',
+            },
+            {
+                depotId: '34',
+                depotName: 'AT Metro Onehunga',
+            },
+            {
+                depotId: '33',
+                depotName: 'AT Metro South',
+            },
+            {
+                depotId: '32',
+                depotName: 'AT Metro East',
+            },
+        ],
+    },
+    {
+        agencyId: 'ATMB',
+        agencyName: 'AT Metro Bus',
+        depots: [
+            {
+                depotId: '201',
+                depotName: 'AT Metro',
+            },
+        ],
+    },
+    {
+        agencyId: 'BAYES',
+        agencyName: 'Bayes Coachlines',
+        depots: [
+            {
+                depotId: '218',
+                depotName: 'Bayes Coachlines',
+            },
+        ],
+    },
+    {
+        agencyId: 'BFL',
+        agencyName: 'Belaire Ferries',
+        depots: [
+            {
+                depotId: '211',
+                depotName: 'Belaire Ferries',
+            },
+        ],
+    },
+    {
+        agencyId: 'EXPNZ',
+        agencyName: 'Explore Group',
+        depots: [
+            {
+                depotId: '240',
+                depotName: 'Explore Group',
+            },
+        ],
+    },
+];
+
 describe('getStopKey', () => {
     it('generate getStopkey using departureTime', () => {
         const stop = {
@@ -197,5 +263,32 @@ describe('parseIncidentEndTime', () => {
         const currentDate = '2024-07-17T02:30:37.000Z';
         Date.now = jest.fn(() => new Date(currentDate));
         expect(parseIncidentEndTime(currentDate)).to.equal('Unknown');
+    });
+});
+
+describe('getAgencyDepotsOptions', () => {
+    it('should return an empty array when selectedAgency is undefined', () => {
+        assert.deepStrictEqual(getAgencyDepotsOptions(undefined, agencies), []);
+    });
+
+    it('should return an array of AM depots', () => {
+        assert.deepStrictEqual(getAgencyDepotsOptions('AM', agencies), [
+            {
+                label: 'AT Metro West',
+                value: '31',
+            },
+            {
+                label: 'AT Metro Onehunga',
+                value: '34',
+            },
+            {
+                label: 'AT Metro South',
+                value: '33',
+            },
+            {
+                label: 'AT Metro East',
+                value: '32',
+            },
+        ]);
     });
 });

@@ -159,10 +159,16 @@ export const addMinutesToTime = (timeString, minutesToAdd) => {
         .map(time => `${String(time).padStart(2, '0')}`)
         .join(':');
 };
-
 export const parseIncidentEndTime = (endTime) => {
     if (!endTime || !moment(endTime).isValid() || moment(endTime).isSame(moment(), 'minute')) {
         return 'Unknown';
     }
     return moment(endTime).format(dateTimeFormat);
+};
+export const getAgencyDepotsOptions = (selectedAgency, agencies) => {
+    if (selectedAgency) {
+        const agency = agencies.find(a => a.agencyId === selectedAgency);
+        return agency ? agency.depots.map(depot => ({ value: depot.depotId, label: depot.depotName })) : [];
+    }
+    return [];
 };
