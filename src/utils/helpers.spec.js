@@ -11,8 +11,10 @@ import {
     generateUniqueID,
     getTimesFromStop,
     parseIncidentEndTime,
+    getIconNameByIncidentCategory,
     getAgencyDepotsOptions,
 } from './helpers';
+import { Category } from '../types/incidents';
 
 const time = '2021-11-16 18:43:30.000Z';
 const timestamp = 1637088210;
@@ -290,5 +292,23 @@ describe('getAgencyDepotsOptions', () => {
                 value: '32',
             },
         ]);
+    });
+});
+
+describe('getIconNameByIncidentCategory', () => {
+    it('should return the correct icon name for each category', () => {
+        expect(getIconNameByIncidentCategory(Category.Accidents)).to.equal('accidents');
+        expect(getIconNameByIncidentCategory(Category.WeatherEnvironmentalConditions)).to.equal('weather_environmental_conditions');
+        expect(getIconNameByIncidentCategory(Category.RoadConditions)).to.equal('road_conditions');
+        expect(getIconNameByIncidentCategory(Category.Emergencies)).to.equal('emergencies');
+        expect(getIconNameByIncidentCategory(Category.TrafficJams)).to.equal('traffic_jams');
+        expect(getIconNameByIncidentCategory(Category.SpecialEvents)).to.equal('special_events');
+        expect(getIconNameByIncidentCategory(Category.EnvironmentalHazards)).to.equal('environmental_hazards');
+        expect(getIconNameByIncidentCategory(Category.RoadMaintenance)).to.equal('road_maintenance');
+        expect(getIconNameByIncidentCategory(Category.Unknown)).to.equal('unknown');
+    });
+
+    it('should return "unknown" for an undefined category', () => {
+        expect(getIconNameByIncidentCategory('NonExistentCategory')).to.equal('unknown');
     });
 });

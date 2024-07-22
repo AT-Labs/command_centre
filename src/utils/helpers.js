@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { fetchWithAuthHeader } from '../auth';
 import DATE_TYPE from '../types/date-types';
 import { dateTimeFormat } from './dateUtils';
+import { Category } from '../types/incidents';
 
 export const getJSONFromWKT = text => wellknown.parse(text);
 export const getAllCoordinatesFromWKT = text => getJSONFromWKT(text).coordinates.map(c => c.reverse());
@@ -171,4 +172,18 @@ export const getAgencyDepotsOptions = (selectedAgency, agencies) => {
         return agency ? agency.depots.map(depot => ({ value: depot.depotId, label: depot.depotName })) : [];
     }
     return [];
+};
+export const getIconNameByIncidentCategory = (category) => {
+    const categoryToIconFileNameMap = {
+        [Category.Accidents]: 'accidents',
+        [Category.WeatherEnvironmentalConditions]: 'weather_environmental_conditions',
+        [Category.RoadConditions]: 'road_conditions',
+        [Category.Emergencies]: 'emergencies',
+        [Category.TrafficJams]: 'traffic_jams',
+        [Category.SpecialEvents]: 'special_events',
+        [Category.EnvironmentalHazards]: 'environmental_hazards',
+        [Category.RoadMaintenance]: 'road_maintenance',
+        [Category.Unknown]: 'unknown',
+    };
+    return categoryToIconFileNameMap[category] ?? 'unknown';
 };

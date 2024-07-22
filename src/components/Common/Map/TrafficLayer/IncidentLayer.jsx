@@ -5,7 +5,7 @@ import moment from 'moment';
 import React, { useRef, useState, useEffect } from 'react';
 import { FeatureGroup, Polyline, Tooltip } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { generateUniqueID, parseIncidentEndTime } from '../../../../utils/helpers';
+import { generateUniqueID, parseIncidentEndTime, getIconNameByIncidentCategory } from '../../../../utils/helpers';
 import IconMarker from '../../IconMarker/IconMarker';
 import { dateTimeFormat } from '../../../../utils/dateUtils';
 import { INCIDENTS_MARKER_CLUSTER_FOCUS_ZOOM } from '../../../../constants/traffic';
@@ -32,13 +32,6 @@ export const IncidentLayer = (props) => {
         className: 'incident-market-cluster',
         html: `<div style="background-color: #E30084; opacity: 0.5; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; color: white;">${cluster.getChildCount()}</div>`,
     });
-
-    const getIconName = (name) => {
-        if (name) {
-            return name.replace(/\s+/g, '_').toLowerCase();
-        }
-        return 'unknown';
-    };
 
     const parseValidityStatus = (validityStatus) => {
         if (validityStatus === 'definedByValidityTimeSpec') {
@@ -87,7 +80,7 @@ export const IncidentLayer = (props) => {
         <IconMarker
             key={ incident.openlr }
             location={ getIconPoint(incident.isPoint, feature.coordinates) }
-            imageName={ getIconName(incident.type.category) }
+            imageName={ getIconNameByIncidentCategory(incident.type.category) }
             size={ 45 }
             onClick={ () => !incident.isPoint && handleMarkerClick(feature.coordinates) }
             className={ incident.situationRecordsId }
