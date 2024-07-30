@@ -5,15 +5,31 @@ import { getVehicleId, getVehicleLat, getVehicleRouteId, getVehicleTimestamp } f
 import { getAllRoutes } from '../../selectors/static/routes';
 import { getFleetState } from '../../selectors/static/fleet';
 import { updateDataLoading, reportError } from '../activity';
+import { UNSCHEDULED_TAG } from '../../../types/vehicle-types';
 
 let vehiclesTrackingCache = {};
 let tripUpdateCache = {};
 let realTimeSnapshotIntervalId = null;
 
-const decorateWithRouteType = (vehicle, routes) => merge(
-    vehicle,
-    { vehicle: { route: routes[getVehicleRouteId(vehicle)] } },
-);
+const fetchUnscheduledRouteType = () => ({
+    route_id: UNSCHEDULED_TAG,
+    route_type: 3,
+    extended_route_type: 3,
+    route_short_name: UNSCHEDULED_TAG,
+    agency_name: '',
+    agency_id: '',
+    route_color: null,
+    route_text_color: null,
+    tokens: [],
+});
+
+const decorateWithRouteType = (vehicle, routes) => {
+    if (vehicle.vehicle.tags?.includes(UNSCHEDULED_TAG)) {
+        return merge(vehicle, { vehicle: { route: fetchUnscheduledRouteType() } });
+    }
+
+    return merge(vehicle, { vehicle: { route: routes[getVehicleRouteId(vehicle)] } });
+};
 
 const throttledRealTimeUpdates = throttle((dispatch) => {
     dispatch({

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { BUS_TYPE_ID, FERRY_TYPE_ID, TRAIN_TYPE_ID, TRIP_DIRECTION_INBOUND } from '../../../types/vehicle-types';
+import { BUS_TYPE_ID, FERRY_TYPE_ID, TRAIN_TYPE_ID, TRIP_DIRECTION_INBOUND, TRIP_DIRECTION_OUTBOUND, UNSCHEDULED_TAG } from '../../../types/vehicle-types';
 import { getFilteredVehicles, getVisibleVehicles } from './vehicles';
 
 
@@ -39,6 +39,30 @@ const busNewZealandBus = {
     },
 };
 
+const busNotInService = {
+    id: '88888',
+    vehicle: {
+        occupancyStatus: 'EMPTY',
+        position: {
+            latitude: -36.85709166666667,
+            longitude: 174.74785,
+            bearing: 302,
+            odometer: 369819470,
+            speed: 0,
+        },
+        route: null,
+        timestamp: '1538366659',
+        trip: {
+            tripId: null,
+        },
+        vehicle: {
+            id: '88888',
+            label: 'NB8888',
+            licensePlate: 'GEH888',
+        },
+    },
+};
+
 const busRitchiesTransport = {
     id: '13100',
     vehicle: {
@@ -60,7 +84,7 @@ const busRitchiesTransport = {
         },
         timestamp: '1538366659',
         trip: {
-            directionId: null,
+            directionId: TRIP_DIRECTION_OUTBOUND,
             tripId: '444143053-20180921103729_v70.37',
             startTime: '16:30:00',
             startDate: '20181001',
@@ -182,7 +206,39 @@ const ferry = {
     },
 };
 
-const allVehicles = [busNewZealandBus, busRitchiesTransport, train, trainNotInService, trainJoined, ferry];
+const busUnscheduled = {
+    id: '99999',
+    vehicle: {
+        occupancyStatus: 'MANY_SEATS_AVAILABLE',
+        position: {
+            latitude: -36.85709166666667,
+            longitude: 174.74785,
+            bearing: 302,
+            odometer: 369819470,
+            speed: 0,
+        },
+        route: {
+            agency_id: '',
+            agency_name: '',
+            route_id: UNSCHEDULED_TAG,
+            route_short_name: UNSCHEDULED_TAG,
+            route_type: BUS_TYPE_ID,
+            tokens: [],
+        },
+        timestamp: '1538366659',
+        trip: {
+            tripId: null,
+        },
+        vehicle: {
+            id: '99999',
+            label: 'NB5076',
+            licensePlate: 'GEE828',
+        },
+        tags: [UNSCHEDULED_TAG]
+    },
+};
+
+const allVehicles = [busNewZealandBus, busRitchiesTransport, train, trainNotInService, trainJoined, ferry, busUnscheduled, busNotInService];
 const allFleet = {
     15000: {
         agency: {
@@ -238,6 +294,24 @@ const allFleet = {
         },
         tag: 'Torutek',
     },
+    99999: {
+        agency: {
+            agencyId: 'RIT',
+        },
+        type: {
+            type: 'Bus',
+        },
+        tag: 'Torutek',
+    },
+    88888: {
+        agency: {
+            agencyId: 'RIT',
+        },
+        type: {
+            type: 'Bus',
+        },
+        tag: 'Torutek',
+    }
 };
 const allocations = {};
 const tripUpdates = {};
@@ -608,6 +682,58 @@ describe('Vehicles selectors', () => {
                 null,
             )).to.eql({
                 [busRitchiesTransport.id]: busRitchiesTransport,
+            });
+        });
+
+        it('should filter by unscheduled route', () => {
+            let filteredVehicles = getFilteredVehicles.resultFunc(
+                allVehicles,
+                allFleet,
+                allocations,
+                tripUpdates,
+                BUS_TYPE_ID,
+                null,
+                null,
+                null,
+                null,
+                [],
+                {},
+                [],
+                null,
+                true,
+            );
+            expect(getVisibleVehicles.resultFunc(
+                filteredVehicles,
+                null,
+            )).to.eql({
+                [busUnscheduled.id]: busUnscheduled,
+            });
+        });
+
+
+        it('should filter by both unscheduled route and not in service', () => {
+            let filteredVehicles = getFilteredVehicles.resultFunc(
+                allVehicles,
+                allFleet,
+                allocations,
+                tripUpdates,
+                BUS_TYPE_ID,
+                null,
+                null,
+                null,
+                true,
+                [],
+                {},
+                [],
+                null,
+                true,
+            );
+            expect(getVisibleVehicles.resultFunc(
+                filteredVehicles,
+                null,
+            )).to.eql({
+                [busUnscheduled.id]: busUnscheduled,
+                [busNotInService.id]: busNotInService,
             });
         });
     });

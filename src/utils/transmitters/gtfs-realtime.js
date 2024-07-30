@@ -24,6 +24,7 @@ const realTimeTrackingSubscription = `
             longitude
         }
         occupancyStatus
+        tags
     }
     tripUpdate
 }

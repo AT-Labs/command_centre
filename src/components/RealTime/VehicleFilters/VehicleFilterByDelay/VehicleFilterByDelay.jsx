@@ -10,7 +10,9 @@ import { mergeVehicleFilters } from '../../../../redux/actions/realtime/vehicles
 import {
     getVehiclesFilterIsShowingNIS,
     getVehiclesFilterShowingDelay,
+    getVehiclesFilterIsShowingUnscheduled,
 } from '../../../../redux/selectors/realtime/vehicles';
+import { useUnscheduledFilter } from '../../../../redux/selectors/appSettings';
 
 const SHOWING_DELAY = {
     EARLY: 'early',
@@ -20,8 +22,10 @@ const SHOWING_DELAY = {
 class VehicleFilterByDelay extends React.PureComponent {
     static propTypes = {
         isShowingNIS: PropTypes.bool.isRequired,
+        isShowingUnscheduled: PropTypes.bool.isRequired,
         mergeVehicleFilters: PropTypes.func.isRequired,
         showingDelay: PropTypes.object.isRequired,
+        useUnscheduledFilter: PropTypes.bool.isRequired,
     };
 
     state = {
@@ -41,6 +45,10 @@ class VehicleFilterByDelay extends React.PureComponent {
 
     handleShowingNISChange = (event) => {
         this.props.mergeVehicleFilters({ isShowingNIS: event.target.checked });
+    };
+
+    handleShowingUnscheduledChange = (event) => {
+        this.props.mergeVehicleFilters({ isShowingUnscheduled: event.target.checked });
     };
 
     updateLocalShowingDelay = (name, value, callback) => {
@@ -81,6 +89,17 @@ class VehicleFilterByDelay extends React.PureComponent {
                         />
                         <span className="font-weight-light">Not In Service</span>
                     </Label>
+                    { this.props.useUnscheduledFilter && (
+                        <Label check style={ { display: 'block' } }>
+                            <Input
+                                type="checkbox"
+                                checked={ this.props.isShowingUnscheduled }
+                                onChange={ this.handleShowingUnscheduledChange }
+                                className="vehicle-filter-by-status__checkbox"
+                            />
+                            <span className="font-weight-light">Unscheduled</span>
+                        </Label>
+                    ) }
                 </FormGroup>
             </>
         );
@@ -91,6 +110,8 @@ export default connect(
     state => ({
         showingDelay: getVehiclesFilterShowingDelay(state),
         isShowingNIS: getVehiclesFilterIsShowingNIS(state),
+        isShowingUnscheduled: getVehiclesFilterIsShowingUnscheduled(state),
+        useUnscheduledFilter: useUnscheduledFilter(state),
     }),
     { mergeVehicleFilters },
 )(VehicleFilterByDelay);

@@ -2,7 +2,7 @@ import L from 'leaflet';
 import { each, filter, get, isFunction, isMatch, isNull, keyBy, pick, sortBy } from 'lodash-es';
 import moment from 'moment';
 import { createSelector } from 'reselect';
-import VEHICLE_TYPE, { TRIP_DIRECTION_INBOUND, TRIP_DIRECTION_OUTBOUND, EXTENDED_ROUTE_TYPE } from '../../../types/vehicle-types';
+import VEHICLE_TYPE, { TRIP_DIRECTION_INBOUND, TRIP_DIRECTION_OUTBOUND, EXTENDED_ROUTE_TYPE, UNSCHEDULED_TAG } from '../../../types/vehicle-types';
 import { getAllocations, getVehicleAllocationByTrip, getVehicleAllocationLabelByTrip } from '../control/blocks';
 import { getAgencies } from '../static/agencies';
 import { getFleetState, getFleetVehicleAgencyId, getFleetVehicleType, getFleetVehicleTag } from '../static/fleet';
@@ -72,6 +72,7 @@ export const getVehiclesFilterIsShowingSchoolBus = createSelector(getVehiclesFil
 export const getVehiclesFilterShowingDelay = createSelector(getVehiclesFilters, filters => get(filters, 'showingDelay', {}));
 export const getVehiclesFilterShowingOccupancyLevels = createSelector(getVehiclesFilters, filters => get(filters, 'showingOccupancyLevels', []));
 export const getVehiclesFilterIsShowingNIS = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingNIS'));
+export const getVehiclesFilterIsShowingUnscheduled = createSelector(getVehiclesFilters, filters => get(filters, 'isShowingUnscheduled'));
 export const getVehiclesFilterShowingTags = createSelector(getVehiclesFilters, filters => get(filters, 'showingTags', []));
 export const getFilteredVehicles = createSelector(
     getAllVehicles,
@@ -87,6 +88,7 @@ export const getFilteredVehicles = createSelector(
     getVehiclesFilterShowingDelay,
     getVehiclesFilterShowingTags,
     getVehiclesFilterIsShowingSchoolBus,
+    getVehiclesFilterIsShowingUnscheduled,
     (
         allVehicles,
         allFleet,
@@ -101,6 +103,7 @@ export const getFilteredVehicles = createSelector(
         showingDelay,
         showingTags,
         isShowingSchoolBus,
+        showUnscheduled,
     ) => {
         const runningVehiclesWithAllocations = showNIS ? getVehiclesWithAllocations(allVehicles, allocations) : [];
         const visibleVehicles = filter(allVehicles, (vehicle) => {
@@ -110,7 +113,15 @@ export const getFilteredVehicles = createSelector(
             const fleetInfo = allFleet[id];
 
             if (!tripId) {
-                if (!showNIS) {
+                if (!showNIS && !showUnscheduled) {
+                    return false;
+                }
+
+                if (!showNIS && !vehicle.vehicle.tags?.includes(UNSCHEDULED_TAG)) {
+                    return false;
+                }
+
+                if (!showUnscheduled && vehicle.vehicle.tags?.includes(UNSCHEDULED_TAG)) {
                     return false;
                 }
 

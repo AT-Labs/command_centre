@@ -34,6 +34,7 @@ class VehicleFilters extends React.PureComponent {
     clearFilters = () => this.props.mergeVehicleFilters({
         routeType: null,
         isShowingNIS: false,
+        isShowingUnscheduled: false,
         showingDelay: {},
         showingOccupancyLevels: [],
         showingTags: [],

@@ -4,6 +4,8 @@ $bus-color:   #3F9DB5;
 $train-color: #3F51B5;
 $ferry-color:  map-get($theme-colors, "at-dark-green");
 
+$unscheduled-color: #CC5500;
+
 @mixin vehicle-marker-color($element) {
     & .icon-wrapper {
         border: 3px solid white;
@@ -63,6 +65,9 @@ $ferry-color:  map-get($theme-colors, "at-dark-green");
     @if $element == div {
         & .vehicle-type-bus {
             background-color: $bus-color;
+            &.unscheduled {
+                background-color: $unscheduled-color;
+            }
         }
         & .vehicle-type-train {
             background-color: $train-color;

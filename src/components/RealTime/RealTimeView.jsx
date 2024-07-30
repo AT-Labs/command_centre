@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { filter } from 'lodash-es';
+import { filter, map, slice } from 'lodash-es';
 
 import { getSearchTerms } from '../../redux/selectors/search';
 import { addressSelected } from '../../redux/actions/realtime/detail/address';
@@ -36,7 +36,7 @@ import ErrorAlerts from './ErrorAlert/ErrorAlerts';
 import Feedback from './Feedback/Feedback';
 import { updateRealTimeDetailView } from '../../redux/actions/navigation';
 import { addSelectedSearchResult, removeSelectedSearchResult, clearSelectedSearchResult } from '../../redux/actions/realtime/detail/common';
-import { formatRealtimeDetailListItemKey } from '../../utils/helpers';
+import { formatRealtimeDetailListItemKey, addOffsetToIncident } from '../../utils/helpers';
 import VIEW_TYPE from '../../types/view-types';
 import { recenterMap, updateHoveredEntityKey } from '../../redux/actions/realtime/map';
 import { getBoundsToFit, getMaxZoom, getShouldOffsetForSidePanel, getHoveredEntityKey, getMapRecenterStatus } from '../../redux/selectors/realtime/map';
@@ -80,7 +80,13 @@ function RealTimeView(props) {
         try {
             const data = await incidentsApi.fetchIncidents();
             const filteredIncidents = filter(data, incident => incident.type.category !== Category.RoadConditions && incident.type.category !== Category.RoadMaintenance);
-            setIncidents(filteredIncidents);
+            const result = map(filteredIncidents, (incident, index) => {
+                if (slice(filteredIncidents, index + 1).find(i => i.openlr === incident.openlr && i.situationRecordsId !== incident.situationRecordsId)) {
+                    return addOffsetToIncident(incident);
+                }
+                return incident;
+            });
+            setIncidents(result);
         } catch (error) {
             setIncidents([]);
         }

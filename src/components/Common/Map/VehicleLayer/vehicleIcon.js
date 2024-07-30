@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import { getVehicleBearing, getVehicleRouteType, getVehicleRouteName } from '../../../../redux/selectors/realtime/vehicles';
-import VEHICLE_TYPE from '../../../../types/vehicle-types';
+import VEHICLE_TYPE, { UNSCHEDULED_TAG, UNSCHEDULED_VEHICLE_CLASS } from '../../../../types/vehicle-types';
 import VEHICLE_OCCUPANCY_STATUS_TYPE from '../../../../types/vehicle-occupancy-status-types';
 
 const getVehicleIconWithoutRouteName = (vehicleTypeClass, opacityClass) => new L.DivIcon({
@@ -29,6 +29,12 @@ export const getVehicleIcon = (vehicle, opacityClass) => {
     const vehicleOccupancyStatusClass = vehicle.vehicle.occupancyStatus === standingRoomOnly
         || vehicle.vehicle.occupancyStatus === full
         ? 'vehicle-occupancy-highlight' : '';
-    const routeName = getVehicleRouteName(vehicle) || '';
-    return routeTypeId ? getVehicleIconWithRouteName(newBearing, `${vehicleTypeClass} ${vehicleOccupancyStatusClass} ${opacityClass}`, routeName) : getVehicleIconWithoutRouteName(vehicleTypeClass, opacityClass);
+    let routeName = getVehicleRouteName(vehicle) || '';
+    let unscheduledVehicleClass = '';
+    if (routeName === UNSCHEDULED_TAG) {
+        unscheduledVehicleClass = UNSCHEDULED_VEHICLE_CLASS;
+        routeName = '';
+    }
+
+    return routeTypeId ? getVehicleIconWithRouteName(newBearing, `${vehicleTypeClass} ${unscheduledVehicleClass} ${vehicleOccupancyStatusClass} ${opacityClass}`, routeName) : getVehicleIconWithoutRouteName(vehicleTypeClass, opacityClass);
 };

@@ -16,6 +16,7 @@ import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
 import VIEW_TYPE from '../../../../../types/view-types';
 import VehicleCapacityOccupancy from './VehicleCapacityOccupancy';
 import './VehicleDetails.scss';
+import { UNSCHEDULED_TAG } from '../../../../../types/vehicle-types';
 
 const VehicleDetails = (props) => {
     const { vehicleDetail, vehicleFleetInfo, vehicleAllocations } = props;
@@ -40,6 +41,14 @@ const VehicleDetails = (props) => {
         props.addSelectedSearchResult(routeSelectedSearchResult);
         props.routeChecked(routeSelectedSearchResult);
         props.routeSelected(routeSelectedSearchResult);
+    };
+
+    const nonTripDescription = () => {
+        if (vehicleDetail.tags?.includes(UNSCHEDULED_TAG)) {
+            return 'Unscheduled Service';
+        }
+
+        return 'Not In Service';
     };
 
     const vehicleLabel = getJoinedVehicleLabel(vehicleDetail, vehicleAllocations) || getFleetVehicleLabel(vehicleFleetInfo);
@@ -77,7 +86,7 @@ const VehicleDetails = (props) => {
                         ['Trip ID:', tripId],
 
                     ]) || [
-                        ['Description:', 'Not In Service'],
+                        ['Description:', nonTripDescription()],
                         ['Operator:', agencyName],
                         ...(vehicleTag ? [['Tags:', vehicleTag]] : []),
                     ]).map(r => createDetailRow(...r))

@@ -29,6 +29,9 @@ export default {
 
 };
 
+export const UNSCHEDULED_TAG = 'UNSCHEDULED';
+export const UNSCHEDULED_VEHICLE_CLASS = 'unscheduled';
+
 export const EXTENDED_ROUTE_TYPE = {
     schoolBus: 712,
 };

@@ -16,6 +16,7 @@ export const INIT_STATE = {
         isShowingDirectionOutbound: true,
         isShowingSchoolBus: false,
         isShowingNIS: false,
+        isShowingUnscheduled: false,
         showingDelay: {},
         showingOccupancyLevels: [],
         showingTags: [],

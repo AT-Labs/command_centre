@@ -1,6 +1,6 @@
 import wellknown from 'wellknown';
 import moment from 'moment-timezone';
-import { isEmpty, intersectionWith, get, has, isEqual } from 'lodash-es';
+import { isEmpty, intersectionWith, get, has, isEqual, cloneDeep } from 'lodash-es';
 import isURL from 'validator/lib/isURL';
 import crypto from 'crypto';
 import { fetchWithAuthHeader } from '../auth';
@@ -186,4 +186,20 @@ export const getIconNameByIncidentCategory = (category) => {
         [Category.Unknown]: 'unknown',
     };
     return categoryToIconFileNameMap[category] ?? 'unknown';
+};
+
+export const getRandomPointWithinRadius = (x, y, radius) => {
+    const angle = (crypto.randomBytes(4).readUInt32BE(0) / 0xFFFFFFFF) * 2 * Math.PI;
+    const distance = Math.sqrt(crypto.randomBytes(4).readUInt32BE(0) / 0xFFFFFFFF) * radius;
+    return [x + distance * Math.cos(angle), y + distance * Math.sin(angle)];
+};
+
+export const addOffsetToIncident = (incident) => {
+    const incidentCopy = cloneDeep(incident);
+    if (!incidentCopy.isPoint && get(incidentCopy, 'features[0].coordinates[0]', []).length > 0) {
+        const newCoordinates = getRandomPointWithinRadius(get(incidentCopy, 'features[0].coordinates[0][0]', 0), get(incidentCopy, 'features[0].coordinates[0][1]', 0), 0.0001);
+        incidentCopy.features[0].coordinates[0] = newCoordinates;
+        return incidentCopy;
+    }
+    return incident;
 };

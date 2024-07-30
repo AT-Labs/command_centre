@@ -13,6 +13,8 @@ import {
     parseIncidentEndTime,
     getIconNameByIncidentCategory,
     getAgencyDepotsOptions,
+    getRandomPointWithinRadius,
+    addOffsetToIncident,
 } from './helpers';
 import { Category } from '../types/incidents';
 
@@ -310,5 +312,72 @@ describe('getIconNameByIncidentCategory', () => {
 
     it('should return "unknown" for an undefined category', () => {
         expect(getIconNameByIncidentCategory('NonExistentCategory')).to.equal('unknown');
+    });
+});
+
+describe('getRandomPointWithinRadius', () => {
+    it('should return a point within the specified radius', () => {
+        const x = 0;
+        const y = 0;
+        const radius = 5;
+
+        for (let i = 0; i < 1000; i++) {
+            const [xPoint, yPoint] = getRandomPointWithinRadius(x, y, radius);
+            const distance = Math.sqrt((xPoint - x) ** 2 + (yPoint - y) ** 2);
+            expect(distance).to.be.at.most(radius);
+        }
+    });
+});
+
+describe('addOffsetToIncident', () => {
+    it('should add an offset to the incident coordinates if conditions are met', () => {
+        const incident = {
+            isPoint: false,
+            features: [
+                {
+                    coordinates: [
+                        [10, 20],
+                    ],
+                },
+            ],
+        };
+
+        const modifiedIncident = addOffsetToIncident(incident);
+        expect(modifiedIncident).to.not.deep.equal(incident);
+        const originalCoordinates = incident.features[0].coordinates[0];
+        const newCoordinates = modifiedIncident.features[0].coordinates[0];
+
+        const distance = Math.sqrt((newCoordinates[0] - originalCoordinates[0]) ** 2 + (newCoordinates[1] - originalCoordinates[1]) ** 2);
+        expect(distance).to.be.at.most(0.0001);
+    });
+
+    it('should return the same incident if it is a point', () => {
+        const incident = {
+            isPoint: true,
+            features: [
+                {
+                    coordinates: [
+                        [10, 20],
+                    ],
+                },
+            ],
+        };
+
+        const modifiedIncident = addOffsetToIncident(incident);
+        expect(modifiedIncident).to.deep.equal(incident);
+    });
+
+    it('should return the same incident if coordinates are not properly defined', () => {
+        const incident = {
+            isPoint: false,
+            features: [
+                {
+                    coordinates: [],
+                },
+            ],
+        };
+
+        const modifiedIncident = addOffsetToIncident(incident);
+        expect(modifiedIncident).to.deep.equal(incident);
     });
 });

@@ -20,5 +20,6 @@
     "useIncidentLayer": "false",
     "useBulkStopsUpdate": "false",
     "useRemoveStops": "false",
-    "useRoutesTripsPreferences": "false"
+    "useRoutesTripsPreferences": "false",
+    "useUnscheduledFilter": "false"
 }
