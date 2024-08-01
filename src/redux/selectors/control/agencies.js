@@ -1,4 +1,4 @@
-import { result } from 'lodash-es';
+import { result, isEmpty } from 'lodash-es';
 import { createSelector } from 'reselect';
 import { getOperatorPermissions } from '../user';
 
@@ -8,3 +8,4 @@ export const getRestrictedAgencies = createSelector(getAgencies, getOperatorPerm
     const filteredAgency = agencies.filter(agency => operatorPermissions.includes(agency.agencyId));
     return filteredAgency.map(agency => ({ value: agency.agencyId, label: agency.agencyName }));
 });
+export const hasAgenciesLoaded = createSelector(getAgencies, agencies => !isEmpty(agencies));

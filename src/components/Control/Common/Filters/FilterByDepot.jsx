@@ -38,6 +38,15 @@ class FilterByDepot extends React.Component {
 
     componentDidMount() { if (isEmpty(this.props.agencies)) this.props.retrieveAgencies(); }
 
+    getSelectedValues() {
+        if (isEmpty(this.props.agencies)) {
+            return [];
+        }
+        return getAgencyDepotsOptions(this.props.selectedAgency, this.props.agencies)
+            .filter(({ value }) => this.props.selectedOptions.includes(value))
+            .map(({ value }) => value);
+    }
+
     render() {
         return (
             <section className={ `control-search ${this.props.className}` }>
@@ -50,7 +59,7 @@ class FilterByDepot extends React.Component {
                     id={ this.props.id }
                     theme={ SearchTheme }
                     options={ getAgencyDepotsOptions(this.props.selectedAgency, this.props.agencies) }
-                    selectedValues={ isEmpty(this.props.agencies) ? [] : this.props.selectedOptions }
+                    selectedValues={ this.getSelectedValues() }
                     onSelectionChange={ this.props.onSelection }
                     disabled={ !this.props.selectedAgency }
                     displayProps={ {

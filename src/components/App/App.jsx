@@ -46,6 +46,7 @@ import ERROR_TYPE from '../../types/error-types';
 import { getApplicationSettings } from '../../redux/actions/appSettings';
 import { useRoutesTripsPreferences } from '../../redux/selectors/appSettings';
 import { retrieveAgencies } from '../../redux/actions/control/agencies';
+import { hasAgenciesLoaded } from '../../redux/selectors/control/agencies';
 
 import 'flatpickr/dist/flatpickr.css';
 
@@ -67,6 +68,7 @@ export function App(props) {
             props.getFerries(),
             props.setCache(),
             props.getStops(),
+            props.retrieveAgencies(),
         ]).then(() => {
             props.updateUserProfile(getAuthUser());
             props.fetchBlocksViewPermission();
@@ -95,7 +97,6 @@ export function App(props) {
 
     useEffect(() => {
         if (props.useRoutesTripsPreferences) {
-            props.retrieveAgencies();
             props.fetchPreferences();
         }
     }, [props.useRoutesTripsPreferences]);
@@ -143,7 +144,7 @@ App.propTypes = {
 
 export default connect(state => ({
     hasError: isAnyError(state),
-    isInitLoading: !hasPrerequisiteDataLoaded(state),
+    isInitLoading: !hasPrerequisiteDataLoaded(state) || !hasAgenciesLoaded(state),
     activeMainView: getActiveMainView(state),
     useRoutesTripsPreferences: useRoutesTripsPreferences(state),
 }), {

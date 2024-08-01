@@ -8,12 +8,15 @@ import { BUS_TYPE_ID } from '../../../../types/vehicle-types';
 import { getDefaultRoutesTripsDatagridConfig } from '../../../../redux/selectors/datagrid';
 import { updateRoutesTripsDatagridConfig } from '../../../../redux/actions/datagrid';
 import { DEFAULT_ROUTES_TRIPS_DATAGRID_CONFIG } from '../../../../redux/reducers/datagrid';
+import { updateUserPreferences } from '../../../../utils/transmitters/command-centre-config-api';
 
 const ClearUserPreferencesModal = (props) => {
     const clearPreferences = () => {
         const { columns } = props.defaultRoutesTripsDatagridConfig;
         props.mergeRouteFilters({ routeType: BUS_TYPE_ID, agencyId: '', depotsIds: [] }, false, false, true);
-        props.updateRoutesTripsDatagridConfig({ ...DEFAULT_ROUTES_TRIPS_DATAGRID_CONFIG, columns }, true);
+        props.updateRoutesTripsDatagridConfig({ ...DEFAULT_ROUTES_TRIPS_DATAGRID_CONFIG, columns }, false);
+        const newColumns = columns?.map(({ align, field, hide, width }) => ({ align, field, hide, width }));
+        updateUserPreferences({ routesTripsDatagrid: { ...DEFAULT_ROUTES_TRIPS_DATAGRID_CONFIG, ...(newColumns ? { columns: newColumns } : undefined) } });
         props.onClose();
     };
 

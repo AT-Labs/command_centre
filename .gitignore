@@ -15,3 +15,5 @@ cypress/screenshots
 storybook-static
 __opensource__
 .DS_Store
+# Ignore Jest snapshot files
+*.snap

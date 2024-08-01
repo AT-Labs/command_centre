@@ -36,6 +36,7 @@ const componentPropsMock = {
     fetchNotificationsViewPermission: jest.fn(),
     getApplicationSettings: jest.fn(),
     getStops: jest.fn(),
+    retrieveAgencies: jest.fn(),
 };
 
 const setup = (customProps) => {
@@ -51,6 +52,7 @@ const mockResolveStaticData = () => {
     componentPropsMock.getFerries.mockResolvedValueOnce([]);
     componentPropsMock.setCache.mockResolvedValueOnce([]);
     componentPropsMock.getStops.mockResolvedValueOnce([]);
+    componentPropsMock.retrieveAgencies.mockResolvedValueOnce([]);
 };
 
 describe('<App />', () => {
@@ -83,6 +85,7 @@ describe('<App />', () => {
             expect(componentPropsMock.getFerries).toHaveBeenCalled();
             expect(componentPropsMock.setCache).toHaveBeenCalled();
             expect(componentPropsMock.getStops).toHaveBeenCalled();
+            expect(componentPropsMock.retrieveAgencies).toHaveBeenCalled();
         });
     });
 });

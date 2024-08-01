@@ -380,8 +380,9 @@ export const TripsDataGrid = (props) => {
                 .then((preferences) => {
                     const { routesTripsDatagrid } = preferences;
                     if (routesTripsDatagrid) {
-                        const { columns, ...rest } = routesTripsDatagrid;
+                        const { columns, density, ...rest } = routesTripsDatagrid;
                         const updatedColumns = mergeDatagridColumns(GRID_COLUMNS, columns);
+                        if (density) props.updateRoutesTripsDatagridConfig({ density }, false);
                         props.updateRoutesTripsDatagridConfig({ ...rest, ...(updatedColumns ? { columns: updatedColumns } : undefined) }, false);
                     }
                     setIsSavedDatagridConfigReady(true);
@@ -390,8 +391,11 @@ export const TripsDataGrid = (props) => {
     }, []);
 
     const updateDatagridConfigHandler = (config) => {
-        const isOnlyDefaultFilterModelConfig = isEqual(config, { filterModel: { items: [], linkOperator: 'and' } });
-        props.updateRoutesTripsDatagridConfig(config, props.useRoutesTripsPreferences && isSavedDatagridConfigReadyRef.current && !isOnlyDefaultFilterModelConfig);
+        if (isEqual(config, { filterModel: { items: [], linkOperator: 'and' } }) && isSavedDatagridConfigReadyRef.current) {
+            props.updateRoutesTripsDatagridConfig(config, props.useRoutesTripsPreferences);
+        } else {
+            props.updateRoutesTripsDatagridConfig(config, props.useRoutesTripsPreferences && isSavedDatagridConfigReadyRef.current);
+        }
     };
 
     return (
