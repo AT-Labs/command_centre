@@ -10,13 +10,10 @@ import {
     getExpiredMessageRowClassName,
     generateUniqueID,
     getTimesFromStop,
-    parseIncidentEndTime,
-    getIconNameByIncidentCategory,
     getAgencyDepotsOptions,
     getRandomPointWithinRadius,
     addOffsetToIncident,
 } from './helpers';
-import { Category } from '../types/incidents';
 
 const time = '2021-11-16 18:43:30.000Z';
 const timestamp = 1637088210;
@@ -254,22 +251,6 @@ describe('getTimesFromStop', () => {
     });
 });
 
-describe('parseIncidentEndTime', () => {
-    it('should return Unknown when end time is undifined', () => {
-        expect(parseIncidentEndTime(undefined)).to.equal('Unknown');
-    });
-
-    it('should return Unknown when end time is invalid', () => {
-        expect(parseIncidentEndTime('invalid date')).to.equal('Unknown');
-    });
-
-    it('should return Unknown when end time is equal to current date', () => {
-        const currentDate = '2024-07-17T02:30:37.000Z';
-        Date.now = jest.fn(() => new Date(currentDate));
-        expect(parseIncidentEndTime(currentDate)).to.equal('Unknown');
-    });
-});
-
 describe('getAgencyDepotsOptions', () => {
     it('should return an empty array when selectedAgency is undefined', () => {
         assert.deepStrictEqual(getAgencyDepotsOptions(undefined, agencies), []);
@@ -294,24 +275,6 @@ describe('getAgencyDepotsOptions', () => {
                 value: '32',
             },
         ]);
-    });
-});
-
-describe('getIconNameByIncidentCategory', () => {
-    it('should return the correct icon name for each category', () => {
-        expect(getIconNameByIncidentCategory(Category.Accidents)).to.equal('accidents');
-        expect(getIconNameByIncidentCategory(Category.WeatherEnvironmentalConditions)).to.equal('weather_environmental_conditions');
-        expect(getIconNameByIncidentCategory(Category.RoadConditions)).to.equal('road_conditions');
-        expect(getIconNameByIncidentCategory(Category.Emergencies)).to.equal('emergencies');
-        expect(getIconNameByIncidentCategory(Category.TrafficJams)).to.equal('traffic_jams');
-        expect(getIconNameByIncidentCategory(Category.SpecialEvents)).to.equal('special_events');
-        expect(getIconNameByIncidentCategory(Category.EnvironmentalHazards)).to.equal('environmental_hazards');
-        expect(getIconNameByIncidentCategory(Category.RoadMaintenance)).to.equal('road_maintenance');
-        expect(getIconNameByIncidentCategory(Category.Unknown)).to.equal('unknown');
-    });
-
-    it('should return "unknown" for an undefined category', () => {
-        expect(getIconNameByIncidentCategory('NonExistentCategory')).to.equal('unknown');
     });
 });
 

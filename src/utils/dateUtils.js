@@ -19,3 +19,18 @@ export const getDatePickerOptions = (minimumDate) => {
         dateFormat: 'd/m/Y',
     };
 };
+
+export const formatSeconds = (seconds) => {
+    if (seconds) {
+        if (seconds < 60) {
+            return `${seconds} seconds`;
+        }
+        if (seconds < 3600) {
+            const minutes = Math.floor(seconds / 60);
+            return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+        }
+        const hours = Math.floor(seconds / 3600);
+        return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+    }
+    return undefined;
+};

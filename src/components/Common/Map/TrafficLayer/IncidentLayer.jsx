@@ -1,14 +1,13 @@
 import { isEmpty } from 'lodash-es';
 import PropTypes from 'prop-types';
 import L from 'leaflet';
-import moment from 'moment';
 import React, { useRef, useState, useEffect } from 'react';
 import { FeatureGroup, Polyline, Tooltip } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { generateUniqueID, parseIncidentEndTime, getIconNameByIncidentCategory } from '../../../../utils/helpers';
-import IconMarker from '../../IconMarker/IconMarker';
-import { dateTimeFormat } from '../../../../utils/dateUtils';
+import { generateUniqueID } from '../../../../utils/helpers';
+import IncidentMarker from './IncidentMarker';
 import { INCIDENTS_MARKER_CLUSTER_FOCUS_ZOOM } from '../../../../constants/traffic';
+import IncidentDetails from './IncidentDetails';
 
 export const IncidentLayer = (props) => {
     const { data, weight } = props;
@@ -30,40 +29,14 @@ export const IncidentLayer = (props) => {
 
     const handleGetClusterIcon = cluster => new L.DivIcon({
         className: 'incident-market-cluster',
-        html: `<div style="background-color: #E30084; opacity: 0.5; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; color: white;">${cluster.getChildCount()}</div>`,
+        html: `<div style="background-color: #D52923; opacity: 0.7; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; color: white;">${cluster.getChildCount()}</div>`,
     });
-
-    const parseValidityStatus = (validityStatus) => {
-        if (validityStatus === 'definedByValidityTimeSpec') {
-            return 'Valid until incident end time';
-        }
-        return validityStatus;
-    };
 
     const getIconPoint = (isPoint, coordinates) => {
         if (isPoint) {
             return coordinates;
         }
         return [coordinates[0][1], coordinates[0][0]];
-    };
-
-    const getShowLabel = (label, value) => {
-        if (value) {
-            return (
-                <>
-                    <span>
-                        <strong>
-                            {label}
-                            :
-                            {' '}
-                        </strong>
-                        {value}
-                    </span>
-                    <br />
-                </>
-            );
-        }
-        return <></>;
     };
 
     const getPolyline = (pCoordinates, pWeight) => (
@@ -77,30 +50,17 @@ export const IncidentLayer = (props) => {
     );
 
     const getIconMarket = (incident, feature) => (
-        <IconMarker
+        <IncidentMarker
             key={ incident.openlr }
             location={ getIconPoint(incident.isPoint, feature.coordinates) }
-            imageName={ getIconNameByIncidentCategory(incident.type.category) }
-            size={ 45 }
+            category={ incident.type.category }
             onClick={ () => !incident.isPoint && handleMarkerClick(feature.coordinates) }
             className={ incident.situationRecordsId }
         >
-            <Tooltip direction="top">
-                <h4>Incident information</h4>
-                {getShowLabel('Status', parseValidityStatus(incident.validity.status))}
-                {getShowLabel('Probability of occurrence', incident.probabilityOfOccurrence)}
-                {getShowLabel('Type', incident.type.name)}
-                {getShowLabel('Category', incident.type.category)}
-                {getShowLabel('Description', incident.type.description)}
-                {getShowLabel('From', incident.from)}
-                {getShowLabel('To', incident.to)}
-                {getShowLabel('Average speed(Km/h)', incident.averageSpeed)}
-                {getShowLabel('Delay time(sec)', incident.delayTime)}
-                {getShowLabel('Start time', moment(incident.validity.overallStartTime).format(dateTimeFormat))}
-                {getShowLabel('End time', parseIncidentEndTime(incident.validity.overallEndTime))}
-                {getShowLabel('General public comment', incident.generalPublicComment)}
+            <Tooltip direction="top" offset={ [0, -50] }>
+                <IncidentDetails incident={ incident } />
             </Tooltip>
-        </IconMarker>
+        </IncidentMarker>
     );
 
     const renderIncidentFeatures = () => data.map(incident => incident.features?.map(feature => (
