@@ -12,3 +12,15 @@
         color: map-get($theme-colors, "white");
     }
 }
+
+.feedback-btn-bottom {
+    right: 270px;
+    bottom: 0;
+    z-index: 1000;
+    color: map-get($theme-colors, "white");
+
+    &:hover {
+        text-decoration: none;
+        color: map-get($theme-colors, "white");
+    }
+}

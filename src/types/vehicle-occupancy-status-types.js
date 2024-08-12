@@ -40,4 +40,12 @@ export const occupancyStatusToMessage = (occupancyLevel) => {
     }
 };
 
+export const VEHICLE_OCCUPANCY_STATUS_DESCRIPTIONS = {
+    [VEHICLE_OCCUPANCY_STATUS_TYPE.empty]: 'Currently empty',
+    [VEHICLE_OCCUPANCY_STATUS_TYPE.fewSeatsAvailable]: 'Currently a few seats available',
+    [VEHICLE_OCCUPANCY_STATUS_TYPE.manySeatsAvailable]: 'Currently many seats available',
+    [VEHICLE_OCCUPANCY_STATUS_TYPE.standingRoomOnly]: 'Currently standing room only',
+    [VEHICLE_OCCUPANCY_STATUS_TYPE.full]: 'Likely not picking up passengers',
+};
+
 export default VEHICLE_OCCUPANCY_STATUS_TYPE;

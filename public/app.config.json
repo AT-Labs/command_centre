@@ -21,5 +21,6 @@
     "useBulkStopsUpdate": "false",
     "useRemoveStops": "false",
     "useRoutesTripsPreferences": "false",
-    "useUnscheduledFilter": "false"
+    "useUnscheduledFilter": "false",
+    "useNewRealtimeMapFilters": "false"
 }

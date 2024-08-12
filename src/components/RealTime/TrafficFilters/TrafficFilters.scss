@@ -1,0 +1,74 @@
+@import '../../../assets/styles/variables';
+
+.traffic-filters-container {
+    width: 350px;
+    .layers-title,
+    .incident-filters-block {
+        border-bottom: 2.2px solid $at-bk-gray;
+        .layers-sub-title {
+            font-size: 1.1rem;
+        }
+        .contract-incident-items {
+            max-height: 170px;
+        }
+        .incident-items {
+            position: relative;
+            overflow: hidden;
+            input[type="checkbox"] {
+                width: 18px;
+                height: 18px;
+                position: relative;
+            }
+            .bottom-text {
+                width: 100%;
+                position: absolute;
+                bottom: 0;
+                height: 70px;
+                background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+            }
+            .show-all-text {
+                color: $at-shore;
+                font-size: .8rem;
+            }
+        }
+    }
+    .congestion-filters-block {
+        .layers-sub-title {
+            font-size: 1.1rem;
+        }
+        .taffic-level-items {
+            .sub-title {
+                font-size: 1.1rem;
+            }
+            input[type="checkbox"] {
+                width: 18px;
+                height: 18px;
+                position: relative;
+            }
+            .traffic-card {
+                width: 70px;
+                height: 15px;
+                margin-right: 5px;
+                border-radius: .25rem !important;
+            }
+            .high-traffic-card {
+                background-color: #D52A23;
+            }
+            .medium-traffic-card {
+                background-color: #B39B00;
+            }
+            .low-traffic-card {
+                background-color: #7AB639;
+            }
+        }
+    }
+    .traffic-filters-icon-container,
+    .vehicle-filters-icon-container {
+        height: 44px;
+        width: 50px;
+    }
+    #close-traffic-filters,
+    #close-vehicle-filters {
+        cursor: pointer;
+    }
+}

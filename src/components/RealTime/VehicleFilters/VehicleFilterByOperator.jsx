@@ -37,10 +37,12 @@ class VehicleFilterByOperator extends React.Component {
         selectedAgencyIds: PropTypes.arrayOf(PropTypes.string),
         routeType: PropTypes.number.isRequired,
         mergeVehicleFilters: PropTypes.func.isRequired,
+        className: PropTypes.string,
     };
 
     static defaultProps = {
         selectedAgencyIds: null,
+        className: '',
     };
 
     updateVehicleFilters = agencyIds => this.props.mergeVehicleFilters({ agencyIds });
@@ -82,7 +84,7 @@ class VehicleFilterByOperator extends React.Component {
                                 map(this.props.agencyOptions, (option, index) => (
                                     index > 0 && (
                                         <FormGroup check key={ option.value }>
-                                            <Label check>
+                                            <Label className={ this.props.className } check>
                                                 <Input
                                                     type="checkbox"
                                                     checked={

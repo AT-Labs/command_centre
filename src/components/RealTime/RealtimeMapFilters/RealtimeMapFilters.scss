@@ -1,0 +1,20 @@
+@import '../../../assets/styles/variables';
+
+.realtime-map-filters-container {
+    right: 10px;
+    top: 75px;
+    z-index: 1001;
+    font-size: .9rem;
+    max-height: calc(100vh - 165px);
+    overflow-y: auto;
+    .traffic-filters-icon-container:after {
+        content: '';
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 6px;
+        height: 6px;
+        background-color: $at-red;
+        border-radius: 50%;
+    }
+}

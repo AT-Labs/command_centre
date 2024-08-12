@@ -26,6 +26,13 @@ class VehicleFilterByDelay extends React.PureComponent {
         mergeVehicleFilters: PropTypes.func.isRequired,
         showingDelay: PropTypes.object.isRequired,
         useUnscheduledFilter: PropTypes.bool.isRequired,
+        className: PropTypes.string,
+        titleClassName: PropTypes.string,
+    };
+
+    static defaultProps = {
+        className: '',
+        titleClassName: '',
     };
 
     state = {
@@ -76,12 +83,13 @@ class VehicleFilterByDelay extends React.PureComponent {
         const { showingDelay } = this.state;
         return (
             <>
-                <div className="mt-3 mb-1">Status</div>
-                <DelayOptions range={ showingDelay.early } type={ SHOWING_DELAY.EARLY } onChange={ this.handleShowingDelayChange } />
-                <DelayOptions range={ showingDelay.late } type={ SHOWING_DELAY.LATE } onChange={ this.handleShowingDelayChange } />
+                <div className={ `mt-3 mb-1 ${this.props.titleClassName}` }>Status</div>
+                <DelayOptions className={ this.props.className } range={ showingDelay.early } type={ SHOWING_DELAY.EARLY } onChange={ this.handleShowingDelayChange } />
+                <DelayOptions className={ this.props.className } range={ showingDelay.late } type={ SHOWING_DELAY.LATE } onChange={ this.handleShowingDelayChange } />
                 <FormGroup check>
-                    <Label check>
+                    <Label className={ this.props.className } check>
                         <Input
+                            name="not-in-service"
                             type="checkbox"
                             checked={ this.props.isShowingNIS }
                             onChange={ this.handleShowingNISChange }
@@ -90,7 +98,7 @@ class VehicleFilterByDelay extends React.PureComponent {
                         <span className="font-weight-light">Not In Service</span>
                     </Label>
                     { this.props.useUnscheduledFilter && (
-                        <Label check style={ { display: 'block' } }>
+                        <Label className={ this.props.className } check style={ { display: 'block' } }>
                             <Input
                                 type="checkbox"
                                 checked={ this.props.isShowingUnscheduled }

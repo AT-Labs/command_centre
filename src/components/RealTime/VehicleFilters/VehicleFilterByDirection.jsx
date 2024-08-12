@@ -19,6 +19,11 @@ class VehicleFilterByDirection extends React.Component {
         isShowingSchoolBus: PropTypes.bool.isRequired,
         mergeVehicleFilters: PropTypes.func.isRequired,
         routeType: PropTypes.number.isRequired,
+        className: PropTypes.string,
+    };
+
+    static defaultProps = {
+        className: '',
     };
 
     handleShowingInboundChange = (event) => {
@@ -37,7 +42,7 @@ class VehicleFilterByDirection extends React.Component {
         return (
             <>
                 <FormGroup check>
-                    <Label check>
+                    <Label className={ this.props.className } check>
                         <Input
                             type="checkbox"
                             checked={ this.props.isShowingDirectionInbound }
@@ -48,7 +53,7 @@ class VehicleFilterByDirection extends React.Component {
                     </Label>
                 </FormGroup>
                 <FormGroup check>
-                    <Label check>
+                    <Label className={ this.props.className } check>
                         <Input
                             type="checkbox"
                             checked={ this.props.isShowingDirectionOutbound }
@@ -60,7 +65,7 @@ class VehicleFilterByDirection extends React.Component {
                 </FormGroup>
                 { this.props.routeType === BUS_TYPE_ID && (
                     <FormGroup check className="mt-3">
-                        <Label check>
+                        <Label className={ this.props.className } check>
                             <Input
                                 type="checkbox"
                                 checked={ this.props.isShowingSchoolBus }

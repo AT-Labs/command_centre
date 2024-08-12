@@ -1,0 +1,57 @@
+@import '../../../../assets/styles/variables';
+
+$animation-time: .5s;
+
+.vehicle-filters {
+    position: absolute;
+    right: 0;
+    height: 250px;
+    width: 300px;
+    padding: 0;
+    z-index: $zindex-dropdown;
+    transform: translate(100%, 0);
+
+    @include transition(width $animation-time ease);
+    @include transition(transform $animation-time ease);
+
+    &--is-active {
+        transform: translate(0, 0);
+
+        .arrow-icon {
+            transform: rotate(-180deg);
+        }
+    }
+
+    &__separator {
+        border-top: 0;
+        border-bottom: 1px solid $white;
+    }
+
+    .vehicle-filters-handle {
+        color: map-get($theme-colors, "black");
+        background-color: map-get($theme-colors, "white");
+        border: none;
+        margin: 0;
+        padding: 5px 3px;
+        white-space: nowrap;
+        position: absolute;
+        top: 100px;
+        left: 0;
+        transform: translate(-100%, 0);
+
+        span {
+            transform: rotate(-180deg);
+            writing-mode: vertical-rl;
+        }
+
+        .arrow-icon {
+            margin-left: -5px;
+            @include transition(transform $animation-time ease);
+        }
+    }
+
+    .vehicle-filters-content {
+        background-color: map-get($theme-colors, "white");
+        padding: 27px;
+    }
+}

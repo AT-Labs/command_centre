@@ -15,10 +15,12 @@ export default class DelayOptions extends React.PureComponent {
         range: PropTypes.arrayOf(PropTypes.number),
         onChange: PropTypes.func.isRequired,
         type: PropTypes.string.isRequired,
+        className: PropTypes.string,
     };
 
     static defaultProps = {
         range: null,
+        className: '',
     };
 
     handleRangeToggle = (e) => {
@@ -43,7 +45,7 @@ export default class DelayOptions extends React.PureComponent {
         const prettyRange = isCustomRange ? `${range[0]} to ${range[1]}` : '30 or more';
         return (
             <FormGroup check>
-                <Label check>
+                <Label className={ this.props.className } check>
                     <Input
                         type="checkbox"
                         name={ type }
@@ -65,7 +67,7 @@ export default class DelayOptions extends React.PureComponent {
                     )}
                 </Label>
                 {!!isShowingDelay && (
-                    <div className="mt-2 ml-3 mb-2">
+                    <div className="mt-2 ml-3 mb-2 delay-options-config">
                         <Label check>
                             <Input
                                 type="radio"

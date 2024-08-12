@@ -31,3 +31,7 @@ export const useBulkStopsUpdate = createSelector(getAppSettingsState, appSetting
 export const useRemoveStops = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRemoveStops') === 'true'));
 export const useRoutesTripsPreferences = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useRoutesTripsPreferences') === 'true'));
 export const useUnscheduledFilter = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useUnscheduledFilter') === 'true'));
+export const useNewRealtimeMapFilters = createSelector(
+    getAppSettingsState,
+    appSettingState => (result(appSettingState, 'useNewRealtimeMapFilters') === 'true'),
+);

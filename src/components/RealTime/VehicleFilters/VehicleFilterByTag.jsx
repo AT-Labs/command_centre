@@ -20,10 +20,10 @@ export const VehicleFilterByTag = (props) => {
 
     return (
         <>
-            <div className="mt-3 mb-1">Tags</div>
+            <div className={ `mt-3 mb-1 ${props.titleClassName}` }>Tags</div>
             {Object.values(VehicleTag).map(tag => (
                 <FormGroup key={ tag } check>
-                    <Label check>
+                    <Label className={ props.className } check>
                         <Input
                             type="checkbox"
                             name={ tag }
@@ -43,6 +43,13 @@ VehicleFilterByTag.propTypes = {
     mergeVehicleFilters: PropTypes.func.isRequired,
     showingTags: PropTypes.arrayOf(PropTypes.string).isRequired,
     useCAFMapFilter: PropTypes.bool.isRequired,
+    titleClassName: PropTypes.string,
+    className: PropTypes.string,
+};
+
+VehicleFilterByTag.defaultProps = {
+    titleClassName: '',
+    className: '',
 };
 
 export default connect(
