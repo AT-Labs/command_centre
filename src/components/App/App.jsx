@@ -21,7 +21,6 @@ import {
     fetchStopMessagingViewPermission,
     updateUserProfile,
     fetchNotificationsViewPermission,
-    fetchPreferences,
 } from '../../redux/actions/user';
 import { hasPrerequisiteDataLoaded, isAnyError } from '../../redux/selectors/activity';
 import { getActiveMainView } from '../../redux/selectors/navigation';
@@ -44,9 +43,6 @@ import './App.scss';
 import Header from './Header/Header';
 import ERROR_TYPE from '../../types/error-types';
 import { getApplicationSettings } from '../../redux/actions/appSettings';
-import { useRoutesTripsPreferences } from '../../redux/selectors/appSettings';
-import { retrieveAgencies } from '../../redux/actions/control/agencies';
-import { hasAgenciesLoaded } from '../../redux/selectors/control/agencies';
 
 import 'flatpickr/dist/flatpickr.css';
 
@@ -68,7 +64,6 @@ export function App(props) {
             props.getFerries(),
             props.setCache(),
             props.getStops(),
-            props.retrieveAgencies(),
         ]).then(() => {
             props.updateUserProfile(getAuthUser());
             props.fetchBlocksViewPermission();
@@ -94,12 +89,6 @@ export function App(props) {
         });
         props.getApplicationSettings();
     }, []);
-
-    useEffect(() => {
-        if (props.useRoutesTripsPreferences) {
-            props.fetchPreferences();
-        }
-    }, [props.useRoutesTripsPreferences]);
 
     return (
         <div className="app">
@@ -137,16 +126,12 @@ App.propTypes = {
     fetchNotificationsViewPermission: PropTypes.func.isRequired,
     getApplicationSettings: PropTypes.func.isRequired,
     getStops: PropTypes.func.isRequired,
-    fetchPreferences: PropTypes.func.isRequired,
-    useRoutesTripsPreferences: PropTypes.bool.isRequired,
-    retrieveAgencies: PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
     hasError: isAnyError(state),
-    isInitLoading: !hasPrerequisiteDataLoaded(state) || !hasAgenciesLoaded(state),
+    isInitLoading: !hasPrerequisiteDataLoaded(state),
     activeMainView: getActiveMainView(state),
-    useRoutesTripsPreferences: useRoutesTripsPreferences(state),
 }), {
     setCache,
     startPollingSiteStatus,
@@ -167,6 +152,4 @@ export default connect(state => ({
     fetchNotificationsViewPermission,
     getApplicationSettings,
     getStops,
-    fetchPreferences,
-    retrieveAgencies,
 })(App);

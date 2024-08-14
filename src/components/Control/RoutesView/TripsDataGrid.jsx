@@ -40,6 +40,7 @@ import { useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPr
 import { getUserPreferences } from '../../../utils/transmitters/command-centre-config-api';
 import { updateRoutesTripsDatagridConfig, updateDefaultRoutesTripsDatagridConfig } from '../../../redux/actions/datagrid';
 import { getRoutesTripsDatagridConfig } from '../../../redux/selectors/datagrid';
+import { mergeRouteFilters } from '../../../redux/actions/control/routes/filters';
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
 
@@ -78,6 +79,11 @@ export const TripsDataGrid = (props) => {
     const isDateServiceTodayOrTomorrow = () => moment(props.serviceDate).isBetween(moment(), moment().add(1, 'd'), 'd', '[]');
     const [isSavedDatagridConfigReady, setIsSavedDatagridConfigReady] = useState(false);
     const isSavedDatagridConfigReadyRef = useRef(isSavedDatagridConfigReady);
+    const getAgenciesRef = useRef(() => props.agencies);
+
+    useEffect(() => {
+        getAgenciesRef.current = () => props.agencies;
+    }, [props.agencies]);
 
     const renderIconColumnContent = ({ row, api }) => {
         let iconColor = '';
@@ -171,10 +177,10 @@ export const TripsDataGrid = (props) => {
             width: 250,
             type: 'singleSelect',
             valueGetter: ({ row }) => {
-                const agencyName = props.agencies.find(agency => agency.agencyId === get(row.tripInstance, 'agencyId'))?.agencyName;
+                const agencyName = getAgenciesRef.current().find(agency => agency.agencyId === get(row.tripInstance, 'agencyId'))?.agencyName;
                 return agencyName || '';
             },
-            valueOptions: props.agencies.map(agency => ({ value: agency.agencyId, label: agency.agencyName })),
+            valueOptions: getAgenciesRef.current().map(agency => ({ value: agency.agencyId, label: agency.agencyName })),
             filterOperators: getGridSingleSelectOperators(true).filter(
                 operator => operator.value === 'is',
             ),
@@ -187,11 +193,11 @@ export const TripsDataGrid = (props) => {
             headerName: 'Depot',
             width: 250,
             valueGetter: ({ row }) => {
-                const depots = props.agencies.map(agency => agency.depots).flat();
+                const depots = getAgenciesRef.current().map(agency => agency.depots).flat();
                 const depotName = depots.find(depot => depot.depotId === get(row.tripInstance, 'depotId'))?.depotName;
                 return depotName || '';
             },
-            valueOptions: props.agencies.map(agency => agency.depots).flat().map(depot => ({ value: depot.depotId, label: depot.depotName })),
+            valueOptions: getAgenciesRef.current().map(agency => agency.depots).flat().map(depot => ({ value: depot.depotId, label: depot.depotName })),
             filterOperators: getGridSingleSelectOperators(true).filter(
                 operator => operator.value === 'isAnyOf',
             ),
@@ -378,12 +384,15 @@ export const TripsDataGrid = (props) => {
             props.updateDefaultRoutesTripsDatagridConfig({ columns: GRID_COLUMNS });
             getUserPreferences()
                 .then((preferences) => {
-                    const { routesTripsDatagrid } = preferences;
+                    const { routesTripsDatagrid, routesFilters } = preferences;
                     if (routesTripsDatagrid) {
                         const { columns, density, ...rest } = routesTripsDatagrid;
                         const updatedColumns = mergeDatagridColumns(GRID_COLUMNS, columns);
                         if (density) props.updateRoutesTripsDatagridConfig({ density }, false);
                         props.updateRoutesTripsDatagridConfig({ ...rest, ...(updatedColumns ? { columns: updatedColumns } : undefined) }, false);
+                    }
+                    if (routesFilters) {
+                        props.mergeRouteFilters({ ...routesFilters }, false, true);
                     }
                     setIsSavedDatagridConfigReady(true);
                 });
@@ -450,6 +459,7 @@ TripsDataGrid.propTypes = {
     useRoutesTripsFilterCollapse: PropTypes.bool.isRequired,
     useRoutesTripsPreferences: PropTypes.bool.isRequired,
     updateDefaultRoutesTripsDatagridConfig: PropTypes.func.isRequired,
+    mergeRouteFilters: PropTypes.func.isRequired,
 };
 
 TripsDataGrid.defaultProps = {
@@ -476,6 +486,13 @@ export default connect(
         useRoutesTripsPreferences: useRoutesTripsPreferences(state),
     }),
     {
-        selectSingleTrip, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances, updateRoutesTripsDatagridConfig, updateDefaultRoutesTripsDatagridConfig,
+        selectSingleTrip,
+        selectTrips,
+        selectAllTrips,
+        filterTripInstances,
+        updateActiveTripInstances,
+        updateRoutesTripsDatagridConfig,
+        updateDefaultRoutesTripsDatagridConfig,
+        mergeRouteFilters,
     },
 )(TripsDataGrid);

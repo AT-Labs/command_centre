@@ -1,4 +1,4 @@
-import { isArray, isEmpty, find } from 'lodash-es';
+import { isArray, isEmpty, find, merge } from 'lodash-es';
 
 export const mergeDatagridColumns = (oldDatagridColumns, newDatagridColumns) => {
     if (isArray(newDatagridColumns) && !isEmpty(newDatagridColumns) && isArray(oldDatagridColumns) && !isEmpty(oldDatagridColumns)) {
@@ -8,10 +8,7 @@ export const mergeDatagridColumns = (oldDatagridColumns, newDatagridColumns) => 
                     field: column.field,
                 });
                 if (foundColumn) {
-                    return {
-                        ...foundColumn,
-                        ...column,
-                    };
+                    return merge({}, foundColumn, column);
                 }
                 return null;
             })
