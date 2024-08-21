@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 import { Dialog, DialogContent, IconButton } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-
 import VIEW_TYPE from '../../../types/view-types';
 import TableTitle from '../Common/ControlTable/TableTitle';
 import Filters from './Filters/Filters';
@@ -32,7 +31,7 @@ import {
     getRouteVariantsLoadingState, getFilteredRouteVariantsTotal, getAllRouteVariantsTotal, getActiveRouteVariant,
 } from '../../../redux/selectors/control/routes/routeVariants';
 import { getSelectedTripsKeys, isAddTripModalEnabled, isAddTripAllowed } from '../../../redux/selectors/control/routes/trip-instances';
-import { useAddTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences } from '../../../redux/selectors/appSettings';
+import { useAddTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences, useNextDayTrips } from '../../../redux/selectors/appSettings';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
 import CustomModal from '../../Common/CustomModal/CustomModal';
@@ -103,7 +102,10 @@ export const RoutesAndTripsView = (props) => {
         return props.routesTotal;
     };
 
-    const showAddTripButton = props.useAddTrip && props.isAddTripAllowed && moment(props.serviceDate).format(SERVICE_DATE_FORMAT) === moment().format(SERVICE_DATE_FORMAT);
+    const showAddTripButton = props.useAddTrip
+        && props.isAddTripAllowed
+        && (moment(props.serviceDate).format(SERVICE_DATE_FORMAT) === moment().format(SERVICE_DATE_FORMAT)
+        || (props.useNextDayTrips && moment(props.serviceDate).format(SERVICE_DATE_FORMAT) === moment().add(1, 'days').format(SERVICE_DATE_FORMAT)));
 
     const getAddTripActionButton = () => (
         <div className="mr-4">
@@ -236,6 +238,7 @@ RoutesAndTripsView.propTypes = {
     routeType: PropTypes.number,
     useRoutesTripsFilterCollapse: PropTypes.bool.isRequired,
     useRoutesTripsPreferences: PropTypes.bool.isRequired,
+    useNextDayTrips: PropTypes.bool.isRequired,
 };
 
 RoutesAndTripsView.defaultProps = {
@@ -264,6 +267,7 @@ export default connect(
         routeType: getModeRouteFilter(state),
         useRoutesTripsFilterCollapse: useRoutesTripsFilterCollapse(state),
         useRoutesTripsPreferences: useRoutesTripsPreferences(state),
+        useNextDayTrips: useNextDayTrips(state),
     }),
     {
         fetchRoutes, filterTripInstances, retrieveAgencies, updateEnabledAddTripModal, mergeRouteFilters,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-
+import moment from 'moment';
 import { NewTripsTable } from './NewTripsTable';
 
 const componentPropsMock = {
@@ -36,6 +36,9 @@ const componentPropsMock = {
         tripHeadsign: '',
     },
     trips: [],
+    useNextDayTrips: false,
+    todayTripChecked: false,
+    tomorrowTripChecked: false,
     onAddedTripsChange: jest.fn(),
     onStopsPreview: jest.fn(),
 };
@@ -214,5 +217,77 @@ describe('<NewTripsTable />', () => {
         const addButton = wrapper.find('.add-trips-table-container__add-button');
 
         expect(addButton.exists()).toBe(false);
+    });
+
+    it('should show Date column for the next day trips and be equal Today if today trip selected', () => {
+        const wrapper = setup({
+            trips: [{
+                id: 'id1',
+                startTime: moment().add(20, 'minute').format('HH:mm'),
+                endTime: '',
+                referenceId: '',
+            }],
+            useNextDayTrips: true,
+            todayTripChecked: true,
+            tomorrowTripChecked: false,
+        });
+
+        const columnDate = wrapper.find('.add-trips-table__date').at(0);
+        expect(columnDate.exists()).toBe(true);
+        expect(columnDate.props().value).toBe('Today');
+    });
+
+    it('should show Date column for the next day trips and be equal Tomorrow if tomorrow trip selected', () => {
+        const wrapper = setup({
+            trips: [{
+                id: 'id1',
+                startTime: moment().add(20, 'minute').format('HH:mm'),
+                endTime: '',
+                referenceId: '',
+            }],
+            useNextDayTrips: true,
+            todayTripChecked: false,
+            tomorrowTripChecked: true,
+        });
+
+        const columnDate = wrapper.find('.add-trips-table__date').at(0);
+        expect(columnDate.exists()).toBe(true);
+        expect(columnDate.props().value).toBe('Tomorrow');
+    });
+
+    it('should show Date column for the next day trips and be equal Today and Tomorrow if today and tomorrow trip selected', () => {
+        const wrapper = setup({
+            trips: [{
+                id: 'id1',
+                startTime: moment().add(20, 'minute').format('HH:mm'),
+                endTime: '',
+                referenceId: '',
+            }],
+            useNextDayTrips: true,
+            todayTripChecked: true,
+            tomorrowTripChecked: true,
+        });
+
+        const columnDate = wrapper.find('.add-trips-table__date').at(0);
+        expect(columnDate.exists()).toBe(true);
+        expect(columnDate.props().value).toBe('Today, Tomorrow');
+    });
+
+    it('should show Date column for the next day trips and be equal Tomorrow if today and tomorrow trip selected and startTime is less then now', () => {
+        const wrapper = setup({
+            trips: [{
+                id: 'id1',
+                startTime: moment().add(-2, 'minute').format('HH:mm'),
+                endTime: '',
+                referenceId: '',
+            }],
+            useNextDayTrips: true,
+            todayTripChecked: true,
+            tomorrowTripChecked: true,
+        });
+
+        const columnDate = wrapper.find('.add-trips-table__date').at(0);
+        expect(columnDate.exists()).toBe(true);
+        expect(columnDate.props().value).toBe('Tomorrow');
     });
 });

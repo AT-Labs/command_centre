@@ -25,6 +25,7 @@ export const getTripTimeDisplay = (time) => {
     const timeMoment = parseTime(time);
     return `${timeMoment.format('HH:mm')}${timeMoment.isAfter(moment(), 'day') ? ' (+1)' : ''}`;
 };
+
 export const isUrlValid = url => isEmpty(url) || isURL(url, {
     require_protocol: true,
     protocols: ['http', 'https'],

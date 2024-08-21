@@ -2,7 +2,7 @@ import moment from 'moment-timezone';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { connect } from 'react-redux';
-import { Form, FormGroup, Label, Button } from 'reactstrap';
+import { Form, FormGroup, Label, Button, Input } from 'reactstrap';
 import { AiFillInfoCircle } from 'react-icons/ai';
 
 import { isEmpty, omit } from 'lodash-es';
@@ -22,7 +22,8 @@ import { isNewTripModalOpen, getAddTripAction, getSelectedStopsByTripKey } from 
 import NewTripModal from './NewTripModal';
 import { NewTripsTable } from './NewTripsTable';
 import StopSelectionFooter from '../../bulkSelection/StopSelectionFooter';
-import { useAddTripStopUpdate, useNonStopping, useRemoveStops } from '../../../../../redux/selectors/appSettings';
+import { useAddTripStopUpdate, useNonStopping, useRemoveStops, useNextDayTrips } from '../../../../../redux/selectors/appSettings';
+import DATE_TYPE from '../../../../../types/date-types';
 
 const updateStopHeadsign = (stop, headsign) => ({
     ...stop,
@@ -60,6 +61,8 @@ export const NewTripDetails = forwardRef((props, ref) => {
     });
     const [currentTrip, setCurrentTrip] = useState();
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [isTodayChecked, setIsTodayChecked] = useState(true);
+    const [isTomorrowChecked, setIsTomorrowChecked] = useState(false);
 
     useImperativeHandle(ref, () => ({
         shouldShowConfirmationModal: () => !isFormEmpty,
@@ -88,13 +91,18 @@ export const NewTripDetails = forwardRef((props, ref) => {
 
     const isReferenceIdRequired = () => tripTemplate.routeType === TRAIN_TYPE_ID;
 
-    const isStartTimeValid = start => (TIME_PATTERN.test(start)
-     && convertTimeToMinutes(start) <= convertTimeToMinutes('28:00'))
-     && getDifferenceInMinutes(moment().format('HH:mm'), start) >= 0;
+    const isStartTimeValid = (time, date) => {
+        const isTimeValid = TIME_PATTERN.test(time) && convertTimeToMinutes(time) <= convertTimeToMinutes('28:00');
+        if (props.useNextDayTrips && date === DATE_TYPE.TOMORROW) {
+            return isTimeValid;
+        }
+        const isTimeInFuture = getDifferenceInMinutes(moment().format('HH:mm'), time) >= 0;
+        return isTimeValid && isTimeInFuture;
+    };
 
     const isReferenceIdValid = refId => !!refId.trim();
 
-    const isTripValid = (start, refId) => (!isReferenceIdRequired() || isReferenceIdValid(refId)) && isStartTimeValid(start);
+    const isTripValid = (start, refId, date) => (!isReferenceIdRequired() || isReferenceIdValid(refId)) && isStartTimeValid(start, date);
     const isTripEmpty = (start, refId) => start === '' && refId === '';
 
     const hasDuplicateStartTime = (trips) => {
@@ -162,6 +170,14 @@ export const NewTripDetails = forwardRef((props, ref) => {
         setTripTemplate({ ...tripTemplate, stops: updatedStops });
     };
 
+    const handleTodayToggle = () => {
+        setIsTodayChecked(!isTodayChecked);
+    };
+
+    const handleTomorrowToggle = () => {
+        setIsTomorrowChecked(!isTomorrowChecked);
+    };
+
     // This method add temporary permissions to the stops so that stops are editable in the Stops component.
     const addPermissions = trip => ({
         ...trip,
@@ -184,7 +200,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
 
     const mode = VEHICLE_TYPES[tripTemplate.routeType].type;
 
-    const isStartTimeInvalid = () => tripsToAdd.some(trip => !isTripValid(trip.startTime, trip.referenceId)) || hasDuplicateStartTime(tripsToAdd);
+    const isStartTimeInvalid = () => tripsToAdd.some(trip => !isTripValid(trip.startTime, trip.referenceId, trip.date)) || hasDuplicateStartTime(tripsToAdd);
 
     const isReferenceIdsInvalid = () => {
         const referenceIds = new Set();
@@ -200,11 +216,11 @@ export const NewTripDetails = forwardRef((props, ref) => {
 
     useEffect(() => {
         setIsFormEmpty(!tripsToAdd.some(trip => !isTripEmpty(trip.startTime, trip.referenceId)));
-        setIsActionDisabled(isStartTimeInvalid() || isReferenceIdsInvalid());
+        setIsActionDisabled((isStartTimeInvalid() || isReferenceIdsInvalid()) || (props.useNextDayTrips && !isTodayChecked && !isTomorrowChecked));
     }, [tripsToAdd, currentTime]);
 
-    const getUpdatedStopTimes = (tripInstance, newStartTime) => {
-        if (!isStartTimeValid(newStartTime)) {
+    const getUpdatedStopTimes = (tripInstance, newStartTime, date) => {
+        if (!isStartTimeValid(newStartTime, date)) {
             return tripTemplate.stops;
         }
         const delayInMinutes = getDifferenceInMinutes(tripInstance.startTime, newStartTime);
@@ -232,7 +248,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
 
     const sanitizeStops = stops => getStopsBetweenFirstAndLast(stops).map((stop, index) => ({ ...omit(stop, ['firstStop', 'lastStop']), stopSequence: index + 1 }));
 
-    const createNewTripObject = trip => ({
+    const createNewTripObject = (trip, isTomorrow) => ({
         tripId: tripTemplate.tripId,
         routeId: tripTemplate.routeId,
         routeShortName: tripTemplate.routeShortName,
@@ -244,10 +260,11 @@ export const NewTripDetails = forwardRef((props, ref) => {
         depotId: tripTemplate.depotId,
         shapeId: tripTemplate.shapeId,
         tripHeadsign: tripTemplate.tripHeadsign,
-        serviceDate: tripTemplate.serviceDate,
+        serviceDate: isTomorrow && tripTemplate.serviceDate === moment().format(SERVICE_DATE_FORMAT)
+            ? moment(props.serviceDate).add(1, 'day').format(SERVICE_DATE_FORMAT) : tripTemplate.serviceDate,
         referenceId: trip.referenceId,
         endTime: trip.endTime,
-        stops: getUpdatedStopTimes(tripTemplate, trip.startTime), // calculate stops for each added trip
+        stops: getUpdatedStopTimes(tripTemplate, trip.startTime, trip.date), // calculate stops for each added trip
         startTime: trip.startTime ? `${trip.startTime}:00` : '', // We only accept HH:mm for startTime input on add trip screen. We need to make sure we also send seconds to backend.
     });
 
@@ -263,18 +280,40 @@ export const NewTripDetails = forwardRef((props, ref) => {
 
     const addNewTrips = () => {
         props.addTrips(
-            tripsToAdd.map((trip) => {
-                const newTrip = createNewTripObject(trip);
-                return {
-                    ...newTrip,
-                    stops: sanitizeStops(newTrip.stops),
-                };
+            tripsToAdd.flatMap((trip) => {
+                const retArr = [];
+                if (props.useNextDayTrips && trip.date) {
+                    if (trip.date.includes(DATE_TYPE.TODAY)) {
+                        const newTripToday = createNewTripObject(trip);
+                        retArr.push({
+                            ...newTripToday,
+                            stops: sanitizeStops(newTripToday.stops),
+                        });
+                    }
+                    if (trip.date.includes(DATE_TYPE.TOMORROW)) {
+                        const newTripTomorrow = createNewTripObject(trip, true);
+                        retArr.push({
+                            ...newTripTomorrow,
+                            stops: sanitizeStops(newTripTomorrow.stops),
+                        });
+                    }
+                } else {
+                    const newTrip = createNewTripObject(trip);
+                    retArr.push({
+                        ...newTrip,
+                        stops: sanitizeStops(newTrip.stops),
+                    });
+                }
+                return retArr;
             }),
         );
         props.toggleAddTripModals('isNewTripModalOpen', true);
     };
 
     const shouldStopSelectionFooterBeShown = props.useAddTripStopUpdate && !isEmpty(props.selectedStopsByTripKey(addPermissions(tripTemplate)));
+
+    const isTomorrow = moment(props.serviceDate).format(SERVICE_DATE_FORMAT) === moment().add(1, 'days').format(SERVICE_DATE_FORMAT);
+    const tomorrowDate = isTomorrow ? moment(props.serviceDate).format('DD-MM-YYYY') : moment().add(1, 'days').format('DD-MM-YYYY');
 
     return tripTemplate && (
         <div className="add-trip-new-trip-details p-3">
@@ -289,8 +328,50 @@ export const NewTripDetails = forwardRef((props, ref) => {
                             <FormGroup className="d-flex pr-2 pl-2">
                                 <Label for="add-trip-new-trip-details__service-date">
                                     <span className="font-size-md font-weight-bold pr-2">Service date:</span>
+                                    { props.useNextDayTrips && (
+                                        <span className="font-size-md font-weight-bold pr-2">
+                                            <br />
+                                            (Mandatory)
+                                        </span>
+                                    )}
                                 </Label>
-                                <div id="add-trip-new-trip-details__service-date">{ `${moment(props.serviceDate).format('DD-MM-YYYY')} (Today)` }</div>
+                            </FormGroup>
+
+                            <FormGroup className="d-flex pr-2 pl-2">
+                                { props.useNextDayTrips
+                                    ? (
+                                        <div>
+                                            { !isTomorrow && (
+                                                <div className="add-trip-new-trip-details__today-div">
+                                                    <Input
+                                                        type="checkbox"
+                                                        id="add-trip-new-trip-details__today-checkbox"
+                                                        checked={ isTodayChecked }
+                                                        onChange={ handleTodayToggle }
+                                                        className="add-trip-new-trip-details__checkbox"
+                                                    />
+                                                    <Label for="add-trip-new-trip-details__service-date">
+                                                        <span id="add-trip-new-trip-details__service-date">{ `${moment(props.serviceDate).format('DD-MM-YYYY')} (Today)` }</span>
+                                                    </Label>
+                                                </div>
+                                            )}
+                                            <div className="add-trip-new-trip-details__tomorrow-div">
+                                                <Input
+                                                    type="checkbox"
+                                                    id="add-trip-new-trip-details__tomorrow-checkbox"
+                                                    checked={ isTomorrowChecked }
+                                                    onChange={ handleTomorrowToggle }
+                                                    className="add-trip-new-trip-details__checkbox"
+                                                />
+                                                <Label for="add-trip-new-trip-details__service-date">
+                                                    <span id="add-trip-new-trip-details__service-date">{ `${tomorrowDate} (Tomorrow)` }</span>
+                                                </Label>
+                                            </div>
+                                        </div>
+                                    )
+                                    : (
+                                        <div id="add-trip-new-trip-details__service-date">{ `${moment(props.serviceDate).format('DD-MM-YYYY')} (Today)` }</div>
+                                    )}
                             </FormGroup>
 
                             <FormGroup className="d-flex pr-2 pl-2">
@@ -331,7 +412,10 @@ export const NewTripDetails = forwardRef((props, ref) => {
                             tripInstance={ tripTemplate }
                             trips={ tripsToAdd }
                             onAddedTripsChange={ setTripsToAdd }
-                            onStopsPreview={ showStopsPreview } />
+                            onStopsPreview={ showStopsPreview }
+                            useNextDayTrips={ props.useNextDayTrips }
+                            todayTripChecked={ (tripTemplate.serviceDate === moment().add(1, 'day').format(SERVICE_DATE_FORMAT) ? false : isTodayChecked) }
+                            tomorrowTripChecked={ isTomorrowChecked } />
                     </div>
                 </Form>
                 { shouldStopSelectionFooterBeShown
@@ -389,6 +473,7 @@ NewTripDetails.propTypes = {
     deselectAllStopsByTrip: PropTypes.func.isRequired,
     useNonStopping: PropTypes.bool.isRequired,
     useRemoveStops: PropTypes.bool.isRequired,
+    useNextDayTrips: PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({
@@ -399,4 +484,5 @@ export default connect(state => ({
     useAddTripStopUpdate: useAddTripStopUpdate(state),
     useNonStopping: useNonStopping(state),
     useRemoveStops: useRemoveStops(state),
+    useNextDayTrips: useNextDayTrips(state),
 }), { addTrips, toggleAddTripModals, deselectAllStopsByTrip }, null, { forwardRef: true })(NewTripDetails);

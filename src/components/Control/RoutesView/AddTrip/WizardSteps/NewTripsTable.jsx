@@ -3,20 +3,22 @@ import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 import { uniqueId } from 'lodash-es';
 import { Input, Button, FormGroup, FormFeedback } from 'reactstrap';
-import { AiOutlinePlusCircle, AiOutlineMinusCircle, AiOutlineSearch } from 'react-icons/ai';
+import { AiOutlinePlusCircle, AiOutlineMinusCircle, AiOutlineSearch, AiFillInfoCircle } from 'react-icons/ai';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-
+import Tooltip from '@mui/material/Tooltip';
 import { TripInstanceType } from '../../Types';
 import { TIME_PATTERN } from '../../../../../constants/time';
 import { getTripTimeDisplay, convertTimeToMinutes } from '../../../../../utils/helpers';
 import './NewTripsTable.scss';
+import DATE_TYPE from '../../../../../types/date-types';
 
 export const NewTripsTable = (props) => {
     const maxTrips = 30;
+    const dateTooltipText = 'Trip(s) cannot be added with a past start time for today\'s date';
 
     const getDelayInMinutes = (originalStartTime, newStartTime) => convertTimeToMinutes(newStartTime) - convertTimeToMinutes(originalStartTime);
 
@@ -46,6 +48,47 @@ export const NewTripsTable = (props) => {
         props.onAddedTripsChange([...props.trips, newRow]);
     };
 
+    const handleDateChange = (id, value) => {
+        const updatedAddedTrips = props.trips.map((row) => {
+            if (row.id !== id) {
+                return row;
+            }
+            return {
+                ...row,
+                date: value,
+            };
+        });
+        props.onAddedTripsChange(updatedAddedTrips);
+    };
+
+    const getCheckedDays = (isToday, isTomorrow, id) => {
+        const row = props.trips.find(item => item.id === id);
+        if (row) {
+            const isNewStartTimeValid = row.startTime !== '' ? isStartTimeValid(row.startTime) : false;
+            let selectedDays = '';
+            if (isToday && isTomorrow) {
+                selectedDays = isNewStartTimeValid ? DATE_TYPE.TODAYANDTOMORROW : DATE_TYPE.TOMORROW;
+            } else if (isToday) {
+                selectedDays = DATE_TYPE.TODAY;
+            } else if (isTomorrow) {
+                selectedDays = DATE_TYPE.TOMORROW;
+            }
+            if (selectedDays !== row.date) {
+                handleDateChange(id, selectedDays);
+            }
+            return selectedDays;
+        }
+        return row;
+    };
+
+    const isDateValid = (id) => {
+        const row = props.trips.find(item => item.id === id);
+        if (row) {
+            return row.date?.length > 0 && row.date !== '';
+        }
+        return false;
+    };
+
     const referenceIdValid = (id, ref) => !props.trips.find(row => row.id !== id && row.referenceId === ref);
 
     const removeRow = (id) => {
@@ -64,7 +107,8 @@ export const NewTripsTable = (props) => {
                 return row;
             }
             const isNewStartTimeInvalid = !isStartTimeValid(value);
-            const newEndTime = isNewStartTimeInvalid ? '' : addMinutesToTime(props.tripInstance.endTime, getDelayInMinutes(props.tripInstance.startTime, value));
+            const newEndTime = (isNewStartTimeInvalid && !props.useNextDayTrips && !props.tomorrowTripChecked)
+                ? '' : addMinutesToTime(props.tripInstance.endTime, getDelayInMinutes(props.tripInstance.startTime, value));
             return {
                 ...row,
                 startTime: value,
@@ -72,6 +116,9 @@ export const NewTripsTable = (props) => {
             };
         });
         props.onAddedTripsChange(updatedAddedTrips);
+        if (props.useNextDayTrips) {
+            getCheckedDays(props.todayTripChecked, props.tomorrowTripChecked, id);
+        }
     };
 
     const handleReferenceIdChange = (id, value) => {
@@ -93,6 +140,14 @@ export const NewTripsTable = (props) => {
         addRow();
     }
 
+    const isTimeInvalid = (startTime, id) => {
+        const row = props.trips.find(item => item.id === id);
+        if (props.useNextDayTrips && row.date === DATE_TYPE.TOMORROW) {
+            return !(TIME_PATTERN.test(startTime) && !isStartTimeRepeated(startTime) && convertTimeToMinutes(startTime) <= convertTimeToMinutes('28:00'));
+        }
+        return (!isStartTimeValid(startTime) || isStartTimeRepeated(startTime));
+    };
+
     useEffect(() => {
         const updatedAddedTrips = props.trips.map((row) => {
             const newEndTime = !isStartTimeValid(row.startTime) ? '' : addMinutesToTime(props.tripInstance.endTime, getDelayInMinutes(props.tripInstance.startTime, row.startTime));
@@ -107,6 +162,7 @@ export const NewTripsTable = (props) => {
     return (
         <div>
             <div className="add-trips-table-container d-flex">
+                <br />
                 {props.trips.length < maxTrips && (
                     <Button title="Add a new trip" className="add-trips-table-container__add-button" onClick={ addRow }>
                         <AiOutlinePlusCircle />
@@ -119,6 +175,16 @@ export const NewTripsTable = (props) => {
                                 <TableCell>START TIME</TableCell>
                                 <TableCell>END TIME</TableCell>
                                 <TableCell>REFERENCE ID</TableCell>
+                                { props.useNextDayTrips && (
+                                    <TableCell>
+                                        <Tooltip title={ dateTooltipText } placement="top-end" className="add-trips-table__tooltip">
+                                            <span>
+                                                <AiFillInfoCircle className="cc-text-orange add-trips-table__warning__icon" />
+                                                DATE
+                                            </span>
+                                        </Tooltip>
+                                    </TableCell>
+                                )}
                                 <TableCell>ACTIONS</TableCell>
                             </TableRow>
                         </TableHead>
@@ -132,7 +198,7 @@ export const NewTripsTable = (props) => {
                                             placeholder={ getTripTimeDisplay(props.tripInstance.startTime) }
                                             value={ row.startTime }
                                             onChange={ e => handleStartTimeChange(row.id, e.target.value) }
-                                            invalid={ !isStartTimeValid(row.startTime) || isStartTimeRepeated(row.startTime) }
+                                            invalid={ isTimeInvalid(row.startTime, row.id) }
                                         />
                                     </TableCell>
                                     <TableCell>
@@ -150,6 +216,19 @@ export const NewTripsTable = (props) => {
                                             <FormFeedback>Reference Id should be unique</FormFeedback>
                                         </FormGroup>
                                     </TableCell>
+                                    { props.useNextDayTrips && (
+                                        <TableCell>
+                                            <Input
+                                                id="add-trips-table__date"
+                                                className="add-trips-table__date"
+                                                value={ getCheckedDays(props.todayTripChecked, props.tomorrowTripChecked, row.id) }
+                                                readOnly
+                                                onChange={ e => handleDateChange(row.id, e.target.value) }
+                                                invalid={ !isDateValid(row.id) }
+                                            />
+                                            <FormFeedback>Today\Tomorrow selection required</FormFeedback>
+                                        </TableCell>
+                                    )}
                                     <TableCell>
                                         <Button title="View scheduled stop times" className="add-trips-table__preview-button" onClick={ () => onStopsPreviewClicked(row.id) }>
                                             <AiOutlineSearch />
@@ -179,6 +258,9 @@ NewTripsTable.propTypes = {
     trips: PropTypes.array.isRequired,
     onAddedTripsChange: PropTypes.func.isRequired,
     onStopsPreview: PropTypes.func.isRequired,
+    useNextDayTrips: PropTypes.bool.isRequired,
+    todayTripChecked: PropTypes.bool.isRequired,
+    tomorrowTripChecked: PropTypes.bool.isRequired,
 };
 
 NewTripsTable.defaultProps = {

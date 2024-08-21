@@ -21,12 +21,14 @@ describe('NewTripDetails', () => {
     let mockSelectedStopsByTripKey;
     let mockUseAddTripStopUpdate;
     let mockDeselectAllStopsByTrip;
+    let mockUseNextDayTrips;
     let wrapper;
+    let wrapperNextDay;
 
     beforeEach(() => {
         mockTripInstance = {
             tripId: 'id',
-            serviceDate: '20231001',
+            serviceDate: moment().format(SERVICE_DATE_FORMAT),
             routeType: 2,
             startTime: '10:00:00',
             endTime: '11:00:00',
@@ -58,7 +60,7 @@ describe('NewTripDetails', () => {
             shapeId: '',
             tripHeadsign: '',
         };
-        mockServiceDate = '2023-07-04';
+        mockServiceDate = moment().format('YYYY-MM-DD');
         mockAddTrips = jest.fn();
         mockToggleAddTripModals = jest.fn();
         mockIsNewTripModalOpen = false;
@@ -66,6 +68,7 @@ describe('NewTripDetails', () => {
         mockSelectedStopsByTripKey = jest.fn();
         mockUseAddTripStopUpdate = false;
         mockDeselectAllStopsByTrip = jest.fn();
+        mockUseNextDayTrips = true;
 
         wrapper = shallow(
             <NewTripDetails
@@ -78,6 +81,21 @@ describe('NewTripDetails', () => {
                 selectedStopsByTripKey={ mockSelectedStopsByTripKey }
                 useAddTripStopUpdate={ mockUseAddTripStopUpdate }
                 deselectAllStopsByTrip={ mockDeselectAllStopsByTrip }
+            />,
+        );
+
+        wrapperNextDay = shallow(
+            <NewTripDetails
+                tripInstance={ mockTripInstance }
+                serviceDate={ mockServiceDate }
+                addTrips={ mockAddTrips }
+                toggleAddTripModals={ mockToggleAddTripModals }
+                isNewTripModalOpen={ mockIsNewTripModalOpen }
+                action={ mockAction }
+                selectedStopsByTripKey={ mockSelectedStopsByTripKey }
+                useAddTripStopUpdate={ mockUseAddTripStopUpdate }
+                deselectAllStopsByTrip={ mockDeselectAllStopsByTrip }
+                useNextDayTrips={ mockUseNextDayTrips }
             />,
         );
     });
@@ -110,6 +128,200 @@ describe('NewTripDetails', () => {
         const addButton = wrapper.find(Button);
 
         expect(addButton.prop('disabled')).toEqual(true);
+    });
+
+    it('calls addTrip for Today and Add Trip button click', () => {
+        const table = wrapperNextDay.find(NewTripsTable);
+        table.invoke('onAddedTripsChange')([
+            {
+                id: 'id',
+                startTime: '23:00',
+                endTime: '24:00:00',
+                date: 'Today',
+                referenceId: 'ref1',
+            },
+        ]);
+
+        const addButton = wrapperNextDay.find(Button);
+
+        addButton.simulate('click');
+
+        expect(mockAddTrips).toHaveBeenCalledTimes(1);
+        expect(mockAddTrips).toHaveBeenCalledWith([{
+            ...mockTripInstance,
+            serviceDate: moment(mockServiceDate).format(SERVICE_DATE_FORMAT),
+            startTime: '23:00:00',
+            endTime: '24:00:00',
+            stops: [{
+                stopCode: 'Stop1',
+                stopHeadsign: 'Britomart',
+                arrivalTime: '25:00:00',
+                departureTime: '25:02:00',
+                scheduledArrivalTime: '25:00:00',
+                scheduledDepartureTime: '25:02:00',
+                stopSequence: 1,
+            },
+            {
+                stopCode: 'Stop2',
+                stopHeadsign: 'Britomart',
+                arrivalTime: '25:10:00',
+                departureTime: '25:12:00',
+                scheduledArrivalTime: '25:10:00',
+                scheduledDepartureTime: '25:12:00',
+                stopSequence: 2,
+            }],
+            referenceId: 'ref1',
+            agencyId: '',
+            depotId: '',
+            directionId: '',
+            routeId: '',
+            routeLongName: '',
+            routeShortName: '',
+            routeVariantId: '',
+            shapeId: '',
+            tripHeadsign: '',
+        }]);
+    });
+
+    it('calls addTrip for Tomorrow and Add Trip button click', () => {
+        const table = wrapperNextDay.find(NewTripsTable);
+        table.invoke('onAddedTripsChange')([
+            {
+                id: 'id',
+                startTime: '23:00',
+                endTime: '24:00:00',
+                date: 'Tomorrow',
+                referenceId: 'ref1',
+            },
+        ]);
+
+        const addButton = wrapperNextDay.find(Button);
+
+        addButton.simulate('click');
+
+        expect(mockAddTrips).toHaveBeenCalledTimes(1);
+        expect(mockAddTrips).toHaveBeenCalledWith([{
+            ...mockTripInstance,
+            serviceDate: moment(mockServiceDate).add(1, 'days').format(SERVICE_DATE_FORMAT),
+            startTime: '23:00:00',
+            endTime: '24:00:00',
+            stops: [{
+                stopCode: 'Stop1',
+                stopHeadsign: 'Britomart',
+                arrivalTime: '25:00:00',
+                departureTime: '25:02:00',
+                scheduledArrivalTime: '25:00:00',
+                scheduledDepartureTime: '25:02:00',
+                stopSequence: 1,
+            },
+            {
+                stopCode: 'Stop2',
+                stopHeadsign: 'Britomart',
+                arrivalTime: '25:10:00',
+                departureTime: '25:12:00',
+                scheduledArrivalTime: '25:10:00',
+                scheduledDepartureTime: '25:12:00',
+                stopSequence: 2,
+            }],
+            referenceId: 'ref1',
+            agencyId: '',
+            depotId: '',
+            directionId: '',
+            routeId: '',
+            routeLongName: '',
+            routeShortName: '',
+            routeVariantId: '',
+            shapeId: '',
+            tripHeadsign: '',
+        }]);
+    });
+
+    it('calls addTrip for Today and Tomorrow and Add Trip button click', () => {
+        const table = wrapperNextDay.find(NewTripsTable);
+        table.invoke('onAddedTripsChange')([
+            {
+                id: 'id',
+                startTime: '23:00',
+                endTime: '24:00:00',
+                date: 'Today, Tomorrow',
+                referenceId: 'ref1',
+            },
+        ]);
+
+        const addButton = wrapperNextDay.find(Button);
+
+        addButton.simulate('click');
+
+        expect(mockAddTrips).toHaveBeenCalledTimes(1);
+        expect(mockAddTrips).toHaveBeenCalledWith([{
+            ...mockTripInstance,
+            serviceDate: moment(mockServiceDate).format(SERVICE_DATE_FORMAT),
+            startTime: '23:00:00',
+            endTime: '24:00:00',
+            stops: [{
+                stopCode: 'Stop1',
+                stopHeadsign: 'Britomart',
+                arrivalTime: '25:00:00',
+                departureTime: '25:02:00',
+                scheduledArrivalTime: '25:00:00',
+                scheduledDepartureTime: '25:02:00',
+                stopSequence: 1,
+            },
+            {
+                stopCode: 'Stop2',
+                stopHeadsign: 'Britomart',
+                arrivalTime: '25:10:00',
+                departureTime: '25:12:00',
+                scheduledArrivalTime: '25:10:00',
+                scheduledDepartureTime: '25:12:00',
+                stopSequence: 2,
+            }],
+            referenceId: 'ref1',
+            agencyId: '',
+            depotId: '',
+            directionId: '',
+            routeId: '',
+            routeLongName: '',
+            routeShortName: '',
+            routeVariantId: '',
+            shapeId: '',
+            tripHeadsign: '',
+        },
+        {
+            ...mockTripInstance,
+            serviceDate: moment(mockServiceDate).add(1, 'days').format(SERVICE_DATE_FORMAT),
+            startTime: '23:00:00',
+            endTime: '24:00:00',
+            stops: [{
+                stopCode: 'Stop1',
+                stopHeadsign: 'Britomart',
+                arrivalTime: '25:00:00',
+                departureTime: '25:02:00',
+                scheduledArrivalTime: '25:00:00',
+                scheduledDepartureTime: '25:02:00',
+                stopSequence: 1,
+            },
+            {
+                stopCode: 'Stop2',
+                stopHeadsign: 'Britomart',
+                arrivalTime: '25:10:00',
+                departureTime: '25:12:00',
+                scheduledArrivalTime: '25:10:00',
+                scheduledDepartureTime: '25:12:00',
+                stopSequence: 2,
+            }],
+            referenceId: 'ref1',
+            agencyId: '',
+            depotId: '',
+            directionId: '',
+            routeId: '',
+            routeLongName: '',
+            routeShortName: '',
+            routeVariantId: '',
+            shapeId: '',
+            tripHeadsign: '',
+        },
+        ]);
     });
 
     it('calls addTrip and toggleAddTripModals on Add Trip button click', () => {

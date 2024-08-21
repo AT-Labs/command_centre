@@ -17,7 +17,7 @@ import { StopStatus, StopType, TripInstanceType, updateStopsModalTypes } from '.
 import { isChangeStopPermitted, isSkipStopPermitted, isUpdateStopHeadsignPermitted } from '../../../../utils/user-permissions';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../../auth';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
-import { useHeadsignUpdate, useNonStopping } from '../../../../redux/selectors/appSettings';
+import { useHeadsignUpdate, useNonStopping, useNextDayTrips } from '../../../../redux/selectors/appSettings';
 
 export class Stop extends React.Component {
     static propTypes = {
@@ -33,6 +33,7 @@ export class Stop extends React.Component {
         isStopInSelectionRange: PropTypes.bool,
         lineInteractionClasses: PropTypes.string.isRequired,
         useHeadsignUpdate: PropTypes.bool.isRequired,
+        useNextDayTrips: PropTypes.bool.isRequired,
         showActuals: PropTypes.bool,
         showScheduled: PropTypes.bool,
         onStopUpdated: PropTypes.func,
@@ -78,6 +79,7 @@ export class Stop extends React.Component {
 
     isUpdateStopHeadsignPossible = () => (this.isNotStartedTrip() || this.isInProgressTrip())
         && (moment(this.props.serviceDate).isSame(moment(), 'day')
+            || (this.props.useNextDayTrips && moment(this.props.serviceDate).isSame(moment().add(1, 'day'), 'day'))
             || (moment(this.props.serviceDate).isBefore(moment(), 'day') && this.props.tripInstance.endTime > '24:00:00'));
 
     isStopSkippingPermitted = () => IS_LOGIN_NOT_REQUIRED || isSkipStopPermitted(this.props.stop);
@@ -274,5 +276,6 @@ export default connect(state => ({
     platforms: getParentStopsWithPlatform(state),
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
     useHeadsignUpdate: useHeadsignUpdate(state),
+    useNextDayTrips: useNextDayTrips(state),
     useNonStopping: useNonStopping(state),
 }), { updateTripInstanceStopPlatform, selectStops })(Stop);

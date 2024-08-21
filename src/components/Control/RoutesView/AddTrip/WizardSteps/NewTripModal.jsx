@@ -12,15 +12,17 @@ import {
     toggleAddTripModals,
     updateSelectedAddTrip,
 } from '../../../../../redux/actions/control/routes/trip-instances';
+import { useNextDayTrips } from '../../../../../redux/selectors/appSettings';
 
 export const NewTripModal = (props) => {
     const { isRequesting, result, resultMessage } = props.response;
+    const messageText = props.useNextDayTrips ? 'the dates selected' : `today ${moment().format('DD/MM/YYYY')}`;
     const renderContent = () => {
         if (isRequesting) return <DetailLoader />;
         return result && result[0]
             ? (
                 <div>
-                    <span className="d-block mb-3 font-weight-bold">{ `${result.length} new trip(s) successfully added for today ${moment().format('DD/MM/YYYY')}` }</span>
+                    <span className="d-block mb-3 font-weight-bold">{ `${result.length} new trip(s) successfully added for ${messageText}` }</span>
                     <span className="d-block mb-2">{ `Route Variant Name: ${result[0].routeLongName}` }</span>
                 </div>
             )
@@ -98,6 +100,7 @@ NewTripModal.propTypes = {
     toggleAddTripModals: PropTypes.func.isRequired,
     updateSelectedAddTrip: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
+    useNextDayTrips: PropTypes.bool.isRequired,
 };
 
 NewTripModal.defaultProps = {
@@ -105,7 +108,9 @@ NewTripModal.defaultProps = {
 };
 
 export default connect(
-    null,
+    state => ({
+        useNextDayTrips: useNextDayTrips(state),
+    }),
     {
         clearAddTripActionResult,
         updateEnabledAddTripModal,

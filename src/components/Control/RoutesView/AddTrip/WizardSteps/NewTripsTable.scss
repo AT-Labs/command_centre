@@ -1,3 +1,5 @@
+@import "../../../../../assets/styles/variables";
+
 .add-trips-table-container {
     &__add-button {
         width: 42px;
@@ -20,11 +22,67 @@
         text-align: center;
     }
 
+    &__date {
+        border: none !important;
+        outline: 0 !important;
+        text-align: center;
+        background-color: white !important;
+        box-shadow: none !important;
+        cursor: default !important;
+
+        &:focus {
+            outline: 0 !important;
+            box-shadow: none !important;
+            cursor: default !important;
+        }
+    }
+
     &__remove-button {
         margin-left: 10px;
     }
 
     &__reference-id-group {
         flex-direction: column !important;
+    }
+
+    & &__warning {
+        &__icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            margin-bottom: 3px;
+        }
+    }
+
+    & &__tooltip {
+        max-width: 100;
+        .tooltip-inner {
+            border-color: #B8BCC3;
+            border-style: solid;
+            border-width: thin;
+            color: $at-dark-blue;
+            background: $white;
+            font-size: $font-size-sm;
+            text-align: left;
+        }
+
+        &.tooltip.show {
+            opacity: 1;
+        }
+
+        &.bs-tooltip-top .arrow:before {
+            border-top-color: #B8BCC3;
+        }
+
+        &.bs-tooltip-top .arrow:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            border-width: .4rem .4rem 0;
+            transform: translateY(-1px);
+            border-color: transparent;
+            border-style: solid;
+            border-top-color: $white;
+        }
     }
 }
