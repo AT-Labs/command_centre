@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import React from 'react';
 
 import { FaCarBurst, FaCloudShowersHeavy, FaRoadCircleExclamation, FaCalendarDay, FaQuestion } from 'react-icons/fa6';
-import { AiTwotoneAlert, AiFillWarning } from 'react-icons/ai';
+import { AiTwotoneAlert, AiFillCloseCircle } from 'react-icons/ai';
 import Icon from '../../Icon/Icon';
 import {
     parseIncidentEndTime,
@@ -32,10 +32,10 @@ describe('getIconNameByIncidentCategory', () => {
         expect(getIconByIncidentCategory(Category.WeatherEnvironmentalConditions)).to.deep.equal(<FaCloudShowersHeavy color="#D52923" className="icon" />);
         expect(getIconByIncidentCategory(Category.RoadConditions)).to.deep.equal(<FaRoadCircleExclamation color="#D52923" className="icon" />);
         expect(getIconByIncidentCategory(Category.Emergencies)).to.deep.equal(<AiTwotoneAlert color="#D52923" className="icon" />);
-        expect(getIconByIncidentCategory(Category.TrafficJams)).to.deep.equal(<Icon icon="incident-jam" />);
+        expect(getIconByIncidentCategory(Category.TrafficCongestion)).to.deep.equal(<Icon icon="incident-jam" />);
         expect(getIconByIncidentCategory(Category.SpecialEvents)).to.deep.equal(<FaCalendarDay color="#D52923" className="icon" />);
-        expect(getIconByIncidentCategory(Category.EnvironmentalHazards)).to.deep.equal(<AiFillWarning color="#D52923" className="icon" />);
-        expect(getIconByIncidentCategory(Category.RoadMaintenance)).to.deep.equal(<Icon icon="incident-roadwork" />);
+        expect(getIconByIncidentCategory(Category.Roadworks)).to.deep.equal(<Icon icon="incident-roadwork" />);
+        expect(getIconByIncidentCategory(Category.RoadClosed)).to.deep.equal(<AiFillCloseCircle color="#D52923" className="icon" />);
         expect(getIconByIncidentCategory(Category.Unknown)).to.deep.equal(<FaQuestion color="#D52923" className="icon" />);
     });
 

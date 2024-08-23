@@ -2,7 +2,7 @@ import React from 'react';
 
 import moment from 'moment-timezone';
 import { FaCarBurst, FaCloudShowersHeavy, FaRoadCircleExclamation, FaCalendarDay, FaQuestion } from 'react-icons/fa6';
-import { AiTwotoneAlert, AiFillWarning } from 'react-icons/ai';
+import { AiTwotoneAlert, AiFillCloseCircle } from 'react-icons/ai';
 
 import { dateTimeFormat } from '../../../../utils/dateUtils';
 import { Category } from '../../../../types/incidents';
@@ -14,10 +14,10 @@ export const getIconByIncidentCategory = (category) => {
         [Category.WeatherEnvironmentalConditions]: <FaCloudShowersHeavy color="#D52923" className="icon" />,
         [Category.RoadConditions]: <FaRoadCircleExclamation color="#D52923" className="icon" />,
         [Category.Emergencies]: <AiTwotoneAlert color="#D52923" className="icon" />,
-        [Category.TrafficJams]: <Icon icon="incident-jam" />,
+        [Category.TrafficCongestion]: <Icon icon="incident-jam" />,
         [Category.SpecialEvents]: <FaCalendarDay color="#D52923" className="icon" />,
-        [Category.EnvironmentalHazards]: <AiFillWarning color="#D52923" className="icon" />,
-        [Category.RoadMaintenance]: <Icon icon="incident-roadwork" />,
+        [Category.Roadworks]: <Icon icon="incident-roadwork" />,
+        [Category.RoadClosed]: <AiFillCloseCircle color="#D52923" className="icon" />,
         [Category.Unknown]: <FaQuestion color="#D52923" className="icon" />,
     };
     return categoryToIconMapping[category] ?? <FaQuestion color="#D52923" className="icon" />;

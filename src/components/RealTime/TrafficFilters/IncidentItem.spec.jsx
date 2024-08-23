@@ -7,7 +7,7 @@ import IncidentItem from './IncidentItem';
 describe('IncidentItem Component', () => {
     let wrapper;
     let mockOnChange;
-    const title = 'Test Incident';
+    const title = 'Accidents';
     const checked = true;
 
     beforeEach(() => {

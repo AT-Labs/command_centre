@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { map, slice } from 'lodash-es';
+import { map, slice, filter } from 'lodash-es';
 
 import { getSearchTerms } from '../../redux/selectors/search';
 import { addressSelected } from '../../redux/actions/realtime/detail/address';
@@ -64,6 +64,7 @@ import {
 } from '../../constants/traffic';
 import * as incidentsApi from '../../utils/transmitters/incidents-api';
 import RealtimeMapFilters from './RealtimeMapFilters/RealtimeMapFilters';
+import { Probability } from '../../types/incidents';
 
 function RealTimeView(props) {
     const { ADDRESS, ROUTE, STOP, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
@@ -80,8 +81,9 @@ function RealTimeView(props) {
     const fetchIncidentsData = async () => {
         try {
             const data = await incidentsApi.fetchIncidents();
-            const result = map(data, (incident, index) => {
-                if (slice(data, index + 1).find(i => i.openlr === incident.openlr && i.situationRecordsId !== incident.situationRecordsId)) {
+            const filteredData = filter(data, incident => incident.probabilityOfOccurrence !== Probability.Probable);
+            const result = map(filteredData, (incident, index) => {
+                if (slice(filteredData, index + 1).find(i => i.openlr === incident.openlr && i.situationRecordsId !== incident.situationRecordsId)) {
                     return addOffsetToIncident(incident);
                 }
                 return incident;

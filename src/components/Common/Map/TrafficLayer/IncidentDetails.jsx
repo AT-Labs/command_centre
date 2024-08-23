@@ -1,9 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
+
 import { dateTimeFormat, formatSeconds } from '../../../../utils/dateUtils';
-import './IncidentDetails.scss';
 import { parseIncidentEndTime, getIconByIncidentCategory, parseValidityStatus } from './TrafficHelper';
+import { CategoryLabelMapping } from '../../../../types/incidents';
+
+import './IncidentDetails.scss';
 
 const IncidentDetails = props => (
     <div className="traffic-incident-container">
@@ -18,7 +21,7 @@ const IncidentDetails = props => (
             <div className="row">
                 <p>
                     <strong>
-                        {props.incident?.type?.category}
+                        {CategoryLabelMapping[props.incident?.type?.category]}
                         :
                     </strong>
                     {` ${props.incident?.type?.description}`}
@@ -35,14 +38,18 @@ const IncidentDetails = props => (
                 </div>
             </div>
             <div className="row">
-                <div className="column">
-                    <p><strong>Delay time</strong></p>
-                    <p>{formatSeconds(props.incident?.delayTime) || '-'}</p>
-                </div>
-                <div className="column">
-                    <p><strong>Average speed</strong></p>
-                    <p>{`${props.incident?.averageSpeed || '-'} km/h`}</p>
-                </div>
+                { props.incident?.delayTime && (
+                    <div className="column">
+                        <p><strong>Delay time</strong></p>
+                        <p>{formatSeconds(props.incident.delayTime)}</p>
+                    </div>
+                ) }
+                { props.incident?.averageSpeed && (
+                    <div className="column">
+                        <p><strong>Average speed</strong></p>
+                        <p>{`${props.incident.averageSpeed} km/h`}</p>
+                    </div>
+                ) }
             </div>
             <div className="row">
                 <div className="column">

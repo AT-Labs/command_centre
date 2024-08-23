@@ -1,11 +1,30 @@
 export const Category = {
     Accidents: 'Accidents',
-    WeatherEnvironmentalConditions: 'Weather/Environmental Conditions',
-    RoadConditions: 'Road Conditions',
+    WeatherEnvironmentalConditions: 'WeatherEnvironmentalConditions',
+    RoadConditions: 'RoadConditions',
     Emergencies: 'Emergencies',
-    TrafficJams: 'Traffic Jams',
-    SpecialEvents: 'Special Events',
-    EnvironmentalHazards: 'Environmental Hazards',
-    RoadMaintenance: 'Road Maintenance',
+    TrafficCongestion: 'TrafficCongestion',
+    SpecialEvents: 'SpecialEvents',
+    Roadworks: 'Roadworks',
+    RoadClosed: 'RoadClosed',
     Unknown: 'Unknown',
+};
+
+export const CategoryLabelMapping = {
+    [Category.Accidents]: 'Accidents',
+    [Category.WeatherEnvironmentalConditions]: 'Weather/Environmental Conditions',
+    [Category.RoadConditions]: 'Road Conditions',
+    [Category.Emergencies]: 'Emergencies',
+    [Category.TrafficCongestion]: 'Traffic Congestion',
+    [Category.SpecialEvents]: 'Special Events',
+    [Category.Roadworks]: 'Road Works',
+    [Category.RoadClosed]: 'Road Closure',
+    [Category.Unknown]: 'Unknown',
+};
+
+export const Probability = {
+    Certain: 'certain',
+    Probable: 'probable',
+    RiskOf: 'riskOf',
+    Improbable: 'improbable',
 };
