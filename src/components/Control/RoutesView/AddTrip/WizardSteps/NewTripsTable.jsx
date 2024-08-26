@@ -150,7 +150,8 @@ export const NewTripsTable = (props) => {
 
     useEffect(() => {
         const updatedAddedTrips = props.trips.map((row) => {
-            const newEndTime = !isStartTimeValid(row.startTime) ? '' : addMinutesToTime(props.tripInstance.endTime, getDelayInMinutes(props.tripInstance.startTime, row.startTime));
+            const newEndTime = (!isStartTimeValid(row.startTime) && !props.useNextDayTrips && !props.tomorrowTripChecked)
+                ? '' : addMinutesToTime(props.tripInstance.endTime, getDelayInMinutes(props.tripInstance.startTime, row.startTime));
             return {
                 ...row,
                 endTime: newEndTime,

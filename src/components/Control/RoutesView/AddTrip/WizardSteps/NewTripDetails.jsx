@@ -7,7 +7,6 @@ import { AiFillInfoCircle } from 'react-icons/ai';
 
 import { isEmpty, omit } from 'lodash-es';
 import { addTrips, deselectAllStopsByTrip, toggleAddTripModals } from '../../../../../redux/actions/control/routes/trip-instances';
-import { getServiceDate } from '../../../../../redux/selectors/control/serviceDate';
 import VEHICLE_TYPES, { TRAIN_TYPE_ID } from '../../../../../types/vehicle-types';
 import Stops from '../../../Common/Stops/Stops';
 import { StopStatus, TripInstanceType, updateStopsModalTypes } from '../../Types';
@@ -57,7 +56,7 @@ export const NewTripDetails = forwardRef((props, ref) => {
     const [tripsToAdd, setTripsToAdd] = useState([]);
     const [tripTemplate, setTripTemplate] = useState({
         ...props.tripInstance,
-        serviceDate: moment(props.serviceDate).format(SERVICE_DATE_FORMAT),
+        serviceDate: moment().format(SERVICE_DATE_FORMAT),
     });
     const [currentTrip, setCurrentTrip] = useState();
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -341,20 +340,18 @@ export const NewTripDetails = forwardRef((props, ref) => {
                                 { props.useNextDayTrips
                                     ? (
                                         <div>
-                                            { !isTomorrow && (
-                                                <div className="add-trip-new-trip-details__today-div">
-                                                    <Input
-                                                        type="checkbox"
-                                                        id="add-trip-new-trip-details__today-checkbox"
-                                                        checked={ isTodayChecked }
-                                                        onChange={ handleTodayToggle }
-                                                        className="add-trip-new-trip-details__checkbox"
-                                                    />
-                                                    <Label for="add-trip-new-trip-details__service-date">
-                                                        <span id="add-trip-new-trip-details__service-date">{ `${moment(props.serviceDate).format('DD-MM-YYYY')} (Today)` }</span>
-                                                    </Label>
-                                                </div>
-                                            )}
+                                            <div className="add-trip-new-trip-details__today-div">
+                                                <Input
+                                                    type="checkbox"
+                                                    id="add-trip-new-trip-details__today-checkbox"
+                                                    checked={ isTodayChecked }
+                                                    onChange={ handleTodayToggle }
+                                                    className="add-trip-new-trip-details__checkbox"
+                                                />
+                                                <Label for="add-trip-new-trip-details__service-date">
+                                                    <span id="add-trip-new-trip-details__service-date">{ `${moment(props.serviceDate).format('DD-MM-YYYY')} (Today)` }</span>
+                                                </Label>
+                                            </div>
                                             <div className="add-trip-new-trip-details__tomorrow-div">
                                                 <Input
                                                     type="checkbox"
@@ -477,7 +474,6 @@ NewTripDetails.propTypes = {
 };
 
 export default connect(state => ({
-    serviceDate: getServiceDate(state),
     isNewTripModalOpen: isNewTripModalOpen(state),
     action: getAddTripAction(state),
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
