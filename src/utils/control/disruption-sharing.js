@@ -88,8 +88,8 @@ function generateHtmlEmailBody(disruption) {
             ${createHtmlLine(LABEL_DESCRIPTION, disruption.description)}
             ${createHtmlLine(LABEL_START_DATE, moment(disruption.startTime).format(DATE_FORMAT))}
             ${createHtmlLine(LABEL_START_TIME, moment(disruption.startTime).format(TIME_FORMAT))}
-            ${createHtmlLine(LABEL_END_DATE, endDateTimeMoment.isValid() ? endDateTimeMoment.format(DATE_FORMAT) : '')}
-            ${createHtmlLine(LABEL_END_TIME, endDateTimeMoment.isValid() ? endDateTimeMoment.format(TIME_FORMAT) : '')}
+            ${createHtmlLine(LABEL_END_DATE, disruption.endTime && endDateTimeMoment.isValid() ? endDateTimeMoment.format(DATE_FORMAT) : '')}
+            ${createHtmlLine(LABEL_END_TIME, disruption.endTime && endDateTimeMoment.isValid() ? endDateTimeMoment.format(TIME_FORMAT) : '')}
             ${createHtmlLine(LABEL_URL, disruption.url)}
             ${createHtmlLine(LABEL_CREATED_AT, formatCreatedUpdatedTime(disruption.createdTime))}
             ${createHtmlLine(LABEL_LAST_UPDATED_AT, formatCreatedUpdatedTime(disruption.lastUpdatedTime))}
