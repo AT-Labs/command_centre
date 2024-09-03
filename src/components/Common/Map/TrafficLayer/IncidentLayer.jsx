@@ -1,4 +1,4 @@
-import { isEmpty } from 'lodash-es';
+import { isEmpty, find } from 'lodash-es';
 import PropTypes from 'prop-types';
 import L from 'leaflet';
 import React, { useRef, useState, useEffect } from 'react';
@@ -13,12 +13,10 @@ export const IncidentLayer = (props) => {
     const { data, weight } = props;
 
     const polylineGroupRef = useRef();
-    const [showPolyline, setShowPolyline] = useState(false);
-    const [polylineCoordinates, setPolylineCoordinates] = useState([]);
+    const [selectedIncidentShape, setSelectedIncidentShape] = useState(null);
 
-    const handleMarkerClick = (coordinates) => {
-        setShowPolyline(!showPolyline);
-        setPolylineCoordinates(coordinates);
+    const handleMarkerClick = (situationRecordsId, coordinates) => {
+        setSelectedIncidentShape(prevState => (prevState?.situationRecordsId === situationRecordsId ? null : { situationRecordsId, coordinates }));
     };
 
     useEffect(() => {
@@ -26,6 +24,12 @@ export const IncidentLayer = (props) => {
             polylineGroupRef.current.leafletElement.bringToBack();
         }
     }, []);
+
+    useEffect(() => {
+        if (selectedIncidentShape && !find(data, incident => incident.situationRecordsId === selectedIncidentShape.situationRecordsId)) {
+            setSelectedIncidentShape(null);
+        }
+    }, [props.data]);
 
     const handleGetClusterIcon = cluster => new L.DivIcon({
         className: 'incident-market-cluster',
@@ -45,7 +49,7 @@ export const IncidentLayer = (props) => {
             weight={ pWeight }
             color="#d21710"
             opacity={ 0.5 }
-            onclick={ () => setShowPolyline(false) }
+            onclick={ () => setSelectedIncidentShape(null) }
         />
     );
 
@@ -54,7 +58,7 @@ export const IncidentLayer = (props) => {
             key={ incident.openlr }
             location={ getIconPoint(incident.isPoint, feature.coordinates) }
             category={ incident.type.category }
-            onClick={ () => !incident.isPoint && handleMarkerClick(feature.coordinates) }
+            onClick={ () => !incident.isPoint && handleMarkerClick(incident.situationRecordsId, feature.coordinates) }
             className={ incident.situationRecordsId }
         >
             <Tooltip direction="top" offset={ [0, -50] }>
@@ -65,7 +69,7 @@ export const IncidentLayer = (props) => {
 
     const renderIncidentFeatures = () => data.map(incident => incident.features?.map(feature => (
         <React.Fragment key={ `${incident.openlr}-${generateUniqueID(10)}` }>
-            { showPolyline && getPolyline(polylineCoordinates, weight) }
+            { selectedIncidentShape && getPolyline(selectedIncidentShape.coordinates, weight) }
             { getIconMarket(incident, feature) }
         </React.Fragment>
     )));
