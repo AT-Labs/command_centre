@@ -16,6 +16,12 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import StopGroupsView from './StopGroups/StopGroupsView';
 import { getPageSettings } from '../../../redux/selectors/control/dataManagement/dataManagement';
 import { updateDataManagementPageSettings } from '../../../redux/actions/control/dataManagement';
+import BusPriorityRoutesDataGrid from './BusPriority/BusPriorityRoutes';
+import { useBusPriorityDataManagement } from '../../../redux/selectors/appSettings';
+import { getStopMessagesPermissions } from '../../../redux/selectors/control/stopMessaging/stopMessages';
+import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
+import { isGlobalEditStopMessagesPermitted } from '../../../utils/user-permissions';
+import { getControlBusPriorityViewPermission } from '../../../redux/selectors/user';
 
 import './DataManagement.scss';
 
@@ -66,15 +72,29 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: prop => prop !== 'open' })
 );
 
 export const DataManagement = (props) => {
-    const drawerList = [
-        {
+    const isGlobalEditMessagesPermitted = IS_LOGIN_NOT_REQUIRED || isGlobalEditStopMessagesPermitted(props.stopMessagesPermissions);
+
+    const drawerList = [];
+
+    if (isGlobalEditMessagesPermitted) {
+        drawerList.push({
             id: 0,
             icon: <MdAddLocationAlt size={ 25 } />,
             label: 'Stop Groups',
             component: <StopGroupsView displayTitle={ false } />,
             header: 'Manage Stop Groups',
-        },
-    ];
+        });
+    }
+
+    if (props.useBusPriorityDataManagement && props.isBusPriorityViewPermitted) {
+        drawerList.push({
+            id: 1,
+            icon: <MdAddLocationAlt size={ 25 } />,
+            label: 'Bus Priority Routes',
+            component: <BusPriorityRoutesDataGrid />,
+            header: 'Manage Bus Priority Allowed Routes',
+        });
+    }
 
     const handleListItemClick = (event, index) => {
         props.updatePageSettings({ selectedIndex: index });
@@ -103,27 +123,31 @@ export const DataManagement = (props) => {
 
     return (
         <div className="control-general-settings-view">
-            <div className="mb-3">
-                <h1>{ `Data Management - ${drawerList[props.pageSettings.selectedIndex].header}` }</h1>
-                <Box className="pt-2" sx={ { display: 'flex' } }>
-                    <Drawer variant="permanent" open={ props.pageSettings.drawerOpen }>
-                        <DrawerHeader open={ props.pageSettings.drawerOpen }>
-                            <IconButton onClick={ toggleDrawerView }>
-                                {props.pageSettings.drawerOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-                            </IconButton>
-                        </DrawerHeader>
-                        <Divider />
-                        <List>
-                            {drawerList.map(menu => renderListItem(menu))}
-                        </List>
-                    </Drawer>
-                    <Box sx={ { flexGrow: 1, p: 3, pt: 0 } }>
-                        <div>
-                            {renderContent()}
-                        </div>
-                    </Box>
-                </Box>
-            </div>
+            {
+                drawerList.length > 0 && (
+                    <div className="mb-3">
+                        <h1>{ `Data Management - ${drawerList[props.pageSettings.selectedIndex].header}` }</h1>
+                        <Box className="pt-2" sx={ { display: 'flex' } }>
+                            <Drawer variant="permanent" open={ props.pageSettings.drawerOpen }>
+                                <DrawerHeader open={ props.pageSettings.drawerOpen }>
+                                    <IconButton onClick={ toggleDrawerView }>
+                                        {props.pageSettings.drawerOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+                                    </IconButton>
+                                </DrawerHeader>
+                                <Divider />
+                                <List>
+                                    {drawerList.map(menu => renderListItem(menu))}
+                                </List>
+                            </Drawer>
+                            <Box sx={ { flexGrow: 1, p: 3, pt: 0 } }>
+                                <div>
+                                    {renderContent()}
+                                </div>
+                            </Box>
+                        </Box>
+                    </div>
+                )
+            }
         </div>
     );
 };
@@ -131,10 +155,16 @@ export const DataManagement = (props) => {
 DataManagement.propTypes = {
     pageSettings: PropTypes.object.isRequired,
     updatePageSettings: PropTypes.func.isRequired,
+    useBusPriorityDataManagement: PropTypes.bool.isRequired,
+    isBusPriorityViewPermitted: PropTypes.bool.isRequired,
+    stopMessagesPermissions: PropTypes.array.isRequired,
 };
 
 export default connect(state => ({
     pageSettings: getPageSettings(state),
+    useBusPriorityDataManagement: useBusPriorityDataManagement(state),
+    isBusPriorityViewPermitted: getControlBusPriorityViewPermission(state),
+    stopMessagesPermissions: getStopMessagesPermissions(state),
 }), {
     updatePageSettings: updateDataManagementPageSettings,
 })(DataManagement);

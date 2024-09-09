@@ -23,7 +23,7 @@ import CustomButton from '../../Common/CustomButton/CustomButton';
 import Icon from '../../Common/Icon/Icon';
 import { HelpInformationModal } from '../HelpInformationModal/HelpInformationModal';
 import { resetRealtimeToDefault } from '../../../redux/actions/realtime/common';
-import { useRecurringCancellationsGridView } from '../../../redux/selectors/appSettings';
+import { useBusPriorityDataManagement, useRecurringCancellationsGridView } from '../../../redux/selectors/appSettings';
 import { goToNotificationsView } from '../../../redux/actions/control/link';
 
 import './Header.scss';
@@ -117,6 +117,10 @@ function Header(props) {
         }
         return isDropdownHovered;
     };
+
+    const isDataManagementViewPermitted = () => (
+        isGlobalEditMessagesPermitted
+        || (props.useBusPriorityDataManagement && isViewPermitted('controlBusPriorityView')));
 
     return (
         <Navbar className="header bg-primary p-0 fixed-top" expand="md" dark>
@@ -315,7 +319,7 @@ function Header(props) {
                     )}
                 </Nav>
                 <Nav className="header__toolbar ml-auto" navbar>
-                    { isGlobalEditMessagesPermitted && (
+                    { isDataManagementViewPermitted() && (
                         <NavItem>
                             <CustomButton
                                 className="header__btn header__data-management rounded-0 px-3"
@@ -425,6 +429,7 @@ Header.propTypes = {
     activeControlEntityId: PropTypes.string,
     queryParams: PropTypes.object,
     goToNotificationsView: PropTypes.func.isRequired,
+    useBusPriorityDataManagement: PropTypes.bool.isRequired,
 };
 
 Header.defaultProps = {
@@ -446,6 +451,7 @@ export default connect(
         useRecurringCancellationsGridView: useRecurringCancellationsGridView(state),
         activeControlEntityId: getActiveControlEntityId(state),
         queryParams: getQueryParams(state),
+        useBusPriorityDataManagement: useBusPriorityDataManagement(state),
     }),
     {
         resetRealtimeToDefault,

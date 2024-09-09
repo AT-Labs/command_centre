@@ -23,5 +23,6 @@
     "useRoutesTripsPreferences": "false",
     "useNextDayTrips" : "false",
     "useUnscheduledFilter": "false",
-    "useNewRealtimeMapFilters": "false"
+    "useNewRealtimeMapFilters": "false",
+    "useBusPriorityDataManagement": "false"
 }

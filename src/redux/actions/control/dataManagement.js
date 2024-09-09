@@ -3,6 +3,7 @@ import ACTION_TYPE from '../../action-types';
 import STOP_MESSAGE_TYPE from '../../../types/stop-messages-types';
 import ERROR_TYPE from '../../../types/error-types';
 import * as stopMessagingApi from '../../../utils/transmitters/stop-messaging-api';
+import * as busPriorityApi from '../../../utils/transmitters/bus-priority-api';
 import { setBannerError, reportError } from '../activity';
 
 export const updateDataManagementPageSettings = model => ({
@@ -15,6 +16,13 @@ const loadStopGroups = (stopGroups, stopGroupsIncludingDeleted) => ({
     payload: {
         stopGroups,
         stopGroupsIncludingDeleted,
+    },
+});
+
+const updateBusPriorityPermissions = permissions => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_PERMISSIONS,
+    payload: {
+        permissions,
     },
 });
 
@@ -59,3 +67,56 @@ export const updateStopGroup = (payload, stopGroupId) => (dispatch) => {
             return Promise.reject();
         });
 };
+
+const loadBusPriorityRoutes = priorityRoutes => ({
+    type: ACTION_TYPE.FETCH_CONTROL_BUS_PRIORITY_ROUTES,
+    payload: {
+        priorityRoutes,
+    },
+});
+
+const updateLoadingBusPriorityRoutes = isPriorityRoutesLoading => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_ROUTES_LOADING,
+    payload: {
+        isPriorityRoutesLoading,
+    },
+});
+
+export const getBusPriorityRoutes = () => (dispatch) => {
+    dispatch(updateLoadingBusPriorityRoutes(true));
+    return busPriorityApi.getBusPriorityRoutes()
+        .then((response) => {
+            const { priorityRoutes, _links: { permissions } } = response;
+            dispatch(updateBusPriorityPermissions(permissions));
+            dispatch(loadBusPriorityRoutes(priorityRoutes));
+            dispatch(updateLoadingBusPriorityRoutes(false));
+        })
+        .catch((error) => {
+            const errorMessage = error.code === 500 ? ERROR_TYPE.fetchPriorityBusRoutes : error.message;
+            dispatch(setBannerError(errorMessage));
+            dispatch(updateLoadingBusPriorityRoutes(false));
+        });
+};
+
+export const updateBusPriorityRoutesDatagridConfig = model => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_ROUTES_DATAGRID_CONFIG,
+    payload: model,
+});
+
+export const deleteBusPriorityRoutes = routeIds => dispatch => busPriorityApi.deleteBusPriorityRoutes(routeIds)
+    .then(() => {
+        dispatch(getBusPriorityRoutes());
+    })
+    .catch((error) => {
+        const errorMessage = error.code === 500 ? ERROR_TYPE.fetchPriorityBusRoutes : error.message;
+        dispatch(setBannerError(errorMessage));
+    });
+
+export const addBusPriorityRoute = routeId => dispatch => busPriorityApi.addBusPriorityRoute(routeId)
+    .then(() => {
+        dispatch(getBusPriorityRoutes());
+    })
+    .catch((error) => {
+        const errorMessage = error.code === 500 ? ERROR_TYPE.fetchPriorityBusRoutes : error.message;
+        dispatch(setBannerError(errorMessage));
+    });

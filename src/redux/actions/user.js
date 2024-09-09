@@ -6,6 +6,7 @@ import * as STOP_MESSAGING_API from '../../utils/transmitters/stop-messaging-api
 import * as DISRUPTION_MGT_API from '../../utils/transmitters/disruption-mgt-api';
 import * as TRIP_REPLAY_API from '../../utils/transmitters/trip-replay-api';
 import * as NOTIFICATIONS_API from '../../utils/transmitters/notifications-api';
+import * as BUS_PRIORITY_API from '../../utils/transmitters/bus-priority-api';
 import { getAlertsViewPermission } from '../../utils/transmitters/alerts-api';
 import { getFleetsViewPermission } from '../../utils/transmitters/fleets-api';
 import { getUserPreferences } from '../../utils/transmitters/command-centre-config-api';
@@ -45,6 +46,7 @@ export const fetchAlertsViewPermission = () => fetchViewPermission('controlAlert
 export const fetchTripReplaysViewPermission = () => fetchViewPermission('controlTripReplaysView', TRIP_REPLAY_API.getTripReplaysViewPermission);
 export const fetchFleetsViewPermission = () => fetchViewPermission('controlFleetsView', getFleetsViewPermission);
 export const fetchNotificationsViewPermission = () => fetchViewPermission('controlNotificationsView', NOTIFICATIONS_API.getNotificationsViewPermission);
+export const fetchBusPriorityViewPermission = () => fetchViewPermission('controlBusPriorityView', BUS_PRIORITY_API.getBusPriorityViewPermission);
 export const fetchPreferences = () => dispatch => getUserPreferences()
     .then((preferences) => {
         const { routesFilters } = preferences;

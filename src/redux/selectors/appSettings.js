@@ -36,3 +36,4 @@ export const useNewRealtimeMapFilters = createSelector(
     getAppSettingsState,
     appSettingState => (result(appSettingState, 'useNewRealtimeMapFilters') === 'true'),
 );
+export const useBusPriorityDataManagement = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useBusPriorityDataManagement') === 'true'));

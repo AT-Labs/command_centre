@@ -278,4 +278,10 @@ export default {
     // Datagrid Config
     UPDATE_ROUTES_TRIPS_DATAGRID_CONFIG: 'update-routes-trips-datagrid-config',
     UPDATE_DEFAULT_ROUTES_TRIPS_DATAGRID_CONFIG: 'update-default-routes-trips-datagrid-config',
+
+    // Bus Priority
+    FETCH_CONTROL_BUS_PRIORITY_ROUTES: 'fetch-control-bus-priority-routes',
+    UPDATE_CONTROL_BUS_PRIORITY_ROUTES_LOADING: 'update-control-bus-priority-routes-loading',
+    UPDATE_CONTROL_BUS_PRIORITY_ROUTES_DATAGRID_CONFIG: 'update-control-bus-priority-routes-datagrid-config',
+    UPDATE_CONTROL_BUS_PRIORITY_PERMISSIONS: 'update-control-bus-priority-permissions',
 };

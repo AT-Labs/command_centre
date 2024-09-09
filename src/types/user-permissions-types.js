@@ -33,4 +33,8 @@ export default {
     RECURRING_CANCELLATIONS: {
         UPDATE_RECURRING_CANCELLATIONS: 'recurrent_cancel',
     },
+    DATA_MANAGEMENT_BUS_PRIORITY: {
+        EDIT_BUS_PRIORITY: 'edit',
+        VIEW_BUS_PRIORITY: 'view',
+    },
 };

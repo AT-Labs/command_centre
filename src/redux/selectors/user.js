@@ -11,3 +11,7 @@ export const getControlBlockViewPermission = createSelector(
     getUserPermissions,
     userPermissions => IS_LOGIN_NOT_REQUIRED || result(userPermissions, 'controlBlocksView', false),
 );
+export const getControlBusPriorityViewPermission = createSelector(
+    getUserPermissions,
+    userPermissions => IS_LOGIN_NOT_REQUIRED || result(userPermissions, 'controlBusPriorityView', false),
+);

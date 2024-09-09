@@ -12,8 +12,8 @@ const componentPropsMock = {
         drawerOpen: true,
         selectedIndex: 0,
     },
-    updatePageSettings: () => {}
-
+    updatePageSettings: () => {},
+    stopMessagesPermissions: [ { _rel: 'edit' } ]
 };
 
 const setup = (customProps) => {

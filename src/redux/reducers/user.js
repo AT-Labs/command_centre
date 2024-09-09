@@ -16,6 +16,7 @@ export const INIT_STATE = {
         controlTripReplaysView: false,
         controlFleetsView: false,
         controlNotificationsView: false,
+        controlBusPriorityView: false,
     },
 };
 
