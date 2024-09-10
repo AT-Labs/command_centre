@@ -21,8 +21,9 @@
     "useBulkStopsUpdate": "false",
     "useRemoveStops": "false",
     "useRoutesTripsPreferences": "false",
-    "useNextDayTrips" : "false",
+    "useNextDayTrips": "false",
     "useUnscheduledFilter": "false",
     "useNewRealtimeMapFilters": "false",
-    "useBusPriorityDataManagement": "false"
+    "useBusPriorityDataManagement": "false",
+    "useNextDayChangePlatform": "false"
 }

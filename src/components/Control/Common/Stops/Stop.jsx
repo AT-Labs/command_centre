@@ -17,7 +17,7 @@ import { StopStatus, StopType, TripInstanceType, updateStopsModalTypes } from '.
 import { isChangeStopPermitted, isSkipStopPermitted, isUpdateStopHeadsignPermitted } from '../../../../utils/user-permissions';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../../auth';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
-import { useHeadsignUpdate, useNonStopping, useNextDayTrips } from '../../../../redux/selectors/appSettings';
+import { useHeadsignUpdate, useNonStopping, useNextDayTrips, useNextDayChangePlatform } from '../../../../redux/selectors/appSettings';
 
 export class Stop extends React.Component {
     static propTypes = {
@@ -38,6 +38,7 @@ export class Stop extends React.Component {
         showScheduled: PropTypes.bool,
         onStopUpdated: PropTypes.func,
         useNonStopping: PropTypes.bool.isRequired,
+        useNextDayChangePlatform: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -98,7 +99,7 @@ export class Stop extends React.Component {
     isChangePlatformDisabled = () => !this.isStopMutationPermitted()
         || !this.isStopMutationPossible()
         || this.getAvailablePlatforms().length < 2
-        || moment(this.props.serviceDate).isAfter(moment(), 'day');
+        || (this.props.useNextDayChangePlatform ? moment(this.props.serviceDate).isAfter(moment().add(1, 'day'), 'day') : moment(this.props.serviceDate).isAfter(moment(), 'day'));
 
     showChangePlatformModal = newPlatform => this.setState({ isChangePlatformModalOpen: true, newPlatform });
 
@@ -278,4 +279,5 @@ export default connect(state => ({
     useHeadsignUpdate: useHeadsignUpdate(state),
     useNextDayTrips: useNextDayTrips(state),
     useNonStopping: useNonStopping(state),
+    useNextDayChangePlatform: useNextDayChangePlatform(state),
 }), { updateTripInstanceStopPlatform, selectStops })(Stop);
