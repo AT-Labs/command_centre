@@ -49,3 +49,32 @@ export const addBusPriorityRoute = (routeId) => {
         },
     );
 };
+
+export const getBusPriorityIntersections = () => {
+    const url = `${REACT_APP_BUS_PRIORITY_URL}/intersection`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+        },
+    ).then(response => jsonResponseHandling(response));
+};
+
+export const updateIntersection = (body) => {
+    const url = `${REACT_APP_BUS_PRIORITY_URL}/intersection`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: 'PATCH',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        },
+    );
+};

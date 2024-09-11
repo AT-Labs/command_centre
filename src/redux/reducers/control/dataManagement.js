@@ -22,6 +22,16 @@ export const INIT_STATE = {
             density: 'standard',
             filterModel: { items: [], linkOperator: 'and' },
         },
+        intersections: [],
+        isIntersectionsLoading: false,
+        intersectionsDatagridConfig: {
+            columns: [],
+            page: 0,
+            pageSize: 100,
+            sortModel: [],
+            density: 'standard',
+            filterModel: { items: [], linkOperator: 'and' },
+        },
     },
 };
 
@@ -49,6 +59,23 @@ const handleBusPriorityPermissionsUpdate = (state, { payload: { permissions } })
     ...state,
     busPriority: { ...state.busPriority, permissions },
 });
+const handleBusPriorityIntersectionsLoadingUpdate = (state, { payload: { isIntersectionsLoading } }) => ({
+    ...state,
+    busPriority: { ...state.busPriority, isIntersectionsLoading } });
+const handleBusPriorityIntersectionsUpdate = (state, { payload: { intersections } }) => ({
+    ...state,
+    busPriority: { ...state.busPriority, intersections },
+});
+const handleBusPriorityIntersectionsDatagridConfig = (state, action) => ({
+    ...state,
+    busPriority: {
+        ...state.busPriority,
+        intersectionsDatagridConfig: {
+            ...state.busPriority.intersectionsDatagridConfig,
+            ...action.payload,
+        },
+    },
+});
 
 export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_DATAMANAGEMENT_PAGESETTINGS]: handlePageSettingsUpdate,
@@ -57,5 +84,8 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_ROUTES_LOADING]: handleBusPriorityRoutesLoadingUpdate,
     [ACTION_TYPE.FETCH_CONTROL_BUS_PRIORITY_ROUTES]: handleBusPriorityRoutesUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_ROUTES_DATAGRID_CONFIG]: handleBusPriorityRoutesDatagridConfig,
+    [ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_INTERSECTIONS_LOADING]: handleBusPriorityIntersectionsLoadingUpdate,
+    [ACTION_TYPE.FETCH_CONTROL_BUS_PRIORITY_INTERSECTIONS]: handleBusPriorityIntersectionsUpdate,
+    [ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_INTERSECTIONS_DATAGRID_CONFIG]: handleBusPriorityIntersectionsDatagridConfig,
     [ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_PERMISSIONS]: handleBusPriorityPermissionsUpdate,
 }, INIT_STATE);

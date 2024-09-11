@@ -9,6 +9,14 @@ export const getBusPriorityRoutesDatagridConfig = createSelector(
     dataManagmentState => result(dataManagmentState, 'busPriority.priorityRoutesDatagridConfig'),
 );
 export const getIsLoadingBusPriorityRoutes = createSelector(getDataManagementState, dataManagmentState => result(dataManagmentState, 'busPriority.isPriorityRoutesLoading'));
+
+export const getAllBusPriorityIntersections = createSelector(getDataManagementState, dataManagmentState => result(dataManagmentState, 'busPriority.intersections'));
+export const getBusPriorityIntersectionsDatagridConfig = createSelector(
+    getDataManagementState,
+    dataManagmentState => result(dataManagmentState, 'busPriority.intersectionsDatagridConfig'),
+);
+export const getIsLoadingBusPriorityIntersections = createSelector(getDataManagementState, dataManagmentState => result(dataManagmentState, 'busPriority.isIntersectionsLoading'));
+
 export const getBusPriorityPermissions = createSelector(getDataManagementState, dataManagmentState => result(dataManagmentState, 'busPriority.permissions'));
 export const isBusPriorityEditAllowed = createSelector(
     getBusPriorityPermissions,

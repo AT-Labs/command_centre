@@ -283,5 +283,8 @@ export default {
     FETCH_CONTROL_BUS_PRIORITY_ROUTES: 'fetch-control-bus-priority-routes',
     UPDATE_CONTROL_BUS_PRIORITY_ROUTES_LOADING: 'update-control-bus-priority-routes-loading',
     UPDATE_CONTROL_BUS_PRIORITY_ROUTES_DATAGRID_CONFIG: 'update-control-bus-priority-routes-datagrid-config',
+    FETCH_CONTROL_BUS_PRIORITY_INTERSECTIONS: 'fetch-control-bus-priority-intersections',
+    UPDATE_CONTROL_BUS_PRIORITY_INTERSECTIONS_LOADING: 'update-control-bus-priority-intersections-loading',
+    UPDATE_CONTROL_BUS_PRIORITY_INTERSECTIONS_DATAGRID_CONFIG: 'update-control-bus-priority-intersections-datagrid-config',
     UPDATE_CONTROL_BUS_PRIORITY_PERMISSIONS: 'update-control-bus-priority-permissions',
 };

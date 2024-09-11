@@ -120,3 +120,47 @@ export const addBusPriorityRoute = routeId => dispatch => busPriorityApi.addBusP
         const errorMessage = error.code === 500 ? ERROR_TYPE.fetchPriorityBusRoutes : error.message;
         dispatch(setBannerError(errorMessage));
     });
+
+const loadBusPriorityIntersections = intersections => ({
+    type: ACTION_TYPE.FETCH_CONTROL_BUS_PRIORITY_INTERSECTIONS,
+    payload: {
+        intersections,
+    },
+});
+
+const updateLoadingBusPriorityIntersections = isIntersectionsLoading => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_ROUTES_LOADING,
+    payload: {
+        isIntersectionsLoading,
+    },
+});
+
+export const getBusPriorityIntersections = () => (dispatch) => {
+    dispatch(updateLoadingBusPriorityRoutes(true));
+    return busPriorityApi.getBusPriorityIntersections()
+        .then((response) => {
+            const { intersections, _links: { permissions } } = response;
+            dispatch(updateBusPriorityPermissions(permissions));
+            dispatch(loadBusPriorityIntersections(intersections));
+            dispatch(updateLoadingBusPriorityIntersections(false));
+        })
+        .catch((error) => {
+            const errorMessage = error.code === 500 ? ERROR_TYPE.fetchPriorityBusRoutes : error.message;
+            dispatch(setBannerError(errorMessage));
+            dispatch(updateLoadingBusPriorityRoutes(false));
+        });
+};
+
+export const updateBusPriorityIntersectionsDatagridConfig = model => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_INTERSECTIONS_DATAGRID_CONFIG,
+    payload: model,
+});
+
+export const updateBusPriorityIntersection = body => dispatch => busPriorityApi.updateIntersection(body)
+    .then(() => {
+        dispatch(loadBusPriorityIntersections);
+    })
+    .catch((error) => {
+        const errorMessage = error.code === 500 ? ERROR_TYPE.fetchPriorityBusIntersections : error.message;
+        dispatch(setBannerError(errorMessage));
+    });

@@ -17,6 +17,7 @@ import StopGroupsView from './StopGroups/StopGroupsView';
 import { getPageSettings } from '../../../redux/selectors/control/dataManagement/dataManagement';
 import { updateDataManagementPageSettings } from '../../../redux/actions/control/dataManagement';
 import BusPriorityRoutesDataGrid from './BusPriority/BusPriorityRoutes';
+import BusPriorityIntersectionsDataGrid from './BusPriority/BusPriorityIntersections';
 import { useBusPriorityDataManagement } from '../../../redux/selectors/appSettings';
 import { getStopMessagesPermissions } from '../../../redux/selectors/control/stopMessaging/stopMessages';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
@@ -87,13 +88,22 @@ export const DataManagement = (props) => {
     }
 
     if (props.useBusPriorityDataManagement && props.isBusPriorityViewPermitted) {
-        drawerList.push({
-            id: 1,
-            icon: <MdAddLocationAlt size={ 25 } />,
-            label: 'Bus Priority Routes',
-            component: <BusPriorityRoutesDataGrid />,
-            header: 'Manage Bus Priority Allowed Routes',
-        });
+        drawerList.push(
+            {
+                id: 1,
+                icon: <MdAddLocationAlt size={ 25 } />,
+                label: 'Bus Priority Routes',
+                component: <BusPriorityRoutesDataGrid />,
+                header: 'Manage Bus Priority Allowed Routes',
+            },
+            {
+                id: 2,
+                icon: <MdAddLocationAlt size={ 25 } />,
+                label: 'Bus Priority Intersections',
+                component: <BusPriorityIntersectionsDataGrid />,
+                header: 'Manage Bus Priority Intersections',
+            },
+        );
     }
 
     const handleListItemClick = (event, index) => {
