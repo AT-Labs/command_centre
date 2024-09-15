@@ -78,6 +78,10 @@ export const IMPACTS = [
         value: 'STOP_CLOSED',
     },
     {
+        label: 'Stop moved',
+        value: 'STOP_MOVED',
+    },
+    {
         label: 'Taxi replacement',
         value: 'TAXI_REPLACEMENT',
     },
@@ -157,6 +161,10 @@ export const CAUSES = [
     {
         label: 'Infrastructure Issue',
         value: 'INFRASTRUCTURE_ISSUE',
+    },
+    {
+        label: 'Maintenance',
+        value: 'MAINTENANCE',
     },
     {
         label: 'Mechanical issues',
@@ -266,10 +274,6 @@ export const OLD_IMPACTS = [
         value: 'SPEED_RESTRICTIONS',
     },
     {
-        label: 'Stop moved',
-        value: 'STOP_MOVED',
-    },
-    {
         label: 'Unknown effect',
         value: 'UNKNOWN_EFFECT',
     },
@@ -303,10 +307,6 @@ export const OLD_CAUSES = [
     {
         label: 'Level crossing issue',
         value: 'LEVEL_CROSSING_ISSUE',
-    },
-    {
-        label: 'Maintenance',
-        value: 'MAINTENANCE',
     },
     {
         label: 'Medical Emergency',
