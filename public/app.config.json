@@ -25,5 +25,6 @@
     "useUnscheduledFilter": "false",
     "useNewRealtimeMapFilters": "false",
     "useBusPriorityDataManagement": "false",
-    "useNextDayChangePlatform": "false"
+    "useNextDayChangePlatform": "false",
+    "useNextDayChangePlatformBulkUpdate": "false"
 }

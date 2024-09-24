@@ -16,7 +16,7 @@ import { deselectAllTrips, removeBulkUpdateMessages, setTripStatusModalOrigin } 
 import {
     getSelectedTripInstances, getTripInstancesActionResults, getTripInstancesActionLoading, getBulkUpdateMessagesByType, getTripStatusModalOriginState,
 } from '../../../../redux/selectors/control/routes/trip-instances';
-import { useHideTrip, useBulkStopsUpdate } from '../../../../redux/selectors/appSettings';
+import { useHideTrip, useBulkStopsUpdate, useNextDayChangePlatformBulkUpdate } from '../../../../redux/selectors/appSettings';
 import './styles.scss';
 import { isHideCancellationPermitted } from '../../../../utils/user-permissions';
 import UpdateTripStopsModal from '../Modals/UpdateTripStopsModal';
@@ -66,8 +66,12 @@ const SelectionToolsFooter = (props) => {
         const { routeVariantId } = trips[0];
 
         // Check if the selected trips have the same routeVariantId as the first one
-        // Check if all the selected trips are not started
-        return trips.every(trip => (moment(trip.serviceDate).isSame(moment(), 'day')) && trip.routeVariantId === routeVariantId && trip.status === TRIP_STATUS_TYPES.notStarted);
+        // Check if all the selected trips are not started and the service date is either today or tomorrow
+        return trips.every((trip) => {
+            const serviceDate = moment(trip.serviceDate);
+            const isTodayOrTomorrowTrip = serviceDate.isSame(moment(), 'day') || (props.useNextDayChangePlatformBulkUpdate && serviceDate.isSame(moment().add(1, 'day'), 'day'));
+            return isTodayOrTomorrowTrip && trip.routeVariantId === routeVariantId && trip.status === TRIP_STATUS_TYPES.notStarted;
+        });
     };
 
     return (
@@ -198,6 +202,7 @@ SelectionToolsFooter.propTypes = {
     setTripStatusModalOrigin: PropTypes.func.isRequired,
     useHideTrip: PropTypes.bool.isRequired,
     useBulkStopsUpdate: PropTypes.bool.isRequired,
+    useNextDayChangePlatformBulkUpdate: PropTypes.bool.isRequired,
 };
 
 SelectionToolsFooter.defaultProps = {
@@ -211,4 +216,5 @@ export default connect(state => ({
     tripStatusModalOrigin: getTripStatusModalOriginState(state),
     useHideTrip: useHideTrip(state),
     useBulkStopsUpdate: useBulkStopsUpdate(state),
+    useNextDayChangePlatformBulkUpdate: useNextDayChangePlatformBulkUpdate(state),
 }), { deselectAllTrips, removeBulkUpdateMessages, setTripStatusModalOrigin })(SelectionToolsFooter);
