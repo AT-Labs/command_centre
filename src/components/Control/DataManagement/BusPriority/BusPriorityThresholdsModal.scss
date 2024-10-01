@@ -1,0 +1,19 @@
+
+.filter-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+
+    .filter {
+        flex: 1;
+
+        label {
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+    }
+}
+
+.threshold-grid {
+    margin-top: 10px;
+}

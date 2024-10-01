@@ -9,7 +9,8 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
-import { MdAddLocationAlt } from 'react-icons/md';
+import { MdAddLocationAlt, MdDataThresholding, MdRoute } from 'react-icons/md';
+import { BsSignIntersectionFill } from 'react-icons/bs';
 import { Divider, IconButton } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -23,6 +24,7 @@ import { getStopMessagesPermissions } from '../../../redux/selectors/control/sto
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
 import { isGlobalEditStopMessagesPermitted } from '../../../utils/user-permissions';
 import { getControlBusPriorityViewPermission } from '../../../redux/selectors/user';
+import BusPriorityThresholdDataGrid from './BusPriority/BusPriorityThresholds';
 
 import './DataManagement.scss';
 
@@ -77,31 +79,42 @@ export const DataManagement = (props) => {
 
     const drawerList = [];
 
+    let drawerId = 0;
+
     if (isGlobalEditMessagesPermitted) {
         drawerList.push({
-            id: 0,
+            id: drawerId,
             icon: <MdAddLocationAlt size={ 25 } />,
             label: 'Stop Groups',
             component: <StopGroupsView displayTitle={ false } />,
             header: 'Manage Stop Groups',
         });
+
+        drawerId += 1;
     }
 
     if (props.useBusPriorityDataManagement && props.isBusPriorityViewPermitted) {
         drawerList.push(
             {
-                id: 1,
-                icon: <MdAddLocationAlt size={ 25 } />,
+                id: drawerId,
+                icon: <MdRoute size={ 25 } />,
                 label: 'Bus Priority Routes',
                 component: <BusPriorityRoutesDataGrid />,
                 header: 'Manage Bus Priority Allowed Routes',
             },
             {
-                id: 2,
-                icon: <MdAddLocationAlt size={ 25 } />,
+                id: drawerId + 1,
+                icon: <BsSignIntersectionFill size={ 25 } />,
                 label: 'Bus Priority Intersections',
                 component: <BusPriorityIntersectionsDataGrid />,
                 header: 'Manage Bus Priority Intersections',
+            },
+            {
+                id: drawerId + 2,
+                icon: <MdDataThresholding size={ 25 } />,
+                label: 'Bus Priority Thresholds',
+                component: <BusPriorityThresholdDataGrid />,
+                header: 'Manage Bus Priority Thresholds',
             },
         );
     }

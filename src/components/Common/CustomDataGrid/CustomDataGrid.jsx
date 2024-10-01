@@ -17,10 +17,15 @@ export const CustomDataGrid = (props) => {
 
     const CustomToolbar = toolbarProps => (
         <GridToolbarContainer { ...toolbarProps }>
-            <GridToolbarColumnsButton />
-            <GridToolbarFilterButton />
-            <GridToolbarDensitySelector />
-            <GridToolbarExport printOptions={ { disableToolbarButton: true } } />
+            { props.showStandardToolbarButtons && (
+                <>
+                    <GridToolbarColumnsButton />
+                    <GridToolbarFilterButton />
+                    <GridToolbarDensitySelector />
+                    <GridToolbarExport printOptions={ { disableToolbarButton: true } } />
+                </>
+            )}
+            { props.toolbarButtons() }
         </GridToolbarContainer>
     );
 
@@ -205,6 +210,7 @@ export const CustomDataGrid = (props) => {
                     autoHeight={ props.autoHeight }
                     groupingColDef={ props.groupingColDef }
                     loading={ props.loading }
+                    onCellEditCommit={ props.onCellEditCommit }
                 />
             </LocalizationProvider>
         </div>
@@ -241,6 +247,9 @@ CustomDataGrid.propTypes = {
     groupingColDef: PropTypes.object,
     loading: PropTypes.bool,
     classes: PropTypes.object,
+    onCellEditCommit: PropTypes.func,
+    toolbarButtons: PropTypes.func,
+    showStandardToolbarButtons: PropTypes.bool,
 };
 
 CustomDataGrid.defaultProps = {
@@ -272,6 +281,9 @@ CustomDataGrid.defaultProps = {
     loading: false,
     keepNonExistentRowsSelected: false,
     classes: {},
+    onCellEditCommit: () => null,
+    toolbarButtons: () => null,
+    showStandardToolbarButtons: true,
 };
 
 export default CustomDataGrid;

@@ -32,6 +32,16 @@ export const INIT_STATE = {
             density: 'standard',
             filterModel: { items: [], linkOperator: 'and' },
         },
+        thresholds: [],
+        isThresholdsLoading: false,
+        thresholdsDatagridConfig: {
+            columns: [],
+            page: 0,
+            pageSize: 100,
+            sortModel: [],
+            density: 'standard',
+            filterModel: { items: [], linkOperator: 'and' },
+        },
     },
 };
 
@@ -76,6 +86,23 @@ const handleBusPriorityIntersectionsDatagridConfig = (state, action) => ({
         },
     },
 });
+const handleBusPriorityThresholdsLoadingUpdate = (state, { payload: { isThresholdsLoading } }) => ({
+    ...state,
+    busPriority: { ...state.busPriority, isThresholdsLoading } });
+const handleBusPriorityThresholdsUpdate = (state, { payload: { thresholds } }) => ({
+    ...state,
+    busPriority: { ...state.busPriority, thresholds },
+});
+const handleBusPriorityThresholdsDatagridConfig = (state, action) => ({
+    ...state,
+    busPriority: {
+        ...state.busPriority,
+        thresholdsDatagridConfig: {
+            ...state.busPriority.thresholdsDatagridConfig,
+            ...action.payload,
+        },
+    },
+});
 
 export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_DATAMANAGEMENT_PAGESETTINGS]: handlePageSettingsUpdate,
@@ -87,5 +114,8 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_INTERSECTIONS_LOADING]: handleBusPriorityIntersectionsLoadingUpdate,
     [ACTION_TYPE.FETCH_CONTROL_BUS_PRIORITY_INTERSECTIONS]: handleBusPriorityIntersectionsUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_INTERSECTIONS_DATAGRID_CONFIG]: handleBusPriorityIntersectionsDatagridConfig,
+    [ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_THRESHOLDS_LOADING]: handleBusPriorityThresholdsLoadingUpdate,
+    [ACTION_TYPE.FETCH_CONTROL_BUS_PRIORITY_THRESHOLDS]: handleBusPriorityThresholdsUpdate,
+    [ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_THRESHOLDS_DATAGRID_CONFIG]: handleBusPriorityThresholdsDatagridConfig,
     [ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_PERMISSIONS]: handleBusPriorityPermissionsUpdate,
 }, INIT_STATE);

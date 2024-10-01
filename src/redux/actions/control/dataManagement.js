@@ -164,3 +164,65 @@ export const updateBusPriorityIntersection = body => dispatch => busPriorityApi.
         const errorMessage = error.code === 500 ? ERROR_TYPE.fetchPriorityBusIntersections : error.message;
         dispatch(setBannerError(errorMessage));
     });
+
+const loadBusPriorityThresholds = thresholds => ({
+    type: ACTION_TYPE.FETCH_CONTROL_BUS_PRIORITY_THRESHOLDS,
+    payload: {
+        thresholds,
+    },
+});
+
+const updateLoadingBusPriorityThresholds = isThresholdsLoading => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_THRESHOLDS_LOADING,
+    payload: {
+        isThresholdsLoading,
+    },
+});
+
+export const getBusPriorityThresholds = () => (dispatch) => {
+    dispatch(updateLoadingBusPriorityThresholds(true));
+    return busPriorityApi.getBusPriorityThresholds()
+        .then((response) => {
+            const { thresholds, _links: { permissions } } = response;
+            dispatch(updateBusPriorityPermissions(permissions));
+            dispatch(loadBusPriorityThresholds(thresholds));
+            dispatch(updateLoadingBusPriorityThresholds(false));
+        })
+        .catch((error) => {
+            const errorMessage = error.code === 500 ? ERROR_TYPE.fetchPriorityThresholds : error.message;
+            dispatch(setBannerError(errorMessage));
+            dispatch(updateLoadingBusPriorityThresholds(false));
+        });
+};
+
+export const updateBusPriorityThresholdsDatagridConfig = model => ({
+    type: ACTION_TYPE.UPDATE_CONTROL_BUS_PRIORITY_THRESHOLDS_DATAGRID_CONFIG,
+    payload: model,
+});
+
+export const saveNewThresholds = thresholds => dispatch => busPriorityApi.saveBusPriorityThresholds(thresholds)
+    .then(() => {
+        dispatch(getBusPriorityThresholds());
+    })
+    .catch((error) => {
+        const errorMessage = error.code === 500 ? ERROR_TYPE.saveNewPriorityThresholds : error.message;
+        dispatch(setBannerError(errorMessage));
+    });
+
+export const updateThresholds = thresholds => dispatch => busPriorityApi.updateBusPriorityThresholds(thresholds)
+    .then(() => {
+        dispatch(getBusPriorityThresholds());
+    })
+    .catch((error) => {
+        const errorMessage = error.code === 500 ? ERROR_TYPE.updatePriorityThresholds : error.message;
+        dispatch(setBannerError(errorMessage));
+    });
+
+export const deleteThresholds = thresholds => dispatch => busPriorityApi.deleteBusPriorityThresholds(thresholds)
+    .then(() => {
+        dispatch(getBusPriorityThresholds());
+    })
+    .catch((error) => {
+        const errorMessage = error.code === 500 ? ERROR_TYPE.updatePriorityThresholds : error.message;
+        dispatch(setBannerError(errorMessage));
+    });

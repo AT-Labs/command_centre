@@ -78,3 +78,62 @@ export const updateIntersection = (body) => {
         },
     );
 };
+
+export const getBusPriorityThresholds = () => {
+    const url = `${REACT_APP_BUS_PRIORITY_URL}/threshold`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+        },
+    ).then(response => jsonResponseHandling(response));
+};
+
+export const saveBusPriorityThresholds = (thresholds) => {
+    const url = `${REACT_APP_BUS_PRIORITY_URL}/threshold`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(thresholds),
+        },
+    );
+};
+
+export const updateBusPriorityThresholds = (thresholds) => {
+    const url = `${REACT_APP_BUS_PRIORITY_URL}/threshold`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: 'PUT',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(thresholds),
+        },
+    );
+};
+
+export const deleteBusPriorityThresholds = (thresholds) => {
+    const url = `${REACT_APP_BUS_PRIORITY_URL}/threshold`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: 'DELETE',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(thresholds),
+        },
+    );
+};

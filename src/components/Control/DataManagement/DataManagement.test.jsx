@@ -13,7 +13,10 @@ const componentPropsMock = {
         selectedIndex: 0,
     },
     updatePageSettings: () => {},
-    stopMessagesPermissions: [ { _rel: 'edit' } ]
+    stopMessagesPermissions: [ { _rel: 'edit' } ],
+    useBusPriorityDataManagement: true,
+    isBusPriorityViewPermitted: true,
+
 };
 
 const setup = (customProps) => {
