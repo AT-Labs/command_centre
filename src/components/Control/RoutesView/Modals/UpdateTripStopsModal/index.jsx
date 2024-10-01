@@ -107,7 +107,7 @@ const UpdateTripStopsModal = (props) => {
                     });
                 })
                 .catch((error) => {
-                    setErrorMessage(error);
+                    setErrorMessage(error?.message ? `Something went wrong(${error.message})` : error);
                 })
                 .finally(() => setAreTripsUpdating(false));
         } catch {
