@@ -73,6 +73,15 @@ describe('Authentication Functions', () => {
         expect(user.username).toBe('test-user');
     });
 
+    it('should throw an error if no active account is found', async () => {
+        process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN = 'false';
+        const { getMsalInstance, getAuthToken } = require('./auth');
+        global.IS_LOGIN_NOT_REQUIRED = false;
+        const msalInstance = getMsalInstance();
+        msalInstance.getActiveAccount = jest.fn().mockReturnValue(null);
+        await expect(getAuthToken()).rejects.toThrow('No user account found');
+    });
+
     it('getAuthToken should return token if user is logged in', async () => {
         process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN = 'false';
         const { getMsalInstance, getAuthToken } = require('./auth');
@@ -83,6 +92,36 @@ describe('Authentication Functions', () => {
 
         const token = await getAuthToken();
         expect(token).toBe('test-token');
+    });
+
+    it('should return idToken when popup interaction is required', async () => {
+        global.IS_LOGIN_NOT_REQUIRED = false;
+        process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN = 'false';
+        const { getMsalInstance, getAuthToken } = require('./auth');
+        const msalInstance = getMsalInstance();
+        const idToken = 'popupToken';
+
+        msalInstance.getAllAccounts = jest.fn().mockReturnValue([account]);
+        msalInstance.getActiveAccount = jest.fn().mockReturnValue(account);
+        msalInstance.acquireTokenSilent = jest.fn().mockRejectedValue({ name: 'InteractionRequiredAuthError' });
+        msalInstance.acquireTokenPopup = jest.fn().mockResolvedValue({ idToken });
+
+        const token = await getAuthToken();
+        expect(msalInstance.acquireTokenPopup).toHaveBeenCalled();
+        expect(token).toBe(idToken);
+    });
+
+    it('should capture exception and return undefined when silent token acquisition fails', async () => {
+        global.IS_LOGIN_NOT_REQUIRED = false;
+        process.env.REACT_APP_DISABLE_ACTIVE_DIRECTORY_LOGIN = 'false';
+        const { getMsalInstance, getAuthToken } = require('./auth');
+        const msalInstance = getMsalInstance();
+
+        msalInstance.getAllAccounts = jest.fn().mockReturnValue([account]);
+        msalInstance.getActiveAccount = jest.fn().mockReturnValue(account);
+        msalInstance.acquireTokenSilent = jest.fn().mockRejectedValue(new Error('Silent token acquisition failed'));
+        const token = await getAuthToken();
+        expect(token).toBe(undefined);
     });
 
     it('logout should call msalInstance.logoutRedirect and clear Sentry user', () => {

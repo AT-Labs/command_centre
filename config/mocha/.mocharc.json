@@ -15,8 +15,8 @@
         "ignore-styles"
     ],
     "file": [
-        "config/mocha/setup-auth-mock.js",
-        "config/mocha/setup.js"
+        "config/mocha/setup.js",
+        "config/mocha/setup-auth-mock.js"
     ],
     "spec": ["src/**/*.test.js", "src/**/*.test.jsx"]
 }
