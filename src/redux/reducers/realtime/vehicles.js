@@ -3,6 +3,7 @@ import { handleActions } from 'redux-actions';
 
 import ACTION_TYPE from '../../action-types';
 import { getVehiclePosition } from '../../selectors/realtime/vehicles';
+import { UNSCHEDULED_TAG } from '../../../types/vehicle-types';
 
 const vehicleKeyedById = 'vehicle.vehicle.id';
 
@@ -34,20 +35,30 @@ const hasPositionChanged = (existingVehicle, vehicleUpdate) => {
 
 const isValidVehicleUpdate = (existingVehicle, vehicleUpdate) => result(existingVehicle, 'vehicle.timestamp', 0) < vehicleUpdate.vehicle.timestamp;
 
-const handleVehiclesUpdate = (state, action) => {
+export const handleVehiclesUpdate = (state, action) => {
     const { payload: { isSnapshotUpdate, vehicles } } = action;
     let allVehicles = [];
     if (isSnapshotUpdate) {
         allVehicles = keyBy(
-            map(vehicles, (vehicleUpdate, key) => {
-                const existingVehicle = state.all[key];
-                return isValidVehicleUpdate(existingVehicle, vehicleUpdate) ? vehicleUpdate : existingVehicle;
+            map(vehicles, (vehicle) => {
+                const vehicleToUpdate = { ...vehicle };
+                const existingVehicle = state.all[vehicleToUpdate.id];
+
+                if (existingVehicle?.vehicle.tags?.includes(UNSCHEDULED_TAG)) {
+                    vehicleToUpdate.vehicle.tags = [
+                        ...(vehicleToUpdate.vehicle.tags ?? []),
+                        UNSCHEDULED_TAG,
+                    ];
+                    vehicleToUpdate.vehicle.route = existingVehicle.vehicle.route;
+                }
+
+                return isValidVehicleUpdate(existingVehicle, vehicleToUpdate) ? vehicleToUpdate : existingVehicle;
             }),
             vehicleKeyedById,
         );
     } else {
-        let updatedVehicles = keyBy(filter(vehicles, (vehicleUpdate, key) => {
-            const existingVehicle = state.all[key];
+        let updatedVehicles = keyBy(filter(vehicles, (vehicleUpdate) => {
+            const existingVehicle = state.all[vehicleUpdate.id];
             return isValidVehicleUpdate(existingVehicle, vehicleUpdate)
                 && hasPositionChanged(existingVehicle, vehicleUpdate);
         }), vehicleKeyedById);
