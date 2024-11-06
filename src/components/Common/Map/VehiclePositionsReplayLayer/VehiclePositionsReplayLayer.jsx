@@ -27,7 +27,7 @@ const filterPositions = (positions, leafletMap, tripSignOn) => {
     let signOnPositionNotFound = true;
     let current = 0;
     const filteredPositions = [positions[0]];
-    for (let i = 0; i < positions.length - 1; i++) {
+    for (let i = 1; i < positions.length - 1; i++) {
         if (signOnPositionNotFound) {
             if (isEqual(positions[i].timestamp, tripSignOnTimestamp)) {
                 filteredPositions.push(positions[i]);
