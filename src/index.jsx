@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import { EventType } from '@azure/msal-browser';
 import { getMsalInstance, IS_LOGIN_NOT_REQUIRED } from './auth';
 
 let localVersion;
@@ -66,13 +65,6 @@ async function checkAuthentication() {
     const account = msalInstance.getAllAccounts()[0];
     if (account) {
         msalInstance.setActiveAccount(account);
-        msalInstance.enableAccountStorageEvents();
-        msalInstance.addEventCallback((event) => {
-            if (event.eventType === EventType.LOGIN_SUCCESS && event.payload.account) {
-                const accountEvent = event.payload.account;
-                msalInstance.setActiveAccount(accountEvent);
-            }
-        });
         loadApp();
     } else {
         msalInstance.loginRedirect();

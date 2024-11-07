@@ -20,7 +20,6 @@ const msalConfig = {
 const msalInstance = new PublicClientApplication(msalConfig);
 const loginRequest = {
     scopes: ['User.Read'],
-    redirectUri: `${window.location.origin}/blank.html`,
 };
 
 const guestUserName = 'Guest User';
@@ -49,22 +48,12 @@ export const getAuthToken = async () => {
         throw new Error('No user account found');
     }
     const forceRefresh = new Date() >= new Date(account.idTokenClaims.exp * 1000);
-    const silentRequest = {
+    const response = await msalInstance.acquireTokenSilent({
         ...loginRequest,
         account,
         forceRefresh,
-    };
-    try {
-        const response = await msalInstance.acquireTokenSilent(silentRequest);
-        return response.idToken;
-    } catch (error) {
-        if (error.name === 'InteractionRequiredAuthError') {
-            const response = await msalInstance.acquireTokenPopup(silentRequest);
-            return response.idToken;
-        }
-        Sentry.captureException(`Failed to get user token silent ${error})`);
-        return undefined;
-    }
+    });
+    return response.idToken;
 };
 
 export const fetchWithAuthHeader = async (url, options) => {
