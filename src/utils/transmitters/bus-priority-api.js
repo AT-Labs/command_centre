@@ -108,7 +108,7 @@ export const saveBusPriorityThresholds = (thresholds) => {
     );
 };
 
-export const updateBusPriorityThresholds = (thresholds) => {
+export const updateBusPriorityThresholds = (previousThresholds, thresholds) => {
     const url = `${REACT_APP_BUS_PRIORITY_URL}/threshold`;
     return fetchWithAuthHeader(
         url,
@@ -118,7 +118,10 @@ export const updateBusPriorityThresholds = (thresholds) => {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(thresholds),
+            body: JSON.stringify({
+                previousThresholds,
+                updatedThresholds: thresholds,
+            }),
         },
     );
 };

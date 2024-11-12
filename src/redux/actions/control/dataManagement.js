@@ -209,7 +209,7 @@ export const saveNewThresholds = thresholds => dispatch => busPriorityApi.saveBu
         dispatch(setBannerError(errorMessage));
     });
 
-export const updateThresholds = thresholds => dispatch => busPriorityApi.updateBusPriorityThresholds(thresholds)
+export const updateThresholds = (originalThresholds, thresholds) => dispatch => busPriorityApi.updateBusPriorityThresholds(originalThresholds, thresholds)
     .then(() => {
         dispatch(getBusPriorityThresholds());
     })

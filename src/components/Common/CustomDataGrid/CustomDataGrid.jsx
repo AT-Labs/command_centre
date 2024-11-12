@@ -14,6 +14,7 @@ import { DENSITY } from '../../../types/data-grid-types';
 export const CustomDataGrid = (props) => {
     const apiRef = useGridApiRef();
     const [selectedRows, setSelectedRows] = useState([]);
+    const [currentCellEditParams, setCurrentCellEditParams] = useState(null);
 
     const CustomToolbar = toolbarProps => (
         <GridToolbarContainer { ...toolbarProps }>
@@ -57,6 +58,14 @@ export const CustomDataGrid = (props) => {
         ];
     };
 
+    const handleCellEditStart = (params) => {
+        setCurrentCellEditParams(params);
+    };
+
+    const handleCellEditStop = () => {
+        setCurrentCellEditParams(null);
+    };
+
     const getNoRowsOverlay = () => <Overlay message="No records found." />;
 
     const getNoResultsOverlay = () => (
@@ -88,6 +97,17 @@ export const CustomDataGrid = (props) => {
             setTimeout(() => apiRef.current.scroll({ top: calculateScroll(idx - (pageIdx * props.datagridConfig.pageSize)) }));
         }
     };
+
+    React.useEffect(() => {
+        if (props.stopEditing && currentCellEditParams) {
+            apiRef.current.commitCellChange(currentCellEditParams); // This commits the edit
+            apiRef.current.setCellMode(currentCellEditParams.id, currentCellEditParams.field, 'view');
+        }
+
+        if (props.stopEditing) {
+            props.editComplete();
+        }
+    }, [props.stopEditing]);
 
     React.useEffect(() => {
         if (isInitialLoad && props.dataSource.length > 0 && props.expandedDetailPanels?.length > 0) {
@@ -211,6 +231,8 @@ export const CustomDataGrid = (props) => {
                     groupingColDef={ props.groupingColDef }
                     loading={ props.loading }
                     onCellEditCommit={ props.onCellEditCommit }
+                    onCellEditStart={ handleCellEditStart }
+                    onCellEditStop={ handleCellEditStop }
                 />
             </LocalizationProvider>
         </div>
@@ -250,6 +272,8 @@ CustomDataGrid.propTypes = {
     onCellEditCommit: PropTypes.func,
     toolbarButtons: PropTypes.func,
     showStandardToolbarButtons: PropTypes.bool,
+    stopEditing: PropTypes.bool,
+    editComplete: PropTypes.func,
 };
 
 CustomDataGrid.defaultProps = {
@@ -284,6 +308,8 @@ CustomDataGrid.defaultProps = {
     onCellEditCommit: () => null,
     toolbarButtons: () => null,
     showStandardToolbarButtons: true,
+    stopEditing: false,
+    editComplete: () => null,
 };
 
 export default CustomDataGrid;

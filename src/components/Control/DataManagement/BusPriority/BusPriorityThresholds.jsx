@@ -117,7 +117,7 @@ export const BusPriorityThresholdDataGrid = (props) => {
         {
             field: 'RouteId',
             headerName: LABEL_ROUTEID,
-            width: 100,
+            width: 200,
             type: 'string',
         },
         {
@@ -177,7 +177,7 @@ export const BusPriorityThresholdDataGrid = (props) => {
                     mode={ mode }
                     allThresholds={ props.busPriorityThresholds }
                     saveNewThresholds={ thresholds => props.saveNewThresholds(thresholds) }
-                    updateThresholds={ thresholds => props.updateThresholds(thresholds) }
+                    updateThresholds={ (originalThresholds, thresholds) => props.updateThresholds(originalThresholds, thresholds) }
                     deleteThresholds={ thresholds => props.deleteThresholds(thresholds) }
                     thresholdSet={ thresholdSet }
                 />

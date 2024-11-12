@@ -23,9 +23,10 @@ export const UPDATE_TYPE = {
 
 const BusPriorityThresholdsModal = (props) => {
     const [thresholds, setThresholds] = useState([]);
+    const [originalThresholds, setOriginalThresholds] = useState([]);
     const [occupancy, setOccupancy] = useState(null);
     const [siteId, setSiteId] = useState(null);
-    const [routeId, setRouteId] = useState(null);
+    const [routeIds, setRouteIds] = useState('');
     const [disableFilters, setDisableFilters] = useState(false);
     const [invalidFilters, setInvalidFilters] = useState(false);
     const [invalidFilterString, setInvalidFilterString] = useState('');
@@ -43,11 +44,14 @@ const BusPriorityThresholdsModal = (props) => {
         filterModel: { items: [], linkOperator: 'and' },
     });
     const [updateType, setUpdateType] = useState(UPDATE_TYPE.VIEW);
+    const [initialLoad, setInitialLoad] = useState(true);
+    const [stopEdit, setStopEdit] = useState(false);
+    const [performSave, setPerformSave] = useState(false);
 
     const resetFilters = () => {
         setOccupancy(null);
         setSiteId(null);
-        setRouteId(null);
+        setRouteIds(null);
         setThresholds([]);
     };
 
@@ -89,7 +93,7 @@ const BusPriorityThresholdsModal = (props) => {
     const updateCanSave = () => {
         if (invalidFilters
             || thresholds.length === 0
-            || (updateType === UPDATE_TYPE.NEW && (isEmpty(siteId) && isEmpty(routeId) && isEmpty(occupancy)))) {
+            || (updateType === UPDATE_TYPE.NEW && (isEmpty(siteId) && isEmpty(routeIds) && isEmpty(occupancy)))) {
             setCanSave(false);
         } else {
             setCanSave(true);
@@ -97,10 +101,30 @@ const BusPriorityThresholdsModal = (props) => {
     };
 
     const validateFilters = () => {
-        const filterExists = updateType === UPDATE_TYPE.NEW
-            && props.allThresholds.some(threshold => (threshold.Occupancy === occupancy || (!threshold.Occupancy && !occupancy))
-            && (threshold.SiteId === siteId || (!threshold.SiteId && !siteId))
-            && (threshold.RouteId === routeId || (!threshold.RouteId && !routeId)));
+        const originalRowKeys = new Set(originalThresholds.map(item => item.rowKey));
+
+        // Check that another threshold set does not already exist with the same Occupancy, RouteId and SiteId values as this is not allowed
+        // Note: RouteId is checked separately as it can be a comma separated list of routes,
+        // so each routeId in this modal needs to be checked against each routeId in the threshold being tested
+        const filterExists = updateType !== UPDATE_TYPE.DELETE
+            && props.allThresholds.some((threshold) => {
+                if (originalRowKeys.has(threshold.rowKey)) {
+                    return false;
+                }
+
+                let routeMatched = (!threshold.RouteId && !routeIds);
+
+                if (!routeMatched && threshold.RouteId && routeIds) {
+                    const thresholdRoutes = threshold.RouteId.split(',').map(item => item.trim());
+                    const currentRoutes = routeIds.split(',').map(item => item.trim());
+
+                    routeMatched = currentRoutes.some(item => thresholdRoutes.includes(item));
+                }
+
+                return (threshold.Occupancy === occupancy || (!threshold.Occupancy && !occupancy))
+                        && (threshold.SiteId === siteId || (!threshold.SiteId && !siteId))
+                        && routeMatched;
+            });
 
         const duplicateScores = hasDuplicates(thresholds.map(row => row.Score));
 
@@ -110,29 +134,35 @@ const BusPriorityThresholdsModal = (props) => {
 
         const thresholdsNotIncreasing = areThresholdsNotIncreasing(thresholds);
 
+        const isInvalid = (filterExists && thresholds.length > 0) || duplicateScores || duplicateThresholds || hasZeroValues || thresholdsNotIncreasing;
+
         setInvalidMessage(filterExists, duplicateScores, duplicateThresholds, hasZeroValues, thresholdsNotIncreasing);
-        setInvalidFilters((filterExists && thresholds.length > 0) || duplicateScores || duplicateThresholds || hasZeroValues || thresholdsNotIncreasing);
+        setInvalidFilters(isInvalid);
         updateCanSave();
+
+        return isInvalid;
     };
 
     const updateThresholds = () => {
-        const updatedThresholds = thresholds.map(threshold => ({ ...threshold, routeId, siteId, occupancy }));
+        const updatedThresholds = thresholds.map(threshold => ({ ...threshold, RouteId: routeIds, SiteId: siteId, Occupancy: occupancy }));
 
         setThresholds(updatedThresholds);
     };
 
     useEffect(() => {
         if (props.thresholdSet != null) {
-            setThresholds(props.allThresholds.filter(threshold => threshold.Occupancy === props.thresholdSet.occupancy
+            const initalThresholds = (props.allThresholds.filter(threshold => threshold.Occupancy === props.thresholdSet.occupancy
                 && threshold.SiteId === props.thresholdSet.siteId
                 && threshold.RouteId === props.thresholdSet.routeId));
 
+            setThresholds(initalThresholds);
+            setOriginalThresholds(initalThresholds);
             setSiteId(props.thresholdSet.siteId);
-            setRouteId(props.thresholdSet.routeId);
+            setRouteIds(props.thresholdSet.routeId);
             setOccupancy(props.thresholdSet.occupancy);
         }
-
-        if (updateType !== UPDATE_TYPE.NEW) setDisableFilters(true);
+        setUpdateType(props.mode);
+        setInitialLoad(false);
     }, []);
 
     useEffect(() => {
@@ -144,15 +174,17 @@ const BusPriorityThresholdsModal = (props) => {
             setDisableFilters(false);
             validateFilters();
         }
+
+        setDisableFilters(updateType === UPDATE_TYPE.DELETE);
     }, [updateType]);
 
     useEffect(() => {
         validateFilters();
 
-        if (updateType === UPDATE_TYPE.NEW) {
+        if (!initialLoad) {
             updateThresholds();
         }
-    }, [occupancy, siteId, routeId]);
+    }, [occupancy, siteId, routeIds]);
 
     useEffect(() => {
         validateFilters();
@@ -260,7 +292,7 @@ const BusPriorityThresholdsModal = (props) => {
             Threshold: 0,
             Score: 0,
             SiteId: siteId,
-            RouteId: routeId,
+            RouteId: routeIds,
             Occupancy: occupancy,
         };
 
@@ -268,6 +300,8 @@ const BusPriorityThresholdsModal = (props) => {
     };
 
     const handleDuplicateSet = () => {
+        setOriginalThresholds([]);
+        setThresholds(thresholds.map(threshold => ({ ...threshold, rowKey: `NEW${threshold.rowKey}` })));
         setUpdateType(UPDATE_TYPE.NEW);
     };
 
@@ -299,13 +333,25 @@ const BusPriorityThresholdsModal = (props) => {
     const handleCellEditCommit = (params) => {
         const updatedThresholds = thresholds.map((threshold) => {
             if (threshold.rowKey === params.id) {
-                return { ...threshold, [params.field]: params.value };
+                return { ...threshold, [params.field]: params.value.toString() };
             }
             return threshold;
         });
 
         setThresholds(updatedThresholds);
     };
+
+    const handleRouteIdsBlurOrEnter = () => {
+        const updatedRouteIds = routeIds
+            .split(',')
+            .map(id => id.trim())
+            .filter(id => id)
+            .sort((a, b) => a - b);
+
+        setRouteIds(updatedRouteIds.join(', '));
+    };
+
+    const handleEditComplete = () => setPerformSave(true);
 
     const renderMainBody = () => (
         <div>
@@ -334,17 +380,19 @@ const BusPriorityThresholdsModal = (props) => {
                     />
                 </div>
                 <div className="filter">
-                    <Label for="siteId">
+                    <Label for="routeIds">
                         <span className="filter-label">Route Id</span>
                     </Label>
                     <Input
-                        id="routeId"
+                        id="routeIds"
                         disabled={ disableFilters }
-                        value={ routeId ?? '' }
+                        value={ routeIds }
                         className="cc-form-control"
                         placeholder="Route Id"
-                        onChange={ (event) => {
-                            setRouteId(event.target.value.toUpperCase());
+                        onChange={ event => setRouteIds(event.target.value.toUpperCase()) }
+                        onBlur={ handleRouteIdsBlurOrEnter }
+                        onKeyDown={ (e) => {
+                            if (e.key === 'Enter') handleRouteIdsBlurOrEnter();
                         } }
                     />
                 </div>
@@ -376,6 +424,8 @@ const BusPriorityThresholdsModal = (props) => {
                     updateDatagridConfig={ config => setDatagridConfig({ ...datagridConfig, ...config }) }
                     pagination={ false }
                     onCellEditCommit={ handleCellEditCommit }
+                    stopEditing={ stopEdit }
+                    editComplete={ handleEditComplete }
                 />
             </div>
         </div>
@@ -392,6 +442,9 @@ const BusPriorityThresholdsModal = (props) => {
             title: 'Add New Threshold Set',
             mainButtonLabel: 'Add new threshold set',
             onClick: () => {
+                setStopEdit(true);
+            },
+            save: () => {
                 props.saveNewThresholds(thresholds);
                 closeModal();
             },
@@ -402,7 +455,10 @@ const BusPriorityThresholdsModal = (props) => {
             title: 'Update Threshold Set',
             mainButtonLabel: 'Update threshold set',
             onClick: () => {
-                props.updateThresholds(thresholds);
+                setStopEdit(true);
+            },
+            save: () => {
+                props.updateThresholds(originalThresholds, thresholds);
                 closeModal();
             },
             renderBody: renderMainBody(),
@@ -429,6 +485,15 @@ const BusPriorityThresholdsModal = (props) => {
     };
 
     const activeModalProps = modalProps[modalPropsKey()];
+
+    useEffect(() => {
+        if (performSave && !validateFilters()) {
+            activeModalProps.save();
+        }
+
+        setPerformSave(false);
+        setStopEdit(false);
+    }, [performSave]);
 
     const generateFooter = () => (
         <Button
