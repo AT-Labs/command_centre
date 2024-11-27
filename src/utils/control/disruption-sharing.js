@@ -7,6 +7,10 @@ import {
     LABEL_HEADER, LABEL_LAST_UPDATED_AT, LABEL_SEVERITY,
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME,
     LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
+    LABEL_NOTE,
+    NOTE_BUS,
+    NOTE_TRAIN,
+    NOTE_FERRY,
 } from '../../constants/disruptions';
 import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES } from '../../types/disruptions-types';
 import { CAUSES, IMPACTS, OLD_CAUSES, OLD_IMPACTS } from '../../types/disruption-cause-and-effect';
@@ -66,6 +70,27 @@ function createHtmlLine(label, value) {
     </tr>`;
 }
 
+function getNoteByMode(mode) {
+    switch (mode) {
+    case 'Bus': return NOTE_BUS;
+    case 'Train': return NOTE_TRAIN;
+    case 'Ferry': return NOTE_FERRY;
+    default: return '';
+    }
+}
+
+function createNoteByMode(mode) {
+    let note = '';
+    if (!mode) return note;
+    const modes = mode.split(',').map(m => m.trim());
+    if (modes.length === 1) {
+        note = getNoteByMode(mode);
+    } else if (modes.length > 1) {
+        note = modes.map(m => `For ${m.toLowerCase()} trips:<br />${getNoteByMode(m)}`).join('<p />');
+    }
+    return note;
+}
+
 function generateHtmlEmailBody(disruption) {
     const endDateTimeMoment = moment(disruption.endTime);
     const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
@@ -95,6 +120,7 @@ function generateHtmlEmailBody(disruption) {
             ${createHtmlLine(LABEL_LAST_UPDATED_AT, formatCreatedUpdatedTime(disruption.lastUpdatedTime))}
             ${createHtmlLine(LABEL_DISRUPTION_NOTES, disruption.notes)}
             ${createHtmlLine(LABEL_WORKAROUNDS, disruption.workarounds)}
+            ${createHtmlLine(LABEL_NOTE, createNoteByMode(disruption.mode))}
         </tbody>
     </table>
     `;

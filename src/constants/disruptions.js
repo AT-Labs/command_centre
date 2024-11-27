@@ -33,6 +33,7 @@ export const LABEL_DISRUPTION_NOTES = 'Disruption Notes';
 export const LABEL_LAST_NOTE = 'Last Note';
 export const LABEL_SEVERITY = 'Severity';
 export const LABEL_PASSENGER_IMPACT = 'Passenger Impact';
+export const LABEL_NOTE = 'Note';
 
 export const STOP_NOT_AVAILABLE = 'Stop not available';
 
@@ -40,3 +41,14 @@ export const FREQUENCY_TYPE = {
     ONCE: 'Once',
     RECURRING: 'Recurring',
 };
+
+export const NOTE_BUS = `This is an evolving situation, 
+and we appreciate your patience and cooperation as we work through the resolution, 
+we urge all stakeholders to remain calm AT staff and external agencies are actively working to resolve the current situation.`;
+
+export const NOTE_TRAIN = `This is an evolving situation, and we appreciate your patience and cooperation as we work through the resolution, 
+we urge all stakeholders to remain calm AT staff and external agencies are actively working to resolve the current situation. 
+Refer to Journey Planner <a href="https://at.govt.nz/bus-train-ferry#!/journey-planner">https://at.govt.nz/bus-train-ferry#!/journey-planner</a> for alternative travel arrangements or to electronic display boards and announcement for next available service or ask staff for alternative transport options.`;
+
+export const NOTE_FERRY = `Refer to Journey Planner <a href="https://at.govt.nz/bus-train-ferry#!/journey-planner">https://at.govt.nz/bus-train-ferry#!/journey-planner</a>  
+for alternative travel arrangements or to electronic display boards and announcement for next available service or ask staff for alternative transport options.`;

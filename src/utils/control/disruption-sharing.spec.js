@@ -176,4 +176,37 @@ describe('shareToEmail', () => {
         await shareToEmail({ ...disruption, status: 'resolved' });
         expect(link.href).toContain('Subject: Re: RESOLVED - Train Disruption Notification - Holidays for everyone - DISR0001');
     });
+
+    test('should generate note for bus', async () => {
+        await shareToEmail({ ...disruption, mode: 'Bus' });
+        expect(link.href).toContain('evolving');
+        expect(link.href).not.toContain('Journey');
+    });
+
+    test('should generate note for train', async () => {
+        await shareToEmail({ ...disruption, mode: 'Train' });
+        expect(link.href).toContain('evolving');
+        expect(link.href).toContain('Journey');
+    });
+
+    test('should generate note for ferry', async () => {
+        await shareToEmail({ ...disruption, mode: 'Ferry' });
+        expect(link.href).not.toContain('evolving');
+        expect(link.href).toContain('Journey');
+    });
+
+    test('should generate note for bus, train and ferry', async () => {
+        await shareToEmail({ ...disruption, mode: 'Bus, Train, Ferry' });
+        expect(link.href).toContain('For%20bus%20trips');
+        expect(link.href).toContain('For%20train%20trips');
+        expect(link.href).toContain('For%20ferry%20trips');
+        expect(link.href).toContain('evolving');
+        expect(link.href).toContain('Journey');
+    });
+
+    test('should not generate note for unknown mode', async () => {
+        await shareToEmail({ ...disruption, mode: 'Starship' });
+        expect(link.href).not.toContain('evolving');
+        expect(link.href).not.toContain('Journey');
+    });
 });
