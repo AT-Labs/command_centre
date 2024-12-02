@@ -26,5 +26,6 @@
     "useNewRealtimeMapFilters": "false",
     "useBusPriorityDataManagement": "false",
     "useNextDayChangePlatform": "false",
-    "useNextDayChangePlatformBulkUpdate": "false"
+    "useNextDayChangePlatformBulkUpdate": "false",
+    "useDisruptionEmailFormat": "false"
 }

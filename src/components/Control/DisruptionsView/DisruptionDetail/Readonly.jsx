@@ -10,7 +10,7 @@ import { getShapes, getDisruptionsLoadingState, getBoundsToFit, getRouteColors }
 import {
     DATE_FORMAT,
     LABEL_CAUSE, LABEL_CREATED_BY,
-    LABEL_CUSTOMER_IMPACT, LABEL_DURATION, LABEL_END_DATE, LABEL_END_TIME, LABEL_HEADER, LABEL_LAST_UPDATED_BY,
+    LABEL_CUSTOMER_IMPACT, LABEL_DURATION_HOURS, LABEL_END_DATE, LABEL_END_TIME, LABEL_HEADER, LABEL_LAST_UPDATED_BY,
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME, LABEL_STATUS, LABEL_URL, LABEL_SEVERITY,
     TIME_FORMAT, LABEL_LAST_NOTE,
 } from '../../../../constants/disruptions';
@@ -170,7 +170,7 @@ const Readonly = (props) => {
                         )}
                         { disruption.recurrent && (
                             <DisruptionLabelAndText
-                                label={ LABEL_DURATION }
+                                label={ LABEL_DURATION_HOURS }
                                 id="disruption-detail__duration"
                                 text={ disruption.duration } />
                         )}

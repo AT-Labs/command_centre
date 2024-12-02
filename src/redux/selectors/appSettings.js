@@ -42,3 +42,4 @@ export const useNextDayChangePlatformBulkUpdate = createSelector(
     getAppSettingsState,
     appSettingState => (result(appSettingState, 'useNextDayChangePlatformBulkUpdate') === 'true'),
 );
+export const useDisruptionEmailFormat = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useDisruptionEmailFormat') === 'true'));

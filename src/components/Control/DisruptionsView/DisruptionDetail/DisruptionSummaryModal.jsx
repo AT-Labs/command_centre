@@ -1,6 +1,7 @@
 import { Table, Button } from 'reactstrap';
 import { uniqueId, find } from 'lodash-es';
 import React from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import {
@@ -17,8 +18,9 @@ import { OLD_CAUSES, OLD_IMPACTS, CAUSES, IMPACTS } from '../../../../types/disr
 import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from '../../../../utils/control/disruptions';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import { getWorkaroundsAsText } from '../../../../utils/control/disruption-workarounds';
-import { shareToEmail } from '../../../../utils/control/disruption-sharing';
+import { shareToEmail, shareToEmailLegacy } from '../../../../utils/control/disruption-sharing';
 import CustomCollapse from '../../../Common/CustomCollapse/CustomCollapse';
+import { useDisruptionEmailFormat } from '../../../../redux/selectors/appSettings';
 
 const generateDisruptionNotes = (notes) => {
     if (Array.isArray(notes) && notes.length > 0) {
@@ -61,9 +63,10 @@ const DisruptionSummaryModal = (props) => {
     const endDateTimeMoment = moment(props.disruption.endTime);
     const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
     const MERGED_IMPACTS = [...IMPACTS, ...OLD_IMPACTS];
+    const shareToEmailHandler = props.useDisruptionEmailFormat ? shareToEmail : shareToEmailLegacy;
     const generateModalFooter = () => (
         <>
-            <Button onClick={ () => shareToEmail(props.disruption) } className="cc-btn-primary">
+            <Button onClick={ () => shareToEmailHandler(props.disruption) } className="cc-btn-primary">
                 Share to email
             </Button>
             <Button onClick={ () => props.onClose() } className="cc-btn-primary">
@@ -111,6 +114,9 @@ DisruptionSummaryModal.propTypes = {
     isModalOpen: PropTypes.bool.isRequired,
     disruption: PropTypes.object.isRequired,
     onClose: PropTypes.func.isRequired,
+    useDisruptionEmailFormat: PropTypes.bool.isRequired,
 };
 
-export default DisruptionSummaryModal;
+export default connect(state => ({
+    useDisruptionEmailFormat: useDisruptionEmailFormat(state),
+}), {})(DisruptionSummaryModal);

@@ -2,20 +2,27 @@ import moment from 'moment';
 import { find } from 'lodash-es';
 import {
     DATE_FORMAT,
+    DATE_TIME_FORMAT,
     LABEL_AFFECTED_ROUTES,
     LABEL_CAUSE, LABEL_CREATED_AT, LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_END_DATE, LABEL_END_TIME,
-    LABEL_HEADER, LABEL_LAST_UPDATED_AT, LABEL_SEVERITY,
+    LABEL_HEADER, LABEL_LAST_UPDATED_AT, LABEL_LAST_UPDATED_BY, LABEL_SEVERITY,
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME,
     LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
     LABEL_NOTE,
     NOTE_BUS,
     NOTE_TRAIN,
     NOTE_FERRY,
+    LABEL_DURATION,
+    LABEL_START_TIME_DATE,
+    LABEL_END_TIME_DATE,
 } from '../../constants/disruptions';
 import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES } from '../../types/disruptions-types';
 import { CAUSES, IMPACTS, OLD_CAUSES, OLD_IMPACTS } from '../../types/disruption-cause-and-effect';
 import { getWorkaroundsAsText } from './disruption-workarounds';
 import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from './disruptions';
+import SEARCH_RESULT_TYPE from '../../types/search-result-types';
+
+const { ROUTE } = SEARCH_RESULT_TYPE;
 
 async function getFileBase64(url) {
     const response = await fetch(url);
@@ -84,14 +91,14 @@ function createNoteByMode(mode) {
     if (!mode) return note;
     const modes = mode.split(',').map(m => m.trim());
     if (modes.length === 1) {
-        note = getNoteByMode(mode);
+        note = `<i>${getNoteByMode(mode)}</i>`;
     } else if (modes.length > 1) {
-        note = modes.map(m => `For ${m.toLowerCase()} trips:<br />${getNoteByMode(m)}`).join('<p />');
+        note = modes.map(m => `<p>For ${m.toLowerCase()} trips:<br /><i>${getNoteByMode(m)}</i></p>`).join('');
     }
     return note;
 }
 
-function generateHtmlEmailBody(disruption) {
+function generateHtmlEmailBodyLegacy(disruption) {
     const endDateTimeMoment = moment(disruption.endTime);
     const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
     const MERGED_IMPACTS = [...IMPACTS, ...OLD_IMPACTS];
@@ -127,6 +134,170 @@ function generateHtmlEmailBody(disruption) {
     return encodeURIComponent(`<html><head></head><body>${htmlBody}</body></html>`);
 }
 
+function generateHeaderSection(disruption) {
+    return `<div style="margin-bottom: 20px;">
+        <p><strong>${disruption.incidentNo}: ${disruption.header}</strong></p>
+        <p><strong>${LABEL_LAST_UPDATED_AT}:</strong> ${formatCreatedUpdatedTime(disruption.lastUpdatedTime)}</p>
+        <p><strong>${LABEL_LAST_UPDATED_BY}:</strong> ${disruption.lastUpdatedBy}</p>
+    </div>`;
+}
+
+function createHtmlField(mapFieldValue, label) {
+    const value = mapFieldValue[label] || '-';
+
+    const nonBreakingLabel = label.replace(/ /g, '&nbsp;');
+    const nonBreakingValue = [LABEL_AFFECTED_ROUTES, LABEL_AFFECTED_STOPS].includes(label)
+        ? value
+        : value.replace(/ /g, '&nbsp;');
+
+    return `<th style="font-weight: bold; padding: 0px 15px 15px 5px; text-align: left;">${nonBreakingLabel}</th>
+        <td style="padding: 0px 15px 15px 5px;">${nonBreakingValue}</td>`;
+}
+
+function getDuration(disruption) {
+    const startTime = moment(disruption.startTime);
+    const endTime = moment(disruption.endTime);
+    const now = moment();
+    let cutoff = now;
+    let duration;
+
+    if (now <= startTime) {
+        return '-';
+    }
+
+    if (disruption.status === STATUSES.RESOLVED) {
+        cutoff = endTime;
+    }
+
+    if (!disruption.recurrent) {
+        duration = cutoff.diff(startTime, 'seconds');
+    }
+
+    if (disruption.recurrent) {
+        const cutoffEpoch = cutoff.unix();
+        duration = disruption.activePeriods
+            .filter(activePeriod => activePeriod.startTime < cutoffEpoch)
+            .map(activePeriod => ({
+                startTime: activePeriod.startTime,
+                endTime: Math.min(activePeriod.endTime, cutoffEpoch),
+            }))
+            .reduce((sum, activePeriod) => sum + (activePeriod.endTime - activePeriod.startTime), 0);
+    }
+
+    const hours = Math.floor(duration / 3600);
+    const minutes = Math.floor((duration % 3600) / 60);
+    const seconds = duration % 60;
+
+    return `${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
+}
+
+function getMapFieldValue(disruption) {
+    const endDateTimeMoment = moment(disruption.endTime);
+    const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
+    const MERGED_IMPACTS = [...IMPACTS, ...OLD_IMPACTS];
+
+    return {
+        [LABEL_CREATED_AT]: formatCreatedUpdatedTime(disruption.createdTime),
+        [LABEL_STATUS]: disruption.status,
+        [LABEL_MODE]: disruption.mode,
+        [LABEL_AFFECTED_ROUTES]: getDeduplcatedAffectedRoutes(disruption.affectedEntities).join(', '),
+        [LABEL_AFFECTED_STOPS]: getDeduplcatedAffectedStops(disruption.affectedEntities).join(', '),
+        [LABEL_CAUSE]: find(MERGED_CAUSES, { value: disruption.cause }).label,
+        [LABEL_SEVERITY]: find(SEVERITIES, { value: disruption.severity }).label,
+        [LABEL_CUSTOMER_IMPACT]: find(MERGED_IMPACTS, { value: disruption.impact }).label,
+        [LABEL_DURATION]: getDuration(disruption),
+        [LABEL_START_TIME_DATE]: moment(disruption.startTime).format(DATE_TIME_FORMAT),
+        [LABEL_END_TIME_DATE]: disruption.endTime && endDateTimeMoment.isValid() ? endDateTimeMoment.format(DATE_TIME_FORMAT) : '',
+    };
+}
+
+function generateHtmlDetailsTable(disruption) {
+    const mapFieldValue = getMapFieldValue(disruption);
+    const isRouteBased = disruption.affectedEntities?.[0].type === ROUTE.type;
+
+    return `<table border="1" style="font-family: Arial; font-size: 16px; border-collapse: collapse; text-align: left; width: 100%; max-width: 800px;">
+        <tr>
+            ${createHtmlField(mapFieldValue, LABEL_CREATED_AT)}
+            ${createHtmlField(mapFieldValue, LABEL_STATUS)}
+        </tr>
+        <tr>
+            ${createHtmlField(mapFieldValue, LABEL_MODE)}
+            ${createHtmlField(mapFieldValue, isRouteBased ? LABEL_AFFECTED_ROUTES : LABEL_AFFECTED_STOPS)}
+        </tr>
+        <tr>
+            ${createHtmlField(mapFieldValue, LABEL_CAUSE)}
+            ${createHtmlField(mapFieldValue, LABEL_SEVERITY)}
+        </tr>
+        <tr>
+            ${createHtmlField(mapFieldValue, LABEL_CUSTOMER_IMPACT)}
+            ${createHtmlField(mapFieldValue, LABEL_DURATION)}
+        </tr>
+        <tr>
+            ${createHtmlField(mapFieldValue, LABEL_START_TIME_DATE)}
+            ${createHtmlField(mapFieldValue, LABEL_END_TIME_DATE)}
+        </tr>
+    </table>
+    <br>`;
+}
+
+function generateHtmlNotesTable(disruption) {
+    if (!disruption.notes?.length) {
+        return '';
+    }
+
+    const notesHtml = [...disruption.notes].reverse().map((note) => {
+        const createdTime = formatCreatedUpdatedTime(note.createdTime);
+        const nonBreakingCreatedTime = createdTime.replace(/ /g, '&nbsp;');
+
+        return `<tr>
+            <td style="padding: 0px 15px 15px 5px;">${nonBreakingCreatedTime}</td>
+            <td style="padding: 0px 15px 15px 5px;">
+                <pre style="font-family: Arial; font-size: 16px; margin: 0">${note.description}</pre>
+            </td>
+            </tr>`;
+    }).join('');
+
+    return `<br><table border="1" style="font-family: Arial; font-size: 16px; border-collapse: collapse; text-align: left; width: 100%; max-width: 800px;">
+        <tr>
+            <th colspan="2" style="padding: 0px 15px 15px 5px; font-weight: bold; text-align: left;">${disruption.incidentNo}&nbsp;Timeline</th>
+        </tr>
+        <tr>
+            <th style="font-weight: bold; width: 20%; padding: 0px 15px 15px 5px; text-align: left;">Date&nbsp;&&nbsp;Time</th>
+            <th style="font-weight: bold; padding: 0px 15px 15px 5px; text-align: left;">Disruption&nbsp;/&nbsp;Activity&nbsp;Details</th>
+        </tr>
+        ${notesHtml}
+    </table><br>`;
+}
+
+function generateFooterSection({ mode }) {
+    if (!mode) return '';
+
+    const note = createNoteByMode(mode);
+
+    return `<table style="max-width: 800px; width: 100%; border-collapse: collapse;">
+        <tr>
+            <td>
+                <b>${LABEL_NOTE}: </b>
+                ${note}
+            </td>
+        </tr>
+    </table>`;
+}
+
+function generateHtmlEmailBody(disruption) {
+    const htmlBody = `
+    <div style="font-family: Arial; font-size: 16px;">
+        ${generateHeaderSection(disruption)}
+        <div style="display: table; text-align: left; max-width: 800px; font-family: Arial; font-size: 16px;">
+            ${generateHtmlDetailsTable(disruption)}
+            ${generateHtmlNotesTable(disruption)}
+            ${generateFooterSection(disruption)}
+        </div>
+    </div>
+    `;
+    return encodeURIComponent(`<html><head></head><body>${htmlBody}</body></html>`);
+}
+
 async function generateAttachment(uploadFile, getAttachmentFileAsync = undefined) {
     const base64File = getAttachmentFileAsync ? await getAttachmentFileAsync() : await getFileBase64(uploadFile.storageUrl);
     if (!base64File?.content?.includes(',')) {
@@ -155,6 +326,29 @@ function getSubjectMode(mode) {
     }
 
     return mode;
+}
+
+export async function shareToEmailLegacy(disruption, getAttachmentFileAsync = undefined) {
+    const mode = disruption.mode ? `${getSubjectMode(disruption.mode)} ` : '';
+    const subject = `Re: ${disruption.status === STATUSES.RESOLVED ? 'RESOLVED - ' : ''}${mode}Disruption Notification - ${disruption.header} - ${disruption.incidentNo}`;
+    const boundary = '--disruption_email_boundary_string';
+    const { REACT_APP_DISRUPTION_SHARING_EMAIL_FROM, REACT_APP_DISRUPTION_SHARING_EMAIL_CC } = process.env;
+    let emailFile = 'data:message/rfc822 eml;charset=utf-8,'
+        + `From: ${REACT_APP_DISRUPTION_SHARING_EMAIL_FROM || ''} \n`
+        + `cc: ${REACT_APP_DISRUPTION_SHARING_EMAIL_CC || ''} \n`
+        + 'X-Unsent: 1 \n'
+        + `Subject: ${subject} \n`
+        + `Content-Type: multipart/mixed; boundary=${boundary} \n`
+        + `\n--${boundary}\n`
+        + 'Content-Type: text/html; charset=UTF-8\n'
+        + `\n${generateHtmlEmailBodyLegacy(disruption)}\n`;
+    if (disruption.uploadedFiles?.length) {
+        emailFile += `\n--${boundary}\n${await generateAttachment(disruption.uploadedFiles[0], getAttachmentFileAsync)}`;
+    }
+    const link = document.createElement('a');
+    link.href = emailFile;
+    link.download = `${subject}.eml`;
+    link.click();
 }
 
 export async function shareToEmail(disruption, getAttachmentFileAsync = undefined) {

@@ -27,7 +27,7 @@ import {
     LABEL_START_DATE,
     DATE_FORMAT,
     LABEL_END_TIME, LABEL_END_DATE,
-    LABEL_DURATION,
+    LABEL_DURATION_HOURS,
     LABEL_SEVERITY,
 } from '../../../../../constants/disruptions';
 import Footer from './Footer';
@@ -302,7 +302,7 @@ export const SelectDetails = (props) => {
                     { recurrent && (
                         <FormGroup>
                             <Label for="disruption-creation__wizard-select-details__duration">
-                                <span className="font-size-md font-weight-bold">{LABEL_DURATION}</span>
+                                <span className="font-size-md font-weight-bold">{LABEL_DURATION_HOURS}</span>
                             </Label>
                             <Input
                                 id="disruption-creation__wizard-select-details__duration"

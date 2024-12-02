@@ -29,7 +29,7 @@ import {
     LABEL_URL,
     TIME_FORMAT,
     URL_MAX_LENGTH,
-    LABEL_DURATION,
+    LABEL_DURATION_HOURS,
     LABEL_DISRUPTION_NOTES,
     DESCRIPTION_NOTE_MAX_LENGTH,
     LABEL_LAST_NOTE,
@@ -580,7 +580,7 @@ const DisruptionDetailView = (props) => {
                                         { recurrent && (
                                             <FormGroup>
                                                 <Label for="disruption-creation__wizard-select-details__duration">
-                                                    <span className="font-size-md font-weight-bold">{LABEL_DURATION}</span>
+                                                    <span className="font-size-md font-weight-bold">{LABEL_DURATION_HOURS}</span>
                                                 </Label>
                                                 <Input
                                                     id="disruption-creation__wizard-select-details__duration"

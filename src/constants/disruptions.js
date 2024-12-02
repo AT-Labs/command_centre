@@ -5,6 +5,7 @@ export const HEADER_MAX_LENGTH = 150;
 export const URL_MAX_LENGTH = 250;
 export const TIME_FORMAT = 'HH:mm';
 export const DATE_FORMAT = 'DD/MM/YYYY';
+export const DATE_TIME_FORMAT = 'DD/MM/YYYY HH:mm';
 
 export const LABEL_CAUSE = 'Cause';
 export const LABEL_MODE = 'Mode';
@@ -27,13 +28,16 @@ export const LABEL_LAST_UPDATED_BY = 'Last Updated By';
 export const LABEL_CREATED_AT = 'Created At';
 export const LABEL_LAST_UPDATED_AT = 'Last Updated At';
 export const LABEL_FREQUENCY = 'Frequency';
-export const LABEL_DURATION = 'Duration (hours)';
+export const LABEL_DURATION_HOURS = 'Duration (hours)';
 export const LABEL_WORKAROUNDS = 'Workarounds';
 export const LABEL_DISRUPTION_NOTES = 'Disruption Notes';
 export const LABEL_LAST_NOTE = 'Last Note';
 export const LABEL_SEVERITY = 'Severity';
 export const LABEL_PASSENGER_IMPACT = 'Passenger Impact';
 export const LABEL_NOTE = 'Note';
+export const LABEL_DURATION = 'Duration';
+export const LABEL_START_TIME_DATE = 'Start Time/Date';
+export const LABEL_END_TIME_DATE = 'End Time/Date';
 
 export const STOP_NOT_AVAILABLE = 'Stop not available';
 
