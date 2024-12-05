@@ -9,12 +9,10 @@ import {
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME,
     LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
     LABEL_NOTE,
-    NOTE_BUS,
-    NOTE_TRAIN,
-    NOTE_FERRY,
     LABEL_DURATION,
     LABEL_START_TIME_DATE,
     LABEL_END_TIME_DATE,
+    NOTE_DISCLAIMER,
 } from '../../constants/disruptions';
 import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES } from '../../types/disruptions-types';
 import { CAUSES, IMPACTS, OLD_CAUSES, OLD_IMPACTS } from '../../types/disruption-cause-and-effect';
@@ -77,27 +75,6 @@ function createHtmlLine(label, value) {
     </tr>`;
 }
 
-function getNoteByMode(mode) {
-    switch (mode) {
-    case 'Bus': return NOTE_BUS;
-    case 'Train': return NOTE_TRAIN;
-    case 'Ferry': return NOTE_FERRY;
-    default: return '';
-    }
-}
-
-function createNoteByMode(mode) {
-    let note = '';
-    if (!mode) return note;
-    const modes = mode.split(',').map(m => m.trim());
-    if (modes.length === 1) {
-        note = `<i>${getNoteByMode(mode)}</i>`;
-    } else if (modes.length > 1) {
-        note = modes.map(m => `<p>For ${m.toLowerCase()} trips:<br /><i>${getNoteByMode(m)}</i></p>`).join('');
-    }
-    return note;
-}
-
 function generateHtmlEmailBodyLegacy(disruption) {
     const endDateTimeMoment = moment(disruption.endTime);
     const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
@@ -127,7 +104,6 @@ function generateHtmlEmailBodyLegacy(disruption) {
             ${createHtmlLine(LABEL_LAST_UPDATED_AT, formatCreatedUpdatedTime(disruption.lastUpdatedTime))}
             ${createHtmlLine(LABEL_DISRUPTION_NOTES, disruption.notes)}
             ${createHtmlLine(LABEL_WORKAROUNDS, disruption.workarounds)}
-            ${createHtmlLine(LABEL_NOTE, createNoteByMode(disruption.mode))}
         </tbody>
     </table>
     `;
@@ -269,16 +245,12 @@ function generateHtmlNotesTable(disruption) {
     </table><br>`;
 }
 
-function generateFooterSection({ mode }) {
-    if (!mode) return '';
-
-    const note = createNoteByMode(mode);
-
+function generateFooterSection() {
     return `<table style="max-width: 800px; width: 100%; border-collapse: collapse;">
         <tr>
             <td>
                 <b>${LABEL_NOTE}: </b>
-                ${note}
+                <i>${NOTE_DISCLAIMER} </i>
             </td>
         </tr>
     </table>`;
@@ -291,7 +263,7 @@ function generateHtmlEmailBody(disruption) {
         <div style="display: table; text-align: left; max-width: 800px; font-family: Arial; font-size: 16px;">
             ${generateHtmlDetailsTable(disruption)}
             ${generateHtmlNotesTable(disruption)}
-            ${generateFooterSection(disruption)}
+            ${generateFooterSection()}
         </div>
     </div>
     `;

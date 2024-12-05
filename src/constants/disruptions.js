@@ -46,13 +46,6 @@ export const FREQUENCY_TYPE = {
     RECURRING: 'Recurring',
 };
 
-export const NOTE_BUS = `This is an evolving situation, 
-and we appreciate your patience and cooperation as we work through the resolution, 
-we urge all stakeholders to remain calm AT staff and external agencies are actively working to resolve the current situation.`;
-
-export const NOTE_TRAIN = `This is an evolving situation, and we appreciate your patience and cooperation as we work through the resolution, 
-we urge all stakeholders to remain calm AT staff and external agencies are actively working to resolve the current situation. 
-Refer to Journey Planner <a href="https://at.govt.nz/bus-train-ferry#!/journey-planner">https://at.govt.nz/bus-train-ferry#!/journey-planner</a> for alternative travel arrangements or to electronic display boards and announcement for next available service or ask staff for alternative transport options.`;
-
-export const NOTE_FERRY = `Refer to Journey Planner <a href="https://at.govt.nz/bus-train-ferry#!/journey-planner">https://at.govt.nz/bus-train-ferry#!/journey-planner</a>  
-for alternative travel arrangements or to electronic display boards and announcement for next available service or ask staff for alternative transport options.`;
+export const NOTE_DISCLAIMER = `This notification is a communication tool to inform multiple internal and external stakeholders about a disruption. 
+Auckland Transport does not deem this notification as evidence of actual impact to service. Auckland Transport advises that 
+the agreed operational data and metrics will need to be utilised to ascertain the actual impact to service performance.`;
