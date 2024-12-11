@@ -9,11 +9,13 @@ import {
     updateRequestingDisruptionResult,
     updateDisruptionsDatagridConfig,
     searchByDrawing,
+    updateDisruption,
 } from './disruptions';
 import { INIT_STATE } from '../../reducers/control/disruptions';
 import ACTION_TYPE from '../../action-types';
 import SEARCH_RESULT_TYPE from '../../../types/search-result-types';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
+import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
 
 chai.use(sinonChai);
 
@@ -52,6 +54,11 @@ const mockShape = {
 jest.mock('../../../utils/transmitters/cc-static', () => ({
     geoSearch: jest.fn(),
     getRoutesByShortName: jest.fn(),
+}));
+
+jest.mock('../../../utils/transmitters/disruption-mgt-api', () => ({
+    updateDisruption: jest.fn(),
+    getDisruptions: jest.fn(),
 }));
 
 describe('Disruptions actions', () => {
@@ -219,5 +226,131 @@ describe('Disruptions actions', () => {
         ccStatic.geoSearch.mockResolvedValue(mockSearchResult);
         await store.dispatch(searchByDrawing('Stops', mockShape));
         expect(store.getActions()[1]).to.deep.eql(expectedAction);
+    });
+
+    it('dispatches success actions when update disruption succeeds and returns updated disruption', async () => {
+        const disruption = {
+            disruptionId: 1,
+            incidentNo: 1,
+            createNotification: false,
+        };
+        disruptionsMgtApi.updateDisruption.mockResolvedValue(disruption);
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [disruption],
+            _links: { permissions: [] },
+        });
+
+        const result = await store.dispatch(updateDisruption(disruption));
+
+        expect(store.getActions()[0]).to.deep.eql({
+            payload: {
+                isRequesting: true,
+                resultDisruptionId: 1,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+        expect(store.getActions()[1]).to.deep.eql({
+            payload: {
+                resultCreateNotification: false,
+                resultDisruptionId: 1,
+                resultDisruptionVersion: undefined,
+                resultMessage: 'Disruption 1 has been updated.',
+                resultStatus: 'success',
+            },
+            type: 'update-control-disruption-action-result',
+        });
+        expect(store.getActions()[2]).to.deep.eql({
+            payload: {
+                isRequesting: false,
+                resultDisruptionId: 1,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+        expect(store.getActions()[3]).to.deep.eql({
+            payload: {
+                permissions: [],
+            },
+            type: 'update-control-disruptions-permissions',
+        });
+        expect(store.getActions()[4]).to.deep.eql({
+            payload: {
+                disruptions: [{
+                    createNotification: false,
+                    disruptionId: 1,
+                    incidentNo: 1,
+                }],
+            },
+            type: 'fetch-control-disruptions',
+        });
+        expect(store.getActions()[5]).to.deep.eql({
+            payload: {
+                isLoading: false,
+            },
+            type: 'update-control-disruptions-loading',
+        });
+        expect(result).to.eql(disruption);
+    });
+
+    it('dispatches error actions when update disruption fails and returns undefined', async () => {
+        const disruption = {
+            disruptionId: 1,
+            incidentNo: 1,
+            createNotification: false,
+        };
+        disruptionsMgtApi.updateDisruption.mockRejectedValue({ code: 'ERROR_CODE' });
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [disruption],
+            _links: { permissions: [] },
+        });
+
+        const result = await store.dispatch(updateDisruption(disruption));
+
+        expect(store.getActions()[0]).to.deep.eql({
+            payload: {
+                isRequesting: true,
+                resultDisruptionId: 1,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+        expect(store.getActions()[1]).to.deep.eql({
+            payload: {
+                resultCreateNotification: undefined,
+                resultDisruptionId: 1,
+                resultDisruptionVersion: undefined,
+                resultMessage: 'Failed to update disruption 1.',
+                resultStatus: 'danger',
+            },
+            type: 'update-control-disruption-action-result',
+        });
+        expect(store.getActions()[2]).to.deep.eql({
+            payload: {
+                isRequesting: false,
+                resultDisruptionId: 1,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+        expect(store.getActions()[3]).to.deep.eql({
+            payload: {
+                permissions: [],
+            },
+            type: 'update-control-disruptions-permissions',
+        });
+        expect(store.getActions()[4]).to.deep.eql({
+            payload: {
+                disruptions: [{
+                    createNotification: false,
+                    disruptionId: 1,
+                    incidentNo: 1,
+                }],
+            },
+            type: 'fetch-control-disruptions',
+        });
+        expect(store.getActions()[5]).to.deep.eql({
+            payload: {
+                isLoading: false,
+            },
+            type: 'update-control-disruptions-loading',
+        });
+        expect(result).to.eql(undefined);
     });
 });

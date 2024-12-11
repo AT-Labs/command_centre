@@ -427,9 +427,9 @@ const DisruptionDetailView = (props) => {
         setIsRecurrenceDirty(true);
     };
 
-    const saveAndShareHandler = () => {
-        handleUpdateDisruption();
-        shareToEmail(setDisruption());
+    const saveAndShareHandler = async () => {
+        const result = await handleUpdateDisruption();
+        shareToEmail(result || setDisruption());
     };
 
     return (

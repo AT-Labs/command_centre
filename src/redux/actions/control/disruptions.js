@@ -165,16 +165,19 @@ export const getDisruptions = () => dispatch => disruptionsMgtApi.getDisruptions
 export const updateDisruption = disruption => async (dispatch) => {
     const { disruptionId, incidentNo, createNotification } = disruption;
     dispatch(updateRequestingDisruptionState(true, disruptionId));
+
+    let result;
     try {
-        await disruptionsMgtApi.updateDisruption(disruption);
+        result = await disruptionsMgtApi.updateDisruption(disruption);
         dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentNo, createNotification)));
     } catch (error) {
         dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentNo, error.code)));
     } finally {
         dispatch(updateRequestingDisruptionState(false, disruptionId));
     }
-
     await dispatch(getDisruptions());
+
+    return result;
 };
 
 export const clearDisruptionActionResult = () => ({
