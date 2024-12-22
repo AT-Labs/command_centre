@@ -27,5 +27,6 @@
     "useBusPriorityDataManagement": "false",
     "useNextDayChangePlatform": "false",
     "useNextDayChangePlatformBulkUpdate": "false",
-    "useDisruptionEmailFormat": "false"
+    "useDisruptionEmailFormat": "false",
+    "useGeoSearchRoutesByDisruptionPeriod": "false"
 }

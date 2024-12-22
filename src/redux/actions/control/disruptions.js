@@ -577,14 +577,14 @@ const geographySearchStops = searchBody => async (dispatch, getState) => {
     dispatch(updateAffectedStopsState(newAffectedStops));
 };
 
-export const searchByDrawing = (disruptionType, shape) => async (dispatch) => {
+export const searchByDrawing = (disruptionType, content) => async (dispatch) => {
     dispatch(updateLoadingDisruptionsState(true));
 
     try {
         if (disruptionType === DISRUPTION_TYPE.ROUTES) {
-            await dispatch(geographySearchRoutes(shape));
+            await dispatch(geographySearchRoutes(content));
         } else if (disruptionType === DISRUPTION_TYPE.STOPS) {
-            await dispatch(geographySearchStops(shape));
+            await dispatch(geographySearchStops(content));
         }
     } finally {
         dispatch(updateLoadingDisruptionsState(false));

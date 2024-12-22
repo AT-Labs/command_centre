@@ -43,3 +43,7 @@ export const useNextDayChangePlatformBulkUpdate = createSelector(
     appSettingState => (result(appSettingState, 'useNextDayChangePlatformBulkUpdate') === 'true'),
 );
 export const useDisruptionEmailFormat = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useDisruptionEmailFormat') === 'true'));
+export const useGeoSearchRoutesByDisruptionPeriod = createSelector(
+    getAppSettingsState,
+    appSettingState => (result(appSettingState, 'useGeoSearchRoutesByDisruptionPeriod') === 'true'),
+);

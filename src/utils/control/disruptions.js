@@ -5,10 +5,32 @@ import { DATE_FORMAT_DDMMYYYY as DATE_FORMAT } from '../dateUtils';
 import VEHICLE_TYPES from '../../types/vehicle-types';
 import { STATUSES, PASSENGER_IMPACT_RANGE } from '../../types/disruptions-types';
 import SEARCH_RESULT_TYPE from '../../types/search-result-types';
+import { calculateActivePeriods } from '../recurrence';
 
 export const PAGE_SIZE = 50;
 
 export const formatCreatedUpdatedTime = time => moment(time).format(`${DATE_FORMAT} ${TIME_FORMAT}`);
+
+export const momentFromDateTime = (date, time) => {
+    if (time && date) {
+        return moment(`${date}T${time}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`);
+    }
+    return undefined;
+};
+
+export const generateDisruptionActivePeriods = (disruption) => {
+    if (disruption.recurrent) {
+        return calculateActivePeriods(disruption.recurrencePattern, Number(disruption.duration), [], false);
+    }
+
+    const startTimeMoment = momentFromDateTime(disruption.startDate, disruption.startTime);
+    const endTimeMoment = momentFromDateTime(disruption.endDate, disruption.endTime);
+
+    return [{
+        startTime: startTimeMoment ? startTimeMoment.unix() : undefined,
+        endTime: endTimeMoment ? endTimeMoment.unix() : undefined,
+    }];
+};
 
 export const isStartTimeValid = (startDate, startTime, openingTime, recurrent = false) => startTime !== '24:00'
     && moment(startTime, TIME_FORMAT, true).isValid()
@@ -43,13 +65,6 @@ export const isStartDateValid = (startDate, openingTime, recurrent = false) => m
     && (!recurrent || moment(startDate, DATE_FORMAT).isSameOrAfter(openingTime, 'day'));
 
 export const isDurationValid = (duration, recurrent) => !recurrent || (!isEmpty(duration) && (Number.isInteger(+duration) && +duration > 0 && +duration < 25));
-
-export const momentFromDateTime = (date, time) => {
-    if (time && date) {
-        return moment(`${date}T${time}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`);
-    }
-    return undefined;
-};
 
 export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
     const modes = [...routes.map(route => VEHICLE_TYPES[route.routeType].type),

@@ -1,7 +1,20 @@
 import { expect } from 'chai';
 import moment from 'moment';
 import MockDate from 'mockdate';
-import { isEndDateValid, isEndTimeValid, isStartDateValid, isStartTimeValid, transformIncidentNo, isDurationValid, buildSubmitBody, getStatusOptions, groupStopsByRouteElementByParentStation, getPassengerCountRange, momentFromDateTime } from './disruptions';
+import {
+    isEndDateValid,
+    isEndTimeValid,
+    isStartDateValid,
+    isStartTimeValid,
+    transformIncidentNo,
+    isDurationValid,
+    buildSubmitBody,
+    getStatusOptions,
+    groupStopsByRouteElementByParentStation,
+    getPassengerCountRange,
+    momentFromDateTime,
+    generateDisruptionActivePeriods,
+} from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 import { STATUSES } from '../../types/disruptions-types';
 
@@ -114,7 +127,6 @@ describe('isStartTimeValid', () => {
     });
 });
 
-
 describe('transformIncidentNo', () => {
     it('Should return null if the incidentNo is undefined or null.', () => {
         expect(transformIncidentNo(null)).to.equal(null);
@@ -164,10 +176,10 @@ describe('momentFromDateTime', () => {
 
 describe('buildSubmitBody', () => {
     it('should include workarounds when passed', () => {
-        const workarounds = [{"type": "all", "workaround": "workaround"}];
+        const workarounds = [{ type: 'all', workaround: 'workaround' }];
         expect(buildSubmitBody({}, [], [], workarounds)).to.deep.equal({
             affectedEntities: [],
-            mode: "",
+            mode: '',
             workarounds,
         });
     });
@@ -175,7 +187,7 @@ describe('buildSubmitBody', () => {
     it('should not include workarounds when not passed', () => {
         expect(buildSubmitBody({}, [], [])).to.deep.equal({
             affectedEntities: [],
-            mode: "",
+            mode: '',
         });
     });
 });
@@ -201,39 +213,39 @@ describe('groupStopsByRouteElementByParentStation', () => {
         const data = [
             {
                 stopSequence: 1,
-                stopId: "4226-19578f75",
-                stopCode: "4226",
-                stopName: "Stop A Albany Bus Station",
-                parentStationStopId: "41386-6206d5fd",
-                parentStationStopCode: "41386",
-                parentStationStopName: "Albany Bus Station",
+                stopId: '4226-19578f75',
+                stopCode: '4226',
+                stopName: 'Stop A Albany Bus Station',
+                parentStationStopId: '41386-6206d5fd',
+                parentStationStopCode: '41386',
+                parentStationStopName: 'Albany Bus Station',
                 stopLat: -36.72237,
                 stopLon: 174.71309,
-                directionId: 0
+                directionId: 0,
             },
             {
                 stopSequence: 1,
-                stopId: "4981-ecc5b741",
-                stopCode: "4981",
-                stopName: "Stop A Hibiscus Coast",
-                parentStationStopId: "41672-866a7e51",
-                parentStationStopCode: "41672",
-                parentStationStopName: "Painton Rd/Hibiscus Coast Station",
+                stopId: '4981-ecc5b741',
+                stopCode: '4981',
+                stopName: 'Stop A Hibiscus Coast',
+                parentStationStopId: '41672-866a7e51',
+                parentStationStopCode: '41672',
+                parentStationStopName: 'Painton Rd/Hibiscus Coast Station',
                 stopLat: -36.62431,
                 stopLon: 174.66608,
-                directionId: 0
+                directionId: 0,
             },
             {
                 stopSequence: 1,
-                stopId: "4211-ecc5b741",
-                stopCode: "49822",
-                stopName: "Stop A Hibiscus Coast",
-                parentStationStopId: "41672-866a7e51",
-                parentStationStopCode: "41672",
-                parentStationStopName: "Painton Rd/Hibiscus Coast Station",
+                stopId: '4211-ecc5b741',
+                stopCode: '49822',
+                stopName: 'Stop A Hibiscus Coast',
+                parentStationStopId: '41672-866a7e51',
+                parentStationStopCode: '41672',
+                parentStationStopName: 'Painton Rd/Hibiscus Coast Station',
                 stopLat: -36.62431,
                 stopLon: 174.66608,
-                directionId: 0
+                directionId: 0,
             },
         ];
         const result = groupStopsByRouteElementByParentStation(data);
@@ -241,60 +253,60 @@ describe('groupStopsByRouteElementByParentStation', () => {
             stopId: '41386-6206d5fd',
             stopCode: '41386',
             stopName: 'Albany Bus Station',
-            directionId: 0
-        }))).to.be.true
+            directionId: 0,
+        }))).to.be.true;
         expect(result.get(JSON.stringify({
             stopId: '41386-6206d5fd',
             stopCode: '41386',
             stopName: 'Albany Bus Station',
             stopLat: undefined,
             stopLon: undefined,
-            directionId: 0
+            directionId: 0,
         }))).to.deep.equal(
             [
                 {
-                  stopSequence: 1,
-                  stopId: '4226-19578f75',
-                  stopCode: '4226',
-                  stopName: 'Stop A Albany Bus Station',
-                  parentStationStopId: '41386-6206d5fd',
-                  parentStationStopCode: '41386',
-                  parentStationStopName: 'Albany Bus Station',
-                  stopLat: -36.72237,
-                  stopLon: 174.71309,
-                  directionId: 0
-                }
-            ]
+                    stopSequence: 1,
+                    stopId: '4226-19578f75',
+                    stopCode: '4226',
+                    stopName: 'Stop A Albany Bus Station',
+                    parentStationStopId: '41386-6206d5fd',
+                    parentStationStopCode: '41386',
+                    parentStationStopName: 'Albany Bus Station',
+                    stopLat: -36.72237,
+                    stopLon: 174.71309,
+                    directionId: 0,
+                },
+            ],
         );
     });
     it('those who dont have a parent station will be put inside the `undefined` key value', () => {
         const data = [
             {
                 stopSequence: 6,
-                stopId: "1315-e6177005",
-                stopCode: "1315",
-                stopName: "Fanshawe Street/Victoria Park",
+                stopId: '1315-e6177005',
+                stopCode: '1315',
+                stopName: 'Fanshawe Street/Victoria Park',
                 parentStationStopId: null,
                 parentStationStopCode: null,
                 parentStationStopName: null,
                 stopLat: -36.84566,
                 stopLon: 174.75542,
-                directionId: 0
+                directionId: 0,
             },
             {
                 stopSequence: 8,
-                stopId: "7005-afc9794d",
-                stopCode: "7005",
-                stopName: "Customs Street West/Te Komititanga",
+                stopId: '7005-afc9794d',
+                stopCode: '7005',
+                stopName: 'Customs Street West/Te Komititanga',
                 parentStationStopId: null,
                 parentStationStopCode: null,
                 parentStationStopName: null,
                 stopLat: -36.84445,
                 stopLon: 174.76613,
-                directionId: 0
+                directionId: 0,
             },
         ];
-        const result = groupStopsByRouteElementByParentStation(data)
+        const result = groupStopsByRouteElementByParentStation(data);
         expect(result.has(undefined)).to.be.true;
         expect(result.get(undefined)).to.length == 2;
     });
@@ -305,10 +317,79 @@ describe('groupStopsByRouteElementByParentStation', () => {
 
 describe('getPassengerCountRange', () => {
     it('should return an appropriate value', () => {
-        expect(getPassengerCountRange(237)).to.eql("<500")
-        expect(getPassengerCountRange(500)).to.eql("500 - 5,000")
-        expect(getPassengerCountRange(6789)).to.eql("5,001 - 15,000")
-        expect(getPassengerCountRange(23700)).to.eql("15,001 - 40,000")
-        expect(getPassengerCountRange(86000)).to.eql(">40,000")
+        expect(getPassengerCountRange(237)).to.eql('<500');
+        expect(getPassengerCountRange(500)).to.eql('500 - 5,000');
+        expect(getPassengerCountRange(6789)).to.eql('5,001 - 15,000');
+        expect(getPassengerCountRange(23700)).to.eql('15,001 - 40,000');
+        expect(getPassengerCountRange(86000)).to.eql('>40,000');
+    });
+});
+
+describe('generateDisruptionActivePeriods', () => {
+    it('should return calculated active periods for recurrent disruptions', () => {
+        const mockDisruption = {
+            recurrent: true,
+            recurrencePattern: {
+                until: '2024-12-02T04:00:00.000Z',
+                dtstart: '2024-11-29T04:00:00.000Z',
+            },
+            duration: 9,
+        };
+        const result = generateDisruptionActivePeriods(mockDisruption);
+        expect(result).to.deep.equal([{
+            endTime: 1732838400,
+            startTime: 1732806000,
+        }]);
+    });
+
+    it('should return a single active period with start and end times for non-recurrent disruptions with both startTime and endTime', () => {
+        const mockDisruption = {
+            recurrent: false,
+            startTime: '23:00',
+            startDate: '12/12/2024',
+            endTime: '01:00',
+            endDate: '13/12/2024',
+        };
+
+        const result = generateDisruptionActivePeriods(mockDisruption);
+
+        expect(result).to.eql([
+            {
+                startTime: momentFromDateTime(mockDisruption.startDate, mockDisruption.startTime).unix(),
+                endTime: momentFromDateTime(mockDisruption.endDate, mockDisruption.endTime).unix(),
+            },
+        ]);
+    });
+
+    it('should return a single active period with only start time for non-recurrent disruptions without endTime', () => {
+        const mockDisruption = {
+            recurrent: false,
+            startDate: '12/12/2024',
+            startTime: '23:00',
+        };
+
+        const result = generateDisruptionActivePeriods(mockDisruption);
+
+        expect(result).to.eql([
+            {
+                startTime: momentFromDateTime(mockDisruption.startDate, mockDisruption.startTime).unix(),
+                endTime: undefined,
+            },
+        ]);
+    });
+
+    it('should handle invalid or missing disruption data gracefully', () => {
+        const mockDisruption = {
+            recurrent: false,
+        };
+
+        const result = generateDisruptionActivePeriods(mockDisruption);
+
+        expect(result).to.eql([
+            {
+                startTime: undefined,
+                endTime: undefined,
+            },
+        ]);
     });
 });

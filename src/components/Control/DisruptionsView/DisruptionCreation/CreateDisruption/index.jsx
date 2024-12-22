@@ -40,6 +40,7 @@ import {
     getRecurrenceDates,
     itemToEntityTransformers,
     toCamelCaseKeys,
+    generateDisruptionActivePeriods,
 } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
@@ -51,7 +52,9 @@ import Confirmation from '../WizardSteps/Confirmation';
 import SelectDetails from '../WizardSteps/SelectDetails';
 import SelectDisruptionEntities from '../WizardSteps/SelectDisruptionEntities';
 import Workarounds from '../WizardSteps/Workarounds';
-import { parseRecurrencePattern } from '../../../../../utils/recurrence';
+import {
+    parseRecurrencePattern,
+} from '../../../../../utils/recurrence';
 import EDIT_TYPE from '../../../../../types/edit-types';
 import { Map } from '../../../../Common/Map/Map';
 import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
@@ -64,7 +67,7 @@ import { HighlightingLayer } from '../../../../Common/Map/HighlightingLayer/High
 import { SelectedStopsMarker } from '../../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import DrawLayer from './DrawLayer';
 import PassengerImpactDrawer from '../../PassengerImpact/PassengerImpactDrawer';
-import { usePassengerImpact } from '../../../../../redux/selectors/appSettings';
+import { usePassengerImpact, useGeoSearchRoutesByDisruptionPeriod } from '../../../../../redux/selectors/appSettings';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 
 const INIT_STATE = {
@@ -75,6 +78,7 @@ const INIT_STATE = {
     impact: DEFAULT_IMPACT.value,
     cause: DEFAULT_CAUSE.value,
     affectedEntities: [],
+    activePeriods: [],
     mode: '-',
     status: STATUSES.NOT_STARTED,
     header: '',
@@ -371,7 +375,13 @@ export class CreateDisruption extends React.Component {
                     <DrawLayer
                         disabled={ this.props.activeStep !== 2 }
                         disruptionType={ disruptionData.disruptionType }
-                        onDrawCreated={ shape => this.props.searchByDrawing(disruptionData.disruptionType, shape) } />
+                        onDrawCreated={ shape => this.props.searchByDrawing(
+                            disruptionData.disruptionType,
+                            this.props.useGeoSearchRoutesByDisruptionPeriod && (disruptionData.endTime || disruptionData.recurrent) ? {
+                                ...shape,
+                                activePeriods: disruptionData.activePeriods.length > 0 ? disruptionData.activePeriods : generateDisruptionActivePeriods(disruptionData),
+                            } : shape,
+                        ) } />
                 </Map>
                 <Button
                     className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
@@ -417,6 +427,7 @@ CreateDisruption.propTypes = {
     isLoading: PropTypes.bool,
     updateDisruptionToEdit: PropTypes.func.isRequired,
     usePassengerImpact: PropTypes.bool.isRequired,
+    useGeoSearchRoutesByDisruptionPeriod: PropTypes.bool.isRequired,
 };
 
 CreateDisruption.defaultProps = {
@@ -448,6 +459,7 @@ export default connect(state => ({
     stopDetail: getStopDetail(state),
     isLoading: getDisruptionsLoadingState(state),
     usePassengerImpact: usePassengerImpact(state),
+    useGeoSearchRoutesByDisruptionPeriod: useGeoSearchRoutesByDisruptionPeriod(state),
 }), {
     createDisruption,
     openCreateDisruption,
