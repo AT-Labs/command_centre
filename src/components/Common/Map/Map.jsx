@@ -15,6 +15,11 @@ export const Map = (props) => {
     const [needBoundsFit, setNeedBoundsFit] = useState(true);
     const [boundsToFit, setBoundsToFit] = useState([]);
     const [mapLoaded, setMapLoaded] = useState(false);
+    const mapStateRef = React.useRef({
+        center: null,
+        zoom: null,
+        bounds: null,
+    });
 
     const fitBounds = () => {
         const leafletInstance = mapRef.current.leafletElement;
@@ -24,21 +29,7 @@ export const Map = (props) => {
             const options = maxZoom ? { maxZoom, paddingTopLeft } : { paddingTopLeft };
             leafletInstance.fitBounds(props.boundsToFit, options);
         }
-
-        if (props.center) {
-            leafletInstance.setView(props.center, MAP_DATA.zoomLevel.initial);
-            if (props.recenterMap) {
-                props.recenterMap(false);
-            }
-        }
     };
-
-    useEffect(() => {
-        if (props.center) {
-            const leafletInstance = mapRef.current.leafletElement;
-            leafletInstance.setView(props.center, MAP_DATA.zoomLevel.initial);
-        }
-    }, [props.center]);
 
     useEffect(() => {
         fitBounds();
@@ -58,14 +49,19 @@ export const Map = (props) => {
 
     const handleMove = () => {
         setNeedBoundsFit(false);
-        if (props.onViewChanged && mapLoaded) {
+        if (mapLoaded) {
             const map = mapRef.current.leafletElement;
             const update = {
                 center: map.getCenter(),
                 zoom: map.getZoom(),
                 bounds: map.getBounds(),
             };
-            props.onViewChanged(update);
+
+            const mapStateChanged = !isEqual(mapStateRef.current, update);
+            if (props.onViewChanged && mapStateChanged) {
+                mapStateRef.current = update;
+                props.onViewChanged(update);
+            }
         }
     };
 
@@ -79,8 +75,8 @@ export const Map = (props) => {
             <LeafletProvider value="">
                 <LeafletMap
                     className="map flex-grow-1"
-                    center={ MAP_DATA.centerLocation }
-                    zoom={ MAP_DATA.zoomLevel.initial }
+                    center={ props.center }
+                    zoom={ props.zoom }
                     preferCanvas
                     zoomControl={ false }
                     ref={ mapRef }
@@ -106,11 +102,11 @@ Map.propTypes = {
         PropTypes.arrayOf(PropTypes.node),
         PropTypes.node,
     ]),
-    recenterMap: PropTypes.func,
     maxZoom: PropTypes.number,
     shouldOffsetForSidePanel: PropTypes.bool.isRequired,
     boundsToFit: PropTypes.array.isRequired,
     center: PropTypes.array,
+    zoom: PropTypes.number,
     isLoading: PropTypes.bool,
     handlePopupClose: PropTypes.func,
     sidePanelWidthPX: PropTypes.number,
@@ -120,9 +116,9 @@ Map.propTypes = {
 
 Map.defaultProps = {
     children: [],
-    recenterMap: null,
     maxZoom: 0,
-    center: null,
+    center: MAP_DATA.centerLocation,
+    zoom: MAP_DATA.zoomLevel.initial,
     isLoading: false,
     handlePopupClose: () => {},
     sidePanelWidthPX: SIDE_PANEL_WIDTH_PX,

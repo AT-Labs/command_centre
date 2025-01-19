@@ -11,8 +11,9 @@ import VIEW_TYPE from '../../../types/view-types';
 import SEARCH_RESULT_TYPE from '../../../types/search-result-types';
 
 export const getMapState = state => result(state, 'realtime.map');
-export const getMapRecenterStatus = createSelector(getMapState, mapState => result(mapState, 'shouldMapBeRecentered'));
 export const getHoveredEntityKey = createSelector(getMapState, mapState => result(mapState, 'hoveredEntityKey'));
+export const getMapCenter = createSelector(getMapState, mapState => result(mapState, 'mapCenter'));
+export const getMapZoomLevel = createSelector(getMapState, mapState => result(mapState, 'mapZoomLevel'));
 
 export const getShouldOffsetForSidePanel = createSelector(
     getRealTimeSidePanelIsActive,

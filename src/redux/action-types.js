@@ -71,8 +71,12 @@ export default {
     // Vehicle quick view
     FETCH_TRIP_UPDATE_SNAPSHOT: 'fetch-trip-update-snapshot',
     // Map
-    RECENTER_MAP: 'recenter-map',
     UPDATE_HOVERED_ENTITY_KEY: 'update-hovered-entity-key',
+    UPDATE_MAP_DETAILS: 'update-map-details',
+    // Layers
+    UPDATE_SHOW_INCIDENTS: 'update-show-incidents',
+    UPDATE_SELECTED_INCIDENT_FILTERS: 'update-selected-incident-filters',
+    UPDATE_SELECTED_CONGESTION_FILTERS: 'update-selected-congestion-filters',
     // navigation
     UPDATE_MAIN_VIEW: 'update-main-view',
     TOGGLE_RT_SIDE_PANEL: 'toggle-rt-side-panel',

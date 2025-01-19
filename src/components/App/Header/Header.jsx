@@ -102,7 +102,7 @@ function Header(props) {
 
     useEffect(() => {
         const locationToPush = props.activeView === VIEW_TYPE.MAIN.REAL_TIME ? '/' : `/${props.activeView}`;
-        if (locationToPush !== location.pathname && [VIEW_TYPE.MAIN.DASHBOARD, VIEW_TYPE.MAIN.REAL_TIME, VIEW_TYPE.MAIN.ANALYTICS].includes(props.activeView)) {
+        if (locationToPush !== location.pathname && [VIEW_TYPE.MAIN.DASHBOARD, VIEW_TYPE.MAIN.ANALYTICS].includes(props.activeView)) {
             history.push(locationToPush);
         }
     }, [props.activeView]);

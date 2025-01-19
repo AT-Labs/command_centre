@@ -1,14 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { map, slice, filter } from 'lodash-es';
+import { useLocation, useHistory } from 'react-router-dom';
+import { map, slice, filter, isEqual } from 'lodash-es';
 
 import { getSearchTerms } from '../../redux/selectors/search';
 import { addressSelected } from '../../redux/actions/realtime/detail/address';
 import { routeChecked } from '../../redux/actions/realtime/detail/route';
 import { stopChecked, stopSelected } from '../../redux/actions/realtime/detail/stop';
 import { vehicleChecked } from '../../redux/actions/realtime/detail/vehicle';
-import { startTrackingVehicles } from '../../redux/actions/realtime/vehicles';
+import { mergeVehicleFilters, startTrackingVehicles } from '../../redux/actions/realtime/vehicles';
 import {
     getStopDetail,
     getRouteDetail,
@@ -38,10 +39,29 @@ import { updateRealTimeDetailView } from '../../redux/actions/navigation';
 import { addSelectedSearchResult, removeSelectedSearchResult, clearSelectedSearchResult } from '../../redux/actions/realtime/detail/common';
 import { formatRealtimeDetailListItemKey, addOffsetToIncident } from '../../utils/helpers';
 import VIEW_TYPE from '../../types/view-types';
-import { recenterMap, updateHoveredEntityKey } from '../../redux/actions/realtime/map';
-import { getBoundsToFit, getMaxZoom, getShouldOffsetForSidePanel, getHoveredEntityKey, getMapRecenterStatus } from '../../redux/selectors/realtime/map';
+import { updateHoveredEntityKey, updateMapDetails } from '../../redux/actions/realtime/map';
+import {
+    getBoundsToFit,
+    getMaxZoom,
+    getShouldOffsetForSidePanel,
+    getHoveredEntityKey,
+    getMapCenter,
+    getMapZoomLevel,
+} from '../../redux/selectors/realtime/map';
 import { MAP_DATA } from '../../types/map-types';
-import { getHighlightVehiclePosition } from '../../redux/selectors/realtime/vehicles';
+import {
+    getHighlightVehiclePosition,
+    getVehiclesFilterShowingTags,
+    getVehiclesFilterIsShowingNIS,
+    getVehiclesFilterShowingDelay,
+    getVehiclesFilterIsShowingUnscheduled,
+    getVehiclesFilterShowingOccupancyLevels,
+    getVehiclesFilterRouteType,
+    getVehiclesFilterAgencyIds,
+    getVehiclesFilterIsShowingDirectionInbound,
+    getVehiclesFilterIsShowingDirectionOutbound,
+    getVehiclesFilterIsShowingSchoolBus,
+} from '../../redux/selectors/realtime/vehicles';
 import { getChildStops } from '../../redux/selectors/static/stops';
 
 import './RealTimeView.scss';
@@ -65,17 +85,25 @@ import {
 import * as incidentsApi from '../../utils/transmitters/incidents-api';
 import RealtimeMapFilters from './RealtimeMapFilters/RealtimeMapFilters';
 import { Probability } from '../../types/incidents';
+import { updateSelectedCongestionFilters, updateSelectedIncidentFilters, updateShowIncidents } from '../../redux/actions/realtime/layers';
+import { getSelectedCongestionFilters, getSelectedIncidentFilters, getShowIncidents } from '../../redux/selectors/realtime/layers';
+import { getAgencies } from '../../redux/selectors/static/agencies';
+import {
+    isIncidentsQueryValid,
+    isLiveTrafficQueryValid,
+    isMapCenterQueryValid,
+    isMapZoomLevelQueryValid,
+    isOccupancyLevelsValid,
+    isRouteTypeQueryValid,
+    isStatusQueryValid,
+    isTagsQueryValid,
+} from '../../utils/realtimeMap';
 
 function RealTimeView(props) {
     const { ADDRESS, ROUTE, STOP, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
     const [trafficFlows, setTrafficFlows] = useState([]);
-    const [mapZoomLevel, setMapZoomLevel] = useState(MAP_DATA.zoomLevel.initial);
-    const [mapCenter, setMapCenter] = useState(MAP_DATA.centerLocation);
     const [mapRadius, setMapRadius] = useState(50);
-    const [selectedCongestionFilters, setSelectedCongestionFilters] = useState([]);
-    const [showIncidents, setShowIncidents] = useState(false);
     const [incidents, setIncidents] = useState([]);
-    const [selectedIncidentFilters, setSelectedIncidentFilters] = useState([]);
     const abortControllerRef = useRef(null);
 
     const fetchIncidentsData = async () => {
@@ -102,8 +130,8 @@ function RealTimeView(props) {
     }, []);
 
     const shouldFetchTrafficData = () => (
-        props.useNewRealtimeMapFilters && selectedCongestionFilters.length > 0)
-        || (props.useCongestionLayer && selectedCongestionFilters.length > 0);
+        props.useNewRealtimeMapFilters && props.selectedCongestionFilters.length > 0)
+        || (props.useCongestionLayer && props.selectedCongestionFilters.length > 0);
 
     const fetchTrafficData = async (lat, long, radius, zoom) => {
         try {
@@ -124,20 +152,20 @@ function RealTimeView(props) {
                 if (abortControllerRef.current) {
                     abortControllerRef.current.abort();
                 }
-                const [lat, long] = mapCenter;
-                fetchTrafficData(lat, long, mapRadius, mapZoomLevel);
+                const [lat, long] = props.mapCenter;
+                fetchTrafficData(lat, long, mapRadius, props.mapZoomLevel);
             }
         }, CONGESTION_REFRESH_INTERVAL);
 
         return () => {
             clearInterval(refreshTrafficInterval);
         };
-    }, [selectedCongestionFilters, mapCenter, mapRadius]);
+    }, [props.selectedCongestionFilters, props.mapCenter, mapRadius]);
 
     useEffect(() => {
         let refreshIncidentsInterval;
 
-        if ((props.useNewRealtimeMapFilters && selectedIncidentFilters?.length > 0) || (props.useIncidentLayer && showIncidents)) {
+        if ((props.useNewRealtimeMapFilters && props.selectedIncidentFilters?.length > 0) || (props.useIncidentLayer && props.showIncidents)) {
             fetchIncidentsData();
             refreshIncidentsInterval = setInterval(() => {
                 fetchIncidentsData();
@@ -147,27 +175,279 @@ function RealTimeView(props) {
         return () => {
             clearInterval(refreshIncidentsInterval);
         };
-    }, [showIncidents, selectedIncidentFilters]);
+    }, [props.showIncidents, props.selectedIncidentFilters]);
 
     const onMapViewChanged = (event) => {
         const center = [event.center.lat, event.center.lng];
         const nw = event.bounds.getNorthWest();
         const radius = haversineDistance(center, [nw.lat, nw.lng]);
+
+        if (!isEqual(props.mapCenter, center) || props.mapZoomLevel !== event.zoom) {
+            props.updateMapDetails(center, event.zoom);
+        }
+
         if (shouldFetchTrafficData()) {
-            setMapCenter(center);
-            setMapZoomLevel(event.zoom);
             setMapRadius(radius);
             fetchTrafficData(event.center.lat, event.center.lng, radius, event.zoom);
         }
     };
 
     const onCongestionFiltersChanged = (newFilters) => {
-        setSelectedCongestionFilters(newFilters);
+        props.updateSelectedCongestionFilters(newFilters);
         if (!trafficFlows || trafficFlows.length === 0) {
-            const [lat, long] = mapCenter;
-            fetchTrafficData(lat, long, mapRadius, mapZoomLevel);
+            const [lat, long] = props.mapCenter;
+            fetchTrafficData(lat, long, mapRadius, props.mapZoomLevel);
         }
     };
+
+    const location = useLocation();
+    const history = useHistory();
+    const realtimeViewPath = '/';
+
+    const handleUrlChange = (inputLocation) => {
+        let routeType = null;
+        let agencyIds = null;
+        let isShowingNIS = false;
+        let isShowingUnscheduled = false;
+        let showingDelay = {};
+        let showingOccupancyLevels = [];
+        let showingTags = [];
+        let isShowingDirectionInbound = true;
+        let isShowingDirectionOutbound = true;
+        let isShowingSchoolBus = false;
+
+        if (inputLocation.pathname !== realtimeViewPath) {
+            return;
+        }
+        if (!inputLocation.search) {
+            props.mergeVehicleFilters({
+                routeType,
+                agencyIds,
+                isShowingNIS,
+                isShowingUnscheduled,
+                showingDelay,
+                showingTags,
+                showingOccupancyLevels,
+                isShowingDirectionInbound,
+                isShowingDirectionOutbound,
+                isShowingSchoolBus,
+            });
+            return;
+        }
+
+        const searchParams = new URLSearchParams(location.search);
+
+        const tagsQuery = searchParams.get('tags');
+        if (isTagsQueryValid(tagsQuery)) {
+            showingTags = tagsQuery.split(',');
+        }
+
+        const statusQuery = searchParams.get('status');
+        const earlyCustomQuery = searchParams.get('earlyCustom');
+        const lateCustomQuery = searchParams.get('lateCustom');
+        if (isStatusQueryValid(statusQuery, earlyCustomQuery, lateCustomQuery)) {
+            const status = statusQuery.split(',');
+            const earlyCustom = earlyCustomQuery?.split('-')?.map(Number);
+            const lateCustom = lateCustomQuery?.split('-')?.map(Number);
+            isShowingNIS = status.includes('notInService');
+            isShowingUnscheduled = status.includes('unscheduled');
+            showingDelay = {
+                ...(status.includes('earlyCustom') && { early: [earlyCustom[0], earlyCustom[1]] }),
+                ...(status.includes('earlyMoreThan30') && { early: [30, Infinity] }),
+                ...(status.includes('lateCustom') && { late: [lateCustom[0], lateCustom[1]] }),
+                ...(status.includes('lateMoreThan30') && { late: [30, Infinity] }),
+            };
+        }
+
+        const occupancyLevelsQuery = searchParams.get('occupancyLevels');
+        if (isOccupancyLevelsValid(occupancyLevelsQuery)) {
+            showingOccupancyLevels = occupancyLevelsQuery.split(',');
+        }
+
+        const routeTypeQuery = searchParams.get('routeType');
+        const agencyIdsQuery = searchParams.get('agencyIds');
+        const settingsQuery = searchParams.get('settings');
+        if (isRouteTypeQueryValid(routeTypeQuery, agencyIdsQuery, settingsQuery, props.agencies)) {
+            routeType = Number(routeTypeQuery);
+            if (agencyIdsQuery) {
+                agencyIds = agencyIdsQuery.split(',');
+            }
+            if (settingsQuery) {
+                const settings = settingsQuery.split(',');
+                isShowingDirectionInbound = settings.includes('inbound');
+                isShowingDirectionOutbound = settings.includes('outbound');
+                isShowingSchoolBus = settings.includes('schoolBus');
+            } else {
+                isShowingDirectionInbound = false;
+                isShowingDirectionOutbound = false;
+                isShowingSchoolBus = false;
+            }
+        }
+
+        props.mergeVehicleFilters({
+            routeType,
+            agencyIds,
+            isShowingNIS,
+            isShowingUnscheduled,
+            showingDelay,
+            showingTags,
+            showingOccupancyLevels,
+            isShowingDirectionInbound,
+            isShowingDirectionOutbound,
+            isShowingSchoolBus,
+        });
+
+        const incidentsQuery = searchParams.get('incidents');
+        if (isIncidentsQueryValid(incidentsQuery)) {
+            props.updateSelectedIncidentFilters(incidentsQuery.split(','));
+            props.updateShowIncidents(true);
+        }
+
+        const liveTrafficQuery = searchParams.get('liveTraffic');
+        if (isLiveTrafficQueryValid(liveTrafficQuery)) {
+            props.updateSelectedCongestionFilters(liveTrafficQuery.split(','));
+        }
+
+        let mapCenter;
+        let mapZoomLevel;
+        const mapCenterQuery = searchParams.get('mapCenter');
+        if (isMapCenterQueryValid(mapCenterQuery)) {
+            mapCenter = mapCenterQuery.split(',').map(Number);
+        }
+        const mapZoomLevelQuery = searchParams.get('mapZoomLevel');
+        if (isMapZoomLevelQueryValid(mapZoomLevelQuery)) {
+            mapZoomLevel = Number(mapZoomLevelQuery);
+        }
+        if (mapCenter !== undefined || mapZoomLevel !== undefined) {
+            props.updateMapDetails(mapCenter ?? props.mapCenter, mapZoomLevel ?? props.mapZoomLevel);
+        }
+    };
+
+    useEffect(() => {
+        handleUrlChange(location);
+        const removeBackListener = history.listen((currentLocation, action) => {
+            if (action === 'POP') {
+                handleUrlChange(currentLocation);
+            }
+        });
+        return () => {
+            removeBackListener();
+        };
+    }, []);
+
+    const buildQueryParams = () => {
+        const searchParams = new URLSearchParams();
+
+        const showingTags = props.showingTags.join(',');
+        if (showingTags) {
+            searchParams.set('tags', showingTags);
+        }
+
+        const status = [];
+        if (props.isShowingNIS) {
+            status.push('notInService');
+        }
+        if (props.isShowingUnscheduled) {
+            status.push('unscheduled');
+        }
+        if (props.showingDelay.early) {
+            const min = props.showingDelay.early[0];
+            const max = props.showingDelay.early[1];
+            if (max === Infinity) {
+                status.push('earlyMoreThan30');
+            } else {
+                status.push('earlyCustom');
+                searchParams.set('earlyCustom', `${min}-${max}`);
+            }
+        }
+        if (props.showingDelay.late) {
+            const min = props.showingDelay.late[0];
+            const max = props.showingDelay.late[1];
+            if (max === Infinity) {
+                status.push('lateMoreThan30');
+            } else {
+                status.push('lateCustom');
+                searchParams.set('lateCustom', `${min}-${max}`);
+            }
+        }
+        if (status.length > 0) {
+            searchParams.set('status', status.join(','));
+        }
+
+        const showingOccupancyLevels = props.showingOccupancyLevels.join(',');
+        if (showingOccupancyLevels) {
+            searchParams.set('occupancyLevels', showingOccupancyLevels);
+        }
+
+        const { routeType, selectedAgencyIds, isShowingDirectionInbound, isShowingDirectionOutbound, isShowingSchoolBus } = props;
+        if (routeType) {
+            searchParams.set('routeType', routeType);
+            if (selectedAgencyIds && selectedAgencyIds.length > 0) {
+                searchParams.set('agencyIds', selectedAgencyIds);
+            }
+            const settings = {
+                inbound: isShowingDirectionInbound,
+                outbound: isShowingDirectionOutbound,
+                schoolBus: isShowingSchoolBus,
+            };
+            const isSettingOn = Object.values(settings).find(setting => setting);
+            if (isSettingOn) {
+                const onSettings = Object.keys(settings).filter(key => settings[key]);
+                searchParams.set('settings', onSettings.join(','));
+            }
+        }
+
+        if (props.selectedIncidentFilters.length > 0) {
+            searchParams.set('incidents', props.selectedIncidentFilters.join(','));
+        }
+
+        if (props.selectedCongestionFilters.length > 0) {
+            searchParams.set('liveTraffic', props.selectedCongestionFilters.join(','));
+        }
+
+        if (!isEqual(props.mapCenter, MAP_DATA.centerLocation)) {
+            searchParams.set('mapCenter', props.mapCenter.join(','));
+        }
+
+        if (props.mapZoomLevel !== MAP_DATA.zoomLevel.initial) {
+            searchParams.set('mapZoomLevel', props.mapZoomLevel);
+        }
+
+        return searchParams.toString();
+    };
+
+    useEffect(() => {
+        if (location.pathname !== realtimeViewPath) {
+            return;
+        }
+        const queryParams = buildQueryParams();
+        const urlSearchParams = queryParams ? `?${queryParams}` : '';
+        history.replace(`${location.pathname}${urlSearchParams}`);
+    }, [
+        props.showingTags,
+        props.isShowingNIS,
+        props.isShowingUnscheduled,
+        props.showingDelay,
+        props.showingOccupancyLevels,
+        props.routeType,
+        props.selectedAgencyIds,
+        props.isShowingDirectionInbound,
+        props.isShowingDirectionOutbound,
+        props.isShowingSchoolBus,
+        props.selectedIncidentFilters,
+        props.selectedCongestionFilters,
+        props.mapCenter,
+        props.mapZoomLevel,
+    ]);
+
+    useEffect(() => {
+        const queryParams = buildQueryParams();
+        const urlSearchParams = queryParams ? `?${queryParams}` : '';
+        const fullPath = `${realtimeViewPath}${urlSearchParams}`;
+        if (`${location.pathname}${location.search}` !== fullPath) {
+            history.push(fullPath);
+        }
+    }, []);
 
     return (
         <OffCanvasLayout>
@@ -286,20 +566,20 @@ function RealTimeView(props) {
             </SidePanel>
             <Main className="real-time-view d-flex">
                 <Map
-                    recenterMap={ props.recenterMap }
                     maxZoom={ props.maxZoom }
                     shouldOffsetForSidePanel={ props.shouldOffsetForSidePanel }
                     boundsToFit={ props.boundsToFit }
-                    center={ props.shouldMapBeRecentered ? MAP_DATA.centerLocation : null }
+                    center={ props.mapCenter }
+                    zoom={ props.mapZoomLevel }
                     onViewChanged={ onMapViewChanged }
                 >
                     <CongestionLayer
                         data={ trafficFlows }
-                        weight={ mapZoomLevel > CONGESTION_ZOOM_LEVEL_THRESHOLD ? CONGESTION_SHAPE_WEIGHT_BOLD : CONGESTION_SHAPE_WEIGHT_DEFAULT }
-                        filters={ selectedCongestionFilters } />
-                    { (props.useNewRealtimeMapFilters || (props.useIncidentLayer && showIncidents)) && (
+                        weight={ props.mapZoomLevel > CONGESTION_ZOOM_LEVEL_THRESHOLD ? CONGESTION_SHAPE_WEIGHT_BOLD : CONGESTION_SHAPE_WEIGHT_DEFAULT }
+                        filters={ props.selectedCongestionFilters } />
+                    { (props.useNewRealtimeMapFilters || (props.useIncidentLayer && props.showIncidents)) && (
                         <IncidentLayer
-                            data={ incidents.filter(incident => (props.useNewRealtimeMapFilters ? selectedIncidentFilters.includes(incident.type.category) : incident)) }
+                            data={ incidents.filter(incident => (props.useNewRealtimeMapFilters ? props.selectedIncidentFilters.includes(incident.type.category) : incident)) }
                             weight={ INCIDENTS_SHAPE_WEIGHT }
                         />
                     ) }
@@ -338,14 +618,14 @@ function RealTimeView(props) {
                 <ErrorAlerts />
                 { !props.useNewRealtimeMapFilters && <VehicleFilters /> }
                 <Feedback />
-                { props.useCongestionLayer ? <CongestionFilters selectedFilters={ selectedCongestionFilters } onFiltersChanged={ onCongestionFiltersChanged } /> : ''}
-                { props.useIncidentLayer ? <EnableIncidentLayerButton isEnabled={ showIncidents } onClick={ () => setShowIncidents(!showIncidents) } /> : ''}
+                { props.useCongestionLayer ? <CongestionFilters selectedFilters={ props.selectedCongestionFilters } onFiltersChanged={ onCongestionFiltersChanged } /> : ''}
+                { props.useIncidentLayer ? <EnableIncidentLayerButton isEnabled={ props.showIncidents } onClick={ () => props.updateShowIncidents(!props.showIncidents) } /> : ''}
                 { props.useNewRealtimeMapFilters && !props.useCongestionLayer && !props.useIncidentLayer ? (
                     <RealtimeMapFilters
                         onCongestionFiltersChanged={ onCongestionFiltersChanged }
-                        selectedCongestionFilters={ selectedCongestionFilters }
-                        selectedIncidentFilters={ selectedIncidentFilters }
-                        onIncidentFiltersChanged={ newFilters => setSelectedIncidentFilters(newFilters) }
+                        selectedCongestionFilters={ props.selectedCongestionFilters }
+                        selectedIncidentFilters={ props.selectedIncidentFilters }
+                        onIncidentFiltersChanged={ newFilters => props.updateSelectedIncidentFilters(newFilters) }
                     />
                 ) : '' }
             </Main>
@@ -369,7 +649,6 @@ RealTimeView.propTypes = {
     removeSelectedSearchResult: PropTypes.func.isRequired,
     clearSelectedSearchResult: PropTypes.func.isRequired,
     allSearchResults: PropTypes.object.isRequired,
-    recenterMap: PropTypes.func.isRequired,
     maxZoom: PropTypes.number.isRequired,
     shouldOffsetForSidePanel: PropTypes.bool.isRequired,
     boundsToFit: PropTypes.array.isRequired,
@@ -384,14 +663,36 @@ RealTimeView.propTypes = {
     visibleStops: PropTypes.array.isRequired,
     childStops: PropTypes.object.isRequired,
     stopSelected: PropTypes.func.isRequired,
-    shouldMapBeRecentered: PropTypes.bool.isRequired,
     useCongestionLayer: PropTypes.bool.isRequired,
     useIncidentLayer: PropTypes.bool.isRequired,
     useNewRealtimeMapFilters: PropTypes.bool.isRequired,
+    mergeVehicleFilters: PropTypes.func.isRequired,
+    showingTags: PropTypes.arrayOf(PropTypes.string).isRequired,
+    isShowingNIS: PropTypes.bool.isRequired,
+    isShowingUnscheduled: PropTypes.bool.isRequired,
+    showingDelay: PropTypes.object.isRequired,
+    showingOccupancyLevels: PropTypes.arrayOf(PropTypes.string).isRequired,
+    routeType: PropTypes.number,
+    selectedAgencyIds: PropTypes.arrayOf(PropTypes.string),
+    isShowingDirectionInbound: PropTypes.bool.isRequired,
+    isShowingDirectionOutbound: PropTypes.bool.isRequired,
+    isShowingSchoolBus: PropTypes.bool.isRequired,
+    mapCenter: PropTypes.arrayOf(PropTypes.number).isRequired,
+    mapZoomLevel: PropTypes.number.isRequired,
+    updateMapDetails: PropTypes.func.isRequired,
+    showIncidents: PropTypes.bool.isRequired,
+    selectedIncidentFilters: PropTypes.array.isRequired,
+    selectedCongestionFilters: PropTypes.array.isRequired,
+    updateShowIncidents: PropTypes.func.isRequired,
+    updateSelectedIncidentFilters: PropTypes.func.isRequired,
+    updateSelectedCongestionFilters: PropTypes.func.isRequired,
+    agencies: PropTypes.array.isRequired,
 };
 
 RealTimeView.defaultProps = {
     vehiclePosition: undefined,
+    routeType: null,
+    selectedAgencyIds: null,
 };
 
 export default connect(
@@ -417,10 +718,25 @@ export default connect(
         stops: getCheckedStops(state),
         childStops: getChildStops(state),
         visibleStops: getVisibleStops(state),
-        shouldMapBeRecentered: getMapRecenterStatus(state),
         useCongestionLayer: useCongestionLayer(state),
         useIncidentLayer: useIncidentLayer(state),
         useNewRealtimeMapFilters: useNewRealtimeMapFilters(state),
+        showingTags: getVehiclesFilterShowingTags(state),
+        showingDelay: getVehiclesFilterShowingDelay(state),
+        isShowingNIS: getVehiclesFilterIsShowingNIS(state),
+        isShowingUnscheduled: getVehiclesFilterIsShowingUnscheduled(state),
+        showingOccupancyLevels: getVehiclesFilterShowingOccupancyLevels(state),
+        routeType: getVehiclesFilterRouteType(state),
+        selectedAgencyIds: getVehiclesFilterAgencyIds(state),
+        isShowingDirectionInbound: getVehiclesFilterIsShowingDirectionInbound(state),
+        isShowingDirectionOutbound: getVehiclesFilterIsShowingDirectionOutbound(state),
+        isShowingSchoolBus: getVehiclesFilterIsShowingSchoolBus(state),
+        mapCenter: getMapCenter(state),
+        mapZoomLevel: getMapZoomLevel(state),
+        showIncidents: getShowIncidents(state),
+        selectedIncidentFilters: getSelectedIncidentFilters(state),
+        selectedCongestionFilters: getSelectedCongestionFilters(state),
+        agencies: getAgencies(state),
     }),
     {
         addressSelected,
@@ -432,8 +748,12 @@ export default connect(
         addSelectedSearchResult,
         removeSelectedSearchResult,
         clearSelectedSearchResult,
-        recenterMap,
         updateHoveredEntityKey,
         stopSelected,
+        mergeVehicleFilters,
+        updateMapDetails,
+        updateShowIncidents,
+        updateSelectedIncidentFilters,
+        updateSelectedCongestionFilters,
     },
 )(RealTimeView);

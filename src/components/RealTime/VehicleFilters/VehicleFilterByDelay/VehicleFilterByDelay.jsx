@@ -37,8 +37,8 @@ class VehicleFilterByDelay extends React.PureComponent {
 
     state = {
         showingDelay: {
-            early: null,
-            late: null,
+            early: this.props.showingDelay?.early ?? null,
+            late: this.props.showingDelay?.late ?? null,
         },
     };
 

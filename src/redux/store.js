@@ -34,12 +34,12 @@ import controlTripReplayView from './reducers/control/tripReplays/tripReplayView
 import vehicleReplay from './reducers/control/vehicleReplays/vehicleReplay';
 import currentTrip from './reducers/control/tripReplays/currentTrip';
 import prevFilterValue from './reducers/control/tripReplays/prevFilterValue';
-import tripReplaysMap from './reducers/control/tripReplays/map';
 import analytics from './reducers/analytics/analytics';
 import dataManagement from './reducers/control/dataManagement';
 import appSettings from './reducers/appSettings';
 import notifications from './reducers/control/notifications';
 import datagridConfig from './reducers/datagrid';
+import layers from './reducers/realtime/layers';
 
 const sentryReduxEnhancer = Sentry.createReduxEnhancer();
 
@@ -64,6 +64,7 @@ export default createStore(
             detail,
             map,
             quickview,
+            layers,
         }),
         control: combineReducers({
             agencies: agenciesWithDepots,
@@ -84,7 +85,6 @@ export default createStore(
                 tripReplaysView: controlTripReplayView,
                 currentTrip,
                 prevFilterValue,
-                map: tripReplaysMap,
             }),
             vehicleReplays: combineReducers({
                 vehicleReplay,
