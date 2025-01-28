@@ -141,7 +141,7 @@ function getDuration(disruption) {
         return '-';
     }
 
-    if (disruption.status === STATUSES.RESOLVED) {
+    if (disruption.status === STATUSES.RESOLVED || endTime <= now) {
         cutoff = endTime;
     }
 

@@ -340,6 +340,33 @@ describe('shareToEmail', () => {
         expect(siblingTd.textContent.trim()).toBe(expectedDuration.replace(/ /g, '\u00A0'));
     });
 
+    test('should include duration for non recurrent when end date/time is in the past', async () => {
+        const startTime = '2020-03-17T19:41:13.775Z';
+        const now = '2020-03-21T10:00:00.000Z';
+        const endTime = '2020-03-18T19:41:13.775Z';
+        const expectedDuration = '24 hours, 0 minutes, and 0 seconds';
+        jest.setSystemTime(new Date(now));
+
+        await shareToEmail({ ...disruption, recurrent: false, startTime, endTime });
+
+        const href = decodeURIComponent(link.href);
+
+        const htmlMatch = /<html[\s\S]*<\/html>/.exec(href);
+        expect(htmlMatch).not.toBeNull();
+
+        const htmlContent = htmlMatch[0];
+        const { defaultView: { document } } = jsdom.jsdom(htmlContent);
+
+        const duration = Array.from(document.querySelectorAll('th')).find(
+            th => th.textContent.trim() === 'Duration',
+        );
+        expect(duration).not.toBeNull();
+
+        const siblingTd = duration.nextElementSibling;
+        expect(siblingTd).not.toBeNull();
+        expect(siblingTd.textContent.trim()).toBe(expectedDuration.replace(/ /g, '\u00A0'));
+    });
+
     test('should include duration for recurrent when not started', async () => {
         const startTime = '2022-08-29T20:30:00.000Z';
         const now = '2022-08-29T20:00:00.000Z';
@@ -396,11 +423,38 @@ describe('shareToEmail', () => {
     test('should include duration for recurrent when resolved', async () => {
         const startTime = '2022-08-29T20:30:00.000Z';
         const now = '2022-09-01T20:00:00.000Z';
-        const endTime = '2022-08-31T22:30:00.000Z';
-        const expectedDuration = '4 hours, 0 minutes, and 0 seconds';
+        const endTime = '2022-08-31T21:30:00.000Z';
+        const expectedDuration = '3 hours, 0 minutes, and 0 seconds';
         jest.setSystemTime(new Date(now));
 
         await shareToEmail({ ...disruption, recurrent: true, startTime, endTime, activePeriods, status: 'resolved' });
+
+        const href = decodeURIComponent(link.href);
+
+        const htmlMatch = /<html[\s\S]*<\/html>/.exec(href);
+        expect(htmlMatch).not.toBeNull();
+
+        const htmlContent = htmlMatch[0];
+        const { defaultView: { document } } = jsdom.jsdom(htmlContent);
+
+        const duration = Array.from(document.querySelectorAll('th')).find(
+            th => th.textContent.trim() === 'Duration',
+        );
+        expect(duration).not.toBeNull();
+
+        const siblingTd = duration.nextElementSibling;
+        expect(siblingTd).not.toBeNull();
+        expect(siblingTd.textContent.trim()).toBe(expectedDuration.replace(/ /g, '\u00A0'));
+    });
+
+    test('should include duration for recurrent when end date/time is in the past', async () => {
+        const startTime = '2022-08-29T20:30:00.000Z';
+        const now = '2022-09-01T20:00:00.000Z';
+        const endTime = '2022-08-31T21:30:00.000Z';
+        const expectedDuration = '3 hours, 0 minutes, and 0 seconds';
+        jest.setSystemTime(new Date(now));
+
+        await shareToEmail({ ...disruption, recurrent: true, startTime, endTime, activePeriods });
 
         const href = decodeURIComponent(link.href);
 

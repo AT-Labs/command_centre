@@ -90,46 +90,36 @@ export const generateActivePeriodsFromRecurrencePattern = (recurrencePattern, du
     });
 };
 
-const filterPastAndCurrentPeriods = (allActivePeriods, duration, isResolved) => {
-    const pastAndCurrentPeriods = [];
-
-    allActivePeriods.some((period) => {
-        if (period.endTime && moment.unix(period.endTime).isBefore(moment())) {
-            const periodToAdd = { ...period };
-            if (!isResolved) {
-                const calculatedEndTime = moment.unix(period.startTime).add(duration, 'h');
-                if (calculatedEndTime.isAfter(moment())) {
-                    periodToAdd.endTime = calculatedEndTime.unix();
-                }
-            }
-            pastAndCurrentPeriods.push(periodToAdd);
-        } else if (period.endTime && moment().isBetween(moment.unix(period.startTime), moment.unix(period.endTime))) {
-            pastAndCurrentPeriods.push({
-                ...period,
-                endTime: isResolved ? moment().unix() : moment.unix(period.startTime).add(duration, 'h').unix(),
-            });
-            return true;
-        } else if (moment.unix(period.startTime).isAfter(moment())) {
-            return true;
-        }
-
-        return false;
-    });
-
-    return pastAndCurrentPeriods;
+const filterPastPeriods = (existingActivePeriods, duration) => {
+    const now = moment();
+    return existingActivePeriods
+        .filter(period => moment.unix(period.startTime).add(duration, 'h') < now);
 };
 
 const filterFuturePeriods = (allActivePeriods, isResolved) => (isResolved ? []
     : allActivePeriods.filter(period => moment.unix(period.startTime).isAfter(moment())));
 
-export const calculateActivePeriods = (recurrencePattern, durationInHours, allActivePeriods, isResolved) => {
-    const newActivePeriods = generateActivePeriodsFromRecurrencePattern(recurrencePattern, durationInHours);
+const filterCurrentPeriods = (allActivePeriods, duration, isResolved) => {
+    const now = moment();
+    return allActivePeriods
+        .filter(period => period.endTime && moment.unix(period.startTime) <= now && now <= moment.unix(period.endTime))
+        .map(period => ({
+            ...period,
+            endTime: isResolved ? now.unix() : moment.unix(period.startTime).add(duration, 'h').unix(),
+        }));
+};
 
-    if (!isResolved && (!allActivePeriods || allActivePeriods.length === 0 || moment().isBefore(moment.unix(allActivePeriods[0].startTime)))) {
-        return newActivePeriods;
+export const calculateActivePeriods = (recurrencePattern, durationInHours, existingActivePeriods, isResolved) => {
+    const allActivePeriods = generateActivePeriodsFromRecurrencePattern(recurrencePattern, durationInHours);
+
+    if (!isResolved && (!existingActivePeriods || existingActivePeriods.length === 0 || moment().isBefore(moment.unix(existingActivePeriods[0].startTime)))) {
+        return allActivePeriods;
     }
 
-    const calculatedPeriods = [...filterPastAndCurrentPeriods(allActivePeriods, durationInHours, isResolved), ...filterFuturePeriods(newActivePeriods, isResolved)];
+    const pastPeriods = filterPastPeriods(existingActivePeriods, durationInHours);
+    const currentPeriods = filterCurrentPeriods(allActivePeriods, durationInHours, isResolved);
+    const futurePeriods = filterFuturePeriods(allActivePeriods, isResolved);
+    const calculatedPeriods = [...pastPeriods, ...currentPeriods, ...futurePeriods];
 
     if (isResolved && (!calculatedPeriods || calculatedPeriods?.length === 0)) {
         const unixNow = moment().unix();
