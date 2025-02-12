@@ -5,7 +5,7 @@ import {
     DATE_TIME_FORMAT,
     LABEL_AFFECTED_ROUTES,
     LABEL_CAUSE, LABEL_CREATED_AT, LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_END_DATE, LABEL_END_TIME,
-    LABEL_HEADER, LABEL_LAST_UPDATED_AT, LABEL_LAST_UPDATED_BY, LABEL_SEVERITY,
+    LABEL_HEADER, LABEL_LAST_UPDATED_AT, LABEL_SEVERITY,
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME,
     LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
     LABEL_NOTE,
@@ -114,7 +114,6 @@ function generateHeaderSection(disruption) {
     return `<div style="margin-bottom: 20px;">
         <p><strong>${disruption.incidentNo}: ${disruption.header}</strong></p>
         <p><strong>${LABEL_LAST_UPDATED_AT}:</strong> ${formatCreatedUpdatedTime(disruption.lastUpdatedTime)}</p>
-        <p><strong>${LABEL_LAST_UPDATED_BY}:</strong> ${disruption.lastUpdatedBy}</p>
     </div>`;
 }
 
