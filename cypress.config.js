@@ -26,6 +26,7 @@ module.exports = defineConfig({
         },
         baseUrl: 'http://localhost:3000/',
         testIsolation: false,
+        experimentalRunAllSpecs: true,
     },
     experimentalMemoryManagement: true,
 });
