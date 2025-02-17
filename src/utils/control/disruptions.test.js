@@ -13,7 +13,7 @@ import {
     groupStopsByRouteElementByParentStation,
     getPassengerCountRange,
     momentFromDateTime,
-    generateDisruptionActivePeriods,
+    generateDisruptionActivePeriods
 } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 import { STATUSES } from '../../types/disruptions-types';

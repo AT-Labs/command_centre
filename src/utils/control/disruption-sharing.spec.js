@@ -129,34 +129,66 @@ describe('shareToEmail', () => {
 
     test('should generate subject', async () => {
         await shareToEmail(disruption);
-        expect(link.href).toContain('Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001');
+        expect(link.href).toContain('Subject: Re: Unknown - Train Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should generate subject for multiple modes', async () => {
         await shareToEmail({ ...disruption, mode: 'Bus, Train, Ferry' });
-        expect(link.href).toContain('Subject: Re: Multi-Modal Disruption Notification - Holidays for everyone - DISR0001');
+        expect(link.href).toContain('Subject: Re: Unknown - Multi-Modal Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should generate subject for Bus and Train', async () => {
         await shareToEmail({ ...disruption, mode: 'Bus, Train' });
-        expect(link.href).toContain('Subject: Re: Bus & Train Disruption Notification - Holidays for everyone - DISR0001');
+        expect(link.href).toContain('Subject: Re: Unknown - Bus & Train Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should generate subject for Bus and Ferry', async () => {
         await shareToEmail({ ...disruption, mode: 'Bus, Ferry' });
-        expect(link.href).toContain('Subject: Re: Bus & Ferry Disruption Notification - Holidays for everyone - DISR0001');
+        expect(link.href).toContain('Subject: Re: Unknown - Bus & Ferry Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should generate subject for Ferry and Train', async () => {
         await shareToEmail({ ...disruption, mode: 'Train, Ferry' });
-        expect(link.href).toContain('Subject: Re: Ferry & Train Disruption Notification - Holidays for everyone - DISR0001');
+        expect(link.href).toContain('Subject: Re: Unknown - Ferry & Train Disruption Notification - Holidays for everyone - DISR0001');
+    });
+
+    test.each([
+        ['CATASTROPHIC', 'Subject: Re: Catastrophic - Train Disruption Notification - Holidays for everyone - DISR0001'],
+        ['HEADLINE', 'Subject: Re: Headline - Train Disruption Notification - Holidays for everyone - DISR0001'],
+        ['MINOR', 'Subject: Re: Minor - Train Disruption Notification - Holidays for everyone - DISR0001'],
+        ['', 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+        [null, 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+        [undefined, 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+    ])('should generate correct subject for severity: %s', async (severity, expected) => {
+        await shareToEmail({ ...disruption, severity });
+
+        expect(link.href).toContain(expected);
+        expect(link.href.startsWith('data:message/rfc822')).toBe(true);
+        expect(link.download).toBeDefined();
+        expect(link.href).not.toContain(' -  - ');
+    });
+
+    test.each([
+        ['resolved', 'Subject: Re: RESOLVED - Train Disruption Notification - Holidays for everyone - DISR0001'],
+        ['resolved', 'Subject: Re: RESOLVED - Minor - Train Disruption Notification - Holidays for everyone - DISR0001', 'MINOR'],
+        [null, 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+        [undefined, 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+        [false, 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+        [0, 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+    ])('should generate correct subject for status: %s with severity: %s', async (status, expected, severity = '') => {
+        await shareToEmail({ ...disruption, status, severity });
+
+        expect(link.href).toContain(expected);
+        expect(link.href.startsWith('data:message/rfc822')).toBe(true);
+        expect(link.download).toBeDefined();
+        expect(link.href).not.toContain(' -  - ');
     });
 
     test('should handle empty mode', async () => {
         await shareToEmail({ ...disruption, mode: '' });
 
         const href = decodeURIComponent(link.href);
-        expect(href).toContain('Subject: Re: Disruption Notification - Holidays for everyone - DISR0001');
+        expect(href).toContain('Subject: Re: Unknown - Disruption Notification - Holidays for everyone - DISR0001');
 
         const htmlMatch = /<html[\s\S]*<\/html>/.exec(href);
         expect(htmlMatch).not.toBeNull();
@@ -561,7 +593,7 @@ describe('shareToEmail', () => {
 
     test('should generate subject for resolved disruption', async () => {
         await shareToEmail({ ...disruption, status: 'resolved' });
-        expect(link.href).toContain('Subject: Re: RESOLVED - Train Disruption Notification - Holidays for everyone - DISR0001');
+        expect(link.href).toContain('Subject: Re: RESOLVED - Unknown - Train Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should generate disclaimer', async () => {
@@ -605,32 +637,32 @@ describe('shareToEmailLegacy', () => {
 
     test('should generate subject', async () => {
         await shareToEmailLegacy(disruption);
-        expect(link.href).toContain('Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001');
+        expect(link.href).toContain('Subject: Re: Unknown - Train Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should handle empty mode', async () => {
         await shareToEmailLegacy({ ...disruption, mode: null });
-        expect(link.href).toContain('Subject: Re: Disruption Notification - Holidays for everyone - DISR0001');
+        expect(link.href).toContain('Subject: Re: Unknown - Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should generate subject for multiple modes', async () => {
         await shareToEmailLegacy({ ...disruption, mode: 'Bus, Train, Ferry' });
-        expect(link.href).toContain('Subject: Re: Multi-Modal Disruption Notification - Holidays for everyone - DISR0001');
+        expect(link.href).toContain('Subject: Re: Unknown - Multi-Modal Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should generate subject for Bus and Train', async () => {
         await shareToEmailLegacy({ ...disruption, mode: 'Bus, Train' });
-        expect(link.href).toContain('Subject: Re: Bus & Train Disruption Notification - Holidays for everyone - DISR0001');
+        expect(link.href).toContain('Subject: Re: Unknown - Bus & Train Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should generate subject for Bus and Ferry', async () => {
         await shareToEmailLegacy({ ...disruption, mode: 'Bus, Ferry' });
-        expect(link.href).toContain('Subject: Re: Bus & Ferry Disruption Notification - Holidays for everyone - DISR0001');
+        expect(link.href).toContain('Subject: Re: Unknown - Bus & Ferry Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should generate subject for Ferry and Train', async () => {
         await shareToEmailLegacy({ ...disruption, mode: 'Train, Ferry' });
-        expect(link.href).toContain('Subject: Re: Ferry & Train Disruption Notification - Holidays for everyone - DISR0001');
+        expect(link.href).toContain('Subject: Re: Unknown - Ferry & Train Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should handle empty workaround', async () => {
@@ -677,12 +709,104 @@ describe('shareToEmailLegacy', () => {
 
     test('should generate subject for resolved disruption', async () => {
         await shareToEmailLegacy({ ...disruption, status: 'resolved' });
-        expect(link.href).toContain('Subject: Re: RESOLVED - Train Disruption Notification - Holidays for everyone - DISR0001');
+        expect(link.href).toContain('Subject: Re: RESOLVED - Unknown - Train Disruption Notification - Holidays for everyone - DISR0001');
     });
 
     test('should not generate disclaimer', async () => {
         await shareToEmailLegacy({ ...disruption, mode: 'Bus' });
         const href = decodeURIComponent(link.href);
         expect(href).not.toContain('This notification is a communication tool');
+    });
+
+    test.each([
+        ['CATASTROPHIC', 'Subject: Re: Catastrophic - Train Disruption Notification - Holidays for everyone - DISR0001'],
+        ['HEADLINE', 'Subject: Re: Headline - Train Disruption Notification - Holidays for everyone - DISR0001'],
+        ['MINOR', 'Subject: Re: Minor - Train Disruption Notification - Holidays for everyone - DISR0001'],
+        ['', 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+        [null, 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+        [undefined, 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+    ])('should generate correct subject for severity: %s', async (severity, expected) => {
+        await shareToEmailLegacy({ ...disruption, severity });
+
+        expect(link.href).toContain(expected);
+        expect(link.href.startsWith('data:message/rfc822')).toBe(true);
+        expect(link.download).toBeDefined();
+        expect(link.href).not.toContain(' -  - ');
+    });
+
+    test.each([
+        ['resolved', 'Subject: Re: RESOLVED - Train Disruption Notification - Holidays for everyone - DISR0001'],
+        ['resolved', 'Subject: Re: RESOLVED - Minor - Train Disruption Notification - Holidays for everyone - DISR0001', 'MINOR'],
+        [null, 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+        [undefined, 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+        [false, 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+        [0, 'Subject: Re: Train Disruption Notification - Holidays for everyone - DISR0001'],
+    ])('should generate correct subject for status: %s with severity: %s', async (status, expected, severity = '') => {
+        await shareToEmailLegacy({ ...disruption, status, severity });
+
+        expect(link.href).toContain(expected);
+        expect(link.href.startsWith('data:message/rfc822')).toBe(true);
+        expect(link.download).toBeDefined();
+        expect(link.href).not.toContain(' -  - ');
+    });
+});
+
+describe('shareToEmail indirectly testing getFileBase64', () => {
+    let mockBlobData;
+    const storageUrl = 'test-url/testImage.png';
+    const uploadedFiles = [
+        { storageUrl, fileName: 'testImage.png' },
+    ];
+    const fileReaderInstance = {
+        onload: null,
+        readAsDataURL(blob) {
+            this.result = `data:${blob.type};base64,ZmFrZUJhc2U2NA==`;
+            setTimeout(() => this.onload?.(), 0);
+        },
+    };
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        mockBlobData = new Blob([new Uint8Array([72, 101, 108, 108, 111])], { type: 'image/png' });
+    });
+
+    beforeAll(() => {
+        global.fetch = jest.fn();
+        global.FileReader = jest.fn().mockImplementation(() => fileReaderInstance);
+        global.Blob = jest.fn().mockImplementation((chunks, options) => ({
+            chunks,
+            type: options?.type || '',
+            text: jest.fn().mockResolvedValue(chunks.join('')),
+        }));
+    });
+
+    afterAll(() => {
+        delete global.fetch;
+        delete global.Blob;
+        delete global.FileReader;
+    });
+
+    test('should call fetch to get file and include it in email attachment', async () => {
+        fetch.mockResolvedValue({
+            blob: jest.fn().mockResolvedValue(mockBlobData),
+            headers: new Map([['content-type', 'image/png']]),
+        });
+
+        document.createElement = jest.fn(() => ({ click: jest.fn() }));
+        await shareToEmail({ ...disruption, uploadedFiles, activePeriods });
+
+        expect(fetch).toHaveBeenCalledWith(storageUrl);
+    });
+
+    test('should handle missing content-type header', async () => {
+        fetch.mockResolvedValue({
+            blob: jest.fn().mockResolvedValue(mockBlobData),
+            headers: new Map(),
+        });
+
+        document.createElement = jest.fn(() => ({ click: jest.fn() }));
+        await shareToEmail({ ...disruption, uploadedFiles, activePeriods });
+
+        expect(fetch).toHaveBeenCalledWith(storageUrl);
     });
 });

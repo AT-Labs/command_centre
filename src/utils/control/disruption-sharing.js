@@ -89,7 +89,7 @@ function generateHtmlEmailBodyLegacy(disruption) {
         margin-bottom: 1rem; color: #212529; table-layout: fixed;" width="100%">
         <tbody>
             ${createHtmlLine(LABEL_HEADER, disruption.header)}
-            ${createHtmlLine(LABEL_SEVERITY, find(SEVERITIES, { value: disruption.severity }).label)}
+            ${createHtmlLine(LABEL_SEVERITY, find(SEVERITIES, { value: disruption.severity ?? '' }).label)}
             ${createHtmlLine(LABEL_STATUS, disruption.status)}
             ${createHtmlLine(LABEL_MODE, disruption.mode)}
             ${createHtmlLine(LABEL_AFFECTED_ROUTES, getDeduplcatedAffectedRoutes(disruption.affectedEntities).join(', '))}
@@ -189,7 +189,7 @@ function getMapFieldValue(disruption) {
         [LABEL_AFFECTED_ROUTES]: getDeduplcatedAffectedRoutes(disruption.affectedEntities).join(', '),
         [LABEL_AFFECTED_STOPS]: getDeduplcatedAffectedStops(disruption.affectedEntities).join(', '),
         [LABEL_CAUSE]: find(MERGED_CAUSES, { value: disruption.cause }).label,
-        [LABEL_SEVERITY]: find(SEVERITIES, { value: disruption.severity }).label,
+        [LABEL_SEVERITY]: find(SEVERITIES, { value: disruption.severity ?? '' }).label,
         [LABEL_IS_SCHEDULED]: disruption.recurrent ? 'Yes' : 'No',
         [LABEL_SCHEDULED_PERIOD]: disruption.recurrent ? getScheduledPeriod(disruption) : '-',
         [LABEL_CUSTOMER_IMPACT]: find(MERGED_IMPACTS, { value: disruption.impact }).label,
@@ -316,9 +316,24 @@ function getSubjectMode(mode) {
     return mode;
 }
 
-export async function shareToEmailLegacy(disruption, getAttachmentFileAsync = undefined) {
+function getSubject(disruption) {
     const mode = disruption.mode ? `${getSubjectMode(disruption.mode)} ` : '';
-    const subject = `Re: ${disruption.status === STATUSES.RESOLVED ? 'RESOLVED - ' : ''}${mode}Disruption Notification - ${disruption.header} - ${disruption.incidentNo}`;
+    let severity = '';
+    let status = '';
+
+    if (disruption.severity) {
+        severity = `${(disruption.severity.charAt(0).toUpperCase() + disruption.severity.slice(1).toLowerCase())} - `;
+    }
+
+    if (disruption.status === STATUSES.RESOLVED) {
+        status = 'RESOLVED - ';
+    }
+
+    return `Re: ${status}${severity}${mode}Disruption Notification - ${disruption.header} - ${disruption.incidentNo}`;
+}
+
+export async function shareToEmailLegacy(disruption, getAttachmentFileAsync = undefined) {
+    const subject = getSubject(disruption);
     const boundary = '--disruption_email_boundary_string';
     const { REACT_APP_DISRUPTION_SHARING_EMAIL_FROM, REACT_APP_DISRUPTION_SHARING_EMAIL_CC } = process.env;
     let emailFile = 'data:message/rfc822 eml;charset=utf-8,'
@@ -340,8 +355,7 @@ export async function shareToEmailLegacy(disruption, getAttachmentFileAsync = un
 }
 
 export async function shareToEmail(disruption, getAttachmentFileAsync = undefined) {
-    const mode = disruption.mode ? `${getSubjectMode(disruption.mode)} ` : '';
-    const subject = `Re: ${disruption.status === STATUSES.RESOLVED ? 'RESOLVED - ' : ''}${mode}Disruption Notification - ${disruption.header} - ${disruption.incidentNo}`;
+    const subject = getSubject(disruption);
     const boundary = '--disruption_email_boundary_string';
     const { REACT_APP_DISRUPTION_SHARING_EMAIL_FROM, REACT_APP_DISRUPTION_SHARING_EMAIL_CC } = process.env;
     let emailFile = 'data:message/rfc822 eml;charset=utf-8,'
