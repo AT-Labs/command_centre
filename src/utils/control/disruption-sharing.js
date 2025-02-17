@@ -13,8 +13,10 @@ import {
     LABEL_START_TIME_DATE,
     LABEL_END_TIME_DATE,
     NOTE_DISCLAIMER,
+    LABEL_SCHEDULED_PERIOD,
+    LABEL_IS_SCHEDULED,
 } from '../../constants/disruptions';
-import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES } from '../../types/disruptions-types';
+import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES, WEEKDAYS } from '../../types/disruptions-types';
 import { CAUSES, IMPACTS, OLD_CAUSES, OLD_IMPACTS } from '../../types/disruption-cause-and-effect';
 import { getWorkaroundsAsText } from './disruption-workarounds';
 import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from './disruptions';
@@ -166,11 +168,20 @@ function getDuration(disruption) {
     return `${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
 }
 
+function getScheduledPeriod(disruption) {
+    const weekdays = disruption.recurrencePattern.byweekday
+        .map(day => WEEKDAYS[day])
+        .join(', ');
+    const startTime = moment.utc(disruption.recurrencePattern.dtstart).format('h:mma');
+    const endTime = moment.utc(disruption.recurrencePattern.dtstart).add(disruption.duration, 'hours').format('h:mma');
+
+    return `${weekdays} ${startTime}-${endTime}`;
+}
+
 function getMapFieldValue(disruption) {
     const endDateTimeMoment = moment(disruption.endTime);
     const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
     const MERGED_IMPACTS = [...IMPACTS, ...OLD_IMPACTS];
-
     return {
         [LABEL_CREATED_AT]: formatCreatedUpdatedTime(disruption.createdTime),
         [LABEL_STATUS]: disruption.status,
@@ -179,6 +190,8 @@ function getMapFieldValue(disruption) {
         [LABEL_AFFECTED_STOPS]: getDeduplcatedAffectedStops(disruption.affectedEntities).join(', '),
         [LABEL_CAUSE]: find(MERGED_CAUSES, { value: disruption.cause }).label,
         [LABEL_SEVERITY]: find(SEVERITIES, { value: disruption.severity }).label,
+        [LABEL_IS_SCHEDULED]: disruption.recurrent ? 'Yes' : 'No',
+        [LABEL_SCHEDULED_PERIOD]: disruption.recurrent ? getScheduledPeriod(disruption) : '-',
         [LABEL_CUSTOMER_IMPACT]: find(MERGED_IMPACTS, { value: disruption.impact }).label,
         [LABEL_DURATION]: getDuration(disruption),
         [LABEL_START_TIME_DATE]: moment(disruption.startTime).format(DATE_TIME_FORMAT),
@@ -206,6 +219,10 @@ function generateHtmlDetailsTable(disruption) {
         <tr>
             ${createHtmlField(mapFieldValue, LABEL_CUSTOMER_IMPACT)}
             ${createHtmlField(mapFieldValue, LABEL_DURATION)}
+        </tr>
+        <tr>
+            ${createHtmlField(mapFieldValue, LABEL_IS_SCHEDULED)}
+            ${createHtmlField(mapFieldValue, LABEL_SCHEDULED_PERIOD)}
         </tr>
         <tr>
             ${createHtmlField(mapFieldValue, LABEL_START_TIME_DATE)}

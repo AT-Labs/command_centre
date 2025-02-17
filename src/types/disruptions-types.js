@@ -109,3 +109,13 @@ export const PASSENGER_IMPACT_RANGE = {
     BETWEEN_15001_40000: '15,001 - 40,000',
     GREATER_THAN_40000: '>40,000',
 };
+
+export const WEEKDAYS = [
+    'M',
+    'Tu',
+    'W',
+    'Th',
+    'F',
+    'Sa',
+    'Su',
+];

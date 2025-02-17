@@ -38,6 +38,8 @@ export const LABEL_NOTE = 'Note';
 export const LABEL_DURATION = 'Duration';
 export const LABEL_START_TIME_DATE = 'Start Time/Date';
 export const LABEL_END_TIME_DATE = 'End Time/Date';
+export const LABEL_IS_SCHEDULED = 'Scheduled?';
+export const LABEL_SCHEDULED_PERIOD = 'Scheduled Period';
 
 export const STOP_NOT_AVAILABLE = 'Stop not available';
 

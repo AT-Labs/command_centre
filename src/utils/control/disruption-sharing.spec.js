@@ -40,6 +40,13 @@ const disruption = {
     severity: 'UNKNOWN',
 };
 
+const recurrencePattern = {
+    freq: 2,
+    until: '2022-08-31T21:30:00.000Z',
+    dtstart: '2022-08-29T20:30:00.000Z',
+    byweekday: [0, 1, 2, 3, 4, 5, 6],
+};
+
 const disruptionDiversion = [{
     id: 'bc8d0b35-a706-4276-827d-9ccd217f2b39',
     fileName: 'test upload.png',
@@ -373,7 +380,7 @@ describe('shareToEmail', () => {
         const endTime = '2022-08-31T22:30:00.000Z';
         jest.setSystemTime(new Date(now));
 
-        await shareToEmail({ ...disruption, recurrent: true, startTime, endTime, activePeriods });
+        await shareToEmail({ ...disruption, recurrent: true, startTime, endTime, activePeriods, recurrencePattern });
 
         const href = decodeURIComponent(link.href);
 
@@ -393,6 +400,53 @@ describe('shareToEmail', () => {
         expect(siblingTd.textContent.trim()).toBe('-');
     });
 
+    test('should include scheduled period for recurring disruption', async () => {
+        const expectedScheduledPeriod = 'M, Tu, W, Th, F, Sa, Su 8:30pm-10:30pm';
+        const duration = 2;
+        await shareToEmail({ ...disruption, duration, recurrent: true, activePeriods, recurrencePattern });
+
+        const href = decodeURIComponent(link.href);
+
+        const htmlMatch = /<html[\s\S]*<\/html>/.exec(href);
+        expect(htmlMatch).not.toBeNull();
+
+        const htmlContent = htmlMatch[0];
+        const { defaultView: { document } } = jsdom.jsdom(htmlContent);
+
+        const isScheduled = Array.from(document.querySelectorAll('th')).find(
+            th => th.textContent.trim() === 'Scheduled?',
+        );
+        const scheduledPeriod = Array.from(document.querySelectorAll('th')).find(
+            th => th.textContent.trim() === 'Scheduled\u00A0Period',
+        );
+
+        expect(isScheduled.nextElementSibling.textContent).toBe('Yes');
+        expect(scheduledPeriod.nextElementSibling.textContent).toBe(expectedScheduledPeriod.replace(/ /g, '\u00A0'));
+    });
+
+    test('should not include scheduled period for recurring disruption', async () => {
+        const expectedScheduledPeriod = '-';
+        await shareToEmail({ ...disruption, recurrent: false, activePeriods });
+
+        const href = decodeURIComponent(link.href);
+
+        const htmlMatch = /<html[\s\S]*<\/html>/.exec(href);
+        expect(htmlMatch).not.toBeNull();
+
+        const htmlContent = htmlMatch[0];
+        const { defaultView: { document } } = jsdom.jsdom(htmlContent);
+
+        const isScheduled = Array.from(document.querySelectorAll('th')).find(
+            th => th.textContent.trim() === 'Scheduled?',
+        );
+        const scheduledPeriod = Array.from(document.querySelectorAll('th')).find(
+            th => th.textContent.trim() === 'Scheduled\u00A0Period',
+        );
+
+        expect(isScheduled.nextElementSibling.textContent).toBe('No');
+        expect(scheduledPeriod.nextElementSibling.textContent).toBe(expectedScheduledPeriod);
+    });
+
     test('should include duration for recurrent when in progress', async () => {
         const startTime = '2022-08-29T20:30:00.000Z';
         const now = '2022-08-31T22:00:00.000Z';
@@ -400,7 +454,7 @@ describe('shareToEmail', () => {
         const expectedDuration = '3 hours, 30 minutes, and 0 seconds';
         jest.setSystemTime(new Date(now));
 
-        await shareToEmail({ ...disruption, recurrent: true, startTime, endTime, activePeriods });
+        await shareToEmail({ ...disruption, recurrent: true, startTime, endTime, activePeriods, recurrencePattern });
 
         const href = decodeURIComponent(link.href);
 
@@ -427,7 +481,7 @@ describe('shareToEmail', () => {
         const expectedDuration = '3 hours, 0 minutes, and 0 seconds';
         jest.setSystemTime(new Date(now));
 
-        await shareToEmail({ ...disruption, recurrent: true, startTime, endTime, activePeriods, status: 'resolved' });
+        await shareToEmail({ ...disruption, recurrent: true, startTime, endTime, activePeriods, status: 'resolved', recurrencePattern });
 
         const href = decodeURIComponent(link.href);
 
@@ -454,7 +508,7 @@ describe('shareToEmail', () => {
         const expectedDuration = '3 hours, 0 minutes, and 0 seconds';
         jest.setSystemTime(new Date(now));
 
-        await shareToEmail({ ...disruption, recurrent: true, startTime, endTime, activePeriods });
+        await shareToEmail({ ...disruption, recurrent: true, startTime, endTime, activePeriods, recurrencePattern });
 
         const href = decodeURIComponent(link.href);
 
