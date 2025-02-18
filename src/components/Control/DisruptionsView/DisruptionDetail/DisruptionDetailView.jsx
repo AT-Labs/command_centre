@@ -10,7 +10,7 @@ import Flatpickr from 'react-flatpickr';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
 import { STATUSES, SEVERITIES } from '../../../../types/disruptions-types';
-import { CAUSES, IMPACTS } from '../../../../types/disruption-cause-and-effect';
+import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
 import {
     DATE_FORMAT,
     HEADER_MAX_LENGTH,
@@ -88,6 +88,9 @@ const { STOP } = SEARCH_RESULT_TYPE;
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
     const { NONE, EDIT, COPY } = confirmationModalTypes;
+
+    const causes = useAlertCauses();
+    const impacts = useAlertEffects();
 
     const formatEndDateFromEndTime = disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '';
     const fetchEndDate = () => (disruption.recurrent ? fetchEndDateFromRecurrence(disruption.recurrencePattern) : formatEndDateFromEndTime);
@@ -311,7 +314,7 @@ const DisruptionDetailView = (props) => {
         </>
     );
 
-    const causeAndImpactAreValid = CAUSES.find(c => c.value === cause) && IMPACTS.find(i => i.value === impact);
+    const causeAndImpactAreValid = causes.find(c => c.value === cause) && impacts.find(i => i.value === impact);
 
     const durationValid = () => isDurationValid(duration, recurrent);
     const isWeekdayRequiredButEmpty = recurrent && isEmpty(recurrencePattern.byweekday);
@@ -439,7 +442,7 @@ const DisruptionDetailView = (props) => {
                                         <DisruptionDetailSelect
                                             id="disruption-detail__cause"
                                             value={ cause }
-                                            options={ CAUSES }
+                                            options={ causes }
                                             disabled={ isResolved() }
                                             label={ LABEL_CAUSE }
                                             onChange={ setCause } />
@@ -456,7 +459,7 @@ const DisruptionDetailView = (props) => {
                                     <DisruptionDetailSelect
                                         id="disruption-detail__impact"
                                         value={ impact }
-                                        options={ IMPACTS }
+                                        options={ impacts }
                                         disabled={ isResolved() }
                                         label={ LABEL_CUSTOMER_IMPACT }
                                         onChange={ setImpact }

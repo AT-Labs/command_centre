@@ -17,12 +17,26 @@ import {
     LABEL_IS_SCHEDULED,
 } from '../../constants/disruptions';
 import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES, WEEKDAYS } from '../../types/disruptions-types';
-import { CAUSES, IMPACTS, OLD_CAUSES, OLD_IMPACTS } from '../../types/disruption-cause-and-effect';
 import { getWorkaroundsAsText } from './disruption-workarounds';
 import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from './disruptions';
 import SEARCH_RESULT_TYPE from '../../types/search-result-types';
+import { getAlertCauses, getAlertEffects } from '../transmitters/command-centre-config-api';
+import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../types/disruption-cause-and-effect';
+import { fetchFromLocalStorage, CAUSES_CACHE_KEY, EFFECTS_CACHE_KEY, CAUSES_EFFECTS_CACHE_EXPIRY } from '../common/local-storage-helper';
 
 const { ROUTE } = SEARCH_RESULT_TYPE;
+
+async function fetchCauses() {
+    const causes = await fetchFromLocalStorage(CAUSES_CACHE_KEY, CAUSES_EFFECTS_CACHE_EXPIRY, getAlertCauses);
+    if (causes) causes.unshift(DEFAULT_CAUSE);
+    return causes.length > 0 ? causes : [DEFAULT_CAUSE];
+}
+
+async function fetchImpacts() {
+    const effects = await fetchFromLocalStorage(EFFECTS_CACHE_KEY, CAUSES_EFFECTS_CACHE_EXPIRY, getAlertEffects);
+    if (effects) effects.unshift(DEFAULT_IMPACT);
+    return effects.length > 0 ? effects : [DEFAULT_IMPACT];
+}
 
 async function getFileBase64(url) {
     const response = await fetch(url);
@@ -77,10 +91,9 @@ function createHtmlLine(label, value) {
     </tr>`;
 }
 
-function generateHtmlEmailBodyLegacy(disruption) {
+async function generateHtmlEmailBodyLegacy(disruption) {
     const endDateTimeMoment = moment(disruption.endTime);
-    const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
-    const MERGED_IMPACTS = [...IMPACTS, ...OLD_IMPACTS];
+    const [causes, impacts] = await Promise.all([fetchCauses(), fetchImpacts()]);
     const htmlBody = `
     <div style="display: flex;width: 100% !important;font-weight: 400;font-size: 1rem;line-height: 1.5;">
         <h3 class="modal-title mx-auto font-weight-normal">Summary for Disruption ${disruption.incidentNo}</h3>
@@ -94,8 +107,8 @@ function generateHtmlEmailBodyLegacy(disruption) {
             ${createHtmlLine(LABEL_MODE, disruption.mode)}
             ${createHtmlLine(LABEL_AFFECTED_ROUTES, getDeduplcatedAffectedRoutes(disruption.affectedEntities).join(', '))}
             ${createHtmlLine(LABEL_AFFECTED_STOPS, getDeduplcatedAffectedStops(disruption.affectedEntities).join(', '))}
-            ${createHtmlLine(LABEL_CUSTOMER_IMPACT, find(MERGED_IMPACTS, { value: disruption.impact }).label)}
-            ${createHtmlLine(LABEL_CAUSE, find(MERGED_CAUSES, { value: disruption.cause }).label)}
+            ${createHtmlLine(LABEL_CUSTOMER_IMPACT, find(impacts, { value: disruption.impact }).label)}
+            ${createHtmlLine(LABEL_CAUSE, find(causes, { value: disruption.cause }).label)}
             ${createHtmlLine(LABEL_DESCRIPTION, disruption.description)}
             ${createHtmlLine(LABEL_START_DATE, moment(disruption.startTime).format(DATE_FORMAT))}
             ${createHtmlLine(LABEL_START_TIME, moment(disruption.startTime).format(TIME_FORMAT))}
@@ -178,29 +191,29 @@ function getScheduledPeriod(disruption) {
     return `${weekdays} ${startTime}-${endTime}`;
 }
 
-function getMapFieldValue(disruption) {
+async function getMapFieldValue(disruption) {
     const endDateTimeMoment = moment(disruption.endTime);
-    const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
-    const MERGED_IMPACTS = [...IMPACTS, ...OLD_IMPACTS];
+    const [causes, impacts] = await Promise.all([fetchCauses(), fetchImpacts()]);
+
     return {
         [LABEL_CREATED_AT]: formatCreatedUpdatedTime(disruption.createdTime),
         [LABEL_STATUS]: disruption.status,
         [LABEL_MODE]: disruption.mode,
         [LABEL_AFFECTED_ROUTES]: getDeduplcatedAffectedRoutes(disruption.affectedEntities).join(', '),
         [LABEL_AFFECTED_STOPS]: getDeduplcatedAffectedStops(disruption.affectedEntities).join(', '),
-        [LABEL_CAUSE]: find(MERGED_CAUSES, { value: disruption.cause }).label,
+        [LABEL_CAUSE]: find(causes, { value: disruption.cause }).label,
         [LABEL_SEVERITY]: find(SEVERITIES, { value: disruption.severity ?? '' }).label,
         [LABEL_IS_SCHEDULED]: disruption.recurrent ? 'Yes' : 'No',
         [LABEL_SCHEDULED_PERIOD]: disruption.recurrent ? getScheduledPeriod(disruption) : '-',
-        [LABEL_CUSTOMER_IMPACT]: find(MERGED_IMPACTS, { value: disruption.impact }).label,
+        [LABEL_CUSTOMER_IMPACT]: find(impacts, { value: disruption.impact }).label,
         [LABEL_DURATION]: getDuration(disruption),
         [LABEL_START_TIME_DATE]: moment(disruption.startTime).format(DATE_TIME_FORMAT),
         [LABEL_END_TIME_DATE]: disruption.endTime && endDateTimeMoment.isValid() ? endDateTimeMoment.format(DATE_TIME_FORMAT) : '',
     };
 }
 
-function generateHtmlDetailsTable(disruption) {
-    const mapFieldValue = getMapFieldValue(disruption);
+async function generateHtmlDetailsTable(disruption) {
+    const mapFieldValue = await getMapFieldValue(disruption);
     const isRouteBased = disruption.affectedEntities?.[0].type === ROUTE.type;
 
     return `<table border="1" style="font-family: Arial; font-size: 16px; border-collapse: collapse; text-align: left; width: 100%; max-width: 800px;">
@@ -272,12 +285,12 @@ function generateFooterSection() {
     </table>`;
 }
 
-function generateHtmlEmailBody(disruption) {
+async function generateHtmlEmailBody(disruption) {
     const htmlBody = `
     <div style="font-family: Arial; font-size: 16px;">
         ${generateHeaderSection(disruption)}
         <div style="display: table; text-align: left; max-width: 800px; font-family: Arial; font-size: 16px;">
-            ${generateHtmlDetailsTable(disruption)}
+            ${await generateHtmlDetailsTable(disruption)}
             ${generateHtmlNotesTable(disruption)}
             ${generateFooterSection()}
         </div>
@@ -344,7 +357,7 @@ export async function shareToEmailLegacy(disruption, getAttachmentFileAsync = un
         + `Content-Type: multipart/mixed; boundary=${boundary} \n`
         + `\n--${boundary}\n`
         + 'Content-Type: text/html; charset=UTF-8\n'
-        + `\n${generateHtmlEmailBodyLegacy(disruption)}\n`;
+        + `\n${await generateHtmlEmailBodyLegacy(disruption)}\n`;
     if (disruption.uploadedFiles?.length) {
         emailFile += `\n--${boundary}\n${await generateAttachment(disruption.uploadedFiles[0], getAttachmentFileAsync)}`;
     }
@@ -366,7 +379,7 @@ export async function shareToEmail(disruption, getAttachmentFileAsync = undefine
         + `Content-Type: multipart/mixed; boundary=${boundary} \n`
         + `\n--${boundary}\n`
         + 'Content-Type: text/html; charset=UTF-8\n'
-        + `\n${generateHtmlEmailBody(disruption)}\n`;
+        + `\n${await generateHtmlEmailBody(disruption)}\n`;
     if (disruption.uploadedFiles?.length) {
         emailFile += `\n--${boundary}\n${await generateAttachment(disruption.uploadedFiles[0], getAttachmentFileAsync)}`;
     }

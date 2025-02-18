@@ -14,13 +14,14 @@ import {
     LABEL_SEVERITY,
 } from '../../../../constants/disruptions';
 import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES } from '../../../../types/disruptions-types';
-import { OLD_CAUSES, OLD_IMPACTS, CAUSES, IMPACTS } from '../../../../types/disruption-cause-and-effect';
 import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from '../../../../utils/control/disruptions';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import { getWorkaroundsAsText } from '../../../../utils/control/disruption-workarounds';
 import { shareToEmail, shareToEmailLegacy } from '../../../../utils/control/disruption-sharing';
 import CustomCollapse from '../../../Common/CustomCollapse/CustomCollapse';
 import { useDisruptionEmailFormat } from '../../../../redux/selectors/appSettings';
+import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
+import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../types/disruption-cause-and-effect';
 
 const generateDisruptionNotes = (notes) => {
     if (Array.isArray(notes) && notes.length > 0) {
@@ -61,8 +62,9 @@ const createLine = (label, value) => (value && (
 
 const DisruptionSummaryModal = (props) => {
     const endDateTimeMoment = moment(props.disruption.endTime);
-    const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
-    const MERGED_IMPACTS = [...IMPACTS, ...OLD_IMPACTS];
+    const causes = useAlertCauses();
+    const impacts = useAlertEffects();
+
     const shareToEmailHandler = props.useDisruptionEmailFormat ? shareToEmail : shareToEmailLegacy;
     const generateModalFooter = () => (
         <>
@@ -90,8 +92,8 @@ const DisruptionSummaryModal = (props) => {
                     {createLine(LABEL_MODE, props.disruption.mode)}
                     {createLine(LABEL_AFFECTED_ROUTES, getDeduplcatedAffectedRoutes(props.disruption.affectedEntities).join(', '))}
                     {createLine(LABEL_AFFECTED_STOPS, getDeduplcatedAffectedStops(props.disruption.affectedEntities).join(', '))}
-                    {createLine(LABEL_CUSTOMER_IMPACT, (find(MERGED_IMPACTS, { value: props.disruption.impact })).label)}
-                    {createLine(LABEL_CAUSE, (find(MERGED_CAUSES, { value: props.disruption.cause })).label)}
+                    {createLine(LABEL_CUSTOMER_IMPACT, ((find(impacts, { value: props.disruption.impact })) || DEFAULT_IMPACT).label)}
+                    {createLine(LABEL_CAUSE, ((find(causes, { value: props.disruption.cause })) || DEFAULT_CAUSE).label)}
                     {props.disruption.description ? createLine(LABEL_DESCRIPTION, props.disruption.description) : null}
                     {createLine(LABEL_START_DATE, moment(props.disruption.startTime).format(DATE_FORMAT))}
                     {createLine(LABEL_START_TIME, moment(props.disruption.startTime).format(TIME_FORMAT))}

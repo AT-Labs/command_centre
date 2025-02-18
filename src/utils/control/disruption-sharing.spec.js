@@ -1,5 +1,6 @@
 import jsdom from 'jsdom';
 import { shareToEmail, shareToEmailLegacy } from './disruption-sharing';
+import { getAlertCauses, getAlertEffects } from '../transmitters/command-centre-config-api';
 
 const disruption = {
     disruptionId: 1,
@@ -84,6 +85,9 @@ const link = {
     click: jest.fn(),
 };
 
+const causes = [{ label: 'Holiday', value: 'HOLIDAY' }];
+const effects = [{ label: 'Reduced service', value: 'REDUCED_SERVICE' }];
+
 Object.defineProperty(
     global.document,
     'createElement',
@@ -93,9 +97,32 @@ Object.defineProperty(
     },
 );
 
+jest.mock('../transmitters/command-centre-config-api', () => ({
+    getAlertCauses: jest.fn(),
+    getAlertEffects: jest.fn(),
+}));
+
 describe('shareToEmail', () => {
+    let mockLocalStorage = {};
+
     beforeAll(() => {
         jest.useFakeTimers();
+
+        global.localStorage = {
+            getItem: jest.fn(key => mockLocalStorage[key] || null),
+            setItem: jest.fn((key, value) => {
+                mockLocalStorage[key] = value;
+            }),
+            removeItem: jest.fn((key) => {
+                delete mockLocalStorage[key];
+            }),
+            clear: jest.fn(() => {
+                mockLocalStorage = {};
+            }),
+        };
+
+        getAlertCauses.mockResolvedValue(causes);
+        getAlertEffects.mockResolvedValue(effects);
     });
 
     afterAll(() => {

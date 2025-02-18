@@ -1,9 +1,7 @@
 import React from 'react';
 import { expect } from 'chai';
 import { shallow } from 'enzyme';
-
 import { DisruptionPassengerImpactGridModal } from './DisruptionPassengerImpactGridModal';
-import { IMPACTS, CAUSES } from '../../../../types/disruption-cause-and-effect';
 
 let wrapper;
 
@@ -32,8 +30,8 @@ const mockProps = {
                 type: 'stop',
             },
         ],
-        impact: IMPACTS[3].value,
-        cause: CAUSES[2].value,
+        impact: 'CANCELLATIONS',
+        cause: 'BUNKERING_THRUSTERS',
         startTime: '2022-08-03T23:32:00.000Z',
         endTime: '2022-09-03T23:42:00.000Z',
         status: 'cancelled',

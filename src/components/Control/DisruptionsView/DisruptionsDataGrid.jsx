@@ -21,7 +21,7 @@ import {
 } from '../../../constants/disruptions';
 import { dateTimeFormat } from '../../../utils/dateUtils';
 import { SEVERITIES, DEFAULT_SEVERITY, STATUSES, PASSENGER_IMPACT_RANGE } from '../../../types/disruptions-types';
-import { DEFAULT_CAUSE, DEFAULT_IMPACT, CAUSES, IMPACTS, OLD_CAUSES, OLD_IMPACTS } from '../../../types/disruption-cause-and-effect';
+import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../types/disruption-cause-and-effect';
 import { getActiveDisruptionId, getDisruptionsDatagridConfig } from '../../../redux/selectors/control/disruptions';
 import { updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState } from '../../../redux/actions/control/disruptions';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
@@ -32,6 +32,7 @@ import { getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops, getPassenger
 import { getWorkaroundsAsText } from '../../../utils/control/disruption-workarounds';
 import { usePassengerImpact, useDisruptionsNotificationsDirectLink, useViewDisruptionDetailsPage } from '../../../redux/selectors/appSettings';
 import { goToNotificationsView } from '../../../redux/actions/control/link';
+import { useAlertCauses, useAlertEffects } from '../../../utils/control/alert-cause-effect';
 
 const getDisruptionLabel = (disruption) => {
     const { uploadedFiles, incidentNo, createNotification, recurrent } = disruption;
@@ -89,8 +90,8 @@ const getViewDisruptionDetailsButton = row => (
 );
 
 export const DisruptionsDataGrid = (props) => {
-    const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
-    const MERGED_IMPACTS = [...IMPACTS, ...OLD_IMPACTS];
+    const causes = useAlertCauses();
+    const impacts = useAlertEffects();
 
     const GRID_COLUMNS = [
         {
@@ -135,16 +136,16 @@ export const DisruptionsDataGrid = (props) => {
             headerName: LABEL_CUSTOMER_IMPACT,
             width: 200,
             type: 'singleSelect',
-            valueGetter: params => (MERGED_IMPACTS.find(impact => impact.value === params.value) || DEFAULT_IMPACT).label,
-            valueOptions: MERGED_IMPACTS.slice(1, MERGED_IMPACTS.length).map(impact => impact.label),
+            valueGetter: params => (impacts.find(impact => impact.value === params.value) || DEFAULT_IMPACT).label,
+            valueOptions: impacts.slice(1, impacts.length).map(impact => impact.label),
         },
         {
             field: 'cause',
             headerName: LABEL_CAUSE,
             width: 200,
             type: 'singleSelect',
-            valueGetter: params => (MERGED_CAUSES.find(cause => cause.value === params.value) || DEFAULT_CAUSE).label,
-            valueOptions: MERGED_CAUSES.slice(1, MERGED_CAUSES.length).map(cause => cause.label),
+            valueGetter: params => (causes.find(cause => cause.value === params.value) || DEFAULT_CAUSE).label,
+            valueOptions: causes.slice(1, causes.length).map(cause => cause.label),
         },
         {
             field: 'severity',

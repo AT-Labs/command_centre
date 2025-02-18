@@ -6,7 +6,7 @@ import { toString, omit, isEmpty, uniqBy, uniqWith } from 'lodash-es';
 import moment from 'moment';
 import Message from '../../Common/Message/Message';
 import { SEVERITIES } from '../../../../types/disruptions-types';
-import { CAUSES, IMPACTS } from '../../../../types/disruption-cause-and-effect';
+import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
 import {
     LABEL_CAUSE,
     LABEL_CREATED_BY,
@@ -64,6 +64,9 @@ const MinimizeDisruptionDetail = (props) => {
     } = disruption;
     const formatEndDateFromEndTime = disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '';
     const fetchEndDate = () => (disruption.recurrent ? fetchEndDateFromRecurrence(disruption.recurrencePattern) : formatEndDateFromEndTime);
+
+    const causes = useAlertCauses();
+    const impacts = useAlertEffects();
 
     const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
     const [notes, setNotes] = useState(disruption.notes);
@@ -125,7 +128,7 @@ const MinimizeDisruptionDetail = (props) => {
         props.updateDisruptionToEdit(setDisruption());
     };
 
-    const causeAndImpactAreValid = CAUSES.find(c => c.value === cause) && IMPACTS.find(i => i.value === impact);
+    const causeAndImpactAreValid = causes.find(c => c.value === cause) && impacts.find(i => i.value === impact);
 
     const isUpdating = isRequesting && resultDisruptionId === disruptionId;
 
@@ -190,7 +193,7 @@ const MinimizeDisruptionDetail = (props) => {
                                         <DisruptionDetailSelect
                                             id="disruption-detail__cause"
                                             value={ cause }
-                                            options={ CAUSES }
+                                            options={ causes }
                                             label={ LABEL_CAUSE }
                                             disabled
                                         />
@@ -209,7 +212,7 @@ const MinimizeDisruptionDetail = (props) => {
                                     <DisruptionDetailSelect
                                         id="disruption-detail__impact"
                                         value={ impact }
-                                        options={ IMPACTS }
+                                        options={ impacts }
                                         label={ LABEL_CUSTOMER_IMPACT }
                                         disabled
                                     />

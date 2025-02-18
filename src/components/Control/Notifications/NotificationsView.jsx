@@ -17,7 +17,7 @@ import { NOTIFICATION_CONDITION, NOTIFICATION_STATUS } from '../../../types/noti
 import { sourceIdDataGridOperator } from './sourceIdDataGridOperator';
 import { dateTimeFormat } from '../../../utils/dateUtils';
 import { getStopGroups } from '../../../redux/actions/control/dataManagement';
-import { OLD_CAUSES, CAUSES, DEFAULT_CAUSE } from '../../../types/disruption-cause-and-effect';
+import { DEFAULT_CAUSE } from '../../../types/disruption-cause-and-effect';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
 import { flatInformedEntities } from '../../../utils/control/notifications';
 import { updateQueryParams } from '../../../redux/actions/navigation';
@@ -26,6 +26,7 @@ import { goToDisruptionsView } from '../../../redux/actions/control/link';
 import { ALERT_MESSAGE_TYPE } from '../../../types/message-types';
 import { useDisruptionsNotificationsDirectLink } from '../../../redux/selectors/appSettings';
 import Loader from '../../Common/Loader/Loader';
+import { useAlertCauses } from '../../../utils/control/alert-cause-effect';
 
 import './NotificationsView.scss';
 
@@ -36,13 +37,14 @@ export const NotificationsView = (props) => {
     const query = new URLSearchParams(location.search);
     const NOTIFICATIONS_POLLING_INTERVAL = 10000;
     const isActiveNoti = notification => notification.condition === 'published' && notification.status === 'in-progress';
-    const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
     const disruptionId = query.get('disruptionId');
     const version = query.get('version');
     const source = query.get('source');
     const isNew = query.get('new') === 'true';
 
     const isQueryParamsValid = disruptionId && version && source;
+
+    const causes = useAlertCauses();
 
     const GRID_COLUMNS = [
         {
@@ -121,8 +123,8 @@ export const NotificationsView = (props) => {
             width: 150,
             flex: 1,
             type: 'singleSelect',
-            valueGetter: params => (MERGED_CAUSES.find(cause => cause.value === params.value) || DEFAULT_CAUSE).label,
-            valueOptions: MERGED_CAUSES.slice(1, MERGED_CAUSES.length).map(cause => cause.label),
+            valueGetter: params => (causes.find(cause => cause.value === params.value) || DEFAULT_CAUSE).label,
+            valueOptions: causes.slice(1, causes.length).map(cause => cause.label),
         },
         {
             field: 'startTime',

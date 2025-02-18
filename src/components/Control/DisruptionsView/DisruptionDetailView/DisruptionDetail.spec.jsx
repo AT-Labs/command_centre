@@ -10,7 +10,7 @@ import { Provider } from 'react-redux';
 import sinon from 'sinon';
 import configureMockStore from 'redux-mock-store';
 import DisruptionDetail from './DisruptionDetail';
-import { IMPACTS, CAUSES } from '../../../../types/disruption-cause-and-effect';
+import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
 
 const mockStore = configureMockStore();
 
@@ -31,8 +31,8 @@ const stop = { stopId: '105-474861ff', stopCode: '105' };
 const baseDisruption = {
     startTime: '2022-03-09T06:00:00.000Z',
     endTime: '2022-04-20T03:00:00.000Z',
-    impact: IMPACTS[3].value,
-    cause: CAUSES[2].value,
+    impact: 'CANCELLATIONS',
+    cause: 'BUNKERING_THRUSTERS',
     mode: '-',
     status: 'in-progress',
     header: 'Title',
@@ -58,6 +58,14 @@ const baseDisruption = {
     ],
     severity: 'MINOR',
 };
+
+const causes = [{ label: 'Bunkering, Thrusters', value: 'BUNKERING_THRUSTERS' }];
+const effects = [{ label: 'Cancellations', value: 'CANCELLATIONS' }];
+
+jest.mock('../../../../utils/control/alert-cause-effect', () => ({
+    useAlertCauses: jest.fn(),
+    useAlertEffects: jest.fn(),
+}));
 
 const cache = createCache({ key: 'blah' });
 
@@ -89,6 +97,9 @@ describe('<DisruptionDetailView />', () => {
     beforeEach(() => {
         sandbox = sinon.createSandbox();
         sandbox.useFakeTimers(new Date('2022-03-01T06:00:00.000Z'));
+
+        useAlertCauses.mockReturnValue(causes);
+        useAlertEffects.mockReturnValue(effects);
     });
 
     afterEach(() => sandbox.restore());

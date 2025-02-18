@@ -15,7 +15,6 @@ import { isStartTimeValid, isStartDateValid, isEndDateValid, isEndTimeValid, isD
 import { toggleDisruptionModals, updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { DisruptionDetailSelect } from '../../DisruptionDetail/DisruptionDetailSelect';
 import { SEVERITIES } from '../../../../../types/disruptions-types';
-import { CAUSES, IMPACTS } from '../../../../../types/disruption-cause-and-effect';
 import {
     URL_MAX_LENGTH,
     HEADER_MAX_LENGTH,
@@ -38,6 +37,7 @@ import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText } from '../../../../../utils/recurrence';
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
+import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
 
 export const SelectDetails = (props) => {
     const { startDate, startTime, endDate, endTime, impact, cause, header, url, createNotification, exemptAffectedTrips, severity } = props.data;
@@ -202,6 +202,9 @@ export const SelectDetails = (props) => {
         setActivePeriodsModalOpen(true);
     };
 
+    const causes = useAlertCauses();
+    const impacts = useAlertEffects();
+
     return (
         <div className="disruption-creation__wizard-select-details">
             <Form className="row my-3 p-4">
@@ -352,7 +355,7 @@ export const SelectDetails = (props) => {
                         id="disruption-creation__wizard-select-details__cause"
                         className=""
                         value={ cause }
-                        options={ CAUSES }
+                        options={ causes }
                         label={ LABEL_CAUSE }
                         invalid={ isCauseDirty && !causeValid() }
                         feedback="Please select cause"
@@ -364,7 +367,7 @@ export const SelectDetails = (props) => {
                         id="disruption-creation__wizard-select-details__impact"
                         className=""
                         value={ impact }
-                        options={ IMPACTS }
+                        options={ impacts }
                         label={ LABEL_CUSTOMER_IMPACT }
                         invalid={ isEffectDirty && !effectValid() }
                         feedback="Please select effect"

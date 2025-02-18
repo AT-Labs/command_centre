@@ -14,10 +14,11 @@ import CustomMuiDialog from '../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../Common/ActivePeriods/ActivePeriods';
 import { getRecurrenceText, parseRecurrencePattern } from '../../../utils/recurrence';
 import { getTitle, getDescription, getAndParseInformedEntities } from '../../../utils/control/notifications';
-import { OLD_CAUSES, OLD_IMPACTS, CAUSES, IMPACTS } from '../../../types/disruption-cause-and-effect';
 import AffectedEntities from '../DisruptionsView/AffectedEntities';
 import AlertMessage from '../../Common/AlertMessage/AlertMessage';
 import { ACTION_RESULT_TYPES, NOTIFICATION_CONDITION, NOTIFICATION_STATUS } from '../../../types/notification-types';
+import { useAlertCauses, useAlertEffects } from '../../../utils/control/alert-cause-effect';
+import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../types/disruption-cause-and-effect';
 
 export const NotificationsDetailView = (props) => {
     const { notification } = props;
@@ -40,6 +41,9 @@ export const NotificationsDetailView = (props) => {
     const [originalDescription, setOriginalDescription] = useState('');
     const [originalTitle, setOriginalTitle] = useState('');
     const [actionType, setActionType] = useState(null);
+
+    const causes = useAlertCauses();
+    const impacts = useAlertEffects();
 
     const canEditField = () => isNotificationUpdateAllowed(props.notification);
 
@@ -99,9 +103,6 @@ export const NotificationsDetailView = (props) => {
 
     const calculateIsDirty = (updatedTitle, updatedDescription) => setIsDirty(updatedTitle !== originalTitle || updatedDescription !== originalDescription);
 
-    const MERGED_CAUSES = [...CAUSES, ...OLD_CAUSES];
-    const MERGED_IMPACTS = [...IMPACTS, ...OLD_IMPACTS];
-
     return (
         <div className="p-3 h-100">
             { fetchingNotification && (
@@ -124,7 +125,7 @@ export const NotificationsDetailView = (props) => {
                                 </Label>
                                 <Input id="notification-detail__header"
                                     className="border border-dark"
-                                    value={ MERGED_CAUSES.find(causeParam => causeParam.value === cause).label }
+                                    value={ (causes.find(causeParam => causeParam.value === cause) || DEFAULT_CAUSE).label }
                                     disabled
                                 />
                             </FormGroup>
@@ -134,7 +135,7 @@ export const NotificationsDetailView = (props) => {
                                 </Label>
                                 <Input id="notification-detail__header"
                                     className="border border-dark"
-                                    value={ MERGED_IMPACTS.find(impactParam => impactParam.value === impact).label }
+                                    value={ (impacts.find(impactParam => impactParam.value === impact) || DEFAULT_IMPACT).label }
                                     disabled
                                 />
                             </FormGroup>

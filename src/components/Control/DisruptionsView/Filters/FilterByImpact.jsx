@@ -3,9 +3,11 @@ import { get } from 'lodash-es';
 
 import PropTypes from 'prop-types';
 import ControlSearch from '../../Common/ControlSearch/ControlSearch';
-import { IMPACTS } from '../../../../types/disruption-cause-and-effect';
+import { useAlertEffects } from '../../../../utils/control/alert-cause-effect';
 
 const FilterByImpact = (props) => {
+    const impacts = useAlertEffects();
+
     FilterByImpact.propTypes = {
         selectedOption: PropTypes.string,
         onSelection: PropTypes.func.isRequired,
@@ -27,7 +29,7 @@ const FilterByImpact = (props) => {
 
     const onInputValueChange = (value) => { if (!value) props.onSelection({ value: '', label: '' }); };
 
-    const getSelectedOption = () => IMPACTS.find(option => option.value === props.selectedOption);
+    const getSelectedOption = () => impacts.find(option => option.value === props.selectedOption);
 
     return (
         <ControlSearch
@@ -35,7 +37,7 @@ const FilterByImpact = (props) => {
             inputId={ `${props.id}-input` }
             className={ props.className }
             label={ props.title }
-            data={ IMPACTS }
+            data={ impacts }
             pathToProperty="label"
             placeholder={ props.placeholder }
             onSelection={ selectedOption => props.onSelection(selectedOption) }

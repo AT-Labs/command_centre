@@ -35,3 +35,31 @@ export const updateUserPreferences = (filterObject) => {
         },
     ).catch(error => Sentry.captureException(`Failed to update user preferences ${error})`));
 };
+
+export const getAlertCauses = () => {
+    const url = `${REACT_APP_REALTIME_COMMAND_CENTRE_CONFIG_API_URL}/causes`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: GET,
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+        },
+    ).then(response => jsonResponseHandling(response)).catch(error => Sentry.captureException(`Failed to get alert causes ${error})`));
+};
+
+export const getAlertEffects = () => {
+    const url = `${REACT_APP_REALTIME_COMMAND_CENTRE_CONFIG_API_URL}/effects`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: GET,
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+        },
+    ).then(response => jsonResponseHandling(response)).catch(error => Sentry.captureException(`Failed to get alert effects ${error})`));
+};
