@@ -103,7 +103,7 @@ jest.mock('../transmitters/command-centre-config-api', () => ({
 }));
 
 describe('shareToEmail', () => {
-    let mockLocalStorage = {};
+    const mockLocalStorage = {};
 
     beforeAll(() => {
         jest.useFakeTimers();
@@ -112,12 +112,6 @@ describe('shareToEmail', () => {
             getItem: jest.fn(key => mockLocalStorage[key] || null),
             setItem: jest.fn((key, value) => {
                 mockLocalStorage[key] = value;
-            }),
-            removeItem: jest.fn((key) => {
-                delete mockLocalStorage[key];
-            }),
-            clear: jest.fn(() => {
-                mockLocalStorage = {};
             }),
         };
 
@@ -835,5 +829,27 @@ describe('shareToEmail indirectly testing getFileBase64', () => {
         await shareToEmail({ ...disruption, uploadedFiles, activePeriods });
 
         expect(fetch).toHaveBeenCalledWith(storageUrl);
+    });
+});
+
+describe('shareToEmail causes and effects testing', () => {
+    const mockLocalStorage = {};
+
+    beforeAll(() => {
+        global.localStorage = {
+            getItem: jest.fn(key => mockLocalStorage[key] || null),
+            setItem: jest.fn((key, value) => {
+                mockLocalStorage[key] = value;
+            }),
+        };
+
+        getAlertCauses.mockResolvedValue(null);
+        getAlertEffects.mockResolvedValue(null);
+    });
+
+    test('should handle missing causes and effects', async () => {
+        await shareToEmail(disruption);
+        expect(link.href.length > 0).toBeTruthy();
+        expect(link.href).toContain('data:message/rfc822 eml;charset=utf-8');
     });
 });

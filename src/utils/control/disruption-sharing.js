@@ -28,14 +28,22 @@ const { ROUTE } = SEARCH_RESULT_TYPE;
 
 async function fetchCauses() {
     const causes = await fetchFromLocalStorage(CAUSES_CACHE_KEY, CAUSES_EFFECTS_CACHE_EXPIRY, getAlertCauses);
-    if (causes) causes.unshift(DEFAULT_CAUSE);
-    return causes.length > 0 ? causes : [DEFAULT_CAUSE];
+    if (causes) {
+        causes.unshift(DEFAULT_CAUSE);
+        return causes;
+    }
+
+    return [DEFAULT_CAUSE];
 }
 
 async function fetchImpacts() {
     const effects = await fetchFromLocalStorage(EFFECTS_CACHE_KEY, CAUSES_EFFECTS_CACHE_EXPIRY, getAlertEffects);
-    if (effects) effects.unshift(DEFAULT_IMPACT);
-    return effects.length > 0 ? effects : [DEFAULT_IMPACT];
+    if (effects) {
+        effects.unshift(DEFAULT_IMPACT);
+        return effects;
+    }
+
+    return [DEFAULT_IMPACT];
 }
 
 async function getFileBase64(url) {
@@ -107,8 +115,8 @@ async function generateHtmlEmailBodyLegacy(disruption) {
             ${createHtmlLine(LABEL_MODE, disruption.mode)}
             ${createHtmlLine(LABEL_AFFECTED_ROUTES, getDeduplcatedAffectedRoutes(disruption.affectedEntities).join(', '))}
             ${createHtmlLine(LABEL_AFFECTED_STOPS, getDeduplcatedAffectedStops(disruption.affectedEntities).join(', '))}
-            ${createHtmlLine(LABEL_CUSTOMER_IMPACT, find(impacts, { value: disruption.impact }).label)}
-            ${createHtmlLine(LABEL_CAUSE, find(causes, { value: disruption.cause }).label)}
+            ${createHtmlLine(LABEL_CUSTOMER_IMPACT, (find(impacts, { value: disruption.impact }) ?? DEFAULT_IMPACT).label)}
+            ${createHtmlLine(LABEL_CAUSE, (find(causes, { value: disruption.cause }) ?? DEFAULT_CAUSE).label)}
             ${createHtmlLine(LABEL_DESCRIPTION, disruption.description)}
             ${createHtmlLine(LABEL_START_DATE, moment(disruption.startTime).format(DATE_FORMAT))}
             ${createHtmlLine(LABEL_START_TIME, moment(disruption.startTime).format(TIME_FORMAT))}
@@ -201,11 +209,11 @@ async function getMapFieldValue(disruption) {
         [LABEL_MODE]: disruption.mode,
         [LABEL_AFFECTED_ROUTES]: getDeduplcatedAffectedRoutes(disruption.affectedEntities).join(', '),
         [LABEL_AFFECTED_STOPS]: getDeduplcatedAffectedStops(disruption.affectedEntities).join(', '),
-        [LABEL_CAUSE]: find(causes, { value: disruption.cause }).label,
+        [LABEL_CAUSE]: (find(causes, { value: disruption.cause }) ?? DEFAULT_CAUSE).label,
         [LABEL_SEVERITY]: find(SEVERITIES, { value: disruption.severity ?? '' }).label,
         [LABEL_IS_SCHEDULED]: disruption.recurrent ? 'Yes' : 'No',
         [LABEL_SCHEDULED_PERIOD]: disruption.recurrent ? getScheduledPeriod(disruption) : '-',
-        [LABEL_CUSTOMER_IMPACT]: find(impacts, { value: disruption.impact }).label,
+        [LABEL_CUSTOMER_IMPACT]: (find(impacts, { value: disruption.impact }) ?? DEFAULT_IMPACT).label,
         [LABEL_DURATION]: getDuration(disruption),
         [LABEL_START_TIME_DATE]: moment(disruption.startTime).format(DATE_TIME_FORMAT),
         [LABEL_END_TIME_DATE]: disruption.endTime && endDateTimeMoment.isValid() ? endDateTimeMoment.format(DATE_TIME_FORMAT) : '',

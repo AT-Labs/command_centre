@@ -9,8 +9,12 @@ export const useAlertCauses = () => {
     useEffect(() => {
         const fetchCauses = async () => {
             const causesList = await fetchFromLocalStorage(CAUSES_CACHE_KEY, CAUSES_EFFECTS_CACHE_EXPIRY, getAlertCauses);
-            if (causesList) causesList.unshift(DEFAULT_CAUSE);
-            setCauses(causesList?.length > 0 ? causesList : [DEFAULT_CAUSE]);
+            if (causesList) {
+                causesList.unshift(DEFAULT_CAUSE);
+                setCauses(causesList);
+            } else {
+                setCauses([DEFAULT_CAUSE]);
+            }
         };
 
         fetchCauses();
@@ -25,8 +29,12 @@ export const useAlertEffects = () => {
     useEffect(() => {
         const fetchEffects = async () => {
             const effectsList = await fetchFromLocalStorage(EFFECTS_CACHE_KEY, CAUSES_EFFECTS_CACHE_EXPIRY, getAlertEffects);
-            if (effectsList) effectsList.unshift(DEFAULT_IMPACT);
-            setEffects(effectsList?.length > 0 ? effectsList : [DEFAULT_IMPACT]);
+            if (effectsList) {
+                effectsList.unshift(DEFAULT_IMPACT);
+                setEffects(effectsList);
+            } else {
+                setEffects([DEFAULT_IMPACT]);
+            }
         };
 
         fetchEffects();
