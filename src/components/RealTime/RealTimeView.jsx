@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useLocation, useHistory } from 'react-router-dom';
 import { map, slice, filter, isEqual } from 'lodash-es';
-
 import { getSearchTerms } from '../../redux/selectors/search';
 import { addressSelected } from '../../redux/actions/realtime/detail/address';
 import { routeChecked } from '../../redux/actions/realtime/detail/route';
@@ -63,10 +62,10 @@ import {
     getVehiclesFilterIsShowingSchoolBus,
 } from '../../redux/selectors/realtime/vehicles';
 import { getChildStops } from '../../redux/selectors/static/stops';
-
 import './RealTimeView.scss';
 import { SelectedAddressMarker } from '../Common/Map/SelectedAddressMarker/SelectedAddressMarker';
 import TripShapeLayer from '../Common/Map/TripShapeLayer/TripShapeLayer';
+import { CarsLayer } from '../Common/Map/CarsLayer/CarsLayer';
 import StopsLayer from '../Common/Map/StopsLayer/StopsLayer';
 import { HighlightingLayer } from '../Common/Map/HighlightingLayer/HighlightingLayer';
 import { SelectedStopsMarker } from '../Common/Map/StopsLayer/SelectedStopsMarker';
@@ -76,7 +75,7 @@ import { IncidentLayer } from '../Common/Map/TrafficLayer/IncidentLayer';
 import CongestionFilters from './TrafficFilters/legacy/CongestionFilters';
 import EnableIncidentLayerButton from './TrafficFilters/legacy/EnableIncidentLayerButton';
 import * as trafficApi from '../../utils/transmitters/traffic-api';
-import { useCongestionLayer, useIncidentLayer, useNewRealtimeMapFilters } from '../../redux/selectors/appSettings';
+import { useCongestionLayer, useIncidentLayer, useNewRealtimeMapFilters, useCarsRoadworksLayer } from '../../redux/selectors/appSettings';
 import { haversineDistance } from '../../utils/map-helpers';
 import {
     CONGESTION_REFRESH_INTERVAL, CONGESTION_SHAPE_WEIGHT_BOLD, CONGESTION_SHAPE_WEIGHT_DEFAULT,
@@ -573,6 +572,7 @@ function RealTimeView(props) {
                     zoom={ props.mapZoomLevel }
                     onViewChanged={ onMapViewChanged }
                 >
+                    { props.useCarsRoadworksLayer && <CarsLayer mapZoomLevel={ props.mapZoomLevel } boundsToFit={ props.boundsToFit } /> }
                     <CongestionLayer
                         data={ trafficFlows }
                         weight={ props.mapZoomLevel > CONGESTION_ZOOM_LEVEL_THRESHOLD ? CONGESTION_SHAPE_WEIGHT_BOLD : CONGESTION_SHAPE_WEIGHT_DEFAULT }
@@ -665,6 +665,7 @@ RealTimeView.propTypes = {
     stopSelected: PropTypes.func.isRequired,
     useCongestionLayer: PropTypes.bool.isRequired,
     useIncidentLayer: PropTypes.bool.isRequired,
+    useCarsRoadworksLayer: PropTypes.bool.isRequired,
     useNewRealtimeMapFilters: PropTypes.bool.isRequired,
     mergeVehicleFilters: PropTypes.func.isRequired,
     showingTags: PropTypes.arrayOf(PropTypes.string).isRequired,
@@ -720,6 +721,7 @@ export default connect(
         visibleStops: getVisibleStops(state),
         useCongestionLayer: useCongestionLayer(state),
         useIncidentLayer: useIncidentLayer(state),
+        useCarsRoadworksLayer: useCarsRoadworksLayer(state),
         useNewRealtimeMapFilters: useNewRealtimeMapFilters(state),
         showingTags: getVehiclesFilterShowingTags(state),
         showingDelay: getVehiclesFilterShowingDelay(state),

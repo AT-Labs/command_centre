@@ -1,9 +1,7 @@
 import { filter, isEmpty } from 'lodash-es';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {
-    CircleMarker, FeatureGroup, LeafletConsumer, Tooltip,
-} from 'react-leaflet';
+import { CircleMarker, FeatureGroup, LeafletConsumer, Tooltip } from 'react-leaflet';
 import { getStopLatLng } from '../../../../redux/selectors/static/stops';
 import './StopsLayer.scss';
 import { TRAIN_TYPE_ID } from '../../../../types/vehicle-types';

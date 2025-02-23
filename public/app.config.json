@@ -28,5 +28,6 @@
     "useNextDayChangePlatform": "false",
     "useNextDayChangePlatformBulkUpdate": "false",
     "useDisruptionEmailFormat": "false",
-    "useGeoSearchRoutesByDisruptionPeriod": "false"
+    "useGeoSearchRoutesByDisruptionPeriod": "false",
+    "useCarsRoadworksLayer": "false"
 }
