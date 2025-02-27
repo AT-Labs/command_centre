@@ -454,7 +454,7 @@ describe('shareToEmail', () => {
     });
 
     test('should include scheduled period for recurring disruption', async () => {
-        const expectedScheduledPeriod = 'M, Tu, W, Th, F, Sa, Su 8:30pm-10:30pm';
+        const expectedRecurringPeriod = 'M, Tu, W, Th, F, Sa, Su 8:30pm-10:30pm';
         const duration = 2;
         await shareToEmail({ ...disruption, duration, recurrent: true, activePeriods, recurrencePattern });
 
@@ -466,19 +466,18 @@ describe('shareToEmail', () => {
         const htmlContent = htmlMatch[0];
         const { defaultView: { document } } = jsdom.jsdom(htmlContent);
 
-        const isScheduled = Array.from(document.querySelectorAll('th')).find(
-            th => th.textContent.trim() === 'Scheduled?',
+        const isRecurring = Array.from(document.querySelectorAll('th')).find(
+            th => th.textContent.trim() === 'Recurring?',
         );
-        const scheduledPeriod = Array.from(document.querySelectorAll('th')).find(
-            th => th.textContent.trim() === 'Scheduled\u00A0Period',
+        const recurringPeriod = Array.from(document.querySelectorAll('th')).find(
+            th => th.textContent.trim() === 'Recurring\u00A0Period',
         );
 
-        expect(isScheduled.nextElementSibling.textContent).toBe('Yes');
-        expect(scheduledPeriod.nextElementSibling.textContent).toBe(expectedScheduledPeriod.replace(/ /g, '\u00A0'));
+        expect(isRecurring.nextElementSibling.textContent).toBe('Yes');
+        expect(recurringPeriod.nextElementSibling.textContent).toBe(expectedRecurringPeriod.replace(/ /g, '\u00A0'));
     });
 
     test('should not include scheduled period for recurring disruption', async () => {
-        const expectedScheduledPeriod = '-';
         await shareToEmail({ ...disruption, recurrent: false, activePeriods });
 
         const href = decodeURIComponent(link.href);
@@ -489,15 +488,15 @@ describe('shareToEmail', () => {
         const htmlContent = htmlMatch[0];
         const { defaultView: { document } } = jsdom.jsdom(htmlContent);
 
-        const isScheduled = Array.from(document.querySelectorAll('th')).find(
-            th => th.textContent.trim() === 'Scheduled?',
+        const isRecurring = Array.from(document.querySelectorAll('th')).find(
+            th => th.textContent.trim() === 'Recurring?',
         );
-        const scheduledPeriod = Array.from(document.querySelectorAll('th')).find(
-            th => th.textContent.trim() === 'Scheduled\u00A0Period',
+        const recurringPeriod = Array.from(document.querySelectorAll('th')).find(
+            th => th.textContent.trim() === 'Recurring\u00A0Period',
         );
 
-        expect(isScheduled.nextElementSibling.textContent).toBe('No');
-        expect(scheduledPeriod.nextElementSibling.textContent).toBe(expectedScheduledPeriod);
+        expect(isRecurring).not.toBeDefined();
+        expect(recurringPeriod).not.toBeDefined();
     });
 
     test('should include duration for recurrent when in progress', async () => {
