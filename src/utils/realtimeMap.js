@@ -2,23 +2,28 @@ import { Filters } from '../components/RealTime/TrafficFilters/TrafficFilters';
 import { Category } from '../types/incidents';
 import VEHICLE_OCCUPANCY_STATUS_TYPE from '../types/vehicle-occupancy-status-types';
 import VEHICLE_TYPE_DETAILS, { VEHICLE_TYPES } from '../types/vehicle-types';
+import { RoadworksFilterCategories } from '../components/RealTime/TrafficFilters/RoadworksFilterBlock';
 
-const validateQueryValues = (query, allowedValuesObject) => {
-    const allowedValues = new Set(Object.values(allowedValuesObject));
+const validateQueryValuesWithSet = (query, allowedValuesArray) => {
     const values = query.split(',');
 
-    if (values.length < 1 || values.length > allowedValues.size) {
+    if (values.length < 1 || values.length > allowedValuesArray.size) {
         return false;
     }
 
     const seen = new Set();
     return values.every((value) => {
-        if (!allowedValues.has(value) || seen.has(value)) {
+        if (!allowedValuesArray.has(value) || seen.has(value)) {
             return false;
         }
         seen.add(value);
         return true;
     });
+};
+
+const validateQueryValues = (query, allowedValuesObject) => {
+    const allowedValues = new Set(Object.values(allowedValuesObject));
+    return validateQueryValuesWithSet(query, allowedValues);
 };
 
 export const isTagsQueryValid = (query) => {
@@ -125,6 +130,11 @@ export const isIncidentsQueryValid = (query) => {
     }
 
     return validateQueryValues(query, Category);
+};
+export const isRoadworksQueryValid = (query) => {
+    if (!query) return false;
+
+    return validateQueryValuesWithSet(query, new Set(RoadworksFilterCategories.map(category => category.id)));
 };
 
 export const isLiveTrafficQueryValid = (query) => {

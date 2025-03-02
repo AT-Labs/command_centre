@@ -1,13 +1,20 @@
 import React from 'react';
 import { shallow } from 'enzyme';
+import { useSelector } from 'react-redux';
 import TrafficFilters, { Filters } from './TrafficFilters';
 import { Category } from '../../../types/incidents';
+import { useCarsRoadworksLayer } from '../../../redux/selectors/appSettings';
 
-// Mocking the lodash map function used in the component
 jest.mock('lodash-es', () => ({
     map: jest.requireActual('lodash').map,
 }));
+jest.mock('react-redux', () => ({
+    useSelector: jest.fn(),
+}));
 
+jest.mock('../../../redux/selectors/appSettings', () => ({
+    useCarsRoadworksLayer: jest.fn(),
+}));
 describe('TrafficFilters Component', () => {
     let wrapper;
     const defaultProps = {
@@ -18,7 +25,14 @@ describe('TrafficFilters Component', () => {
         onCongestionFiltersChanged: jest.fn(),
         onIncidentFiltersChanged: jest.fn(),
     };
-
+    beforeEach(() => {
+        useSelector.mockImplementation((callback) => {
+            if (callback === useCarsRoadworksLayer) {
+                return false;
+            }
+            return {};
+        });
+    });
     beforeEach(() => {
         wrapper = shallow(<TrafficFilters { ...defaultProps } />);
     });

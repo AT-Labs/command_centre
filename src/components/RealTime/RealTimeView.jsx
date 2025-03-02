@@ -84,11 +84,12 @@ import {
 import * as incidentsApi from '../../utils/transmitters/incidents-api';
 import RealtimeMapFilters from './RealtimeMapFilters/RealtimeMapFilters';
 import { Probability } from '../../types/incidents';
-import { updateSelectedCongestionFilters, updateSelectedIncidentFilters, updateShowIncidents } from '../../redux/actions/realtime/layers';
-import { getSelectedCongestionFilters, getSelectedIncidentFilters, getShowIncidents } from '../../redux/selectors/realtime/layers';
+import { updateSelectedCongestionFilters, updateSelectedIncidentFilters, updateShowIncidents, updateShowRoadworks } from '../../redux/actions/realtime/layers';
+import { getSelectedCongestionFilters, getSelectedIncidentFilters, getShowIncidents, getSelectedRoadworksFilters } from '../../redux/selectors/realtime/layers';
 import { getAgencies } from '../../redux/selectors/static/agencies';
 import {
     isIncidentsQueryValid,
+    isRoadworksQueryValid,
     isLiveTrafficQueryValid,
     isMapCenterQueryValid,
     isMapZoomLevelQueryValid,
@@ -97,6 +98,7 @@ import {
     isStatusQueryValid,
     isTagsQueryValid,
 } from '../../utils/realtimeMap';
+import { updateUrlFromCarsRoadworksLayer, readUrlToCarsRoadworksLayer } from './TrafficFilters/RoadworksFilterBlock';
 
 function RealTimeView(props) {
     const { ADDRESS, ROUTE, STOP, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
@@ -302,6 +304,8 @@ function RealTimeView(props) {
             props.updateShowIncidents(true);
         }
 
+        if (props.useCarsRoadworksLayer) readUrlToCarsRoadworksLayer(searchParams, isRoadworksQueryValid, props.updateShowRoadworks);
+
         const liveTrafficQuery = searchParams.get('liveTraffic');
         if (isLiveTrafficQueryValid(liveTrafficQuery)) {
             props.updateSelectedCongestionFilters(liveTrafficQuery.split(','));
@@ -400,6 +404,8 @@ function RealTimeView(props) {
             searchParams.set('incidents', props.selectedIncidentFilters.join(','));
         }
 
+        if (useCarsRoadworksLayer) updateUrlFromCarsRoadworksLayer(props.selectedRoadworksFilters, searchParams);
+
         if (props.selectedCongestionFilters.length > 0) {
             searchParams.set('liveTraffic', props.selectedCongestionFilters.join(','));
         }
@@ -434,6 +440,7 @@ function RealTimeView(props) {
         props.isShowingDirectionOutbound,
         props.isShowingSchoolBus,
         props.selectedIncidentFilters,
+        props.selectedRoadworksFilters,
         props.selectedCongestionFilters,
         props.mapCenter,
         props.mapZoomLevel,
@@ -683,9 +690,11 @@ RealTimeView.propTypes = {
     updateMapDetails: PropTypes.func.isRequired,
     showIncidents: PropTypes.bool.isRequired,
     selectedIncidentFilters: PropTypes.array.isRequired,
+    selectedRoadworksFilters: PropTypes.array.isRequired,
     selectedCongestionFilters: PropTypes.array.isRequired,
     updateShowIncidents: PropTypes.func.isRequired,
     updateSelectedIncidentFilters: PropTypes.func.isRequired,
+    updateShowRoadworks: PropTypes.func.isRequired,
     updateSelectedCongestionFilters: PropTypes.func.isRequired,
     agencies: PropTypes.array.isRequired,
 };
@@ -738,6 +747,7 @@ export default connect(
         showIncidents: getShowIncidents(state),
         selectedIncidentFilters: getSelectedIncidentFilters(state),
         selectedCongestionFilters: getSelectedCongestionFilters(state),
+        selectedRoadworksFilters: getSelectedRoadworksFilters(state),
         agencies: getAgencies(state),
     }),
     {
@@ -756,6 +766,7 @@ export default connect(
         updateMapDetails,
         updateShowIncidents,
         updateSelectedIncidentFilters,
+        updateShowRoadworks,
         updateSelectedCongestionFilters,
     },
 )(RealTimeView);

@@ -3,15 +3,21 @@
 .traffic-filters-container {
     width: 350px;
     .layers-title,
-    .incident-filters-block {
+    .incident-filters-block,
+    .congestion-filters-block {
         border-bottom: 2.2px solid $at-bk-gray;
+    }
+    .layers-title,
+    .incident-filters-block,
+    .roadworks-filters-block {
         .layers-sub-title {
             font-size: 1.1rem;
         }
         .contract-incident-items {
             max-height: 170px;
         }
-        .incident-items {
+        .incident-items,
+        .roadworks-items {
             position: relative;
             overflow: hidden;
             input[type="checkbox"] {

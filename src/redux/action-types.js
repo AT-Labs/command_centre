@@ -73,10 +73,15 @@ export default {
     // Map
     UPDATE_HOVERED_ENTITY_KEY: 'update-hovered-entity-key',
     UPDATE_MAP_DETAILS: 'update-map-details',
-    // Layers
+    // Incident Layers
     UPDATE_SHOW_INCIDENTS: 'update-show-incidents',
     UPDATE_SELECTED_INCIDENT_FILTERS: 'update-selected-incident-filters',
     UPDATE_SELECTED_CONGESTION_FILTERS: 'update-selected-congestion-filters',
+    // Roadworks Layers
+    RESET_SHOW_ROADWORKS: 'reset-show-roadworks',
+    UPDATE_SHOW_ROADWORKS: 'update-show-roadworks',
+    UPDATE_SELECTED_ROADWORKS_FILTERS: 'update-selected-roadworks-filters',
+    UPDATE_ROADWORKS_CALLED_API: 'update-roadworks-called-api',
     // navigation
     UPDATE_MAIN_VIEW: 'update-main-view',
     TOGGLE_RT_SIDE_PANEL: 'toggle-rt-side-panel',

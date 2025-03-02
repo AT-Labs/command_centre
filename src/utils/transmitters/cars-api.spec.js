@@ -1,10 +1,34 @@
 import { getAllFeatures } from './cars-api';
 
+jest.mock('../browser-cache', () => ({
+    setCache: jest.fn(),
+    getCache: jest.fn(),
+}));
+
 describe('getAllFeatures', () => {
     beforeEach(() => {
         global.fetch = jest.fn();
     });
+    beforeEach(() => {
+        Object.defineProperty(global, 'sessionStorage', {
+            value: {
+                getItem: jest.fn().mockReturnValue(null),
+                setItem: jest.fn(),
+                removeItem: jest.fn(),
+                clear: jest.fn(),
+            },
+            writable: true,
+        });
+        jest.spyOn(global.sessionStorage, 'getItem').mockReturnValue(null);
+    });
+    afterEach(() => {
+        jest.clearAllMocks();
+        jest.resetModules();
+    });
 
+    afterAll(() => {
+        jest.restoreAllMocks(); // Fully restores original implementations
+    });
     it('should fetch and return features with remapped coordinates for polygons', async () => {
         const mockResponse = [
             {

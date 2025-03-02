@@ -5,11 +5,15 @@ import { IoIosArrowDown } from 'react-icons/io';
 import { LuX } from 'react-icons/lu';
 import { map } from 'lodash-es';
 
+import { useSelector } from 'react-redux';
 import { Category } from '../../../types/incidents';
 import CustomizedSwitch from '../../Common/Switch/CustomizedSwitch';
 import IncidentItem from './IncidentItem';
 
 import './TrafficFilters.scss';
+import { RoadworksFilterBlock } from './RoadworksFilterBlock';
+
+import { useCarsRoadworksLayer } from '../../../redux/selectors/appSettings';
 
 export const Filters = {
     High: 'High',
@@ -21,6 +25,7 @@ const TrafficFilters = (props) => {
     const [selectedCongestionFilters, setSelectedCongestionFilters] = useState(props.selectedCongestionFilters);
     const [selectedIncidentFilters, setSelectedIncidentFilters] = useState(props.selectedIncidentFilters);
     const [isIncidentCategoryExpand, setIsIncidentCategoryExpand] = useState(false);
+    const useCarsRoadworksLayerEnabled = useSelector(useCarsRoadworksLayer);
 
     const onTrafficFlowsCheckboxChange = (values) => {
         values.forEach((value) => {
@@ -181,6 +186,7 @@ const TrafficFilters = (props) => {
                         </div>
                     )}
                 </div>
+                { useCarsRoadworksLayerEnabled && <RoadworksFilterBlock /> }
             </div>
         </Fade>
     );

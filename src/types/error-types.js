@@ -49,4 +49,5 @@ export default {
     notificationUpdate: (disruptionId, version) => `Failed to update notification for Disruption ${disruptionId} version ${version}`,
     notificationPublish: (disruptionId, version) => `Failed to publish notification for Disruption ${disruptionId} version ${version}`,
     notificationDelete: (disruptionId, version) => `Failed to delete notification for Disruption ${disruptionId} version ${version}`,
+    roadworksFetchError: 'We couldn’t load roadworks data. Please refresh the page and try again in a few minutes. If the issue persists, contact support.',
 };
