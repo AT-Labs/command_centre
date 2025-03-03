@@ -10,6 +10,7 @@ import { updateDataLoading } from '../../activity';
 import { updateRealTimeDetailView } from '../../navigation';
 import { calculateScheduledAndActualTimes, clearDetail, isWithinNextHalfHour, isWithinPastHalfHour, updateViewDetailKey } from './common';
 import { getVehicleAllocationByVehicleId, getAllocations } from '../../../selectors/control/blocks';
+import { useNewMonitoring } from '../../../selectors/appSettings';
 
 export const updateSelectedVehicle = vehicle => (dispatch) => {
     dispatch({
@@ -120,9 +121,11 @@ export const vehicleChecked = ({ id, key }) => (dispatch, getState) => {
 };
 
 export const fetchUpcomingStops = vehicleId => (dispatch, getState) => {
+    const state = getState();
     dispatch(updateDataLoading(true));
     const trackingVehicle = getTrackingVehicle(vehicleId, getState());
-    return ccRealtime.getUpcomingByVehicleId(result(trackingVehicle, 'id'))
+    const shouldUseNewMonitoring = useNewMonitoring(state);
+    return ccRealtime.getUpcomingByVehicleId(result(trackingVehicle, 'id'), shouldUseNewMonitoring)
         .then(upcoming => upcoming.map(({ stop, trip }) => {
             const { stopCode, stopName, scheduleRelationship, passed } = stop;
             const { scheduledTime, actualTime } = calculateScheduledAndActualTimes(stop);
@@ -147,9 +150,11 @@ export const fetchUpcomingStops = vehicleId => (dispatch, getState) => {
 };
 
 export const fetchPastStops = vehicleId => (dispatch, getState) => {
+    const state = getState();
     dispatch(updateDataLoading(true));
     const trackingVehicle = getTrackingVehicle(vehicleId, getState());
-    return ccRealtime.getHistoryByVehicleId(result(trackingVehicle, 'id'))
+    const shouldUseNewMonitoring = useNewMonitoring(state);
+    return ccRealtime.getHistoryByVehicleId(result(trackingVehicle, 'id'), shouldUseNewMonitoring)
         .then((history) => {
             const vehicleTripId = getCurrentVehicleTripId(getState());
             return history.filter(({ trip }) => trip.tripId === vehicleTripId)

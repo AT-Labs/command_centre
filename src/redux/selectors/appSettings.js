@@ -48,3 +48,7 @@ export const useGeoSearchRoutesByDisruptionPeriod = createSelector(
     appSettingState => (result(appSettingState, 'useGeoSearchRoutesByDisruptionPeriod') === 'true'),
 );
 export const useCarsRoadworksLayer = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useCarsRoadworksLayer') === 'true'));
+export const useNewMonitoring = createSelector(
+    getAppSettingsState,
+    appSettingState => (result(appSettingState, 'useNewMonitoring') === 'true'),
+);

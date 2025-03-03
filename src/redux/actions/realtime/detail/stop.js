@@ -12,6 +12,7 @@ import {
     calculateScheduledAndActualTimes, clearDetail, isWithinNextHalfHour, isWithinPastHalfHour, updateViewDetailKey,
 } from './common';
 import { getAllocations, getVehicleAllocationByTrip, getNumberOfCarsByAllocations } from '../../../selectors/control/blocks';
+import { useNewMonitoring } from '../../../selectors/appSettings';
 
 export const getRoutesByStop = stop => (dispatch, getState) => {
     const stopCode = stop.stop_code;
@@ -60,7 +61,8 @@ export const fetchUpcomingVehicles = stopId => (dispatch, getState) => {
     const allRoutes = getAllRoutes(state);
     const vehicleAllocations = getAllocations(state);
     dispatch(updateDataLoading(true));
-    return ccRealtime.getUpcomingByStopId(stopId)
+    const shouldUseNewMonitoring = useNewMonitoring(state);
+    return ccRealtime.getUpcomingByStopId(stopId, shouldUseNewMonitoring)
         .then(upcoming => upcoming.filter(({ stop }) => !!stop.departure)
             .map(({ vehicle, trip, stop }) => {
                 const { scheduledTime, actualTime } = calculateScheduledAndActualTimes(stop);
@@ -93,7 +95,8 @@ export const fetchPastVehicles = stopId => (dispatch, getState) => {
     const allRoutes = getAllRoutes(state);
     const vehicleAllocations = getAllocations(state);
     dispatch(updateDataLoading(true));
-    return ccRealtime.getHistoryByStopId(stopId)
+    const shouldUseNewMonitoring = useNewMonitoring(state);
+    return ccRealtime.getHistoryByStopId(stopId, shouldUseNewMonitoring)
         .then(history => history.map(({ vehicle, trip, stop }) => {
             const { scheduledTime, actualTime } = calculateScheduledAndActualTimes(stop);
             return {
