@@ -58,6 +58,7 @@ export const FleetsView = (props) => {
         { field: 'generated_fare', headerName: 'GENERATED FARE', width: 150 },
         { field: 'generated_time', headerName: 'GENERATED TIME', width: 150 },
         { field: 'generated_topo', headerName: 'GENERATED TOPO', width: 150 },
+        { field: 'latest_actionlist', headerName: 'LATEST ACTIONLIST', width: 150, filterable: true },
     ];
 
     const getPageData = () => fleets.map(fleet => ({
@@ -94,6 +95,7 @@ export const FleetsView = (props) => {
         generated_fare: fleet.eod.generated.fare || '',
         generated_time: fleet.eod.generated.time || '',
         generated_topo: fleet.eod.generated.topo || '',
+        latest_actionlist: fleet.eod.latestActionlist || '',
     }));
 
     return (
