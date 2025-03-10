@@ -52,12 +52,13 @@ export const FleetsView = (props) => {
         { field: 'activated_fare', headerName: 'ACTIVATED FARE', width: 150 },
         { field: 'activated_time', headerName: 'ACTIVATED TIME', width: 150 },
         { field: 'activated_topo', headerName: 'ACTIVATED TOPO', width: 150 },
-        { field: 'activated_timestamp', headerName: 'ACTIVATED TIMESTAMP', width: 150, type: 'date' },
+        { field: 'activated_timestamp', headerName: 'LAST BDC UPDATE', width: 150, type: 'date' },
         { field: 'generated_actionlist', headerName: 'GENERATED ACTIONLIST', width: 150 },
         { field: 'generated_dico', headerName: 'GENERATED DICO', width: 150 },
         { field: 'generated_fare', headerName: 'GENERATED FARE', width: 150 },
         { field: 'generated_time', headerName: 'GENERATED TIME', width: 150 },
         { field: 'generated_topo', headerName: 'GENERATED TOPO', width: 150 },
+        { field: 'latest_eod', headerName: 'LATEST EOD', width: 150, filterable: true },
         { field: 'latest_actionlist', headerName: 'LATEST ACTIONLIST', width: 150, filterable: true },
     ];
 
@@ -95,6 +96,7 @@ export const FleetsView = (props) => {
         generated_fare: fleet.eod.generated.fare || '',
         generated_time: fleet.eod.generated.time || '',
         generated_topo: fleet.eod.generated.topo || '',
+        latest_eod: fleet.eod.latestEOD,
         latest_actionlist: fleet.eod.latestActionlist || '',
     }));
 
