@@ -241,11 +241,11 @@ async function generateHtmlDetailsTable(disruption) {
             ${createHtmlField(mapFieldValue, LABEL_CUSTOMER_IMPACT)}
             ${createHtmlField(mapFieldValue, LABEL_DURATION)}
         </tr>
-        ${disruption.recurrent && (`
+        ${disruption.recurrent ? `
         <tr>
             ${createHtmlField(mapFieldValue, LABEL_IS_RECURRING)}
             ${createHtmlField(mapFieldValue, LABEL_RECURRING_PERIOD)}
-        </tr>`)}
+        </tr>` : ''}
         <tr>
             ${createHtmlField(mapFieldValue, LABEL_START_TIME_DATE)}
             ${createHtmlField(mapFieldValue, LABEL_END_TIME_DATE)}
