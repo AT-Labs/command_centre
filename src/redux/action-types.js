@@ -73,10 +73,13 @@ export default {
     // Map
     UPDATE_HOVERED_ENTITY_KEY: 'update-hovered-entity-key',
     UPDATE_MAP_DETAILS: 'update-map-details',
-    // Incident Layers
+    // TomTom Layers
     UPDATE_SHOW_INCIDENTS: 'update-show-incidents',
     UPDATE_SELECTED_INCIDENT_FILTERS: 'update-selected-incident-filters',
     UPDATE_SELECTED_CONGESTION_FILTERS: 'update-selected-congestion-filters',
+    UPDATE_SHOW_ROUTE_ALERTS: 'update-show-route-alerts',
+    UPDATE_SHOW_ALL_ROUTE_ALERTS: 'update-show-all-route-alerts',
+    UPDATE_SELECTED_ROUTE_ALERTS: 'update-selected-route-alerts',
     // Roadworks Layers
     RESET_SHOW_ROADWORKS: 'reset-show-roadworks',
     UPDATE_SHOW_ROADWORKS: 'update-show-roadworks',

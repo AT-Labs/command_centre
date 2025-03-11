@@ -49,6 +49,12 @@ const RealtimeMapFilters = (props) => {
             ) }
             { isTrafficFiltersBlockExpand && (
                 <TrafficFilters
+                    useRouteAlerts={ props.useRouteAlerts }
+                    selectedRouteAlerts={ props.selectedRouteAlerts }
+                    showRouteAlerts={ props.showRouteAlerts }
+                    showAllRouteAlerts={ props.showAllRouteAlerts }
+                    onSelectedRouteAlertsChanged={ props.onSelectedRouteAlertsChanged }
+                    onRouteAlertFilterChanged={ props.onRouteAlertFilterChanged }
                     selectedCongestionFilters={ props.selectedCongestionFilters }
                     selectedIncidentFilters={ props.selectedIncidentFilters }
                     onCongestionFiltersChanged={ props.onCongestionFiltersChanged }
@@ -63,6 +69,12 @@ const RealtimeMapFilters = (props) => {
 };
 
 RealtimeMapFilters.propTypes = {
+    useRouteAlerts: PropTypes.bool,
+    selectedRouteAlerts: PropTypes.array,
+    showRouteAlerts: PropTypes.bool,
+    showAllRouteAlerts: PropTypes.bool,
+    onSelectedRouteAlertsChanged: PropTypes.func,
+    onRouteAlertFilterChanged: PropTypes.func,
     selectedCongestionFilters: PropTypes.array,
     onCongestionFiltersChanged: PropTypes.func,
     selectedIncidentFilters: PropTypes.array,
@@ -70,6 +82,12 @@ RealtimeMapFilters.propTypes = {
 };
 
 RealtimeMapFilters.defaultProps = {
+    useRouteAlerts: false,
+    selectedRouteAlerts: [],
+    showRouteAlerts: false,
+    showAllRouteAlerts: false,
+    onSelectedRouteAlertsChanged: undefined,
+    onRouteAlertFilterChanged: undefined,
     selectedCongestionFilters: [],
     onCongestionFiltersChanged: undefined,
     selectedIncidentFilters: [],

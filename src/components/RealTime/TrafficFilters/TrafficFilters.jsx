@@ -14,6 +14,7 @@ import './TrafficFilters.scss';
 import { RoadworksFilterBlock } from './RoadworksFilterBlock';
 
 import { useCarsRoadworksLayer } from '../../../redux/selectors/appSettings';
+import RouteAlertsFilter from './RouteAlertsFilter';
 
 export const Filters = {
     High: 'High',
@@ -137,7 +138,7 @@ const TrafficFilters = (props) => {
                         />
                     </div>
                     {selectedCongestionFilters?.length > 0 && (
-                        <div className="taffic-level-items">
+                        <div className="traffic-level-items">
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
                                     <div className="traffic-card low-traffic-card" />
@@ -187,12 +188,16 @@ const TrafficFilters = (props) => {
                     )}
                 </div>
                 { useCarsRoadworksLayerEnabled && <RoadworksFilterBlock /> }
+                { props.useRouteAlerts && (
+                    <RouteAlertsFilter />
+                ) }
             </div>
         </Fade>
     );
 };
 
 TrafficFilters.propTypes = {
+    useRouteAlerts: PropTypes.bool,
     selectedCongestionFilters: PropTypes.array,
     onCongestionFiltersChanged: PropTypes.func,
     selectedIncidentFilters: PropTypes.array,
@@ -202,6 +207,7 @@ TrafficFilters.propTypes = {
 };
 
 TrafficFilters.defaultProps = {
+    useRouteAlerts: false,
     selectedCongestionFilters: [],
     onCongestionFiltersChanged: undefined,
     selectedIncidentFilters: [],

@@ -10,6 +10,7 @@
     .layers-title,
     .incident-filters-block,
     .roadworks-filters-block {
+        border-bottom: 2.2px solid $at-bk-gray;
         .layers-sub-title {
             font-size: 1.1rem;
         }
@@ -39,10 +40,11 @@
         }
     }
     .congestion-filters-block {
+        border-bottom: 2.2px solid $at-bk-gray;
         .layers-sub-title {
             font-size: 1.1rem;
         }
-        .taffic-level-items {
+        .traffic-level-items {
             .sub-title {
                 font-size: 1.1rem;
             }

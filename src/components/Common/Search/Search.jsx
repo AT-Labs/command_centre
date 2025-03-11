@@ -41,6 +41,7 @@ export class Search extends Component {
         showTags: PropTypes.bool,
         isValid: PropTypes.bool,
         inputRef: PropTypes.object,
+        hideClearButton: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -65,6 +66,7 @@ export class Search extends Component {
         showTags: true,
         isValid: true,
         inputRef: {},
+        hideClearButton: false,
     };
 
     static NO_RESULTS = 'No Results';
@@ -282,7 +284,7 @@ export class Search extends Component {
                         controlShouldRenderValue={ this.props.showTags } />
                 ) }
                 { this.props.isIconVisible && <Icon className="search__icon position-absolute" icon="search" /> }
-                { this.props.isValid && !this.props.isDisabled && this.state.value && !this.props.isLoading && !this.props.multiSearch
+                { this.props.isValid && !this.props.isDisabled && this.state.value && !this.props.isLoading && !this.props.multiSearch && !this.props.hideClearButton
                 && <SearchClearButton onClick={ this.handleClearButtonClick } /> }
                 { this.props.isLoading && !this.props.multiSearch && <SearchLoader /> }
                 { !this.props.isValid && <BsExclamationCircle className="search__alert position-absolute" size={ 16 } color="#dc3545" />}

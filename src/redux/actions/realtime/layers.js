@@ -1,11 +1,13 @@
 import ACTION_TYPE from '../../action-types';
 
+// TomTom
 export const updateShowIncidents = showIncidents => ({
     type: ACTION_TYPE.UPDATE_SHOW_INCIDENTS,
     payload: {
         showIncidents,
     },
 });
+
 export const updateSelectedIncidentFilters = selectedIncidentFilters => ({
     type: ACTION_TYPE.UPDATE_SELECTED_INCIDENT_FILTERS,
     payload: {
@@ -19,6 +21,10 @@ export const updateSelectedCongestionFilters = selectedCongestionFilters => ({
         selectedCongestionFilters,
     },
 });
+
+export const updateShowRouteAlerts = payload => ({ type: ACTION_TYPE.UPDATE_SHOW_ROUTE_ALERTS, payload });
+export const updateShowAllRouteAlerts = payload => ({ type: ACTION_TYPE.UPDATE_SHOW_ALL_ROUTE_ALERTS, payload });
+export const updateSelectedRouteAlerts = payload => ({ type: ACTION_TYPE.UPDATE_SELECTED_ROUTE_ALERTS, payload });
 
 // Roadworks
 export const updateShowRoadworks = payload => ({ type: ACTION_TYPE.UPDATE_SHOW_ROADWORKS, payload });

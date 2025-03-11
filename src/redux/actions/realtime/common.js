@@ -4,7 +4,7 @@ import { mergeVehicleFilters } from './vehicles';
 import { updateMapDetails } from './map';
 import { updateMainView, updateRealTimeDetailView, resetRealTimeSidePanel } from '../navigation';
 import VIEW_TYPE from '../../../types/view-types';
-import { updateSelectedCongestionFilters, updateSelectedIncidentFilters, updateShowIncidents, resetShowRoadworks } from './layers';
+import { updateSelectedCongestionFilters, updateSelectedIncidentFilters, updateShowIncidents, resetShowRoadworks, updateShowRouteAlerts, updateShowAllRouteAlerts } from './layers';
 import { MAP_DATA } from '../../../types/map-types';
 
 export const resetRealtimeToDefault = () => (dispatch) => {
@@ -28,6 +28,8 @@ export const resetRealtimeToDefault = () => (dispatch) => {
     dispatch(updateRealTimeDetailView(VIEW_TYPE.REAL_TIME_DETAIL.DEFAULT));
     dispatch(updateSelectedIncidentFilters([]));
     dispatch(resetShowRoadworks());
+    dispatch(updateShowAllRouteAlerts(false));
+    dispatch(updateShowRouteAlerts(false));
     dispatch(updateShowIncidents(false));
     dispatch(updateSelectedCongestionFilters([]));
     dispatch(updateMapDetails(MAP_DATA.centerLocation, MAP_DATA.zoomLevel.initial));

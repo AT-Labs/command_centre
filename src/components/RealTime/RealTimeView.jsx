@@ -75,7 +75,7 @@ import { IncidentLayer } from '../Common/Map/TrafficLayer/IncidentLayer';
 import CongestionFilters from './TrafficFilters/legacy/CongestionFilters';
 import EnableIncidentLayerButton from './TrafficFilters/legacy/EnableIncidentLayerButton';
 import * as trafficApi from '../../utils/transmitters/traffic-api';
-import { useCongestionLayer, useIncidentLayer, useNewRealtimeMapFilters, useCarsRoadworksLayer } from '../../redux/selectors/appSettings';
+import { useCongestionLayer, useIncidentLayer, useNewRealtimeMapFilters, useRouteAlertsLayer, useCarsRoadworksLayer } from '../../redux/selectors/appSettings';
 import { haversineDistance } from '../../utils/map-helpers';
 import {
     CONGESTION_REFRESH_INTERVAL, CONGESTION_SHAPE_WEIGHT_BOLD, CONGESTION_SHAPE_WEIGHT_DEFAULT,
@@ -84,8 +84,10 @@ import {
 import * as incidentsApi from '../../utils/transmitters/incidents-api';
 import RealtimeMapFilters from './RealtimeMapFilters/RealtimeMapFilters';
 import { Probability } from '../../types/incidents';
-import { updateSelectedCongestionFilters, updateSelectedIncidentFilters, updateShowIncidents, updateShowRoadworks } from '../../redux/actions/realtime/layers';
-import { getSelectedCongestionFilters, getSelectedIncidentFilters, getShowIncidents, getSelectedRoadworksFilters } from '../../redux/selectors/realtime/layers';
+import { updateSelectedCongestionFilters, updateSelectedIncidentFilters, updateShowAllRouteAlerts,
+    updateShowIncidents, updateShowRoadworks, updateShowRouteAlerts } from '../../redux/actions/realtime/layers';
+import { getSelectedCongestionFilters, getSelectedIncidentFilters, getShowIncidents, getSelectedRoadworksFilters,
+    getShowRouteAlerts, getShowAllRouteAlerts } from '../../redux/selectors/realtime/layers';
 import { getAgencies } from '../../redux/selectors/static/agencies';
 import {
     isIncidentsQueryValid,
@@ -98,7 +100,9 @@ import {
     isStatusQueryValid,
     isTagsQueryValid,
 } from '../../utils/realtimeMap';
+import RouteAlertsLayer from '../Common/Map/TrafficLayer/RouteAlertsLayer';
 import { updateUrlFromCarsRoadworksLayer, readUrlToCarsRoadworksLayer } from './TrafficFilters/RoadworksFilterBlock';
+import { restoreRouteAlertsStateFromUrl, updateUrlForRouteAlerts } from './TrafficFilters/RouteAlertsFilter';
 
 function RealTimeView(props) {
     const { ADDRESS, ROUTE, STOP, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
@@ -306,6 +310,8 @@ function RealTimeView(props) {
 
         if (props.useCarsRoadworksLayer) readUrlToCarsRoadworksLayer(searchParams, isRoadworksQueryValid, props.updateShowRoadworks);
 
+        if (props.useRouteAlertsLayer) restoreRouteAlertsStateFromUrl(searchParams, props.updateShowRouteAlerts, props.updateShowAllRouteAlerts);
+
         const liveTrafficQuery = searchParams.get('liveTraffic');
         if (isLiveTrafficQueryValid(liveTrafficQuery)) {
             props.updateSelectedCongestionFilters(liveTrafficQuery.split(','));
@@ -406,6 +412,8 @@ function RealTimeView(props) {
 
         if (useCarsRoadworksLayer) updateUrlFromCarsRoadworksLayer(props.selectedRoadworksFilters, searchParams);
 
+        if (props.useRouteAlertsLayer) updateUrlForRouteAlerts(props.showRouteAlerts, props.showAllRouteAlerts, searchParams);
+
         if (props.selectedCongestionFilters.length > 0) {
             searchParams.set('liveTraffic', props.selectedCongestionFilters.join(','));
         }
@@ -442,6 +450,8 @@ function RealTimeView(props) {
         props.selectedIncidentFilters,
         props.selectedRoadworksFilters,
         props.selectedCongestionFilters,
+        props.showRouteAlerts,
+        props.showAllRouteAlerts,
         props.mapCenter,
         props.mapZoomLevel,
     ]);
@@ -579,6 +589,7 @@ function RealTimeView(props) {
                     zoom={ props.mapZoomLevel }
                     onViewChanged={ onMapViewChanged }
                 >
+                    { props.useRouteAlertsLayer && (<RouteAlertsLayer />) }
                     { props.useCarsRoadworksLayer && <CarsLayer mapZoomLevel={ props.mapZoomLevel } boundsToFit={ props.boundsToFit } /> }
                     <CongestionLayer
                         data={ trafficFlows }
@@ -629,6 +640,7 @@ function RealTimeView(props) {
                 { props.useIncidentLayer ? <EnableIncidentLayerButton isEnabled={ props.showIncidents } onClick={ () => props.updateShowIncidents(!props.showIncidents) } /> : ''}
                 { props.useNewRealtimeMapFilters && !props.useCongestionLayer && !props.useIncidentLayer ? (
                     <RealtimeMapFilters
+                        useRouteAlerts={ props.useRouteAlertsLayer }
                         onCongestionFiltersChanged={ onCongestionFiltersChanged }
                         selectedCongestionFilters={ props.selectedCongestionFilters }
                         selectedIncidentFilters={ props.selectedIncidentFilters }
@@ -672,6 +684,7 @@ RealTimeView.propTypes = {
     stopSelected: PropTypes.func.isRequired,
     useCongestionLayer: PropTypes.bool.isRequired,
     useIncidentLayer: PropTypes.bool.isRequired,
+    useRouteAlertsLayer: PropTypes.bool.isRequired,
     useCarsRoadworksLayer: PropTypes.bool.isRequired,
     useNewRealtimeMapFilters: PropTypes.bool.isRequired,
     mergeVehicleFilters: PropTypes.func.isRequired,
@@ -692,10 +705,14 @@ RealTimeView.propTypes = {
     selectedIncidentFilters: PropTypes.array.isRequired,
     selectedRoadworksFilters: PropTypes.array.isRequired,
     selectedCongestionFilters: PropTypes.array.isRequired,
+    showRouteAlerts: PropTypes.bool.isRequired,
+    showAllRouteAlerts: PropTypes.bool.isRequired,
     updateShowIncidents: PropTypes.func.isRequired,
     updateSelectedIncidentFilters: PropTypes.func.isRequired,
     updateShowRoadworks: PropTypes.func.isRequired,
     updateSelectedCongestionFilters: PropTypes.func.isRequired,
+    updateShowRouteAlerts: PropTypes.func.isRequired,
+    updateShowAllRouteAlerts: PropTypes.func.isRequired,
     agencies: PropTypes.array.isRequired,
 };
 
@@ -730,6 +747,7 @@ export default connect(
         visibleStops: getVisibleStops(state),
         useCongestionLayer: useCongestionLayer(state),
         useIncidentLayer: useIncidentLayer(state),
+        useRouteAlertsLayer: useRouteAlertsLayer(state),
         useCarsRoadworksLayer: useCarsRoadworksLayer(state),
         useNewRealtimeMapFilters: useNewRealtimeMapFilters(state),
         showingTags: getVehiclesFilterShowingTags(state),
@@ -748,6 +766,8 @@ export default connect(
         selectedIncidentFilters: getSelectedIncidentFilters(state),
         selectedCongestionFilters: getSelectedCongestionFilters(state),
         selectedRoadworksFilters: getSelectedRoadworksFilters(state),
+        showRouteAlerts: getShowRouteAlerts(state),
+        showAllRouteAlerts: getShowAllRouteAlerts(state),
         agencies: getAgencies(state),
     }),
     {
@@ -768,5 +788,7 @@ export default connect(
         updateSelectedIncidentFilters,
         updateShowRoadworks,
         updateSelectedCongestionFilters,
+        updateShowRouteAlerts,
+        updateShowAllRouteAlerts,
     },
 )(RealTimeView);

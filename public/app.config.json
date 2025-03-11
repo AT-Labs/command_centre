@@ -30,5 +30,6 @@
     "useDisruptionEmailFormat": "false",
     "useGeoSearchRoutesByDisruptionPeriod": "false",
     "useCarsRoadworksLayer": "false",
+    "useRouteAlertsLayer": "false",
     "useNewMonitoring": "false"
 }
