@@ -122,6 +122,9 @@ describe('<RoadworksFilterBlock />', () => {
 });
 
 describe('readUrlToCarsRoadworksLayer', () => {
+    const roadworkFilterCategoriesWithEventsUnselected = [...RoadworksFilterCategories];
+    roadworkFilterCategoriesWithEventsUnselected[2].selected = false;
+
     const testCases = [
         {
             description: 'should update showRoadworks and selectedRoadworksFilters when roadworks query is valid',
@@ -129,11 +132,7 @@ describe('readUrlToCarsRoadworksLayer', () => {
             expectedIsRoadworksQueryValid: true,
             expectedDispatch: {
                 showRoadworks: true,
-                selectedRoadworksFilters: [
-                    { id: 'Excavation', selected: true },
-                    { id: 'Non-Excavation', selected: true },
-                    { id: 'Event', selected: false },
-                ],
+                selectedRoadworksFilters: roadworkFilterCategoriesWithEventsUnselected,
             },
             shouldDispatch: true,
         },

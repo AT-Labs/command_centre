@@ -6,9 +6,9 @@ import { updateShowRoadworks, updateSelectedRoadworksFilters } from '../../../re
 import { getLayersState } from '../../../redux/selectors/realtime/layers';
 
 export const RoadworksFilterCategories = [
-    { id: 'Excavation', selected: true },
-    { id: 'Non-Excavation', selected: true },
-    { id: 'Event', selected: true },
+    { id: 'Excavation', display: 'Excavation', className: '', selected: true },
+    { id: 'Non-Excavation', display: 'Non-Excavation', className: '', selected: true },
+    { id: 'Event', display: 'Special Event', className: 'font-weight-bold', selected: true },
 ];
 
 export const readUrlToCarsRoadworksLayer = (searchParams, isRoadworksQueryValid, updateShowRoadworksDispatcher) => {
@@ -57,7 +57,7 @@ export const RoadworksFilterBlock = () => {
     return (
         <div className="roadworks-filters-block">
             <div className="layers-sub-title d-flex flex-row justify-content-between align-items-center my-2">
-                <h4 className="font-weight-bolder m-0">Roadworks</h4>
+                <h4 className="font-weight-bolder m-0">Planned Events</h4>
                 <CustomizedSwitch
                     id="roadworks-filters-switch"
                     checked={ showRoadworks }
@@ -71,7 +71,7 @@ export const RoadworksFilterBlock = () => {
                 <div className="roadworks-items d-flex flex-row justify-content-between" key={ roadworkFilterItem.id }>
                     <div className="d-flex flex-row align-items-center">
                         <div className="roadwork-type-card mt-1" />
-                        <span htmlFor={ `${roadworkFilterItem.id}-filter-item` }>{roadworkFilterItem.id}</span>
+                        <span htmlFor={ `${roadworkFilterItem.id}-filter-item` } className={ roadworkFilterItem.className }>{roadworkFilterItem.display}</span>
                     </div>
                     <div className="mt-1">
                         <Input
