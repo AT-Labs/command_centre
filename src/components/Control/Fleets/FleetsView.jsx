@@ -60,6 +60,8 @@ export const FleetsView = (props) => {
         { field: 'generated_topo', headerName: 'GENERATED TOPO', width: 150 },
         { field: 'latest_eod', headerName: 'LATEST EOD', width: 150, filterable: true },
         { field: 'latest_actionlist', headerName: 'LATEST ACTIONLIST', width: 150, filterable: true },
+        { field: 'eod_activation_timestamp', headerName: 'EOD ACTIVATION TIMESTAMP', width: 150, filterable: true },
+        { field: 'actionlist_activation_timestamp', headerName: 'ACTIONLIST ACTIVATION TIMESTAMP', width: 150, filterable: true },
     ];
 
     const getPageData = () => fleets.map(fleet => ({
@@ -98,6 +100,8 @@ export const FleetsView = (props) => {
         generated_topo: fleet.eod.generated.topo || '',
         latest_eod: fleet.eod.latestEOD,
         latest_actionlist: fleet.eod.latestActionlist || '',
+        eod_activation_timestamp: parseTime(fleet.eodActivationTimestamp) || null,
+        actionlist_activation_timestamp: parseTime(fleet.actionlistActivationTimestamp) || null,
     }));
 
     return (
