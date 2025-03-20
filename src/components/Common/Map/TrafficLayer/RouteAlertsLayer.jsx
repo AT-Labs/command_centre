@@ -3,36 +3,24 @@ import { FeatureGroup, Polyline, Tooltip } from 'react-leaflet';
 import { useSelector } from 'react-redux';
 import { AiFillWarning } from 'react-icons/ai';
 import { generateUniqueID } from '../../../../utils/helpers';
-import { CONGESTION_THRESHOLD_LOW, CONGESTION_THRESHOLD_MEDIUM, ROUTE_ALERTS_REFRESH_INTERVAL } from '../../../../constants/traffic';
+import { CONGESTION_THRESHOLD_ORANGE, ROUTE_ALERTS_REFRESH_INTERVAL } from '../../../../constants/traffic';
 import './RouteAlertsLayer.scss';
 import { formatSeconds } from '../../../../utils/dateUtils';
 import * as routeMonitoringApi from '../../../../utils/transmitters/route-monitoring-api';
 import { getLayersState } from '../../../../redux/selectors/realtime/layers';
+import { getColor } from '../../../../utils/traffic';
 
 const RouteAlertsLayer = () => {
     const { showRouteAlerts, showAllRouteAlerts, selectedRouteAlerts } = useSelector(getLayersState);
     const [routesData, setRoutesData] = useState([]);
     const abortControllerRef = useRef(null);
 
-    const getColor = (relativeSpeed) => {
-        if (relativeSpeed > CONGESTION_THRESHOLD_LOW) {
-            return 'Green';
-        }
-        if (relativeSpeed > CONGESTION_THRESHOLD_MEDIUM) {
-            return 'Orange';
-        }
-        if (relativeSpeed > 0) {
-            return 'Red';
-        }
-        return 'Green';
-    };
-
     const fetchRouteAlertData = async (routeIds, fetchAll) => {
         try {
             if (fetchAll) {
                 const allData = await routeMonitoringApi.fetchAllRouteAlertDetails();
                 const filteredRoutes = allData.map((route) => {
-                    const filteredSegments = (route.detailedSegments || []).filter(segment => (segment.currentSpeed / segment.typicalSpeed <= CONGESTION_THRESHOLD_MEDIUM));
+                    const filteredSegments = (route.detailedSegments || []).filter(segment => (segment.currentSpeed / segment.typicalSpeed <= CONGESTION_THRESHOLD_ORANGE));
                     return {
                         ...route,
                         detailedSegments: filteredSegments,

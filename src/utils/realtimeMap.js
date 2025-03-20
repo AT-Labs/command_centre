@@ -1,8 +1,8 @@
-import { Filters } from '../components/RealTime/TrafficFilters/TrafficFilters';
 import { Category } from '../types/incidents';
 import VEHICLE_OCCUPANCY_STATUS_TYPE from '../types/vehicle-occupancy-status-types';
 import VEHICLE_TYPE_DETAILS, { VEHICLE_TYPES } from '../types/vehicle-types';
 import { RoadworksFilterCategories } from '../components/RealTime/TrafficFilters/RoadworksFilterBlock';
+import { CONGESTION_COLORS } from '../constants/traffic';
 
 const validateQueryValuesWithSet = (query, allowedValuesArray) => {
     const values = query.split(',');
@@ -142,7 +142,7 @@ export const isLiveTrafficQueryValid = (query) => {
         return false;
     }
 
-    return validateQueryValues(query, Filters);
+    return validateQueryValues(query, CONGESTION_COLORS);
 };
 
 export const isMapCenterQueryValid = (query) => {

@@ -15,12 +15,7 @@ import { RoadworksFilterBlock } from './RoadworksFilterBlock';
 
 import { useCarsRoadworksLayer } from '../../../redux/selectors/appSettings';
 import RouteAlertsFilter from './RouteAlertsFilter';
-
-export const Filters = {
-    High: 'High',
-    Medium: 'Medium',
-    Low: 'Low',
-};
+import { CONGESTION_COLORS } from '../../../constants/traffic';
 
 const TrafficFilters = (props) => {
     const [selectedCongestionFilters, setSelectedCongestionFilters] = useState(props.selectedCongestionFilters);
@@ -72,7 +67,7 @@ const TrafficFilters = (props) => {
 
     const switchTrafficHandler = (value) => {
         if (value) {
-            onTrafficFlowsCheckboxChange([Filters.Low, Filters.Medium, Filters.High]);
+            onTrafficFlowsCheckboxChange([CONGESTION_COLORS.GREEN, CONGESTION_COLORS.YELLOW, CONGESTION_COLORS.ORANGE, CONGESTION_COLORS.RED, CONGESTION_COLORS.MAROON]);
         } else {
             setSelectedCongestionFilters([]);
             if (props.onCongestionFiltersChanged) {
@@ -141,47 +136,77 @@ const TrafficFilters = (props) => {
                         <div className="traffic-level-items">
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
-                                    <div className="traffic-card low-traffic-card" />
-                                    <span htmlFor={ Filters.Low }>Low traffic</span>
+                                    <div className="traffic-card green-traffic-card" />
+                                    <span htmlFor={ CONGESTION_COLORS.GREEN }>Green</span>
                                 </div>
                                 <div>
                                     <Input
-                                        id={ Filters.Low }
+                                        id={ CONGESTION_COLORS.GREEN }
                                         type="checkbox"
                                         className=""
-                                        onChange={ () => onTrafficFlowsCheckboxChange([Filters.Low]) }
+                                        onChange={ () => onTrafficFlowsCheckboxChange([CONGESTION_COLORS.GREEN]) }
                                         size={ 20 }
-                                        checked={ selectedCongestionFilters.includes(Filters.Low) } />
+                                        checked={ selectedCongestionFilters.includes(CONGESTION_COLORS.GREEN) } />
                                 </div>
                             </div>
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
-                                    <div className="traffic-card medium-traffic-card" />
-                                    <div className="font-weight-">Medium traffic</div>
+                                    <div className="traffic-card yellow-traffic-card" />
+                                    <span htmlFor={ CONGESTION_COLORS.YELLOW }>Yellow</span>
                                 </div>
                                 <div>
                                     <Input
-                                        id={ Filters.Medium }
+                                        id={ CONGESTION_COLORS.YELLOW }
                                         type="checkbox"
                                         className=""
-                                        onChange={ () => onTrafficFlowsCheckboxChange([Filters.Medium]) }
+                                        onChange={ () => onTrafficFlowsCheckboxChange([CONGESTION_COLORS.YELLOW]) }
                                         size={ 20 }
-                                        checked={ selectedCongestionFilters.includes(Filters.Medium) } />
+                                        checked={ selectedCongestionFilters.includes(CONGESTION_COLORS.YELLOW) } />
                                 </div>
                             </div>
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
-                                    <div className="traffic-card high-traffic-card" />
-                                    <span className="font-weight-">High traffic</span>
+                                    <div className="traffic-card orange-traffic-card" />
+                                    <span htmlFor={ CONGESTION_COLORS.ORANGE }>Orange</span>
                                 </div>
                                 <div>
                                     <Input
-                                        id={ Filters.High }
+                                        id={ CONGESTION_COLORS.ORANGE }
                                         type="checkbox"
                                         className=""
-                                        onChange={ () => onTrafficFlowsCheckboxChange([Filters.High]) }
+                                        onChange={ () => onTrafficFlowsCheckboxChange([CONGESTION_COLORS.ORANGE]) }
                                         size={ 20 }
-                                        checked={ selectedCongestionFilters.includes(Filters.High) } />
+                                        checked={ selectedCongestionFilters.includes(CONGESTION_COLORS.ORANGE) } />
+                                </div>
+                            </div>
+                            <div className="d-flex flex-row justify-content-between">
+                                <div className="d-flex flex-row align-items-center">
+                                    <div className="traffic-card red-traffic-card" />
+                                    <span htmlFor={ CONGESTION_COLORS.RED }>Red</span>
+                                </div>
+                                <div>
+                                    <Input
+                                        id={ CONGESTION_COLORS.RED }
+                                        type="checkbox"
+                                        className=""
+                                        onChange={ () => onTrafficFlowsCheckboxChange([CONGESTION_COLORS.RED]) }
+                                        size={ 20 }
+                                        checked={ selectedCongestionFilters.includes(CONGESTION_COLORS.RED) } />
+                                </div>
+                            </div>
+                            <div className="d-flex flex-row justify-content-between">
+                                <div className="d-flex flex-row align-items-center">
+                                    <div className="traffic-card maroon-traffic-card" />
+                                    <span htmlFor={ CONGESTION_COLORS.MAROON }>Maroon</span>
+                                </div>
+                                <div>
+                                    <Input
+                                        id={ CONGESTION_COLORS.MAROON }
+                                        type="checkbox"
+                                        className=""
+                                        onChange={ () => onTrafficFlowsCheckboxChange([CONGESTION_COLORS.MAROON]) }
+                                        size={ 20 }
+                                        checked={ selectedCongestionFilters.includes(CONGESTION_COLORS.MAROON) } />
                                 </div>
                             </div>
                         </div>

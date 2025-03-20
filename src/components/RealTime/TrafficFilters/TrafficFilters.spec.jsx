@@ -1,9 +1,10 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import { useSelector } from 'react-redux';
-import TrafficFilters, { Filters } from './TrafficFilters';
+import TrafficFilters from './TrafficFilters';
 import { Category } from '../../../types/incidents';
 import { useCarsRoadworksLayer } from '../../../redux/selectors/appSettings';
+import { CONGESTION_COLORS } from '../../../constants/traffic';
 
 jest.mock('lodash-es', () => ({
     map: jest.requireActual('lodash').map,
@@ -18,7 +19,7 @@ jest.mock('../../../redux/selectors/appSettings', () => ({
 describe('TrafficFilters Component', () => {
     let wrapper;
     const defaultProps = {
-        selectedCongestionFilters: [Filters.Low],
+        selectedCongestionFilters: [CONGESTION_COLORS.GREEN],
         selectedIncidentFilters: [Category[0]],
         isExpand: true,
         isExpandHandler: jest.fn(),
