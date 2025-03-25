@@ -206,6 +206,22 @@ describe('getStatusOptions', () => {
     it('should return not-started, in-progress and resolved when start time is not valid', () => {
         expect(getStatusOptions('20-07-2020', '0000', now)).to.deep.equal([STATUSES.NOT_STARTED, STATUSES.IN_PROGRESS, STATUSES.RESOLVED]);
     });
+
+    it('should return draft when status is draft and start time is in the future', () => {
+        expect(getStatusOptions('20/07/2020', '01:00', now, STATUSES.DRAFT)).to.deep.equal([STATUSES.NOT_STARTED, STATUSES.RESOLVED, STATUSES.DRAFT]);
+    });
+
+    it('should return draft when status is draft and start time is in the past', () => {
+        expect(getStatusOptions('19/07/2020', '23:00', now, STATUSES.DRAFT)).to.deep.equal([STATUSES.IN_PROGRESS, STATUSES.RESOLVED, STATUSES.DRAFT]);
+    });
+
+    it('should return draft, in-progress, and resolved when status is draft and start time is invalid', () => {
+        expect(getStatusOptions('20-07-2020', '0000', now, STATUSES.DRAFT)).to.deep.equal([STATUSES.NOT_STARTED, STATUSES.IN_PROGRESS, STATUSES.RESOLVED, STATUSES.DRAFT]);
+    });
+
+    it('should return draft when status is draft and start time is in the past or present', () => {
+        expect(getStatusOptions('20/07/2020', '00:00', now, STATUSES.DRAFT)).to.deep.equal([STATUSES.IN_PROGRESS, STATUSES.RESOLVED, STATUSES.DRAFT]);
+    });
 });
 
 describe('groupStopsByRouteElementByParentStation', () => {

@@ -46,6 +46,7 @@ import {
     uploadDisruptionFiles,
     deleteDisruptionFile,
     updateDisruption,
+    publishDraftDisruption,
 } from '../../../../redux/actions/control/disruptions';
 import {
     getShapes,
@@ -90,7 +91,7 @@ import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import { ShapeLayer } from '../../../Common/Map/ShapeLayer/ShapeLayer';
 import { SelectedStopsMarker } from '../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import { DisruptionPassengerImpactGridModal } from '../DisruptionDetail/DisruptionPassengerImpactGridModal';
-import { usePassengerImpact } from '../../../../redux/selectors/appSettings';
+import { useDraftDisruptions, usePassengerImpact } from '../../../../redux/selectors/appSettings';
 import { updateActiveControlEntityId } from '../../../../redux/actions/navigation';
 import { shareToEmail } from '../../../../utils/control/disruption-sharing';
 
@@ -107,6 +108,8 @@ const DisruptionDetailView = (props) => {
 
     const formatEndDateFromEndTime = disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '';
     const fetchEndDate = () => (disruption.recurrent ? fetchEndDateFromRecurrence(disruption.recurrencePattern) : formatEndDateFromEndTime);
+    const fetchStartDate = () => (disruption.startTime ? moment(disruption.startTime).format(DATE_FORMAT) : '');
+    const getFormattedTimeOrEmpty = time => (time ? moment(time).format(TIME_FORMAT) : '');
     const now = moment().second(0).millisecond(0);
 
     const [cause, setCause] = useState(disruption.cause);
@@ -117,9 +120,9 @@ const DisruptionDetailView = (props) => {
     const [incidentNo, setIncidentNo] = useState(disruption.incidentNo);
     const [mode, setMode] = useState(disruption.mode);
     const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
-    const [startTime, setStartTime] = useState(moment(disruption.startTime).format(TIME_FORMAT));
-    const [startDate, setStartDate] = useState(moment(disruption.startTime).format(DATE_FORMAT));
-    const [endTime, setEndTime] = useState(disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : '');
+    const [startTime, setStartTime] = useState(getFormattedTimeOrEmpty(disruption.startTime));
+    const [startDate, setStartDate] = useState(fetchStartDate());
+    const [endTime, setEndTime] = useState(getFormattedTimeOrEmpty(disruption.endTime));
     const [endDate, setEndDate] = useState(fetchEndDate());
     const [createNotification, setCreateNotification] = useState(false);
     const [exemptAffectedTrips, setExemptAffectedTrips] = useState(disruption.exemptAffectedTrips);
@@ -149,7 +152,7 @@ const DisruptionDetailView = (props) => {
     // in the array due to the high possibility of collapsing the static API.
     // This piece of code should be deleted when a better performance solution has been put in place.
 
-    const affectedEntitiesWithoutShape = toString(disruption.affectedEntities.map(entity => omit(entity, ['shapeWkt'])));
+    const affectedEntitiesWithoutShape = toString(disruption.affectedEntities?.map(entity => omit(entity, ['shapeWkt'])));
     useEffect(() => {
         const affectedStops = disruption.affectedEntities.filter(entity => entity.type === 'stop');
         const affectedRoutes = disruption.affectedEntities.filter(entity => entity.type === 'route' || (entity.routeId && isEmpty(entity.stopCode)));
@@ -159,7 +162,6 @@ const DisruptionDetailView = (props) => {
             props.actions.updateAffectedRoutesState(affectedRoutes);
 
             const routesToGet = uniqBy([...affectedRoutes, ...affectedStops.filter(stop => stop.routeId)], item => item.routeId);
-
             if (routesToGet.length) {
                 props.actions.getRoutesByShortName(routesToGet.slice(0, 10));
             }
@@ -191,9 +193,9 @@ const DisruptionDetailView = (props) => {
         setStatus(disruption.status);
         setUrl(disruption.url);
         setMode(disruption.mode);
-        setStartTime(moment(disruption.startTime).format(TIME_FORMAT));
-        setStartDate(moment(disruption.startTime).format(DATE_FORMAT));
-        setEndTime(disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : '');
+        setStartTime(getFormattedTimeOrEmpty(disruption.startTime));
+        setStartDate(fetchStartDate());
+        setEndTime(getFormattedTimeOrEmpty(disruption.endTime));
         setEndDate(fetchEndDate());
         setCreateNotification(disruption.createNotification);
         setExemptAffectedTrips(disruption.exemptAffectedTrips);
@@ -283,19 +285,33 @@ const DisruptionDetailView = (props) => {
             setEndDate(moment().format(DATE_FORMAT));
             setEndTime(moment().format(TIME_FORMAT));
         }
-
         setIsRecurrenceDirty(true);
     };
 
     const isResolved = () => status === STATUSES.RESOLVED;
     const isEndDateTimeDisabled = () => status === STATUSES.RESOLVED;
-    const isStartDateTimeDisabled = () => status === STATUSES.RESOLVED || (recurrent && disruption.status !== STATUSES.NOT_STARTED);
+    const isStartDateTimeDisabled = () => {
+        if (status === STATUSES.DRAFT && props.useDraftDisruptions) {
+            return false;
+        }
+        return status === STATUSES.RESOLVED || (recurrent && disruption.status !== STATUSES.NOT_STARTED);
+    };
 
     const startTimeValid = () => {
+        if (status === STATUSES.DRAFT && isEmpty(startTime)) return true;
+
         if (isStartDateTimeDisabled()) {
             return true;
         }
         return isStartTimeValid(startDate, startTime, now, recurrent);
+    };
+
+    const startTimeDraftValid = () => {
+        if (status === STATUSES.DRAFT && isEmpty(startTime)) {
+            return true;
+        }
+
+        return startTimeValid();
     };
 
     const endTimeValid = () => {
@@ -305,6 +321,13 @@ const DisruptionDetailView = (props) => {
         return isEndTimeValid(endDate, endTime, startDate, startTime);
     };
 
+    const endTimeDraftValid = () => {
+        if (status === STATUSES.DRAFT && isEmpty(endTime)) {
+            return true;
+        }
+        return endTimeValid();
+    };
+
     const endDateValid = () => {
         if (isEndDateTimeDisabled()) {
             return true;
@@ -312,11 +335,29 @@ const DisruptionDetailView = (props) => {
         return isEndDateValid(endDate, startDate, recurrent);
     };
 
+    const endDateDraftValid = () => {
+        if (status === STATUSES.DRAFT && isEmpty(endDate)) {
+            return true;
+        }
+        return endDateValid();
+    };
+
+    const isAffectedEntitiesValid = () => disruption?.affectedEntities?.length > 0;
+
+    const isDraftStatusValid = () => status === STATUSES.DRAFT;
+
     const startDateValid = () => {
         if (isStartDateTimeDisabled()) {
             return true;
         }
         return isStartDateValid(startDate, now, recurrent);
+    };
+
+    const startDateDraftValid = () => {
+        if (status === STATUSES.DRAFT && isEmpty(startDate)) {
+            return true;
+        }
+        return startDateValid();
     };
 
     const getOptionalLabel = label => (
@@ -328,8 +369,39 @@ const DisruptionDetailView = (props) => {
     );
 
     const causeAndImpactAreValid = causes.find(c => c.value === cause) && impacts.find(i => i.value === impact);
+    const causeAndImpactAreValidForDraft = () => {
+        const causeIsValid = causes.some(c => c.value === cause);
+        const impactIsValid = impacts.some(i => i.value === impact);
 
-    const durationValid = () => isDurationValid(duration, recurrent);
+        if (status === STATUSES.DRAFT) {
+            return causeIsValid && (isEmpty(impact) || impactIsValid);
+        }
+
+        return causeIsValid && impactIsValid;
+    };
+
+    const durationDraftValid = () => {
+        if (isEmpty(duration) && status === STATUSES.DRAFT) {
+            return true;
+        }
+
+        return isDurationValid(duration, recurrencePattern);
+    };
+
+    const durationValid = () => {
+        if (status === STATUSES.DRAFT && isEmpty(duration)) return true;
+        return isDurationValid(duration, recurrent);
+    };
+
+    const durationPublishValid = () => {
+        if (status === STATUSES.DRAFT && isEmpty(duration) && !recurrent) return true;
+        return isDurationValid(duration, recurrent);
+    };
+
+    const causeValid = () => !isEmpty(cause);
+
+    const isTitleValid = () => !isEmpty(header);
+
     const isWeekdayRequiredButEmpty = recurrent && isEmpty(recurrencePattern.byweekday);
     const isPropsEmpty = some([cause, impact, status, header, severity], isEmpty) || isWeekdayRequiredButEmpty;
     const isUpdating = isRequesting && resultDisruptionId === disruption.disruptionId;
@@ -341,6 +413,19 @@ const DisruptionDetailView = (props) => {
         || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid()
         || !endDateValid() || !durationValid() || !causeAndImpactAreValid);
     const isDiversionUploadDisabled = isUpdating || isPropsEmpty || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid();
+
+    const isSaveDraftDisable = (
+        isUpdating
+        || !isUrlValid(url) || !startTimeDraftValid() || !startDateDraftValid() || !endTimeDraftValid()
+        || !endDateDraftValid() || !durationDraftValid() || !causeAndImpactAreValidForDraft() || !causeValid() || !isTitleValid()
+    );
+
+    const isPublishDraftDisable = (
+        isUpdating
+        || isPropsEmpty
+        || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid()
+        || !endDateValid() || !durationPublishValid() || !causeAndImpactAreValid || !isAffectedEntitiesValid()
+    );
 
     const editRoutesAndStops = () => {
         props.actions.updateEditMode(EDIT_TYPE.EDIT);
@@ -415,6 +500,15 @@ const DisruptionDetailView = (props) => {
         setIsRecurrenceDirty(true);
     };
 
+    const onChangeStartDate = (date) => {
+        if (date.length === 0) {
+            setStartDate('');
+        } else {
+            setStartDate(moment(date[0]).format(DATE_FORMAT));
+        }
+        setIsRecurrenceDirty(true);
+    };
+
     const onUpdateWeekdayPicker = (byweekday) => {
         setRecurrencePattern({ ...recurrencePattern, byweekday });
         setIsRecurrenceDirty(true);
@@ -433,6 +527,19 @@ const DisruptionDetailView = (props) => {
     const saveAndShareHandler = async () => {
         const result = await handleUpdateDisruption();
         shareToEmail(result || setDisruption());
+    };
+
+    const saveDraftHandler = async () => {
+        const result = await handleUpdateDisruption();
+        props.actions.updateDisruptionToEdit(result || setDisruption());
+    };
+
+    const handlePublishDraft = async () => {
+        const updatedDisruption = {
+            ...setDisruption(),
+            status: STATUSES.NOT_STARTED,
+        };
+        await props.actions.publishDraftDisruption(updatedDisruption);
     };
 
     return (
@@ -474,10 +581,10 @@ const DisruptionDetailView = (props) => {
                                         <div className="mt-2 position-relative form-group">
                                             <DisruptionDetailSelect id="disruption-detail__status"
                                                 value={ status }
-                                                options={ getStatusOptions(startDate, startTime, now) }
+                                                options={ getStatusOptions(startDate, startTime, now, props.disruption.status) }
                                                 label={ LABEL_STATUS }
                                                 onChange={ setDisruptionStatus }
-                                                disabled={ isReadOnlyMode } />
+                                                disabled={ isReadOnlyMode || (isDraftStatusValid() && props.useDraftDisruptions) } />
                                         </div>
                                         <DisruptionDetailSelect
                                             id="disruption-detail__impact"
@@ -508,11 +615,7 @@ const DisruptionDetailView = (props) => {
                                                 value={ startDate }
                                                 disabled={ isStartDateTimeDisabled() || isReadOnlyMode }
                                                 options={ datePickerOptionsStartDate }
-                                                placeholder="Select date"
-                                                onChange={ (date) => {
-                                                    setStartDate(moment(date[0]).format(DATE_FORMAT));
-                                                    setIsRecurrenceDirty(true);
-                                                } } />
+                                                onChange={ onChangeStartDate } />
                                             <FaRegCalendarAlt
                                                 className="disruption-creation__wizard-select-details__icon position-absolute"
                                                 size={ 22 } />
@@ -717,23 +820,48 @@ const DisruptionDetailView = (props) => {
                                         </Label>
                                     </div>
                                 </div>
-                                <Button
-                                    className="control-messaging-view__stop-groups-btn cc-btn-primary ml-1 mb-2"
-                                    onClick={ () => setDisruptionsDetailsModalOpen(true) }>
-                                    Preview & Share
-                                </Button>
-                                <Button
-                                    className="cc-btn-primary ml-1 mr-1 mb-2"
-                                    onClick={ saveAndShareHandler }
-                                    disabled={ isSaveDisabled }>
-                                    Save & Share
-                                </Button>
-                                <Button
-                                    className="cc-btn-primary ml-1 mr-1 mb-2"
-                                    onClick={ handleUpdateDisruption }
-                                    disabled={ isSaveDisabled }>
-                                    Save
-                                </Button>
+                                {props.useDraftDisruptions && disruption?.status === STATUSES.DRAFT ? (
+                                    <>
+                                        <Button
+                                            className="control-messaging-view__stop-groups-btn cc-btn-primary ml-1 mb-2"
+                                            onClick={ () => setDisruptionsDetailsModalOpen(true) }>
+                                            Preview
+                                        </Button>
+                                        <Button
+                                            className="cc-btn-primary ml-1 mr-1 mb-2"
+                                            onClick={ saveDraftHandler }
+                                            disabled={ isSaveDraftDisable }>
+                                            Save draft
+                                        </Button>
+                                        <Button
+                                            className="cc-btn-primary ml-1 mr-1 mb-2"
+                                            onClick={ handlePublishDraft }
+                                            disabled={ isPublishDraftDisable }>
+                                            Publish
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Button
+                                            className="control-messaging-view__stop-groups-btn cc-btn-primary ml-1 mb-2"
+                                            onClick={ () => setDisruptionsDetailsModalOpen(true) }>
+                                            Preview & Share
+                                        </Button>
+                                        <Button
+                                            className="cc-btn-primary ml-1 mr-1 mb-2"
+                                            onClick={ saveAndShareHandler }
+                                            disabled={ isSaveDisabled }>
+                                            Save & Share
+                                        </Button>
+                                        <Button
+                                            className="cc-btn-primary ml-1 mr-1 mb-2"
+                                            onClick={ handleUpdateDisruption }
+                                            disabled={ isSaveDisabled }>
+                                            Save
+                                        </Button>
+                                    </>
+                                )}
+
                                 <DisruptionSummaryModal
                                     disruption={ disruption }
                                     isModalOpen={ disruptionsDetailsModalOpen }
@@ -818,6 +946,7 @@ DisruptionDetailView.propTypes = {
     className: PropTypes.string,
     boundsToFit: PropTypes.array.isRequired,
     usePassengerImpact: PropTypes.bool.isRequired,
+    useDraftDisruptions: PropTypes.bool.isRequired,
     isReadOnlyMode: PropTypes.bool,
     actions: PropTypes.objectOf(PropTypes.func).isRequired,
 };
@@ -844,6 +973,7 @@ const mapDispatchToProps = dispatch => ({
         deleteDisruptionFile,
         updateActiveControlEntityId,
         updateDisruption,
+        publishDraftDisruption,
     }, dispatch),
 });
 
@@ -856,4 +986,5 @@ export default connect(state => ({
     boundsToFit: getBoundsToFit(state),
     usePassengerImpact: usePassengerImpact(state),
     isRequesting: getDisruptionAction(state)?.isRequesting,
+    useDraftDisruptions: useDraftDisruptions(state),
 }), mapDispatchToProps)(DisruptionDetailView);

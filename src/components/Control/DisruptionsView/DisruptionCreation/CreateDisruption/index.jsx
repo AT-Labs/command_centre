@@ -67,7 +67,7 @@ import { HighlightingLayer } from '../../../../Common/Map/HighlightingLayer/High
 import { SelectedStopsMarker } from '../../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import DrawLayer from './DrawLayer';
 import PassengerImpactDrawer from '../../PassengerImpact/PassengerImpactDrawer';
-import { usePassengerImpact, useGeoSearchRoutesByDisruptionPeriod } from '../../../../../redux/selectors/appSettings';
+import { usePassengerImpact, useGeoSearchRoutesByDisruptionPeriod, useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 
 const INIT_STATE = {
@@ -104,6 +104,8 @@ export class CreateDisruption extends React.Component {
             disruptionData: INIT_STATE,
             isConfirmationOpen: false,
             showAlert: false,
+            isSetDetailsValid: false,
+            isSelectEntitiesValid: false,
         };
     }
 
@@ -146,6 +148,12 @@ export class CreateDisruption extends React.Component {
             },
         });
     };
+
+    isFinishButtonDisabled = () => !this.state.isSelectEntitiesValid || !this.state.isSetDetailsValid;
+
+    onUpdateDetailsValidation = isValid => this.setState({ isSetDetailsValid: isValid });
+
+    onUpdateEntitiesValidation = isValid => this.setState({ isSelectEntitiesValid: isValid });
 
     setupDataEdit = () => {
         const { disruptionToEdit } = this.props;
@@ -234,6 +242,27 @@ export class CreateDisruption extends React.Component {
         this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds));
     };
 
+    onSubmitDraft = async () => {
+        this.props.updateCurrentStep(1);
+        const { disruptionData } = this.state;
+        const startDate = disruptionData.startDate ? disruptionData.startDate : moment(disruptionData.startTime).format(DATE_FORMAT);
+        const startTimeMoment = momentFromDateTime(startDate, disruptionData.startTime);
+        let endTimeMoment;
+        if (!isEmpty(disruptionData.endDate) && !isEmpty(disruptionData.endTime)) {
+            endTimeMoment = momentFromDateTime(disruptionData.endDate, disruptionData.endTime);
+        }
+        const disruption = {
+            ...disruptionData,
+            endTime: endTimeMoment,
+            startTime: startTimeMoment,
+            status: STATUSES.DRAFT,
+            notes: [],
+        };
+        this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds));
+        this.props.openCreateDisruption(false);
+        this.props.toggleDisruptionModals('isConfirmationOpen', true);
+    };
+
     onSubmitUpdate = async () => {
         const { disruptionData } = this.state;
         const disruptionRequest = buildSubmitBody(this.props.disruptionToEdit, this.props.routes, this.props.stops, disruptionData.workarounds);
@@ -311,11 +340,14 @@ export class CreateDisruption extends React.Component {
                             data={ disruptionData }
                             response={ this.props.action }
                             onDataUpdate={ this.updateData }
-                            onSubmit={ this.onSubmit }>
-                            {this.props.editMode !== EDIT_TYPE.EDIT && (<SelectDetails />)}
+                            onSubmit={ this.onSubmit }
+                            onSubmitDraft={ useDraftDisruptions && this.onSubmitDraft }>
+                            {this.props.editMode !== EDIT_TYPE.EDIT && (<SelectDetails onUpdateDetailsValidation={ this.onUpdateDetailsValidation } />)}
                             <SelectDisruptionEntities
+                                onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
                                 onSubmitUpdate={ this.onSubmitUpdate } />
                             <Workarounds
+                                isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
                                 onSubmitUpdate={ this.onSubmitUpdate } />
                         </Wizard>
                         <CustomModal
@@ -460,6 +492,7 @@ export default connect(state => ({
     isLoading: getDisruptionsLoadingState(state),
     usePassengerImpact: usePassengerImpact(state),
     useGeoSearchRoutesByDisruptionPeriod: useGeoSearchRoutesByDisruptionPeriod(state),
+    useDraftDisruptions: useDraftDisruptions(state),
 }), {
     createDisruption,
     openCreateDisruption,

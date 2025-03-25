@@ -14,7 +14,7 @@ import {
     getDisruptionToEdit,
 } from '../../../../../redux/selectors/control/disruptions';
 import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
-import { DISRUPTION_TYPE } from '../../../../../types/disruptions-types';
+import { DISRUPTION_TYPE, STATUSES } from '../../../../../types/disruptions-types';
 import PickList from '../../../../Common/PickList/PickList';
 import {
     deleteAffectedEntities,
@@ -46,6 +46,7 @@ import {
     entityToItemTransformers,
     itemToEntityTransformers,
 } from '../../../../../utils/control/disruptions';
+import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 
 export const SelectDisruptionEntities = (props) => {
     const { ROUTE, STOP, STOP_GROUP } = SEARCH_RESULT_TYPE;
@@ -55,7 +56,13 @@ export const SelectDisruptionEntities = (props) => {
     const [areEntitiesSelected, setAreEntitiesSelected] = useState(false);
     const [selectedEntities, setSelectedEntities] = useState([]);
     const showFooter = () => areEntitiesSelected || selectedEntities.length > 0;
-    const isButtonDisabled = () => !showFooter() || props.isLoadingStopsByRoute || props.isLoadingRoutesByStop;
+    const isButtonDisabled = () => {
+        if (props.useDraftDisruptions) {
+            return props.isLoadingStopsByRoute || props.isLoadingRoutesByStop;
+        }
+        return !showFooter() || props.isLoadingStopsByRoute || props.isLoadingRoutesByStop;
+    };
+
     const [editedRoutes, setEditedRoutes] = useState([]);
     const [stopCurrentlySearchingFor, setStopCurrentlySearchingFor] = useState(null);
 
@@ -203,11 +210,21 @@ export const SelectDisruptionEntities = (props) => {
             setIsAlertModalOpen(true);
         } else if (!props.isEditMode) {
             removeNotFoundFromStopGroups();
+            props.onUpdateEntitiesValidation(showFooter());
             props.onStepUpdate(2);
             props.updateCurrentStep(3);
         } else {
             props.onStepUpdate(1);
             props.updateCurrentStep(3);
+        }
+    };
+
+    const onSaveDraft = () => {
+        if (!props.isEditMode) {
+            props.onStepUpdate(3);
+            props.onSubmitDraft();
+        } else {
+            props.onSubmitUpdate();
         }
     };
 
@@ -448,6 +465,8 @@ export const SelectDisruptionEntities = (props) => {
                 nextButtonValue="Continue"
                 onContinue={ () => onContinue() }
                 isSubmitDisabled={ isButtonDisabled() }
+                isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || !props.isEditMode }
+                onSubmitDraft={ () => onSaveDraft() }
                 onBack={ !props.isEditMode ? onBack : undefined }
             />
             <CustomModal
@@ -478,6 +497,8 @@ export const SelectDisruptionEntities = (props) => {
 SelectDisruptionEntities.propTypes = {
     onStepUpdate: PropTypes.func.isRequired,
     onDataUpdate: PropTypes.func.isRequired,
+    onSubmitDraft: PropTypes.func,
+    onSubmitUpdate: PropTypes.func,
     deleteAffectedEntities: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
@@ -494,12 +515,18 @@ SelectDisruptionEntities.propTypes = {
     stops: PropTypes.object.isRequired,
     stopGroups: PropTypes.object.isRequired,
     data: PropTypes.object,
+    onUpdateEntitiesValidation: PropTypes.func,
+    useDraftDisruptions: PropTypes.bool,
 };
 
 SelectDisruptionEntities.defaultProps = {
+    onSubmitDraft: () => { },
+    onSubmitUpdate: () => { },
+    onUpdateEntitiesValidation: () => { },
     isLoadingStopsByRoute: false,
     isLoadingRoutesByStop: false,
     isEditMode: false,
+    useDraftDisruptions: false,
     data: {},
 };
 
@@ -514,6 +541,7 @@ export default connect(state => ({
     searchResults: getSearchResults(state),
     stops: getAllStops(state),
     stopGroups: getStopGroupsIncludingDeleted(state),
+    useDraftDisruptions: useDraftDisruptions(state),
 }), {
     deleteAffectedEntities,
     updateCurrentStep,

@@ -5,6 +5,7 @@ export const STATUSES = {
     NOT_STARTED: 'not-started',
     IN_PROGRESS: 'in-progress',
     RESOLVED: 'resolved',
+    DRAFT: 'draft',
 };
 
 export const ACTION_RESULT_TYPES = {
@@ -34,9 +35,24 @@ export const ACTION_RESULT = {
         resultCreateNotification: createNotification,
         resultDisruptionVersion: version,
     }),
+    SAVE_DRAFT_SUCCESS: (incidentNo, createNotification = false) => ({
+        resultStatus: ACTION_RESULT_TYPES.SUCCESS,
+        resultMessage: `Draft disruption number #${incidentNo} saved successfully.`,
+        resultCreateNotification: createNotification,
+    }),
     CREATE_ERROR: () => ({
         resultStatus: ACTION_RESULT_TYPES.ERROR,
         resultMessage: ERROR_TYPE.disruptionCreate,
+    }),
+    PUBLISH_DRAFT_SUCCESS: (incidentNo, version, createNotification = false) => ({
+        resultStatus: ACTION_RESULT_TYPES.SUCCESS,
+        resultMessage: `Draft disruption number #${incidentNo} published successfully.`,
+        resultCreateNotification: createNotification,
+        resultDisruptionVersion: version,
+    }),
+    PUBLISH_DRAFT_ERROR: () => ({
+        resultStatus: ACTION_RESULT_TYPES.ERROR,
+        resultMessage: ERROR_TYPE.draftDisruptionPublish,
     }),
 };
 

@@ -5,6 +5,7 @@ import { isEditEnabled } from '../../../../../redux/selectors/control/disruption
 import { toggleDisruptionModals, updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import Footer from './Footer';
 import { WorkaroundsForm } from '../../Workaround/WorkaroundsForm';
+import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 
 export const Workarounds = (props) => {
     const onContinue = () => {
@@ -12,6 +13,15 @@ export const Workarounds = (props) => {
             props.onStepUpdate(3);
             props.updateCurrentStep(1);
             props.onSubmit();
+        } else {
+            props.onSubmitUpdate();
+        }
+    };
+
+    const onSaveDraft = () => {
+        if (!props.isEditMode) {
+            props.onStepUpdate(3);
+            props.onSubmitDraft();
         } else {
             props.onSubmitUpdate();
         }
@@ -27,6 +37,8 @@ export const Workarounds = (props) => {
         }
     };
 
+    const isSubmitDisabled = props.useDraftDisruptions ? (props.isFinishDisabled && !props.isEditMode) : false;
+
     return (
         <div>
             <WorkaroundsForm disruption={ props.data } onDataUpdate={ props.onDataUpdate } />
@@ -34,9 +46,11 @@ export const Workarounds = (props) => {
                 updateCurrentStep={ props.updateCurrentStep }
                 onStepUpdate={ props.onStepUpdate }
                 toggleDisruptionModals={ props.toggleDisruptionModals }
-                isSubmitDisabled={ false }
+                isSubmitDisabled={ isSubmitDisabled }
                 nextButtonValue={ props.isEditMode ? 'Save' : 'Finish' }
+                isDraftOrCreateMode={ !props.isEditMode }
                 onContinue={ () => onContinue() }
+                onSubmitDraft={ () => onSaveDraft() }
                 onBack={ () => onBack() } />
         </div>
     );
@@ -47,21 +61,28 @@ Workarounds.propTypes = {
     onStepUpdate: PropTypes.func,
     onDataUpdate: PropTypes.func,
     onSubmit: PropTypes.func,
+    onSubmitDraft: PropTypes.func,
     toggleDisruptionModals: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func,
     onSubmitUpdate: PropTypes.func.isRequired,
     isEditMode: PropTypes.bool,
+    isFinishDisabled: PropTypes.bool,
+    useDraftDisruptions: PropTypes.bool,
 };
 
 Workarounds.defaultProps = {
     data: {},
     onStepUpdate: () => { /**/ },
     onDataUpdate: () => { /**/ },
+    onSubmitDraft: () => { /**/ },
     onSubmit: () => { /**/ },
     updateCurrentStep: () => { /**/ },
     isEditMode: false,
+    isFinishDisabled: false,
+    useDraftDisruptions: false,
 };
 
 export default connect(state => ({
     isEditMode: isEditEnabled(state),
+    useDraftDisruptions: useDraftDisruptions(state),
 }), { toggleDisruptionModals, updateCurrentStep })(Workarounds);

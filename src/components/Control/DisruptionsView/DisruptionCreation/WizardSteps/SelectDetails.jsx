@@ -38,6 +38,7 @@ import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText } from '.
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
+import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 
 export const SelectDetails = (props) => {
     const { startDate, startTime, endDate, endTime, impact, cause, header, url, createNotification, exemptAffectedTrips, severity } = props.data;
@@ -154,6 +155,11 @@ export const SelectDetails = (props) => {
         return isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
     };
 
+    const isRequiredDraftPropsEmpty = () => {
+        const isPropsEmpty = some([cause, header], isEmpty);
+        return isPropsEmpty;
+    };
+
     const getOptionalLabel = label => (
         <>
             {label}
@@ -169,6 +175,7 @@ export const SelectDetails = (props) => {
     const isDateTimeValid = () => startTimeValid() && startDateValid() && endDateValid() && durationValid();
     const isViewAllDisabled = !isDateTimeValid() || isEmpty(recurrencePattern.byweekday);
     const isSubmitDisabled = isRequiredPropsEmpty() || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() || !durationValid();
+    const isDraftSubmitDisabled = isRequiredDraftPropsEmpty();
 
     const activePeriodsValid = () => {
         if (recurrent) {
@@ -191,10 +198,16 @@ export const SelectDetails = (props) => {
     };
 
     const onContinue = () => {
-        if (activePeriodsValid()) {
+        if (activePeriodsValid() || props.useDraftDisruptions) {
+            props.onUpdateDetailsValidation(!isSubmitDisabled);
             props.onStepUpdate(1);
             props.updateCurrentStep(2);
         }
+    };
+
+    const onSaveDraft = () => {
+        props.onStepUpdate(3);
+        props.onSubmitDraft();
     };
 
     const displayActivePeriods = () => {
@@ -450,9 +463,11 @@ export const SelectDetails = (props) => {
                 updateCurrentStep={ props.updateCurrentStep }
                 onStepUpdate={ props.onStepUpdate }
                 toggleDisruptionModals={ props.toggleDisruptionModals }
-                isSubmitDisabled={ isSubmitDisabled }
+                isSubmitDisabled={ props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
+                isDraftSubmitDisabled={ isDraftSubmitDisabled }
                 nextButtonValue="Continue"
                 onContinue={ () => onContinue() }
+                onSubmitDraft={ () => onSaveDraft() }
             />
             <CustomMuiDialog
                 title="Disruption Active Periods"
@@ -482,17 +497,23 @@ SelectDetails.propTypes = {
     data: PropTypes.object,
     onStepUpdate: PropTypes.func,
     onDataUpdate: PropTypes.func,
-    onSubmit: PropTypes.func,
+    onSubmitUpdate: PropTypes.func,
+    onSubmitDraft: PropTypes.func,
     toggleDisruptionModals: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func,
+    useDraftDisruptions: PropTypes.bool,
+    onUpdateDetailsValidation: PropTypes.func,
 };
 
 SelectDetails.defaultProps = {
     data: {},
     onStepUpdate: () => { },
     onDataUpdate: () => { },
-    onSubmit: () => { },
     updateCurrentStep: () => { },
+    onSubmitUpdate: () => { },
+    onSubmitDraft: () => { },
+    onUpdateDetailsValidation: () => { },
+    useDraftDisruptions: false,
 };
 
-export default connect(() => ({}), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);
+export default connect(state => ({ useDraftDisruptions: useDraftDisruptions(state) }), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { FaPaperclip } from 'react-icons/fa';
-import { RiMailCheckLine } from 'react-icons/ri';
+import { RiMailCheckLine, RiDraftLine } from 'react-icons/ri';
 import { BsArrowRepeat, BsAlarm, BsFillChatTextFill, BsPencilSquare } from 'react-icons/bs';
 import moment from 'moment';
 import { GoAlert } from 'react-icons/go';
@@ -57,6 +57,10 @@ const getStatusIcon = (value) => {
     if (value === STATUSES.NOT_STARTED) {
         return <BsAlarm className="icon-not-started mr-1" />;
     }
+    if (value === STATUSES.DRAFT) {
+        return <RiDraftLine className="icon-draft mr-1" />;
+    }
+
     return <HiOutlineCheckCircle className="mr-1" />;
 };
 

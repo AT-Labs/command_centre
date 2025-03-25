@@ -16,6 +16,7 @@ const componentPropsMock = {
     stops: [],
     routes: [],
     toggleDisruptionModals: jest.fn(),
+    onSubmitDraft: jest.fn(),
 };
 
 const setup = (customProps) => {
@@ -201,6 +202,69 @@ describe('<SelectDetails />', () => {
             footer.renderProp('onContinue')();
             expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(1);
             expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(2);
+        });
+    });
+
+    describe('save draft button', () => {
+        let data;
+        let stops;
+        let routes;
+
+        beforeEach(() => {
+            data = {
+                startTime: '06:00',
+                startDate: '09/03/2022',
+                endTime: '06:00',
+                endDate: '10/03/2022',
+                impact: 'BUS_STOP_CLOSED',
+                cause: 'CAPACITY_ISSUE',
+                mode: '-',
+                status: 'not-started',
+                header: 'Title',
+                description: 'Description',
+                url: 'https://at.govt.nz',
+                createNotification: false,
+                recurrent: true,
+                duration: '2',
+                recurrencePattern: {
+                    freq: 2,
+                    dtstart: new Date('2022-03-09T06:00:00.000Z'),
+                    until: new Date('2022-03-10T06:00:00.000Z'),
+                    byweekday: [0],
+                },
+                severity: 'MINOR',
+            };
+            stops = [{ stopCode: '105' }];
+            routes = [{ routeId: 'AIR-221' }];
+        });
+
+        it('should be disabled when cause is empty', () => {
+            data.cause = '';
+            wrapper = setup({ data, stops, routes });
+            const footer = wrapper.find(Footer);
+            expect(footer.prop('isDraftSubmitDisabled')).toEqual(true);
+        });
+
+        it('should be disabled when header is empty', () => {
+            data.header = '';
+            wrapper = setup({ data, stops, routes });
+            const footer = wrapper.find(Footer);
+            expect(footer.prop('isDraftSubmitDisabled')).toEqual(true);
+        });
+
+        it('should be enabled when header and cause not empty', () => {
+            wrapper = setup({ data, stops, routes });
+            const footer = wrapper.find(Footer);
+            expect(footer.prop('isDraftSubmitDisabled')).toEqual(false);
+        });
+
+        it('should fire step update when next button is clicked', () => {
+            data.recurrent = false;
+            wrapper = setup({ data, stops, routes });
+            const footer = wrapper.find(Footer);
+            footer.prop('onSubmitDraft')();
+            expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3);
+            expect(componentPropsMock.onSubmitDraft).toHaveBeenCalled();
         });
     });
 });

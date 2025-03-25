@@ -44,6 +44,8 @@ const disruptionDataMock = {
 
 jest.mock('../../../../../utils/control/disruptions', () => ({
     generateDisruptionActivePeriods: jest.fn().mockReturnValue(disruptionActivePeriodsMock),
+    buildSubmitBody: jest.fn(),
+    momentFromDateTime: jest.fn(),
 }));
 
 const mockAction = { resultDisruptionId: 12345 };
@@ -127,5 +129,58 @@ describe('CreateDisruption component', () => {
         drawLayer.prop('onDrawCreated')(disruptionShapeMock);
 
         expect(spy).toHaveBeenCalledWith(disruptionDataMock.disruptionType, disruptionShapeMock);
+    });
+
+    describe('onSubmitDraft method', () => {
+        let wrapper;
+        const mockUpdateCurrentStep = jest.fn();
+        const mockCreateDisruption = jest.fn();
+        const mockOpenCreateDisruption = jest.fn();
+        const mockToggleDisruptionModals = jest.fn();
+        const mockDisruptionData = {
+            startDate: '2025-03-01',
+            startTime: '10:00:00',
+            endDate: '2025-03-02',
+            endTime: '11:00:00',
+            disruptionType: 'type',
+            activePeriods: [],
+        };
+
+        beforeEach(() => {
+            wrapper = shallow(
+                <CreateDisruption
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createDisruption={ mockCreateDisruption }
+                    openCreateDisruption={ mockOpenCreateDisruption }
+                    toggleDisruptionModals={ mockToggleDisruptionModals }
+                    disruptionData={ mockDisruptionData }
+                    action={ mockAction }
+                />,
+            );
+        });
+
+        afterEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('should call updateCurrentStep with 1', async () => {
+            await wrapper.instance().onSubmitDraft();
+            expect(mockUpdateCurrentStep).toHaveBeenCalledWith(1);
+        });
+
+        it('should call openCreateDisruption with false', async () => {
+            await wrapper.instance().onSubmitDraft();
+            expect(mockOpenCreateDisruption).toHaveBeenCalledWith(false);
+        });
+
+        it('should call toggleDisruptionModals with isConfirmationOpen and true', async () => {
+            await wrapper.instance().onSubmitDraft();
+            expect(mockToggleDisruptionModals).toHaveBeenCalledWith('isConfirmationOpen', true);
+        });
+
+        it('should call createDisruption', async () => {
+            await wrapper.instance().onSubmitDraft();
+            expect(mockCreateDisruption).toHaveBeenCalledTimes(1);
+        });
     });
 });

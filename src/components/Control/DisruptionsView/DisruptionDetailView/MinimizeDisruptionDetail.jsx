@@ -5,8 +5,9 @@ import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
 import { toString, omit, isEmpty, uniqBy, uniqWith } from 'lodash-es';
 import moment from 'moment';
 import Message from '../../Common/Message/Message';
-import { SEVERITIES } from '../../../../types/disruptions-types';
+import { SEVERITIES, STATUSES } from '../../../../types/disruptions-types';
 import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
+import { useDraftDisruptions } from '../../../../redux/selectors/appSettings';
 import {
     LABEL_CAUSE,
     LABEL_CREATED_BY,
@@ -64,6 +65,7 @@ const MinimizeDisruptionDetail = (props) => {
     } = disruption;
     const formatEndDateFromEndTime = disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '';
     const fetchEndDate = () => (disruption.recurrent ? fetchEndDateFromRecurrence(disruption.recurrencePattern) : formatEndDateFromEndTime);
+    const fetchStartDate = () => (disruption.startTime ? moment(disruption.startTime).format(DATE_FORMAT) : '');
 
     const causes = useAlertCauses();
     const impacts = useAlertEffects();
@@ -106,7 +108,7 @@ const MinimizeDisruptionDetail = (props) => {
 
     const setDisruption = () => ({
         ...disruption,
-        startTime: momentFromDateTime(moment(disruption.startTime).format(DATE_FORMAT), moment(disruption.startTime).format(TIME_FORMAT)),
+        startTime: momentFromDateTime(fetchStartDate(), disruption.startTime ? moment(disruption.startTime).format(TIME_FORMAT) : ''),
         endTime: momentFromDateTime(fetchEndDate(), disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : ''),
         notes: [...notes, { description: descriptionNote }],
     });
@@ -259,7 +261,7 @@ const MinimizeDisruptionDetail = (props) => {
                         <Button
                             className="control-messaging-view__stop-groups-btn cc-btn-primary ml-1 mb-2"
                             onClick={ () => setDisruptionsDetailsModalOpen(true) }>
-                            Preview & Share
+                            {(props.useDraftDisruptions && disruption.status === STATUSES.DRAFT) ? 'Preview' : 'Preview & Share' }
                         </Button>
                         <Button
                             className="cc-btn-primary ml-1 mr-1 mb-2"
@@ -311,6 +313,7 @@ MinimizeDisruptionDetail.propTypes = {
     resultCreateNotification: PropTypes.bool,
     isCopied: PropTypes.bool,
     clearDisruptionActionResult: PropTypes.func.isRequired,
+    useDraftDisruptions: PropTypes.bool,
 };
 
 MinimizeDisruptionDetail.defaultProps = {
@@ -323,6 +326,7 @@ MinimizeDisruptionDetail.defaultProps = {
     resultCreateNotification: false,
     resultMessage: '',
     resultStatus: '',
+    useDraftDisruptions: false,
 };
 
 export default connect(state => ({
@@ -333,6 +337,7 @@ export default connect(state => ({
     routes: getAffectedRoutes(state),
     stops: getAffectedStops(state),
     boundsToFit: getBoundsToFit(state),
+    useDraftDisruptions: useDraftDisruptions(state),
 }), {
     getRoutesByShortName,
     openCreateDisruption,

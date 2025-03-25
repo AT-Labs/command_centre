@@ -1,6 +1,5 @@
 /** @jest-environment jsdom */
 import { expect } from 'chai';
-import Flatpickr from 'react-flatpickr';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 import createCache from '@emotion/cache';
@@ -8,11 +7,18 @@ import { CacheProvider } from '@emotion/react';
 import { mount } from 'enzyme';
 import { Provider } from 'react-redux';
 import sinon from 'sinon';
+import thunk from 'redux-thunk';
 import configureMockStore from 'redux-mock-store';
+import Flatpickr from 'react-flatpickr';
 import DisruptionDetail from './DisruptionDetail';
 import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
+import { useDraftDisruptions } from '../../../../redux/selectors/appSettings';
+import DisruptionSummaryModal from '../DisruptionDetail/DisruptionSummaryModal';
+import ACTION_TYPE from '../../../../redux/action-types';
 
-const mockStore = configureMockStore();
+jest.mock('../../../../redux/selectors/appSettings');
+
+const mockStore = configureMockStore([thunk]);
 
 let sandbox;
 let wrapper;
@@ -22,8 +28,9 @@ const componentPropsMock = {
     disruption: {},
     shapes: [],
     isRequesting: false,
-    updateDisruption: () => { /** Donesnt't need for testing */ },
+    updateDisruption: () => jest.fn(),
     routeColors: [],
+    publishDraftDisruption: () => jest.fn(),
 };
 
 const stop = { stopId: '105-474861ff', stopCode: '105' };
@@ -81,6 +88,7 @@ const setup = (customProps) => {
                     affectedRoutes: [],
                 },
                 activeStep: 1,
+                action: { isRequesting: false },
             },
             dataManagement: {
                 stopGroupsIncludingDeleted: {},
@@ -100,9 +108,13 @@ describe('<DisruptionDetailView />', () => {
 
         useAlertCauses.mockReturnValue(causes);
         useAlertEffects.mockReturnValue(effects);
+        useDraftDisruptions.mockReturnValue(false);
     });
 
-    afterEach(() => sandbox.restore());
+    afterEach(() => {
+        jest.clearAllMocks();
+        sandbox.restore();
+    });
 
     describe('Save button', () => {
         it('Save button should not be disabled when it is not recurrent and set endDate to empty', () => {
@@ -171,6 +183,154 @@ describe('<DisruptionDetailView />', () => {
 
             const saveButton = findElement(wrapper, 'button', 'Save');
             expect(saveButton.hasClass('disabled')).to.equal(true);
+        });
+    });
+
+    describe('Draft', () => {
+        it('Draft buttons should be displayed', () => {
+            useDraftDisruptions.mockReturnValue(true);
+            wrapper = setup(
+                {
+                    disruption: {
+                        ...baseDisruption,
+                        status: 'draft',
+                    },
+                },
+            );
+
+            const saveButton = findElement(wrapper, 'button', 'Save draft');
+            const publishButton = findElement(wrapper, 'button', 'Publish');
+            const previewButton = findElement(wrapper, 'button', 'Preview');
+
+            expect(saveButton.exists()).to.be.true; // eslint-disable-line
+            expect(publishButton.exists()).to.be.true; // eslint-disable-line
+            expect(previewButton.exists()).to.be.true; // eslint-disable-line
+        });
+
+        it('Draft buttons should not be displayed when useDraftDisruptions false and status not draft', () => {
+            wrapper = setup(
+                {
+                    disruption: {
+                        ...baseDisruption,
+                        status: 'draft',
+                    },
+                },
+            );
+
+            const saveButton = findElement(wrapper, 'button', 'Save draft');
+            const publishButton = findElement(wrapper, 'button', 'Publish');
+            const previewButton = findElement(wrapper, 'button', 'Preview');
+
+            expect(saveButton.exists()).to.be.false; // eslint-disable-line
+            expect(publishButton.exists()).to.be.false; // eslint-disable-line
+            expect(previewButton.exists()).to.be.false; // eslint-disable-line
+        });
+
+        it('Save draft should not be disabled when required fields are empty', () => {
+            useDraftDisruptions.mockReturnValue(true);
+
+            wrapper = setup(
+                {
+                    disruption: {
+                        status: 'draft',
+                        endTime: undefined,
+                        startDate: undefined,
+                        startTime: undefined,
+                        endDate: undefined,
+                        duration: '',
+                        url: '',
+                        impact: '',
+                        cause: 'BUNKERING_THRUSTERS',
+                        severity: '',
+                        notes: [],
+                        header: 'header',
+                        activePeriods: [],
+                        affectedEntities: [],
+                        recurrent: false,
+                    },
+                },
+            );
+
+            const saveButton = findElement(wrapper, 'button', 'Save draft');
+            expect(saveButton.hasClass('disabled')).to.equal(false);
+        });
+
+        it('Publish draft should not be disabled when required fields are empty', () => {
+            useDraftDisruptions.mockReturnValue(true);
+
+            wrapper = setup(
+                {
+                    disruption: {
+                        ...baseDisruption,
+                        status: 'draft',
+                    },
+                },
+            );
+
+            const saveButton = findElement(wrapper, 'button', 'Publish');
+            expect(saveButton.hasClass('disabled')).to.equal(false);
+        });
+
+        it('should call setDisruptionsDetailsModalOpen with true on Preview button click', () => {
+            useDraftDisruptions.mockReturnValue(true);
+            wrapper = setup(
+                {
+                    disruption: {
+                        ...baseDisruption,
+                        status: 'draft',
+                    },
+                },
+            );
+
+            const previewButton = findElement(wrapper, 'button', 'Preview');
+            expect(previewButton.exists()).to.be.true; // eslint-disable-line
+            previewButton.simulate('click');
+
+            wrapper.update();
+
+            const modal = wrapper.find(DisruptionSummaryModal);
+            expect(modal.prop('isModalOpen')).to.be.true; // eslint-disable-line
+        });
+
+        it('should call publishDraft on Publish button click', () => {
+            useDraftDisruptions.mockReturnValue(true);
+
+            wrapper = setup(
+                {
+                    disruption: {
+                        ...baseDisruption,
+                        status: 'draft',
+                    },
+                },
+            );
+
+            const saveButton = findElement(wrapper, 'button', 'Publish');
+            expect(saveButton.hasClass('disabled')).to.equal(false);
+            saveButton.simulate('click');
+
+            const action = store.getActions().find(a => a.type === ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_REQUESTING);
+            expect(action).to.not.be.undefined; // eslint-disable-line
+            expect(JSON.stringify(action.payload)).to.contain('"isRequesting":true');
+        });
+
+        it('should call updateDraft on Save draft button click', () => {
+            useDraftDisruptions.mockReturnValue(true);
+            wrapper = setup(
+                {
+                    disruption: {
+                        ...baseDisruption,
+                        status: 'draft',
+                    },
+                },
+            );
+
+            const saveButton = findElement(wrapper, 'button', 'Save draft');
+            expect(saveButton.hasClass('disabled')).to.equal(false);
+            saveButton.simulate('click');
+
+            const action = store.getActions().find(a => a.type === ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_REQUESTING);
+            expect(action).to.not.be.undefined; // eslint-disable-line
+            expect(JSON.stringify(action.payload)).to.contain('"isRequesting":true');
         });
     });
 });

@@ -123,15 +123,19 @@ export const recurrenceRadioOptions = isRecurrent => ({
     itemOptions: [{ key: '0', value: FREQUENCY_TYPE.ONCE }, { key: '1', value: FREQUENCY_TYPE.RECURRING }],
 });
 
-export const getStatusOptions = (startDate, startTime, now) => {
+export const getStatusOptions = (startDate, startTime, now, status) => {
+    let statuses = Object.values(STATUSES);
+    if (status !== STATUSES.DRAFT) statuses = statuses.filter(s => s !== STATUSES.DRAFT);
+
     const startDateTime = moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`, true);
     if (!startDateTime || !startDateTime.isValid()) {
-        return Object.values(STATUSES);
+        return Object.values(statuses);
     }
     if (startDateTime.isAfter(now)) {
-        return Object.values(STATUSES).filter(s => s !== STATUSES.IN_PROGRESS);
+        return Object.values(statuses).filter(s => s !== STATUSES.IN_PROGRESS);
     }
-    return Object.values(STATUSES).filter(s => s !== STATUSES.NOT_STARTED);
+
+    return Object.values(statuses).filter(s => s !== STATUSES.NOT_STARTED);
 };
 
 /**

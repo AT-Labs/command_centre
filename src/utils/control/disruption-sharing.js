@@ -222,7 +222,7 @@ async function getMapFieldValue(disruption) {
 
 async function generateHtmlDetailsTable(disruption) {
     const mapFieldValue = await getMapFieldValue(disruption);
-    const isRouteBased = disruption.affectedEntities?.[0].type === ROUTE.type;
+    const isRouteBased = disruption.affectedEntities?.[0]?.type === ROUTE.type;
 
     return `<table border="1" style="font-family: Arial; font-size: 16px; border-collapse: collapse; text-align: left; width: 100%; max-width: 800px;">
         <tr>

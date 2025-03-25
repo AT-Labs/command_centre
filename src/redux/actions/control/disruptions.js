@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { isEmpty, uniqBy, each } from 'lodash-es';
 
-import { ACTION_RESULT, DISRUPTION_TYPE } from '../../../types/disruptions-types';
+import { ACTION_RESULT, DISRUPTION_TYPE, STATUSES } from '../../../types/disruptions-types';
 import ERROR_TYPE from '../../../types/error-types';
 import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
@@ -9,6 +9,7 @@ import { toCamelCaseKeys } from '../../../utils/control/disruptions';
 import ACTION_TYPE from '../../action-types';
 import SEARCH_RESULT_TYPE from '../../../types/search-result-types';
 import { setBannerError, modalStatus } from '../activity';
+import { useDraftDisruptions } from '../../selectors/appSettings';
 import {
     getAffectedStops,
     getAffectedRoutes,
@@ -148,19 +149,22 @@ export const updateRoutesByStop = (routesByStop, isLoadingRoutesByStop = false) 
     },
 });
 
-export const getDisruptions = () => dispatch => disruptionsMgtApi.getDisruptions()
-    .then((response) => {
-        const { disruptions, _links: { permissions } } = response;
-        dispatch(updateDisruptionsPermissionsAction(permissions));
-        dispatch(loadDisruptions(disruptions));
-    })
-    .catch(() => {
-        if (ERROR_TYPE.fetchDisruptionsEnabled) {
-            const errorMessage = ERROR_TYPE.fetchDisruptions;
-            dispatch(setBannerError(errorMessage));
-        }
-    })
-    .finally(() => dispatch(updateLoadingDisruptionsState(false)));
+export const getDisruptions = () => (dispatch, getState) => {
+    const state = getState();
+    return disruptionsMgtApi.getDisruptions(useDraftDisruptions(state))
+        .then((response) => {
+            const { disruptions, _links: { permissions } } = response;
+            dispatch(updateDisruptionsPermissionsAction(permissions));
+            dispatch(loadDisruptions(disruptions));
+        })
+        .catch(() => {
+            if (ERROR_TYPE.fetchDisruptionsEnabled) {
+                const errorMessage = ERROR_TYPE.fetchDisruptions;
+                dispatch(setBannerError(errorMessage));
+            }
+        })
+        .finally(() => dispatch(updateLoadingDisruptionsState(false)));
+};
 
 export const updateDisruption = disruption => async (dispatch) => {
     const { disruptionId, incidentNo, createNotification } = disruption;
@@ -169,7 +173,11 @@ export const updateDisruption = disruption => async (dispatch) => {
     let result;
     try {
         result = await disruptionsMgtApi.updateDisruption(disruption);
-        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentNo, createNotification)));
+        if (disruption.status === STATUSES.DRAFT) {
+            dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.SAVE_DRAFT_SUCCESS(incidentNo, false)));
+        } else {
+            dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentNo, createNotification)));
+        }
     } catch (error) {
         dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentNo, error.code)));
     } finally {
@@ -200,6 +208,27 @@ export const updateActiveDisruptionId = activeDisruptionId => (dispatch) => {
     dispatch(clearDisruptionActionResult());
 };
 
+export const publishDraftDisruption = disruption => async (dispatch) => {
+    let response;
+    dispatch(updateRequestingDisruptionState(true, disruption.disruptionId));
+    try {
+        response = await disruptionsMgtApi.updateDisruption(disruption);
+        dispatch(
+            updateRequestingDisruptionResult(
+                disruption.disruptionId,
+                ACTION_RESULT.PUBLISH_DRAFT_SUCCESS(response.incidentNo, response.version, response.createNotification),
+            ),
+        );
+    } catch (error) {
+        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.PUBLISH_DRAFT_ERROR(error.code)));
+    } finally {
+        dispatch(updateRequestingDisruptionState(false, disruption.disruptionId));
+    }
+
+    await dispatch(getDisruptions());
+    return response;
+};
+
 export const createDisruption = disruption => async (dispatch, getState) => {
     let response;
     const state = getState();
@@ -217,10 +246,11 @@ export const createDisruption = disruption => async (dispatch, getState) => {
                 ),
             );
         } else {
+            const isNotificationCreated = (disruption.status === STATUSES.DRAFT ? false : response.createNotification);
             dispatch(
                 updateRequestingDisruptionResult(
                     response.disruptionId,
-                    ACTION_RESULT.CREATE_SUCCESS(response.incidentNo, response.version, response.createNotification),
+                    ACTION_RESULT.CREATE_SUCCESS(response.incidentNo, response.version, isNotificationCreated),
                 ),
             );
         }

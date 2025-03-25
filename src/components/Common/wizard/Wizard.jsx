@@ -7,6 +7,7 @@ export default class Wizard extends Component {
         data: PropTypes.object,
         response: PropTypes.object,
         onSubmit: PropTypes.func.isRequired,
+        onSubmitDraft: PropTypes.func,
         onStepUpdate: PropTypes.func,
         onDataUpdate: PropTypes.func,
         children: PropTypes.oneOfType([
@@ -21,6 +22,7 @@ export default class Wizard extends Component {
         response: {},
         onStepUpdate: () => {},
         onDataUpdate: () => {},
+        onSubmitDraft: () => {},
     };
 
     constructor(props) {
@@ -43,7 +45,7 @@ export default class Wizard extends Component {
     };
 
     render() {
-        const { data, response, onSubmit } = this.props;
+        const { data, response, onSubmit, onSubmitDraft } = this.props;
         const { activeStep, prevStep } = this.state;
         const childrenWithProps = React.Children.map(this.props.children.filter(child => !!child), child => React.cloneElement(
             child,
@@ -51,6 +53,7 @@ export default class Wizard extends Component {
                 data,
                 response,
                 onSubmit,
+                onSubmitDraft,
                 activeStep,
                 prevStep,
                 onStepUpdate: nextStep => this.onStepUpdate(nextStep),

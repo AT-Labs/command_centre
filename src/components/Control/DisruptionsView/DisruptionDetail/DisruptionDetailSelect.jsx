@@ -40,7 +40,7 @@ DisruptionDetailSelect.propTypes = {
     ]).isRequired,
     value: PropTypes.any,
     options: PropTypes.array.isRequired,
-    onChange: PropTypes.func.isRequired,
+    onChange: PropTypes.func,
     onBlur: PropTypes.func,
     disabled: PropTypes.bool,
     className: PropTypes.string,
@@ -55,4 +55,5 @@ DisruptionDetailSelect.defaultProps = {
     invalid: false,
     feedback: '',
     onBlur: () => {},
+    onChange: () => {},
 };

@@ -13,13 +13,13 @@ import {
     LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_CREATED_BY, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
     LABEL_SEVERITY,
 } from '../../../../constants/disruptions';
-import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES } from '../../../../types/disruptions-types';
+import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES } from '../../../../types/disruptions-types';
 import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from '../../../../utils/control/disruptions';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import { getWorkaroundsAsText } from '../../../../utils/control/disruption-workarounds';
 import { shareToEmail, shareToEmailLegacy } from '../../../../utils/control/disruption-sharing';
 import CustomCollapse from '../../../Common/CustomCollapse/CustomCollapse';
-import { useDisruptionEmailFormat } from '../../../../redux/selectors/appSettings';
+import { useDisruptionEmailFormat, useDraftDisruptions, useDisruptionDraftEmailSharing } from '../../../../redux/selectors/appSettings';
 import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../types/disruption-cause-and-effect';
 
@@ -42,23 +42,25 @@ const generateDisruptionNotes = (notes) => {
     return <span>{ DISRUPTIONS_MESSAGE_TYPE.noNotesMessage }</span>;
 };
 
-const createLine = (label, value) => (value && (
-    <tr className="row" key={ uniqueId() }>
-        <td className="col-4">{label}</td>
-        <td className="col text-break">
-            {label === LABEL_WORKAROUNDS && value.length === 0 ? DISRUPTIONS_MESSAGE_TYPE.noWorkaroundsMessage : null }
-            {label === LABEL_WORKAROUNDS ? (
-                <CustomCollapse height="tiny" className="bg-white">
-                    <>
+const createLine = (label, value) => {
+    if (!value) return null;
+
+    return (
+        <tr className="row" key={ uniqueId() }>
+            <td className="col-4">{label}</td>
+            <td className="col text-break">
+                {label === LABEL_WORKAROUNDS && value.length === 0 ? DISRUPTIONS_MESSAGE_TYPE.noWorkaroundsMessage : null}
+                {label === LABEL_WORKAROUNDS ? (
+                    <CustomCollapse height="tiny" className="bg-white">
                         {getWorkaroundsAsText(value, '; \n')}
-                    </>
-                </CustomCollapse>
-            ) : null }
-            {label === LABEL_DISRUPTION_NOTES ? generateDisruptionNotes(value) : null }
-            {(label !== LABEL_DISRUPTION_NOTES && label !== LABEL_WORKAROUNDS) ? value : null }
-        </td>
-    </tr>
-));
+                    </CustomCollapse>
+                ) : null}
+                {label === LABEL_DISRUPTION_NOTES ? generateDisruptionNotes(value) : null}
+                {(label !== LABEL_DISRUPTION_NOTES && label !== LABEL_WORKAROUNDS) ? value : null}
+            </td>
+        </tr>
+    );
+};
 
 const DisruptionSummaryModal = (props) => {
     const endDateTimeMoment = moment(props.disruption.endTime);
@@ -68,9 +70,17 @@ const DisruptionSummaryModal = (props) => {
     const shareToEmailHandler = props.useDisruptionEmailFormat ? shareToEmail : shareToEmailLegacy;
     const generateModalFooter = () => (
         <>
-            <Button onClick={ () => shareToEmailHandler(props.disruption) } className="cc-btn-primary">
-                Share to email
-            </Button>
+            {(
+                props.useDisruptionDraftEmailSharing
+    || !(props.useDraftDisruptions && props.disruption.status === STATUSES.DRAFT)
+            ) && (
+                <Button
+                    onClick={ () => shareToEmailHandler(props.disruption) }
+                    className="cc-btn-primary"
+                >
+                    Share to email
+                </Button>
+            )}
             <Button onClick={ () => props.onClose() } className="cc-btn-primary">
                 Close
             </Button>
@@ -117,8 +127,12 @@ DisruptionSummaryModal.propTypes = {
     disruption: PropTypes.object.isRequired,
     onClose: PropTypes.func.isRequired,
     useDisruptionEmailFormat: PropTypes.bool.isRequired,
+    useDraftDisruptions: PropTypes.bool.isRequired,
+    useDisruptionDraftEmailSharing: PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({
     useDisruptionEmailFormat: useDisruptionEmailFormat(state),
+    useDraftDisruptions: useDraftDisruptions(state),
+    useDisruptionDraftEmailSharing: useDisruptionDraftEmailSharing(state),
 }), {})(DisruptionSummaryModal);

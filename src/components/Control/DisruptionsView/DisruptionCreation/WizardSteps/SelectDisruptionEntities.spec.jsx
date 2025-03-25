@@ -32,6 +32,7 @@ const defaultState = {
     updateCurrentStep: jest.fn(),
     getRoutesByStop: jest.fn(),
     getStopsByRoute: jest.fn(),
+    onSaveDraft: jest.fn(),
 };
 
 function setup(customProps) {
@@ -76,5 +77,48 @@ describe('<SelectDisruptionEntities />', () => {
                 expect(wrapper.find(Footer).prop('nextButtonValue')).toEqual('Continue');
             });
         });
+    });
+
+    it('should call onStepUpdate and onSubmitDraft when not in edit mode', () => {
+        const onSaveDraftSpy = sinon.spy();
+        const onStepUpdateSpy = sinon.spy();
+        const onSubmitDraftSpy = sinon.spy();
+        setup({
+            isEditMode: false,
+            onSaveDraft: onSaveDraftSpy,
+            onStepUpdate: onStepUpdateSpy,
+            onSubmitDraft: onSubmitDraftSpy,
+        });
+        wrapper.find(Footer).prop('onSubmitDraft')();
+        expect(onStepUpdateSpy.calledOnceWith(3)).toEqual(true);
+        expect(onSubmitDraftSpy.calledOnce).toEqual(true);
+    });
+
+    it('should call onSubmitUpdate when in edit mode', () => {
+        const onSaveDraftSpy = sinon.spy();
+        const onSubmitUpdateSpy = sinon.spy();
+        setup({
+            isEditMode: true,
+            onSaveDraft: onSaveDraftSpy,
+            onSubmitUpdate: onSubmitUpdateSpy,
+        });
+        wrapper.find(Footer).prop('onSubmitDraft')();
+        expect(onSubmitUpdateSpy.calledOnce).toEqual(true);
+        expect(onSaveDraftSpy.called).toEqual(false);
+    });
+
+    it('should call onStepUpdate and onSubmitDraft when editMode is undefined', () => {
+        const onSaveDraftSpy = sinon.spy();
+        const onStepUpdateSpy = sinon.spy();
+        const onSubmitDraftSpy = sinon.spy();
+        setup({
+            isEditMode: undefined,
+            onSaveDraft: onSaveDraftSpy,
+            onStepUpdate: onStepUpdateSpy,
+            onSubmitDraft: onSubmitDraftSpy,
+        });
+        wrapper.find(Footer).prop('onSubmitDraft')();
+        expect(onStepUpdateSpy.calledOnceWith(3)).toEqual(true);
+        expect(onSubmitDraftSpy.calledOnce).toEqual(true);
     });
 });

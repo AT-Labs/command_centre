@@ -37,6 +37,7 @@ export default {
     fetchNotifications: 'Unable to load notifications, please try again',
     disruptionUpdate: incidentNo => `Failed to update disruption ${incidentNo}.`,
     disruptionCreate: 'Failed to create disruption',
+    draftDisruptionPublish: 'Failed to publish draft disruption',
     fetchDisruptionsEnabled: false,
     fetchNotificationsEnabled: false,
     fetchPlatforms: false,

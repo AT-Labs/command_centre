@@ -10,6 +10,8 @@ import {
     updateDisruptionsDatagridConfig,
     searchByDrawing,
     updateDisruption,
+    publishDraftDisruption,
+    createDisruption,
 } from './disruptions';
 import { INIT_STATE } from '../../reducers/control/disruptions';
 import ACTION_TYPE from '../../action-types';
@@ -59,6 +61,7 @@ jest.mock('../../../utils/transmitters/cc-static', () => ({
 jest.mock('../../../utils/transmitters/disruption-mgt-api', () => ({
     updateDisruption: jest.fn(),
     getDisruptions: jest.fn(),
+    createDisruption: jest.fn(),
 }));
 
 describe('Disruptions actions', () => {
@@ -291,6 +294,173 @@ describe('Disruptions actions', () => {
         expect(result).to.eql(disruption);
     });
 
+    it('dispatches save draft success actions when disruption status is draft', async () => {
+        const disruption = {
+            disruptionId: 1,
+            incidentNo: 1,
+            createNotification: false,
+            status: 'draft',
+        };
+
+        disruptionsMgtApi.updateDisruption.mockResolvedValue(disruption);
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [disruption],
+            _links: { permissions: [] },
+        });
+
+        const result = await store.dispatch(updateDisruption(disruption));
+
+        expect(store.getActions()[0]).to.deep.eql({
+            payload: {
+                isRequesting: true,
+                resultDisruptionId: 1,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+        expect(store.getActions()[1]).to.deep.eql({
+            payload: {
+                resultCreateNotification: false,
+                resultDisruptionId: 1,
+                resultDisruptionVersion: undefined,
+                resultMessage: 'Draft disruption number #1 saved successfully.',
+                resultStatus: 'success',
+            },
+            type: 'update-control-disruption-action-result',
+        });
+        expect(store.getActions()[2]).to.deep.eql({
+            payload: {
+                isRequesting: false,
+                resultDisruptionId: 1,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+        expect(store.getActions()[3]).to.deep.eql({
+            payload: {
+                permissions: [],
+            },
+            type: 'update-control-disruptions-permissions',
+        });
+        expect(store.getActions()[4]).to.deep.eql({
+            payload: {
+                disruptions: [{
+                    createNotification: false,
+                    disruptionId: 1,
+                    incidentNo: 1,
+                    status: 'draft',
+                }],
+            },
+            type: 'fetch-control-disruptions',
+        });
+        expect(store.getActions()[5]).to.deep.eql({
+            payload: {
+                isLoading: false,
+            },
+            type: 'update-control-disruptions-loading',
+        });
+
+        expect(store.getActions()[1]).to.deep.eql({
+            payload: {
+                resultCreateNotification: false,
+                resultDisruptionId: 1,
+                resultDisruptionVersion: undefined,
+                resultMessage: 'Draft disruption number #1 saved successfully.',
+                resultStatus: 'success',
+            },
+            type: 'update-control-disruption-action-result',
+        });
+
+        expect(result).to.eql(disruption);
+    });
+
+    it('dispatches create disruption success actions when disruption status is draft and not in copy mode', async () => {
+        const disruption = {
+            disruptionId: 1,
+            incidentNo: 1,
+            createNotification: true,
+            status: 'draft',
+        };
+
+        const response = {
+            disruptionId: 1,
+            incidentNo: 1,
+            version: 'v1',
+            createNotification: false,
+        };
+
+        disruptionsMgtApi.createDisruption.mockResolvedValue(response);
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [disruption],
+            _links: { permissions: [] },
+        });
+
+        await store.dispatch(createDisruption(disruption));
+
+        expect(store.getActions()[0]).to.deep.eql({
+            payload: {
+                isRequesting: true,
+                resultDisruptionId: undefined,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+
+        expect(store.getActions()[1]).to.deep.eql({
+            payload: {
+                resultDisruptionId: 1,
+                resultDisruptionVersion: 'v1',
+                resultMessage: 'Disruption number #1 created successfully.',
+                resultStatus: 'success',
+                resultCreateNotification: false,
+            },
+            type: 'update-control-disruption-action-result',
+        });
+
+        expect(store.getActions()[2]).to.deep.eql({
+            payload: {
+                isOpen: true,
+            },
+            type: 'set-modal-status',
+        });
+
+        expect(store.getActions()[3]).to.deep.eql({
+            payload: {
+                isRequesting: false,
+                resultDisruptionId: undefined,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+
+        expect(store.getActions()[4]).to.deep.eql({
+            payload: { affectedRoutes: [] },
+            type: 'update-affected-entities',
+        });
+
+        expect(store.getActions()[5]).to.deep.eql({
+            payload: {
+                permissions: [],
+            },
+            type: 'update-control-disruptions-permissions',
+        });
+
+        expect(store.getActions()[6]).to.deep.eql({
+            payload: {
+                disruptions: [{
+                    createNotification: true,
+                    disruptionId: 1,
+                    incidentNo: 1,
+                    status: 'draft',
+                }],
+            },
+            type: 'fetch-control-disruptions',
+        });
+
+        expect(store.getActions()[7]).to.deep.eql({
+            payload: {
+                isLoading: false,
+            },
+            type: 'update-control-disruptions-loading',
+        });
+    });
+
     it('dispatches error actions when update disruption fails and returns undefined', async () => {
         const disruption = {
             disruptionId: 1,
@@ -351,6 +521,215 @@ describe('Disruptions actions', () => {
             },
             type: 'update-control-disruptions-loading',
         });
+        expect(result).to.eql(undefined);
+    });
+
+    it('dispatches actions when update disruption is successful with draft status', async () => {
+        const disruption = {
+            disruptionId: 1,
+            incidentNo: 1,
+            status: 'draft',
+            createNotification: false,
+        };
+
+        disruptionsMgtApi.updateDisruption.mockResolvedValue({});
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [disruption],
+            _links: { permissions: [] },
+        });
+        const result = await store.dispatch(updateDisruption(disruption));
+        expect(store.getActions()[0]).to.deep.eql({
+            payload: {
+                isRequesting: true,
+                resultDisruptionId: 1,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+        expect(store.getActions()[1]).to.deep.eql({
+            payload: {
+                resultCreateNotification: false,
+                resultDisruptionId: 1,
+                resultDisruptionVersion: undefined,
+                resultMessage: 'Draft disruption number #1 saved successfully.',
+                resultStatus: 'success',
+            },
+            type: 'update-control-disruption-action-result',
+        });
+        expect(store.getActions()[2]).to.deep.eql({
+            payload: {
+                isRequesting: false,
+                resultDisruptionId: 1,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+        expect(store.getActions()[3]).to.deep.eql({
+            payload: {
+                permissions: [],
+            },
+            type: 'update-control-disruptions-permissions',
+        });
+        expect(store.getActions()[4]).to.deep.eql({
+            payload: {
+                disruptions: [{
+                    createNotification: false,
+                    disruptionId: 1,
+                    incidentNo: 1,
+                    status: 'draft',
+                }],
+            },
+            type: 'fetch-control-disruptions',
+        });
+        expect(store.getActions()[5]).to.deep.eql({
+            payload: {
+                isLoading: false,
+            },
+            type: 'update-control-disruptions-loading',
+        });
+        expect(result).to.eql({});
+    });
+
+    it('dispatches actions when publish draft disruption is successful', async () => {
+        const disruption = {
+            disruptionId: 1,
+            incidentNo: 1,
+            status: 'in-progress',
+            createNotification: false,
+        };
+
+        const response = {
+            incidentNo: 1,
+            version: '1.0',
+            createNotification: false,
+        };
+
+        disruptionsMgtApi.updateDisruption.mockResolvedValue(response);
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [disruption],
+            _links: { permissions: [] },
+        });
+
+        const result = await store.dispatch(publishDraftDisruption(disruption));
+
+        expect(store.getActions()[0]).to.deep.eql({
+            payload: {
+                isRequesting: true,
+                resultDisruptionId: 1,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+
+        expect(store.getActions()[1]).to.deep.eql({
+            payload: {
+                resultCreateNotification: false,
+                resultDisruptionId: 1,
+                resultDisruptionVersion: '1.0',
+                resultMessage: 'Draft disruption number #1 published successfully.',
+                resultStatus: 'success',
+            },
+            type: 'update-control-disruption-action-result',
+        });
+
+        expect(store.getActions()[2]).to.deep.eql({
+            payload: {
+                isRequesting: false,
+                resultDisruptionId: 1,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+
+        expect(store.getActions()[3]).to.deep.eql({
+            payload: {
+                permissions: [],
+            },
+            type: 'update-control-disruptions-permissions',
+        });
+
+        expect(store.getActions()[4]).to.deep.eql({
+            payload: {
+                disruptions: [{
+                    createNotification: false,
+                    disruptionId: 1,
+                    incidentNo: 1,
+                    status: 'in-progress',
+                }],
+            },
+            type: 'fetch-control-disruptions',
+        });
+
+        expect(store.getActions()[5]).to.deep.eql({
+            payload: {
+                isLoading: false,
+            },
+            type: 'update-control-disruptions-loading',
+        });
+
+        expect(result).to.eql(response);
+    });
+
+    it('dispatches actions when publish draft disruption fails', async () => {
+        const disruption = {
+            disruptionId: 1,
+            incidentNo: 1,
+            status: 'draft',
+            createNotification: false,
+        };
+
+        disruptionsMgtApi.updateDisruption.mockRejectedValue({ code: 'ERROR_CODE' });
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [disruption],
+            _links: { permissions: [] },
+        });
+
+        const result = await store.dispatch(publishDraftDisruption(disruption));
+
+        expect(store.getActions()[0]).to.deep.eql({
+            payload: {
+                isRequesting: true,
+                resultDisruptionId: 1,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+        expect(store.getActions()[1]).to.deep.eql({
+            payload: {
+                resultCreateNotification: undefined,
+                resultDisruptionId: 1,
+                resultDisruptionVersion: undefined,
+                resultMessage: 'Failed to publish draft disruption',
+                resultStatus: 'danger',
+            },
+            type: 'update-control-disruption-action-result',
+        });
+        expect(store.getActions()[2]).to.deep.eql({
+            payload: {
+                isRequesting: false,
+                resultDisruptionId: 1,
+            },
+            type: 'update-control-disruption-action-requesting',
+        });
+        expect(store.getActions()[3]).to.deep.eql({
+            payload: {
+                permissions: [],
+            },
+            type: 'update-control-disruptions-permissions',
+        });
+        expect(store.getActions()[4]).to.deep.eql({
+            payload: {
+                disruptions: [{
+                    createNotification: false,
+                    disruptionId: 1,
+                    incidentNo: 1,
+                    status: 'draft',
+                }],
+            },
+            type: 'fetch-control-disruptions',
+        });
+        expect(store.getActions()[5]).to.deep.eql({
+            payload: {
+                isLoading: false,
+            },
+            type: 'update-control-disruptions-loading',
+        });
+
         expect(result).to.eql(undefined);
     });
 });

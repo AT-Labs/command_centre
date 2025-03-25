@@ -31,5 +31,7 @@
     "useGeoSearchRoutesByDisruptionPeriod": "false",
     "useCarsRoadworksLayer": "false",
     "useRouteAlertsLayer": "false",
-    "useNewMonitoring": "false"
+    "useNewMonitoring": "false",
+    "useDraftDisruptions": "false",
+    "useDisruptionDraftEmailSharing": "false"
 }
