@@ -100,8 +100,8 @@ export const FleetsView = (props) => {
         generated_topo: fleet.eod.generated.topo || '',
         latest_eod: fleet.eod.latestEOD,
         latest_actionlist: fleet.eod.latestActionlist || '',
-        eod_activation_timestamp: parseTime(fleet.eodActivationTimestamp) || null,
-        actionlist_activation_timestamp: parseTime(fleet.actionlistActivationTimestamp) || null,
+        eod_activation_timestamp: parseTime(fleet.eod.eodActivationTimestamp) || null,
+        actionlist_activation_timestamp: parseTime(fleet.eod.actionlistActivationTimestamp) || null,
     }));
 
     return (
