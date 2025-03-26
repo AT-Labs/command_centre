@@ -423,7 +423,7 @@ const DisruptionDetailView = (props) => {
     const isPublishDraftDisable = (
         isUpdating
         || isPropsEmpty
-        || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid()
+        || !isUrlValid(url) || !isStartTimeValid(startDate, startTime, now, recurrent) || !startDateValid() || !endTimeValid()
         || !endDateValid() || !durationPublishValid() || !causeAndImpactAreValid || !isAffectedEntitiesValid()
     );
 
