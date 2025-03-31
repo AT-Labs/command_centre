@@ -62,4 +62,22 @@
             box-shadow: rgba(0, 0, 0, .1) 0 0 0 1px, rgba(0, 0, 0, .1) 0 4px 11px;
         }
     }
+
+    .corridor-level-items {
+        .box {
+            width: 50px;
+            height: 15px;
+            margin-right: 5px;
+            border-radius: .25rem !important;
+        }
+        .high-box-card {
+            background-color: #D52A23;
+        }
+        .medium-box-card {
+            background-color: #B39B00;
+        }
+        .low-box-card {
+            background-color: #7AB639;
+        }
+    }
 }

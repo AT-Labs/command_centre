@@ -1,0 +1,41 @@
+@import '../../../../assets/styles/variables';
+
+.cars-details-container {
+    padding: 8px;
+    left: 10px;
+    top: 75px;
+    z-index: 2001;
+    font-size: .9rem;
+    width: 530px;
+    background-color: white;
+    border-radius: .55rem;
+    opacity: 0;
+    transform: translateY(-10px);
+    animation: fadeIn .5s ease-out forwards;
+    max-height: calc(100vh - 165px);
+    overflow-y: auto;
+
+    .cars-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .cc-standard-loader-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 150px;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

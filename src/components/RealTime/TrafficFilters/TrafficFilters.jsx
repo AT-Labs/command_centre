@@ -90,7 +90,7 @@ const TrafficFilters = (props) => {
                 </div>
                 <div className="incident-filters-block">
                     <div className="layers-sub-title d-flex flex-row justify-content-between align-items-center my-2">
-                        <h4 className="font-weight-bolder m-0">Incidents</h4>
+                        <h4 className="font-weight-bolder m-0">Live traffic incidents</h4>
                         <CustomizedSwitch
                             id="incident-filters-switch"
                             checked={ selectedIncidentFilters?.length > 0 }
@@ -134,10 +134,13 @@ const TrafficFilters = (props) => {
                     </div>
                     {selectedCongestionFilters?.length > 0 && (
                         <div className="traffic-level-items">
+                            <div>
+                                <span>(Compared to free-flow speed)</span>
+                            </div>
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
                                     <div className="traffic-card green-traffic-card" />
-                                    <span htmlFor={ CONGESTION_COLORS.GREEN }>Green</span>
+                                    <span htmlFor={ CONGESTION_COLORS.GREEN }>90% and above</span>
                                 </div>
                                 <div>
                                     <Input
@@ -152,7 +155,7 @@ const TrafficFilters = (props) => {
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
                                     <div className="traffic-card yellow-traffic-card" />
-                                    <span htmlFor={ CONGESTION_COLORS.YELLOW }>Yellow</span>
+                                    <span htmlFor={ CONGESTION_COLORS.YELLOW }>70% - 89%</span>
                                 </div>
                                 <div>
                                     <Input
@@ -167,7 +170,7 @@ const TrafficFilters = (props) => {
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
                                     <div className="traffic-card orange-traffic-card" />
-                                    <span htmlFor={ CONGESTION_COLORS.ORANGE }>Orange</span>
+                                    <span htmlFor={ CONGESTION_COLORS.ORANGE }>50% - 69%</span>
                                 </div>
                                 <div>
                                     <Input
@@ -182,7 +185,7 @@ const TrafficFilters = (props) => {
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
                                     <div className="traffic-card red-traffic-card" />
-                                    <span htmlFor={ CONGESTION_COLORS.RED }>Red</span>
+                                    <span htmlFor={ CONGESTION_COLORS.RED }>40% - 49%</span>
                                 </div>
                                 <div>
                                     <Input
@@ -197,7 +200,7 @@ const TrafficFilters = (props) => {
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
                                     <div className="traffic-card maroon-traffic-card" />
-                                    <span htmlFor={ CONGESTION_COLORS.MAROON }>Maroon</span>
+                                    <span htmlFor={ CONGESTION_COLORS.MAROON }>39% and below</span>
                                 </div>
                                 <div>
                                     <Input

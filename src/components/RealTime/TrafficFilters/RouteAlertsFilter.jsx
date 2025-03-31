@@ -150,7 +150,6 @@ const RouteAlertsFilter = () => {
                                 isDisabled={ showAllRouteAlerts }
                             />
                         </div>
-
                         <div className="show-all-switch d-flex flex-row align-items-center mt-2">
                             <CustomizedSwitch
                                 id="show-all-switch"
@@ -158,6 +157,31 @@ const RouteAlertsFilter = () => {
                                 onChange={ switchAllAlertHandler }
                             />
                             <span className="ml-2">Show all corridors (alerts only)</span>
+                        </div>
+
+                        <div className="corridor-level-items mt-2">
+                            <div className="d-flex flex-row justify-content-between">
+                                <div className="d-flex flex-row align-items-center">
+                                    <div className="box high-box-card" />
+                                    <span>Less than 50% of typical speed</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="corridor-level-items mt-2">
+                            <div className="d-flex flex-row justify-content-between">
+                                <div className="d-flex flex-row align-items-center">
+                                    <div className="box medium-box-card" />
+                                    <span>Between 50% and 80% of typical speed</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="corridor-level-items my-2">
+                            <div className="d-flex flex-row justify-content-between">
+                                <div className="d-flex flex-row align-items-center">
+                                    <div className="box low-box-card" />
+                                    <span>Between 80% to 100% of typical speed</span>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Selected Routes */}

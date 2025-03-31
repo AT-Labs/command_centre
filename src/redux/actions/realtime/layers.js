@@ -31,3 +31,5 @@ export const updateShowRoadworks = payload => ({ type: ACTION_TYPE.UPDATE_SHOW_R
 export const updateSelectedRoadworksFilters = payload => ({ type: ACTION_TYPE.UPDATE_SELECTED_ROADWORKS_FILTERS, payload });
 export const resetShowRoadworks = payload => ({ type: ACTION_TYPE.RESET_SHOW_ROADWORKS, payload });
 export const calledRoadworksApi = payload => ({ type: ACTION_TYPE.UPDATE_ROADWORKS_CALLED_API, payload });
+export const updateSelectedCars = payload => ({ type: ACTION_TYPE.UPDATE_SELECTED_CARS, payload });
+export const updateSelectedTmpImpacts = payload => ({ type: ACTION_TYPE.UPDATE_SELECTED_TMP_IMPACTS, payload });

@@ -85,9 +85,9 @@ import * as incidentsApi from '../../utils/transmitters/incidents-api';
 import RealtimeMapFilters from './RealtimeMapFilters/RealtimeMapFilters';
 import { Probability } from '../../types/incidents';
 import { updateSelectedCongestionFilters, updateSelectedIncidentFilters, updateShowAllRouteAlerts,
-    updateShowIncidents, updateShowRoadworks, updateShowRouteAlerts } from '../../redux/actions/realtime/layers';
+    updateShowIncidents, updateShowRoadworks, updateShowRouteAlerts, updateSelectedCars, updateSelectedTmpImpacts } from '../../redux/actions/realtime/layers';
 import { getSelectedCongestionFilters, getSelectedIncidentFilters, getShowIncidents, getSelectedRoadworksFilters,
-    getShowRouteAlerts, getShowAllRouteAlerts } from '../../redux/selectors/realtime/layers';
+    getShowRouteAlerts, getShowAllRouteAlerts, getSelectedCars } from '../../redux/selectors/realtime/layers';
 import { getAgencies } from '../../redux/selectors/static/agencies';
 import {
     isIncidentsQueryValid,
@@ -103,6 +103,7 @@ import {
 import RouteAlertsLayer from '../Common/Map/TrafficLayer/RouteAlertsLayer';
 import { updateUrlFromCarsRoadworksLayer, readUrlToCarsRoadworksLayer } from './TrafficFilters/RoadworksFilterBlock';
 import { restoreRouteAlertsStateFromUrl, updateUrlForRouteAlerts } from './TrafficFilters/RouteAlertsFilter';
+import CarsDetails from '../Common/Map/CarsLayer/CarsDetails';
 
 function RealTimeView(props) {
     const { ADDRESS, ROUTE, STOP, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
@@ -110,6 +111,7 @@ function RealTimeView(props) {
     const [mapRadius, setMapRadius] = useState(50);
     const [incidents, setIncidents] = useState([]);
     const abortControllerRef = useRef(null);
+    const yesterdayTodayTomorrowFilter = props.selectedRoadworksFilters?.find(item => item.id === 'Yesterday-Today-Tomorrow');
 
     const fetchIncidentsData = async () => {
         try {
@@ -647,6 +649,16 @@ function RealTimeView(props) {
                         onIncidentFiltersChanged={ newFilters => props.updateSelectedIncidentFilters(newFilters) }
                     />
                 ) : '' }
+                { props.useCarsRoadworksLayer && props.selectedCars && (
+                    <CarsDetails
+                        cars={ props.selectedCars }
+                        onClose={ () => {
+                            props.updateSelectedCars({ selectedCars: null });
+                            props.updateSelectedTmpImpacts({ selectedTmpImpacts: [] });
+                        } }
+                        onUpdateImpacts={ impacts => props.updateSelectedTmpImpacts({ selectedTmpImpacts: impacts }) }
+                        filterByYesterdayTodayTomomorrowDate={ yesterdayTodayTomorrowFilter?.selected } />
+                ) }
             </Main>
             <SecondarySidePanel />
         </OffCanvasLayout>
@@ -714,6 +726,9 @@ RealTimeView.propTypes = {
     updateShowRouteAlerts: PropTypes.func.isRequired,
     updateShowAllRouteAlerts: PropTypes.func.isRequired,
     agencies: PropTypes.array.isRequired,
+    selectedCars: PropTypes.object.isRequired,
+    updateSelectedCars: PropTypes.func.isRequired,
+    updateSelectedTmpImpacts: PropTypes.func.isRequired,
 };
 
 RealTimeView.defaultProps = {
@@ -769,6 +784,7 @@ export default connect(
         showRouteAlerts: getShowRouteAlerts(state),
         showAllRouteAlerts: getShowAllRouteAlerts(state),
         agencies: getAgencies(state),
+        selectedCars: getSelectedCars(state),
     }),
     {
         addressSelected,
@@ -790,5 +806,7 @@ export default connect(
         updateSelectedCongestionFilters,
         updateShowRouteAlerts,
         updateShowAllRouteAlerts,
+        updateSelectedCars,
+        updateSelectedTmpImpacts,
     },
 )(RealTimeView);

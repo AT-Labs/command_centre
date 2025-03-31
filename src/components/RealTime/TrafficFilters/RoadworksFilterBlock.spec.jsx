@@ -123,12 +123,12 @@ describe('<RoadworksFilterBlock />', () => {
 
 describe('readUrlToCarsRoadworksLayer', () => {
     const roadworkFilterCategoriesWithEventsUnselected = [...RoadworksFilterCategories];
-    roadworkFilterCategoriesWithEventsUnselected[2].selected = false;
+    roadworkFilterCategoriesWithEventsUnselected[3].selected = false;
 
     const testCases = [
         {
             description: 'should update showRoadworks and selectedRoadworksFilters when roadworks query is valid',
-            searchParams: new URLSearchParams('roadworks=Excavation,Non-Excavation'),
+            searchParams: new URLSearchParams('roadworks=Yesterday-Today-Tomorrow,Excavation,Non-Excavation'),
             expectedIsRoadworksQueryValid: true,
             expectedDispatch: {
                 showRoadworks: true,

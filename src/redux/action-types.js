@@ -85,6 +85,8 @@ export default {
     UPDATE_SHOW_ROADWORKS: 'update-show-roadworks',
     UPDATE_SELECTED_ROADWORKS_FILTERS: 'update-selected-roadworks-filters',
     UPDATE_ROADWORKS_CALLED_API: 'update-roadworks-called-api',
+    UPDATE_SELECTED_CARS: 'update-selected-cars',
+    UPDATE_SELECTED_TMP_IMPACTS: 'update-selected-tmp-impacts',
     // navigation
     UPDATE_MAIN_VIEW: 'update-main-view',
     TOGGLE_RT_SIDE_PANEL: 'toggle-rt-side-panel',

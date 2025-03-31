@@ -41,6 +41,7 @@ describe('CarsPolygon', () => {
             WorksiteName: 'Test Worksite',
             WorksiteCode: 'AT-W187480',
         },
+        showTooltip: true,
     };
 
     it('should render without crashing', () => {

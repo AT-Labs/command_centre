@@ -1,5 +1,6 @@
 import { jsonResponseHandling } from '../fetch';
 import { setCache, getCache } from '../browser-cache';
+import { getYesterdayTomorrowDates } from '../cars';
 
 const { REACT_APP_AT_CARS_INTEGRATION_URL } = process.env;
 const CACHE_EXPIRY_MS = 15 * 60 * 1000;
@@ -45,4 +46,48 @@ export const getAllFeatures = async (forceFetch = false) => {
     sessionStorage.setItem(SESSION_KEY, Date.now());
 
     return updatedFeatures;
+};
+
+export const getWorksite = async (worksiteCode, filterByYesterdayTodayTomomorrowDate) => {
+    let url = `${REACT_APP_AT_CARS_INTEGRATION_URL}/worksite?worksite_code=${worksiteCode}`;
+
+    if (filterByYesterdayTodayTomomorrowDate) {
+        const { dateFrom, dateTo } = getYesterdayTomorrowDates();
+        url += `&date_from=${dateFrom}&date_to=${dateTo}`;
+    }
+
+    const response = await fetch(url, { method: 'GET' });
+    if (!response.ok && response.status === 404) {
+        let errorMessage = `No corresponding TMP found for this CAR Number ${worksiteCode}.`;
+
+        if (filterByYesterdayTodayTomomorrowDate) {
+            errorMessage += ' You might get more results if you disable the date filter.';
+        }
+
+        throw new Error(errorMessage);
+    }
+    return jsonResponseHandling(response);
+};
+
+export const getLayout = async (ids, filterByYesterdayTodayTomomorrowDate) => {
+    let url = `${REACT_APP_AT_CARS_INTEGRATION_URL}/layout?tmp_ids=${ids}`;
+
+    if (filterByYesterdayTodayTomomorrowDate) {
+        const { dateFrom, dateTo } = getYesterdayTomorrowDates();
+        url += `&date_from=${dateFrom}&date_to=${dateTo}`;
+    }
+
+    const response = await fetch(url, { method: 'GET' });
+
+    if (!response.ok && response.status === 404) {
+        let errorMessage = 'No layout corresponding to the TMPs of this CAR.';
+
+        if (filterByYesterdayTodayTomomorrowDate) {
+            errorMessage += ' You might get more results if you disable the date filter.';
+        }
+
+        throw new Error(errorMessage);
+    }
+
+    return jsonResponseHandling(response);
 };

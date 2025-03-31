@@ -12,6 +12,8 @@ export const INIT_STATE = {
     showRoadworks: false,
     selectedRoadworksFilters: [],
     mustCallRoadworks: true, // When first load/after refreshed, we must force call api at least once
+    selectedCars: null,
+    selectedTmpImpacts: [],
 };
 
 // TomTom
@@ -36,6 +38,9 @@ const handleResetSelectedRoadworksFilters = state => ({
     showRoadworks: false,
 });
 
+const handleUpdateSelectedCars = (state, { payload: { selectedCars } }) => ({ ...state, selectedCars });
+const handleUpdateSelectedTmpImpacts = (state, { payload: { selectedTmpImpacts } }) => ({ ...state, selectedTmpImpacts });
+
 const handleUpdateMustCallRoadworks = state => ({ ...state, mustCallRoadworks: false });
 export default handleActions({
     // TomTom
@@ -51,5 +56,7 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_SELECTED_ROADWORKS_FILTERS]: handleUpdateSelectedRoadworksFilters,
     [ACTION_TYPE.RESET_SHOW_ROADWORKS]: handleResetSelectedRoadworksFilters,
     [ACTION_TYPE.UPDATE_ROADWORKS_CALLED_API]: handleUpdateMustCallRoadworks,
+    [ACTION_TYPE.UPDATE_SELECTED_CARS]: handleUpdateSelectedCars,
+    [ACTION_TYPE.UPDATE_SELECTED_TMP_IMPACTS]: handleUpdateSelectedTmpImpacts,
 
 }, INIT_STATE);
