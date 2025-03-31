@@ -64,8 +64,8 @@ describe("filterCarsByDate", () => {
     });
 
     it("should filter cars by yesterday, today, or tomorrow", () => {
-        const yesterday = moment().subtract(1, "day").unix() * 1000000;
-        const tomorrow = moment().add(1, "day").unix() * 1000000;
+        const yesterday = moment().subtract(1, "day").unix() * 1000;
+        const tomorrow = moment().add(1, "day").unix() * 1000;
         const cars = [
             {
                 properties: {
@@ -89,12 +89,12 @@ describe("filterCarsByDate", () => {
 
         const filteredCars = filterCarsByDate(cars, true);
 
-        expect(filteredCars).to.have.length(2);
+        expect(filteredCars).to.have.length(3);
     });
 
     it("should return an empty array if no cars match the filter date", () => {
-        const pastDate = moment().subtract(10, "days").unix() * 1000000;
-        const futureDate = moment().add(20, "days").unix() * 1000000;
+        const pastDate = moment().subtract(10, "days").unix() * 1000;
+        const futureDate = moment().add(20, "days").unix() * 1000;
         const cars = [
             {
                 properties: {
@@ -110,7 +110,7 @@ describe("filterCarsByDate", () => {
             },
         ];
 
-        expect(filterCarsByDate(cars, true)).to.have.length(1);
+        expect(filterCarsByDate(cars, true)).to.have.length(0);
     });
 });
 

@@ -47,8 +47,8 @@ export const filterCarsByDate = (objects, filterByYesterdayTodayTomorrow) => {
 
         const { ProjectStartDate, ProjectEndDate } = item.properties;
 
-        const startDate = ProjectStartDate ? moment.unix(ProjectStartDate / 1000000) : null;
-        const endDate = ProjectEndDate ? moment.unix(ProjectEndDate / 1000000) : null;
+        const startDate = ProjectStartDate ? moment.unix(ProjectStartDate / 1000) : null;
+        const endDate = ProjectEndDate ? moment.unix(ProjectEndDate / 1000) : null;
 
         if (startDate && !endDate) {
             return startDate.isBetween(yesterday, tomorrow, null, '[]');
@@ -58,7 +58,7 @@ export const filterCarsByDate = (objects, filterByYesterdayTodayTomorrow) => {
             return endDate.isBetween(yesterday, tomorrow, null, '[]');
         }
 
-        return startDate.isSameOrBefore(tomorrow) && endDate.isSameOrBefore(yesterday);
+        return startDate.isBefore(tomorrow) && endDate.isAfter(yesterday);
     });
 };
 

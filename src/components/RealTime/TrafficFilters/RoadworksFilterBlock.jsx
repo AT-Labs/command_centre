@@ -71,7 +71,7 @@ export const RoadworksFilterBlock = () => {
                 <div className="d-flex flex-row justify-content-between">
                     <div className="d-flex flex-row align-items-center">
                         <div className="mt-1" />
-                        <span>(MyWorkSites) </span>
+                        <span>(MyWorkSites)</span>
                     </div>
                 </div>
             )}
