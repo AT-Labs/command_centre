@@ -126,16 +126,20 @@ export const fetchUpcomingStops = vehicleId => (dispatch, getState) => {
     const trackingVehicle = getTrackingVehicle(vehicleId, getState());
     const shouldUseNewMonitoring = useNewMonitoring(state);
     return ccRealtime.getUpcomingByVehicleId(result(trackingVehicle, 'id'), shouldUseNewMonitoring)
-        .then(upcoming => upcoming.map(({ stop, trip }) => {
-            const { stopCode, stopName, scheduleRelationship, passed } = stop;
-            const { scheduledTime, actualTime } = calculateScheduledAndActualTimes(stop);
-            return {
-                stop: { stopCode, stopName, scheduleRelationship, passed },
-                trip,
-                scheduledTime,
-                actualTime,
-            };
-        }))
+        .then((upcoming) => {
+            const vehicleTripId = getCurrentVehicleTripId(getState());
+            return upcoming.filter(({ trip }) => trip.tripId === vehicleTripId)
+                .map(({ stop, trip }) => {
+                    const { stopCode, stopName, scheduleRelationship, passed } = stop;
+                    const { scheduledTime, actualTime } = calculateScheduledAndActualTimes(stop);
+                    return {
+                        stop: { stopCode, stopName, scheduleRelationship, passed },
+                        trip,
+                        scheduledTime,
+                        actualTime,
+                    };
+                });
+        })
         .then(stops => stops.filter(({ actualTime, scheduledTime }) => isWithinNextHalfHour(actualTime || scheduledTime)))
         .then(upcomingStops => orderBy(upcomingStops, 'scheduledTime'))
         .then(upcomingStops => dispatch({

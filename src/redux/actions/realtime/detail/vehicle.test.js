@@ -201,6 +201,7 @@ describe('Vehicle detail actions', () => {
             const fakeUpcomingStops = sandbox.fake.resolves(allStops);
             const fakeGetState = sandbox.fake.returns({
                 realtime: {
+                    detail: { viewDetailKey: 'vehicleId', vehicle: { key: 'vehicleId', trip: { tripId: '14797128071-20190304085219_v76.27' } } },
                     stops: {
                         all: {
                             7235: {},
