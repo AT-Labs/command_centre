@@ -75,6 +75,9 @@ export const getTrips = ({
     if (display) { variables.display = display; }
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
+    const isMock = true;
+
+    if (isMock) return fetch('/mocks/trip_instances_mock.json').then(r => r.json());
     return fetchWithAuthHeader(
         url,
         {
