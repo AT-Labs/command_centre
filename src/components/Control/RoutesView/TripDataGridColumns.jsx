@@ -36,11 +36,12 @@ const isAnyOfStringOperators = getGridStringOperators(true).filter(
 );
 
 // This function are use to define Grid Columns.
-export function createGridColumns(props, renderIconColumnContent, getAgenciesRef) {
+export function createGridColumns({
+    useHideTrip, serviceDate, selectAllTrips, useAddTrip, useRoutesTripsFilterCollapse, vehicleAllocations, allStops }, renderIconColumnContent, getAgenciesRef) {
     const renderHeader = () => (
         <CustomSelectionHeader
-            serviceDate={ props.serviceDate }
-            selectAllTrips={ props.selectAllTrips }
+            serviceDate={ serviceDate }
+            selectAllTrips={ selectAllTrips }
         />
     );
 
@@ -70,7 +71,7 @@ export function createGridColumns(props, renderIconColumnContent, getAgenciesRef
         },
 
         // TODO: LCJ:BEGIN ############# Probably need to change this
-        ...props.useAddTrip ? [{
+        ...useAddTrip ? [{
             field: 'source',
             headerName: 'New',
             width: 100,
@@ -92,6 +93,15 @@ export function createGridColumns(props, renderIconColumnContent, getAgenciesRef
             headerName: 'Type',
             width: 100,
             hide: true,
+            filterOperators: getGridSingleSelectOperators(true)
+                .map(o => { console.log(o.value); return o; })
+                .filter(o => ['isAnyOf'].includes(o.value)),
+            valueOptions: [
+                { value: 'Replacement', label: 'Replacement' },
+                { value: 'Replaced', label: 'Replaced' },
+                { value: 'Add', label: 'Add' },
+                { value: null, label: 'Empty' },
+            ],
             sortable: true,
         },
         {
@@ -108,7 +118,7 @@ export function createGridColumns(props, renderIconColumnContent, getAgenciesRef
             field: 'vehicleLabel',
             headerName: 'Vehicle Label',
             width: 150,
-            valueGetter: ({ row }) => getVehicleAllocationLabelByTrip(row.tripInstance, props.vehicleAllocations) || get(row.tripInstance, 'vehicleLabel'),
+            valueGetter: ({ row }) => getVehicleAllocationLabelByTrip(row.tripInstance, vehicleAllocations) || get(row.tripInstance, 'vehicleLabel'),
             filterable: false,
         },
         {
@@ -160,7 +170,7 @@ export function createGridColumns(props, renderIconColumnContent, getAgenciesRef
             type: 'string',
             filterOperators: isAnyOfStringOperators,
         },
-        ...props.useHideTrip ? [{
+        ...useHideTrip ? [{
             field: 'display',
             headerName: 'Hidden',
             width: 100,
@@ -190,7 +200,7 @@ export function createGridColumns(props, renderIconColumnContent, getAgenciesRef
             type: 'singleSelect',
             valueOptions: getTimePickerOptions(28),
             filterOperators: dateOperators,
-            filterable: !props.useRoutesTripsFilterCollapse,
+            filterable: !useRoutesTripsFilterCollapse,
         },
         {
             field: 'endTime',
@@ -255,7 +265,7 @@ export function createGridColumns(props, renderIconColumnContent, getAgenciesRef
             type: 'string',
             filterOperators: StopSearchDataGridOperators,
             valueGetter: ({ row }) => {
-                const stop = props.allStops[get(row.tripInstance, 'firstStopCode')];
+                const stop = allStops[get(row.tripInstance, 'firstStopCode')];
                 return stop?.stop_name || '';
             },
             hide: true,
@@ -267,7 +277,7 @@ export function createGridColumns(props, renderIconColumnContent, getAgenciesRef
             type: 'string',
             filterOperators: StopSearchDataGridOperators,
             valueGetter: ({ row }) => {
-                const stop = props.allStops[get(row.tripInstance, 'lastStopCode')];
+                const stop = allStops[get(row.tripInstance, 'lastStopCode')];
                 return stop?.stop_name || '';
             },
             hide: true,
