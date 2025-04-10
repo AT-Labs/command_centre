@@ -54,9 +54,9 @@ const gridColumns = [
         renderCell: ({ row: { tripModifications } }) => {
             if (tripModifications.length > 0) {
                 return (
-                    <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                    <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
                         {tripModifications.map(modification => (
-                            <li key={modification.diversionId}>{modification.diversionId}</li>
+                            <li key={ modification.diversionId }>{modification.diversionId}</li>
                         ))}
                     </ul>
                 );
@@ -69,9 +69,9 @@ const gridColumns = [
         renderCell: ({ row: { tripModifications } }) => {
             if (tripModifications.length > 0) {
                 return (
-                    <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                    <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
                         {tripModifications.map(modification => (
-                            <li key={modification.diversionId}>{modification.routeVariantId}</li>
+                            <li key={ modification.diversionId }>{modification.routeVariantId}</li>
                         ))}
                     </ul>
                 );
@@ -84,9 +84,9 @@ const gridColumns = [
         renderCell: ({ row: { tripModifications } }) => {
             if (tripModifications.length > 0) {
                 return (
-                    <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                    <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
                         {tripModifications.map(modification => (
-                            <li key={modification.diversionId}>{modification.routeVariantName}</li>
+                            <li key={ modification.diversionId }>{modification.routeVariantName}</li>
                         ))}
                     </ul>
                 );
@@ -99,9 +99,9 @@ const gridColumns = [
         renderCell: ({ row: { tripModifications } }) => {
             if (tripModifications.length > 0) {
                 return (
-                    <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                    <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
                         {tripModifications.map(modification => (
-                            <li style={{ textAlign: 'right' }} key={modification.diversionId}>{modification.direction}</li>
+                            <li style={ { textAlign: 'right' } } key={ modification.diversionId }>{modification.direction}</li>
                         ))}
                     </ul>
                 );
@@ -111,18 +111,18 @@ const gridColumns = [
     },
 ];
 
-const renderCell = ({ row: { tripModifications } }) => {
-    if (tripModifications.length > 0) {
-        return (
-            <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
-                {tripModifications.map(modification => (
-                    <li key={ modification.diversionId }>{modification.diversionId}</li>
-                ))}
-            </ul>
-        );
-    }
-    return 'None';
-};
+// const renderCell = ({ row: { tripModifications } }) => {
+//     if (tripModifications.length > 0) {
+//         return (
+//             <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
+//                 {tripModifications.map(modification => (
+//                     <li key={ modification.diversionId }>{modification.diversionId}</li>
+//                 ))}
+//             </ul>
+//         );
+//     }
+//     return 'None';
+// };
 
 describe('<ActiveDiversionView />', () => {
     it('should render component', () => {
@@ -177,16 +177,16 @@ describe('<ActiveDiversionView />', () => {
             it('executes true branch of if (tripModifications.length > 0)', () => {
                 const { container } = render(gridColumns[0].renderCell({ row: mockDiversions[0] }));
                 const ul = container.querySelector('ul');
-                expect(ul).toBeInTheDocument(); // <ul> is rendered
+                expect(ul).toBeInTheDocument();
                 const liElements = within(ul).getAllByRole('listitem');
-                expect(liElements).toHaveLength(1); // One <li> for DIV123
+                expect(liElements).toHaveLength(1);
                 expect(within(ul).getByText('DIV123')).toBeInTheDocument();
             });
 
             it('executes false branch of if (tripModifications.length > 0)', () => {
                 const { container } = render(gridColumns[0].renderCell({ row: mockDiversions[2] }));
                 expect(screen.getByText('None')).toBeInTheDocument();
-                expect(container.querySelector('ul')).not.toBeInTheDocument(); // No <ul>
+                expect(container.querySelector('ul')).not.toBeInTheDocument();
             });
         });
     });
