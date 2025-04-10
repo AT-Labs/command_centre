@@ -96,6 +96,7 @@ import { updateActiveControlEntityId } from '../../../../redux/actions/navigatio
 import { shareToEmail } from '../../../../utils/control/disruption-sharing';
 
 import '../DisruptionDetail/styles.scss';
+import { ViewDiversionDetailModal } from '../DisruptionDetail/ViewDiversionDetailModal';
 
 const { STOP } = SEARCH_RESULT_TYPE;
 
@@ -139,6 +140,7 @@ const DisruptionDetailView = (props) => {
     const [descriptionNote, setDescriptionNote] = useState('');
     const [lastNote, setLastNote] = useState();
     const [isViewPassengerImpactModalOpen, setIsViewPassengerImpactModalOpen] = useState(false);
+    const [isViewDiversionsModalOpen, setIsViewDiversionsModalOpen] = useState(false);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqWith([...affectedRoutes, ...props.routes], (routeA, routeB) => routeA.routeId === routeB.routeId && routeA.stopCode === routeB.stopCode);
@@ -546,8 +548,9 @@ const DisruptionDetailView = (props) => {
         <Form className={ props.className }>
             <div className={ isReadOnlyMode ? 'read-only-container' : '' }>
                 <div className={ `row position-relative ${props.className === 'magnify' ? 'mr-0' : ''}` }>
+                    { /* This ONE  */ }
                     <AffectedEntities
-                        editLabel="Edit routes, stops and workarounds"
+                        editLabel="Edit routes, stops and workaroundsssts"
                         editAction={ affectedEntitiesEditActionHandler }
                         isEditDisabled={ isRequesting || isLoading || isResolved() || isReadOnlyMode }
                         affectedEntities={ disruption.affectedEntities }
@@ -555,6 +558,7 @@ const DisruptionDetailView = (props) => {
                         viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                         showViewPassengerImpactButton={ props.usePassengerImpact }
                         viewPassengerImpactAction={ () => setIsViewPassengerImpactModalOpen(true) }
+                        viewDiversionsAction={ () => setIsViewDiversionsModalOpen(true) }
                     />
                     <section className="col-6">
                         <div className="row">
@@ -905,6 +909,7 @@ const DisruptionDetailView = (props) => {
                         <span className="map-note">Note: Only a max of ten routes and ten stops will be displayed on the map.</span>
                     </section>
                 </div>
+                {/* DATA TABLE HERE */}
                 <CustomMuiDialog
                     title="Disruption Active Periods"
                     onClose={ () => setActivePeriodsModalOpen(false) }
@@ -921,6 +926,11 @@ const DisruptionDetailView = (props) => {
                     disruption={ disruption }
                     onClose={ () => setIsViewWorkaroundsModalOpen(false) }
                     isOpen={ isViewWorkaroundsModalOpen }
+                />
+                <ViewDiversionDetailModal
+                    disruption={ disruption }
+                    onClose={ () => setIsViewDiversionsModalOpen(false) }
+                    isOpen={ isViewDiversionsModalOpen }
                 />
                 { props.usePassengerImpact && (
                     <DisruptionPassengerImpactGridModal

@@ -127,7 +127,6 @@ export const fetchTripInstances = (variables, { isUpdate }) => (dispatch, getSta
 
     const timestamp = moment().valueOf();
 
-    console.log('-----------------variables:', variables);
     TRIP_MGT_API.getTrips(variables)
         .then(async ({ tripInstances, totalCount, _links: { permissions } }) => {
             if (filters.routeType === TRAIN_TYPE_ID) {
@@ -573,7 +572,6 @@ export const filterTripInstances = forceLoad => (dispatch, getState) => {
     const routesTripsDatagridConfig = getRoutesTripsDatagridConfig(state);
     const lastFilterRequest = getLastFilterRequest(state);
     const filters = getFilters(routesTripsDatagridConfig.filterModel, state);
-    console.log('----------------filters:', filters);
     const filterRequest = {
         ...filters,
         serviceDate: moment(getServiceDate(state)).format(SERVICE_DATE_FORMAT),
@@ -582,10 +580,8 @@ export const filterTripInstances = forceLoad => (dispatch, getState) => {
         sorting: parseSortModel(routesTripsDatagridConfig.sortModel),
     };
 
-    if (filters.disruptionId?.id) filterRequest.disruptionId = parseInt(filters.disruptionId.id, 10);
-
     const viewType = getControlDetailRoutesViewType(state);
-    console.log('------------------for viewType:', viewType);
+
     if (viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_ROUTE_VARIANTS_TRIPS
         || viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTE_VARIANTS_TRIPS) {
         filterRequest.routeVariantIds = [get(getActiveRouteVariant(state), 'routeVariantId')];
