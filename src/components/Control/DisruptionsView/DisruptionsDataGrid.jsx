@@ -296,6 +296,9 @@ export const DisruptionsDataGrid = (props) => {
         props.updateCopyDisruptionState(false);
     };
 
+    // eslint-disable-next-line no-console
+    console.log('--------------_disruptions', props.disruptions);
+
     return (
         <div>
             <CustomDataGrid
