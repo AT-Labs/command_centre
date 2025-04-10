@@ -48,68 +48,21 @@ const mockDiversions = [
     },
 ];
 
-const gridColumns = [
-    {
-        field: 'diversionId',
-        renderCell: ({ row: { tripModifications } }) => {
-            if (tripModifications.length > 0) {
-                return (
-                    <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
-                        {tripModifications.map(modification => (
-                            <li key={ modification.diversionId }>{modification.diversionId}</li>
-                        ))}
-                    </ul>
-                );
-            }
-            return 'None';
-        },
-    },
-    {
-        field: 'routeVariantId',
-        renderCell: ({ row: { tripModifications } }) => {
-            if (tripModifications.length > 0) {
-                return (
-                    <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
-                        {tripModifications.map(modification => (
-                            <li key={ modification.diversionId }>{modification.routeVariantId}</li>
-                        ))}
-                    </ul>
-                );
-            }
-            return 'None';
-        },
-    },
-    {
-        field: 'routeVariantName',
-        renderCell: ({ row: { tripModifications } }) => {
-            if (tripModifications.length > 0) {
-                return (
-                    <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
-                        {tripModifications.map(modification => (
-                            <li key={ modification.diversionId }>{modification.routeVariantName}</li>
-                        ))}
-                    </ul>
-                );
-            }
-            return 'None';
-        },
-    },
-    {
-        field: 'direction',
-        renderCell: ({ row: { tripModifications } }) => {
-            if (tripModifications.length > 0) {
-                return (
-                    <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
-                        {tripModifications.map(modification => (
-                            <li style={ { textAlign: 'right' } } key={ modification.diversionId }>{modification.direction}</li>
-                        ))}
-                    </ul>
-                );
-            }
-            return 'None';
-        },
-    },
-];
+const createRenderCell = (property, extraLiStyles = {}) => function renderCell({ row }) {
+    const { tripModifications } = row;
+    if (tripModifications.length > 0) {
+        return (
+            <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
+                {tripModifications.map(modification => (
+                    <li key={ modification.diversionId } style={ extraLiStyles }>
+                        {modification[property]}
+                    </li>
+                ))}
+            </ul>
+        );
+    }
+    return <span>None</span>;
+};
 
 describe('<ActiveDiversionView />', () => {
     it('should render component', () => {
@@ -159,22 +112,51 @@ describe('<ActiveDiversionView />', () => {
         expect(screen.getByText('Southbound')).toBeInTheDocument();
     });
 
-    describe('gridColumns renderCell', () => {
-        describe('diversionId column', () => {
-            it('executes true branch of if (tripModifications.length > 0)', () => {
-                const { container } = render(gridColumns[0].renderCell({ row: mockDiversions[0] }));
-                const ul = container.querySelector('ul');
-                expect(ul).toBeInTheDocument();
-                const liElements = within(ul).getAllByRole('listitem');
-                expect(liElements).toHaveLength(1);
-                expect(within(ul).getByText('DIV123')).toBeInTheDocument();
-            });
+    describe('getRowId', () => {
+        it('returns the diversionId from a row object', () => {
+            const getRowId = row => row.diversionId;
+            expect(getRowId(mockDiversions[0])).toBe('DIV123');
+            expect(getRowId(mockDiversions[1])).toBe('DIV456');
+            expect(getRowId(mockDiversions[2])).toBe('DIV789');
+        });
 
-            it('executes false branch of if (tripModifications.length > 0)', () => {
-                const { container } = render(gridColumns[0].renderCell({ row: mockDiversions[2] }));
-                expect(screen.getByText('None')).toBeInTheDocument();
-                expect(container.querySelector('ul')).not.toBeInTheDocument();
-            });
+        it('is passed to DataGridPro with correct row identification', () => {
+            render(<ActiveDiversionView diversions={ mockDiversions } />);
+            fireEvent.click(screen.getAllByTestId('expand-button')[0]);
+            expect(DataGridPro).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    getRowId: expect.any(Function),
+                    rows: [mockDiversions[0]],
+                }),
+                {},
+            );
+            const { getRowId } = DataGridPro.mock.calls[0][0];
+            expect(getRowId(mockDiversions[0])).toBe('DIV123');
+        });
+    });
+
+    describe('createRenderCell', () => {
+        let renderCell;
+
+        beforeEach(() => {
+            renderCell = createRenderCell('diversionId');
+        });
+
+        it('destructures row and executes true branch when tripModifications.length > 0', () => {
+            const { container } = render(renderCell({ row: mockDiversions[0] }));
+            const ul = container.querySelector('ul');
+            expect(ul).toBeInTheDocument();
+            const liElements = within(ul).getAllByRole('listitem');
+            expect(liElements).toHaveLength(1);
+            expect(within(ul).getByText('DIV123')).toBeInTheDocument();
+            expect(screen.queryByText('None')).not.toBeInTheDocument();
+        });
+
+        it('destructures row and executes false branch when tripModifications.length === 0', () => {
+            const { container } = render(renderCell({ row: mockDiversions[2] }));
+            expect(screen.getByText('None')).toBeInTheDocument();
+            expect(container.querySelector('ul')).not.toBeInTheDocument(); // No <ul>
+            expect(container.querySelector('span')).toBeInTheDocument();
         });
     });
 });
