@@ -391,7 +391,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1327-86502-48600-2-def93d11",
@@ -1588,7 +1588,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1299-90112-48600-2-11cb5f6d",
@@ -2147,7 +2147,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1299-90111-48600-2-3b81530e",
@@ -2706,7 +2706,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1289-88401-48600-2-b912107f",
@@ -3241,7 +3241,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1157-73303-48600-2-ab29dff9",
@@ -3781,7 +3781,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1342-99901-48600-2-fc27a69d",
@@ -4096,7 +4096,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1395-27001-48600-2-2997f62e",
@@ -4343,7 +4343,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "20-02006-48600-2-6a0de5f0",
@@ -4841,7 +4841,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1389-06403-48600-2-958b9de4",
@@ -5276,7 +5276,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1323-87101-48600-2-c416c064",
@@ -5837,7 +5837,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1323-87102-48600-2-329c7fa6",
@@ -6356,7 +6356,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1302-92601-48600-2-7ec7ba7b",
@@ -7644,7 +7644,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "20-02005-48600-2-cb453fca",
@@ -8080,7 +8080,7 @@
       "tripHeadsign": "St Lukes To Wynyard Quarter Via Kingsland",
       "display": true,
       "isAddedTrip": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1298-84502-48600-2-6ba4b861",
@@ -9391,7 +9391,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1017-98803-48600-2-4786b40f",
@@ -11616,7 +11616,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1038-36204-48600-2-08fd50a3",
@@ -12391,7 +12391,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1328-87801-48600-2-bb471556",
@@ -13942,7 +13942,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1388-20008-48600-2-9c7c7272",
@@ -14188,7 +14188,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1347-05004-48600-2-cc2004f3",
@@ -14770,7 +14770,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1034-32601-48600-2-f24579dd",
@@ -16811,7 +16811,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1293-09504-48600-2-f77042d4",
@@ -17418,7 +17418,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1181-35104-48600-2-5c6ff455",
@@ -17832,7 +17832,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1054-39407-48600-2-7c88f737",
@@ -18559,7 +18559,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1321-08204-48600-2-967fc953",
@@ -18951,7 +18951,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1073-32302-48600-2-6875d47d",
@@ -19533,7 +19533,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "234-07602-48600-2-d0083985",
@@ -20304,7 +20304,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1109-15405-48600-2-5a96ebcd",
@@ -21888,7 +21888,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1261-29801-48600-2-3a6038d4",
@@ -22575,7 +22575,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1292-01002-48600-2-4fd75bbc",
@@ -23592,7 +23592,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1300-90602-48600-2-1cbd499c",
@@ -24535,7 +24535,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1274-78302-48600-2-7585d97a",
@@ -25724,7 +25724,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1272-78101-48600-2-b79f46e4",
@@ -26408,7 +26408,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1304-92301-48600-2-099f26f1",
@@ -27967,7 +27967,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1027-03201-48600-2-fb1f7461",
@@ -29791,7 +29791,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1292-01001-48600-2-9b98cbc4",
@@ -30037,7 +30037,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1164-06704-48600-2-3444a94c",
@@ -30724,7 +30724,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "27-02704-48600-2-a9204e51",
@@ -31495,7 +31495,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1396-03804-48600-2-9f8ceb58",
@@ -32035,7 +32035,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1306-94101-48600-2-40a6fa38",
@@ -32978,7 +32978,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1326-86102-48600-2-70a79c86",
@@ -33921,7 +33921,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1315-86601-48600-2-19e7e1ed",
@@ -36979,7 +36979,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1275-06601-48600-2-3e2f891e",
@@ -39322,7 +39322,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1275-06602-48600-2-c763f64f",
@@ -43489,7 +43489,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1285-07502-48600-2-645de9c6",
@@ -44386,7 +44386,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1076-06504-48600-2-26ae19fc",
@@ -46932,7 +46932,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1286-79821-48600-2-d0121941",
@@ -47703,7 +47703,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1325-85601-48600-2-17847ab5",
@@ -49342,7 +49342,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1153-07006-48600-2-eade65a7",
@@ -50260,7 +50260,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1286-79922-48600-2-93ecd0e5",
@@ -50987,7 +50987,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1156-06701-48600-2-603e656b",
@@ -52115,7 +52115,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1153-07005-48600-2-d93b5dac",
@@ -54329,7 +54329,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1029-30901-48600-2-91694b9f",
@@ -55604,7 +55604,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1041-36606-48660-2-82d505df",
@@ -56403,7 +56403,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1288-88301-48720-2-f2259b56",
@@ -56674,7 +56674,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1016-98901-48720-2-dae72163",
@@ -58257,7 +58257,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1048-37604-48720-2-43183af9",
@@ -59735,7 +59735,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1308-09703-48720-2-874e4d46",
@@ -60654,7 +60654,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1279-02402-48720-2-456069ed",
@@ -61572,7 +61572,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1088-16101-48780-2-05789e81",
@@ -61963,7 +61963,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "335-79702-48780-2-6c8cb144",
@@ -63361,7 +63361,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1049-37702-48900-2-39944bc4",
@@ -64287,7 +64287,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1014-98503-48900-2-7b03616e",
@@ -64722,7 +64722,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1395-27002-48900-2-cb3062ba",
@@ -65010,7 +65010,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1111-11101-48900-2-e4f93c92",
@@ -65655,7 +65655,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1010-98110-48900-2-82bcb9fc",
@@ -66216,7 +66216,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1047-13502-48900-2-ff588635",
@@ -66819,7 +66819,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1320-81402-48900-2-e2bebb86",
@@ -68333,7 +68333,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1041-36605-48900-2-82b0be78",
@@ -69180,7 +69180,7 @@
           }
         ]
       },
-      "type": null
+      "type": ""
     },
     {
       "tripId": "1015-98604-48900-2-95eda5e1",
@@ -69864,7 +69864,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": null
+      "type": ""
     }
   ],
   "totalCount": 7279,

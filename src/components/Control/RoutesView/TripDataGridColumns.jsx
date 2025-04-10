@@ -9,6 +9,9 @@ import { StopSearchDataGridOperators } from '../Common/DataGrid/OmniSearchDataGr
 import { getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
 import { CustomSelectionHeader } from './CustomSelectionHeader';
+import { LABEL_DISRUPTION } from '../../../constants/disruptions';
+import { transformIncidentNo } from '../../../utils/control/disruptions';
+import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
 
 const formatSourceColumn = row => (isTripAdded(row) ? <FaCheckCircle className="icon-blue-check" size={ 18 } /> : '');
 
@@ -91,25 +94,32 @@ export function createGridColumns({
         {
             field: 'type',
             headerName: 'Type',
-            width: 100,
+            width: 200,
             hide: true,
             filterOperators: getGridSingleSelectOperators(true)
-                .map(o => { console.log(o.value); return o; })
+                // .map((o) => { console.log('--------filterOperations:', o.value); return o; })
                 .filter(o => ['isAnyOf'].includes(o.value)),
             valueOptions: [
                 { value: 'Replacement', label: 'Replacement' },
-                { value: 'Replaced', label: 'Replaced' },
+                // { value: 'Replaced', label: 'Replaced-REMOVING!!' },
                 { value: 'Add', label: 'Add' },
-                { value: null, label: 'Empty' },
+                { value: '', label: 'Empty' },
             ],
             sortable: true,
         },
+        // {
+        //     field: 'disruptionId',
+        //     headerName: 'Disruption',
+        //     width: 100,
+        //     hide: true,
+        //     sortable: true,
+        // },
         {
             field: 'disruptionId',
-            headerName: 'Disruption',
-            width: 100,
-            hide: true,
-            sortable: true,
+            headerName: LABEL_DISRUPTION,
+            width: 200,
+            renderCell: ({ row }) => transformIncidentNo(row.disruptionId),
+            filterOperators: sourceIdDataGridOperator,
         },
 
         // New Columns:END
