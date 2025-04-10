@@ -112,7 +112,7 @@ const gridColumns = [
 ];
 
 const renderCell = ({ row: { tripModifications } }) => {
-    if (tripModifications && tripModifications.length > 0) {
+    if (tripModifications.length > 0) {
         return (
             <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
                 {tripModifications.map(modification => (
