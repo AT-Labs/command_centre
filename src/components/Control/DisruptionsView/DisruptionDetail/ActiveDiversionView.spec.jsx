@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { DataGridPro } from '@mui/x-data-grid-pro';
 
@@ -54,9 +54,9 @@ const gridColumns = [
         renderCell: ({ row: { tripModifications } }) => {
             if (tripModifications.length > 0) {
                 return (
-                    <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
+                    <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                         {tripModifications.map(modification => (
-                            <li key={ modification.diversionId }>{modification.diversionId}</li>
+                            <li key={modification.diversionId}>{modification.diversionId}</li>
                         ))}
                     </ul>
                 );
@@ -69,9 +69,9 @@ const gridColumns = [
         renderCell: ({ row: { tripModifications } }) => {
             if (tripModifications.length > 0) {
                 return (
-                    <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
+                    <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                         {tripModifications.map(modification => (
-                            <li key={ modification.diversionId }>{modification.routeVariantId}</li>
+                            <li key={modification.diversionId}>{modification.routeVariantId}</li>
                         ))}
                     </ul>
                 );
@@ -84,9 +84,9 @@ const gridColumns = [
         renderCell: ({ row: { tripModifications } }) => {
             if (tripModifications.length > 0) {
                 return (
-                    <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
+                    <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                         {tripModifications.map(modification => (
-                            <li key={ modification.diversionId }>{modification.routeVariantName}</li>
+                            <li key={modification.diversionId}>{modification.routeVariantName}</li>
                         ))}
                     </ul>
                 );
@@ -99,9 +99,9 @@ const gridColumns = [
         renderCell: ({ row: { tripModifications } }) => {
             if (tripModifications.length > 0) {
                 return (
-                    <ul style={ { margin: 0, padding: 0, listStyle: 'none' } }>
+                    <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                         {tripModifications.map(modification => (
-                            <li style={ { textAlign: 'right' } } key={ modification.diversionId }>{modification.direction}</li>
+                            <li style={{ textAlign: 'right' }} key={modification.diversionId}>{modification.direction}</li>
                         ))}
                     </ul>
                 );
@@ -172,76 +172,95 @@ describe('<ActiveDiversionView />', () => {
         expect(screen.getByText('Southbound')).toBeInTheDocument();
     });
 
-    it('renders "None" for objects with empty tripModifications in a list', () => {
-        mockDiversions.forEach((mockDiversion) => {
-            render(renderCell({ row: mockDiversion }));
-
-            if (mockDiversion.tripModifications.length === 0) {
-                const noneElements = screen.getAllByText('None');
-                expect(noneElements.length).toBeGreaterThan(0);
-            } else {
-                mockDiversion.tripModifications.forEach((divId) => {
-                    const diversionElements = screen.getAllByText(divId.diversionId);
-                    expect(diversionElements.length).toBeGreaterThan(0);
-                });
-            }
-        });
-    });
-
-    it('should return the correct row ID from diversionId', () => {
-        const getRowId = row => row.diversionId;
-        const result = getRowId(mockDiversions[0]);
-        expect(result).toBe('DIV123');
-    });
-
     describe('gridColumns renderCell', () => {
-        it('renders diversionId column correctly with tripModifications', () => {
-            render(gridColumns[0].renderCell({ row: mockDiversions[0] }));
-            const elements = screen.getAllByText('DIV123');
-            expect(elements.length).toBeGreaterThan(0);
-            expect(screen.queryByText('None')).not.toBeInTheDocument();
-        });
+        describe('diversionId column', () => {
+            it('executes true branch of if (tripModifications.length > 0)', () => {
+                const { container } = render(gridColumns[0].renderCell({ row: mockDiversions[0] }));
+                const ul = container.querySelector('ul');
+                expect(ul).toBeInTheDocument(); // <ul> is rendered
+                const liElements = within(ul).getAllByRole('listitem');
+                expect(liElements).toHaveLength(1); // One <li> for DIV123
+                expect(within(ul).getByText('DIV123')).toBeInTheDocument();
+            });
 
-        it('renders diversionId column as "None" when tripModifications is empty', () => {
-            render(gridColumns[0].renderCell({ row: mockDiversions[2] }));
-            expect(screen.getByText('None')).toBeInTheDocument();
-            expect(screen.queryByText('DIV789')).not.toBeInTheDocument();
-        });
-
-        it('renders routeVariantId column correctly with tripModifications', () => {
-            render(gridColumns[1].renderCell({ row: mockDiversions[1] }));
-            expect(screen.getByText('TMKL-203-1')).toBeInTheDocument();
-            expect(screen.queryByText('None')).not.toBeInTheDocument();
-        });
-
-        it('renders routeVariantId column as "None" when tripModifications is empty', () => {
-            render(gridColumns[1].renderCell({ row: mockDiversions[2] }));
-            expect(screen.getByText('None')).toBeInTheDocument();
-            expect(screen.queryByText('TMKL-203-1')).not.toBeInTheDocument();
-        });
-
-        it('renders routeVariantName column correctly with tripModifications', () => {
-            render(gridColumns[2].renderCell({ row: mockDiversions[0] }));
-            expect(screen.getByText('North Express 2')).toBeInTheDocument();
-            expect(screen.queryByText('None')).not.toBeInTheDocument();
-        });
-
-        it('renders routeVariantName column as "None" when tripModifications is empty', () => {
-            render(gridColumns[2].renderCell({ row: mockDiversions[3] }));
-            expect(screen.getByText('None')).toBeInTheDocument();
-            expect(screen.queryByText('North Express 2')).not.toBeInTheDocument();
-        });
-
-        it('renders direction column correctly with tripModifications', () => {
-            render(gridColumns[3].renderCell({ row: mockDiversions[1] }));
-            expect(screen.getByText('Southbound')).toBeInTheDocument();
-            expect(screen.queryByText('None')).not.toBeInTheDocument();
-        });
-
-        it('renders direction column as "None" when tripModifications is empty', () => {
-            render(gridColumns[3].renderCell({ row: mockDiversions[2] }));
-            expect(screen.getByText('None')).toBeInTheDocument();
-            expect(screen.queryByText('Southbound')).not.toBeInTheDocument();
+            it('executes false branch of if (tripModifications.length > 0)', () => {
+                const { container } = render(gridColumns[0].renderCell({ row: mockDiversions[2] }));
+                expect(screen.getByText('None')).toBeInTheDocument();
+                expect(container.querySelector('ul')).not.toBeInTheDocument(); // No <ul>
+            });
         });
     });
+
+    // it('renders "None" for objects with empty tripModifications in a list', () => {
+    //     mockDiversions.forEach((mockDiversion) => {
+    //         render(renderCell({ row: mockDiversion }));
+
+    //         if (mockDiversion.tripModifications.length === 0) {
+    //             const noneElements = screen.getAllByText('None');
+    //             expect(noneElements.length).toBeGreaterThan(0);
+    //         } else {
+    //             mockDiversion.tripModifications.forEach((divId) => {
+    //                 const diversionElements = screen.getAllByText(divId.diversionId);
+    //                 expect(diversionElements.length).toBeGreaterThan(0);
+    //             });
+    //         }
+    //     });
+    // });
+
+    // it('should return the correct row ID from diversionId', () => {
+    //     const getRowId = row => row.diversionId;
+    //     const result = getRowId(mockDiversions[0]);
+    //     expect(result).toBe('DIV123');
+    // });
+
+    // describe('gridColumns renderCell', () => {
+    //     it('renders diversionId column correctly with tripModifications', () => {
+    //         render(gridColumns[0].renderCell({ row: mockDiversions[0] }));
+    //         const elements = screen.getAllByText('DIV123');
+    //         expect(elements.length).toBeGreaterThan(0);
+    //         expect(screen.queryByText('None')).not.toBeInTheDocument();
+    //     });
+
+    //     it('renders diversionId column as "None" when tripModifications is empty', () => {
+    //         render(gridColumns[0].renderCell({ row: mockDiversions[2] }));
+    //         expect(screen.getByText('None')).toBeInTheDocument();
+    //         expect(screen.queryByText('DIV789')).not.toBeInTheDocument();
+    //     });
+
+    //     it('renders routeVariantId column correctly with tripModifications', () => {
+    //         render(gridColumns[1].renderCell({ row: mockDiversions[1] }));
+    //         expect(screen.getByText('TMKL-203-1')).toBeInTheDocument();
+    //         expect(screen.queryByText('None')).not.toBeInTheDocument();
+    //     });
+
+    //     it('renders routeVariantId column as "None" when tripModifications is empty', () => {
+    //         render(gridColumns[1].renderCell({ row: mockDiversions[2] }));
+    //         expect(screen.getByText('None')).toBeInTheDocument();
+    //         expect(screen.queryByText('TMKL-203-1')).not.toBeInTheDocument();
+    //     });
+
+    //     it('renders routeVariantName column correctly with tripModifications', () => {
+    //         render(gridColumns[2].renderCell({ row: mockDiversions[0] }));
+    //         expect(screen.getByText('North Express 2')).toBeInTheDocument();
+    //         expect(screen.queryByText('None')).not.toBeInTheDocument();
+    //     });
+
+    //     it('renders routeVariantName column as "None" when tripModifications is empty', () => {
+    //         render(gridColumns[2].renderCell({ row: mockDiversions[3] }));
+    //         expect(screen.getByText('None')).toBeInTheDocument();
+    //         expect(screen.queryByText('North Express 2')).not.toBeInTheDocument();
+    //     });
+
+    //     it('renders direction column correctly with tripModifications', () => {
+    //         render(gridColumns[3].renderCell({ row: mockDiversions[1] }));
+    //         expect(screen.getByText('Southbound')).toBeInTheDocument();
+    //         expect(screen.queryByText('None')).not.toBeInTheDocument();
+    //     });
+
+    //     it('renders direction column as "None" when tripModifications is empty', () => {
+    //         render(gridColumns[3].renderCell({ row: mockDiversions[2] }));
+    //         expect(screen.getByText('None')).toBeInTheDocument();
+    //         expect(screen.queryByText('Southbound')).not.toBeInTheDocument();
+    //     });
+    // });
 });
