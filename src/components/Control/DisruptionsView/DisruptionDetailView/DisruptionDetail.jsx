@@ -909,7 +909,6 @@ const DisruptionDetailView = (props) => {
                         <span className="map-note">Note: Only a max of ten routes and ten stops will be displayed on the map.</span>
                     </section>
                 </div>
-                {/* DATA TABLE HERE */}
                 <CustomMuiDialog
                     title="Disruption Active Periods"
                     onClose={ () => setActivePeriodsModalOpen(false) }
