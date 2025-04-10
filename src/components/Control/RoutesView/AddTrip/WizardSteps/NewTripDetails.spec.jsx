@@ -104,6 +104,9 @@ describe('NewTripDetails', () => {
         jest.clearAllMocks();
     });
 
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
+
     it('renders without crashing', () => {
         expect(wrapper).toHaveLength(1);
     });
