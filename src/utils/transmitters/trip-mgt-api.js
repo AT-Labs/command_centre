@@ -82,7 +82,7 @@ export const getTrips = (filterProps) => {
     if (disruptionId) { variables.disruptionId = disruptionId; }
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
-    const isMock = false;
+    const isMock = true;
 
     if (isMock) {
         // eslint-disable-next-line no-console
