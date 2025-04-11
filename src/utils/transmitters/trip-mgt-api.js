@@ -29,29 +29,24 @@ export const getRoutes = () => fetchWithAuthHeader(
     },
 ).then(response => jsonResponseHandling(response));
 
-export const getTrips = (filterProps) => {
-    // eslint-disable-next-line no-console
-    console.log('--------getTrips--------:', filterProps);
-    const {
-        agencyId, routeType, serviceDate,
-        routeVariantIds, page, limit,
-        startTimeFrom, startTimeTo, tripIds,
-        endTimeFrom, endTimeTo,
-        tripStatus, depotIds,
-        vehicleLabels, referenceIds,
-        trackingStatuses,
-        trackingStatus,
-        sorting,
-        isGroupedByRoute,
-        isGroupedByRouteVariant,
-        delayRange,
-        firstStopCode,
-        lastStopCode,
-        source,
-        display,
-        type,
-        disruptionId,
-    } = filterProps;
+export const getTrips = ({
+    agencyId, routeType, serviceDate,
+    routeVariantIds, page, limit,
+    startTimeFrom, startTimeTo, tripIds,
+    endTimeFrom, endTimeTo,
+    tripStatus, depotIds,
+    vehicleLabels, referenceIds,
+    trackingStatuses,
+    trackingStatus,
+    sorting,
+    isGroupedByRoute,
+    isGroupedByRouteVariant,
+    delayRange,
+    firstStopCode,
+    lastStopCode,
+    source,
+    display,
+}) => {
     const variables = { serviceDate };
     if (agencyId) { variables.agencyId = agencyId; }
     if (depotIds) { variables.depotIds = depotIds; }
@@ -78,17 +73,8 @@ export const getTrips = (filterProps) => {
     if (lastStopCode) { variables.lastStopCode = lastStopCode; }
     if (source) { variables.source = source; }
     if (display) { variables.display = display; }
-    if (type) { variables.type = type; }
-    if (disruptionId) { variables.disruptionId = disruptionId; }
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
-    const isMock = true;
-
-    if (isMock) {
-        // eslint-disable-next-line no-console
-        console.log(`------BODY DUMP:${JSON.stringify(variables)}`);
-        return fetch('/mocks/trip_instances_mock.json').then(r => r.json());
-    }
     return fetchWithAuthHeader(
         url,
         {
