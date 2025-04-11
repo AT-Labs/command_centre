@@ -104,6 +104,7 @@ describe('NewTripDetails', () => {
         jest.clearAllMocks();
     });
 
+    beforeEach(() => { process.env.TZ = 'Pacific/Auckland'; });
     beforeEach(() => jest.useFakeTimers());
     afterEach(() => jest.useRealTimers());
 
