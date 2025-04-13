@@ -548,9 +548,8 @@ const DisruptionDetailView = (props) => {
         <Form className={ props.className }>
             <div className={ isReadOnlyMode ? 'read-only-container' : '' }>
                 <div className={ `row position-relative ${props.className === 'magnify' ? 'mr-0' : ''}` }>
-                    { /* This ONE  */ }
                     <AffectedEntities
-                        editLabel="Edit routes, stops and workaroundsssts"
+                        editLabel="Edit routes, stops and workarounds"
                         editAction={ affectedEntitiesEditActionHandler }
                         isEditDisabled={ isRequesting || isLoading || isResolved() || isReadOnlyMode }
                         affectedEntities={ disruption.affectedEntities }

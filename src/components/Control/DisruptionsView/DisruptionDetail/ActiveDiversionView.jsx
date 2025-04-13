@@ -53,9 +53,9 @@ const ActiveDiversionView = ({ diversions }) => {
                 style={ styles.button }
             >
                 {expandedRows[diversion.diversionId] ? (
-                    <IoIosArrowDown size={ 20 } color="black" className="ml-1" />
-                ) : (
                     <IoIosArrowUp size={ 20 } color="black" className="ml-1" />
+                ) : (
+                    <IoIosArrowDown size={ 20 } color="black" className="ml-1" />
                 )}
             </button>
             <span>
