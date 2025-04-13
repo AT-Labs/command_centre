@@ -41,6 +41,9 @@ import { getUserPreferences } from '../../../utils/transmitters/command-centre-c
 import { updateRoutesTripsDatagridConfig, updateDefaultRoutesTripsDatagridConfig } from '../../../redux/actions/datagrid';
 import { getRoutesTripsDatagridConfig } from '../../../redux/selectors/datagrid';
 import { mergeRouteFilters } from '../../../redux/actions/control/routes/filters';
+import { LABEL_DISRUPTION } from '../../../constants/disruptions';
+import { transformIncidentNo } from '../../../utils/control/disruptions';
+import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
 
@@ -164,6 +167,49 @@ export const TripsDataGrid = (props) => {
             ),
             renderCell: params => formatSourceColumn(params.row),
         }] : [],
+        // LCJ:New Columns:BEGIN
+        {
+            field: 'type',
+            headerName: 'Type',
+            width: 200,
+            hide: true,
+            filterOperators: getGridSingleSelectOperators(true)
+                // .map((o) => { console.log('--------filterOperations:', o.value); return o; })
+                .filter(o => ['is', 'not'].includes(o.value)),
+            valueOptions: [
+                { value: 'Replacement', label: 'Replacement' },
+                // { value: 'Replaced', label: 'Replaced-REMOVING!!' },
+                { value: 'Add', label: 'Add' },
+                // { value: '', label: 'Empty' },
+            ],
+            sortable: true,
+        },
+        // {
+        //     field: 'disruptionId',
+        //     headerName: 'Disruption',
+        //     width: 100,
+        //     hide: true,
+        //     sortable: true,
+        // },
+        // onClick={ () => {
+        //     window.open(`/control-main-view/control-disruptions/${row.disruptionId.toString()}`, '_blank');
+        // } }>
+        {
+            field: 'disruptionId',
+            headerName: LABEL_DISRUPTION,
+            width: 200,
+            renderCell: ({ row }) => {
+                const formattedDisruptionId = transformIncidentNo(row.disruptionId);
+                if (formattedDisruptionId) {
+                    return (
+                        <a href={ `/control-main-view/control-disruptions/${row.disruptionId.toString()}` }>{formattedDisruptionId}</a>
+                    );
+                }
+                return '';
+            },
+            filterOperators: sourceIdDataGridOperator,
+        },
+        // LCJ:New Columns:END
         {
             field: 'vehicleLabel',
             headerName: 'Vehicle Label',
@@ -342,6 +388,11 @@ export const TripsDataGrid = (props) => {
         tripId: tripInstance.tripId,
         ...(props.useHideTrip && { display: tripInstance.display }),
         ...(props.useAddTrip && { source: tripInstance.source }),
+        // TODO:  Feature flag BEGIN
+        type: tripInstance.type,
+        disruptionId: tripInstance.disruptionId,
+        // TODO:  Feature flag END
+
         tripInstance: {
             ...tripInstance,
             stops: markStopsAsFirstOrLast(tripInstance.stops),
