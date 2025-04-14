@@ -195,6 +195,7 @@ export const TripsDataGrid = (props) => {
             field: 'disruptionId',
             headerName: LABEL_DISRUPTION,
             width: 200,
+            hide: true,
             renderCell: renderDisruptionIdCell,
             filterOperators: sourceIdDataGridOperator,
         },
