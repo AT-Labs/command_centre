@@ -52,7 +52,7 @@ export const renderDisruptionIdCell = ({ row }) => {
             <a href={ `/control-main-view/control-disruptions/${row.disruptionId.toString()}` }>{formattedDisruptionId}</a>
         );
     }
-    return undefined; 
+    return undefined;
 };
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
