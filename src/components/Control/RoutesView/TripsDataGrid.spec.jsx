@@ -1,6 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import { TripsDataGrid, renderDisruptionIdCell } from './TripsDataGrid';
+import { TripsDataGrid } from './TripsDataGrid';
 
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
 
@@ -25,13 +25,6 @@ const componentPropsMock = {
     selectAllTrips: () => {},
     filterTripInstances: () => {},
     updateActiveTripInstances: () => {},
-    mergeRouteFilters: () => { },
-    updateDefaultRoutesTripsDatagridConfig: () => { },
-    useRoutesTripsPreferences: false,
-    useHideTrip: false,
-    useAddTrip: false,
-    updateRoutesTripsDatagridConfig: () => { },
-    routesTripsDatagridConfig: {},
 };
 
 const setup = (customProps) => {
@@ -44,23 +37,6 @@ describe('TripsDataGrid', () => {
     it('Should render', () => {
         wrapper = setup();
         expect(wrapper.exists()).toEqual(true);
-    });
-
-    describe('renderDisruptionIdCell', () => {
-        it('should return a link with correct href and text when disruptionId is present', () => {
-            const disruptionId = 123;
-            const result = renderDisruptionIdCell({ row: { disruptionId } });
-
-            expect(result).toBeTruthy();
-            expect(result.type).toBe('a');
-            expect(result.props.href).toBe('/control-main-view/control-disruptions/123');
-            expect(result.props.children).toBe('DISR000123');
-        });
-
-        it('should return undefined when disruptionId is null', () => {
-            const result = renderDisruptionIdCell({ row: { disruptionId: null } });
-            expect(result).toBeUndefined();
-        });
     });
 
     describe('getRowClassName', () => {
@@ -83,22 +59,6 @@ describe('TripsDataGrid', () => {
                 const result = wrapper.find('CustomDataGrid').prop('getRowClassName')({ row });
                 expect(result).toBe(expectedClassName);
             });
-        });
-
-        it('should have type and disruptionId columns defined correctly', () => {
-            wrapper = setup();
-            const columns = wrapper.find('CustomDataGrid').prop('columns');
-
-            const typeCol = columns.find(col => col.field === 'type');
-            const disruptionCol = columns.find(col => col.field === 'disruptionId');
-
-            expect(typeCol).toBeDefined();
-            expect(typeCol.headerName).toBe('Type');
-            expect(typeCol.hide).toBe(true);
-
-            expect(disruptionCol).toBeDefined();
-            expect(disruptionCol.headerName).toBe('Disruption');
-            expect(typeof disruptionCol.renderCell).toBe('function');
         });
     });
 });

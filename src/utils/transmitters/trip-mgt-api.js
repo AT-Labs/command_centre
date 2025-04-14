@@ -45,8 +45,6 @@ export const getTrips = ({
     firstStopCode,
     lastStopCode,
     source,
-    type,
-    disruptionId,
     display,
 }) => {
     const variables = { serviceDate };
@@ -75,11 +73,8 @@ export const getTrips = ({
     if (lastStopCode) { variables.lastStopCode = lastStopCode; }
     if (source) { variables.source = source; }
     if (display) { variables.display = display; }
-    if (type) { variables.type = type; }
-    if (disruptionId) { variables.disruptionId = disruptionId; }
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
-
     return fetchWithAuthHeader(
         url,
         {
@@ -90,12 +85,7 @@ export const getTrips = ({
             },
             body: JSON.stringify(variables),
         },
-    )
-        // .then(r => {
-        //     console.log(r);
-        //     return r;
-        // })
-        .then(response => jsonResponseHandling(response))
+    ).then(response => jsonResponseHandling(response))
         .then(res => ({ ...res, tripInstances: res.tripInstances.map(tripInstance => ({ ...tripInstance, delay: tripInstance.combinedDelay })) }));
 };
 

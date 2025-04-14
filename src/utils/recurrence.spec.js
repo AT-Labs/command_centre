@@ -90,7 +90,7 @@ describe('recurrence.js', () => {
             expect(newActivePeriods[1].endTime).toEqual(moment.unix(activePeriodsOneComplete[1].startTime).add(2, 'h').unix());
         });
 
-        it(`Should return one past active period and one current period with the endtime changed and one new period 
+        it(`Should return one past active period and one current period with the endtime changed and one new period
             when one period has completed, one started and the duration is changed`, () => {
             const startDate = moment.unix(activePeriodsOneCompleteAndOneCurrent[0].startTime);
             const endDate = moment.unix(activePeriodsOneCompleteAndOneCurrent[2].endTime);
@@ -113,8 +113,8 @@ describe('recurrence.js', () => {
 
             expect(newActivePeriods.length).toEqual(4);
             expect(newActivePeriods.slice(0, 3)).toEqual(activePeriodsOneCompleteAndOneCurrent.slice(0, 3));
-            expect(newActivePeriods.slice(3)[0].startTime).toEqual(moment.unix(activePeriodsOneCompleteAndOneCurrent[2].startTime).add(1, 'd').unix());
-            expect(newActivePeriods.slice(3)[0].endTime).toEqual(moment.unix(activePeriodsOneCompleteAndOneCurrent[2].endTime).add(1, 'd').unix());
+            expect(newActivePeriods.slice(3)[0].startTime).toEqual(moment.unix(activePeriodsOneCompleteAndOneCurrent[2].startTime).tz(DATE_TYPE.TIME_ZONE).add(1, 'd').unix());
+            expect(newActivePeriods.slice(3)[0].endTime).toEqual(moment.unix(activePeriodsOneCompleteAndOneCurrent[2].endTime).tz(DATE_TYPE.TIME_ZONE).add(1, 'd').unix());
         });
 
         it('should reinstate the current active period duration if disruption has been resolved whilst current and then reinstated', () => {
