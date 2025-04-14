@@ -205,7 +205,7 @@ export const updateSelectedStopsByTrip = tripInstance => async (dispatch, getSta
         }, []);
 
         dispatch(updateSelectedStops(tripInstance, updatedSelectedStops));
-    } catch (e) {
+    } catch {
         return ErrorType.tripsFetch && dispatch(setBannerError(ErrorType.tripsFetch));
     }
 
@@ -424,7 +424,7 @@ export const fetchAndUpdateSelectedStops = tripInstance => async (dispatch, getS
         const { tripInstances } = await TRIP_MGT_API.getTrips(tripsArgs);
         const updatedStops = map(selectedStopsByTrip, selectedStop => tripInstances[0].stops.filter(stop => stop.stopId === selectedStop.stopId)[0]);
         dispatch(updateSelectedStops(tripInstance, updatedStops));
-    } catch (e) {
+    } catch {
         return ErrorType.tripsFetch && dispatch(setBannerError(ErrorType.tripsFetch));
     }
 
