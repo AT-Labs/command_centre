@@ -25,6 +25,13 @@ const componentPropsMock = {
     selectAllTrips: () => {},
     filterTripInstances: () => {},
     updateActiveTripInstances: () => {},
+    mergeRouteFilters: () => { },
+    updateDefaultRoutesTripsDatagridConfig: () => { },
+    useRoutesTripsPreferences: false,
+    useHideTrip: false,
+    useAddTrip: false,
+    updateRoutesTripsDatagridConfig: () => { },
+    routesTripsDatagridConfig: {},
 };
 
 const setup = (customProps) => {
@@ -59,6 +66,22 @@ describe('TripsDataGrid', () => {
                 const result = wrapper.find('CustomDataGrid').prop('getRowClassName')({ row });
                 expect(result).toBe(expectedClassName);
             });
+        });
+
+        it('should have type and disruptionId columns defined correctly', () => {
+            wrapper = setup();
+            const columns = wrapper.find('CustomDataGrid').prop('columns');
+
+            const typeCol = columns.find(col => col.field === 'type');
+            const disruptionCol = columns.find(col => col.field === 'disruptionId');
+
+            expect(typeCol).toBeDefined();
+            expect(typeCol.headerName).toBe('Type');
+            expect(typeCol.hide).toBe(true);
+
+            expect(disruptionCol).toBeDefined();
+            expect(disruptionCol.headerName).toBe('Disruption');
+            expect(typeof disruptionCol.renderCell).toBe('function');
         });
     });
 });
