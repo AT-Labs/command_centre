@@ -45,6 +45,16 @@ import { LABEL_DISRUPTION } from '../../../constants/disruptions';
 import { transformIncidentNo } from '../../../utils/control/disruptions';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
 
+export const renderDisruptionIdCell = ({ row }) => {
+    const formattedDisruptionId = transformIncidentNo(row.disruptionId);
+    if (formattedDisruptionId) {
+        return (
+            <a href={ `/control-main-view/control-disruptions/${row.disruptionId.toString()}` }>{formattedDisruptionId}</a>
+        );
+    }
+    return undefined; 
+};
+
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
 
 const formatSourceColumn = row => (isTripAdded(row) ? <FaCheckCircle className="icon-blue-check" size={ 18 } /> : '');
@@ -185,15 +195,7 @@ export const TripsDataGrid = (props) => {
             field: 'disruptionId',
             headerName: LABEL_DISRUPTION,
             width: 200,
-            renderCell: ({ row }) => {
-                const formattedDisruptionId = transformIncidentNo(row.disruptionId);
-                if (formattedDisruptionId) {
-                    return (
-                        <a href={ `/control-main-view/control-disruptions/${row.disruptionId.toString()}` }>{formattedDisruptionId}</a>
-                    );
-                }
-                return '';
-            },
+            renderCell: renderDisruptionIdCell,
             filterOperators: sourceIdDataGridOperator,
         },
         {
