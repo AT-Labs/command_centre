@@ -167,7 +167,6 @@ export const TripsDataGrid = (props) => {
             ),
             renderCell: params => formatSourceColumn(params.row),
         }] : [],
-        // LCJ:New Columns:BEGIN
         {
             field: 'type',
             headerName: 'Type',
@@ -178,22 +177,10 @@ export const TripsDataGrid = (props) => {
                 .filter(o => ['is', 'not'].includes(o.value)),
             valueOptions: [
                 { value: 'Replacement', label: 'Replacement' },
-                // { value: 'Replaced', label: 'Replaced-REMOVING!!' },
                 { value: 'Add', label: 'Add' },
-                // { value: '', label: 'Empty' },
             ],
             sortable: true,
         },
-        // {
-        //     field: 'disruptionId',
-        //     headerName: 'Disruption',
-        //     width: 100,
-        //     hide: true,
-        //     sortable: true,
-        // },
-        // onClick={ () => {
-        //     window.open(`/control-main-view/control-disruptions/${row.disruptionId.toString()}`, '_blank');
-        // } }>
         {
             field: 'disruptionId',
             headerName: LABEL_DISRUPTION,
@@ -209,7 +196,6 @@ export const TripsDataGrid = (props) => {
             },
             filterOperators: sourceIdDataGridOperator,
         },
-        // LCJ:New Columns:END
         {
             field: 'vehicleLabel',
             headerName: 'Vehicle Label',
@@ -388,11 +374,8 @@ export const TripsDataGrid = (props) => {
         tripId: tripInstance.tripId,
         ...(props.useHideTrip && { display: tripInstance.display }),
         ...(props.useAddTrip && { source: tripInstance.source }),
-        // TODO:  Feature flag BEGIN
         type: tripInstance.type,
         disruptionId: tripInstance.disruptionId,
-        // TODO:  Feature flag END
-
         tripInstance: {
             ...tripInstance,
             stops: markStopsAsFirstOrLast(tripInstance.stops),

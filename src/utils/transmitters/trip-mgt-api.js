@@ -80,7 +80,6 @@ export const getTrips = ({
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
     // const isMock = true;
-
     // if (isMock) {
     //     // eslint-disable-next-line no-console
     //     console.log(`------BODY DUMP:${JSON.stringify(variables)}`);
