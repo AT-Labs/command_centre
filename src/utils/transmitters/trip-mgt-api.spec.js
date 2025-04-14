@@ -1,16 +1,64 @@
-import { updateTripStatus, updateStopId, updateTripDelay, moveToNextStop, moveTotStop, updateHeadsign, searchTrip } from './trip-mgt-api';
+import { getTrips, updateTripStatus, updateStopId, updateTripDelay, moveToNextStop, moveTotStop, updateHeadsign, searchTrip } from './trip-mgt-api';
 import * as graphql from '../graphql';
 import * as auth from '../../auth';
 import * as jsonHandling from '../fetch';
 
 const mutateStatic = jest.spyOn(graphql, 'mutateStatic');
 jest.spyOn(auth, 'getAuthToken').mockResolvedValue('auth_token');
-
 const tripId = {
     tripId: 'trip-id-1',
     serviceDate: '20230101',
     startTime: '10:00:00',
 };
+
+describe('getTrips', () => {
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should send filter for type and discruptionId if set', async () => {
+        jest.spyOn(auth, 'fetchWithAuthHeader').mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                blah: 'hello',
+                tripInstances: [],
+            }),
+        });
+
+        const filter = {
+            type: 'blah',
+            disruptionId: 123,
+        };
+        await getTrips(filter);
+
+        // Validations
+        const { body } = auth.fetchWithAuthHeader.mock.calls[0][1];
+        expect(auth.fetchWithAuthHeader).toHaveBeenCalledTimes(1);
+        expect(JSON.parse(body)).toEqual({
+            type: 'blah',
+            disruptionId: 123,
+        });
+    });
+
+    it('should send empty filter when nothing set', async () => {
+        jest.spyOn(auth, 'fetchWithAuthHeader').mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                blah: 'hello',
+                tripInstances: [],
+            }),
+        });
+
+        const filter = { };
+        await getTrips(filter);
+
+        // Validations
+        const { body } = auth.fetchWithAuthHeader.mock.calls[0][1];
+        expect(auth.fetchWithAuthHeader).toHaveBeenCalledTimes(1);
+
+        expect(JSON.parse(body)).toEqual({ });
+    });
+});
 
 describe('Operation result', () => {
     afterAll(() => {
