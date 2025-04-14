@@ -79,12 +79,6 @@ export const getTrips = ({
     if (disruptionId) { variables.disruptionId = disruptionId; }
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
-    // const isMock = true;
-    // if (isMock) {
-    //     // eslint-disable-next-line no-console
-    //     console.log(`------BODY DUMP:${JSON.stringify(variables)}`);
-    //     return fetch('/mocks/trip_instances_mock.json').then(r => r.json());
-    // }
     return fetchWithAuthHeader(
         url,
         {
