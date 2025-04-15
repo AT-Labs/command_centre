@@ -26,7 +26,8 @@ describe('getTrips', () => {
         });
 
         const filter = {
-            isType: 'blah',
+            isType: 'foo',
+            notType: 'bar',
             disruptionId: 123,
         };
         await getTrips(filter);
@@ -35,7 +36,8 @@ describe('getTrips', () => {
         const { body } = auth.fetchWithAuthHeader.mock.calls[0][1];
         expect(auth.fetchWithAuthHeader).toHaveBeenCalledTimes(1);
         expect(JSON.parse(body)).toEqual({
-            isType: 'blah',
+            isType: 'foo',
+            notType: 'bar',
             disruptionId: 123,
         });
     });
