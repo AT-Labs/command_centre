@@ -33,5 +33,7 @@
     "useRouteAlertsLayer": "false",
     "useNewMonitoring": "false",
     "useDraftDisruptions": "false",
-    "useDisruptionDraftEmailSharing": "false"
+    "useDisruptionDraftEmailSharing": "false",
+    "useHideSkippedStop": "false",
+    "useDiversion": "false"
 }

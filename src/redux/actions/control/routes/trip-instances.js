@@ -205,7 +205,7 @@ export const updateSelectedStopsByTrip = tripInstance => async (dispatch, getSta
         }, []);
 
         dispatch(updateSelectedStops(tripInstance, updatedSelectedStops));
-    } catch (e) {
+    } catch {
         return ErrorType.tripsFetch && dispatch(setBannerError(ErrorType.tripsFetch));
     }
 
@@ -424,7 +424,7 @@ export const fetchAndUpdateSelectedStops = tripInstance => async (dispatch, getS
         const { tripInstances } = await TRIP_MGT_API.getTrips(tripsArgs);
         const updatedStops = map(selectedStopsByTrip, selectedStop => tripInstances[0].stops.filter(stop => stop.stopId === selectedStop.stopId)[0]);
         dispatch(updateSelectedStops(tripInstance, updatedStops));
-    } catch (e) {
+    } catch {
         return ErrorType.tripsFetch && dispatch(setBannerError(ErrorType.tripsFetch));
     }
 
@@ -580,8 +580,9 @@ export const filterTripInstances = forceLoad => (dispatch, getState) => {
         sorting: parseSortModel(routesTripsDatagridConfig.sortModel),
     };
 
-    const viewType = getControlDetailRoutesViewType(state);
+    if (filters.disruptionId?.id) filterRequest.disruptionId = parseInt(filters.disruptionId.id, 10);
 
+    const viewType = getControlDetailRoutesViewType(state);
     if (viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_ROUTE_VARIANTS_TRIPS
         || viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTE_VARIANTS_TRIPS) {
         filterRequest.routeVariantIds = [get(getActiveRouteVariant(state), 'routeVariantId')];

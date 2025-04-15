@@ -1,5 +1,4 @@
 import { getAllFeatures, getWorksite, getLayout } from './cars-api';
-import * as auth from '../../auth';
 
 jest.mock('../browser-cache', () => ({
     setCache: jest.fn(),
@@ -8,7 +7,7 @@ jest.mock('../browser-cache', () => ({
 
 describe('getAllFeatures', () => {
     beforeEach(() => {
-        jest.spyOn(auth, 'fetchWithAuthHeader');
+        global.fetch = jest.fn();
     });
     beforeEach(() => {
         Object.defineProperty(global, 'sessionStorage', {
@@ -44,7 +43,7 @@ describe('getAllFeatures', () => {
             },
         ];
 
-        auth.fetchWithAuthHeader.mockResolvedValue({
+        fetch.mockResolvedValue({
             ok: true,
             json: jest.fn().mockResolvedValue(mockResponse),
         });
@@ -66,7 +65,7 @@ describe('getAllFeatures', () => {
     });
 
     it('should handle fetch errors gracefully', async () => {
-        auth.fetchWithAuthHeader.mockResolvedValue({
+        fetch.mockResolvedValue({
             status: 500,
             ok: false,
             json: jest.fn().mockResolvedValue({ message: 'Internal Server Error' }),
@@ -81,7 +80,7 @@ describe('getAllFeatures', () => {
 
 describe('getWorksite', () => {
     beforeEach(() => {
-        jest.spyOn(auth, 'fetchWithAuthHeader');
+        global.fetch = jest.fn();
     });
 
     afterEach(() => {
@@ -92,14 +91,14 @@ describe('getWorksite', () => {
         const worksiteCode = '123';
         const mockResponse = { worksiteCode: '123', name: 'Test Worksite' };
 
-        auth.fetchWithAuthHeader.mockResolvedValue({
+        fetch.mockResolvedValue({
             ok: true,
             json: jest.fn().mockResolvedValue(mockResponse),
         });
 
         const result = await getWorksite(worksiteCode, false);
 
-        expect(auth.fetchWithAuthHeader).toHaveBeenCalledWith(expect.anything(), expect.anything());
+        expect(fetch).toHaveBeenCalledWith(expect.anything(), expect.anything());
         expect(result).toEqual(mockResponse);
     });
 
@@ -107,7 +106,7 @@ describe('getWorksite', () => {
         const worksiteCode = '123';
         const errorMessage = `No corresponding TMP found for this CAR Number ${worksiteCode}.`;
 
-        auth.fetchWithAuthHeader.mockResolvedValue({
+        fetch.mockResolvedValue({
             ok: false,
             status: 404,
             json: jest.fn().mockResolvedValue({}),
@@ -120,20 +119,20 @@ describe('getWorksite', () => {
         const worksiteCode = '123';
         const mockResponse = { worksiteCode: '123', name: 'Test Worksite' };
 
-        auth.fetchWithAuthHeader.mockResolvedValue({
+        fetch.mockResolvedValue({
             ok: true,
             json: jest.fn().mockResolvedValue(mockResponse),
         });
 
         await getWorksite(worksiteCode, true);
 
-        expect(auth.fetchWithAuthHeader).toHaveBeenCalledWith(expect.anything(), expect.anything());
+        expect(fetch).toHaveBeenCalledWith(expect.anything(), expect.anything());
     });
 });
 
 describe('getLayout', () => {
     beforeEach(() => {
-        jest.spyOn(auth, 'fetchWithAuthHeader');
+        global.fetch = jest.fn();
     });
 
     afterEach(() => {
@@ -144,14 +143,14 @@ describe('getLayout', () => {
         const ids = '1,2,3';
         const mockResponse = { layout: 'Test Layout' };
 
-        auth.fetchWithAuthHeader.mockResolvedValue({
+        fetch.mockResolvedValue({
             ok: true,
             json: jest.fn().mockResolvedValue(mockResponse),
         });
 
         const result = await getLayout(ids, false);
 
-        expect(auth.fetchWithAuthHeader).toHaveBeenCalled();
+        expect(fetch).toHaveBeenCalled();
         expect(result).toEqual(mockResponse);
     });
 
@@ -159,7 +158,7 @@ describe('getLayout', () => {
         const ids = '1,2,3';
         const errorMessage = 'No layout corresponding to the TMPs of this CAR.';
 
-        auth.fetchWithAuthHeader.mockResolvedValue({
+        fetch.mockResolvedValue({
             ok: false,
             status: 404,
             json: jest.fn().mockResolvedValue({}),
@@ -172,13 +171,13 @@ describe('getLayout', () => {
         const ids = '1,2,3';
         const mockResponse = { layout: 'Test Layout' };
 
-        auth.fetchWithAuthHeader.mockResolvedValue({
+        fetch.mockResolvedValue({
             ok: true,
             json: jest.fn().mockResolvedValue(mockResponse),
         });
 
         await getLayout(ids, true);
 
-        expect(auth.fetchWithAuthHeader).toHaveBeenCalledWith(expect.anything(), expect.anything());
+        expect(fetch).toHaveBeenCalledWith(expect.anything(), expect.anything());
     });
 });

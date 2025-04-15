@@ -1,7 +1,6 @@
 import { jsonResponseHandling } from '../fetch';
 import { setCache, getCache } from '../browser-cache';
 import { getYesterdayTomorrowDates } from '../cars';
-import { fetchWithAuthHeader } from '../../auth';
 
 const { REACT_APP_AT_CARS_INTEGRATION_URL } = process.env;
 const CACHE_EXPIRY_MS = 15 * 60 * 1000;
@@ -22,7 +21,7 @@ export const getAllFeatures = async (forceFetch = false) => {
     }
 
     // Fetch new data from API
-    const response = await fetchWithAuthHeader(api, { method: 'GET' });
+    const response = await fetch(api, { method: 'GET' });
     const json = await jsonResponseHandling(response);
 
     // Remap polygon coordinates (lon,lat → lat,lon)
@@ -57,7 +56,7 @@ export const getWorksite = async (worksiteCode, filterByYesterdayTodayTomomorrow
         url += `&date_from=${dateFrom}&date_to=${dateTo}`;
     }
 
-    const response = await fetchWithAuthHeader(url, { method: 'GET' });
+    const response = await fetch(url, { method: 'GET' });
     if (!response.ok && response.status === 404) {
         let errorMessage = `No corresponding TMP found for this CAR Number ${worksiteCode}.`;
 
@@ -78,7 +77,7 @@ export const getLayout = async (ids, filterByYesterdayTodayTomomorrowDate) => {
         url += `&date_from=${dateFrom}&date_to=${dateTo}`;
     }
 
-    const response = await fetchWithAuthHeader(url, { method: 'GET' });
+    const response = await fetch(url, { method: 'GET' });
 
     if (!response.ok && response.status === 404) {
         let errorMessage = 'No layout corresponding to the TMPs of this CAR.';
