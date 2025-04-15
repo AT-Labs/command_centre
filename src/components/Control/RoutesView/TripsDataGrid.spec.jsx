@@ -86,7 +86,9 @@ describe('TripsDataGrid', () => {
         });
 
         it('should have type and disruptionId columns defined correctly', () => {
-            wrapper = setup();
+            wrapper = setup({
+                useDiversion: true,
+            });
             const columns = wrapper.find('CustomDataGrid').prop('columns');
 
             const typeCol = columns.find(col => col.field === 'type');
