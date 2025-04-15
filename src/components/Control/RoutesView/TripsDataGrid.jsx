@@ -183,12 +183,10 @@ export const TripsDataGrid = (props) => {
                 headerName: 'Type',
                 width: 200,
                 hide: true,
-                filterOperators: getGridSingleSelectOperators(true)
-                // .map((o) => { console.log('--------filterOperations:', o.value); return o; })
-                    .filter(o => ['is', 'not'].includes(o.value)),
+                filterOperators: getGridSingleSelectOperators(true).filter(o => ['is', 'not'].includes(o.value)),
                 valueOptions: [
-                    { value: 'Replacement', label: 'Replacement' },
-                    { value: 'Add', label: 'Add' },
+                    { value: 'Detoured', label: 'Detoured' },
+                    { value: 'Added', label: 'Added' },
                 ],
                 sortable: true,
             },

@@ -758,7 +758,7 @@
           }
         ]
       },
-      "type": "Replaced"
+      "type": ""
     },
     {
       "tripId": "1327-86501-48600-2-e84cfc71",
@@ -1149,7 +1149,7 @@
           }
         ]
       },
-      "type": "Add"
+      "type": "Added"
     },
     {
       "tripId": "1046-37301-48600-2-5c51125e",
@@ -7083,7 +7083,7 @@
           }
         ]
       },
-      "type": "Add"
+      "type": "Added"
     },
     {
       "tripId": "1112-11202-48600-2-6e8a4577",
@@ -8639,7 +8639,7 @@
           }
         ]
       },
-      "type": "Replacement",
+      "type": "Detoured",
       "disruptionId": 2000
     },
     {
@@ -10120,7 +10120,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Replaced"
+      "type": ""
     },
     {
       "tripId": "1112-11201-48600-2-5400989d",
@@ -10744,7 +10744,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Replacement",
+      "type": "Detoured",
       "disruptionId": 2001
     },
     {
@@ -13214,7 +13214,7 @@
           }
         ]
       },
-      "type": "Replacement",
+      "type": "Detoured",
       "disruptionId": 2002
     },
     {
@@ -15373,7 +15373,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Replacement",
+      "type": "Detoured",
       "disruptionId": 2003
     },
     {
@@ -16082,7 +16082,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Add"
+      "type": "Added"
     },
     {
       "tripId": "426-84303-48600-2-b35b9db5",
@@ -21180,7 +21180,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Add"
+      "type": "Added"
     },
     {
       "tripId": "1002-14501-48600-2-0a40bb00",
@@ -22821,7 +22821,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Replaced"
+      "type": ""
     },
     {
       "tripId": "234-07601-48600-2-7011ac18",
@@ -27053,7 +27053,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Add"
+      "type": "Added"
     },
     {
       "tripId": "1281-02504-48600-2-8e2058ed",
@@ -28631,7 +28631,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Replacement",
+      "type": "Detoured",
       "disruptionId": 2004
     },
     {
@@ -34504,7 +34504,7 @@
           }
         ]
       },
-      "type": "Replaced"
+      "type": ""
     },
     {
       "tripId": "1326-86101-48600-2-eee52f08",
@@ -35447,7 +35447,7 @@
           }
         ]
       },
-      "type": "Replaced"
+      "type": ""
     },
     {
       "tripId": "1293-09503-48600-2-4a14890d",
@@ -36414,7 +36414,7 @@
           }
         ]
       },
-      "type": "Add"
+      "type": "Added"
     },
     {
       "tripId": "1396-03803-48600-2-d1fa0082",
@@ -38042,7 +38042,7 @@
       "tripHeadsign": "Pt Chevalier Beach To Sylvia Park Via Mt Albert Rd",
       "display": true,
       "isAddedTrip": false,
-      "type": "Replacement",
+      "type": "Detoured",
       "disruptionId": 2005
     },
     {
@@ -40471,7 +40471,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Replaced"
+      "type": ""
     },
     {
       "tripId": "1137-01302-48600-2-f259962b",
@@ -41534,7 +41534,7 @@
       "tripHeadsign": "Te Atatu Peninsula Loop To Henderson",
       "display": true,
       "isAddedTrip": false,
-      "type": "Replacement",
+      "type": "Detoured",
       "disruptionId": 2006
     },
     {
@@ -42306,7 +42306,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Replaced"
+      "type": ""
     },
     {
       "tripId": "1324-08302-48600-2-b8b26460",
@@ -45556,7 +45556,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Replacement",
+      "type": "Detoured",
       "disruptionId": 2007
     },
     {
@@ -46392,7 +46392,7 @@
       "tripHeadsign": "Glen Innes To Wynyard Quarter Via Remuera Rd",
       "display": true,
       "isAddedTrip": false,
-      "type": "Replaced"
+      "type": ""
     },
     {
       "tripId": "1397-38017-48600-2-1378c1f7",
@@ -53054,7 +53054,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Replacement",
+      "type": "Detoured",
       "disruptionId": 2008
     },
     {
@@ -56969,7 +56969,7 @@
           }
         ]
       },
-      "type": "Add"
+      "type": "Added"
     },
     {
       "tripId": "1389-06404-48720-2-b4ea4c90",
@@ -57487,7 +57487,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Replaced"
+      "type": ""
     },
     {
       "tripId": "1159-73501-48720-2-2dc201d9",
@@ -59104,7 +59104,7 @@
           }
         ]
       },
-      "type": "Replaced"
+      "type": ""
     },
     {
       "tripId": "1050-37802-48720-2-5220c654",
@@ -62380,7 +62380,7 @@
       "tripHeadsign": "Wynyard Quarter to Karangahape Rd via Queen St",
       "display": true,
       "isAddedTrip": false,
-      "type": "Replaced"
+      "type": ""
     },
     {
       "tripId": "1076-06503-48780-2-0df25f04",
@@ -63704,7 +63704,7 @@
           }
         ]
       },
-      "type": "Add"
+      "type": "Added"
     },
     {
       "tripId": "1094-18603-48900-2-af9bebce",
@@ -67442,7 +67442,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Replaced"
+      "type": ""
     },
     {
       "tripId": "1256-10601-48900-2-dc6ba0f0",
@@ -67814,7 +67814,7 @@
       "display": true,
       "isAddedTrip": false,
       "_isManualDelay": false,
-      "type": "Replaced"
+      "type": ""
     },
     {
       "tripId": "1175-03508-48900-2-9779d444",
