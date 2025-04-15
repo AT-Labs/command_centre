@@ -82,12 +82,12 @@ export const getTrips = ({
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
 
-    const isMock = false;
-    if (isMock) {
-        // eslint-disable-next-line no-console
-        // console.log(`------MOCK FILTER BODY DUMP:${JSON.stringify(variables)}`);
-        return fetch('/mocks/trip_instances_mock.json').then(r => r.json());
-    }
+    // const isMock = false;
+    // if (isMock) {
+    //     // eslint-disable-next-line no-console
+    //     // console.log(`------MOCK FILTER BODY DUMP:${JSON.stringify(variables)}`);
+    //     return fetch('/mocks/trip_instances_mock.json').then(r => r.json());
+    // }
 
     return fetchWithAuthHeader(
         url,

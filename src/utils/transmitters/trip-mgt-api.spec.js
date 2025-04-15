@@ -36,7 +36,7 @@ describe('getTrips', () => {
         const { body } = auth.fetchWithAuthHeader.mock.calls[0][1];
         expect(auth.fetchWithAuthHeader).toHaveBeenCalledTimes(1);
         expect(JSON.parse(body)).toEqual({
-            isType: 'foo',
+            isType: 'foo', // the ui kind of enforces only one of isType or notType is applied. Not doing any checks for now on this for flexibility purposes
             notType: 'bar',
             disruptionId: 123,
         });
