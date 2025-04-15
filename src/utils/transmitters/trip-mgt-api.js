@@ -45,7 +45,8 @@ export const getTrips = ({
     firstStopCode,
     lastStopCode,
     source,
-    type,
+    isType,
+    notType,
     disruptionId,
     display,
 }) => {
@@ -75,15 +76,16 @@ export const getTrips = ({
     if (lastStopCode) { variables.lastStopCode = lastStopCode; }
     if (source) { variables.source = source; }
     if (display) { variables.display = display; }
-    if (type) { variables.type = type; }
+    if (isType != null) { variables.isType = isType; }
+    if (notType != null) { variables.notType = notType; }
     if (disruptionId) { variables.disruptionId = disruptionId; }
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
 
-    const isMock = false;
+    const isMock = true;
     if (isMock) {
         // eslint-disable-next-line no-console
-        console.log(`------MOCK FILTER BODY DUMP:${JSON.stringify(variables)}`);
+        // console.log(`------MOCK FILTER BODY DUMP:${JSON.stringify(variables)}`);
         return fetch('/mocks/trip_instances_mock.json').then(r => r.json());
     }
 
