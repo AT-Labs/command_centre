@@ -529,10 +529,10 @@ const removeNonNullableFilters = model => model
     }))
     ?.filter(item => !!item.value && (!Array.isArray(item.value) || item.value.length > 0));
 
-const getFilters = (model, state) => {
+export const getFilters = (model, state) => {
     let filters = removeNonNullableFilters(model);
 
-    // console.log('-------------models', model);
+    // console.log('-------------models--', model);
 
     filters = filters.reduce((result, item) => ({
         ...result,
@@ -542,8 +542,8 @@ const getFilters = (model, state) => {
         ...(item.columnField === 'startTime' && item.operatorValue === 'onOrBefore' && { startTimeTo: item.value }),
         ...(item.columnField === 'endTime' && item.operatorValue === 'onOrAfter' && { endTimeFrom: item.value }),
         ...(item.columnField === 'endTime' && item.operatorValue === 'onOrBefore' && { endTimeTo: item.value }),
-        ...(item.columnField === 'type' && item.operatorValue === 'is' && { notType: undefined, isType: item.value.trim() }), // here we trip ' ' added above
-        ...(item.columnField === 'type' && item.operatorValue === 'not' && { isType: undefined, notType: item.value.trim() }), // here we trip ' ' added above
+        ...(item.columnField === 'type' && item.operatorValue === 'is' && { type: undefined, notType: undefined, isType: item.value.trim() }), // here we trip ' ' added above
+        ...(item.columnField === 'type' && item.operatorValue === 'not' && { type: undefined, isType: undefined, notType: item.value.trim() }), // here we trip ' ' added above
         ...(item.columnField === 'status' && { tripStatus: item.value }),
         ...(item.columnField === 'vehicleLabel' && { vehicleLabels: item.value }),
         ...(item.columnField === 'referenceId' && { referenceIds: item.value }),
@@ -576,6 +576,7 @@ const getFilters = (model, state) => {
             .map(item => item.routeVariantId);
     }
 
+    // console.log('------------filters:', filters);
     return filters;
 };
 
