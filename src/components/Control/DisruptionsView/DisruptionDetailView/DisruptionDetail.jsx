@@ -74,7 +74,12 @@ import {
     getStatusOptions,
     itemToEntityTransformers,
 } from '../../../../utils/control/disruptions';
-import { calculateActivePeriods, getRecurrenceText, parseRecurrencePattern, fetchEndDateFromRecurrence } from '../../../../utils/recurrence';
+import {
+    calculateActivePeriods,
+    getRecurrenceText,
+    parseRecurrencePattern,
+    fetchEndDateFromRecurrence,
+} from '../../../../utils/recurrence';
 import DisruptionSummaryModal from '../DisruptionDetail/DisruptionSummaryModal';
 import { Map } from '../../../Common/Map/Map';
 import DiversionUpload from '../DisruptionDetail/DiversionUpload';
@@ -645,12 +650,14 @@ const DisruptionDetailView = (props) => {
                                                         disabled={ isResolved() || isReadOnlyMode }
                                                     />
                                                 </FormGroup>
-                                                { !isEmpty(recurrencePattern.byweekday) && (
-                                                    <FormGroup>
-                                                        <BsArrowRepeat size={ 22 } />
-                                                        <span className="pl-1">{ getRecurrenceText(parseRecurrencePattern(recurrencePattern)) }</span>
-                                                    </FormGroup>
-                                                )}
+                                                {
+                                                    !isEmpty(recurrencePattern.byweekday) && (
+                                                        <FormGroup>
+                                                            <BsArrowRepeat size={ 22 } />
+                                                            <span className="pl-1">{ getRecurrenceText(parseRecurrencePattern(recurrencePattern)) }</span>
+                                                        </FormGroup>
+                                                    )
+                                                }
                                             </>
                                         )}
                                     </section>

@@ -13,7 +13,7 @@ import {
     groupStopsByRouteElementByParentStation,
     getPassengerCountRange,
     momentFromDateTime,
-    generateDisruptionActivePeriods
+    generateDisruptionActivePeriods, isRecurringPeriodInvalid
 } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 import { STATUSES } from '../../types/disruptions-types';
@@ -407,5 +407,42 @@ describe('generateDisruptionActivePeriods', () => {
                 endTime: undefined,
             },
         ]);
+    });
+});
+
+describe('isRecurringPeriodInvalid - Additional Cases', () => {
+    it('should return true for disruption with null byweekday', () => {
+        const disruption = { recurrencePattern: { byweekday: null, dtstart: '2023-10-01T10:00:00Z', until: '2023-12-01T10:00:00Z' }, duration: 2 };
+        expect(isRecurringPeriodInvalid(disruption)).to.be.true;
+    });
+
+    it('should return true for disruption with undefined byweekday', () => {
+        const disruption = { recurrencePattern: { byweekday: undefined, dtstart: '2023-10-01T10:00:00Z', until: '2023-12-01T10:00:00Z' }, duration: 2 };
+        expect(isRecurringPeriodInvalid(disruption)).to.be.true;
+    });
+
+    it('should return true for disruption with duration of 0', () => {
+        const disruption = { recurrencePattern: { byweekday: [1, 2], dtstart: '2023-10-01T10:00:00Z', until: '2023-12-01T10:00:00Z' }, duration: 0 };
+        expect(isRecurringPeriodInvalid(disruption)).to.be.true;
+    });
+
+    it('should return true for disruption with negative duration', () => {
+        const disruption = { recurrencePattern: { byweekday: [1, 2], dtstart: '2023-10-01T10:00:00Z', until: '2023-12-01T10:00:00Z' }, duration: -5 };
+        expect(isRecurringPeriodInvalid(disruption)).to.be.true;
+    });
+
+    it('should return true for disruption with empty recurrencePattern object', () => {
+        const disruption = { recurrencePattern: {}, duration: 2 };
+        expect(isRecurringPeriodInvalid(disruption)).to.be.true;
+    });
+
+    it('should return true for disruption with non-integer duration', () => {
+        const disruption = { recurrencePattern: { byweekday: [1, 2], dtstart: '2023-10-01T10:00:00Z', until: '2023-12-01T10:00:00Z' }, duration: 'two' };
+        expect(isRecurringPeriodInvalid(disruption)).to.be.true;
+    });
+
+    it('should return false for disruption with valid byweekday, valid dtstart, valid until, and duration as a stringified number', () => {
+        const disruption = { recurrencePattern: { byweekday: [1, 2], dtstart: '2023-10-01T10:00:00Z', until: '2023-12-01T10:00:00Z' }, duration: '2' };
+        expect(isRecurringPeriodInvalid(disruption)).to.be.false;
     });
 });

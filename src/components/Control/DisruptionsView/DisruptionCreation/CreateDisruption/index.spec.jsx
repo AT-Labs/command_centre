@@ -1,10 +1,12 @@
 import React from 'react';
 import { shallow } from 'enzyme';
+import { RRule } from 'rrule';
 import { CreateDisruption } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import { searchByDrawing, updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import DrawLayer from './DrawLayer';
-import { generateDisruptionActivePeriods } from '../../../../../utils/control/disruptions';
+import { buildSubmitBody, generateDisruptionActivePeriods } from '../../../../../utils/control/disruptions';
+import { STATUSES } from '../../../../../types/disruptions-types';
 
 jest.mock('../../../../Common/Map/ShapeLayer/ShapeLayer', () => jest.fn());
 
@@ -131,19 +133,28 @@ describe('CreateDisruption component', () => {
         expect(spy).toHaveBeenCalledWith(disruptionDataMock.disruptionType, disruptionShapeMock);
     });
 
-    describe('onSubmitDraft method', () => {
+    describe('onSubmitDraft', () => {
         let wrapper;
         const mockUpdateCurrentStep = jest.fn();
         const mockCreateDisruption = jest.fn();
         const mockOpenCreateDisruption = jest.fn();
         const mockToggleDisruptionModals = jest.fn();
+
+        const dtstart = new Date('2025-03-01T10:00:00.000Z');
+        const until = new Date('2022-03-09T06:00:00.000Z');
         const mockDisruptionData = {
-            startDate: '2025-03-01',
+            startDate: dtstart,
             startTime: '10:00:00',
-            endDate: '2025-03-02',
+            endDate: until,
             endTime: '11:00:00',
             disruptionType: 'type',
             activePeriods: [],
+            recurrencePattern: {
+                freq: 2,
+                dtstart,
+                until,
+                byweekday: [0],
+            },
         };
 
         beforeEach(() => {
@@ -181,6 +192,65 @@ describe('CreateDisruption component', () => {
         it('should call createDisruption', async () => {
             await wrapper.instance().onSubmitDraft();
             expect(mockCreateDisruption).toHaveBeenCalledTimes(1);
+        });
+
+        it('should call createDisruption with recurrencePattern without start end dates', async () => {
+            const disruptionData = {
+                recurrent: true,
+                startTime: undefined,
+                endTime: undefined,
+                recurrencePattern: {
+                    freq: 2,
+                    byweekday: undefined,
+                    dtstart,
+                    until,
+                },
+            };
+            const expectedDisruption = {
+                ...disruptionData,
+                recurrencePattern: { freq: RRule.WEEKLY, byweekday: [] },
+                endTime: undefined,
+                startTime: undefined,
+                status: STATUSES.DRAFT,
+                notes: [],
+            };
+
+            buildSubmitBody.mockReturnValue(expectedDisruption);
+            wrapper.setState({ disruptionData });
+
+            await wrapper.instance().onSubmitDraft();
+
+            expect(mockCreateDisruption).toHaveBeenCalledWith(expectedDisruption);
+        });
+
+        it('should call createDisruption with full recurrencePattern', async () => {
+            const disruptionData = {
+                ...disruptionDataMock,
+                startTime: dtstart,
+                endTime: until,
+                status: STATUSES.DRAFT,
+                notes: [],
+            };
+            const expectedDisruption = {
+                ...disruptionDataMock,
+                recurrencePattern: {
+                    freq: RRule.WEEKLY,
+                    byweekday: [RRule.MO, RRule.FR],
+                    dtstart,
+                    until,
+                },
+                endTime: until,
+                startTime: dtstart,
+                status: STATUSES.DRAFT,
+                notes: [],
+            };
+
+            buildSubmitBody.mockReturnValue(expectedDisruption);
+            wrapper.setState({ disruptionData });
+
+            await wrapper.instance().onSubmitDraft();
+
+            expect(mockCreateDisruption).toHaveBeenCalledWith(expectedDisruption);
         });
     });
 });

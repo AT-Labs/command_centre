@@ -18,7 +18,7 @@ import {
 } from '../../constants/disruptions';
 import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES, WEEKDAYS } from '../../types/disruptions-types';
 import { getWorkaroundsAsText } from './disruption-workarounds';
-import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from './disruptions';
+import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops, isRecurringPeriodInvalid } from './disruptions';
 import SEARCH_RESULT_TYPE from '../../types/search-result-types';
 import { getAlertCauses, getAlertEffects } from '../transmitters/command-centre-config-api';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../types/disruption-cause-and-effect';
@@ -163,6 +163,10 @@ function getDuration(disruption) {
         return '-';
     }
 
+    if (disruption.status === STATUSES.DRAFT && disruption.activePeriods?.length === 0) {
+        return '-';
+    }
+
     if (disruption.status === STATUSES.RESOLVED || endTime <= now) {
         cutoff = endTime;
     }
@@ -174,7 +178,7 @@ function getDuration(disruption) {
     if (disruption.recurrent) {
         const cutoffEpoch = cutoff.unix();
         duration = disruption.activePeriods
-            .filter(activePeriod => activePeriod.startTime < cutoffEpoch)
+            ?.filter(activePeriod => activePeriod.startTime < cutoffEpoch)
             .map(activePeriod => ({
                 startTime: activePeriod.startTime,
                 endTime: Math.min(activePeriod.endTime, cutoffEpoch),
@@ -190,9 +194,8 @@ function getDuration(disruption) {
 }
 
 function getRecurringPeriod(disruption) {
-    const weekdays = disruption.recurrencePattern.byweekday
-        .map(day => WEEKDAYS[day])
-        .join(', ');
+    if (isRecurringPeriodInvalid(disruption) && disruption.status === STATUSES.DRAFT) return '-';
+    const weekdays = disruption.recurrencePattern.byweekday.map(day => WEEKDAYS[day]).join(', ');
     const startTime = moment.utc(disruption.recurrencePattern.dtstart).format('h:mma');
     const endTime = moment.utc(disruption.recurrencePattern.dtstart).add(disruption.duration, 'hours').format('h:mma');
 
@@ -201,6 +204,7 @@ function getRecurringPeriod(disruption) {
 
 async function getMapFieldValue(disruption) {
     const endDateTimeMoment = moment(disruption.endTime);
+    const startTimeMoment = moment(disruption.startTime);
     const [causes, impacts] = await Promise.all([fetchCauses(), fetchImpacts()]);
 
     return {
@@ -215,7 +219,7 @@ async function getMapFieldValue(disruption) {
         [LABEL_RECURRING_PERIOD]: disruption.recurrent ? getRecurringPeriod(disruption) : '-',
         [LABEL_CUSTOMER_IMPACT]: (find(impacts, { value: disruption.impact }) ?? DEFAULT_IMPACT).label,
         [LABEL_DURATION]: getDuration(disruption),
-        [LABEL_START_TIME_DATE]: moment(disruption.startTime).format(DATE_TIME_FORMAT),
+        [LABEL_START_TIME_DATE]: disruption.startTime && startTimeMoment.isValid() ? startTimeMoment.format(DATE_TIME_FORMAT) : '',
         [LABEL_END_TIME_DATE]: disruption.endTime && endDateTimeMoment.isValid() ? endDateTimeMoment.format(DATE_TIME_FORMAT) : '',
     };
 }

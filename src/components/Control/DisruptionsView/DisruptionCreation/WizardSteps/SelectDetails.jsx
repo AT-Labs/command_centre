@@ -3,38 +3,38 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { isEmpty, some } from 'lodash-es';
 import moment from 'moment';
-import { Form, FormGroup, Label, Input, FormFeedback, Button } from 'reactstrap';
+import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap';
 
 import Flatpickr from 'react-flatpickr';
 import { BsArrowRepeat } from 'react-icons/bs';
-import { FaRegCalendarAlt, FaExclamationTriangle } from 'react-icons/fa';
+import { FaExclamationTriangle, FaRegCalendarAlt } from 'react-icons/fa';
 import { IconContext } from 'react-icons';
 import { isUrlValid } from '../../../../../utils/helpers';
-import { isStartTimeValid, isStartDateValid, isEndDateValid, isEndTimeValid, isDurationValid, recurrenceRadioOptions }
-    from '../../../../../utils/control/disruptions';
+import { isDurationValid, isEndDateValid, isEndTimeValid, isStartDateValid, isStartTimeValid, recurrenceRadioOptions } from '../../../../../utils/control/disruptions';
 import { toggleDisruptionModals, updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { DisruptionDetailSelect } from '../../DisruptionDetail/DisruptionDetailSelect';
 import { SEVERITIES } from '../../../../../types/disruptions-types';
 import {
-    URL_MAX_LENGTH,
-    HEADER_MAX_LENGTH,
-    LABEL_START_TIME,
-    LABEL_CUSTOMER_IMPACT,
-    LABEL_CAUSE,
-    LABEL_HEADER,
-    LABEL_URL,
-    LABEL_START_DATE,
     DATE_FORMAT,
-    LABEL_END_TIME, LABEL_END_DATE,
+    HEADER_MAX_LENGTH,
+    LABEL_CAUSE,
+    LABEL_CUSTOMER_IMPACT,
     LABEL_DURATION_HOURS,
+    LABEL_END_DATE,
+    LABEL_END_TIME,
+    LABEL_HEADER,
     LABEL_SEVERITY,
+    LABEL_START_DATE,
+    LABEL_START_TIME,
+    LABEL_URL,
+    URL_MAX_LENGTH,
 } from '../../../../../constants/disruptions';
 import Footer from './Footer';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
 import CustomMuiDialog from '../../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../../Common/ActivePeriods/ActivePeriods';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
-import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText } from '../../../../../utils/recurrence';
+import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText, isActivePeriodsValid } from '../../../../../utils/recurrence';
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
@@ -55,6 +55,7 @@ export const SelectDetails = (props) => {
     const [isCauseDirty, setCauseDirty] = useState(false);
     const [isDurationDirty, setDurationDirty] = useState(false);
     const [isRecurrencePatternDirty, setRecurrencePatternDirty] = useState(false);
+    const [isStartTimeDirty, setIsStartTimeDirty] = useState(false);
     const [cssStartDateInvalid, setCssStartDateInvalid] = useState('');
     const [cssEndDateInvalid, setCssEndDateInvalid] = useState('');
     const maxActivePeriodsCount = 100;
@@ -76,6 +77,13 @@ export const SelectDetails = (props) => {
     const effectValid = () => !isEmpty(impact);
 
     const causeValid = () => !isEmpty(cause);
+
+    const activePeriodsValidV2 = () => {
+        if (recurrent) {
+            return isActivePeriodsValid(recurrencePattern, duration, maxActivePeriodsCount);
+        }
+        return true;
+    };
 
     const onBlurTitle = () => {
         setTitleDirty(true);
@@ -105,26 +113,33 @@ export const SelectDetails = (props) => {
         props.onDataUpdate('recurrencePattern', { ...recurrencePattern, byweekday });
     };
 
+    const onChangeStartTime = (selectedItem) => {
+        setIsStartTimeDirty(true);
+        props.onDataUpdate('startTime', selectedItem);
+    };
+
     const onChangeEndDate = (date, isRecurrent) => {
         if (isRecurrent) {
             if (date.length === 0) {
-                setCssEndDateInvalid('is-invalid');
+                if (props.useDraftDisruptions) {
+                    props.onDataUpdate('endDate', '');
+                    setCssEndDateInvalid('');
+                } else {
+                    setCssEndDateInvalid('is-invalid');
+                }
             } else {
                 props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
                 setCssEndDateInvalid('');
             }
         } else {
             props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
-            if (date.length === 0) {
-                props.onDataUpdate('endTime', '');
-            }
             setCssEndDateInvalid('');
         }
     };
 
     const onBlurEndDate = (date, isRecurrent) => {
         if (isRecurrent) {
-            if (date.length === 0) {
+            if (date.length === 0 && !props.useDraftDisruptions) {
                 setCssEndDateInvalid('is-invalid');
             } else {
                 setCssEndDateInvalid('');
@@ -155,10 +170,7 @@ export const SelectDetails = (props) => {
         return isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
     };
 
-    const isRequiredDraftPropsEmpty = () => {
-        const isPropsEmpty = some([cause, header], isEmpty);
-        return isPropsEmpty;
-    };
+    const isRequiredDraftPropsEmpty = () => some([cause, header], isEmpty);
 
     const getOptionalLabel = label => (
         <>
@@ -173,7 +185,7 @@ export const SelectDetails = (props) => {
     const endDateDatePickerOptions = getDatePickerOptions(startDate);
 
     const isDateTimeValid = () => startTimeValid() && startDateValid() && endDateValid() && durationValid();
-    const isViewAllDisabled = !isDateTimeValid() || isEmpty(recurrencePattern.byweekday);
+    const isViewAllDisabled = !isDateTimeValid() || isEmpty(recurrencePattern?.byweekday);
     const isSubmitDisabled = isRequiredPropsEmpty() || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() || !durationValid();
     const isDraftSubmitDisabled = isRequiredDraftPropsEmpty();
 
@@ -181,7 +193,6 @@ export const SelectDetails = (props) => {
         if (recurrent) {
             let errorMessage;
             const activePeriodsCount = generateActivePeriodsFromRecurrencePattern(recurrencePattern, duration).length;
-
             if (activePeriodsCount === 0) {
                 errorMessage = 'No active periods will be created. Please check the recurrence selection.';
             } else if (activePeriodsCount > maxActivePeriodsCount) {
@@ -197,9 +208,14 @@ export const SelectDetails = (props) => {
         return true;
     };
 
+    const isSubmitDisabledV2 = isSubmitDisabled || isEmpty(recurrencePattern.byweekday);
+
     const onContinue = () => {
-        if (activePeriodsValid() || props.useDraftDisruptions) {
-            props.onUpdateDetailsValidation(!isSubmitDisabled);
+        if (props.useDraftDisruptions) {
+            props.onUpdateDetailsValidation(!isSubmitDisabledV2 && activePeriodsValidV2());
+            props.onStepUpdate(1);
+            props.updateCurrentStep(2);
+        } else if (activePeriodsValid()) {
             props.onStepUpdate(1);
             props.updateCurrentStep(2);
         }
@@ -295,8 +311,8 @@ export const SelectDetails = (props) => {
                             id="disruption-creation__wizard-select-details__start-time"
                             className="border border-dark"
                             value={ startTime }
-                            onChange={ event => props.onDataUpdate('startTime', event.target.value) }
-                            invalid={ !startTimeValid() }
+                            onChange={ event => onChangeStartTime(event.target.value) }
+                            invalid={ (props.useDraftDisruptions ? (isStartTimeDirty && !startTimeValid()) : !startTimeValid()) }
                         />
                         <FormFeedback>Not valid values</FormFeedback>
                     </FormGroup>
@@ -348,19 +364,21 @@ export const SelectDetails = (props) => {
                                 View All
                             </Button>
                         </div>
-                        { !isEmpty(recurrencePattern.byweekday) && (
+                        { (props.useDraftDisruptions
+                            ? (!isEmpty(recurrencePattern.byweekday) && activePeriodsValidV2())
+                            : !isEmpty(recurrencePattern.byweekday)) && (
                             <div className="col-12 mb-3">
                                 <BsArrowRepeat size={ 22 } />
                                 <span className="pl-1">{ getRecurrenceText(recurrencePattern) }</span>
                             </div>
                         )}
-                        {
-                            isRecurrencePatternDirty && isEmpty(recurrencePattern.byweekday) && (
-                                <div className="col-12 mb-3">
-                                    <span className="disruption-recurrance-invalid">Please select recurrence</span>
-                                </div>
-                            )
-                        }
+                        { (props.useDraftDisruptions
+                            ? (isRecurrencePatternDirty && (isEmpty(recurrencePattern.byweekday) || !activePeriodsValidV2()))
+                            : (isRecurrencePatternDirty && isEmpty(recurrencePattern.byweekday))) && (
+                            <div className="col-12 mb-3">
+                                <span className="disruption-recurrance-invalid">Please select recurrence</span>
+                            </div>
+                        )}
                     </>
                 )}
                 <div className="col-6">

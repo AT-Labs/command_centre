@@ -71,15 +71,18 @@ export const getRecurrenceText = (recurrencePattern) => {
     return `Repeats ${new RRule(parsedPattern).toText()}`;
 };
 
+const isValidDate = date => date && moment(date).isValid();
+
 export const parseRecurrencePattern = recurrencePattern => ({
     ...recurrencePattern,
-    until: moment.utc(recurrencePattern.until).toDate(),
-    dtstart: moment.utc(recurrencePattern.dtstart).toDate(),
+    until: isValidDate(recurrencePattern?.until) ? moment.utc(recurrencePattern.until).toDate() : null,
+    dtstart: isValidDate(recurrencePattern?.dtstart) ? moment.utc(recurrencePattern.dtstart).toDate() : null,
 });
 
 export const generateActivePeriodsFromRecurrencePattern = (recurrencePattern, durationInHours) => {
-    const rrule = new RRule(parseRecurrencePattern(recurrencePattern));
+    if (!isValidDate(recurrencePattern?.until) || !isValidDate(recurrencePattern?.dtstart)) return [];
 
+    const rrule = new RRule(parseRecurrencePattern(recurrencePattern));
     return rrule.all().map((date) => {
         const startDate = moment.tz(moment.utc(date).format(utcDateFormatWithoutTZ), DATE_TYPE.TIME_ZONE);
 
@@ -88,6 +91,11 @@ export const generateActivePeriodsFromRecurrencePattern = (recurrencePattern, du
             endTime: startDate.add(durationInHours, 'h').unix(),
         });
     });
+};
+
+export const isActivePeriodsValid = (recurrencePattern, duration, maxActivePeriodsCount) => {
+    const activePeriodsCount = generateActivePeriodsFromRecurrencePattern(recurrencePattern, duration).length;
+    return !(activePeriodsCount === 0 || activePeriodsCount > maxActivePeriodsCount);
 };
 
 const filterPastPeriods = (existingActivePeriods, duration) => {
@@ -132,4 +140,4 @@ export const calculateActivePeriods = (recurrencePattern, durationInHours, exist
     return calculatedPeriods;
 };
 
-export const fetchEndDateFromRecurrence = pattern => moment.utc(pattern.until).format('DD/MM/YYYY');
+export const fetchEndDateFromRecurrence = pattern => (pattern.until ? moment.utc(pattern.until).format('DD/MM/YYYY') : undefined);

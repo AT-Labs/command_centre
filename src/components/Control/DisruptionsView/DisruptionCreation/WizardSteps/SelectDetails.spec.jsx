@@ -17,10 +17,15 @@ const componentPropsMock = {
     routes: [],
     toggleDisruptionModals: jest.fn(),
     onSubmitDraft: jest.fn(),
+    onUpdateDetailsValidation: jest.fn(),
 };
 
 const setup = (customProps) => {
-    const props = componentPropsMock;
+    const props = {
+        ...componentPropsMock,
+        useDraftDisruptions: false,
+        ...customProps,
+    };
     Object.assign(props, customProps);
     return shallow(<SelectDetails { ...props } />);
 };
@@ -32,7 +37,10 @@ describe('<SelectDetails />', () => {
         wrapper = setup();
     });
 
-    afterEach(() => sandbox.restore());
+    afterEach(() => {
+        sandbox.restore();
+        jest.clearAllMocks();
+    });
 
     it('should render', () => {
         expect(wrapper.exists()).toEqual(true);

@@ -1,6 +1,7 @@
 import jsdom from 'jsdom';
 import { shareToEmail, shareToEmailLegacy } from './disruption-sharing';
 import { getAlertCauses, getAlertEffects } from '../transmitters/command-centre-config-api';
+import { STATUSES } from '../../types/disruptions-types';
 
 const disruption = {
     disruptionId: 1,
@@ -246,6 +247,23 @@ describe('shareToEmail', () => {
         const siblingTd = endTime.nextElementSibling;
         expect(siblingTd).not.toBeNull();
         expect(siblingTd.textContent.trim()).toBe('-');
+    });
+
+    describe('getRecurringPeriod', () => {
+        test.each([
+            [{ ...disruption, recurrent: true, recurrencePattern: { byweekday: [] }, status: STATUSES.DRAFT }, '-'],
+            [{ ...disruption, recurrent: true, recurrencePattern: { byweekday: [4], dtstart: '' }, status: STATUSES.DRAFT }, '-'],
+            [{ ...disruption, recurrent: true, recurrencePattern: { byweekday: [6] }, duration: '', status: STATUSES.DRAFT }, '-'],
+            [{ ...disruption, recurrent: true, recurrencePattern: { byweekday: [1], dtstart: 'invalid-date' }, duration: 2, status: STATUSES.DRAFT }, '-'],
+            [{ ...disruption, recurrent: true, recurrencePattern: null, status: STATUSES.DRAFT }, '-'],
+            [{ ...disruption, recurrent: true, recurrencePattern: { byweekday: null, dtstart: '2022-08-29T20:30:00.000Z' }, duration: 2, status: STATUSES.DRAFT }, '-'],
+        ])('should return the correct recurring period for disruption: %o', async (testDisruption, expected) => {
+            await shareToEmail(testDisruption);
+            const htmlContent = /<html[\s\S]*<\/html>/.exec(decodeURIComponent(link.href))?.[0];
+            const recurringPeriod = Array.from(jsdom.jsdom(htmlContent).querySelectorAll('th'))
+                .find(th => th.textContent.trim() === 'Recurring\u00A0Period')?.nextElementSibling?.textContent.trim();
+            expect(recurringPeriod).toBe(expected);
+        });
     });
 
     test('should include affected routes', async () => {

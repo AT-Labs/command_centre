@@ -105,8 +105,8 @@ const DisruptionSummaryModal = (props) => {
                     {createLine(LABEL_CUSTOMER_IMPACT, ((find(impacts, { value: props.disruption.impact })) || DEFAULT_IMPACT).label)}
                     {createLine(LABEL_CAUSE, ((find(causes, { value: props.disruption.cause })) || DEFAULT_CAUSE).label)}
                     {props.disruption.description ? createLine(LABEL_DESCRIPTION, props.disruption.description) : null}
-                    {createLine(LABEL_START_DATE, moment(props.disruption.startTime).format(DATE_FORMAT))}
-                    {createLine(LABEL_START_TIME, moment(props.disruption.startTime).format(TIME_FORMAT))}
+                    {createLine(LABEL_START_DATE, props.disruption.startTime ? moment(props.disruption.startTime).format(DATE_FORMAT) : null)}
+                    {createLine(LABEL_START_TIME, props.disruption.startTime ? moment(props.disruption.startTime).format(TIME_FORMAT) : null)}
                     {createLine(LABEL_END_DATE, endDateTimeMoment.isValid() ? endDateTimeMoment.format(DATE_FORMAT) : null)}
                     {createLine(LABEL_END_TIME, endDateTimeMoment.isValid() ? endDateTimeMoment.format(TIME_FORMAT) : null)}
                     {createLine(LABEL_URL, props.disruption.url)}

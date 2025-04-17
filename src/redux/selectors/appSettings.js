@@ -55,5 +55,3 @@ export const useNewMonitoring = createSelector(
     getAppSettingsState,
     appSettingState => (result(appSettingState, 'useNewMonitoring') === 'true'),
 );
-/* istanbul ignore next */
-export const useDiversion = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useDiversion') === 'true'));

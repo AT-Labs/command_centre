@@ -8,8 +8,7 @@ import MockDate from 'mockdate';
 import {
     fetchTripInstances, clearActiveTripInstanceId, updateActiveTripInstanceId, collectTripsDataAndUpdateTripsStatus,
     updateTripInstanceStatus, updateTripInstanceStopStatus, updateTripInstanceStopPlatform, updateTripInstanceDelay, filterTripInstances, updateDestination,
-    updateEnabledAddTripModal, updateCurrentStepHandler, updateAddTripDatagridConfig, updateSelectedAddTrip, resetAddTripStep,
-    getFilters
+    updateEnabledAddTripModal, updateCurrentStepHandler, updateAddTripDatagridConfig, updateSelectedAddTrip, resetAddTripStep
 } from './trip-instances';
 import * as tripMgtApi from '../../../../utils/transmitters/trip-mgt-api';
 import * as blockMgtApi from '../../../../utils/transmitters/block-mgt-api';
@@ -1120,63 +1119,4 @@ describe('Trip instances actions', () => {
             ]
         );
     })
-});
-
-describe("getFilters", () => {
-    let mockState;
-
-    beforeEach(() => {
-        mockState = {
-            control: {
-                routes: {
-                    filters: {},
-                },
-            },
-        };
-    });
-
-    const testCases = [
-        {
-            columnField: "disruptionId",
-            operatorValue: "is",
-            value: "12345",
-            expectedKey: "disruptionId",
-            expectedValue: "12345",
-        },
-        {
-            columnField: "type",
-            operatorValue: "is",
-            value: "anything",
-            expectedKey: "isType",
-            expectedValue: "anything",
-        },
-        {
-            columnField: "type",
-            operatorValue: "not",
-            value: "anything",
-            expectedKey: "notType",
-            expectedValue: "anything",
-        },
-        {
-            columnField: "type",
-            operatorValue: "not",
-            value: undefined, // We have to filter not empty or empty as well from the UI
-            expectedKey: "notType",
-            expectedValue: "",
-        },
-    ];
-
-    testCases.forEach(
-        ({ columnField, operatorValue, value, expectedKey, expectedValue }) => {
-            it(`should filter ${columnField} correctly`, () => {
-                const mockModel = {
-                    items: [{ columnField, operatorValue, value }],
-                };
-
-                const result = getFilters(mockModel, mockState);
-                // console.log("RESULT IN TEST", result);
-                expect(result[expectedKey]).to.eql(expectedValue);
-            });
-        }
-    );
 });

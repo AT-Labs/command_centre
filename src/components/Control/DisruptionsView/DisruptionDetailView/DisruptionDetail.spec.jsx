@@ -255,7 +255,7 @@ describe('<DisruptionDetailView />', () => {
             expect(saveButton.hasClass('disabled')).to.equal(false);
         });
 
-        it('Publish draft should not be disabled when required fields are empty', () => {
+        it('Publish recurrence draft should with invalid weekday should open modal', () => {
             useDraftDisruptions.mockReturnValue(true);
 
             wrapper = setup(

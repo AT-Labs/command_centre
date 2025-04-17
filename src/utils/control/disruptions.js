@@ -302,3 +302,13 @@ export const getPassengerCountRange = (count) => {
     if (count >= 15001 && count <= 40000) return PASSENGER_IMPACT_RANGE.BETWEEN_15001_40000;
     return PASSENGER_IMPACT_RANGE.GREATER_THAN_40000;
 };
+
+export const isRecurringPeriodInvalid = (disruption) => {
+    const { recurrencePattern, duration } = disruption;
+    return (
+        isEmpty(recurrencePattern?.byweekday)
+        || isEmpty(recurrencePattern?.dtstart)
+        || isEmpty(recurrencePattern?.until)
+        || !(Number.isInteger(+duration) && +duration > 0)
+    );
+};
