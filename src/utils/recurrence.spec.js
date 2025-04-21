@@ -174,13 +174,13 @@ describe('recurrence.js', () => {
 
     describe('fetchEndDateFromRecurrence', () => {
         it('Should return endDate from pattern', () => {
-            const startDate = moment.utc('2022-03-31T03:00:00.000Z');
-            const endDate = moment.utc('2022-04-05T04:00:00.000Z');
+            const startDate = '2022-03-31T03:00:00.000Z';
+            const endDate = '2022-04-05T04:00:00.000Z';
             const pattern = setUpPattern(startDate, endDate);
 
             const result = fetchEndDateFromRecurrence(pattern);
 
-            expect(result).toEqual(endDate.format('DD/MM/YYYY'));
+            expect(result).toEqual('05/04/2022');
         });
 
         it('Should return undefined when pattern is not provided', () => {
@@ -221,7 +221,7 @@ describe('recurrence.js', () => {
     describe('parseRecurrencePattern', () => {
         it('should parse valid until and dtstart dates', () => {
             const input = { until: '2023-10-15T00:00:00.000Z', dtstart: '2023-10-10T00:00:00.000Z' };
-            const expected = { until: moment.utc('2023-10-15T00:00:00.000Z').toDate(), dtstart: moment.utc('2023-10-10T00:00:00.000Z').toDate() };
+            const expected = { until: new Date('2023-10-15T00:00:00.000Z'), dtstart: new Date('2023-10-10T00:00:00.000Z') };
             const result = parseRecurrencePattern(input);
             expect(result).toEqual(expected);
         });
@@ -249,14 +249,14 @@ describe('recurrence.js', () => {
 
         it('should parse valid until and return null for invalid dtstart', () => {
             const input = { until: '2023-10-15T00:00:00.000Z', dtstart: 'invalid-date' };
-            const expected = { until: moment.utc('2023-10-15T00:00:00.000Z').toDate(), dtstart: null };
+            const expected = { until: new Date('2023-10-15T00:00:00.000Z'), dtstart: null };
             const result = parseRecurrencePattern(input);
             expect(result).toEqual(expected);
         });
 
         it('should parse valid dtstart and return null for invalid until', () => {
             const input = { until: 'invalid-date', dtstart: '2023-10-10T00:00:00.000Z' };
-            const expected = { until: null, dtstart: moment.utc('2023-10-10T00:00:00.000Z').toDate() };
+            const expected = { until: null, dtstart: new Date('2023-10-10T00:00:00.000Z') };
             const result = parseRecurrencePattern(input);
             expect(result).toEqual(expected);
         });
@@ -264,15 +264,15 @@ describe('recurrence.js', () => {
 
     describe('isActivePeriodsValid', () => {
         const createRecurrencePattern = (startDate, endDate) => ({
-            dtstart: startDate.toISOString(),
-            until: endDate.toISOString(),
+            dtstart: new Date(startDate).toISOString(),
+            until: new Date(endDate).toISOString(),
             freq: 2,
             byweekday: [0, 2, 4],
         });
 
         it('should return true when active periods count is within the valid range', () => {
-            const startDate = moment().subtract(1, 'days');
-            const endDate = moment().add(5, 'days');
+            const startDate = '2023-10-01T00:00:00.000Z';
+            const endDate = '2023-10-07T00:00:00.000Z';
             const recurrencePattern = createRecurrencePattern(startDate, endDate);
 
             const result = isActivePeriodsValid(recurrencePattern, 2, 10);
@@ -280,8 +280,8 @@ describe('recurrence.js', () => {
         });
 
         it('should return false when active periods count is zero', () => {
-            const startDate = moment().add(10, 'days');
-            const endDate = moment().add(10, 'days');
+            const startDate = '2023-10-15T00:00:00.000Z';
+            const endDate = '2023-10-15T00:00:00.000Z';
             const recurrencePattern = createRecurrencePattern(startDate, endDate);
 
             const result = isActivePeriodsValid(recurrencePattern, 2, 10);
@@ -289,8 +289,8 @@ describe('recurrence.js', () => {
         });
 
         it('should return false when active periods count exceeds the maximum allowed', () => {
-            const startDate = moment().subtract(1, 'days');
-            const endDate = moment().add(30, 'days');
+            const startDate = '2023-09-01T00:00:00.000Z';
+            const endDate = '2023-10-01T00:00:00.000Z';
             const recurrencePattern = createRecurrencePattern(startDate, endDate);
 
             const result = isActivePeriodsValid(recurrencePattern, 1, 5);
@@ -298,8 +298,8 @@ describe('recurrence.js', () => {
         });
 
         it('should return true when active periods count equals the maximum allowed', () => {
-            const startDate = moment().subtract(1, 'days');
-            const endDate = moment().add(5, 'days');
+            const startDate = '2023-10-01T00:00:00.000Z';
+            const endDate = '2023-10-07T00:00:00.000Z';
             const recurrencePattern = createRecurrencePattern(startDate, endDate);
 
             const result = isActivePeriodsValid(recurrencePattern, 2, 3);
