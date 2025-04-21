@@ -242,6 +242,11 @@ export default {
     UPDATE_DISRUPTION_TO_EDIT: 'update-disruption-to-edit',
     UPDATE_DISRUPTION_FILTERS: 'update-disruption-filters',
     UPDATE_DISRUPTION_DATAGRID_CONFIG: 'update-disruption-datagrid-config',
+    UPDATE_DIVERSION_EDIT_MODE: 'update-diversion-edit-mode',
+    OPEN_CREATE_DIVERSION: 'open-create-diversion',
+    ADD_DIVERSION: 'add-diversion',
+    UPDATE_DIVERSION_CREATION_STATE: 'update-diversion-creation-state',
+
     // TripReplays
     UPDATE_CONTROL_TRIP_REPLAYS_LOADING: 'update-control-trip-replays-loading',
     UPDATE_CONTROL_TRIP_REPLAYS_CURRENT_TRIP_DETAIL: 'update-control-trip-replays-current-trip-detail',

@@ -1,0 +1,15 @@
+.route-shape-editor-container {
+    flex-grow: 1; /* Take up the remaining width */
+    height: 100%; /* Full height for the map panel */
+    background-color: #FFF;
+}
+
+.leaflet-editing-icon {
+    margin-left: -2px !important;
+    margin-top: -2px !important;
+    height: .5rem !important;
+    width: .5rem !important;
+    background-color: #DF332A !important;
+    border-radius: 50% !important;
+    display: inline-block !important;
+}

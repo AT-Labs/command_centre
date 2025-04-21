@@ -7,14 +7,16 @@ import DisruptionDetail from './DisruptionDetail';
 import Loader from '../../../Common/Loader/Loader';
 import {
     clearDisruptionActionResult,
+    openCreateDiversion,
     updateDisruptionsPermissions,
 } from '../../../../redux/actions/control/disruptions';
-import { getDisruptionAction, isDisruptionUpdateAllowed } from '../../../../redux/selectors/control/disruptions';
+import { getDisruptionAction, isDisruptionUpdateAllowed, isDiversionCreationOpen } from '../../../../redux/selectors/control/disruptions';
 import { updateActiveControlEntityId } from '../../../../redux/actions/navigation';
 import { getActiveControlEntityId } from '../../../../redux/selectors/navigation';
 import { getDisruption as getDisruptionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
 import { transformIncidentNo } from '../../../../utils/control/disruptions';
 import { DISRUPTION_POLLING_INTERVAL } from '../../../../constants/disruptions';
+import CreateDiversion from '../DiversionCreation';
 
 const DisruptionDetailsPage = (props) => {
     const { resultStatus, resultMessage, resultDisruptionId, resultCreateNotification, isCopied } = props;
@@ -124,12 +126,18 @@ const DisruptionDetailsPage = (props) => {
                     onClose={ () => props.clearDisruptionActionResult() }
                 />
             )}
-            <h2>
-                Disruption
-                {' '}
-                {transformIncidentNo(disruption.disruptionId)}
-            </h2>
-            <DisruptionDetail { ...{ ...props, disruption } } isReadOnlyMode={ !isDisruptionUpdateAllowed(disruption) } />
+            { props.isCreateDiversionOpen
+                ? <CreateDiversion disruption={ disruption } onCancelled={ () => props.openCreateDiversion(false) } />
+                : (
+                    <>
+                        <h2>
+                            Disruption
+                            {' '}
+                            {transformIncidentNo(disruption.disruptionId)}
+                        </h2>
+                        <DisruptionDetail { ...{ ...props, disruption } } isReadOnlyMode={ !isDisruptionUpdateAllowed(disruption) } />
+                    </>
+                )}
         </div>
     );
 };
@@ -144,6 +152,8 @@ DisruptionDetailsPage.propTypes = {
     activeControlEntityId: PropTypes.string.isRequired,
     updateActiveControlEntityId: PropTypes.func.isRequired,
     updateDisruptionsPermissions: PropTypes.func.isRequired,
+    isCreateDiversionOpen: PropTypes.bool,
+    openCreateDiversion: PropTypes.func.isRequired,
 };
 
 DisruptionDetailsPage.defaultProps = {
@@ -152,13 +162,16 @@ DisruptionDetailsPage.defaultProps = {
     resultCreateNotification: false,
     resultDisruptionId: null,
     isCopied: false,
+    isCreateDiversionOpen: false,
 };
 
 export default connect(state => ({
     ...getDisruptionAction(state),
     activeControlEntityId: getActiveControlEntityId(state),
+    isCreateDiversionOpen: isDiversionCreationOpen(state),
 }), {
     clearDisruptionActionResult,
     updateActiveControlEntityId,
     updateDisruptionsPermissions,
+    openCreateDiversion,
 })(DisruptionDetailsPage);

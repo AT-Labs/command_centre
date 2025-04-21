@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { isArray } from 'lodash-es';
 import { getAlertCauses, getAlertEffects } from '../transmitters/command-centre-config-api';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../types/disruption-cause-and-effect';
 import { fetchFromLocalStorage, CAUSES_CACHE_KEY, EFFECTS_CACHE_KEY, CAUSES_EFFECTS_CACHE_EXPIRY } from '../common/local-storage-helper';
@@ -9,7 +10,7 @@ export const useAlertCauses = () => {
     useEffect(() => {
         const fetchCauses = async () => {
             const causesList = await fetchFromLocalStorage(CAUSES_CACHE_KEY, CAUSES_EFFECTS_CACHE_EXPIRY, getAlertCauses);
-            if (causesList) {
+            if (causesList && isArray(causesList)) {
                 causesList.unshift(DEFAULT_CAUSE);
                 setCauses(causesList);
             } else {
@@ -29,7 +30,7 @@ export const useAlertEffects = () => {
     useEffect(() => {
         const fetchEffects = async () => {
             const effectsList = await fetchFromLocalStorage(EFFECTS_CACHE_KEY, CAUSES_EFFECTS_CACHE_EXPIRY, getAlertEffects);
-            if (effectsList) {
+            if (effectsList && isArray(effectsList)) {
                 effectsList.unshift(DEFAULT_IMPACT);
                 setEffects(effectsList);
             } else {

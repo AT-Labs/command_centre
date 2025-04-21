@@ -40,6 +40,7 @@ import appSettings from './reducers/appSettings';
 import notifications from './reducers/control/notifications';
 import datagridConfig from './reducers/datagrid';
 import layers from './reducers/realtime/layers';
+import diversions from './reducers/control/diversions';
 
 const sentryReduxEnhancer = Sentry.createReduxEnhancer();
 
@@ -92,6 +93,7 @@ export default createStore(
             link,
             serviceDate,
             disruptions,
+            diversions,
             dataManagement,
             notifications,
             vehicleReplay,

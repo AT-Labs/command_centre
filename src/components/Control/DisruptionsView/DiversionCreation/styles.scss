@@ -1,0 +1,32 @@
+@import '../../../../assets/styles/variables';
+
+.side-panel-control-component-view {
+    & .side-panel {
+        overflow-x: hidden;
+    }
+    & .side-panel__scroll-size {
+        height: calc(100vh - 149px);
+    }
+
+    & .side-panel-primary-panel {
+        width: $side-panel-width-large;
+    }
+
+    .select-variant-container {
+        height: 150px;
+    }
+
+    footer {
+        width: $side-panel-width-large;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        background-color: #FFF;
+        padding: 1rem;
+    }
+
+    .map {
+        margin-left: $side-panel-width-large;
+        height: calc(100vh - 109px);
+    }
+}

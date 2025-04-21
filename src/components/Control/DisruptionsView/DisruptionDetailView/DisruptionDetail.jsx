@@ -46,6 +46,8 @@ import {
     uploadDisruptionFiles,
     deleteDisruptionFile,
     updateDisruption,
+    updateDiversionMode,
+    openCreateDiversion,
     publishDraftDisruption,
 } from '../../../../redux/actions/control/disruptions';
 import {
@@ -439,6 +441,11 @@ const DisruptionDetailView = (props) => {
         props.actions.updateActiveControlEntityId('');
     };
 
+    const addDiversion = () => {
+        props.actions.updateDiversionMode(EDIT_TYPE.CREATE);
+        props.actions.openCreateDiversion(true);
+    };
+
     const minEndDate = () => {
         if (!recurrent) {
             return startDate;
@@ -554,8 +561,11 @@ const DisruptionDetailView = (props) => {
                     <AffectedEntities
                         editLabel="Edit routes, stops and workarounds"
                         editAction={ affectedEntitiesEditActionHandler }
+                        addDiversionAction={ addDiversion }
                         isEditDisabled={ isRequesting || isLoading || isResolved() || isReadOnlyMode }
                         affectedEntities={ disruption.affectedEntities }
+                        startTime={ disruption.startTime }
+                        endTime={ disruption.endTime }
                         showViewWorkaroundsButton
                         viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                         showViewPassengerImpactButton={ props.usePassengerImpact }
@@ -956,6 +966,8 @@ DisruptionDetailView.propTypes = {
     useDraftDisruptions: PropTypes.bool.isRequired,
     isReadOnlyMode: PropTypes.bool,
     actions: PropTypes.objectOf(PropTypes.func).isRequired,
+    updateDiversionMode: PropTypes.func.isRequired,
+    openCreateDiversion: PropTypes.func.isRequired,
 };
 
 DisruptionDetailView.defaultProps = {
@@ -980,6 +992,8 @@ const mapDispatchToProps = dispatch => ({
         deleteDisruptionFile,
         updateActiveControlEntityId,
         updateDisruption,
+        updateDiversionMode,
+        openCreateDiversion,
         publishDraftDisruption,
     }, dispatch),
 });

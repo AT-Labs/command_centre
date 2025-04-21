@@ -79,3 +79,18 @@ export const deleteDisruptionFile = (disruption, fileId) => {
         },
     ).then(response => jsonResponseHandling(response));
 };
+
+export const addDiversion = (diversion) => {
+    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/diversions`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: POST,
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(diversion),
+        },
+    ).then(response => jsonResponseHandling(response));
+};

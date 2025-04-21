@@ -9,6 +9,7 @@ import { getStopGroupName } from '../../../utils/control/dataManagement';
 import './AffectedEntities.scss';
 import { DIRECTIONS } from './types';
 import CustomCollapse from '../../Common/CustomCollapse/CustomCollapse';
+import { useDiversion } from '../../../redux/selectors/appSettings';
 
 export const AffectedEntities = (props) => {
     const groupByEntityRender = (groupById, groupTitle, groupText, children) => (
@@ -55,6 +56,11 @@ export const AffectedEntities = (props) => {
         return [routesRender, stopsRender, stopGroupsRender];
     };
 
+    // We only support adding diversion to bus route at the moment.
+    const isBusRoute = route => route.routeType === 3;
+
+    const showAddDiversion = props.useDiversion && props.startTime && props.endTime && props.affectedEntities.filter(isBusRoute).length > 0;
+
     return (
         <section className={ `disruption__affected-entities ${props.heightSmall ? 'small' : ''} ${props.className}` }>
             <div className="p-3 w-100">
@@ -89,6 +95,18 @@ export const AffectedEntities = (props) => {
                                         </Button>
                                     </div>
                                 )}
+                                <div>
+                                    { showAddDiversion
+                                    && (
+                                        <Button
+                                            className="btn cc-btn-link pr-0 font-weight-bold"
+                                            id="edit-routes-and-stops-btn"
+                                            onClick={ props.addDiversionAction }>
+                                            Add Diversion
+                                            <MdEdit size={ 20 } color="black" className="ml-1" />
+                                        </Button>
+                                    )}
+                                </div>
                                 {props.showViewPassengerImpactButton && (
                                     <div>
                                         <Button
@@ -120,8 +138,11 @@ export const AffectedEntities = (props) => {
 AffectedEntities.propTypes = {
     editLabel: PropTypes.string,
     editAction: PropTypes.func,
+    addDiversionAction: PropTypes.func,
     isEditDisabled: PropTypes.bool,
     affectedEntities: PropTypes.array.isRequired,
+    startTime: PropTypes.string,
+    endTime: PropTypes.string,
     stopGroups: PropTypes.object.isRequired,
     showHeader: PropTypes.bool,
     className: PropTypes.string,
@@ -130,12 +151,14 @@ AffectedEntities.propTypes = {
     viewWorkaroundsAction: PropTypes.func,
     showViewPassengerImpactButton: PropTypes.bool,
     viewPassengerImpactAction: PropTypes.func,
+    useDiversion: PropTypes.bool.isRequired,
 };
 
 AffectedEntities.defaultProps = {
     isEditDisabled: false,
     editLabel: 'Edit',
     editAction: null,
+    addDiversionAction: null,
     showHeader: true,
     className: '',
     heightSmall: false,
@@ -143,8 +166,11 @@ AffectedEntities.defaultProps = {
     viewWorkaroundsAction: null,
     showViewPassengerImpactButton: false,
     viewPassengerImpactAction: null,
+    startTime: null,
+    endTime: null,
 };
 
 export default connect(state => ({
     stopGroups: getStopGroupsIncludingDeleted(state),
+    useDiversion: useDiversion(state),
 }))(AffectedEntities);

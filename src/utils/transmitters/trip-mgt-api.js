@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import gql from 'graphql-tag';
 import { result } from 'lodash-es';
 import { jsonResponseHandling } from '../fetch';
@@ -427,3 +428,18 @@ export const bulkUpdateTripStops = options => (
             })
         ))
 );
+
+export const searchRouteVariants = (params) => {
+    const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/routevariants`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(params),
+        },
+    ).then(response => jsonResponseHandling(response));
+};
