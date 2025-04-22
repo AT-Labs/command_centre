@@ -42,6 +42,7 @@ const componentPropsMock = {
         scheduledDepartureTime: '11:11:11',
         status: 'NOT_PASSED',
         parent: 'test9',
+        display: true,
     }],
     areSelectedStopsUpdating: true,
     updateSelectedStopsStatus: jest.fn(),
@@ -103,7 +104,7 @@ describe('<UpdateStopStatusModal />', () => {
         });
     });
 
-    describe('ski stop tests', () => {
+    describe('skip stop tests', () => {
         it('Should display UpdateStopStatusModal correctly', () => {
             wrapper = setup({ activeModal: updateStopsModalTypes.SKIP });
             expect(wrapper.find(CustomModal).prop('title')).toEqual('Skip stop(s)');
@@ -131,6 +132,7 @@ describe('<UpdateStopStatusModal />', () => {
                 expect.anything(),
                 { 0: testStop },
                 'SKIPPED',
+                true,
                 expect.anything(),
                 expect.anything(),
             );
@@ -158,6 +160,37 @@ describe('<UpdateStopStatusModal />', () => {
                 expect.anything(),
                 {},
                 'SKIPPED',
+                true,
+                expect.anything(),
+                expect.anything(),
+            );
+        });
+
+        it('Should hide skipped stop', () => {
+            const testStop = {
+                stopId: 'test7',
+                tripId: 'tripId',
+                stopSequence: 1,
+                stopCode: '1111',
+                stopName: 'test8',
+                arrivalTime: '00:00:00',
+                departureTime: '11:11:11',
+                scheduledArrivalTime: '00:00:00',
+                scheduledDepartureTime: '11:11:11',
+                status: 'SKIPPED',
+                parent: 'test9',
+                display: true,
+            };
+
+            wrapper = setup({ activeModal: updateStopsModalTypes.HIDE_SKIPPED_STOP,
+                selectedStopsByTripKey: () => [testStop] });
+            wrapper.find(CustomModal).prop('okButton').onClick();
+            expect(componentPropsMock.updateSelectedStopsStatus).toHaveBeenCalledTimes(1);
+            expect(componentPropsMock.updateSelectedStopsStatus).toHaveBeenCalledWith(
+                expect.anything(),
+                [testStop],
+                'SKIPPED',
+                false,
                 expect.anything(),
                 expect.anything(),
             );
@@ -192,6 +225,7 @@ describe('<UpdateStopStatusModal />', () => {
                 expect.anything(),
                 { 0: testStop },
                 'NOT_PASSED',
+                true,
                 expect.anything(),
                 expect.anything(),
             );
@@ -219,6 +253,7 @@ describe('<UpdateStopStatusModal />', () => {
                 expect.anything(),
                 {},
                 'NOT_PASSED',
+                true,
                 expect.anything(),
                 expect.anything(),
             );
@@ -290,6 +325,19 @@ describe('<UpdateStopStatusModal />', () => {
 
         it('Should invoke updateSelectedStopsStatus when onStopUpdated is undefined', () => {
             wrapper = setup({ activeModal: updateStopsModalTypes.SET_NON_STOPPING });
+            wrapper.find(CustomModal).prop('okButton').onClick();
+            expect(componentPropsMock.updateSelectedStopsStatus).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('set hide skipped stops', () => {
+        it('Should display UpdateStopStatusModal correctly', () => {
+            wrapper = setup({ activeModal: updateStopsModalTypes.HIDE_SKIPPED_STOP });
+            expect(wrapper.find(CustomModal).prop('title')).toEqual('Hide skipped stop(s)');
+        });
+
+        it('Should invoke updateSelectedStopsStatus when onStopUpdated is undefined', () => {
+            wrapper = setup({ activeModal: updateStopsModalTypes.HIDE_SKIPPED_STOP });
             wrapper.find(CustomModal).prop('okButton').onClick();
             expect(componentPropsMock.updateSelectedStopsStatus).toHaveBeenCalledTimes(1);
         });

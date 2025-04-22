@@ -2,9 +2,10 @@ import { isEmpty, findKey, capitalize, pickBy, size } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import React, { useState, useEffect } from 'react';
-import { FormGroup, FormText, Input } from 'reactstrap';
+import { FormGroup, FormText, Input, Table } from 'reactstrap';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
+import { FaExclamationTriangle } from 'react-icons/fa';
 
 import UpdateStatusModalsBtn from './UpdateStatusModalsBtn';
 import { StopStatus, updateStopsModalTypes } from '../Types';
@@ -16,7 +17,7 @@ import { TRAIN_TYPE_ID } from '../../../../types/vehicle-types';
 import { getRailHeadsignsStops } from '../../../../utils/transmitters/cc-static';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 
-const { SKIP, REINSTATE, MOVE_SERVICE, UPDATE_HEADSIGN, SET_NON_STOPPING, SET_FIRST_STOP, SET_LAST_STOP } = updateStopsModalTypes;
+const { SKIP, REINSTATE, MOVE_SERVICE, UPDATE_HEADSIGN, SET_NON_STOPPING, SET_FIRST_STOP, SET_LAST_STOP, HIDE_SKIPPED_STOP } = updateStopsModalTypes;
 
 const modalPropsMapping = (data) => {
     const { firstSelectedStop, tripInstance, isUpdatingOnGoing, skipped, notPassed, nonStopping } = data;
@@ -73,6 +74,14 @@ const modalPropsMapping = (data) => {
             confirmationMessage: `Are you sure you want to set stop ${firstSelectedStop.stopCode} as the last stop of this trip?`,
             label: <UpdateStatusModalsBtn label="Set last stop" isLoading={ isUpdatingOnGoing } />,
         },
+        [HIDE_SKIPPED_STOP]: {
+            className: `${HIDE_SKIPPED_STOP}-modal`,
+            title: 'Hide skipped stop(s)',
+            errorMessage: 'skipped stop(s) could not be hidden',
+            successMessage: 'skipped stop(s) successfully hidden',
+            confirmationMessage: 'Are you sure you want to hide the selected skipped stops?',
+            label: <UpdateStatusModalsBtn label="Hide skipped stop(s)" isLoading={ isUpdatingOnGoing } />,
+        },
     };
 };
 
@@ -128,6 +137,22 @@ const handleSetLastStop = (tripInstance, firstSelectedStop, handlers, activeModa
     }
 };
 
+const getSkippedOnly = selectedStops => Object.values(selectedStops).filter(
+    item => item.status === StopStatus.skipped && item.display === true,
+);
+
+const handleUpdateStopVisibilityToFalse = (tripInstance, selectedStops, modalProps, handlers, activeModal) => {
+    const skippedOnly = getSkippedOnly(selectedStops);
+    handlers?.updateSelectedStopsStatusHandler(
+        tripInstance,
+        skippedOnly,
+        StopStatus.skipped,
+        false,
+        `${size(skippedOnly)} ${modalProps[activeModal].successMessage}`,
+        `${size(skippedOnly)} ${modalProps[activeModal].errorMessage}`,
+    );
+};
+
 const handleDefaultCase = (tripInstance, selectedStops, modalProps, activeModal, skipped, nonStopping, handlers) => {
     const filterSelectedStopsByModalType = status => ((activeModal === SKIP && status !== skipped)
     || (activeModal === REINSTATE && (status === skipped || status === nonStopping)) || (activeModal === SET_NON_STOPPING && status !== nonStopping));
@@ -147,6 +172,7 @@ const handleDefaultCase = (tripInstance, selectedStops, modalProps, activeModal,
             tripInstance,
             selectedStopsByModalType,
             modalProps[activeModal].stopStatus,
+            true,
             `${size(selectedStopsByModalType)} ${modalProps[activeModal].successMessage}`,
             `${size(selectedStopsByModalType)} ${modalProps[activeModal].errorMessage}`,
         );
@@ -176,6 +202,9 @@ const onClickHandler = (
     case SET_LAST_STOP:
         handleSetLastStop(tripInstance, firstSelectedStop, handlers, activeModal);
         break;
+    case HIDE_SKIPPED_STOP:
+        handleUpdateStopVisibilityToFalse(tripInstance, selectedStops, modalProps, handlers, activeModal);
+        break;
     default:
         handleDefaultCase(tripInstance, selectedStops, modalProps, activeModal, skipped, nonStopping, handlers);
     }
@@ -198,7 +227,7 @@ export const UpdateStopStatusModal = (props) => {
         setRailHeadsigns(railHeadsignsStops.map(({ headsign }) => headsign));
     }, []);
 
-    const modalProps = modalPropsMapping({ firstSelectedStop, tripInstance, isUpdatingOnGoing, skipped, notPassed, nonStopping });
+    const modalProps = modalPropsMapping({ firstSelectedStop, tripInstance, isUpdatingOnGoing, skipped, notPassed, nonStopping, selectedStops });
 
     const pidCustomizationOptions = [
         { key: '/N', value: '/N' },
@@ -296,6 +325,43 @@ export const UpdateStopStatusModal = (props) => {
                 </>
             );
         }
+
+        if (activeModal === HIDE_SKIPPED_STOP) {
+            return (
+                <div>
+                    <div className="my-2 py-2 text-center">
+                        <div className="text-warning w-100 m-2">
+                            <FaExclamationTriangle size={ 40 } />
+                        </div>
+                        <div className="mb-2">
+                            Hiding skipped stops will remove it from various channels such as PIDs, rail station announcements, ATM. (only applies for trips today)
+                        </div>
+                        <div>
+                            Are you sure you want to hide the following skipped stops?
+                        </div>
+                    </div>
+                    <Table className="table">
+                        <thead>
+                            <tr>
+                                <th>Stop #</th>
+                                <th>Schedule</th>
+                                <th>Stop(s)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Object.values(getSkippedOnly(selectedStops)).map(stop => (
+                                <tr key={ stop.stopId }>
+                                    <td>{ stop.stopCode }</td>
+                                    <td>{ stop.scheduledDepartureTime }</td>
+                                    <td>{ stop.stopName }</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                </div>
+            );
+        }
+
         return (
             <ConfirmationModalBody
                 message={ activeModal === MOVE_SERVICE

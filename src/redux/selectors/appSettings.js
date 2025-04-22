@@ -56,3 +56,4 @@ export const useNewMonitoring = createSelector(
     appSettingState => (result(appSettingState, 'useNewMonitoring') === 'true'),
 );
 export const useDiversion = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useDiversion') === 'true'));
+export const useHideSkippedStop = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useHideSkippedStop') === 'true'));

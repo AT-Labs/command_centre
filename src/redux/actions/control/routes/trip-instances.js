@@ -206,6 +206,8 @@ export const updateSelectedStopsByTrip = tripInstance => async (dispatch, getSta
 
         dispatch(updateSelectedStops(tripInstance, updatedSelectedStops));
     } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('Error processing selected stops:', e);
         return ErrorType.tripsFetch && dispatch(setBannerError(ErrorType.tripsFetch));
     }
 
@@ -425,6 +427,8 @@ export const fetchAndUpdateSelectedStops = tripInstance => async (dispatch, getS
         const updatedStops = map(selectedStopsByTrip, selectedStop => tripInstances[0].stops.filter(stop => stop.stopId === selectedStop.stopId)[0]);
         dispatch(updateSelectedStops(tripInstance, updatedStops));
     } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('Error processing selected stops:', e);
         return ErrorType.tripsFetch && dispatch(setBannerError(ErrorType.tripsFetch));
     }
 
@@ -442,11 +446,12 @@ export const removeBulkStopsUpdateMessages = tripInstance => (dispatch, getState
     });
 };
 
-export const updateSelectedStopsStatus = (tripInstance, selectedStops, stopStatus, successMessage, errorMessage) => async (dispatch) => {
+export const updateSelectedStopsStatus = (tripInstance, selectedStops, stopStatus, display, successMessage, errorMessage) => async (dispatch) => {
     dispatch(updateSelectedStopsUpdatingState(true));
     await dispatch(updateTripInstanceStopStatus(
         {
             stopStatus,
+            display,
             tripId: tripInstance.tripId,
             stopSequences: compact(map(selectedStops, stop => (stop.status !== StopStatus.passed ? stop.stopSequence : undefined))),
             startTime: tripInstance.startTime,

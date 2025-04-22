@@ -122,29 +122,43 @@ export class Stops extends React.Component {
         );
 
         return (
-            <section className={ `pt-3 ${StopLinesHelper.getHoverDirectionClass()}` }>
+            <section
+                className={ `pt-3 ${StopLinesHelper.getHoverDirectionClass()}` }
+            >
                 <div className="d-flex">
-                    <div className={ `align-self-end ml-3 mr-2 text-right ${this.state.hasScrollbar ? 'stop-times-label__scrollbar' : 'stop-times-label__no-scrollbar'}` }>
-                        { this.props.useHeadsignUpdate && (
-                            <div className="mb-5">
-                                Destination
-                            </div>
-                        ) }
-                        { this.props.showScheduled && (
-                            <div>Scheduled</div>
-                        ) }
-                        { this.props.showActuals && (
+                    <div
+                        className={ `align-self-end ml-3 mr-2 text-right ${
+                            this.state.hasScrollbar
+                                ? 'stop-times-label__scrollbar'
+                                : 'stop-times-label__no-scrollbar'
+                        }` }
+                    >
+                        {this.props.useHeadsignUpdate && (
+                            <div className="mb-5">Destination</div>
+                        )}
+                        {this.props.showScheduled && <div>Scheduled</div>}
+                        {this.props.showActuals && (
                             <div>
                                 <span className="text-muted">Actual</span>
                                 /
-                                <span className="text-prediction">Prediction</span>
+                                <span className="text-prediction">
+                                    Prediction
+                                </span>
                             </div>
-                        ) }
+                        )}
                     </div>
                     <div className="overflow-x-auto" ref={ this.containerRef }>
-                        <div className="stop-control-container d-flex" style={ { width: `${stopContainerWidth}px` } }>
-                            { stops.map((stop) => {
-                                const { selectedEventClasses, hoverEventClasses } = StopLinesHelper.getLineInteractionClasses(stop);
+                        <div
+                            className="stop-control-container d-flex"
+                            style={ { width: `${stopContainerWidth}px` } }
+                        >
+                            {stops.map((stop) => {
+                                const {
+                                    selectedEventClasses,
+                                    hoverEventClasses,
+                                } = StopLinesHelper.getLineInteractionClasses(
+                                    stop,
+                                );
                                 return (
                                     <Stop
                                         stop={ stop }
@@ -156,13 +170,20 @@ export class Stops extends React.Component {
                                         lineInteractionClasses={ `${selectedEventClasses} ${hoverEventClasses}` }
                                         showScheduled={ this.props.showScheduled }
                                         showActuals={ this.props.showActuals }
-                                        onStopUpdated={ this.props.onStopUpdated } />
+                                        onStopUpdated={ this.props.onStopUpdated }
+                                    />
                                 );
                             })}
                         </div>
                     </div>
                 </div>
-                { shouldStopSelectionFooterBeShown && <StopSelectionFooter tripInstance={ this.props.tripInstance } onStopUpdated={ this.props.onStopUpdated } /> }
+                {shouldStopSelectionFooterBeShown && (
+                    <StopSelectionFooter
+                        tripInstance={ this.props.tripInstance }
+                        onStopUpdated={ this.props.onStopUpdated }
+                        showHideSkippedStopButton
+                    />
+                )}
             </section>
         );
     }

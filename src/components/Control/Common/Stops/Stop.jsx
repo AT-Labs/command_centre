@@ -3,7 +3,7 @@ import React from 'react';
 import moment from 'moment';
 import { isEmpty, get } from 'lodash-es';
 import { connect } from 'react-redux';
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaEyeSlash } from 'react-icons/fa';
 import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
 import { selectStops, updateTripInstanceStopPlatform } from '../../../../redux/actions/control/routes/trip-instances';
@@ -224,6 +224,9 @@ export class Stop extends React.Component {
                     )}
                     <div className="font-weight-bold mt-1">{stop.stopCode || '—'}</div>
                     { this.props.useHeadsignUpdate && (<div className="mt-2 mb-2">{stop.stopHeadsign ? stop.stopHeadsign : ''}</div>) }
+                    <div style={ { height: 20 } }>
+                        { stop?.display === false && (<FaEyeSlash className="stop-control__body__actions__action__icon" size={ 16 } title="This stop is hidden" />) }
+                    </div>
                 </div>
                 <div className={ `stop-control__body ${this.props.lineInteractionClasses}` }>
                     <div className="stop-control__body__line" />

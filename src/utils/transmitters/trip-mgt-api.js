@@ -245,15 +245,15 @@ export const updateTripDisplay = (options) => {
 };
 
 const updateStopStatusGqlMutation = gql`
-    mutation($tripId: String!, $serviceDate: Moment!, $startTime: String!, $stopSequences: [Int!]!, $stopStatus: StopStatus!) {
-        updateStopStatus( tripId: $tripId, serviceDate: $serviceDate, startTime: $startTime, stopSequences: $stopSequences, stopStatus: $stopStatus) {
+    mutation($tripId: String!, $serviceDate: Moment!, $startTime: String!, $stopSequences: [Int!]!, $stopStatus: StopStatus!, $display: Boolean) {
+        updateStopStatus( tripId: $tripId, serviceDate: $serviceDate, startTime: $startTime, stopSequences: $stopSequences, stopStatus: $stopStatus, display: $display) {
             ${tripInstanceFields}
         }
     }`;
 
 export const updateStopStatus = (options) => {
     const {
-        tripId, serviceDate, startTime, stopSequences, stopStatus,
+        tripId, serviceDate, startTime, stopSequences, stopStatus, display,
     } = options;
 
     return getAuthToken()
@@ -262,7 +262,7 @@ export const updateStopStatus = (options) => {
                 url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
                 mutation: updateStopStatusGqlMutation,
                 variables: {
-                    tripId, serviceDate, startTime, stopSequences, stopStatus,
+                    tripId, serviceDate, startTime, stopSequences, stopStatus, display,
                 },
                 params: 'updateStopStatus',
                 authToken: token,

@@ -90,6 +90,7 @@ export const updateStopsModalTypes = {
     SET_NON_STOPPING: 'set-non-stopping',
     SET_FIRST_STOP: 'set-first-stop',
     SET_LAST_STOP: 'set-last-stop',
+    HIDE_SKIPPED_STOP: 'hide-skipped-stop',
 };
 
 export const updateTripsStatusModalOrigins = {

@@ -14,7 +14,7 @@ import { deselectAllStopsByTrip } from '../../../../redux/actions/control/routes
 import { isMoveToStopPermitted, isUpdateStopHeadsignPermitted, isSkipStopPermitted } from '../../../../utils/user-permissions';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
 import { SERVICE_DATE_FORMAT } from '../../../../utils/control/routes';
-import { useHeadsignUpdate } from '../../../../redux/selectors/appSettings';
+import { useHeadsignUpdate, useHideSkippedStop } from '../../../../redux/selectors/appSettings';
 
 import './styles.scss';
 
@@ -26,6 +26,7 @@ const getStopStatusState = (selectedStops) => {
             isThereANotSkippedStop: filter(selectedStops, stop => stop.status !== StopStatus.skipped && stop.status !== StopStatus.nonStopping).length > 0,
             isThereANonStoppingStop: filter(selectedStops, stop => stop.status === StopStatus.nonStopping).length > 0,
             isFirstOrLastStopSelected: filter(selectedStops, stop => [1, lastStopSequence].includes(stop.stopSequence)).length > 0,
+            isThereDisplayedSkippedStop: filter(selectedStops, stop => stop.status === StopStatus.skipped && stop.display === true).length > 0,
         };
     };
 
@@ -163,7 +164,7 @@ export const StopSelectionFooter = (props) => {
                         <li>
                             <Button
                                 size="sm"
-                                className="selection-tools-footer__btn-update-destination cc-btn-secondary d-flex align-items-center"
+                                className="selection-tools-footer__btn-update-destination cc-btn-secondary d-flex align-items-center mr-3"
                                 disabled={ isSetAsLastStopDisabled }
                                 onClick={ () => handleModalOnToggle(updateStopsModalTypes.SET_LAST_STOP) }
                                 aria-label="Set as last stop">
@@ -171,6 +172,17 @@ export const StopSelectionFooter = (props) => {
                             </Button>
                         </li>
                     </>
+                ) }
+                { props.useHideSkippedStop && props.showHideSkippedStopButton && (
+                    <li>
+                        <Button
+                            size="sm"
+                            className="selection-tools-footer__btn-hide cc-btn-secondary d-flex align-items-center mr-3"
+                            onClick={ () => handleModalOnToggle(updateStopsModalTypes.HIDE_SKIPPED_STOP) }
+                            disabled={ !checkIfButtonsShouldBeDisabled.isThereDisplayedSkippedStop }>
+                            Hide skipped stops
+                        </Button>
+                    </li>
                 ) }
             </ul>
             <UpdateStopStatusModal
@@ -191,15 +203,19 @@ StopSelectionFooter.propTypes = {
     onStopUpdated: PropTypes.func,
     showNonStoppingButton: PropTypes.bool,
     showRemoveStopsButtons: PropTypes.bool,
+    useHideSkippedStop: PropTypes.bool.isRequired,
+    showHideSkippedStopButton: PropTypes.bool,
 };
 
 StopSelectionFooter.defaultProps = {
     onStopUpdated: undefined,
     showNonStoppingButton: false,
     showRemoveStopsButtons: false,
+    showHideSkippedStopButton: false,
 };
 
 export default connect(state => ({
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
     useHeadsignUpdate: useHeadsignUpdate(state),
+    useHideSkippedStop: useHideSkippedStop(state),
 }), { deselectAllStopsByTrip })(StopSelectionFooter);

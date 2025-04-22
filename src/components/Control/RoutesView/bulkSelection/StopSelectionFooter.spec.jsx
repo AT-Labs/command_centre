@@ -16,6 +16,7 @@ const componentPropsMock = {
     selectedStopsByTripKey: () => {},
     deselectAllStopsByTrip: () => {},
     useHeadsignUpdate: true,
+    useHideSkippedStop: true,
 };
 
 const setup = (customProps) => {
@@ -99,5 +100,18 @@ describe('StopSelectionFooter', () => {
         const button = wrapper.find('.selection-tools-footer__btn-non-stopping');
         expect(button.exists()).toEqual(true);
         button.simulate('click');
+    });
+
+    it('render hide skipped stops button when showHideSkippedStopButton is true', () => {
+        wrapper = setup({ showHideSkippedStopButton: true });
+        const button = wrapper.find('.selection-tools-footer__btn-hide');
+        expect(button.exists()).toEqual(true);
+        button.simulate('click');
+    });
+
+    it('shoud not render hide skipped stops button when showHideSkippedStopButton is false', () => {
+        wrapper = setup({ showHideSkippedStopButton: false });
+        const button = wrapper.find('.selection-tools-footer__btn-hide');
+        expect(button.exists()).toEqual(false);
     });
 });
