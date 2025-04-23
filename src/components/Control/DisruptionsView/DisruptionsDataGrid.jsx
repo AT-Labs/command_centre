@@ -65,16 +65,20 @@ const getStatusIcon = (value) => {
 };
 
 const getViewNotificationButtons = (row, source, callback = () => {}) => {
-    const { disruptionId, version } = row;
+    const { disruptionId, version, status } = row;
+
     return (
         [
             <Tooltip title="View notification" placement="top-end" key={ uniqueId(disruptionId) }>
-                <IconButton aria-label="view-notification"
-                    onClick={ () => {
-                        callback({ disruptionId, version, source });
-                    } }>
-                    <BsFillChatTextFill />
-                </IconButton>
+                <span>
+                    <IconButton
+                        aria-label="view-notification"
+                        onClick={ () => { callback({ disruptionId, version, source }); } }
+                        disabled={ status === STATUSES.DRAFT }
+                    >
+                        <BsFillChatTextFill />
+                    </IconButton>
+                </span>
             </Tooltip>,
         ]
     );
