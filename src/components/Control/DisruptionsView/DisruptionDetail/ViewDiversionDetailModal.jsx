@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
 import { reportError } from '../../../../redux/actions/activity';
-// eslint-disable-next-line no-unused-vars
 import { getDiversion as getDiversionAPI, deleteDiversion as deleteDiversionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import { ActiveDiversionView } from './ActiveDiversionView';
@@ -34,8 +33,7 @@ const ViewDiversionDetailModal = (props) => {
     const deleteDiversion = async (diversionId) => {
         // eslint-disable-next-line no-console
         console.log(`Deleting diversion with ID: ${diversionId}`);
-        // TODO: Enable me when ready for testing:
-        // await deleteDiversionAPI(diversionId);
+        await deleteDiversionAPI(diversionId);
         setRefresh(prevRefresh => !prevRefresh);
     };
 

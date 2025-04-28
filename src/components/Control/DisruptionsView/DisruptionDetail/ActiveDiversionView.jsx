@@ -6,7 +6,6 @@ import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateIcon from '@mui/icons-material/Create';
 import WarningIcon from '@mui/icons-material/Warning';
-// import DisruptionDeleteModal from './DisruptionDeleteModal';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 
 const createRenderCell = (property, extraLiStyles = {}) => function renderCell({ row }) {
@@ -31,8 +30,6 @@ const gridColumns = [
 const ActiveDiversionView = ({ deleteDiversion, diversions, allExpanded, incidentNo }) => {
     const [expandedRows, setExpandedRows] = useState({});
     const getShortRouteId = routeId => routeId.split('-')[0];
-
-    // LCJ:BEGIN
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [selectedDiversionId, setSelectedDiversionId] = useState(null);
 
@@ -46,7 +43,6 @@ const ActiveDiversionView = ({ deleteDiversion, diversions, allExpanded, inciden
         deleteDiversion(selectedDiversionIdToDelete);
         setDeleteDialogOpen(false);
     };
-    // LCJ:END
 
     useEffect(() => {
         if (allExpanded) {
@@ -65,7 +61,7 @@ const ActiveDiversionView = ({ deleteDiversion, diversions, allExpanded, inciden
     };
 
     const renderHeader = diversion => (
-        <div className="d-flex flex-row" style={ { border: '1px solid black' } }>
+        <div className="d-flex flex-row">
             <button
                 data-testid="expand-button"
                 type="button"
@@ -102,7 +98,6 @@ const ActiveDiversionView = ({ deleteDiversion, diversions, allExpanded, inciden
         </div>
     );
 
-    // LCJ:BEGIN
     const renderDeleteModal = () => (
         <CustomMuiDialog
             title="Remove diversion"
@@ -123,7 +118,6 @@ const ActiveDiversionView = ({ deleteDiversion, diversions, allExpanded, inciden
             </div>
         </CustomMuiDialog>
     );
-    // LCJ:END
 
     return (
         <div className="diversion-grid scrollable-container" data-testid="active-diversion-view">
