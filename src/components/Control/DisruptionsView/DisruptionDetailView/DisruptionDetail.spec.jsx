@@ -15,8 +15,11 @@ import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert
 import { useDraftDisruptions } from '../../../../redux/selectors/appSettings';
 import DisruptionSummaryModal from '../DisruptionDetail/DisruptionSummaryModal';
 import ACTION_TYPE from '../../../../redux/action-types';
+import * as disruptionMgtApi from '../../../../utils/transmitters/disruption-mgt-api';
+import { ViewDiversionDetailModal } from '../DisruptionDetail/ViewDiversionDetailModal';
 
 jest.mock('../../../../redux/selectors/appSettings');
+jest.mock('../../../../utils/transmitters/disruption-mgt-api');
 
 const mockStore = configureMockStore([thunk]);
 
@@ -331,6 +334,63 @@ describe('<DisruptionDetailView />', () => {
             const action = store.getActions().find(a => a.type === ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_REQUESTING);
             expect(action).to.not.be.undefined; // eslint-disable-line
             expect(JSON.stringify(action.payload)).to.contain('"isRequesting":true');
+        });
+    });
+
+    describe('ViewDiversionModal', () => {
+        it('should call open and then close on the diversion modal', () => {
+            const mockDiversionData = [
+                { id: 1, route: 'Route A' },
+                { id: 2, route: 'Route B' },
+            ];
+            disruptionMgtApi.getDiversion.mockResolvedValue(mockDiversionData);
+            wrapper = setup(
+                {
+                    disruption: {
+                        ...baseDisruption,
+                    },
+                },
+            );
+            const mockDisruption = {
+                disruption: {
+                    disruptionId: 93839,
+                    incidentNo: 'DISR093839',
+                    diversions: [
+                        {
+                            diversionId: 'DIV123',
+                            tripModifications: [
+                                {
+                                    diversionId: 'DIV123',
+                                    routeId: 'NX2-203',
+                                    routeVariantId: 'NX2-203-1',
+                                    routeVariantName: 'North Express 2',
+                                    direction: 'Northbound',
+                                },
+                            ],
+                        },
+                        {
+                            diversionId: 'DIV456',
+                            tripModifications: [
+                                {
+                                    diversionId: 'DIV456',
+                                    routeId: 'TMKL-203',
+                                    routeVariantId: 'TMKL-203-1',
+                                    routeVariantName: 'Tamaki Link',
+                                    direction: 'Southbound',
+                                },
+                            ],
+                        },
+                    ],
+                },
+                onClose: jest.fn(),
+                isOpen: true,
+            };
+
+            mount(<CacheProvider value={ cache }><Provider store={ store }><ViewDiversionDetailModal { ...mockDisruption } /></Provider></CacheProvider>);
+            const viewDiversions = findElement(wrapper, 'button', 'View & edit diversions');
+            viewDiversions.simulate('click');
+            const closeDiversions = findElement(wrapper, 'button', 'Close');
+            closeDiversions.simulate('click');
         });
     });
 });
