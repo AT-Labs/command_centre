@@ -5,7 +5,7 @@
 import React from 'react';
 import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
-import { render, screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, act, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
@@ -181,5 +181,38 @@ describe('<ViewDiversionDetailModal />', () => {
         fireEvent.click(closeButton);
 
         expect(mockOnClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders active-diversion-actions with CreateIcon and Delete button', async () => {
+        const mockDiversions = [{ id: 1, name: 'Diversion 1' }];
+        const mockOnClose = jest.fn();
+
+        act(() => {
+            render(withCacheProvider(
+                <ViewDiversionDetailModal
+                    disruption={ mockDisruption }
+                    onClose={ mockOnClose }
+                    isOpen
+                />,
+            ));
+        });
+
+        await act(async () => {
+            const setDiversions = jest.fn();
+            setDiversions(mockDiversions);
+        });
+
+        const activeDiversionView = await screen.findByTestId('active-diversion-view');
+        expect(activeDiversionView).toBeInTheDocument();
+
+        const { getAllByTestId } = within(activeDiversionView);
+        const activeDiversionActions = getAllByTestId('active-diversion-actions');
+        expect(activeDiversionActions.length).toBeGreaterThan(0);
+
+        const createIcons = screen.getAllByTestId('CreateIcon');
+        expect(createIcons.length).toBeGreaterThan(0);
+
+        const deleteIcons = screen.getAllByTestId('DeleteIcon');
+        expect(deleteIcons.length).toBeGreaterThan(0);
     });
 });

@@ -86,7 +86,7 @@ const ActiveDiversionView = ({ deleteDiversion, diversions, allExpanded, inciden
                     </span>
                 )}
             </span>
-            <span className="d-flex">
+            <span className="d-flex" data-testid="active-diversion-actions">
                 {/* eslint-disable-next-line no-console */}
                 <IconButton onClick={ () => console.log('Handle edit in another ticket!') }>
                     <CreateIcon />
