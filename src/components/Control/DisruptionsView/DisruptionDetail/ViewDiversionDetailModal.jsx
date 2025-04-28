@@ -18,7 +18,7 @@ const ViewDiversionDetailModal = (props) => {
     useEffect(async () => {
         try {
             // eslint-disable-next-line no-console
-            console.log('----getting new diversion or refreshted');
+            console.log('----getting new diversion or refreshed');
             const data = await getDiversionAPI(props.disruption.disruptionId);
             setDiversions(data);
         } catch (error) {
