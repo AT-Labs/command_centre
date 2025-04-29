@@ -11,7 +11,7 @@ import { StopStatus, updateStopsModalTypes } from '../Types';
 import UpdateStopStatusModal from '../Modals/UpdateStopStatusModal';
 import { getSelectedStopsByTripKey } from '../../../../redux/selectors/control/routes/trip-instances';
 import { deselectAllStopsByTrip } from '../../../../redux/actions/control/routes/trip-instances';
-import { isMoveToStopPermitted, isUpdateStopHeadsignPermitted, isSkipStopPermitted, isHideSkippedStopPermitted } from '../../../../utils/user-permissions';
+import { isMoveToStopPermitted, isUpdateStopHeadsignPermitted, isSkipStopPermitted } from '../../../../utils/user-permissions';
 import TRIP_STATUS_TYPES from '../../../../types/trip-status-types';
 import { SERVICE_DATE_FORMAT } from '../../../../utils/control/routes';
 import { useHeadsignUpdate, useHideSkippedStop } from '../../../../redux/selectors/appSettings';
@@ -36,9 +36,8 @@ const getStopStatusState = (selectedStops) => {
 const getPermissionsState = (selectedStops) => {
     const areSkipStopsPermitted = IS_LOGIN_NOT_REQUIRED || Object.values(selectedStops).every(stop => isSkipStopPermitted(stop));
     const areMoveTripToStopsPermitted = IS_LOGIN_NOT_REQUIRED || Object.values(selectedStops).every(stop => isMoveToStopPermitted(stop));
-    const areHideSkippedStopsPermitted = IS_LOGIN_NOT_REQUIRED || Object.values(selectedStops).every(stop => isHideSkippedStopPermitted(stop));
 
-    return { areSkipStopsPermitted, areMoveTripToStopsPermitted, areHideSkippedStopsPermitted };
+    return { areSkipStopsPermitted, areMoveTripToStopsPermitted };
 };
 
 export const StopSelectionFooter = (props) => {
@@ -51,7 +50,7 @@ export const StopSelectionFooter = (props) => {
     const isOnlyOneStopSelected = size(selectedStops) === 1;
     const onlySelectedStop = selectedStops && selectedStops[findKey(selectedStops)];
 
-    const { areSkipStopsPermitted, areMoveTripToStopsPermitted, areHideSkippedStopsPermitted } = getPermissionsState(selectedStops);
+    const { areSkipStopsPermitted, areMoveTripToStopsPermitted } = getPermissionsState(selectedStops);
 
     const getCheckIfButtonsShouldBeDisabled = getStopStatusState(selectedStops);
 
@@ -174,7 +173,7 @@ export const StopSelectionFooter = (props) => {
                         </li>
                     </>
                 ) }
-                { props.useHideSkippedStop && props.showHideSkippedStopButton && areHideSkippedStopsPermitted && (
+                { props.useHideSkippedStop && props.showHideSkippedStopButton && (
                     <li>
                         <Button
                             size="sm"

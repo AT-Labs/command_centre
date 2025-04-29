@@ -35,5 +35,5 @@
     "useDraftDisruptions": "false",
     "useDisruptionDraftEmailSharing": "false",
     "useDiversion": "false",
-    "useHideSkippedStop": "false"
+    "useHideSkippedStop": "true"
 }

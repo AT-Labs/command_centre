@@ -11,7 +11,6 @@ export default {
         UPDATE_HEADSIGN: 'update_headsign',
         HIDE_TRIP: 'hide',
         NEW_TRIP: 'new',
-        HIDE_STOP: 'hide',
     },
     BLOCKS: {
         ADD_BLOCK: 'add',

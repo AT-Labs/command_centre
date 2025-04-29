@@ -208,9 +208,11 @@ export const SelectDetails = (props) => {
         return true;
     };
 
+    const isSubmitDisabledV2 = isSubmitDisabled || isEmpty(recurrencePattern.byweekday);
+
     const onContinue = () => {
         if (props.useDraftDisruptions) {
-            props.onUpdateDetailsValidation(!isSubmitDisabled && activePeriodsValidV2());
+            props.onUpdateDetailsValidation(!isSubmitDisabledV2 && activePeriodsValidV2());
             props.onStepUpdate(1);
             props.updateCurrentStep(2);
         } else if (activePeriodsValid()) {

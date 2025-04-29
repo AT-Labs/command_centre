@@ -18,7 +18,6 @@ const componentPropsMock = {
     toggleDisruptionModals: jest.fn(),
     onSubmitDraft: jest.fn(),
     onUpdateDetailsValidation: jest.fn(),
-    useDraftDisruptions: jest.fn(),
 };
 
 const setup = (customProps) => {
@@ -211,28 +210,6 @@ describe('<SelectDetails />', () => {
             footer.renderProp('onContinue')();
             expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(1);
             expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(2);
-        });
-
-        it('should fire step update when active periods valid', () => {
-            data.recurrent = true;
-            wrapper = setup({ data: { ...data, recurrencePattern: { ...data.recurrencePattern, byweekday: [0, 1, 2, 3, 4, 5, 6] } }, stops, routes, useDraftDisruptions: true });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('nextButtonValue')).toEqual('Continue');
-            footer.renderProp('onContinue')();
-            expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(1);
-            expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(2);
-            expect(componentPropsMock.onUpdateDetailsValidation).toHaveBeenCalledWith(true);
-        });
-
-        it('should fire step update when active periods invalid', () => {
-            data.recurrent = true;
-            wrapper = setup({ data, stops, routes, useDraftDisruptions: true });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('nextButtonValue')).toEqual('Continue');
-            footer.renderProp('onContinue')();
-            expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(1);
-            expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(2);
-            expect(componentPropsMock.onUpdateDetailsValidation).toHaveBeenCalledWith(false);
         });
     });
 

@@ -2,7 +2,7 @@ import { isEmpty, findKey, capitalize, pickBy, size } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import React, { useState, useEffect } from 'react';
-import { FormGroup, FormText, Input, Table, Label } from 'reactstrap';
+import { FormGroup, FormText, Input, Table } from 'reactstrap';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { FaExclamationTriangle } from 'react-icons/fa';
@@ -20,15 +20,15 @@ import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 const { SKIP, REINSTATE, MOVE_SERVICE, UPDATE_HEADSIGN, SET_NON_STOPPING, SET_FIRST_STOP, SET_LAST_STOP, HIDE_SKIPPED_STOP } = updateStopsModalTypes;
 
 const modalPropsMapping = (data) => {
-    const { firstSelectedStop, tripInstance, isUpdatingOnGoing, skipped, notPassed, nonStopping, hideSkippedStops } = data;
+    const { firstSelectedStop, tripInstance, isUpdatingOnGoing, skipped, notPassed, nonStopping } = data;
     return {
         [SKIP]: {
             stopStatus: skipped,
             className: `${SKIP}-modal`,
             title: `${capitalize(SKIP)} stop(s)`,
-            errorMessage: `stop(s) could not be skipped${hideSkippedStops ? ' and hidden' : ''}:`,
-            successMessage: `stop(s) successfully skipped${hideSkippedStops ? ' and hidden' : ''}`,
-            hideSkippedStops,
+            errorMessage: 'stop(s) could not be skipped:',
+            successMessage: 'stop(s) successfully skipped',
+            confirmationMessage: 'Are you sure you want to skip the selected stops?',
             label: <UpdateStatusModalsBtn label="Skip stop(s)" isLoading={ isUpdatingOnGoing } />,
         },
         [REINSTATE]: {
@@ -168,12 +168,11 @@ const handleDefaultCase = (tripInstance, selectedStops, modalProps, activeModal,
         };
         handlers.onStopUpdatedHandler({ ...options, action: activeModal });
     } else {
-        const stopDisplay = !modalProps[activeModal]?.hideSkippedStops;
         handlers.updateSelectedStopsStatusHandler(
             tripInstance,
             selectedStopsByModalType,
             modalProps[activeModal].stopStatus,
-            stopDisplay,
+            true,
             `${size(selectedStopsByModalType)} ${modalProps[activeModal].successMessage}`,
             `${size(selectedStopsByModalType)} ${modalProps[activeModal].errorMessage}`,
         );
@@ -222,14 +221,13 @@ export const UpdateStopStatusModal = (props) => {
     const firstSelectedStop = !isEmpty(selectedStops) && selectedStops[findKey(selectedStops)];
     const [railHeadsigns, setRailHeadsigns] = useState([]);
     const [selectedPidCustomization, setSelectedPidCustomization] = useState('None');
-    const [hideSkippedStops, setHideSkippedStops] = useState(false);
 
     useEffect(async () => {
         const railHeadsignsStops = await getRailHeadsignsStops();
         setRailHeadsigns(railHeadsignsStops.map(({ headsign }) => headsign));
     }, []);
 
-    const modalProps = modalPropsMapping({ firstSelectedStop, tripInstance, isUpdatingOnGoing, skipped, notPassed, nonStopping, selectedStops, hideSkippedStops });
+    const modalProps = modalPropsMapping({ firstSelectedStop, tripInstance, isUpdatingOnGoing, skipped, notPassed, nonStopping, selectedStops });
 
     const pidCustomizationOptions = [
         { key: '/N', value: '/N' },
@@ -360,33 +358,6 @@ export const UpdateStopStatusModal = (props) => {
                             ))}
                         </tbody>
                     </Table>
-                </div>
-            );
-        }
-
-        if (activeModal === SKIP) {
-            return (
-                <div>
-                    <div className="text-center">
-                        <div className="text-warning w-100 m-2">
-                            <FaExclamationTriangle size={ 40 } />
-                        </div>
-                        <p className="font-weight-light text-center">
-                            Are you sure you want to skip the selected stops?
-                        </p>
-                        <div>
-                            <FormGroup check>
-                                <Label className="top-status-update-modal__hide-checkbox" check>
-                                    <Input
-                                        type="checkbox"
-                                        onChange={ event => setHideSkippedStops(event.target.checked) }
-                                        checked={ hideSkippedStops }
-                                    />
-                                    <span className="font-weight-light">Hide skipped stop(s)</span>
-                                </Label>
-                            </FormGroup>
-                        </div>
-                    </div>
                 </div>
             );
         }
