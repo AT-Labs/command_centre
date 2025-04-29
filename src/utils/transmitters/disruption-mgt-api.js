@@ -15,32 +15,6 @@ export const getDisruptions = (includeDrafts = false) => fetchWithAuthHeader(`${
 export const getDisruption = (disruptionId, signal) => fetchWithAuthHeader(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions/${disruptionId}`, { method: GET, signal })
     .then(response => jsonResponseHandling(response));
 
-// eslint-disable-next-line no-unused-vars
-export const getDiversion = (disruptionId) => {
-    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/diversions/?disruptionId=2`;
-    return fetchWithAuthHeader(
-        url,
-        {
-            method: GET,
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-        },
-    ).then(response => jsonResponseHandling(response));
-};
-
-export const deleteDiversion = (id) => {
-    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/diversions/${id}`;
-    return fetchWithAuthHeader(url, {
-        method: DELETE,
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        },
-    }).then(response => jsonResponseHandling(response));
-};
-
 export const updateDisruption = (disruption) => {
     const { disruptionId } = disruption;
     const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions/${disruptionId}`;

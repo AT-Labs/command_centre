@@ -103,7 +103,6 @@ import { updateActiveControlEntityId } from '../../../../redux/actions/navigatio
 import { shareToEmail } from '../../../../utils/control/disruption-sharing';
 
 import '../DisruptionDetail/styles.scss';
-import { ViewDiversionDetailModal } from '../DisruptionDetail/ViewDiversionDetailModal';
 
 const { STOP } = SEARCH_RESULT_TYPE;
 
@@ -147,7 +146,6 @@ const DisruptionDetailView = (props) => {
     const [descriptionNote, setDescriptionNote] = useState('');
     const [lastNote, setLastNote] = useState();
     const [isViewPassengerImpactModalOpen, setIsViewPassengerImpactModalOpen] = useState(false);
-    const [isViewDiversionsModalOpen, setIsViewDiversionsModalOpen] = useState(false);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqWith([...affectedRoutes, ...props.routes], (routeA, routeB) => routeA.routeId === routeB.routeId && routeA.stopCode === routeB.stopCode);
@@ -572,7 +570,6 @@ const DisruptionDetailView = (props) => {
                         viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                         showViewPassengerImpactButton={ props.usePassengerImpact }
                         viewPassengerImpactAction={ () => setIsViewPassengerImpactModalOpen(true) }
-                        viewDiversionsAction={ () => setIsViewDiversionsModalOpen(true) }
                     />
                     <section className="col-6">
                         <div className="row">
@@ -941,11 +938,6 @@ const DisruptionDetailView = (props) => {
                     disruption={ disruption }
                     onClose={ () => setIsViewWorkaroundsModalOpen(false) }
                     isOpen={ isViewWorkaroundsModalOpen }
-                />
-                <ViewDiversionDetailModal
-                    disruption={ disruption }
-                    onClose={ () => setIsViewDiversionsModalOpen(false) }
-                    isOpen={ isViewDiversionsModalOpen }
                 />
                 { props.usePassengerImpact && (
                     <DisruptionPassengerImpactGridModal

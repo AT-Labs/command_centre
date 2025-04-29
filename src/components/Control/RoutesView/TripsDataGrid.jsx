@@ -36,11 +36,24 @@ import { CustomSelectionHeader } from './CustomSelectionHeader';
 import { getAllStops } from '../../../redux/selectors/static/stops';
 import { StopSearchDataGridOperators } from '../Common/DataGrid/OmniSearchDataGridOperator';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
-import { useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences } from '../../../redux/selectors/appSettings';
+import { useDiversion, useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences } from '../../../redux/selectors/appSettings';
 import { getUserPreferences } from '../../../utils/transmitters/command-centre-config-api';
 import { updateRoutesTripsDatagridConfig, updateDefaultRoutesTripsDatagridConfig } from '../../../redux/actions/datagrid';
 import { getRoutesTripsDatagridConfig } from '../../../redux/selectors/datagrid';
 import { mergeRouteFilters } from '../../../redux/actions/control/routes/filters';
+import { LABEL_DISRUPTION } from '../../../constants/disruptions';
+import { transformIncidentNo } from '../../../utils/control/disruptions';
+import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
+
+export const renderDisruptionIdCell = ({ row }) => {
+    const formattedDisruptionId = transformIncidentNo(row.disruptionId);
+    if (formattedDisruptionId) {
+        return (
+            <a href={ `/control-main-view/control-disruptions/${row.disruptionId.toString()}` }>{formattedDisruptionId}</a>
+        );
+    }
+    return undefined;
+};
 
 const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed;
 
@@ -164,6 +177,29 @@ export const TripsDataGrid = (props) => {
             ),
             renderCell: params => formatSourceColumn(params.row),
         }] : [],
+        ...props.useDiversion ? [
+            {
+                field: 'type',
+                headerName: 'Type',
+                width: 200,
+                hide: true,
+                filterOperators: getGridSingleSelectOperators(true).filter(o => ['is', 'not'].includes(o.value)),
+                valueOptions: [
+                    { value: 'Detoured', label: 'Detoured' },
+                    { value: 'Added', label: 'Added' },
+                ],
+                sortable: true,
+            },
+            {
+                field: 'disruptionId',
+                headerName: LABEL_DISRUPTION,
+                width: 200,
+                hide: false,
+                renderCell: renderDisruptionIdCell,
+                filterOperators: sourceIdDataGridOperator,
+            },
+
+        ] : [],
         {
             field: 'vehicleLabel',
             headerName: 'Vehicle Label',
@@ -342,6 +378,8 @@ export const TripsDataGrid = (props) => {
         tripId: tripInstance.tripId,
         ...(props.useHideTrip && { display: tripInstance.display }),
         ...(props.useAddTrip && { source: tripInstance.source }),
+        type: tripInstance.type,
+        disruptionId: tripInstance.disruptionId,
         tripInstance: {
             ...tripInstance,
             stops: markStopsAsFirstOrLast(tripInstance.stops),
@@ -455,6 +493,7 @@ TripsDataGrid.propTypes = {
     vehicleAllocations: PropTypes.object.isRequired,
     useAddTrip: PropTypes.bool.isRequired,
     useHideTrip: PropTypes.bool.isRequired,
+    useDiversion: PropTypes.bool.isRequired,
     gridClassNames: PropTypes.string,
     useRoutesTripsFilterCollapse: PropTypes.bool.isRequired,
     useRoutesTripsPreferences: PropTypes.bool.isRequired,
@@ -482,6 +521,7 @@ export default connect(
         vehicleAllocations: getAllocations(state),
         useAddTrip: useAddTrip(state),
         useHideTrip: useHideTrip(state),
+        useDiversion: useDiversion(state),
         useRoutesTripsFilterCollapse: useRoutesTripsFilterCollapse(state),
         useRoutesTripsPreferences: useRoutesTripsPreferences(state),
     }),
