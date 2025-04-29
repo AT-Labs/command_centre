@@ -34,6 +34,6 @@
     "useNewMonitoring": "false",
     "useDraftDisruptions": "false",
     "useDisruptionDraftEmailSharing": "false",
-    "useHideSkippedStop": "false",
-    "useDiversion": "false"
+    "useDiversion": "false",
+    "useHideSkippedStop": "false"
 }
