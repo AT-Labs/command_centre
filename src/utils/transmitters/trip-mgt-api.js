@@ -46,9 +46,6 @@ export const getTrips = ({
     firstStopCode,
     lastStopCode,
     source,
-    isType,
-    notType,
-    disruptionId,
     display,
 }) => {
     const variables = { serviceDate };
@@ -77,19 +74,8 @@ export const getTrips = ({
     if (lastStopCode) { variables.lastStopCode = lastStopCode; }
     if (source) { variables.source = source; }
     if (display) { variables.display = display; }
-    if (isType != null) { variables.isType = isType; }
-    if (notType != null) { variables.notType = notType; }
-    if (disruptionId) { variables.disruptionId = disruptionId; }
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
-
-    // const isMock = false;
-    // if (isMock) {
-    //     // eslint-disable-next-line no-console
-    //     // console.log(`------MOCK FILTER BODY DUMP:${JSON.stringify(variables)}`);
-    //     return fetch('/mocks/trip_instances_mock.json').then(r => r.json());
-    // }
-
     return fetchWithAuthHeader(
         url,
         {
@@ -100,12 +86,7 @@ export const getTrips = ({
             },
             body: JSON.stringify(variables),
         },
-    )
-        // .then(r => {
-        //     console.log(r);
-        //     return r;
-        // })
-        .then(response => jsonResponseHandling(response))
+    ).then(response => jsonResponseHandling(response))
         .then(res => ({ ...res, tripInstances: res.tripInstances.map(tripInstance => ({ ...tripInstance, delay: tripInstance.combinedDelay })) }));
 };
 
@@ -263,30 +244,57 @@ export const updateTripDisplay = (options) => {
         ));
 };
 
-const updateStopStatusGqlMutation = gql`
-    mutation($tripId: String!, $serviceDate: Moment!, $startTime: String!, $stopSequences: [Int!]!, $stopStatus: StopStatus!, $display: Boolean) {
-        updateStopStatus( tripId: $tripId, serviceDate: $serviceDate, startTime: $startTime, stopSequences: $stopSequences, stopStatus: $stopStatus, display: $display) {
+const buildUpdateStopStatusMutation = (includeDisplay = false) => gql`
+    mutation(
+        $tripId: String!,
+        $serviceDate: Moment!,
+        $startTime: String!,
+        $stopSequences: [Int!]!,
+        $stopStatus: StopStatus!
+        ${includeDisplay ? ', $display: Boolean' : ''}
+    ) {
+        updateStopStatus(
+            tripId: $tripId,
+            serviceDate: $serviceDate,
+            startTime: $startTime,
+            stopSequences: $stopSequences,
+            stopStatus: $stopStatus
+            ${includeDisplay ? ', display: $display' : ''}
+        ) {
             ${tripInstanceFields}
         }
     }`;
 
-export const updateStopStatus = (options) => {
-    const {
-        tripId, serviceDate, startTime, stopSequences, stopStatus, display,
-    } = options;
+export const updateStopStatus = async ({
+    tripId,
+    serviceDate,
+    startTime,
+    stopSequences,
+    stopStatus,
+    display,
+}) => {
+    const token = await getAuthToken();
+    const includeDisplay = typeof display === 'boolean';
 
-    return getAuthToken()
-        .then(token => (
-            mutateStatic({
-                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
-                mutation: updateStopStatusGqlMutation,
-                variables: {
-                    tripId, serviceDate, startTime, stopSequences, stopStatus, display,
-                },
-                params: 'updateStopStatus',
-                authToken: token,
-            }).then(response => result(response, 'data.updateStopStatus', {}))
-        ));
+    const mutation = buildUpdateStopStatusMutation(includeDisplay);
+    const variables = {
+        tripId,
+        serviceDate,
+        startTime,
+        stopSequences,
+        stopStatus,
+        ...(includeDisplay && { display }),
+    };
+
+    const response = await mutateStatic({
+        url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+        mutation,
+        variables,
+        params: 'updateStopStatus',
+        authToken: token,
+    });
+
+    return result(response, 'data.updateStopStatus', {});
 };
 
 const updateStopIdGqlMutation = gql`

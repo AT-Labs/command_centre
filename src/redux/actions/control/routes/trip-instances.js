@@ -29,6 +29,7 @@ import { ACTION_RESULT } from '../../../../types/add-trip-types';
 import { captureError } from '../../../../utils/logger';
 import { UpdateStopPlatformError } from '../../../../types/exception-types';
 import { getRoutesTripsDatagridConfig } from '../../../selectors/datagrid';
+import { useHideSkippedStop } from '../../../selectors/appSettings';
 
 const loadTripInstances = (tripInstances, timestamp) => ({
     type: ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES,
@@ -272,8 +273,8 @@ export const updateTripInstanceDelay = (options, successMessage) => (dispatch) =
     );
 };
 
-export const updateTripInstanceStopStatus = (options, successMessage, actionType, errorMessage) => dispatch => handleTripInstanceUpdate(
-    () => TRIP_MGT_API.updateStopStatus(options),
+export const updateTripInstanceStopStatus = (options, successMessage, actionType, errorMessage) => async (dispatch, getState) => handleTripInstanceUpdate(
+    () => TRIP_MGT_API.updateStopStatus({ ...options, display: useHideSkippedStop(getState()) ? options.display : undefined }),
     { ...options, successMessage, actionType, errorMessage },
     dispatch,
 );
@@ -526,19 +527,10 @@ export const setTripStatusModalOrigin = origin => ({
     payload: { origin },
 });
 
-const removeNonNullableFilters = model => model
-    ?.items
-    ?.map(item => ({
-        ...item,
-        value: item.value ?? ' ', // type can be undefined, so we replace it with single space so its not filtered. Its trim() later
-    }))
-    ?.filter(item => !!item.value && (!Array.isArray(item.value) || item.value.length > 0));
+const removeNonNullableFilters = model => model?.items?.filter(item => !!item.value && (!Array.isArray(item.value) || item.value.length > 0));
 
-export const getFilters = (model, state) => {
+const getFilters = (model, state) => {
     let filters = removeNonNullableFilters(model);
-
-    // console.log('-------------models--', model);
-
     filters = filters.reduce((result, item) => ({
         ...result,
         [item.columnField]: item.value,
@@ -547,8 +539,6 @@ export const getFilters = (model, state) => {
         ...(item.columnField === 'startTime' && item.operatorValue === 'onOrBefore' && { startTimeTo: item.value }),
         ...(item.columnField === 'endTime' && item.operatorValue === 'onOrAfter' && { endTimeFrom: item.value }),
         ...(item.columnField === 'endTime' && item.operatorValue === 'onOrBefore' && { endTimeTo: item.value }),
-        ...(item.columnField === 'type' && item.operatorValue === 'is' && { type: undefined, notType: undefined, isType: item.value.trim() }), // here we trip ' ' added above
-        ...(item.columnField === 'type' && item.operatorValue === 'not' && { type: undefined, isType: undefined, notType: item.value.trim() }), // here we trip ' ' added above
         ...(item.columnField === 'status' && { tripStatus: item.value }),
         ...(item.columnField === 'vehicleLabel' && { vehicleLabels: item.value }),
         ...(item.columnField === 'referenceId' && { referenceIds: item.value }),
@@ -557,15 +547,12 @@ export const getFilters = (model, state) => {
         ...(item.columnField === 'lastStopCode' && { lastStopCode: item.value.data.stop_code }),
     }), {});
 
-    // console.log('------------reduced filter:', filters);
-
     const routeFilters = getRouteFilters(state);
     filters.routeType = routeFilters.routeType;
     filters.delayRange = routeFilters.delayRange;
     filters.agencyId = routeFilters.agencyId;
     filters.depotIds = routeFilters.depotIds;
     filters.tripStatus = routeFilters.tripStatus;
-
     filters = {
         ...filters,
         ...(!filters.startTimeFrom && { startTimeFrom: routeFilters.startTimeFrom }),
@@ -581,7 +568,6 @@ export const getFilters = (model, state) => {
             .map(item => item.routeVariantId);
     }
 
-    // console.log('------------filters:', filters);
     return filters;
 };
 
@@ -600,9 +586,8 @@ export const filterTripInstances = forceLoad => (dispatch, getState) => {
         sorting: parseSortModel(routesTripsDatagridConfig.sortModel),
     };
 
-    if (filters.disruptionId?.id) filterRequest.disruptionId = parseInt(filters.disruptionId.id, 10);
-    // console.log('-------filters:', filters);
     const viewType = getControlDetailRoutesViewType(state);
+
     if (viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTES_ROUTE_VARIANTS_TRIPS
         || viewType === VIEW_TYPE.CONTROL_DETAIL_ROUTES.ROUTE_VARIANTS_TRIPS) {
         filterRequest.routeVariantIds = [get(getActiveRouteVariant(state), 'routeVariantId')];

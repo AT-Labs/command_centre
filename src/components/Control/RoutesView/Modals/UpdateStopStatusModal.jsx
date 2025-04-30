@@ -16,6 +16,7 @@ import { getSelectedStopsByTripKey, getSelectedStopsUpdatingState } from '../../
 import { TRAIN_TYPE_ID } from '../../../../types/vehicle-types';
 import { getRailHeadsignsStops } from '../../../../utils/transmitters/cc-static';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
+import { useHideSkippedStop } from '../../../../redux/selectors/appSettings';
 
 const { SKIP, REINSTATE, MOVE_SERVICE, UPDATE_HEADSIGN, SET_NON_STOPPING, SET_FIRST_STOP, SET_LAST_STOP, HIDE_SKIPPED_STOP } = updateStopsModalTypes;
 
@@ -374,18 +375,20 @@ export const UpdateStopStatusModal = (props) => {
                         <p className="font-weight-light text-center">
                             Are you sure you want to skip the selected stops?
                         </p>
-                        <div>
-                            <FormGroup check>
-                                <Label className="top-status-update-modal__hide-checkbox" check>
-                                    <Input
-                                        type="checkbox"
-                                        onChange={ event => setHideSkippedStops(event.target.checked) }
-                                        checked={ hideSkippedStops }
-                                    />
-                                    <span className="font-weight-light">Hide skipped stop(s)</span>
-                                </Label>
-                            </FormGroup>
-                        </div>
+                        { props.useHideSkippedStop && (
+                            <div>
+                                <FormGroup check>
+                                    <Label className="top-status-update-modal__hide-checkbox" check>
+                                        <Input
+                                            type="checkbox"
+                                            onChange={ event => setHideSkippedStops(event.target.checked) }
+                                            checked={ hideSkippedStops }
+                                        />
+                                        <span className="font-weight-light">Hide skipped stop(s)</span>
+                                    </Label>
+                                </FormGroup>
+                            </div>
+                        ) }
                     </div>
                 </div>
             );
@@ -428,6 +431,7 @@ UpdateStopStatusModal.propTypes = {
     updateSelectedStopsStatus: PropTypes.func.isRequired,
     updateDestination: PropTypes.func.isRequired,
     onStopUpdated: PropTypes.func,
+    useHideSkippedStop: PropTypes.bool.isRequired,
 };
 
 UpdateStopStatusModal.defaultProps = {
@@ -437,4 +441,5 @@ UpdateStopStatusModal.defaultProps = {
 export default connect(state => ({
     areSelectedStopsUpdating: getSelectedStopsUpdatingState(state),
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
+    useHideSkippedStop: useHideSkippedStop(state),
 }), { updateSelectedStopsStatus, moveTripToStop, updateDestination })(UpdateStopStatusModal);

@@ -1,66 +1,16 @@
-import { getTrips, updateTripStatus, updateStopId, updateTripDelay, moveToNextStop, moveTotStop, updateHeadsign, searchTrip } from './trip-mgt-api';
+import { updateTripStatus, updateStopId, updateTripDelay, moveToNextStop, moveTotStop, updateHeadsign, searchTrip, updateStopStatus } from './trip-mgt-api';
 import * as graphql from '../graphql';
 import * as auth from '../../auth';
 import * as jsonHandling from '../fetch';
 
 const mutateStatic = jest.spyOn(graphql, 'mutateStatic');
 jest.spyOn(auth, 'getAuthToken').mockResolvedValue('auth_token');
+
 const tripId = {
     tripId: 'trip-id-1',
     serviceDate: '20230101',
     startTime: '10:00:00',
 };
-
-describe('getTrips', () => {
-    afterEach(() => {
-        jest.clearAllMocks();
-    });
-
-    it('should send filter for type and discruptionId if set', async () => {
-        jest.spyOn(auth, 'fetchWithAuthHeader').mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                blah: 'hello',
-                tripInstances: [],
-            }),
-        });
-
-        const filter = {
-            isType: 'foo',
-            notType: 'bar',
-            disruptionId: 123,
-        };
-        await getTrips(filter);
-
-        // Validations
-        const { body } = auth.fetchWithAuthHeader.mock.calls[0][1];
-        expect(auth.fetchWithAuthHeader).toHaveBeenCalledTimes(1);
-        expect(JSON.parse(body)).toEqual({
-            isType: 'foo', // the ui kind of enforces only one of isType or notType is applied. Not doing any checks for now on this for flexibility purposes
-            notType: 'bar',
-            disruptionId: 123,
-        });
-    });
-
-    it('should send empty filter when nothing set', async () => {
-        jest.spyOn(auth, 'fetchWithAuthHeader').mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                blah: 'hello',
-                tripInstances: [],
-            }),
-        });
-
-        const filter = { };
-        await getTrips(filter);
-
-        // Validations
-        const { body } = auth.fetchWithAuthHeader.mock.calls[0][1];
-        expect(auth.fetchWithAuthHeader).toHaveBeenCalledTimes(1);
-
-        expect(JSON.parse(body)).toEqual({ });
-    });
-});
 
 describe('Operation result', () => {
     afterAll(() => {
@@ -148,5 +98,56 @@ describe('Operation result', () => {
 
         const result = await searchTrip(fakeRequestBody);
         expect(result).toEqual(mockResult);
+    });
+
+    it('should include display: true in variables when display is true', async () => {
+        mutateStatic.mockResolvedValue({ data: { updateStopStatus: tripId } });
+        const result = await updateStopStatus({
+            tripId: 'e28f1068-83ab-40a8-85f1-83beb041cb3d',
+            serviceDate: '20240501',
+            startTime: '08:00:00',
+            stopSequences: [1, 2],
+            stopStatus: 'SKIPPED',
+            display: true,
+        });
+        expect(mutateStatic).toHaveBeenCalledWith(expect.objectContaining({
+            variables: expect.objectContaining({
+                display: true,
+            }),
+        }));
+        expect(result).toEqual(tripId);
+    });
+
+    it('should include display: false in variables when display is false', async () => {
+        mutateStatic.mockResolvedValue({ data: { updateStopStatus: tripId } });
+        const result = await updateStopStatus({
+            tripId: '636b0565-f02f-4990-b2bc-af7758ef542c',
+            serviceDate: '20240501',
+            startTime: '08:00:00',
+            stopSequences: [1, 2],
+            stopStatus: 'MISSED',
+            display: false,
+        });
+        expect(mutateStatic).toHaveBeenCalledWith(expect.objectContaining({
+            variables: expect.objectContaining({
+                display: false,
+            }),
+        }));
+        expect(result).toEqual(tripId);
+    });
+
+    it('should omit display in variables when display is undefined', async () => {
+        mutateStatic.mockResolvedValue({ data: { updateStopStatus: tripId } });
+        const result = await updateStopStatus({
+            tripId: '423f80e2-2eab-47db-abc1-e419df05cdec',
+            serviceDate: '20240501',
+            startTime: '08:00:00',
+            stopSequences: [1, 2],
+            stopStatus: 'CANCELLED',
+            display: undefined,
+        });
+        const callArgs = mutateStatic.mock.calls[0][0];
+        expect(callArgs.variables).not.toHaveProperty('display');
+        expect(result).toEqual(tripId);
     });
 });

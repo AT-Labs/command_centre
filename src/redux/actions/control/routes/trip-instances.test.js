@@ -8,8 +8,7 @@ import MockDate from 'mockdate';
 import {
     fetchTripInstances, clearActiveTripInstanceId, updateActiveTripInstanceId, collectTripsDataAndUpdateTripsStatus,
     updateTripInstanceStatus, updateTripInstanceStopStatus, updateTripInstanceStopPlatform, updateTripInstanceDelay, filterTripInstances, updateDestination,
-    updateEnabledAddTripModal, updateCurrentStepHandler, updateAddTripDatagridConfig, updateSelectedAddTrip, resetAddTripStep,
-    getFilters
+    updateEnabledAddTripModal, updateCurrentStepHandler, updateAddTripDatagridConfig, updateSelectedAddTrip, resetAddTripStep
 } from './trip-instances';
 import * as tripMgtApi from '../../../../utils/transmitters/trip-mgt-api';
 import * as blockMgtApi from '../../../../utils/transmitters/block-mgt-api';
@@ -508,47 +507,61 @@ describe('Trip instances actions', () => {
         expect(store.getActions()).to.eql(expectedActions);
     });
 
-    it('updates stop status', async () => {
+    it('updates stop status with and without display field', async () => {
         const fakeUpdateStopStatus = sandbox.fake.resolves(mockTrip);
         sandbox.stub(tripMgtApi, 'updateStopStatus').callsFake(fakeUpdateStopStatus);
 
-        const options = {
-            tripId: mockTrip.tripId,
-            serviceDate: '20190608',
-            startTime: '10:00:00',
-        };
-        const successMessage = 'success';
-        const tripInstanceId = getTripInstanceId(mockTrip);
-
-        const expectedActions = [
-            {
-                type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
-                payload: { tripId: tripInstanceId, isLoading: true },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCE_ENTRY,
-                payload: { tripInstance: mockTrip },
-            },
-            {
-                type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
-                payload: {
-                    actionType: MESSAGE_ACTION_TYPES.bulkStopStatusUpdate,
-                    id: 'actionResult3',
-                    body: successMessage,
-                    type: CONFIRMATION_MESSAGE_TYPE,
-                    tripId: tripInstanceId,
-                },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
-                payload: { tripId: tripInstanceId, isLoading: false },
-            },
+        const testCases = [
+            { description: 'without display', options: { display: undefined }, id: 'actionResult3',},
+            { description: 'with display: true', options: { display: true }, id: 'actionResult4', },
         ];
-
-        await store.dispatch(updateTripInstanceStopStatus(options, successMessage, MESSAGE_ACTION_TYPES.bulkStopStatusUpdate, 'errorMessage'));
-        expect(store.getActions()).to.eql(expectedActions);
+    
+        for (const { description, options: displayOption, id } of testCases) {
+            const baseOptions = {
+                tripId: mockTrip.tripId,
+                serviceDate: '20190608',
+                startTime: '10:00:00',
+                ...displayOption,
+            };
+    
+            const successMessage = 'success';
+            const tripInstanceId = getTripInstanceId(mockTrip);
+    
+            const expectedActions = [
+                {
+                    type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
+                    payload: { tripId: tripInstanceId, isLoading: true },
+                },
+                {
+                    type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCE_ENTRY,
+                    payload: { tripInstance: mockTrip },
+                },
+                {
+                    type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
+                    payload: {
+                        actionType: MESSAGE_ACTION_TYPES.bulkStopStatusUpdate,
+                        id,
+                        body: successMessage,
+                        type: CONFIRMATION_MESSAGE_TYPE,
+                        tripId: tripInstanceId,
+                    },
+                },
+                {
+                    type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
+                    payload: { tripId: tripInstanceId, isLoading: false },
+                },
+            ];
+    
+            store.clearActions();
+    
+            await store.dispatch(
+                updateTripInstanceStopStatus(baseOptions, successMessage, MESSAGE_ACTION_TYPES.bulkStopStatusUpdate, 'errorMessage')
+            );
+    
+            expect(store.getActions(), `Failed case: ${description}`).to.eql(expectedActions);
+        }
     });
-
+    
     it('updates trip delay', async () => {
         const fakeUpdateTripDelay = sandbox.fake.resolves(mockTrip);
         sandbox.stub(tripMgtApi, 'updateTripDelay').callsFake(fakeUpdateTripDelay);
@@ -574,7 +587,7 @@ describe('Trip instances actions', () => {
                 type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
                 payload: {
                     actionType: MESSAGE_ACTION_TYPES.tripDelayUpdate,
-                    id: 'actionResult4',
+                    id: 'actionResult5',
                     body: successMessage,
                     type: CONFIRMATION_MESSAGE_TYPE,
                     tripId: tripInstanceId,
@@ -612,7 +625,7 @@ describe('Trip instances actions', () => {
                 type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
                 payload: {
                     actionType: MESSAGE_ACTION_TYPES.stopPlatformUpdate,
-                    id: 'actionResult5',
+                    id: 'actionResult6',
                     body: successMessage,
                     type: CONFIRMATION_MESSAGE_TYPE,
                     tripId: tripInstanceId,
@@ -641,7 +654,7 @@ describe('Trip instances actions', () => {
                 type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
                 payload: {
                     actionType: MESSAGE_ACTION_TYPES.stopPlatformUpdate,
-                    id: 'actionResult6',
+                    id: 'actionResult7',
                     body: errorMessage,
                     type: ERROR_MESSAGE_TYPE,
                     tripId: tripInstanceId,
@@ -1120,63 +1133,4 @@ describe('Trip instances actions', () => {
             ]
         );
     })
-});
-
-describe("getFilters", () => {
-    let mockState;
-
-    beforeEach(() => {
-        mockState = {
-            control: {
-                routes: {
-                    filters: {},
-                },
-            },
-        };
-    });
-
-    const testCases = [
-        {
-            columnField: "disruptionId",
-            operatorValue: "is",
-            value: "12345",
-            expectedKey: "disruptionId",
-            expectedValue: "12345",
-        },
-        {
-            columnField: "type",
-            operatorValue: "is",
-            value: "anything",
-            expectedKey: "isType",
-            expectedValue: "anything",
-        },
-        {
-            columnField: "type",
-            operatorValue: "not",
-            value: "anything",
-            expectedKey: "notType",
-            expectedValue: "anything",
-        },
-        {
-            columnField: "type",
-            operatorValue: "not",
-            value: undefined, // We have to filter not empty or empty as well from the UI
-            expectedKey: "notType",
-            expectedValue: "",
-        },
-    ];
-
-    testCases.forEach(
-        ({ columnField, operatorValue, value, expectedKey, expectedValue }) => {
-            it(`should filter ${columnField} correctly`, () => {
-                const mockModel = {
-                    items: [{ columnField, operatorValue, value }],
-                };
-
-                const result = getFilters(mockModel, mockState);
-                // console.log("RESULT IN TEST", result);
-                expect(result[expectedKey]).to.eql(expectedValue);
-            });
-        }
-    );
 });
