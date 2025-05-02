@@ -41,8 +41,6 @@ const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiv
         setDeleteDialogOpen(true);
     };
     const handleDeleteDiversionConfirm = (selectedDiversionIdToDelete) => {
-        // eslint-disable-next-line no-console
-        console.log('TODO: Make delete diversion possible for id:', selectedDiversionIdToDelete);
         deleteDiversion(selectedDiversionIdToDelete);
         setDeleteDialogOpen(false);
     };
@@ -86,7 +84,6 @@ const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiv
         </div>
     );
 
-    // TODO: Refactor code so that id is passed in and not stored as a state variable
     const renderDeleteModal = () => (
         <CustomMuiDialog
             title="Remove diversion"
@@ -129,7 +126,6 @@ const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiv
                             />
                         ) : null}
                         {(index < (ary.length - 1)) ? <hr className="hr" /> : null}
-                        { renderDeleteModal() }
                     </div>
                 ))}
 

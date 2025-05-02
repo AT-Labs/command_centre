@@ -18,7 +18,6 @@ const ViewDiversionDetailModal = (props) => {
     useEffect(() => {
         const fetchDiversions = async () => {
             try {
-                console.log('Fetching diversion details...');
                 const data = await getDiversionAPI(props.disruption.disruptionId);
                 setDiversions(data);
             } catch (error) {
@@ -28,7 +27,6 @@ const ViewDiversionDetailModal = (props) => {
         };
         fetchDiversions();
     }, [refresh]);
-
 
     // Update allExpanded based on whether all rows are expanded
     useEffect(() => {
@@ -63,8 +61,6 @@ const ViewDiversionDetailModal = (props) => {
     };
 
     const deleteDiversion = async (diversionId) => {
-        // eslint-disable-next-line no-console
-        console.log(`Deleting diversion with ID: ${diversionId}`);
         await deleteDiversionAPI(diversionId);
         setRefresh(prevRefresh => !prevRefresh);
     };
