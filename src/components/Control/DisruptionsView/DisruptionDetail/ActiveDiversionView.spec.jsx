@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 /* eslint-disable react/prop-types */
+
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -14,6 +15,7 @@ jest.mock('../types', () => ({
         1: 'Outbound/Clockwise',
     },
 }));
+
 jest.mock('@mui/x-data-grid-pro', () => ({
     DataGridPro: jest.fn(({ columns, rows, className }) => (
         <div data-testid="datagrid-pro" className={ className }>
@@ -29,6 +31,7 @@ jest.mock('@mui/x-data-grid-pro', () => ({
         </div>
     )),
 }));
+
 const mockDiversions = [
     {
         diversionId: 'DIV123',
@@ -70,9 +73,11 @@ const mockDiversions = [
         diversionRouteVariants: [],
     },
 ];
+
 describe('<ActiveDiversionView />', () => {
     const defaultExpandedRows = {};
     const mockToggleExpand = jest.fn();
+
     it('renders the component with diversions', () => {
         render(
             <ActiveDiversionView
@@ -85,6 +90,7 @@ describe('<ActiveDiversionView />', () => {
         expect(screen.getAllByTestId('expand-button').length).toBe(2);
         expect(screen.getAllByRole('separator').length).toBe(1);
     });
+
     it('should render expand-button', async () => {
         render(
             <ActiveDiversionView
@@ -96,6 +102,7 @@ describe('<ActiveDiversionView />', () => {
         const buttons = await screen.findAllByTestId('expand-button');
         expect(buttons[0]).toBeInTheDocument();
     });
+
     it('onClick should call toggleExpand and display DataGrid when row is expanded', async () => {
         const expandedRows = { DIV123: true };
         render(
@@ -107,6 +114,7 @@ describe('<ActiveDiversionView />', () => {
         );
         const buttons = await screen.findAllByTestId('expand-button');
         const firstButton = buttons[0];
+
         fireEvent.click(firstButton);
         expect(mockToggleExpand).toHaveBeenCalledWith('DIV123');
         const grid = await screen.findByTestId('datagrid-pro');
@@ -115,6 +123,7 @@ describe('<ActiveDiversionView />', () => {
         expect(screen.getAllByTestId('datagrid-row')).toHaveLength(2);
         expect(screen.getByText('Inbound/Anticlockwise')).toBeInTheDocument();
     });
+
     it('should render diversionRouteVariants if available', () => {
         render(
             <ActiveDiversionView
@@ -125,6 +134,7 @@ describe('<ActiveDiversionView />', () => {
         );
         expect(screen.getByText('Diversion DIV123')).toBeInTheDocument();
     });
+
     it('renders diversionRouteVariants correctly in grid columns when expanded', () => {
         const expandedRows = { DIV123: true };
         render(
@@ -143,6 +153,7 @@ describe('<ActiveDiversionView />', () => {
         expect(screen.getByText('North Express 3')).toBeInTheDocument();
         expect(screen.getAllByTestId('datagrid-row')).toHaveLength(2);
     });
+
     it('renders no diversions when all have empty diversionRouteVariants', () => {
         const emptyDiversions = [
             { diversionId: 'DIV789', diversionRouteVariants: [] },
@@ -160,6 +171,7 @@ describe('<ActiveDiversionView />', () => {
         expect(screen.queryByTestId('datagrid-pro')).not.toBeInTheDocument();
         expect(screen.queryAllByRole('separator')).toHaveLength(0);
     });
+
     describe('getRowId', () => {
         it('returns the diversionId from a row object', () => {
             const getRowId = row => row.diversionId;
@@ -167,6 +179,7 @@ describe('<ActiveDiversionView />', () => {
             expect(getRowId(mockDiversions[0].diversionRouteVariants[1])).toBe('DIV123-2');
             expect(getRowId(mockDiversions[1].diversionRouteVariants[0])).toBe('DIV456-1');
         });
+
         it('is passed to DataGridPro with correct row identification', () => {
             const expandedRows = { DIV123: true };
             render(
@@ -187,6 +200,7 @@ describe('<ActiveDiversionView />', () => {
             expect(getRowId(mockDiversions[0].diversionRouteVariants[0])).toMatch(/^DIV123-1/);
         });
     });
+
     describe('<ActiveDiversionView />', () => {
         it('should check for diversions, and also filter out diversions without diversionRouteVariants', () => {
             const expandedRows = { DIV123: true, DIV456: true };
@@ -203,6 +217,7 @@ describe('<ActiveDiversionView />', () => {
             expect(screen.getAllByTestId('expand-button')).toHaveLength(2);
             expect(screen.getAllByRole('separator').length).toBe(1);
         });
+
         it('should check if diversions are empty', () => {
             render(
                 <ActiveDiversionView
@@ -215,6 +230,7 @@ describe('<ActiveDiversionView />', () => {
             expect(component.children).toHaveLength(0);
             expect(screen.queryAllByRole('separator')).toHaveLength(0);
         });
+
         it('should check if rerender is called for datagridpro when rows are expanded', () => {
             const expandedRows = { DIV123: true, DIV456: true };
             render(
@@ -229,23 +245,28 @@ describe('<ActiveDiversionView />', () => {
             expect(screen.getAllByTestId('datagrid-pro')[0]).toHaveClass('ml-5');
         });
     });
+
     describe('createRenderCell', () => {
         it('creates a renderCell function that renders a single value for routeVariantId', () => {
             const renderCell = createRenderCell('routeVariantId');
             const { container } = render(
                 renderCell({ row: { diversionId: 'DIV123-1', routeVariantId: 'NX2-203-1' } }),
             );
+
             const div = container.querySelector('div');
             expect(div).toHaveTextContent('NX2-203-1');
         });
+
         it('creates a renderCell function that maps directionId using DIRECTIONS', () => {
             const renderCell = createRenderCell('directionId');
             const { container } = render(
                 renderCell({ row: { diversionId: 'DIV123-1', directionId: '1' } }),
             );
+
             const div = container.querySelector('div');
             expect(div).toHaveTextContent('Outbound/Clockwise');
         });
+
         it('renders a list with items when view is collapsed & diversionRouteVariants.length > 0', () => {
             render(
                 <ActiveDiversionView
@@ -263,6 +284,7 @@ describe('<ActiveDiversionView />', () => {
             expect(mockDiversions[0].diversionRouteVariants.length).toBe(2);
             expect(mockDiversions[1].diversionRouteVariants.length).toBe(1);
         });
+
         it('renders a list with items when view is expanded & diversionRouteVariants.length > 0', () => {
             const expandedRows = { DIV123: true, DIV456: true };
             render(
@@ -277,6 +299,7 @@ describe('<ActiveDiversionView />', () => {
             expect(mockDiversions[0].diversionRouteVariants.length).toBe(2);
             expect(mockDiversions[1].diversionRouteVariants.length).toBe(1);
         });
+
         it('does not render diversions with empty diversionRouteVariants when view is collapsed', () => {
             render(
                 <ActiveDiversionView
@@ -290,6 +313,7 @@ describe('<ActiveDiversionView />', () => {
             expect(mockDiversions[2].diversionRouteVariants.length).toBe(0);
             expect(mockDiversions[3].diversionRouteVariants.length).toBe(0);
         });
+
         it('does not display diversions with no diversionRouteVariants', () => {
             const expandedRows = { DIV123: true, DIV456: true };
             render(
