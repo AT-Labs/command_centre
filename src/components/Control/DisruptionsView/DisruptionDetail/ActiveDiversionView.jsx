@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { DataGridPro } from '@mui/x-data-grid-pro';
@@ -36,22 +36,6 @@ const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiv
         console.log('TODO: Make delete diversion possible for id:', selectedDiversionIdToDelete);
         deleteDiversion(selectedDiversionIdToDelete);
         setDeleteDialogOpen(false);
-    };
-
-    useEffect(() => {
-        if (allExpanded) {
-            const newExpandedRows = diversions.reduce((acc, diversion) => {
-                acc[diversion.diversionId] = true;
-                return acc;
-            }, {});
-            setExpandedRows(newExpandedRows);
-        } else {
-            setExpandedRows({});
-        }
-    }, [allExpanded, diversions]);
-
-    const toggleExpand = (diversionId) => {
-        setExpandedRows(prev => ({ ...prev, [diversionId]: !prev[diversionId] }));
     };
 
     const renderHeader = diversion => (
@@ -134,12 +118,8 @@ const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiv
                                 className="ml-5"
                             />
                         ) : null}
-<<<<<<< HEAD
                         {(index < (ary.length - 1)) ? <hr className="hr" /> : null}
                         { renderDeleteModal() }
-=======
-                        <hr className="hr" />
->>>>>>> 25d70638 ([ATR-6291] Adding unit tests)
                     </div>
                 ))}
 
