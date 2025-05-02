@@ -11,6 +11,7 @@ cypress/screenshots
 # ide
 .idea
 *.iml
+.vscode
 
 storybook-static
 __opensource__

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
 import { reportError } from '../../../../redux/actions/activity';
-import { getDiversion as getDiversionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
+import { getDiversion as getDiversionAPI, deleteDiversion as deleteDiversionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import { ActiveDiversionView } from './ActiveDiversionView';
 import { DISRUPTIONS_MESSAGE_TYPE } from '../../../../types/disruptions-types';
@@ -13,10 +13,12 @@ const ViewDiversionDetailModal = (props) => {
     const [allExpanded, setAllExpanded] = useState(false);
     const [expandedRows, setExpandedRows] = useState({});
     const dispatch = useDispatch();
+    const [refresh, setRefresh] = useState(false);
 
     useEffect(() => {
         const fetchDiversions = async () => {
             try {
+                console.log('Fetching diversion details...');
                 const data = await getDiversionAPI(props.disruption.disruptionId);
                 setDiversions(data);
             } catch (error) {
@@ -25,7 +27,8 @@ const ViewDiversionDetailModal = (props) => {
             }
         };
         fetchDiversions();
-    }, []);
+    }, [refresh]);
+
 
     // Update allExpanded based on whether all rows are expanded
     useEffect(() => {
@@ -57,6 +60,13 @@ const ViewDiversionDetailModal = (props) => {
             ...prev,
             [diversionId]: !prev[diversionId],
         }));
+    };
+
+    const deleteDiversion = async (diversionId) => {
+        // eslint-disable-next-line no-console
+        console.log(`Deleting diversion with ID: ${diversionId}`);
+        await deleteDiversionAPI(diversionId);
+        setRefresh(prevRefresh => !prevRefresh);
     };
 
     return (
@@ -92,9 +102,11 @@ const ViewDiversionDetailModal = (props) => {
                             {allExpanded ? 'Collapse All' : 'Expand All'}
                         </button>
                         <ActiveDiversionView
+                            deleteDiversion={ deleteDiversion }
                             diversions={ diversions }
                             expandedRows={ expandedRows }
                             toggleExpand={ toggleExpand }
+                            incidentNo={ props.disruption.incidentNo }
                         />
                     </>
                 ) : (
