@@ -107,6 +107,19 @@ export const AffectedEntities = (props) => {
                                         </Button>
                                     )}
                                 </div>
+                                <div>
+                                    { props.useDiversion
+                                        && (
+                                            <Button
+                                                className="btn cc-btn-link pr-0 font-weight-bold"
+                                                id="view-and-edit-diversions-btn"
+                                                onClick={ props.viewDiversionsAction }
+                                            >
+                                                View & edit diversions
+                                                <MdEast size={ 20 } color="black" className="ml-1" />
+                                            </Button>
+                                        )}
+                                </div>
                                 {props.showViewPassengerImpactButton && (
                                     <div>
                                         <Button
@@ -149,6 +162,7 @@ AffectedEntities.propTypes = {
     heightSmall: PropTypes.bool,
     showViewWorkaroundsButton: PropTypes.bool,
     viewWorkaroundsAction: PropTypes.func,
+    viewDiversionsAction: PropTypes.func,
     showViewPassengerImpactButton: PropTypes.bool,
     viewPassengerImpactAction: PropTypes.func,
     useDiversion: PropTypes.bool.isRequired,
@@ -164,6 +178,7 @@ AffectedEntities.defaultProps = {
     heightSmall: false,
     showViewWorkaroundsButton: false,
     viewWorkaroundsAction: null,
+    viewDiversionsAction: null,
     showViewPassengerImpactButton: false,
     viewPassengerImpactAction: null,
     startTime: null,

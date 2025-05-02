@@ -8,12 +8,14 @@ test-reports
 cypress/screenshots
 .scannerwork
 .nyc_output
+
 # ide
 .idea
 *.iml
-
+.vscode
 storybook-static
 __opensource__
 .DS_Store
+
 # Ignore Jest snapshot files
 *.snap
