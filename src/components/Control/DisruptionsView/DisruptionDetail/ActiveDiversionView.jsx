@@ -2,13 +2,22 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { DataGridPro } from '@mui/x-data-grid-pro';
+import { DIRECTIONS } from '../types';
+import { generateUniqueID } from '../../../../utils/helpers';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CreateIcon from '@mui/icons-material/Create';
 import WarningIcon from '@mui/icons-material/Warning';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 
-const createRenderCell = (property = {}) => function renderCell({ row }) {
+const createRenderCell = (property = '') => function renderCell({ row }) {
+    if (property === 'directionId') {
+        return (
+            <div>
+                {DIRECTIONS[row[property]]}
+            </div>
+        );
+    }
     return (
         <div>
             {row[property]}
@@ -60,6 +69,7 @@ const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiv
                     <span className="flex-grow-1">
                         Routes
                         {' '}
+                        {' '}
                         {diversion.diversionRouteVariants.map(m => getShortRouteId(m.routeId)).join(', ')}
                     </span>
                 )}
@@ -108,7 +118,7 @@ const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiv
                         {expandedRows[diversion.diversionId] ? (
                             <DataGridPro
                                 data-testid="datagrid-pro"
-                                getRowId={ row => row.diversionId }
+                                getRowId={ row => `${row.diversionId}_${generateUniqueID()}` }
                                 rows={ diversion.diversionRouteVariants }
                                 disableSelectionOnClick
                                 columns={ gridColumns }
@@ -136,4 +146,4 @@ ActiveDiversionView.propTypes = {
     incidentNo: PropTypes.string.isRequired,
 };
 
-export { ActiveDiversionView };
+export { ActiveDiversionView, createRenderCell };
