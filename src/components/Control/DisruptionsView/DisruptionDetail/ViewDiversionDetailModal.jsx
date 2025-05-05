@@ -18,6 +18,7 @@ const ViewDiversionDetailModal = (props) => {
     useEffect(() => {
         const fetchDiversions = async () => {
             try {
+                console.log('Fetching diversion details...');
                 const data = await getDiversionAPI(props.disruption.disruptionId);
                 setDiversions(data);
             } catch (error) {

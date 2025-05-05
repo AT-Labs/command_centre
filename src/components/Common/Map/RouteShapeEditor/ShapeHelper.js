@@ -1,20 +1,18 @@
-import L from 'leaflet';
-
 // Calculate the distance between two points (lat, lng)
 export const calculateDistance = ([lat1, lng1], [lat2, lng2]) => {
-    const R = 6371e3; // Earth's radius in meters
-    const rad = Math.PI / 180;
-    const φ1 = lat1 * rad; const
-        φ2 = lat2 * rad;
-    const Δφ = (lat2 - lat1) * rad;
-    const Δλ = (lng2 - lng1) * rad;
+    const earthRadius = 6371e3; // Earth's radius in meters
+    const degToRad = Math.PI / 180;
+    const lat1Rad = lat1 * degToRad;
+    const lat2Rad = lat2 * degToRad;
+    const deltaLatRad = (lat2 - lat1) * degToRad;
+    const deltaLngRad = (lng2 - lng1) * degToRad;
 
-    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2)
-              + Math.cos(φ1) * Math.cos(φ2)
-              * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const haversineA = Math.sin(deltaLatRad / 2) * Math.sin(deltaLatRad / 2)
+                     + Math.cos(lat1Rad) * Math.cos(lat2Rad)
+                     * Math.sin(deltaLngRad / 2) * Math.sin(deltaLngRad / 2);
+    const angularDistance = 2 * Math.atan2(Math.sqrt(haversineA), Math.sqrt(1 - haversineA));
 
-    return R * c; // in meters
+    return earthRadius * angularDistance; // in meters
 };
 
 // Calculate the projection of a point on a line segment
@@ -33,6 +31,7 @@ export const findProjectionOnPolyline = (point, polyline) => {
     let minDist = Infinity;
     let projection = null;
     let segmentIndex = -1;
+    let distance = -1;
 
     for (let i = 0; i < polyline.length - 1; i++) {
         const p1 = polyline[i];
@@ -44,10 +43,11 @@ export const findProjectionOnPolyline = (point, polyline) => {
             minDist = dist;
             projection = projectedPoint;
             segmentIndex = i;
+            distance = dist;
         }
     }
 
-    return { projection, segmentIndex };
+    return { projection, segmentIndex, distance };
 };
 
 // Merge the second list into the first list
@@ -123,24 +123,6 @@ export const findDifferences = (original, updated) => {
     }
 
     return [];
-};
-
-export const getMinDistanceToPolyline = (stopLatLng, polylineLatLngs, map) => {
-    let minDistance = Infinity;
-    for (let i = 0; i < polylineLatLngs.length - 1; i++) {
-        const A = polylineLatLngs[i];
-        const B = polylineLatLngs[i + 1];
-        const pA = map.latLngToLayerPoint(A);
-        const pB = map.latLngToLayerPoint(B);
-        const pP = map.latLngToLayerPoint(stopLatLng);
-        const closestPoint = L.LineUtil.closestPointOnSegment(pP, pA, pB);
-        const closestLatLng = map.layerPointToLatLng(closestPoint);
-        const distance = stopLatLng.distanceTo(closestLatLng);
-        if (distance < minDistance) {
-            minDistance = distance;
-        }
-    }
-    return minDistance;
 };
 
 // Function to parse WKT LINESTRING into an array of coordinates

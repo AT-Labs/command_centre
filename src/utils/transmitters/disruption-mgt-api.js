@@ -15,6 +15,7 @@ export const getDisruptions = (includeDrafts = false) => fetchWithAuthHeader(`${
 export const getDisruption = (disruptionId, signal) => fetchWithAuthHeader(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions/${disruptionId}`, { method: GET, signal })
     .then(response => jsonResponseHandling(response));
 
+// eslint-disable-next-line no-unused-vars
 export const getDiversion = (disruptionId) => {
     const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/diversions/?disruptionId=${disruptionId}`;
     return fetchWithAuthHeader(
