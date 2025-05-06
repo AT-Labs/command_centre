@@ -18,6 +18,7 @@ jest.mock('../../../../utils/transmitters/disruption-mgt-api', () => ({
     getDiversion: diversions => mockGetDiversion(diversions),
     deleteDiversion: jest.fn(() => Promise.resolve()),
 }));
+
 const mockStore = configureStore([thunk]);
 const store = mockStore({
     realtime: {
@@ -26,6 +27,7 @@ const store = mockStore({
         },
     },
 });
+
 const cache = createCache({ key: 'blah' });
 const withCacheProvider = children => (
     <Provider store={ store }>
@@ -34,6 +36,7 @@ const withCacheProvider = children => (
         </CacheProvider>
     </Provider>
 );
+
 const mockDiversions = [{
     diversionId: 'DIV123',
     diversionRouteVariants: [
@@ -68,7 +71,9 @@ const mockDisruption = {
     onClose: jest.fn(),
     isOpen: true,
 };
+
 const mockOnClose = jest.fn();
+
 describe('<ViewDiversionDetailModal />', () => {
     beforeEach(() => {
         jest.clearAllMocks();
@@ -97,6 +102,7 @@ describe('<ViewDiversionDetailModal />', () => {
         expect(screen.getByText('Close')).toBeInTheDocument();
         expect(mockDiversionsEmpty.length).toBe(2);
     });
+
     it('toggles "Collapse All" back to "Expand All" on second click', async () => {
         mockGetDiversion.mockResolvedValue(mockDiversions);
         await act(async () => {
@@ -115,6 +121,7 @@ describe('<ViewDiversionDetailModal />', () => {
         fireEvent.click(expandAllButton);
         expect(expandAllButton).toHaveTextContent('Expand All');
     });
+
     it('renders no diversions message and hides expand button when diversions is empty', async () => {
         mockGetDiversion.mockResolvedValue([]);
         await act(async () => {
@@ -130,6 +137,7 @@ describe('<ViewDiversionDetailModal />', () => {
         expect(screen.queryByTestId('expand-all-button')).not.toBeInTheDocument();
         expect(screen.getByText('Close')).toBeInTheDocument();
     });
+
     it('renders "Expand All" button and ActiveDiversionView when diversions is not null', async () => {
         mockGetDiversion.mockResolvedValue(mockDiversions);
         await act(async () => {
@@ -145,6 +153,7 @@ describe('<ViewDiversionDetailModal />', () => {
         expect(screen.getByText('Expand All')).toBeInTheDocument();
         expect(screen.getByText('Close')).toBeInTheDocument();
     });
+
     it('renders Expand All button initially and toggles to Collapse All on click', async () => {
         mockGetDiversion.mockResolvedValue(mockDiversions);
         await act(async () => {
@@ -164,6 +173,7 @@ describe('<ViewDiversionDetailModal />', () => {
         });
         expect(expandAllButton).toHaveTextContent('Collapse All');
     });
+
     it('toggles "Expand All" and "Collapse All" button text on click', async () => {
         mockGetDiversion.mockResolvedValue(mockDiversions);
         await act(async () => {
@@ -180,6 +190,7 @@ describe('<ViewDiversionDetailModal />', () => {
         fireEvent.click(expandAllButton);
         expect(expandAllButton).toHaveTextContent('Collapse All');
     });
+
     it('calls onClose when "Close" button is clicked', async () => {
         await act(async () => {
             render(withCacheProvider(
@@ -194,6 +205,7 @@ describe('<ViewDiversionDetailModal />', () => {
         fireEvent.click(closeButton);
         expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
+
     it('renders no diversions message and hides expand button when diversions is null', async () => {
         mockGetDiversion.mockRejectedValue(new Error('API error'));
         await act(async () => {
