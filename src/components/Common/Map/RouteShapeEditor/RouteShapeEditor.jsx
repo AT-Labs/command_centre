@@ -6,7 +6,7 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 import './RouteShapeEditor.scss';
 import L from 'leaflet';
 import PropTypes from 'prop-types';
-import { findDifferences, parseWKT, toWKT } from './ShapeHelper';
+import { findDifferences, getMinDistanceToPolyline, parseWKT, toWKT } from './ShapeHelper';
 import IconMarker from '../../IconMarker/IconMarker';
 
 L.drawLocal.edit.handlers.edit.tooltip.text = 'Drag the red dots to update the shape for the selected route variant.';
@@ -19,15 +19,21 @@ const RouteShapeEditor = (props) => {
     const [diversionPolyline, setDiversionPolyline] = useState([]);
     const [editablePolyline, setEditablePolyline] = useState([]);
     const [isEditablePolylineVisible, setIsEditablePolylineVisible] = useState(true);
-    const [isEditing, setIsEditing] = useState(false);
+    const [showStops, setShowStops] = useState(true);
+    const [highlightedStops, setHighlightedStops] = useState([]);
 
     const mapRef = useRef();
     const featureGroupRef = useRef();
 
-    // Only allow user to modify the shape when there is no other additional route variants.
-    const editable = props.additionalRouteVariants.length === 0;
-
     const toCoordinates = latlngs => latlngs.map(item => [item.lat, item.lng]);
+
+    const onEditStart = () => {
+        setShowStops(false);
+    };
+
+    const onEditStop = () => {
+        setShowStops(true);
+    };
 
     const onEdited = (e) => {
         const { layers } = e;
@@ -40,31 +46,6 @@ const RouteShapeEditor = (props) => {
                 }
             }
         });
-    };
-
-    // Collect all unique stops from main route and additional variants
-    const getAllUniqueStops = () => {
-        const stopMap = new Map();
-
-        // Add stops from main route
-        if (props.visible) {
-            props.routeVariant?.stops?.forEach((stop) => {
-                if (stop.stopId) {
-                    stopMap.set(stop.stopId, stop);
-                }
-            });
-        }
-
-        // Add stops from additional visible route variants
-        props.additionalRouteVariants.filter(rv => rv.visible).forEach((variant) => {
-            variant.stops?.forEach((stop) => {
-                if (stop.stopId) {
-                    stopMap.set(stop.stopId, stop);
-                }
-            });
-        });
-
-        return Array.from(stopMap.values());
     };
 
     useEffect(() => {
@@ -102,10 +83,22 @@ const RouteShapeEditor = (props) => {
                 setDiversionPolyline(parseWKT(toWKT(difference)));
             }
 
-            props.onShapeUpdated(updatedDiversionShape, toWKT(updatedCoords));
+            // Find effected stops
+            const map = mapRef.current.leafletElement;
+            const polylineLatLngs = updatedCoords.map(coord => L.latLng(coord[0], coord[1]));
+            const { stops } = props.routeVariant;
+            const highlighted = stops
+                .filter((stop) => {
+                    const stopLatLng = L.latLng(stop.stopLat, stop.stopLon);
+                    const minDistance = getMinDistanceToPolyline(stopLatLng, polylineLatLngs, map);
+                    return minDistance > props.stopCheckRadius;
+                });
+            setHighlightedStops(highlighted);
+            props.onShapeUpdated(updatedDiversionShape, toWKT(updatedCoords), highlighted);
         } else {
             setDiversionPolyline([]);
-            props.onShapeUpdated(null, null);
+            setHighlightedStops([]);
+            props.onShapeUpdated(null, null, []);
         }
     }, [updatedCoords, props.stopCheckRadius]);
 
@@ -114,7 +107,7 @@ const RouteShapeEditor = (props) => {
             <LeafletMap
                 key={ props.routeVariant?.routeVariantId }
                 center={ center }
-                zoom={ 14 }
+                zoom={ 16 }
                 style={ { height: '100%', width: '100%' } }
                 ref={ mapRef }
             >
@@ -122,10 +115,10 @@ const RouteShapeEditor = (props) => {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
-                {!isEditing && props.routeVariant?.stops?.length > 0 && (
+                {showStops && props.routeVariant?.stops?.length > 0 && (
                     <FeatureGroup>
-                        {getAllUniqueStops().map((stop) => {
-                            const isHighlighted = props.highlightedStops.includes(stop.stopId);
+                        {props.routeVariant.stops.map((stop) => {
+                            const isHighlighted = highlightedStops.includes(stop);
                             const marker = stop.stopLat ? (
                                 <IconMarker
                                     key={ stop.stopId }
@@ -148,30 +141,22 @@ const RouteShapeEditor = (props) => {
                             positions={ editablePolyline }
                             color="DEEPSKYBLUE"
                             weight={ 5 }
-                            opacity={ props.visible ? 0.8 : 0 }
-                        >
-                            <Tooltip sticky="true">
-                                { `${props.routeVariant?.routeVariantId} - ${props.routeVariant?.routeLongName}` }
-                            </Tooltip>
-                        </Polyline>
-                        {editable && (
-                            <EditControl
-                                position="topleft"
-                                onEditStart={ () => setIsEditing(true) }
-                                onEdited={ onEdited }
-                                onEditStop={ () => setIsEditing(false) }
-                                draw={ {
-                                    rectangle: false,
-                                    circle: false,
-                                    circlemarker: false,
-                                    marker: false,
-                                    polygon: false,
-                                    polyline: false,
-                                } }
-                                edit={ { edit: true, remove: false } }
-                            />
-                        )}
-
+                        />
+                        <EditControl
+                            position="topleft"
+                            onEditStart={ onEditStart }
+                            onEdited={ onEdited }
+                            onEditStop={ onEditStop }
+                            draw={ {
+                                rectangle: false,
+                                circle: false,
+                                circlemarker: false,
+                                marker: false,
+                                polygon: false,
+                                polyline: false,
+                            } }
+                            edit={ { edit: true, remove: false } }
+                        />
                     </FeatureGroup>
                 )}
                 {diversionPolyline.length > 0 && (
@@ -180,24 +165,7 @@ const RouteShapeEditor = (props) => {
                             positions={ diversionPolyline }
                             color="RED"
                             weight={ 5 }
-                        >
-                            <Tooltip sticky="true">
-                                <spa>Diversion Shape</spa>
-                            </Tooltip>
-                        </Polyline>
-                    </FeatureGroup>
-                )}
-                {!isEditing && (
-                    <FeatureGroup>
-                        { props.additionalRouteVariants
-                            .filter(rv => rv.visible)
-                            .map(rv => (
-                                <Polyline key={ rv.routeVariantId } positions={ parseWKT(rv.shapeWkt) } color={ rv.color } weight={ 5 } opacity={ 0.6 }>
-                                    <Tooltip sticky="true">
-                                        { `${rv.routeVariantId} - ${rv.routeLongName}` }
-                                    </Tooltip>
-                                </Polyline>
-                            ))}
+                        />
                     </FeatureGroup>
                 )}
             </LeafletMap>
@@ -207,18 +175,12 @@ const RouteShapeEditor = (props) => {
 
 RouteShapeEditor.propTypes = {
     routeVariant: PropTypes.object,
-    highlightedStops: PropTypes.array,
-    visible: PropTypes.bool,
-    additionalRouteVariants: PropTypes.array,
     stopCheckRadius: PropTypes.number,
     onShapeUpdated: PropTypes.func.isRequired,
 };
 
 RouteShapeEditor.defaultProps = {
-    visible: true,
     routeVariant: {},
-    highlightedStops: [],
-    additionalRouteVariants: [],
     stopCheckRadius: 20,
 };
 

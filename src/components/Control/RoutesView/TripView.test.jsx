@@ -125,7 +125,7 @@ describe('<TripView />', () => {
             const trip = { ...busTrip, status: 'NOT_STARTED', _links: { permissions: [{ _rel: 'cancel' }, { _rel: 'delay' }, { _rel: 'advancer' }] } };
             let result;
             beforeEach(() => {
-                wrapper = setup({ tripInstance: trip });
+                wrapper = setup({ tripInstance: trip, useHoldTrip: true });
                 result = wrapper.instance().getButtonBarConfig(trip);
             });
 
@@ -137,6 +137,10 @@ describe('<TripView />', () => {
             });
             it('should contain Move to next stop button', () => {
                 expect(find(result, { label: 'Move to next stop' })).to.not.be.undefined;  // eslint-disable-line
+            });
+
+            it('should contain Hold button', () => {
+                expect(find(result, { label: 'Hold trip' })).to.not.be.undefined;  // eslint-disable-line
             });
         });
 
@@ -166,7 +170,7 @@ describe('<TripView />', () => {
             const trip = { ...busTrip, status: 'COMPLETED', _links: { permissions: [{ _rel: 'cancel' }, { _rel: 'delay' }, { _rel: 'advancer' }] } };
             let result;
             beforeEach(() => {
-                wrapper = setup({ tripInstance: trip });
+                wrapper = setup({ tripInstance: trip, useHoldTrip: true });
                 result = wrapper.instance().getButtonBarConfig(trip);
             });
 
@@ -178,6 +182,9 @@ describe('<TripView />', () => {
             });
             it('should not contain Move to next stop button', () => {
                 expect(find(result, { label: 'Move to next stop' })).to.be.undefined;  // eslint-disable-line
+            });
+            it('should not contain Hold button', () => {
+                expect(find(result, { label: 'Hold trip' })).to.be.undefined;  // eslint-disable-line
             });
         });
 

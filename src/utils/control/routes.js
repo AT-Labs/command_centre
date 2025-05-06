@@ -53,6 +53,8 @@ export const transformStopName = name => name && name.replace('Train Station', '
 
 export const isTripAdded = tripInstance => lowerCase(tripInstance.source) === 'manual';
 
+export const IsOnHoldTrip = tripInstance => tripInstance.onHold === true;
+
 export const dateOperators = [
     { label: 'is on or after', value: 'onOrAfter' },
     { label: 'is on or before', value: 'onOrBefore' },

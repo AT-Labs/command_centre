@@ -28,9 +28,10 @@ import TripDetails from '../Common/Trip/TripDetails';
 import CopyTripModal from './Modals/CopyTripModal';
 import SetTripDelayModal from './Modals/SetTripDelayModal';
 import UpdateTripStatusModal from './Modals/UpdateTripStatusModal';
-import { AgencyType, TripInstanceType, updateTripsStatusModalOrigins, updateTripsStatusModalTypes } from './Types';
+import { AgencyType, TripInstanceType, updateTripsStatusModalOrigins, updateTripsStatusModalTypes, TRIP_HOLD_STATUS } from './Types';
 import StopSelectionMessages from './bulkSelection/StopSelectionMessages';
-import { useHideTrip } from '../../../redux/selectors/appSettings';
+import { useHideTrip, useHoldTrip } from '../../../redux/selectors/appSettings';
+import UpdateTripHoldModal from './Modals/UpdateTripHoldModal';
 
 export class TripView extends React.Component {
     static propTypes = {
@@ -55,6 +56,7 @@ export class TripView extends React.Component {
         setTripStatusModalOrigin: PropTypes.func.isRequired,
         useHideTrip: PropTypes.bool.isRequired,
         removeBulkUpdateMessages: PropTypes.func.isRequired,
+        useHoldTrip: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -73,6 +75,7 @@ export class TripView extends React.Component {
             isRemoveTripDelayModalOpen: false,
             isCopyTripModalOpen: false,
             isMoveToNextStopModalOpen: false,
+            isTripHoldModalOpen: false,
         };
     }
 
@@ -132,6 +135,7 @@ export class TripView extends React.Component {
         const isDelayEditPossible = isInProgress || isNotStarted || isMissed;
         const isMoveTripToNextStopPermitted = IS_LOGIN_NOT_REQUIRED || isMoveToStopPermitted(tripInstance);
         const isMoveTripToNextStopPossible = isInProgress || isMissed || isNotStarted;
+        const isOnHoldPossible = isNotStarted || isInProgress;
 
         if (isCancelPermitted && isCancelPossible) {
             buttonBarConfig.push({
@@ -214,6 +218,16 @@ export class TripView extends React.Component {
             });
         }
 
+        if (this.props.useHoldTrip && isOnHoldPossible) {
+            buttonBarConfig.push({
+                label: tripInstance.onHold ? 'Release trip' : 'Hold trip',
+                action: () => {
+                    this.setState({ isTripHoldModalOpen: true });
+                    this.props.setTripStatusModalOrigin(updateTripsStatusModalOrigins.TRIP_VIEW);
+                },
+            });
+        }
+
         return buttonBarConfig;
     };
 
@@ -254,6 +268,13 @@ export class TripView extends React.Component {
                     onClose={ () => {
                         this.setState({ isSetTripStatusModalOpen: false });
                     } } />
+
+                <UpdateTripHoldModal
+                    isModalOpen={ this.state.isTripHoldModalOpen }
+                    trip={ tripInstance }
+                    onClose={ () => { this.setState({ isTripHoldModalOpen: false }); } }
+                    action={ tripInstance.onHold ? TRIP_HOLD_STATUS.RELEASE : TRIP_HOLD_STATUS.HOLD }
+                />
 
                 <SetTripDelayModal
                     tripInstance={ tripInstance }
@@ -334,4 +355,5 @@ export default connect(state => ({
     vehicleAllocations: getAllocations(state),
     tripStatusModalOrigin: getTripStatusModalOriginState(state),
     useHideTrip: useHideTrip(state),
+    useHoldTrip: useHoldTrip(state),
 }), { clearTripInstanceActionResult, updateTripInstanceDelay, goToBlocksView, copyTrip, moveTripToNextStop, setTripStatusModalOrigin, removeBulkUpdateMessages })(TripView);

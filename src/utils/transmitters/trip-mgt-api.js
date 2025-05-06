@@ -50,6 +50,7 @@ export const getTrips = ({
     notType,
     disruptionId,
     display,
+    onHold,
 }) => {
     const variables = { serviceDate };
     if (agencyId) { variables.agencyId = agencyId; }
@@ -80,6 +81,7 @@ export const getTrips = ({
     if (isType != null) { variables.isType = isType; }
     if (notType != null) { variables.notType = notType; }
     if (disruptionId) { variables.disruptionId = disruptionId; }
+    if (onHold) { variables.onHold = onHold; }
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
     return fetchWithAuthHeader(
@@ -236,6 +238,13 @@ const updateTripDisplayGqlMutation = gql`
         }
     }`;
 
+const updateTripOnHoldGqlMutation = gql`
+    mutation($tripId: String!, $serviceDate: Moment!, $startTime: String!, $onHold: Boolean!) {
+        updateTripOnHold( tripId: $tripId, serviceDate: $serviceDate, startTime: $startTime, onHold: $onHold) {
+            ${tripInstanceFields}
+        }
+    }`;
+
 export const updateTripDisplay = (options) => {
     const { tripId, serviceDate, startTime, display } = options;
 
@@ -302,6 +311,21 @@ export const updateStopStatus = async ({
     });
 
     return result(response, 'data.updateStopStatus', {});
+};
+
+export const updateTripOnHold = (options) => {
+    const { tripId, serviceDate, startTime, onHold } = options;
+
+    return getAuthToken()
+        .then(token => (
+            mutateStatic({
+                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+                mutation: updateTripOnHoldGqlMutation,
+                variables: { tripId, serviceDate, startTime, onHold },
+                params: 'updateTripOnHold',
+                authToken: token,
+            }).then(response => result(response, 'data.updateTripOnHold', {}))
+        ));
 };
 
 const updateStopIdGqlMutation = gql`

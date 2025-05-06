@@ -14,7 +14,7 @@ import { getActiveRoute } from '../../../redux/selectors/control/routes/routes';
 import { getActiveRouteVariant } from '../../../redux/selectors/control/routes/routeVariants';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
 import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
-import { formatTripDelay, isTripAdded, dateOperators, markStopsAsFirstOrLast } from '../../../utils/control/routes';
+import { formatTripDelay, isTripAdded, dateOperators, markStopsAsFirstOrLast, IsOnHoldTrip } from '../../../utils/control/routes';
 import { getTripInstanceId, getTripTimeDisplay, getTimePickerOptions } from '../../../utils/helpers';
 import { mergeDatagridColumns } from '../../../utils/datagrid';
 import TripIcon from '../Common/Trip/TripIcon';
@@ -36,7 +36,7 @@ import { CustomSelectionHeader } from './CustomSelectionHeader';
 import { getAllStops } from '../../../redux/selectors/static/stops';
 import { StopSearchDataGridOperators } from '../Common/DataGrid/OmniSearchDataGridOperator';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
-import { useDiversion, useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences } from '../../../redux/selectors/appSettings';
+import { useDiversion, useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences, useHoldTrip } from '../../../redux/selectors/appSettings';
 import { getUserPreferences } from '../../../utils/transmitters/command-centre-config-api';
 import { updateRoutesTripsDatagridConfig, updateDefaultRoutesTripsDatagridConfig } from '../../../redux/actions/datagrid';
 import { getRoutesTripsDatagridConfig } from '../../../redux/selectors/datagrid';
@@ -59,6 +59,8 @@ const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed
 
 const formatSourceColumn = row => (isTripAdded(row) ? <FaCheckCircle className="icon-blue-check" size={ 18 } /> : '');
 
+const formatOnHoldColumn = row => (IsOnHoldTrip(row.tripInstance) ? 'Y' : 'N');
+
 const formatHideColumn = (row) => {
     const display = get(row.tripInstance, 'display');
     return display === false ? <FaCheckCircle className="icon-red-check" size={ 18 } /> : '';
@@ -67,6 +69,11 @@ const formatHideColumn = (row) => {
 const getTripSourceOptions = () => [
     { value: 'manual', label: 'Yes' },
     { value: 'gtfs', label: 'No' },
+];
+
+const getTripOnHoldOptions = () => [
+    { value: 'true', label: 'Yes' },
+    { value: 'false', label: 'No' },
 ];
 
 const getHideOptions = () => [
@@ -200,6 +207,17 @@ export const TripsDataGrid = (props) => {
             },
 
         ] : [],
+        ...props.useHoldTrip ? [{
+            field: 'onHold',
+            headerName: 'On Hold',
+            width: 100,
+            type: 'singleSelect',
+            valueOptions: getTripOnHoldOptions(),
+            filterOperators: getGridSingleSelectOperators(true).filter(
+                operator => operator.value === 'is',
+            ),
+            renderCell: params => formatOnHoldColumn(params.row),
+        }] : [],
         {
             field: 'vehicleLabel',
             headerName: 'Vehicle Label',
@@ -499,6 +517,7 @@ TripsDataGrid.propTypes = {
     useRoutesTripsPreferences: PropTypes.bool.isRequired,
     updateDefaultRoutesTripsDatagridConfig: PropTypes.func.isRequired,
     mergeRouteFilters: PropTypes.func.isRequired,
+    useHoldTrip: PropTypes.bool.isRequired,
 };
 
 TripsDataGrid.defaultProps = {
@@ -524,6 +543,7 @@ export default connect(
         useDiversion: useDiversion(state),
         useRoutesTripsFilterCollapse: useRoutesTripsFilterCollapse(state),
         useRoutesTripsPreferences: useRoutesTripsPreferences(state),
+        useHoldTrip: useHoldTrip(state),
     }),
     {
         selectSingleTrip,

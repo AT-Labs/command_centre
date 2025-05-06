@@ -8,6 +8,7 @@ import {
     updateHeadsign,
     searchTrip,
     updateStopStatus,
+    updateTripOnHold,
 } from './trip-mgt-api';
 import * as graphql from '../graphql';
 import * as auth from '../../auth';
@@ -209,5 +210,12 @@ describe('Operation result', () => {
         const callArgs = mutateStatic.mock.calls[0][0];
         expect(callArgs.variables).not.toHaveProperty('display');
         expect(result).toEqual(tripId);
+    });
+
+    it('Should get updateTripOnHold from response after sending updateTripOnHold', async () => {
+        const options = { ...tripId, onHold: true };
+        mutateStatic.mockResolvedValue({ data: { updateTripOnHold: options } });
+        const result = await updateTripOnHold(options);
+        expect(result).toEqual(options);
     });
 });

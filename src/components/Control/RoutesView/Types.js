@@ -103,6 +103,11 @@ export const ADD_TRIP_STEPS = {
     SELECT_AND_ADD_TRIP: 'Select and Add Trip',
 };
 
+export const TRIP_HOLD_STATUS = {
+    HOLD: 'hold',
+    RELEASE: 'release',
+};
+
 export const modeRadioOptions = (routeType, formGroupClass) => ({
     title: 'Mode',
     formGroupClass,
