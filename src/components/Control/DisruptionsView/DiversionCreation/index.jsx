@@ -16,9 +16,11 @@ import { getDiversionCreationState } from '../../../../redux/selectors/control/d
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
 import { generateUniqueColor, isAffectedStop, createAffectedStop, getUniqueStops, createModifiedRouteVariant, canMerge } from './DiversionHelper';
 import { mergeCoordinates, parseWKT, toWKT } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
+import dateTypes from '../../../../types/date-types';
 
 const CreateDiversion = (props) => {
     const SERVICE_DATE_FORMAT = 'YYYYMMDD';
+    const TIME_FORMAT_HHMM = 'HH:mm';
 
     // For base route variant
     const [routeVariantsList, setRouteVariantsList] = useState([]);
@@ -53,15 +55,21 @@ const CreateDiversion = (props) => {
 
     // Fetch available route variants to populate the dropdown lists
     const fetchVariants = async () => {
-        const startDate = moment(props.disruption.startTime).format(SERVICE_DATE_FORMAT);
-        const endDate = moment(props.disruption.endTime).format(SERVICE_DATE_FORMAT);
+        const start = moment(props.disruption.startTime).tz(dateTypes.TIME_ZONE);
+        const end = moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE);
+        const startDate = start.format(SERVICE_DATE_FORMAT);
+        const startTime = start.format(TIME_FORMAT_HHMM);
+        const endDate = end.format(SERVICE_DATE_FORMAT);
+        const endTime = end.format(TIME_FORMAT_HHMM);
         try {
             const search = {
                 page: 1,
                 limit: 1000,
                 routeIds,
                 ...(startDate !== null && { serviceDateFrom: startDate }),
+                ...(startTime !== null && { startTime }),
                 ...(endDate !== null && { serviceDateTo: endDate }),
+                ...(endTime !== null && { endTime }),
             };
             const response = await searchRouteVariants(search);
             setRouteVariantsList(response.routeVariants);
