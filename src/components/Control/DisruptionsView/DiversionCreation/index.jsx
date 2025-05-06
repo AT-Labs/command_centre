@@ -108,7 +108,7 @@ const CreateDiversion = (props) => {
 
     // Find affected stops when diversion shape or the list of selected other route variants are updated.
     useEffect(() => {
-        if (diversionShapeWkt?.length > 0) {
+        if (diversionShapeWkt?.length > 0 && modifiedBaseRouteVariant) {
             let updatedAffectedStops = [];
 
             // Find affected Stops for the main route variants
