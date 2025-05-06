@@ -18,5 +18,3 @@ __opensource__
 .DS_Store
 # Ignore Jest snapshot files
 *.snap
-
-.vscode
