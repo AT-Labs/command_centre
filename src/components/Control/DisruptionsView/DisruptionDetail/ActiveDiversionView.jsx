@@ -126,6 +126,7 @@ const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiv
                             />
                         ) : null}
                         {(index < (ary.length - 1)) ? <hr className="hr" /> : null}
+                        { renderDeleteModal() }
                     </div>
                 ))}
 
