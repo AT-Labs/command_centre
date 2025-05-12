@@ -119,3 +119,33 @@ export const addDiversion = (diversion) => {
         },
     ).then(response => jsonResponseHandling(response));
 };
+
+export const getDisruptionsByFilters = (filters) => {
+    const { statuses, stopId, stopCode, onlyWithStops, includeDrafts } = filters;
+
+    const queryParams = [];
+
+    if (statuses) {
+        queryParams.push(statuses.map(status => `statuses=${status}`).join('&'));
+    }
+    if (stopId) {
+        queryParams.push(`stopId=${stopId}`);
+    }
+    if (stopCode) {
+        queryParams.push(`stopCode=${stopCode}`);
+    }
+    if (onlyWithStops) {
+        queryParams.push(`onlyWithStops=${onlyWithStops}`);
+    }
+    if (includeDrafts) {
+        queryParams.push(`includeDraft=${includeDrafts}`);
+    } else {
+        queryParams.push('includeDraft=false');
+    }
+
+    const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions${queryString}`;
+
+    return fetchWithAuthHeader(url, { method: GET })
+        .then(response => jsonResponseHandling(response));
+};
