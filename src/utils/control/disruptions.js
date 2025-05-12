@@ -355,12 +355,14 @@ const buildDuration = (disruption) => {
 
 export const getDuration = (disruption) => {
     const duration = buildDuration(disruption);
+    if (duration === '-') return duration;
     const { hours, minutes, seconds } = duration;
     return `${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
 };
 
 export const getDurationWithoutSeconds = (disruption) => {
     const duration = buildDuration(disruption);
+    if (duration === '-') return duration;
     const { hours, minutes } = duration;
     return `${hours} hours, ${minutes} minutes`;
 };
