@@ -107,6 +107,7 @@ const TrafficFilters = (props) => {
                                     title={ category }
                                     onChange={ () => onIncidentCheckboxChange([category]) }
                                     checked={ selectedIncidentFilters.includes(category) }
+                                    useNewColors={ useDisruptionsLayerEnabled }
                                 />
                             ))}
                             {!isIncidentCategoryExpand && (

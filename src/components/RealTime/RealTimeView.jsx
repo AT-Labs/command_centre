@@ -672,6 +672,7 @@ function RealTimeView(props) {
                         <IncidentLayer
                             data={ incidents.filter(incident => (props.useNewRealtimeMapFilters ? props.selectedIncidentFilters.includes(incident.type.category) : incident)) }
                             weight={ INCIDENTS_SHAPE_WEIGHT }
+                            useNewColors={ props.useDisruptionsLayer }
                         />
                     ) }
                     {(props.useNewRealtimeMapFilters || (props.useDisruptionsLayer && props.showDisruptions)) && (

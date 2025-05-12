@@ -121,8 +121,8 @@ const DisruptionDetails = (props) => {
                     <div className="column">
                         <p><strong>Internal Notes</strong></p>
                         {disruptions[index]?.notes?.length > 0 ? (
-                            disruptions[index].notes.map((note, idx) => (
-                                <p key={ idx }>{note.description}</p>
+                            disruptions[index].notes.map((note) => (
+                                <p key={ note.id }>{note.description}</p>
                             ))
                         ) : (
                             <p>No notes added to this disruption.</p>

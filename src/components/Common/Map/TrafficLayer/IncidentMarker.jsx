@@ -9,16 +9,16 @@ import './IncidentMarker.scss';
 import { getIconByIncidentCategory } from './TrafficHelper';
 
 const IncidentMarker = ({
-    location, category, className, ...props
+    location, category, className, useNewColors, ...props
 }) => (
     <Marker
         { ...props }
         key={ generateUniqueID() }
         icon={ new L.DivIcon({
             html: ReactDOMServer.renderToString(
-                <div className="incident-marker">
+                <div className={ `incident-marker ${useNewColors ? 'new-colors' : ''}` }>
                     <div className="icon-container">
-                        { getIconByIncidentCategory(category) }
+                        { getIconByIncidentCategory(category, useNewColors) }
                     </div>
                     <div className="pin" />
                 </div>,
@@ -34,11 +34,13 @@ IncidentMarker.propTypes = {
     category: PropTypes.string.isRequired,
     offset: PropTypes.array,
     className: PropTypes.string,
+    useNewColors: PropTypes.bool,
 };
 
 IncidentMarker.defaultProps = {
     offset: undefined,
     className: undefined,
+    useNewColors: false,
 };
 
 export default IncidentMarker;

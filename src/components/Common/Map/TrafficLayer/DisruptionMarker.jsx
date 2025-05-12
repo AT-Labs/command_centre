@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Marker } from 'react-leaflet';
 import ReactDOMServer from 'react-dom/server';
 import L from 'leaflet';
@@ -9,27 +9,25 @@ import { generateUniqueID } from '../../../../utils/helpers';
 
 const getCoordinates = stop => [stop.stopLat, stop.stopLon];
 
-const DisruptionMarker = (({ stop, offset, className, ...props }) => {
-    return (
-        <Marker
-            { ...props }
-            key={ generateUniqueID() }
-            icon={ new L.DivIcon({
-                html: ReactDOMServer.renderToString(
-                    <div className="disruption-marker">
-                        <div className="icon-container">
-                            <FaExclamation color="#D52923" className="icon" />
-                        </div>
-                        <div className="pin" />
-                    </div>,
-                ),
-                iconAnchor: [14, 44],
-                className,
-            }) }
-            position={ getCoordinates(stop) }
-        />
-    );
-});
+const DisruptionMarker = (({ stop, offset, className, ...props }) => (
+    <Marker
+        { ...props }
+        key={ generateUniqueID() }
+        icon={ new L.DivIcon({
+            html: ReactDOMServer.renderToString(
+                <div className="disruption-marker">
+                    <div className="icon-container">
+                        <FaExclamation color="#D52923" className="icon" />
+                    </div>
+                    <div className="pin" />
+                </div>,
+            ),
+            iconAnchor: [14, 44],
+            className,
+        }) }
+        position={ getCoordinates(stop) }
+    />
+));
 
 DisruptionMarker.propTypes = {
     stop: PropTypes.object.isRequired,

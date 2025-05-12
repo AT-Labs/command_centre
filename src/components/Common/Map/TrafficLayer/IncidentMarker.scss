@@ -30,4 +30,16 @@
             height: 20px;
         }
     }
+
+    &.new-colors {
+        .pin {
+            background-color: black;
+            border-left: 1px solid black;
+            border-right: 1px solid black;
+        }
+
+        .icon-container {
+            border: 2px solid black;
+        }
+    }
 }
