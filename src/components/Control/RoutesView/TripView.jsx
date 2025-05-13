@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { FaCheckCircle, FaRegClock, FaTimesCircle, FaEyeSlash } from 'react-icons/fa';
 import { connect } from 'react-redux';
+
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
 import { goToBlocksView } from '../../../redux/actions/control/link';
 import {
@@ -30,8 +31,10 @@ import SetTripDelayModal from './Modals/SetTripDelayModal';
 import UpdateTripStatusModal from './Modals/UpdateTripStatusModal';
 import { AgencyType, TripInstanceType, updateTripsStatusModalOrigins, updateTripsStatusModalTypes, TRIP_HOLD_STATUS } from './Types';
 import StopSelectionMessages from './bulkSelection/StopSelectionMessages';
-import { useHideTrip, useHoldTrip } from '../../../redux/selectors/appSettings';
+import { useHideTrip, useHoldTrip, useTripOperationNotes } from '../../../redux/selectors/appSettings';
 import UpdateTripHoldModal from './Modals/UpdateTripHoldModal';
+import UpdateTripOperationNotesModal from './Modals/UpdateTripOperationNotesModal';
+import SingleLineTextWithTooltip from '../../Common/SingleLineTextWithTooltip/SingleLineTextWithTooltip';
 
 export class TripView extends React.Component {
     static propTypes = {
@@ -57,6 +60,7 @@ export class TripView extends React.Component {
         useHideTrip: PropTypes.bool.isRequired,
         removeBulkUpdateMessages: PropTypes.func.isRequired,
         useHoldTrip: PropTypes.bool.isRequired,
+        useTripOperationNotes: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -76,6 +80,7 @@ export class TripView extends React.Component {
             isCopyTripModalOpen: false,
             isMoveToNextStopModalOpen: false,
             isTripHoldModalOpen: false,
+            isTripOperationNotesModalOpen: false,
         };
     }
 
@@ -100,6 +105,7 @@ export class TripView extends React.Component {
                 { name: 'End time', value: getTripTimeDisplay(tripInstance.endTime) || '—' },
                 { name: 'Service type', value: '—' },
                 { name: 'Delay', value: tripDelay },
+                this.props.useTripOperationNotes ? { name: 'Operation notes', value: <SingleLineTextWithTooltip text={ tripInstance.operationNotes } /> } : null,
             ],
         ];
 
@@ -228,6 +234,16 @@ export class TripView extends React.Component {
             });
         }
 
+        if (this.props.useTripOperationNotes) {
+            buttonBarConfig.push({
+                label: 'Operation notes',
+                action: () => {
+                    this.setState({ isTripOperationNotesModalOpen: true });
+                    this.props.setTripStatusModalOrigin(updateTripsStatusModalOrigins.TRIP_VIEW);
+                },
+            });
+        }
+
         return buttonBarConfig;
     };
 
@@ -274,6 +290,12 @@ export class TripView extends React.Component {
                     trip={ tripInstance }
                     onClose={ () => { this.setState({ isTripHoldModalOpen: false }); } }
                     action={ tripInstance.onHold ? TRIP_HOLD_STATUS.RELEASE : TRIP_HOLD_STATUS.HOLD }
+                />
+
+                <UpdateTripOperationNotesModal
+                    isModalOpen={ this.state.isTripOperationNotesModalOpen }
+                    trip={ tripInstance }
+                    onClose={ () => { this.setState({ isTripOperationNotesModalOpen: false }); } }
                 />
 
                 <SetTripDelayModal
@@ -356,4 +378,5 @@ export default connect(state => ({
     tripStatusModalOrigin: getTripStatusModalOriginState(state),
     useHideTrip: useHideTrip(state),
     useHoldTrip: useHoldTrip(state),
+    useTripOperationNotes: useTripOperationNotes(state),
 }), { clearTripInstanceActionResult, updateTripInstanceDelay, goToBlocksView, copyTrip, moveTripToNextStop, setTripStatusModalOrigin, removeBulkUpdateMessages })(TripView);

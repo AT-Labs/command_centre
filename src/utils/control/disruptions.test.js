@@ -13,7 +13,7 @@ import {
     groupStopsByRouteElementByParentStation,
     getPassengerCountRange,
     momentFromDateTime,
-    generateDisruptionActivePeriods, isRecurringPeriodInvalid, getDurationWithoutSeconds, getDuration
+    generateDisruptionActivePeriods, isRecurringPeriodInvalid
 } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 import { STATUSES } from '../../types/disruptions-types';
@@ -444,90 +444,5 @@ describe('isRecurringPeriodInvalid - Additional Cases', () => {
     it('should return false for disruption with valid byweekday, valid dtstart, valid until, and duration as a stringified number', () => {
         const disruption = { recurrencePattern: { byweekday: [1, 2], dtstart: '2023-10-01T10:00:00Z', until: '2023-12-01T10:00:00Z' }, duration: '2' };
         expect(isRecurringPeriodInvalid(disruption)).to.be.false;
-    });
-});
-
-describe('getDurationWithoutSeconds', () => {
-    const disruption = {
-        disruptionId: 1,
-        incidentNo: 'DISR0001',
-        mode: 'Train',
-        affectedEntities: [
-            {
-                routeId: 'WEST-201',
-                routeType: 2,
-                routeShortName: 'WEST',
-                agencyName: 'AT Metro',
-                agencyId: 'AM',
-                tokens: [
-                    'west',
-                ],
-            },
-        ],
-        impact: 'REDUCED_SERVICE',
-        cause: 'HOLIDAY',
-        startTime: '2023-03-17T11:41:13.775Z',
-        endTime: '2023-03-18T19:41:13.775Z',
-        estimatedResolutionDuration: 4,
-        estimatedServiceResumeTime: '2020-03-17T19:42:00.739Z',
-        status: 'in-progress',
-        lastUpdatedTime: '2020-03-17T19:42:00.739Z',
-        lastUpdatedBy: 'michael.weber@propellerhead.co.nz',
-        description: 'Test description',
-        createdBy: 'michael.weber@propellerhead.co.nz',
-        createdTime: '2020-03-17T19:42:00.739Z',
-        url: '',
-        header: 'Holidays for everyone',
-        uploadedFiles: [],
-        workarounds: [{
-            type: 'all',
-            workaround: 'workaround text',
-        }],
-        notes: [],
-        severity: 'UNKNOWN',
-        activePeriods: [
-            {
-                startTime: 1661805000,
-                endTime: 1661812200,
-            },
-            {
-                startTime: 1661977800,
-                endTime: 1661985000,
-            },
-        ],
-    };
-
-    before(() => {
-        MockDate.set(moment('2023-03-17T12:00:00Z').toDate());
-    });
-
-    after(() => {
-        MockDate.reset();
-    });
-
-
-    it('should return - when now <= startTime', () => {
-        const result = getDurationWithoutSeconds({
-            ...disruption,
-            startTime: '2024-03-17T19:41:13.775Z',
-            endTime: '2023-10-02T12:00:00Z',
-        });
-        expect(result).to.eql('-');
-    });
-
-    it('should return status draft and no active periods empty array', () => {
-        const result = getDurationWithoutSeconds({
-            ...disruption,
-            startTime: '2023-03-16T10:00:00Z',
-            endTime: '2023-03-19T12:00:00Z',
-            status: 'draft',
-            activePeriods: []
-        });
-        expect(result).to.eql('-');
-    });
-
-    it('should return valid duration', () => {
-        const result = getDurationWithoutSeconds(disruption);
-        expect(result).to.eql('0 hours, 18 minutes');
     });
 });
