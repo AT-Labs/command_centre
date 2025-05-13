@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { FaExclamation } from 'react-icons/fa';
 import { find } from 'lodash-es';
 import { Button, IconButton } from '@mui/material';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIos';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { SEVERITIES, WEEKDAYS } from '../../../../types/disruptions-types';
 import './DisruptionDetails.scss';
 import {
@@ -12,7 +12,6 @@ import {
     getDurationWithoutSeconds,
     transformIncidentNo,
 } from '../../../../utils/control/disruptions';
-import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../types/disruption-cause-and-effect';
 
 const DisruptionDetails = (props) => {
     const { disruptions, stop, causes, impacts, goToDisruptionSummary } = props;
@@ -85,17 +84,17 @@ const DisruptionDetails = (props) => {
                     </div>
                     <div className="column">
                         <p><strong>Severity</strong></p>
-                        <p>{find(SEVERITIES, { value: disruptions[index].severity ?? '-' }).label}</p>
+                        <p>{find(SEVERITIES, { value: disruptions[index].severity })?.label || '-'}</p>
                     </div>
                 </div>
                 <div className="row">
                     <div className="column">
                         <p><strong>Cause</strong></p>
-                        <p>{(find(causes, { value: disruptions[index].cause }) ?? DEFAULT_CAUSE).label ?? '-'}</p>
+                        <p>{(find(causes, { value: disruptions[index].cause }))?.label || '-'}</p>
                     </div>
                     <div className="column">
                         <p><strong>Effect</strong></p>
-                        <p>{(find(impacts, { value: disruptions[index].impact }) ?? DEFAULT_IMPACT).label ?? '-'}</p>
+                        <p>{(find(impacts, { value: disruptions[index].impact }))?.label || '-'}</p>
                     </div>
                 </div>
                 <div className="row">
@@ -108,7 +107,7 @@ const DisruptionDetails = (props) => {
                         { disruptions[index]?.recurrencePattern?.byweekday?.length > 0 ? (
                             <p>{disruptions[index].recurrencePattern.byweekday.map(day => WEEKDAYS[day]).join(', ')}</p>
                         )
-                            : ('-')}
+                            : (<p>-</p>)}
                     </div>
                 </div>
                 <div className="row">
@@ -136,14 +135,14 @@ const DisruptionDetails = (props) => {
                     disabled={ index === 0 }
                     aria-label="Previous disruption"
                 >
-                    <ArrowBackIosNewIcon />
+                    <ChevronLeftIcon />
                 </IconButton>
                 <IconButton
                     onClick={ handleNext }
                     disabled={ index === disruptions.length - 1 }
                     aria-label="Next disruption"
                 >
-                    <ArrowForwardIosIcon />
+                    <ChevronRightIcon sx={ { fontSize: 20 } } />
                 </IconButton>
             </div>
         </div>

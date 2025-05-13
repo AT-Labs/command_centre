@@ -12,7 +12,7 @@ import {
     getTimesFromStop,
     getAgencyDepotsOptions,
     getRandomPointWithinRadius,
-    addOffsetToIncident,
+    addOffsetToIncident, getDisruptionsUniqueStops,
 } from './helpers';
 
 const time = '2021-11-16 18:43:30.000Z';
@@ -342,5 +342,137 @@ describe('addOffsetToIncident', () => {
 
         const modifiedIncident = addOffsetToIncident(incident);
         expect(modifiedIncident).to.deep.equal(incident);
+    });
+});
+
+describe('getDisruptionsUniqueStops', () => {
+    const disruptions = [
+        {
+            disruptionId: 138304,
+            incidentNo: 'DISR138304',
+            mode: '',
+            affectedEntities: [
+                {
+                    stopId: '3722-c965b636',
+                    stopName: 'Bush Road/William Pickering Drive',
+                    stopCode: '3722',
+                    locationType: 0,
+                    stopLat: -36.75198,
+                    stopLon: 174.70667,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 3,
+                    text: '3722 - Bush Road/William Pickering Drive',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'route',
+                },
+                {
+                    stopId: '8076-bf09e8e8',
+                    stopName: 'Ponsonby Road/Picton Street',
+                    stopCode: '8076',
+                    locationType: 0,
+                    stopLat: -36.85665,
+                    stopLon: 174.74638,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 3,
+                    text: '8076 - Ponsonby Road/Picton Street',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+            ],
+            impact: 'BUS_STOP_MOVED',
+            cause: 'BREAKDOWN',
+            header: 'Disruption - MW',
+            severity: 'SERIOUS',
+        },
+        {
+            disruptionId: 138292,
+            incidentNo: 'DISR138292',
+            mode: '',
+            affectedEntities: [
+                {
+                    stopId: '8075-ec7774a9',
+                    stopName: 'Fitzroy Street',
+                    stopCode: '8075',
+                    locationType: 0,
+                    stopLat: -36.85694,
+                    stopLon: 174.74404,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 3,
+                    text: '8075 - Fitzroy Street',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+                {
+                    stopId: '8076-bf09e8e8',
+                    stopName: 'Ponsonby Road/Picton Street',
+                    stopCode: '8076',
+                    locationType: 0,
+                    stopLat: -36.85665,
+                    stopLon: 174.74638,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 3,
+                    text: '8076 - Ponsonby Road/Picton Street',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+            ],
+            impact: 'BUS_STOP_CLOSED',
+            cause: 'CAPACITY_ISSUE',
+            status: 'in-progress',
+            header: 'Test - non-draft 1',
+            severity: 'SERIOUS',
+        },
+    ];
+
+    it('should return unique stops from disruptions', () => {
+        const expectedUniqueStops = [
+            {
+                stopId: '8076-bf09e8e8',
+                stopName: 'Ponsonby Road/Picton Street',
+                stopCode: '8076',
+                locationType: 0,
+                stopLat: -36.85665,
+                stopLon: 174.74638,
+                parentStation: null,
+                platformCode: null,
+                routeType: 3,
+                text: '8076 - Ponsonby Road/Picton Street',
+                valueKey: 'stopCode',
+                labelKey: 'stopCode',
+                type: 'stop',
+            },
+            {
+                stopId: '8075-ec7774a9',
+                stopName: 'Fitzroy Street',
+                stopCode: '8075',
+                locationType: 0,
+                stopLat: -36.85694,
+                stopLon: 174.74404,
+                parentStation: null,
+                platformCode: null,
+                routeType: 3,
+                text: '8075 - Fitzroy Street',
+                valueKey: 'stopCode',
+                labelKey: 'stopCode',
+                type: 'stop',
+            },
+        ];
+
+        const uniqueStops = getDisruptionsUniqueStops(disruptions);
+        expect(uniqueStops).to.deep.equal(expectedUniqueStops);
     });
 });

@@ -321,11 +321,11 @@ const buildDuration = (disruption) => {
     let duration;
 
     if (now <= startTime) {
-        return '-';
+        return undefined;
     }
 
     if (disruption.status === STATUSES.DRAFT && disruption.activePeriods?.length === 0) {
-        return '-';
+        return undefined;
     }
 
     if (disruption.status === STATUSES.RESOLVED || endTime <= now) {
@@ -355,14 +355,14 @@ const buildDuration = (disruption) => {
 
 export const getDuration = (disruption) => {
     const duration = buildDuration(disruption);
-    if (duration === '-') return duration;
+    if (!duration) return '-';
     const { hours, minutes, seconds } = duration;
     return `${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
 };
 
 export const getDurationWithoutSeconds = (disruption) => {
     const duration = buildDuration(disruption);
-    if (duration === '-') return duration;
+    if (!duration) return '-';
     const { hours, minutes } = duration;
     return `${hours} hours, ${minutes} minutes`;
 };
