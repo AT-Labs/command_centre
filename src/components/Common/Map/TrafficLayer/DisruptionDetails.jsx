@@ -26,14 +26,11 @@ const DisruptionDetails = (props) => {
     };
 
     const getUniqueRouteNames = (disruption) => {
-        if (!disruption?.affectedEntities?.length) return '-';
-        const routes = [...new Set(
-            disruption.affectedEntities
-                .map(entity => entity?.routeShortName)
-                .filter(routeShortName => routeShortName && routeShortName.trim() !== ''),
-        )].join(', ');
+        const routes = disruption?.affectedEntities
+            ?.map(entity => entity?.routeShortName?.trim())
+            ?.filter(Boolean);
 
-        return routes.length > 0 ? routes : '-';
+        return routes?.length ? [...new Set(routes)].join(', ') : '-';
     };
 
     return (

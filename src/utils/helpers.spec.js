@@ -388,6 +388,21 @@ describe('getDisruptionsUniqueStops', () => {
                     labelKey: 'stopCode',
                     type: 'stop',
                 },
+                {
+                    stopId: '8090-bf09e8e8',
+                    stopName: 'Ponsonby Road/Picton Street',
+                    stopCode: '8090',
+                    locationType: 0,
+                    stopLat: -36.85665,
+                    stopLon: 174.74638,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 3,
+                    text: '8090 - Ponsonby Road',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'route',
+                },
             ],
             impact: 'BUS_STOP_MOVED',
             cause: 'BREAKDOWN',
@@ -474,5 +489,20 @@ describe('getDisruptionsUniqueStops', () => {
 
         const uniqueStops = getDisruptionsUniqueStops(disruptions);
         expect(uniqueStops).to.deep.equal(expectedUniqueStops);
+    });
+
+    it('should return an empty array when no disruptions are provided', () => {
+        const uniqueStops = getDisruptionsUniqueStops([]);
+        expect(uniqueStops).to.deep.equal([]);
+    });
+
+    it('should return an empty array when disruptions have no stops', () => {
+        const uniqueStops = getDisruptionsUniqueStops([
+            {
+                ...disruptions[0],
+                affectedEntities: disruptions[0].affectedEntities.filter(entity => entity.type !== 'stop'),
+            }]);
+
+        expect(uniqueStops).to.deep.equal([]);
     });
 });
