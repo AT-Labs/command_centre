@@ -9,7 +9,7 @@ import ACTION_TYPE from '../../../redux/action-types';
 import { isDisruptionsQueryValid } from '../../../utils/realtimeMap';
 import {
     DisruptionFilter,
-    DisruptionFilterCategories,
+    DisruptionFilterCategories, mapFiltersToStatuses,
     readUrlToDisruptionLayer,
     updateUrlFromDisruptionsLayer,
 } from './DisruptionFilter';
@@ -98,7 +98,7 @@ describe('<DisruptionFilter />', () => {
     it('should render the correct number of filter categories', () => {
         store = createMockedStore({
             showDisruptions: true,
-            selectedDisruptionFilters: [...DisruptionFilterCategories],
+            selectedDisruptionFilters: DisruptionFilterCategories,
         });
         const wrapper = renderDisruptionFilterWithStore(store);
         expect(wrapper.find('Input').length).toBe(DisruptionFilterCategories.length);
@@ -107,7 +107,7 @@ describe('<DisruptionFilter />', () => {
     it('should dispatch updateSelectedDisruptionFilters action when a filter is toggled', () => {
         store = createMockedStore({
             showDisruptions: true,
-            selectedDisruptionFilters: [...DisruptionFilterCategories],
+            selectedDisruptionFilters: DisruptionFilterCategories,
         });
         const wrapper = renderDisruptionFilterWithStore(store);
 
@@ -178,7 +178,7 @@ describe('updateUrlFromDisruptionsLayer', () => {
         },
         {
             description: 'should update the URL with all selected disruptions filters',
-            selectedDisruptionFilters: [DisruptionFilterCategories],
+            selectedDisruptionFilters: DisruptionFilterCategories,
             expectedUrl: 'disruptions=Active,Planned',
         },
         {
@@ -194,6 +194,33 @@ describe('updateUrlFromDisruptionsLayer', () => {
 
             updateUrlFromDisruptionsLayer(selectedDisruptionFilters, searchParams);
             expect(decodeURIComponent(searchParams.toString())).toBe(expectedUrl);
+        });
+    });
+});
+
+describe('mapFiltersToStatuses', () => {
+    const testCases = [
+        {
+            description: 'should return all statuses for all filters',
+            selectedDisruptionFilters: DisruptionFilterCategories,
+            expectedStatuses: ['in-progress', 'not-started'],
+        },
+        {
+            description: 'should return empty array of statuses if filters are empty',
+            selectedDisruptionFilters: [],
+            expectedStatuses: [],
+        },
+        {
+            description: 'should return array with only one status when filter is single',
+            selectedDisruptionFilters: [DisruptionFilterCategories[0]],
+            expectedStatuses: ['in-progress'],
+        },
+    ];
+
+    testCases.forEach(({ description, selectedDisruptionFilters, expectedStatuses }) => {
+        it(description, () => {
+            const result = mapFiltersToStatuses(selectedDisruptionFilters);
+            expect(result).toStrictEqual(expectedStatuses);
         });
     });
 });
