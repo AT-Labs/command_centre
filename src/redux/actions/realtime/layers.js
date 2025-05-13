@@ -26,6 +26,9 @@ export const updateShowRouteAlerts = payload => ({ type: ACTION_TYPE.UPDATE_SHOW
 export const updateShowAllRouteAlerts = payload => ({ type: ACTION_TYPE.UPDATE_SHOW_ALL_ROUTE_ALERTS, payload });
 export const updateSelectedRouteAlerts = payload => ({ type: ACTION_TYPE.UPDATE_SELECTED_ROUTE_ALERTS, payload });
 
+export const updateShowDisruptions = payload => ({ type: ACTION_TYPE.UPDATE_SHOW_DISRUPTIONS, payload });
+export const updateSelectedDisruptionFilters = payload => ({ type: ACTION_TYPE.UPDATE_SELECTED_DISRUPTION_FILTERS, payload });
+
 // Roadworks
 export const updateShowRoadworks = payload => ({ type: ACTION_TYPE.UPDATE_SHOW_ROADWORKS, payload });
 export const updateSelectedRoadworksFilters = payload => ({ type: ACTION_TYPE.UPDATE_SELECTED_ROADWORKS_FILTERS, payload });
