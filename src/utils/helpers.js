@@ -182,11 +182,3 @@ export const addOffsetToIncident = (incident) => {
     }
     return incident;
 };
-
-export const getDisruptionsUniqueStops = (disruptions) => {
-    const seenStopCodes = new Set();
-    return disruptions.flatMap(disruption => disruption.affectedEntities
-        .filter(entity => entity.type === 'stop' && !seenStopCodes.has(entity.stopCode) && seenStopCodes.add(entity.stopCode)));
-};
-
-export const getDisruptionsByStop = (disruptions, stop) => disruptions.filter(disruption => disruption.affectedEntities.some(entity => entity.stopCode === stop.stopCode));

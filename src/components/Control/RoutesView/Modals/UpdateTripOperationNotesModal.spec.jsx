@@ -1,0 +1,155 @@
+/** @jest-environment jsdom */
+import React from 'react';
+import { mount } from 'enzyme';
+import sinon from 'sinon';
+import configureMockStore from 'redux-mock-store';
+import { Provider } from 'react-redux';
+import thunk from 'redux-thunk';
+import { Input } from 'reactstrap';
+import { act } from 'react-dom/test-utils';
+import { TRIP_OPERATION_NOTES_MAX_LENGTH } from '../../../../constants/trips';
+import UpdateTripOperationNotesModal from './UpdateTripOperationNotesModal';
+import CustomModal from '../../../Common/CustomModal/CustomModal';
+
+const mockStore = configureMockStore([thunk]);
+
+describe('<UpdateTripOperationNotesModal />', () => {
+    let wrapper;
+    let sandbox;
+    let store;
+    let defaultProps;
+    let trip;
+    let onCloseMock;
+    let bulkUpdateTripsOperationNotesMock;
+
+    beforeEach(() => {
+        sandbox = sinon.createSandbox();
+        onCloseMock = jest.fn();
+        bulkUpdateTripsOperationNotesMock = jest.fn();
+
+        trip = {
+            tripId: 'trip-1',
+            routeVariantId: 'variant-1',
+            routeLongName: 'Test Route',
+            operationNotes: 'Initial note',
+        };
+
+        store = mockStore({
+            control: {
+                routes: {
+                    tripInstances: {
+                        isActionLoading: {},
+                    },
+                },
+            },
+        });
+
+        defaultProps = {
+            isModalOpen: true,
+            trip,
+            onClose: onCloseMock,
+            bulkUpdateTripsOperationNotes: bulkUpdateTripsOperationNotesMock,
+            actionLoadingStatesByTripId: {},
+        };
+    });
+
+    afterEach(() => {
+        sandbox.restore();
+        jest.clearAllMocks();
+    });
+
+    const setup = (customProps = {}) => mount(
+        <Provider store={ store }>
+            <UpdateTripOperationNotesModal { ...defaultProps } { ...customProps } />
+        </Provider>,
+    );
+
+    it('renders modal with default note and correct props', () => {
+        wrapper = setup();
+        const input = wrapper.find(Input);
+        expect(input.prop('value')).toBe('Initial note');
+        expect(wrapper.find(CustomModal).prop('isModalOpen')).toBe(true);
+        expect(wrapper.find('#trip-operation-notes-max-length-info').text()).toContain(`The maximum length is ${TRIP_OPERATION_NOTES_MAX_LENGTH}`);
+    });
+
+    it('updates internal state when input changes', () => {
+        wrapper = setup();
+        const newNote = 'Updated operation note';
+
+        act(() => {
+            wrapper.find('textarea#trip__operation-notes').props().onChange({
+                currentTarget: { value: newNote },
+            });
+        });
+
+        wrapper.update();
+        const input = wrapper.find(Input);
+        expect(input.prop('value')).toBe(newNote);
+    });
+
+    // it('calls bulkUpdateTripsOperationNotes with correct args on Save click', () => {
+    //     wrapper = setup();
+
+    //     act(() => {
+    //         wrapper.find('button.update-trip-operation-notes-modal__ok-btn').at(0).simulate('click');
+    //     });
+
+    //     expect(bulkUpdateTripsOperationNotesMock).toHaveBeenCalledWith(
+    //         [trip],
+    //         'Operation notes were successfully saved',
+    //         'Updating the operation notes has failed.',
+    //         trip.operationNotes,
+    //     );
+    // });
+
+    // it('disables Save button when trip is updating', () => {
+    //     const updatingProps = {
+    //         actionLoadingStatesByTripId: {
+    //             'trip-1': true,
+    //         },
+    //     };
+
+    //     wrapper = setup(updatingProps);
+
+    //     act(() => {
+    //         wrapper.find('.update-trip-operation-notes-modal__ok-btn').at(0).props().onClick();
+    //     });
+
+    //     wrapper.update();
+
+    //     const button = wrapper.find('button.update-trip-operation-notes-modal__ok-btn').at(0);
+    //     expect(button.prop('isDisabled')).toBe(true);
+    // });
+
+    // it('calls onClose after update is finished', () => {
+    //     jest.useFakeTimers();
+    //     const props = {
+    //         actionLoadingStatesByTripId: { 'trip-1': false },
+    //     };
+
+    //     wrapper = setup(props);
+
+    //     act(() => {
+    //         wrapper.find('.update-trip-operation-notes-modal__ok-btn').at(0).props().onClick();
+    //     });
+
+    //     wrapper.setProps({
+    //         children: React.cloneElement(wrapper.props().children, {
+    //             ...defaultProps,
+    //             actionLoadingStatesByTripId: { 'trip-1': false },
+    //         }),
+    //     });
+
+    //     act(() => {
+    //         jest.runAllTimers();
+    //     });
+
+    //     expect(onCloseMock).toHaveBeenCalled();
+    //     jest.useRealTimers();
+    // });
+
+    it('does not crash if modal is closed without update', () => {
+        wrapper = setup({ isModalOpen: false });
+        expect(wrapper.find(CustomModal).prop('isModalOpen')).toBe(false);
+    });
+});

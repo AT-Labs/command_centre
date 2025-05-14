@@ -271,6 +271,12 @@ export const updateTripInstanceOnHold = (options, successMessage, actionType, er
     dispatch,
 );
 
+export const updateTripInstanceOperationNotes = (options, successMessage, actionType, errorMessage) => dispatch => handleTripInstanceUpdate(
+    () => TRIP_MGT_API.updateTripOperationNotes(options),
+    { ...options, successMessage, actionType, errorMessage },
+    dispatch,
+);
+
 export const updateTripInstanceDelay = (options, successMessage) => (dispatch) => {
     handleTripInstanceUpdate(
         () => TRIP_MGT_API.updateTripDelay(options),
@@ -400,6 +406,21 @@ export const bulkUpdateTripsOnHold = (operateTrips, successMessage, errorMessage
     const action = trip => updateTripInstanceOnHold(
         {
             onHold,
+            tripId: trip.tripId,
+            startTime: trip.startTime,
+            serviceDate: trip.serviceDate,
+        },
+        successMessage,
+        MESSAGE_ACTION_TYPES.bulkStatusUpdate,
+        errorMessage,
+    );
+    await dispatch(bulkTripInstanceActions(operateTrips, action, {}));
+};
+
+export const bulkUpdateTripsOperationNotes = (operateTrips, successMessage, errorMessage, OperationNotes) => async (dispatch) => {
+    const action = trip => updateTripInstanceOperationNotes(
+        {
+            OperationNotes,
             tripId: trip.tripId,
             startTime: trip.startTime,
             serviceDate: trip.serviceDate,
