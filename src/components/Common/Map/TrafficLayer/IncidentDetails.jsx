@@ -66,7 +66,7 @@ const IncidentDetails = props => (
 );
 
 IncidentDetails.propTypes = {
-    incident: PropTypes.isRequired,
+    incident: PropTypes.object.isRequired,
 };
 
 export default IncidentDetails;
