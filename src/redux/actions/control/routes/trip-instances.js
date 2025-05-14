@@ -426,7 +426,7 @@ export const bulkUpdateTripsOperationNotes = (operateTrips, successMessage, erro
             serviceDate: trip.serviceDate,
         },
         successMessage,
-        MESSAGE_ACTION_TYPES.bulkStatusUpdate,
+        MESSAGE_ACTION_TYPES.tripOperationNotesUpdate,
         errorMessage,
     );
     await dispatch(bulkTripInstanceActions(operateTrips, action, {}));
