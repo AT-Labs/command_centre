@@ -17,7 +17,6 @@ import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api
 import { generateUniqueColor, isAffectedStop, createAffectedStop, getUniqueStops, createModifiedRouteVariant, canMerge } from './DiversionHelper';
 import { mergeCoordinates, parseWKT, toWKT } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
 import dateTypes from '../../../../types/date-types';
-import EDIT_TYPE from '../../../../types/edit-types';
 
 const CreateDiversion = (props) => {
     const SERVICE_DATE_FORMAT = 'YYYYMMDD';
@@ -74,14 +73,6 @@ const CreateDiversion = (props) => {
             };
             const response = await searchRouteVariants(search);
             setRouteVariantsList(response.routeVariants);
-            // Select the base route in edit mode
-            if (props.editMode === EDIT_TYPE.EDIT && props.diversion) {
-                const baseRouteVariantId = props.diversion.diversionRouteVariants[0].routeVariantId;
-                const baseRouteVariant = response.routeVariants.find(rv => rv.routeVariantId === baseRouteVariantId);
-                if (baseRouteVariant) {
-                    setSelectedBaseRouteVariant(baseRouteVariant);
-                }
-            }
         } catch {
             setRouteVariantsList([]);
         }
@@ -427,8 +418,6 @@ const CreateDiversion = (props) => {
 };
 
 CreateDiversion.propTypes = {
-    editMode: PropTypes.string,
-    diversion: PropTypes.object,
     createDiversion: PropTypes.func.isRequired,
     resetDiversionCreation: PropTypes.func.isRequired,
     disruption: PropTypes.object,
@@ -437,8 +426,6 @@ CreateDiversion.propTypes = {
 };
 
 CreateDiversion.defaultProps = {
-    editMode: EDIT_TYPE.CREATE,
-    diversion: null,
     disruption: null,
     onCancelled: null,
     creationState: {

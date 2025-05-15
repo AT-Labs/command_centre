@@ -15,7 +15,7 @@ const RouteShapeEditor = (props) => {
     const [center, setCenter] = useState([-36.8485, 174.7633]);
     const [originalShape, setOriginalShape] = useState(props.routeVariant?.shapeWkt);
     const [originalCoords, setOriginalCoords] = useState([]);
-    const [updatedCoords, setUpdatedCoords] = useState(props.initialShape ? parseWKT(props.initialShape) : []); // For editing mode
+    const [updatedCoords, setUpdatedCoords] = useState([]);
     const [diversionPolyline, setDiversionPolyline] = useState([]);
     const [editablePolyline, setEditablePolyline] = useState([]);
     const [isEditablePolylineVisible, setIsEditablePolylineVisible] = useState(true);
@@ -207,7 +207,6 @@ const RouteShapeEditor = (props) => {
 
 RouteShapeEditor.propTypes = {
     routeVariant: PropTypes.object,
-    initialShape: PropTypes.string,
     highlightedStops: PropTypes.array,
     visible: PropTypes.bool,
     additionalRouteVariants: PropTypes.array,
@@ -218,7 +217,6 @@ RouteShapeEditor.propTypes = {
 RouteShapeEditor.defaultProps = {
     visible: true,
     routeVariant: {},
-    initialShape: null,
     highlightedStops: [],
     additionalRouteVariants: [],
     stopCheckRadius: 20,

@@ -1,29 +1,6 @@
 import ACTION_TYPE from '../../action-types';
 import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
 
-export const openCreateDiversion = isCreateDiversionEnabled => (dispatch) => {
-    dispatch({
-        type: ACTION_TYPE.OPEN_CREATE_DIVERSION,
-        payload: {
-            isCreateDiversionEnabled,
-        },
-    });
-};
-
-export const updateDiversionMode = editMode => ({
-    type: ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE,
-    payload: {
-        diversionEditMode: editMode,
-    },
-});
-
-export const updateDiversionToEdit = diversionToEdit => ({
-    type: ACTION_TYPE.UPDATE_DIVERSION_TO_EDIT,
-    payload: {
-        diversionToEdit,
-    },
-});
-
 export const updateDiversionCreationState = (isLoading, diversionId, error) => ({
     type: ACTION_TYPE.UPDATE_DIVERSION_CREATION_STATE,
     payload: {
