@@ -193,8 +193,10 @@ function RealTimeView(props) {
         };
         try {
             const data = await disruptionApi.getDisruptionsByFilters(filters);
-            setDisruptions(data.disruptions);
-            setDisruptionStops(getDisruptionsUniqueStops(data.disruptions));
+            setDisruptions(prev => (isEqual(prev, data.disruptions) ? prev : data.disruptions));
+
+            const newStops = getDisruptionsUniqueStops(data.disruptions);
+            setDisruptionStops(prev => (isEqual(prev, newStops) ? prev : newStops));
         } catch {
             setDisruptions([]);
             setDisruptionStops([]);

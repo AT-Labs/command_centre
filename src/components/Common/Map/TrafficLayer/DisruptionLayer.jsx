@@ -17,6 +17,8 @@ export const DisruptionLayer = (props) => {
     const causes = useAlertCauses();
     const impacts = useAlertEffects();
 
+    const getCoordinates = stop => [stop.stopLat, stop.stopLon];
+
     const handleGetClusterIcon = cluster => new L.DivIcon({
         className: 'incident-market-cluster',
         html: `<div style="background-color: magenta; opacity: 0.7; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; color: white;">${cluster.getChildCount()}</div>`,
@@ -27,7 +29,7 @@ export const DisruptionLayer = (props) => {
             <React.Fragment key={ stop.stopCode }>
                 <DisruptionMarker
                     key={ generateUniqueID() }
-                    stop={ stop }
+                    coordinates={ getCoordinates(stop) }
                 >
                     <Popup
                         direction="top"

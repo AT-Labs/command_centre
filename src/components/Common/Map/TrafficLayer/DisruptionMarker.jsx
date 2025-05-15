@@ -7,9 +7,7 @@ import { FaExclamation } from 'react-icons/fa';
 import './DisruptionMarker.scss';
 import { generateUniqueID } from '../../../../utils/helpers';
 
-const getCoordinates = stop => [stop.stopLat, stop.stopLon];
-
-const DisruptionMarker = (({ stop, offset, className, ...props }) => (
+const DisruptionMarker = (({ coordinates, className, ...props }) => (
     <Marker
         { ...props }
         key={ generateUniqueID() }
@@ -25,18 +23,16 @@ const DisruptionMarker = (({ stop, offset, className, ...props }) => (
             iconAnchor: [14, 44],
             className,
         }) }
-        position={ getCoordinates(stop) }
+        position={ coordinates }
     />
 ));
 
 DisruptionMarker.propTypes = {
-    stop: PropTypes.object.isRequired,
-    offset: PropTypes.array,
+    coordinates: PropTypes.array.isRequired,
     className: PropTypes.string,
 };
 
 DisruptionMarker.defaultProps = {
-    offset: undefined,
     className: undefined,
 };
 
