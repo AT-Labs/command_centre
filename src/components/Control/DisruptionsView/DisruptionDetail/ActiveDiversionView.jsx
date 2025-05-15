@@ -31,7 +31,7 @@ const gridColumns = [
     { field: 'directionId', headerName: 'Direction', width: 180, align: 'left', renderCell: createRenderCell('directionId') },
 ];
 
-const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiversion, incidentNo }) => {
+const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiversion, editDiversion, incidentNo }) => {
     const getShortRouteId = routeId => routeId.split('-')[0];
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [selectedDiversionId, setSelectedDiversionId] = useState(null);
@@ -43,6 +43,10 @@ const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiv
     const handleDeleteDiversionConfirm = (selectedDiversionIdToDelete) => {
         deleteDiversion(selectedDiversionIdToDelete);
         setDeleteDialogOpen(false);
+    };
+
+    const handleEditRequest = (diversion) => {
+        editDiversion(diversion);
     };
 
     const renderHeader = diversion => (
@@ -74,7 +78,7 @@ const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiv
             </span>
             <span className="d-flex" data-testid="active-diversion-actions">
                 {/* eslint-disable-next-line no-console */}
-                <IconButton onClick={ () => console.log('Handle edit in another ticket!') } data-testid="edit-diversion-icon-button">
+                <IconButton onClick={ () => handleEditRequest(diversion) } data-testid="edit-diversion-icon-button">
                     <CreateIcon />
                 </IconButton>
                 <IconButton onClick={ () => handleDeleteRequest(diversion) } data-testid="delete-diversion-icon-button">
@@ -139,6 +143,7 @@ ActiveDiversionView.propTypes = {
     expandedRows: PropTypes.object.isRequired,
     toggleExpand: PropTypes.func.isRequired,
     deleteDiversion: PropTypes.func.isRequired,
+    editDiversion: PropTypes.func.isRequired,
     incidentNo: PropTypes.string.isRequired,
 };
 

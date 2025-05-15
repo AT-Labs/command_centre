@@ -129,7 +129,6 @@ const handleUpdateDisruptionFilters = (state, { payload: { filters } }) => ({ ..
 const handleDatagridConfig = (state, action) => ({ ...state, datagridConfig: { ...state.datagridConfig, ...action.payload } });
 
 const handleOpenCreateDiversion = (state, { payload: { isCreateDiversionEnabled } }) => ({ ...state, isCreateDiversionEnabled });
-const handleUpdateDiversionEditMode = (state, { payload: { diversionEditMode } }) => ({ ...state, diversionEditMode });
 
 export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_PERMISSIONS]: handleDisruptionsPermissionsUpdate,
@@ -161,5 +160,4 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_DISRUPTION_FILTERS]: handleUpdateDisruptionFilters,
     [ACTION_TYPE.UPDATE_DISRUPTION_DATAGRID_CONFIG]: handleDatagridConfig,
     [ACTION_TYPE.OPEN_CREATE_DIVERSION]: handleOpenCreateDiversion,
-    [ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE]: handleUpdateDiversionEditMode,
 }, INIT_STATE);

@@ -31,14 +31,4 @@ describe('IncidentItem Component', () => {
         wrapper.find(Input).simulate('change');
         expect(mockOnChange).toHaveBeenCalled();
     });
-
-    it('should apply the new-colors class when useNewColors is true', () => {
-        wrapper.setProps({ useNewColors: true });
-        expect(wrapper.find('.icon-container').hasClass('new-colors')).toBe(true);
-    });
-
-    it('should not apply the new-colors class when useNewColors is false', () => {
-        wrapper.setProps({ useNewColors: false });
-        expect(wrapper.find('.icon-container').hasClass('new-colors')).toBe(false);
-    });
 });

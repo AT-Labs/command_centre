@@ -1,6 +1,6 @@
 import ACTION_TYPE from '../../action-types';
 import VIEW_TYPE from '../../../types/view-types';
-import { updateActiveControlEntityId, updateControlDetailView, updateMainView, updateQueryParams } from '../navigation';
+import { updateControlDetailView, updateMainView, updateQueryParams } from '../navigation';
 import { mergeRouteFilters } from './routes/filters';
 import { setActiveRoute } from './routes/routes';
 import { setActiveRouteVariant } from './routes/routeVariants';
@@ -76,11 +76,4 @@ export const goToDisruptionsView = (message, { setActiveDisruption }) => (dispat
     dispatch(updateMainView(VIEW_TYPE.MAIN.CONTROL));
     dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS));
     if (setActiveDisruption) dispatch(updateActiveDisruptionId(message.incidentId));
-};
-
-export const goToDisruptionSummary = (message, { setActiveDisruption }) => (dispatch) => {
-    dispatch(updateMainView(VIEW_TYPE.MAIN.CONTROL));
-    dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS));
-    dispatch(updateActiveControlEntityId(message.disruptionId.toString()));
-    if (setActiveDisruption) dispatch(updateActiveDisruptionId(message.disruptionId));
 };

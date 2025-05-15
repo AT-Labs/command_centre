@@ -7,7 +7,6 @@ import DisruptionDetail from './DisruptionDetail';
 import Loader from '../../../Common/Loader/Loader';
 import {
     clearDisruptionActionResult,
-    openCreateDiversion,
     updateDisruptionsPermissions,
 } from '../../../../redux/actions/control/disruptions';
 import { getDisruptionAction, isDisruptionUpdateAllowed, isDiversionCreationOpen } from '../../../../redux/selectors/control/disruptions';
@@ -17,6 +16,7 @@ import { getDisruption as getDisruptionAPI } from '../../../../utils/transmitter
 import { transformIncidentNo } from '../../../../utils/control/disruptions';
 import { DISRUPTION_POLLING_INTERVAL } from '../../../../constants/disruptions';
 import CreateDiversion from '../DiversionCreation';
+import { openCreateDiversion } from '../../../../redux/actions/control/diversions';
 
 const DisruptionDetailsPage = (props) => {
     const { resultStatus, resultMessage, resultDisruptionId, resultCreateNotification, isCopied } = props;

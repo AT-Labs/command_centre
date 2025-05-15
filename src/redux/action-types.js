@@ -80,8 +80,6 @@ export default {
     UPDATE_SHOW_ROUTE_ALERTS: 'update-show-route-alerts',
     UPDATE_SHOW_ALL_ROUTE_ALERTS: 'update-show-all-route-alerts',
     UPDATE_SELECTED_ROUTE_ALERTS: 'update-selected-route-alerts',
-    UPDATE_SHOW_DISRUPTIONS: 'update-show-disruptions',
-    UPDATE_SELECTED_DISRUPTION_FILTERS: 'update-selected-disruption-filters',
     // Roadworks Layers
     RESET_SHOW_ROADWORKS: 'reset-show-roadworks',
     UPDATE_SHOW_ROADWORKS: 'update-show-roadworks',
@@ -245,6 +243,7 @@ export default {
     UPDATE_DISRUPTION_FILTERS: 'update-disruption-filters',
     UPDATE_DISRUPTION_DATAGRID_CONFIG: 'update-disruption-datagrid-config',
     UPDATE_DIVERSION_EDIT_MODE: 'update-diversion-edit-mode',
+    UPDATE_DIVERSION_TO_EDIT: 'update-diversion-to-edit',
     OPEN_CREATE_DIVERSION: 'open-create-diversion',
     ADD_DIVERSION: 'add-diversion',
     UPDATE_DIVERSION_CREATION_STATE: 'update-diversion-creation-state',
