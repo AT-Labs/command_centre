@@ -6,7 +6,6 @@ import sinon from 'sinon';
 import { shallow } from 'enzyme';
 
 import { TripView } from './TripView';
-import { useTripOperationNotes } from '../../../redux/selectors/appSettings';
 
 const busTrip = {
     tripId: 'test1',
@@ -145,6 +144,23 @@ describe('<TripView />', () => {
             });
         });
 
+        context('When trip is NOT STARTED and user dont have persmission for the action', () => {
+            const trip = { ...busTrip, status: 'NOT_STARTED', _links: { permissions: [{ _rel: 'delay' }, { _rel: 'advancer' }] } };
+            let result;
+            beforeEach(() => {
+                wrapper = setup({ tripInstance: trip, useHoldTrip: true });
+                result = wrapper.instance().getButtonBarConfig(trip);
+            });
+
+            it('should not contain Cancel trip button', () => {
+                expect(find(result, { label: 'Cancel trip' })).to.be.undefined;
+            });
+
+            it('should not contain Hold button', () => {
+                expect(find(result, { label: 'Hold trip' })).to.be.undefined;
+            });
+        });
+
         context('When trip is IN PROGRESS', () => {
             const trip = { ...busTrip, status: 'IN_PROGRESS', _links: { permissions: [{ _rel: 'cancel' }, { _rel: 'delay' }, { _rel: 'advancer' }] } };
             let result;
@@ -269,35 +285,6 @@ describe('<TripView />', () => {
 
             it('should be empty', () => {
                 expect(isEmpty(result)).to.be.true;  // eslint-disable-line
-            });
-        });
-
-        context("Check add operation notes button for all mode", () => {
-            const trip = {
-                ...busTrip,
-                status: "NOT_STARTED",
-                _links: {
-                    permissions: [{ _rel: "cancel" }, { _rel: "delay" }],
-                },
-                operationNotes: "this is a fake operation notes for test",
-            };
-            let result;
-            beforeEach(() => {
-                wrapper = setup({
-                    tripInstance: trip,
-                    serviceDate: moment().format(),
-                    useTripOperationNotes: true,
-                });
-                result = wrapper.instance().getButtonBarConfig(trip);
-            });
-
-            it("should contain some buttons", () => {
-                expect(isEmpty(result)).to.be.false;
-            });
-
-            it("should contain add operation notes button", () => {
-                expect(find(result, { label: "Operation notes" })).to.not.be
-                    .undefined;
             });
         });
     });
