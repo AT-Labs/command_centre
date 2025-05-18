@@ -9,6 +9,7 @@ import {
     searchTrip,
     updateStopStatus,
     updateTripOnHold,
+    updateTripOperationNotes,
 } from './trip-mgt-api';
 import * as graphql from '../graphql';
 import * as auth from '../../auth';
@@ -216,6 +217,13 @@ describe('Operation result', () => {
         const options = { ...tripId, onHold: true };
         mutateStatic.mockResolvedValue({ data: { updateTripOnHold: options } });
         const result = await updateTripOnHold(options);
+        expect(result).toEqual(options);
+    });
+
+    it('Should get updateTripOperationNotes from response after sending updateTripOperationNotes', async () => {
+        const options = { ...tripId, OperationNotes: 'Notes' };
+        mutateStatic.mockResolvedValue({ data: { updateTripOperationNotes: options } });
+        const result = await updateTripOperationNotes(options);
         expect(result).toEqual(options);
     });
 });
