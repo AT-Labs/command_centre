@@ -710,6 +710,59 @@ describe('Trip instances actions', () => {
         expect(store.getActions()).to.eql(expectedActions);
     });
 
+    it('bulk updates trips operation notes', async () => {
+        const fakeUpdateTripNotes = sandbox.fake.resolves(mockTrip);
+        sandbox.stub(tripMgtApi, 'updateTripOperationNotes').callsFake(fakeUpdateTripNotes);
+        
+        const operateTrips = {
+            [mockTrip.tripId]: {
+                tripId: mockTrip.tripId,
+                serviceDate: '20190608',
+                startTime: '10:00:00',
+            }
+        };
+        
+        const successMessage = 'Operation notes successfully updated';
+        const errorMessage = 'Failed to update operation notes';
+        const operationNotes = 'This is a bulk update test note';
+        const tripInstanceId = getTripInstanceId(mockTrip);
+    
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
+                payload: { tripId: tripInstanceId, isLoading: true },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCE_ENTRY,
+                payload: { tripInstance: mockTrip },
+            },
+            {
+                type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
+                payload: {
+                    actionType: MESSAGE_ACTION_TYPES.tripOperationNotesUpdate,
+                    id: 'actionResult9',
+                    body: successMessage,
+                    type: CONFIRMATION_MESSAGE_TYPE,
+                    tripId: tripInstanceId,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
+                payload: { tripId: tripInstanceId, isLoading: false },
+            },
+        ];
+    
+        await store.dispatch(bulkUpdateTripsOperationNotes(operateTrips, successMessage, errorMessage, operationNotes));
+        
+        expect(store.getActions()).to.eql(expectedActions);
+        expect(fakeUpdateTripNotes).to.have.been.calledWith({
+            OperationNotes: operationNotes,
+            tripId: mockTrip.tripId,
+            serviceDate: '20190608',
+            startTime: '10:00:00',
+        });
+    });
+
     it('gets all trips filtered for the datagrid', async () => {
         const fakeGetTrips = sandbox.fake.resolves(mockTrips);
         sandbox.stub(tripMgtApi, 'getTrips').callsFake(fakeGetTrips);
