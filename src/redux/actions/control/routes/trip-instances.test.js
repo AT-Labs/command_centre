@@ -9,7 +9,7 @@ import {
     fetchTripInstances, clearActiveTripInstanceId, updateActiveTripInstanceId, collectTripsDataAndUpdateTripsStatus,
     updateTripInstanceStatus, updateTripInstanceStopStatus, updateTripInstanceStopPlatform, updateTripInstanceDelay, filterTripInstances, updateDestination,
     updateEnabledAddTripModal, updateCurrentStepHandler, updateAddTripDatagridConfig, updateSelectedAddTrip, resetAddTripStep,
-    getFilters, updateTripInstanceOperationNotes
+    getFilters, updateTripInstanceOperationNotes, bulkUpdateTripsOperationNotes
 } from './trip-instances';
 import * as tripMgtApi from '../../../../utils/transmitters/trip-mgt-api';
 import * as blockMgtApi from '../../../../utils/transmitters/block-mgt-api';
