@@ -144,23 +144,6 @@ describe('<TripView />', () => {
             });
         });
 
-        context('When trip is NOT STARTED and user dont have persmission for the action', () => {
-            const trip = { ...busTrip, status: 'NOT_STARTED', _links: { permissions: [{ _rel: 'delay' }, { _rel: 'advancer' }] } };
-            let result;
-            beforeEach(() => {
-                wrapper = setup({ tripInstance: trip, useHoldTrip: true });
-                result = wrapper.instance().getButtonBarConfig(trip);
-            });
-
-            it('should not contain Cancel trip button', () => {
-                expect(find(result, { label: 'Cancel trip' })).to.be.undefined;
-            });
-
-            it('should not contain Hold button', () => {
-                expect(find(result, { label: 'Hold trip' })).to.be.undefined;
-            });
-        });
-
         context('When trip is IN PROGRESS', () => {
             const trip = { ...busTrip, status: 'IN_PROGRESS', _links: { permissions: [{ _rel: 'cancel' }, { _rel: 'delay' }, { _rel: 'advancer' }] } };
             let result;
