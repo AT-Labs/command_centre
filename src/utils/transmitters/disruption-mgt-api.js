@@ -119,3 +119,18 @@ export const addDiversion = (diversion) => {
         },
     ).then(response => jsonResponseHandling(response));
 };
+
+export const updateDiversion = (diversion) => {
+    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/diversions/${diversion.diversionId}`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: PUT,
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(diversion),
+        },
+    ).then(response => jsonResponseHandling(response));
+};
