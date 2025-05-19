@@ -36,6 +36,5 @@
     "useDisruptionDraftEmailSharing": "false",
     "useDiversion": "false",
     "useHideSkippedStop": "false",
-    "useHoldTrip": "false",
-    "useParentChildIncident": "false"
+    "useHoldTrip": "false"
 }

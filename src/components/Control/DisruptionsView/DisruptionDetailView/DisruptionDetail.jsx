@@ -46,8 +46,6 @@ import {
     uploadDisruptionFiles,
     deleteDisruptionFile,
     updateDisruption,
-    updateDiversionMode,
-    openCreateDiversion,
     publishDraftDisruption,
 } from '../../../../redux/actions/control/disruptions';
 import {
@@ -104,6 +102,7 @@ import { shareToEmail } from '../../../../utils/control/disruption-sharing';
 
 import '../DisruptionDetail/styles.scss';
 import { ViewDiversionDetailModal } from '../DisruptionDetail/ViewDiversionDetailModal';
+import { updateDiversionMode, openDiversionManager, updateDiversionToEdit } from '../../../../redux/actions/control/diversions';
 
 const { STOP } = SEARCH_RESULT_TYPE;
 
@@ -445,7 +444,13 @@ const DisruptionDetailView = (props) => {
 
     const addDiversion = () => {
         props.actions.updateDiversionMode(EDIT_TYPE.CREATE);
-        props.actions.openCreateDiversion(true);
+        props.actions.openDiversionManager(true);
+    };
+
+    const editDiversion = (diversion) => {
+        props.actions.updateDiversionMode(EDIT_TYPE.EDIT);
+        props.actions.updateDiversionToEdit(diversion);
+        props.actions.openDiversionManager(true);
     };
 
     const minEndDate = () => {
@@ -945,7 +950,9 @@ const DisruptionDetailView = (props) => {
                 <ViewDiversionDetailModal
                     disruption={ disruption }
                     onClose={ () => setIsViewDiversionsModalOpen(false) }
+                    onEditDiversion={ editDiversion }
                     isOpen={ isViewDiversionsModalOpen }
+                    onEdi
                 />
                 { props.usePassengerImpact && (
                     <DisruptionPassengerImpactGridModal
@@ -975,7 +982,6 @@ DisruptionDetailView.propTypes = {
     isReadOnlyMode: PropTypes.bool,
     actions: PropTypes.objectOf(PropTypes.func).isRequired,
     updateDiversionMode: PropTypes.func.isRequired,
-    openCreateDiversion: PropTypes.func.isRequired,
 };
 
 DisruptionDetailView.defaultProps = {
@@ -1001,7 +1007,8 @@ const mapDispatchToProps = dispatch => ({
         updateActiveControlEntityId,
         updateDisruption,
         updateDiversionMode,
-        openCreateDiversion,
+        openDiversionManager,
+        updateDiversionToEdit,
         publishDraftDisruption,
     }, dispatch),
 });
