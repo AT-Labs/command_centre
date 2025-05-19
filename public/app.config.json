@@ -36,5 +36,6 @@
     "useDisruptionDraftEmailSharing": "false",
     "useDiversion": "false",
     "useHideSkippedStop": "false",
-    "useHoldTrip": "false"
+    "useHoldTrip": "false",
+    "useDisruptionsLayer": "false"
 }
