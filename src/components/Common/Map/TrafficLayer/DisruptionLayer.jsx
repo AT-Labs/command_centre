@@ -32,7 +32,8 @@ export const DisruptionLayer = (props) => {
                         direction="top"
                         offset={ [0, -50] }
                         maxWidth={ 480 }
-                        minWidth={ 400 }>
+                        minWidth={ 400 }
+                        closeButton={ false }>
                         <DisruptionDetails
                             disruptions={ getDisruptionsByStop(disruptions, stop) }
                             stopTitle={ `${stop.stopCode} - ${stop.stopName}` }
