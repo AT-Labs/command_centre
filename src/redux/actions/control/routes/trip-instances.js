@@ -29,7 +29,7 @@ import { ACTION_RESULT } from '../../../../types/add-trip-types';
 import { captureError } from '../../../../utils/logger';
 import { UpdateStopPlatformError } from '../../../../types/exception-types';
 import { getRoutesTripsDatagridConfig } from '../../../selectors/datagrid';
-import { useHideSkippedStop, useTripCauseCancellation } from '../../../selectors/appSettings';
+import { useHideSkippedStop } from '../../../selectors/appSettings';
 
 const loadTripInstances = (tripInstances, timestamp) => ({
     type: ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES,
@@ -357,8 +357,7 @@ const bulkTripInstanceActions = (operateTrips, action, selectedTrips) => async (
     }
 };
 
-export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, successMessage, errorMessage, recurrenceSetting, selectedTrips) => async (dispatch, getState) => {
-    const isUseTripCauseCancellationEnabled = useTripCauseCancellation(getState());
+export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, successMessage, errorMessage, recurrenceSetting, selectedTrips) => async (dispatch) => {
     const action = trip => updateTripInstanceStatus(
         {
             tripStatus,
@@ -374,7 +373,6 @@ export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, s
             display: recurrenceSetting.display,
             agencyId: trip.agencyId,
             routeShortName: trip.routeShortName,
-            ...(isUseTripCauseCancellationEnabled && recurrenceSetting.causeCancellation ? { causeCancellation: recurrenceSetting.causeCancellation } : null),
         },
         successMessage,
         MESSAGE_ACTION_TYPES.bulkStatusUpdate,

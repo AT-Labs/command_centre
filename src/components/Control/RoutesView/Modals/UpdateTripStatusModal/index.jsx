@@ -37,7 +37,6 @@ const UpdateTripStatusModal = (props) => {
         endDate: moment(props.serviceDate).format(DATE_FORMAT_DDMMYYYY),
         selectedWeekdays: [moment(props.serviceDate).isoWeekday() - 1],
         display: true,
-        causeCancellation: 'OTHER',
     };
 
     const [hasModalBeenInit, setHasModalBeenInit] = useState(false);
@@ -131,9 +130,6 @@ const UpdateTripStatusModal = (props) => {
 
     const updateTripsStatus = (isRecurringOperation) => {
         const tripStatus = activeModal === CANCEL_MODAL ? cancelled : notStarted;
-        if (tripStatus === notStarted) {
-            recurrenceSetting.causeCancellation = null;
-        }
         props.collectTripsDataAndUpdateTripsStatus(
             operateTripsByModalType,
             tripStatus,
