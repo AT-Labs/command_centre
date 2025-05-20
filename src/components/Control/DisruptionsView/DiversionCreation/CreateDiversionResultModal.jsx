@@ -8,8 +8,8 @@ export const ACTION_TYPE = {
     NEW_DIVERSION: 'NEW_DIVERSION',
 };
 
-const DiversionResultModal = props => (
-    <div className="diversion__confirmation-modal">
+const CreateDiversionResultModal = props => (
+    <div className="add-diversion__confirmation-modal">
         <div className="row">
             <div className="col text-center">
                 <div>
@@ -58,15 +58,15 @@ const DiversionResultModal = props => (
     </div>
 );
 
-DiversionResultModal.propTypes = {
+CreateDiversionResultModal.propTypes = {
     result: PropTypes.string,
     error: PropTypes.string,
     onAction: PropTypes.func.isRequired,
 };
 
-DiversionResultModal.defaultProps = {
+CreateDiversionResultModal.defaultProps = {
     result: '',
     error: '',
 };
 
-export default DiversionResultModal;
+export default CreateDiversionResultModal;

@@ -9,7 +9,7 @@ import {
     fetchTripInstances, clearActiveTripInstanceId, updateActiveTripInstanceId, collectTripsDataAndUpdateTripsStatus,
     updateTripInstanceStatus, updateTripInstanceStopStatus, updateTripInstanceStopPlatform, updateTripInstanceDelay, filterTripInstances, updateDestination,
     updateEnabledAddTripModal, updateCurrentStepHandler, updateAddTripDatagridConfig, updateSelectedAddTrip, resetAddTripStep,
-    getFilters
+    getFilters, updateTripInstanceOperationNotes, bulkUpdateTripsOperationNotes
 } from './trip-instances';
 import * as tripMgtApi from '../../../../utils/transmitters/trip-mgt-api';
 import * as blockMgtApi from '../../../../utils/transmitters/block-mgt-api';
@@ -665,6 +665,102 @@ describe('Trip instances actions', () => {
 
         await store.dispatch(updateTripInstanceStopPlatform(options, ''));
         expect(store.getActions()).to.eql(expectedActions);
+    });
+
+    it('updates trip operation notes', async () => {
+        const fakeUpdateTripStatus = sandbox.fake.resolves(mockTrip);
+        sandbox.stub(tripMgtApi, 'updateTripOperationNotes').callsFake(fakeUpdateTripStatus);
+
+        const options = {
+            tripId: mockTrip.tripId,
+            serviceDate: '20190608',
+            startTime: '10:00:00',
+            OperationNotes: "this is a note"
+        };
+        const successMessage = 'success';
+        const errorMessage = 'error';
+        const tripInstanceId = getTripInstanceId(mockTrip);
+
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
+                payload: { tripId: tripInstanceId, isLoading: true },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCE_ENTRY,
+                payload: { tripInstance: mockTrip },
+            },
+            {
+                type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
+                payload: {
+                    actionType: MESSAGE_ACTION_TYPES.tripOperationNotesUpdate,
+                    id: 'actionResult8',
+                    body: successMessage,
+                    type: CONFIRMATION_MESSAGE_TYPE,
+                    tripId: tripInstanceId,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
+                payload: { tripId: tripInstanceId, isLoading: false },
+            },
+        ];
+
+        await store.dispatch(updateTripInstanceOperationNotes(options, successMessage, MESSAGE_ACTION_TYPES.tripOperationNotesUpdate, errorMessage));
+        expect(store.getActions()).to.eql(expectedActions);
+    });
+
+    it('bulk updates trips operation notes', async () => {
+        const fakeUpdateTripNotes = sandbox.fake.resolves(mockTrip);
+        sandbox.stub(tripMgtApi, 'updateTripOperationNotes').callsFake(fakeUpdateTripNotes);
+        
+        const operateTrips = {
+            [mockTrip.tripId]: {
+                tripId: mockTrip.tripId,
+                serviceDate: '20190608',
+                startTime: '10:00:00',
+            }
+        };
+        
+        const successMessage = 'Operation notes successfully updated';
+        const errorMessage = 'Failed to update operation notes';
+        const operationNotes = 'This is a bulk update test note';
+        const tripInstanceId = getTripInstanceId(mockTrip);
+    
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
+                payload: { tripId: tripInstanceId, isLoading: true },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_TRIP_INSTANCE_ENTRY,
+                payload: { tripInstance: mockTrip },
+            },
+            {
+                type: ACTION_TYPE.SET_TRIP_INSTANCE_ACTION_RESULT,
+                payload: {
+                    actionType: MESSAGE_ACTION_TYPES.tripOperationNotesUpdate,
+                    id: 'actionResult9',
+                    body: successMessage,
+                    type: CONFIRMATION_MESSAGE_TYPE,
+                    tripId: tripInstanceId,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
+                payload: { tripId: tripInstanceId, isLoading: false },
+            },
+        ];
+    
+        await store.dispatch(bulkUpdateTripsOperationNotes(operateTrips, successMessage, errorMessage, operationNotes));
+        
+        expect(store.getActions()).to.eql(expectedActions);
+        expect(fakeUpdateTripNotes).to.have.been.calledWith({
+            OperationNotes: operationNotes,
+            tripId: mockTrip.tripId,
+            serviceDate: '20190608',
+            startTime: '10:00:00',
+        });
     });
 
     it('gets all trips filtered for the datagrid', async () => {
