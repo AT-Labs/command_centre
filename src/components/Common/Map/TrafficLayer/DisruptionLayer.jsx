@@ -5,10 +5,10 @@ import PropTypes from 'prop-types';
 import L from 'leaflet';
 import { has } from 'lodash-es';
 import { DISRUPTIONS_MARKER_CLUSTER_FOCUS_ZOOM } from '../../../../constants/traffic';
-import DisruptionDetails from './DisruptionDetails';
 import { generateUniqueID, getDisruptionsByStop } from '../../../../utils/helpers';
 import './DisruptionLayer.scss';
 import DisruptionMarker from './DisruptionMarker';
+import DisruptionDetails from './DisruptionDetails';
 
 export const DisruptionLayer = (props) => {
     const { stops, disruptions, goToDisruptionSummary, impacts, causes } = props;

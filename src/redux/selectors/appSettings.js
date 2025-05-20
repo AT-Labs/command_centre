@@ -60,3 +60,4 @@ export const useDiversion = createSelector(getAppSettingsState, appSettingState 
 export const useHideSkippedStop = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useHideSkippedStop') === 'true'));
 export const useDisruptionsLayer = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useDisruptionsLayer') === 'true'));
 export const useHoldTrip = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useHoldTrip') === 'true'));
+export const useStopDisruptionsSearch = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useStopDisruptionsSearch') === 'true'));

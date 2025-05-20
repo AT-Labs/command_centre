@@ -38,4 +38,5 @@
     "useHideSkippedStop": "false",
     "useHoldTrip": "false",
     "useDisruptionsLayer": "false"
+    "useStopDisruptionsSearch": "false"
 }
