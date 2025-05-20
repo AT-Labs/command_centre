@@ -5,7 +5,6 @@ import isURL from 'validator/lib/isURL';
 import crypto from 'crypto';
 import { fetchWithAuthHeader } from '../auth';
 import DATE_TYPE from '../types/date-types';
-import { TRAIN_TYPE_ID } from '../types/vehicle-types';
 
 export const getJSONFromWKT = text => wellknown.parse(text);
 export const getAllCoordinatesFromWKT = text => getJSONFromWKT(text).coordinates.map(c => c.reverse());
@@ -183,16 +182,3 @@ export const addOffsetToIncident = (incident) => {
     }
     return incident;
 };
-
-const isChildTrainPlatform = stp => stp.routeType === TRAIN_TYPE_ID && stp.locationType === 0;
-
-export const getDisruptionsUniqueStops = (disruptions) => {
-    const seenStopCodes = new Set();
-    return disruptions.flatMap(disruption => disruption.affectedEntities
-        .filter(entity => entity.type === 'stop'
-                && !seenStopCodes.has(entity.stopCode)
-                && seenStopCodes.add(entity.stopCode)
-                && !isChildTrainPlatform(entity)));
-};
-
-export const getDisruptionsByStop = (disruptions, stop) => disruptions.filter(disruption => disruption.affectedEntities.some(entity => entity.stopCode === stop.stopCode));
