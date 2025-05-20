@@ -159,14 +159,6 @@ export const getCheckedStops = createSelector(
     ),
 );
 
-export const getCheckedStopsDisruptionsList = createSelector(
-    getDetailState,
-    detailState => Object.entries(detailState.disruptions || {}).map(([stopCode, disruptions]) => ({
-        stopCode,
-        disruptions,
-    })),
-);
-
 export const getVisibleStops = createSelector(
     getViewDetailEntity,
     viewDetailEntity => (isCheckedRouteOrOtherEntity(viewDetailEntity) && result(viewDetailEntity, 'stops')) || [],

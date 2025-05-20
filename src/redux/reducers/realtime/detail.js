@@ -11,7 +11,6 @@ export const INIT_STATE = {
     isReplace: false,
     selectedSearchResults: {},
     viewDetailKey: '',
-    disruptions: [],
 };
 
 const handleClearDetail = (state, { payload: { isReplace } }) => ({
@@ -23,7 +22,6 @@ const handleClearDetail = (state, { payload: { isReplace } }) => ({
     route: {},
     isReplace,
     viewDetailKey: '',
-    disruptions: [],
 });
 
 const handleSelectedVehicle = (state, { payload: { vehicle } }) => ({
@@ -124,14 +122,6 @@ const handleRouteByStop = (state, { payload: { entityKey, routes } }) => ({
         routes,
     },
     selectedSearchResults: updateSelectedSearchResults(state.selectedSearchResults, entityKey, { routes }),
-});
-
-const handleFetchStopDisruptions = (state, { payload: { stopCode, disruptions } }) => ({
-    ...state,
-    disruptions: {
-        ...state.disruptions,
-        [stopCode]: disruptions,
-    },
 });
 
 const handleGetTrip = (state, { payload: { entityKey, trip } }) => ({
@@ -235,7 +225,6 @@ export default handleActions({
     [ACTION_TYPE.FETCH_ROUTE_STOPS]: handleFetchRouteStops,
     [ACTION_TYPE.FETCH_VEHICLE_TRIP_STOPS]: handleFetchVehicleTripStops,
     [ACTION_TYPE.FETCH_STOP_ROUTES_STOPS]: handleFetchStopRoutesStops,
-    [ACTION_TYPE.FETCH_STOP_DISRUPTIONS]: handleFetchStopDisruptions,
     [ACTION_TYPE.UPDATE_VEHICLE_VEHICLE_PREDICATE]: handleUpdateVehicleVehiclePredicate,
     [ACTION_TYPE.UPDATE_ROUTE_VEHICLE_PREDICATE]: handleUpdateRouteVehiclePredicate,
     [ACTION_TYPE.UPDATE_STOP_VEHICLE_PREDICATE]: handleUpdateStopVehiclePredicate,

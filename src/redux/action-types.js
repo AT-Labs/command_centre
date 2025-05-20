@@ -50,7 +50,6 @@ export default {
     FETCH_STOP_PID_MESSAGES: 'fetch-stop-pid-messages',
     FETCH_STOP_PID_INFORMATION: 'fetch-stop-pid-information',
     FETCH_STOP_ROUTES_STOPS: 'fetch-stop-routes-stops',
-    FETCH_STOP_DISRUPTIONS: 'fetch-stop-disruptions',
     UPDATE_STOP_VEHICLE_PREDICATE: 'update-stop-vehicle-predicate',
     // Route detail
     FETCH_ROUTE_INFO: 'fetch-route-info',
@@ -81,8 +80,6 @@ export default {
     UPDATE_SHOW_ROUTE_ALERTS: 'update-show-route-alerts',
     UPDATE_SHOW_ALL_ROUTE_ALERTS: 'update-show-all-route-alerts',
     UPDATE_SELECTED_ROUTE_ALERTS: 'update-selected-route-alerts',
-    UPDATE_SHOW_DISRUPTIONS: 'update-show-disruptions',
-    UPDATE_SELECTED_DISRUPTION_FILTERS: 'update-selected-disruption-filters',
     // Roadworks Layers
     RESET_SHOW_ROADWORKS: 'reset-show-roadworks',
     UPDATE_SHOW_ROADWORKS: 'update-show-roadworks',
