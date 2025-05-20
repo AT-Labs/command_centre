@@ -312,3 +312,83 @@ export const isRecurringPeriodInvalid = (disruption) => {
         || !(Number.isInteger(+duration) && +duration > 0)
     );
 };
+
+const buildDuration = (disruption) => {
+    const startTime = moment(disruption.startTime);
+    const endTime = moment(disruption.endTime);
+    const now = moment();
+    let cutoff = now;
+    let duration;
+
+    if (now <= startTime) {
+        return undefined;
+    }
+
+    if (disruption.status === STATUSES.DRAFT && disruption.activePeriods?.length === 0) {
+        return undefined;
+    }
+
+    if (disruption.status === STATUSES.RESOLVED || endTime <= now) {
+        cutoff = endTime;
+    }
+
+    if (!disruption.recurrent) {
+        duration = cutoff.diff(startTime, 'seconds');
+    }
+
+    if (disruption.recurrent) {
+        const cutoffEpoch = cutoff.unix();
+        duration = disruption.activePeriods
+            ?.filter(activePeriod => activePeriod.startTime < cutoffEpoch)
+            .map(activePeriod => ({
+                startTime: activePeriod.startTime,
+                endTime: Math.min(activePeriod.endTime, cutoffEpoch),
+            }))
+            .reduce((sum, activePeriod) => sum + (activePeriod.endTime - activePeriod.startTime), 0);
+    }
+
+    const hours = Math.floor(duration / 3600);
+    const minutes = Math.floor((duration % 3600) / 60);
+    const seconds = duration % 60;
+    return { hours, minutes, seconds };
+};
+
+export const getDuration = (disruption) => {
+    const duration = buildDuration(disruption);
+    if (!duration) return '-';
+    const { hours, minutes, seconds } = duration;
+    return `${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
+};
+
+export const getDurationWithoutSeconds = (disruption) => {
+    const duration = buildDuration(disruption);
+    if (!duration) return '-';
+    const { hours, minutes } = duration;
+    return `${hours} hours, ${minutes} minutes`;
+};
+
+export const buildDisruptionsQuery = (filters) => {
+    const { statuses, stopId, stopCode, onlyWithStops, includeDrafts } = filters;
+
+    const queryParams = [];
+
+    if (statuses) {
+        queryParams.push(statuses.map(status => `statuses=${status}`).join('&'));
+    }
+    if (stopId) {
+        queryParams.push(`stopId=${stopId}`);
+    }
+    if (stopCode) {
+        queryParams.push(`stopCode=${stopCode}`);
+    }
+    if (onlyWithStops) {
+        queryParams.push(`onlyWithStops=${onlyWithStops}`);
+    }
+    if (includeDrafts) {
+        queryParams.push(`includeDraft=${includeDrafts}`);
+    } else {
+        queryParams.push('includeDraft=false');
+    }
+
+    return queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+};
