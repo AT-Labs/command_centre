@@ -3,7 +3,6 @@ import { jsonResponseHandling } from '../fetch';
 import { getViewPermission } from '../helpers';
 import { fetchWithAuthHeader } from '../../auth';
 import HTTP_TYPES from '../../types/http-types';
-import { buildDisruptionsQuery } from '../control/disruptions';
 
 const { REACT_APP_DISRUPTION_MGT_QUERY_URL } = process.env;
 const { GET, POST, PUT, DELETE } = HTTP_TYPES;
@@ -121,10 +120,17 @@ export const addDiversion = (diversion) => {
     ).then(response => jsonResponseHandling(response));
 };
 
-export const getDisruptionsByFilters = (filters) => {
-    const query = buildDisruptionsQuery(filters);
-    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions${query}`;
-
-    return fetchWithAuthHeader(url, { method: GET })
-        .then(response => jsonResponseHandling(response));
+export const updateDiversion = (diversion) => {
+    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/diversions/${diversion.diversionId}`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: PUT,
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(diversion),
+        },
+    ).then(response => jsonResponseHandling(response));
 };

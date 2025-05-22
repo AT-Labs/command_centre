@@ -65,6 +65,11 @@ const ViewDiversionDetailModal = (props) => {
         setRefresh(prevRefresh => !prevRefresh);
     };
 
+    const editDiversion = (diversion) => {
+        props.onClose();
+        props.onEditDiversion(diversion);
+    };
+
     return (
         <div data-testid="active-diversion-detail">
             <CustomMuiDialog
@@ -99,6 +104,7 @@ const ViewDiversionDetailModal = (props) => {
                         </button>
                         <ActiveDiversionView
                             deleteDiversion={ deleteDiversion }
+                            editDiversion={ editDiversion }
                             diversions={ diversions }
                             expandedRows={ expandedRows }
                             toggleExpand={ toggleExpand }
@@ -119,6 +125,7 @@ ViewDiversionDetailModal.propTypes = {
     disruption: PropTypes.any.isRequired,
     onClose: PropTypes.func.isRequired,
     isOpen: PropTypes.bool.isRequired,
+    onEditDiversion: PropTypes.func.isRequired,
 };
 
 export { ViewDiversionDetailModal };

@@ -18,7 +18,7 @@ import {
 } from '../../constants/disruptions';
 import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES, WEEKDAYS } from '../../types/disruptions-types';
 import { getWorkaroundsAsText } from './disruption-workarounds';
-import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops, isRecurringPeriodInvalid, getDuration } from './disruptions';
+import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops, isRecurringPeriodInvalid } from './disruptions';
 import SEARCH_RESULT_TYPE from '../../types/search-result-types';
 import { getAlertCauses, getAlertEffects } from '../transmitters/command-centre-config-api';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../types/disruption-cause-and-effect';
@@ -150,6 +150,47 @@ function createHtmlField(mapFieldValue, label) {
 
     return `<th style="font-weight: bold; padding: 0px 15px 15px 5px; text-align: left;">${nonBreakingLabel}</th>
         <td style="padding: 0px 15px 15px 5px;">${nonBreakingValue}</td>`;
+}
+
+function getDuration(disruption) {
+    const startTime = moment(disruption.startTime);
+    const endTime = moment(disruption.endTime);
+    const now = moment();
+    let cutoff = now;
+    let duration;
+
+    if (now <= startTime) {
+        return '-';
+    }
+
+    if (disruption.status === STATUSES.DRAFT && disruption.activePeriods?.length === 0) {
+        return '-';
+    }
+
+    if (disruption.status === STATUSES.RESOLVED || endTime <= now) {
+        cutoff = endTime;
+    }
+
+    if (!disruption.recurrent) {
+        duration = cutoff.diff(startTime, 'seconds');
+    }
+
+    if (disruption.recurrent) {
+        const cutoffEpoch = cutoff.unix();
+        duration = disruption.activePeriods
+            ?.filter(activePeriod => activePeriod.startTime < cutoffEpoch)
+            .map(activePeriod => ({
+                startTime: activePeriod.startTime,
+                endTime: Math.min(activePeriod.endTime, cutoffEpoch),
+            }))
+            .reduce((sum, activePeriod) => sum + (activePeriod.endTime - activePeriod.startTime), 0);
+    }
+
+    const hours = Math.floor(duration / 3600);
+    const minutes = Math.floor((duration % 3600) / 60);
+    const seconds = duration % 60;
+
+    return `${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
 }
 
 function getRecurringPeriod(disruption) {
