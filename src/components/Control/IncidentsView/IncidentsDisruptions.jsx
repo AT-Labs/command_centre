@@ -24,7 +24,7 @@ import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOpera
 import './IncidentsDisruptions.scss';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
 import { getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from '../../../utils/control/disruptions';
-import { usePassengerImpact, useDisruptionsNotificationsDirectLink, useViewDisruptionDetailsPage } from '../../../redux/selectors/appSettings';
+import { useDisruptionsNotificationsDirectLink, useViewDisruptionDetailsPage } from '../../../redux/selectors/appSettings';
 import { goToNotificationsView } from '../../../redux/actions/control/link';
 import { useAlertEffects } from '../../../utils/control/alert-cause-effect';
 
@@ -223,7 +223,6 @@ IncidentsDisruptions.propTypes = {
     activeDisruptionId: PropTypes.number,
     updateActiveDisruptionId: PropTypes.func.isRequired,
     updateCopyDisruptionState: PropTypes.func.isRequired,
-    usePassengerImpact: PropTypes.bool.isRequired,
     goToNotificationsView: PropTypes.func.isRequired,
     useDisruptionsNotificationsDirectLink: PropTypes.bool.isRequired,
     useViewDisruptionDetailsPage: PropTypes.bool.isRequired,
@@ -238,7 +237,6 @@ export default connect(
     state => ({
         datagridConfig: getDisruptionsDatagridConfig(state),
         activeDisruptionId: getActiveDisruptionId(state),
-        usePassengerImpact: usePassengerImpact(state),
         useDisruptionsNotificationsDirectLink: useDisruptionsNotificationsDirectLink(state),
         useViewDisruptionDetailsPage: useViewDisruptionDetailsPage(state),
     }),

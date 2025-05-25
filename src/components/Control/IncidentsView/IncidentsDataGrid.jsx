@@ -154,7 +154,9 @@ IncidentDataGrid.propTypes = {
     clearActiveIncident: PropTypes.func.isRequired,
     updateActiveIncident: PropTypes.func.isRequired,
     useViewDisruptionDetailsPage: PropTypes.bool.isRequired,
+    // eslint-disable-next-line react/no-unused-prop-types
     incidentsSortingParams: PropTypes.object.isRequired,
+    // eslint-disable-next-line react/no-unused-prop-types
     updateIncidentsSortingParams: PropTypes.func.isRequired,
 };
 

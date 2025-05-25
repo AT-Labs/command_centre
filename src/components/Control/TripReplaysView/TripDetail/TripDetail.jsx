@@ -189,7 +189,6 @@ TripDetail.propTypes = {
     searchRoutes: PropTypes.func.isRequired,
     searchResults: PropTypes.object.isRequired,
     navigateToVehicleReplayTab: PropTypes.func.isRequired,
-    useParentChildIncident: PropTypes.bool.isRequired,
 };
 
 TripDetail.defaultProps = {
