@@ -13,17 +13,15 @@ import IncidentItem from './IncidentItem';
 import './TrafficFilters.scss';
 import { RoadworksFilterBlock } from './RoadworksFilterBlock';
 
-import { useCarsRoadworksLayer, useStopBasedDisruptionsLayer } from '../../../redux/selectors/appSettings';
+import { useCarsRoadworksLayer } from '../../../redux/selectors/appSettings';
 import RouteAlertsFilter from './RouteAlertsFilter';
 import { CONGESTION_COLORS } from '../../../constants/traffic';
-import { DisruptionFilter } from './DisruptionFilter';
 
 const TrafficFilters = (props) => {
     const [selectedCongestionFilters, setSelectedCongestionFilters] = useState(props.selectedCongestionFilters);
     const [selectedIncidentFilters, setSelectedIncidentFilters] = useState(props.selectedIncidentFilters);
     const [isIncidentCategoryExpand, setIsIncidentCategoryExpand] = useState(false);
     const useCarsRoadworksLayerEnabled = useSelector(useCarsRoadworksLayer);
-    const useStopBasedDisruptionsLayerEnabled = useSelector(useStopBasedDisruptionsLayer);
 
     const onTrafficFlowsCheckboxChange = (values) => {
         values.forEach((value) => {
@@ -107,7 +105,6 @@ const TrafficFilters = (props) => {
                                     title={ category }
                                     onChange={ () => onIncidentCheckboxChange([category]) }
                                     checked={ selectedIncidentFilters.includes(category) }
-                                    useNewColors={ useStopBasedDisruptionsLayerEnabled }
                                 />
                             ))}
                             {!isIncidentCategoryExpand && (
@@ -222,7 +219,6 @@ const TrafficFilters = (props) => {
                 { props.useRouteAlerts && (
                     <RouteAlertsFilter />
                 ) }
-                { useStopBasedDisruptionsLayerEnabled && (<DisruptionFilter />) }
             </div>
         </Fade>
     );
