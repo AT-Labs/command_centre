@@ -23,7 +23,7 @@ import CustomButton from '../../Common/CustomButton/CustomButton';
 import Icon from '../../Common/Icon/Icon';
 import { HelpInformationModal } from '../HelpInformationModal/HelpInformationModal';
 import { resetRealtimeToDefault } from '../../../redux/actions/realtime/common';
-import { useBusPriorityDataManagement, useRecurringCancellationsGridView } from '../../../redux/selectors/appSettings';
+import { useBusPriorityDataManagement, useRecurringCancellationsGridView, useParentChildIncident } from '../../../redux/selectors/appSettings';
 import { goToNotificationsView } from '../../../redux/actions/control/link';
 
 import './Header.scss';
@@ -89,7 +89,7 @@ function Header(props) {
                 VIEW_TYPE.CONTROL_DETAIL.BLOCKS,
                 VIEW_TYPE.CONTROL_DETAIL.ROUTES,
                 VIEW_TYPE.CONTROL_DETAIL.STOP_MESSAGES,
-                VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
+                props.useParentChildIncident ? VIEW_TYPE.CONTROL_DETAIL.INCIDENTS : VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
                 VIEW_TYPE.CONTROL_DETAIL.ALERTS,
                 VIEW_TYPE.CONTROL_DETAIL.FLEETS,
                 VIEW_TYPE.CONTROL_DETAIL.RECURRING_CANCELLATIONS,
@@ -206,7 +206,23 @@ function Header(props) {
                             </Dropdown>
                         </div>
                     )}
-                    { (IS_DISRUPTIONS_ENABLED && isViewPermitted('controlDisruptionsView')) && (
+                    { (props.useParentChildIncident && IS_DISRUPTIONS_ENABLED && isViewPermitted('controlDisruptionsView')) && (
+                        <NavItem>
+                            <CustomButton
+                                className="header__btn header__disruption rounded-0 px-3"
+                                active={ activeView === VIEW_TYPE.MAIN.CONTROL && controlActiveView === VIEW_TYPE.CONTROL_DETAIL.INCIDENTS }
+                                tabIndex="0"
+                                ariaLabel="Disruption section button"
+                                onClick={ () => {
+                                    props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
+                                    props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.INCIDENTS);
+                                    props.updateActiveControlEntityId(undefined);
+                                } }>
+                                DISRUPTIONS
+                            </CustomButton>
+                        </NavItem>
+                    )}
+                    { (!props.useParentChildIncident && IS_DISRUPTIONS_ENABLED && isViewPermitted('controlDisruptionsView')) && (
                         <NavItem>
                             <CustomButton
                                 className="header__btn header__disruption rounded-0 px-3"
@@ -430,6 +446,7 @@ Header.propTypes = {
     queryParams: PropTypes.object,
     goToNotificationsView: PropTypes.func.isRequired,
     useBusPriorityDataManagement: PropTypes.bool.isRequired,
+    useParentChildIncident: PropTypes.bool.isRequired,
 };
 
 Header.defaultProps = {
@@ -452,6 +469,7 @@ export default connect(
         activeControlEntityId: getActiveControlEntityId(state),
         queryParams: getQueryParams(state),
         useBusPriorityDataManagement: useBusPriorityDataManagement(state),
+        useParentChildIncident: useParentChildIncident(state),
     }),
     {
         resetRealtimeToDefault,
