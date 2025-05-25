@@ -1,4 +1,4 @@
-.incident-marker {
+.disruption-marker {
     width: 32px;
     display: flex;
     flex-direction: column;
@@ -9,6 +9,7 @@
         width: 3px;
         height: 12px;
         margin-right: 2px;
+        margin-left: -2px;
         background-color: #D52923;
         border-left: 1px solid #D52923;
         border-right: 1px solid #D52923;
@@ -28,18 +29,6 @@
         .icon {
             width: 20px;
             height: 20px;
-        }
-    }
-
-    &.new-colors {
-        .pin {
-            background-color: black;
-            border-left: 1px solid black;
-            border-right: 1px solid black;
-        }
-
-        .icon-container {
-            border: 2px solid black;
         }
     }
 }

@@ -10,7 +10,7 @@ import { INCIDENTS_MARKER_CLUSTER_FOCUS_ZOOM } from '../../../../constants/traff
 import IncidentDetails from './IncidentDetails';
 
 export const IncidentLayer = (props) => {
-    const { data, weight } = props;
+    const { data, weight, useNewColors } = props;
 
     const polylineGroupRef = useRef();
     const [selectedIncidentShape, setSelectedIncidentShape] = useState(null);
@@ -60,6 +60,7 @@ export const IncidentLayer = (props) => {
             category={ incident.type.category }
             onClick={ () => !incident.isPoint && handleMarkerClick(incident.situationRecordsId, feature.coordinates) }
             className={ incident.situationRecordsId }
+            useNewColors={ useNewColors }
         >
             <Tooltip direction="top" offset={ [0, -50] }>
                 <IncidentDetails incident={ incident } />
@@ -92,9 +93,11 @@ export const IncidentLayer = (props) => {
 IncidentLayer.propTypes = {
     data: PropTypes.array,
     weight: PropTypes.number,
+    useNewColors: PropTypes.bool,
 };
 
 IncidentLayer.defaultProps = {
     data: [],
     weight: 5,
+    useNewColors: false,
 };

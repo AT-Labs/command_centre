@@ -385,15 +385,6 @@ export const openCreateDisruption = isCreateEnabled => (dispatch) => {
     dispatch(updateOpenCreateDisruption(isCreateEnabled));
 };
 
-export const openCreateDiversion = isCreateDiversionEnabled => (dispatch) => {
-    dispatch({
-        type: ACTION_TYPE.OPEN_CREATE_DIVERSION,
-        payload: {
-            isCreateDiversionEnabled,
-        },
-    });
-};
-
 export const resetState = () => ({
     type: ACTION_TYPE.RESET_STATE,
 });
@@ -515,13 +506,6 @@ export const updateEditMode = editModeParam => ({
     type: ACTION_TYPE.UPDATE_EDIT_MODE,
     payload: {
         editMode: editModeParam,
-    },
-});
-
-export const updateDiversionMode = editMode => ({
-    type: ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE,
-    payload: {
-        diversionEditMode: editMode,
     },
 });
 
