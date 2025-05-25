@@ -80,6 +80,8 @@ export default {
     UPDATE_SHOW_ROUTE_ALERTS: 'update-show-route-alerts',
     UPDATE_SHOW_ALL_ROUTE_ALERTS: 'update-show-all-route-alerts',
     UPDATE_SELECTED_ROUTE_ALERTS: 'update-selected-route-alerts',
+    UPDATE_SHOW_DISRUPTIONS: 'update-show-disruptions',
+    UPDATE_SELECTED_DISRUPTION_FILTERS: 'update-selected-disruption-filters',
     // Roadworks Layers
     RESET_SHOW_ROADWORKS: 'reset-show-roadworks',
     UPDATE_SHOW_ROADWORKS: 'update-show-roadworks',

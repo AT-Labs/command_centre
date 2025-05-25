@@ -13,7 +13,6 @@ import IncidentsDisruptions from './IncidentsDisruptions';
 import { useViewDisruptionDetailsPage } from '../../../redux/selectors/appSettings';
 import SortButton from '../Common/SortButton/SortButton';
 import { useAlertEffects } from '../../../utils/control/alert-cause-effect';
-import { DEFAULT_IMPACT } from '../../../types/disruption-cause-and-effect';
 
 export const IncidentDataGrid = (props) => {
     const impacts = useAlertEffects();

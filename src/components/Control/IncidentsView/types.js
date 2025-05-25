@@ -18,3 +18,8 @@ export const confirmationModalTypes = {
 };
 
 export const PAGE_SIZE = 25;
+
+export const DIRECTIONS = {
+    0: 'Inbound/Anticlockwise',
+    1: 'Outbound/Clockwise',
+};
