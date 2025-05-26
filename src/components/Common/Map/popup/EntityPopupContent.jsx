@@ -17,7 +17,7 @@ export const EntityPopupContent = ({
     entity,
     causes,
     impacts,
-    goToDisruptionSummary,
+    goToDisruptionEditPage,
     onExpandPopup,
     onCollapsePopup,
     isExpanded,
@@ -90,7 +90,7 @@ export const EntityPopupContent = ({
                     stopTitle={ `${entity.stop_code} - ${entity.stop_name}` }
                     impacts={ impacts }
                     causes={ causes }
-                    goToDisruptionSummary={ goToDisruptionSummary }
+                    goToDisruptionEditPage={ goToDisruptionEditPage }
                 />
             </div>
         );
@@ -120,7 +120,7 @@ EntityPopupContent.propTypes = {
     entity: PropTypes.object.isRequired,
     causes: PropTypes.array,
     impacts: PropTypes.array,
-    goToDisruptionSummary: PropTypes.func,
+    goToDisruptionEditPage: PropTypes.func,
     onExpandPopup: PropTypes.func.isRequired,
     onCollapsePopup: PropTypes.func.isRequired,
     isExpanded: PropTypes.bool.isRequired,
@@ -129,5 +129,5 @@ EntityPopupContent.propTypes = {
 EntityPopupContent.defaultProps = {
     causes: [],
     impacts: [],
-    goToDisruptionSummary: () => {},
+    goToDisruptionEditPage: () => {},
 };

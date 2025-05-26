@@ -69,7 +69,7 @@ const SelectedStopsDisruptionsMarker = (props) => {
                     entity={ stop }
                     causes={ props.causes }
                     impacts={ props.impacts }
-                    goToDisruptionSummary={ props.goToDisruptionSummary }
+                    goToDisruptionEditPage={ props.goToDisruptionEditPage }
                     onExpandPopup={ () => handleExpandDisruptionsDetails(stop.stop_id) }
                     onCollapsePopup={ () => handleCollapseDisruptionsDetails(stop.stop_id) }
                     isExpanded={ isExpanded }
@@ -116,7 +116,7 @@ SelectedStopsDisruptionsMarker.propTypes = {
     tooltip: PropTypes.bool,
     maximumStopsToDisplay: PropTypes.number,
     tabIndexOverride: PropTypes.number,
-    goToDisruptionSummary: PropTypes.func,
+    goToDisruptionEditPage: PropTypes.func,
     impacts: PropTypes.array,
     causes: PropTypes.array,
 };
@@ -126,7 +126,7 @@ SelectedStopsDisruptionsMarker.defaultProps = {
     tooltip: false,
     maximumStopsToDisplay: 0,
     tabIndexOverride: 0,
-    goToDisruptionSummary: () => {},
+    goToDisruptionEditPage: () => {},
     impacts: [],
     causes: [],
 };
