@@ -103,7 +103,7 @@ const SelectedStopsDisruptionsMarker = (props) => {
                 </IconMarker>
             );
         }),
-        [uniqueStops, expandedPopupKey, props.tooltip, props.popup, props.size, props.tabIndexOverride, props.causes, props.impacts, props.goToDisruptionSummary],
+        [uniqueStops, expandedPopupKey, props.tooltip, props.popup, props.size, props.tabIndexOverride, props.causes, props.impacts, props.goToDisruptionEditPage],
     );
 
     return <>{markers}</>;
