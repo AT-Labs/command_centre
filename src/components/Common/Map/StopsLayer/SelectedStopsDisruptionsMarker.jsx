@@ -37,7 +37,7 @@ const SelectedStopsDisruptionsMarker = (props) => {
         setExpandedPopupKey(stopKey);
         setTimeout(() => {
             const ref = markerRefs.current[stopKey];
-            if (ref && ref.leafletElement) {
+            if (ref?.leafletElement) {
                 ref.leafletElement.openPopup();
             }
         }, 0);
@@ -47,7 +47,7 @@ const SelectedStopsDisruptionsMarker = (props) => {
         setExpandedPopupKey(null);
         setTimeout(() => {
             const ref = markerRefs.current[stopKey];
-            if (ref && ref.leafletElement) {
+            if (ref?.leafletElement) {
                 ref.leafletElement.openPopup();
             }
         }, 0);

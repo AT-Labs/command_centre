@@ -55,13 +55,11 @@ export const getDisruptionsByStop = stop => async (dispatch, getState) => {
             statuses: ['in-progress', 'not-started'],
             stopCode,
         };
-        disruptionApi.getDisruptionsByFilters(filters)
-            .then((data) => {
-                dispatch({
-                    type: ACTION_TYPE.FETCH_STOP_DISRUPTIONS,
-                    payload: { entityKey, disruptions: data.disruptions },
-                });
-            });
+        const data = await disruptionApi.getDisruptionsByFilters(filters);
+        dispatch({
+            type: ACTION_TYPE.FETCH_STOP_DISRUPTIONS,
+            payload: { entityKey, disruptions: data.disruptions },
+        });
     } catch (error) {
         dispatch(reportError({ error: { disruptionsByStop: error } }));
     } finally {
@@ -72,7 +70,6 @@ export const getDisruptionsByStop = stop => async (dispatch, getState) => {
 export const stopSelected = stop => (dispatch) => {
     dispatch(clearDetail(true));
     dispatch(getRoutesByStop(stop));
-    dispatch(getDisruptionsByStop(stop));
     dispatch(updateRealTimeDetailView(VIEW_TYPE.REAL_TIME_DETAIL.STOP));
     dispatch(updateViewDetailKey(stop.key));
     dispatch({
