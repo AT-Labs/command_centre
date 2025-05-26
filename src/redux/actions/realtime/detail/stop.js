@@ -12,7 +12,7 @@ import {
     calculateScheduledAndActualTimes, clearDetail, isWithinNextHalfHour, isWithinPastHalfHour, updateViewDetailKey,
 } from './common';
 import { getAllocations, getVehicleAllocationByTrip, getNumberOfCarsByAllocations } from '../../../selectors/control/blocks';
-import { useNewMonitoring, useStopDisruptionsSearch } from '../../../selectors/appSettings';
+import { useNewMonitoring, useStopBasedDisruptionSearch } from '../../../selectors/appSettings';
 import * as disruptionApi from '../../../../utils/transmitters/disruption-mgt-api';
 
 export const getRoutesByStop = stop => (dispatch, getState) => {
@@ -45,7 +45,7 @@ export const getRoutesByStop = stop => (dispatch, getState) => {
 export const getDisruptionsByStop = stop => async (dispatch, getState) => {
     const state = getState();
     const entityKey = stop.key;
-    const useDisruptionSearch = useStopDisruptionsSearch(state);
+    const useDisruptionSearch = useStopBasedDisruptionSearch(state);
     if (!useDisruptionSearch) return;
     const stopCode = stop.stop_code;
     dispatch(updateDataLoading(true));

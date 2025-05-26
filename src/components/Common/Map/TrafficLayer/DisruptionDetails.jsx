@@ -14,7 +14,7 @@ import {
 } from '../../../../utils/control/disruptions';
 
 const DisruptionDetails = (props) => {
-    const { disruptions, causes, impacts, goToDisruptionSummary, stopTitle } = props;
+    const { disruptions, causes, impacts, goToDisruptionEditPage, stopTitle } = props;
     const [index, setIndex] = useState(0);
 
     const handleNext = () => {
@@ -45,7 +45,7 @@ const DisruptionDetails = (props) => {
                 <div className="row">
                     <p>
                         <Button
-                            onClick={ () => goToDisruptionSummary(
+                            onClick={ () => goToDisruptionEditPage(
                                 { disruptionId: disruptions[index].disruptionId },
                                 { setActiveDisruption: true },
                             ) }
@@ -151,7 +151,7 @@ DisruptionDetails.propTypes = {
     stopTitle: PropTypes.string,
     causes: PropTypes.array,
     impacts: PropTypes.array,
-    goToDisruptionSummary: PropTypes.func,
+    goToDisruptionEditPage: PropTypes.func,
 };
 
 DisruptionDetails.defaultProps = {
@@ -159,7 +159,7 @@ DisruptionDetails.defaultProps = {
     stopTitle: '',
     causes: [],
     impacts: [],
-    goToDisruptionSummary: undefined,
+    goToDisruptionEditPage: undefined,
 };
 
 export default DisruptionDetails;

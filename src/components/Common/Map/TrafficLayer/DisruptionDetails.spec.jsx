@@ -69,14 +69,14 @@ const mockImpacts = [
     { value: 'DELAY', label: 'Delay' },
 ];
 
-const mockGoToDisruptionSummary = jest.fn();
+const mockGoToDisruptionEditPage = jest.fn();
 
 const componentPropsMock = {
     disruptions: mockDisruptions,
     stopTitle: mockStopTitle,
     causes: mockCauses,
     impacts: mockImpacts,
-    goToDisruptionSummary: mockGoToDisruptionSummary,
+    goToDisruptionEditPage: mockGoToDisruptionEditPage,
 };
 
 const setup = (customProps) => {
@@ -132,7 +132,7 @@ describe('DisruptionDetails Component', () => {
         expect(backButton.prop('disabled')).toBe(true);
     });
 
-    it('calls goToDisruptionSummary when the button is clicked', () => {
+    it('calls goToDisruptionEditPage when the button is clicked', () => {
         wrapper = setup();
         const button = wrapper.find(Button).at(0);
         expect(button.exists()).toBe(true);
@@ -141,7 +141,7 @@ describe('DisruptionDetails Component', () => {
             button.simulate('click');
         });
 
-        expect(mockGoToDisruptionSummary).toHaveBeenCalledWith(
+        expect(mockGoToDisruptionEditPage).toHaveBeenCalledWith(
             { disruptionId: 1 },
             { setActiveDisruption: true },
         );

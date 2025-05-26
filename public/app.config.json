@@ -37,6 +37,6 @@
     "useDiversion": "false",
     "useHideSkippedStop": "false",
     "useHoldTrip": "false",
-    "useDisruptionsLayer": "false"
-    "useStopDisruptionsSearch": "false"
+    "useStopBasedDisruptionsLayer": "false",
+    "useStopBasedDisruptionSearch": "false"
 }
