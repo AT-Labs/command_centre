@@ -8,8 +8,8 @@ export const ACTION_TYPE = {
     NEW_DIVERSION: 'NEW_DIVERSION',
 };
 
-const CreateDiversionResultModal = props => (
-    <div className="add-diversion__confirmation-modal">
+const DiversionResultModal = props => (
+    <div className="diversion__confirmation-modal">
         <div className="row">
             <div className="col text-center">
                 <div>
@@ -45,12 +45,14 @@ const CreateDiversionResultModal = props => (
                         </Button>
                     </div>
                     <div className="col-5">
-                        <Button
-                            className="btn btn-block cc-btn-primary btn-block"
-                            aria-label="Add new diversion"
-                            onClick={ () => props.onAction(ACTION_TYPE.NEW_DIVERSION) }>
-                            Add new diversion
-                        </Button>
+                        { props.showNewDiversionButton && (
+                            <Button
+                                className="btn btn-block cc-btn-primary btn-block"
+                                aria-label="Add new diversion"
+                                onClick={ () => props.onAction(ACTION_TYPE.NEW_DIVERSION) }>
+                                Add new diversion
+                            </Button>
+                        ) }
                     </div>
                 </div>
             ) }
@@ -58,15 +60,17 @@ const CreateDiversionResultModal = props => (
     </div>
 );
 
-CreateDiversionResultModal.propTypes = {
+DiversionResultModal.propTypes = {
     result: PropTypes.string,
     error: PropTypes.string,
+    showNewDiversionButton: PropTypes.bool,
     onAction: PropTypes.func.isRequired,
 };
 
-CreateDiversionResultModal.defaultProps = {
+DiversionResultModal.defaultProps = {
     result: '',
     error: '',
+    showNewDiversionButton: true,
 };
 
-export default CreateDiversionResultModal;
+export default DiversionResultModal;
