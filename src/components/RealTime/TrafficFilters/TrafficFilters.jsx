@@ -13,7 +13,7 @@ import IncidentItem from './IncidentItem';
 import './TrafficFilters.scss';
 import { RoadworksFilterBlock } from './RoadworksFilterBlock';
 
-import { useCarsRoadworksLayer, useStopBasedDisruptionsLayer } from '../../../redux/selectors/appSettings';
+import { useCarsRoadworksLayer, useDisruptionsLayer } from '../../../redux/selectors/appSettings';
 import RouteAlertsFilter from './RouteAlertsFilter';
 import { CONGESTION_COLORS } from '../../../constants/traffic';
 import { DisruptionFilter } from './DisruptionFilter';
@@ -23,7 +23,7 @@ const TrafficFilters = (props) => {
     const [selectedIncidentFilters, setSelectedIncidentFilters] = useState(props.selectedIncidentFilters);
     const [isIncidentCategoryExpand, setIsIncidentCategoryExpand] = useState(false);
     const useCarsRoadworksLayerEnabled = useSelector(useCarsRoadworksLayer);
-    const useStopBasedDisruptionsLayerEnabled = useSelector(useStopBasedDisruptionsLayer);
+    const useDisruptionsLayerEnabled = useSelector(useDisruptionsLayer);
 
     const onTrafficFlowsCheckboxChange = (values) => {
         values.forEach((value) => {
@@ -107,7 +107,7 @@ const TrafficFilters = (props) => {
                                     title={ category }
                                     onChange={ () => onIncidentCheckboxChange([category]) }
                                     checked={ selectedIncidentFilters.includes(category) }
-                                    useNewColors={ useStopBasedDisruptionsLayerEnabled }
+                                    useNewColors={ useDisruptionsLayerEnabled }
                                 />
                             ))}
                             {!isIncidentCategoryExpand && (
@@ -222,7 +222,7 @@ const TrafficFilters = (props) => {
                 { props.useRouteAlerts && (
                     <RouteAlertsFilter />
                 ) }
-                { useStopBasedDisruptionsLayerEnabled && (<DisruptionFilter />) }
+                {useDisruptionsLayerEnabled && (<DisruptionFilter />)}
             </div>
         </Fade>
     );

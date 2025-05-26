@@ -5,7 +5,7 @@ import chai, { expect } from 'chai';
 import sinonChai from 'sinon-chai';
 import MockDate from 'mockdate';
 
-import {goToRoutesView, goToBlocksView, goToDisruptionsView, goToDisruptionEditPage} from './link';
+import {goToRoutesView, goToBlocksView, goToDisruptionsView, goToDisruptionSummary} from './link';
 import * as tripMgtApi from '../../../utils/transmitters/trip-mgt-api';
 import ACTION_TYPE from '../../action-types';
 import VIEW_TYPE from '../../../types/view-types';
@@ -358,7 +358,7 @@ describe('Link actions', () => {
         expect(store.getActions()).to.eql(expectedActions);
     });
 
-    it("goToDisruptionEditPage", () => {
+    it("goToDisruptionSummary", () => {
         const disruptionId = "123456789";
         const message = {
             disruptionId: disruptionId,
@@ -399,11 +399,11 @@ describe('Link actions', () => {
            },
         ];
 
-        store.dispatch(goToDisruptionEditPage({ disruptionId: disruptionId }, { setActiveDisruption: true }));
+        store.dispatch(goToDisruptionSummary({ disruptionId: disruptionId }, { setActiveDisruption: true }));
         expect(store.getActions()).to.eql(expectedActions);
     });
 
-    it("goToDisruptionEditPage with setActiveDisruption false", () => {
+    it("goToDisruptionSummary with setActiveDisruption false", () => {
         const disruptionId = "123456789";
         const message = {
             disruptionId: disruptionId,
@@ -429,7 +429,7 @@ describe('Link actions', () => {
             },
         ];
 
-        store.dispatch(goToDisruptionEditPage({ disruptionId: disruptionId }, { setActiveDisruption: false }));
+        store.dispatch(goToDisruptionSummary({ disruptionId: disruptionId }, { setActiveDisruption: false }));
         expect(store.getActions()).to.eql(expectedActions);
     });
 });

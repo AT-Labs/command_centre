@@ -68,7 +68,6 @@ import TripShapeLayer from '../Common/Map/TripShapeLayer/TripShapeLayer';
 import { CarsLayer } from '../Common/Map/CarsLayer/CarsLayer';
 import StopsLayer from '../Common/Map/StopsLayer/StopsLayer';
 import { HighlightingLayer } from '../Common/Map/HighlightingLayer/HighlightingLayer';
-import { SelectedStopsMarker } from '../Common/Map/StopsLayer/SelectedStopsMarker';
 import VehicleLayer from '../Common/Map/VehicleLayer/VehicleLayer';
 import { CongestionLayer } from '../Common/Map/TrafficLayer/CongestionLayer';
 import { IncidentLayer } from '../Common/Map/TrafficLayer/IncidentLayer';
@@ -82,7 +81,7 @@ import {
     useNewRealtimeMapFilters,
     useRouteAlertsLayer,
     useCarsRoadworksLayer,
-    useStopBasedDisruptionsLayer,
+    useDisruptionsLayer, useStopDisruptionsSearch,
 } from '../../redux/selectors/appSettings';
 import { haversineDistance } from '../../utils/map-helpers';
 import {
@@ -134,8 +133,10 @@ import {
     updateUrlFromDisruptionsLayer,
 } from './TrafficFilters/DisruptionFilter';
 import { DisruptionLayer } from '../Common/Map/TrafficLayer/DisruptionLayer';
-import { goToDisruptionEditPage } from '../../redux/actions/control/link';
+import { goToDisruptionSummary } from '../../redux/actions/control/link';
 import { useAlertCauses, useAlertEffects } from '../../utils/control/alert-cause-effect';
+import SelectedStopsDisruptionsMarker from '../Common/Map/StopsLayer/SelectedStopsDisruptionsMarker';
+import { SelectedStopsMarker } from '../Common/Map/StopsLayer/SelectedStopsMarker';
 
 function RealTimeView(props) {
     const { ADDRESS, ROUTE, STOP, BUS, TRAIN, FERRY } = SEARCH_RESULT_TYPE;
@@ -188,7 +189,7 @@ function RealTimeView(props) {
 
     const shouldFetchDisruptionData = () => (
         props.useNewRealtimeMapFilters && props.selectedDisruptionFilters.length > 0)
-        || (props.useStopBasedDisruptionsLayer && props.selectedDisruptionFilters.length > 0);
+        || (props.useDisruptionsLayer && props.selectedDisruptionFilters.length > 0);
 
     const fetchDisruptionsData = async () => {
         const filters = {
@@ -385,7 +386,7 @@ function RealTimeView(props) {
         }
 
         if (props.useCarsRoadworksLayer) readUrlToCarsRoadworksLayer(searchParams, isRoadworksQueryValid, props.updateShowRoadworks);
-        if (props.useStopBasedDisruptionsLayer) readUrlToDisruptionLayer(searchParams, isDisruptionsQueryValid, props.updateShowDisruptions);
+        if (props.useDisruptionsLayer) readUrlToDisruptionLayer(searchParams, isDisruptionsQueryValid, props.updateShowDisruptions);
         if (props.useRouteAlertsLayer) restoreRouteAlertsStateFromUrl(searchParams, props.updateShowRouteAlerts, props.updateShowAllRouteAlerts);
 
         const liveTrafficQuery = searchParams.get('liveTraffic');
@@ -487,7 +488,7 @@ function RealTimeView(props) {
         }
 
         if (useCarsRoadworksLayer) updateUrlFromCarsRoadworksLayer(props.selectedRoadworksFilters, searchParams);
-        if (props.useStopBasedDisruptionsLayer) updateUrlFromDisruptionsLayer(props.selectedDisruptionFilters, searchParams);
+        if (useDisruptionsLayer) updateUrlFromDisruptionsLayer(props.selectedDisruptionFilters, searchParams);
 
         if (props.useRouteAlertsLayer) updateUrlForRouteAlerts(props.showRouteAlerts, props.showAllRouteAlerts, searchParams);
 
@@ -678,16 +679,16 @@ function RealTimeView(props) {
                         <IncidentLayer
                             data={ incidents.filter(incident => (props.useNewRealtimeMapFilters ? props.selectedIncidentFilters.includes(incident.type.category) : incident)) }
                             weight={ INCIDENTS_SHAPE_WEIGHT }
-                            useNewColors={ props.useStopBasedDisruptionsLayer }
+                            useNewColors={ props.useDisruptionsLayer }
                         />
                     ) }
-                    {(props.useNewRealtimeMapFilters || (props.useStopBasedDisruptionsLayer && props.showDisruptions)) && (
+                    {(props.useNewRealtimeMapFilters || (props.useDisruptionsLayer && props.showDisruptions)) && (
                         <DisruptionLayer
                             disruptions={ disruptions }
                             stops={ disruptionStops }
-                            goToDisruptionEditPage={ props.goToDisruptionEditPage }
-                            impacts={ impactsArray }
                             causes={ causesArray }
+                            impacts={ impactsArray }
+                            goToDisruptionSummary={ props.goToDisruptionSummary }
                         />
                     )}
                     <SelectedAddressMarker address={ props.selectedAddress } />
@@ -714,12 +715,24 @@ function RealTimeView(props) {
                     <HighlightingLayer
                         vehiclePosition={ props.vehiclePosition }
                         stopDetail={ props.selectedStop } />
-                    <SelectedStopsMarker
-                        stops={ props.stops }
-                        onPopupOpen={ stop => props.updateHoveredEntityKey(stop.key) }
-                        onPopupClose={ props.updateHoveredEntityKey }
-                        size={ 26 }
-                        popup />
+                    { props.useStopDisruptionsSearch ? (
+                        <SelectedStopsDisruptionsMarker
+                            stops={ props.stops }
+                            causes={ causesArray }
+                            impacts={ impactsArray }
+                            goToDisruptionSummary={ props.goToDisruptionSummary }
+                            size={ 26 }
+                            popup
+                        />
+                    )
+                        : (
+                            <SelectedStopsMarker
+                                stops={ props.stops }
+                                onPopupOpen={ stop => props.updateHoveredEntityKey(stop.key) }
+                                onPopupClose={ props.updateHoveredEntityKey }
+                                size={ 26 }
+                                popup />
+                        )}
                     <VehicleLayer />
                 </Map>
                 <ErrorAlerts />
@@ -785,7 +798,8 @@ RealTimeView.propTypes = {
     useIncidentLayer: PropTypes.bool.isRequired,
     useRouteAlertsLayer: PropTypes.bool.isRequired,
     useCarsRoadworksLayer: PropTypes.bool.isRequired,
-    useStopBasedDisruptionsLayer: PropTypes.bool.isRequired,
+    useDisruptionsLayer: PropTypes.bool.isRequired,
+    useStopDisruptionsSearch: PropTypes.bool.isRequired,
     useNewRealtimeMapFilters: PropTypes.bool.isRequired,
     mergeVehicleFilters: PropTypes.func.isRequired,
     showingTags: PropTypes.arrayOf(PropTypes.string).isRequired,
@@ -820,7 +834,7 @@ RealTimeView.propTypes = {
     selectedCars: PropTypes.object.isRequired,
     updateSelectedCars: PropTypes.func.isRequired,
     updateSelectedTmpImpacts: PropTypes.func.isRequired,
-    goToDisruptionEditPage: PropTypes.func.isRequired,
+    goToDisruptionSummary: PropTypes.func.isRequired,
 };
 
 RealTimeView.defaultProps = {
@@ -856,7 +870,8 @@ export default connect(
         useIncidentLayer: useIncidentLayer(state),
         useRouteAlertsLayer: useRouteAlertsLayer(state),
         useCarsRoadworksLayer: useCarsRoadworksLayer(state),
-        useStopBasedDisruptionsLayer: useStopBasedDisruptionsLayer(state),
+        useDisruptionsLayer: useDisruptionsLayer(state),
+        useStopDisruptionsSearch: useStopDisruptionsSearch(state),
         useNewRealtimeMapFilters: useNewRealtimeMapFilters(state),
         showingTags: getVehiclesFilterShowingTags(state),
         showingDelay: getVehiclesFilterShowingDelay(state),
@@ -904,6 +919,6 @@ export default connect(
         updateSelectedCars,
         updateSelectedTmpImpacts,
         updateShowDisruptions,
-        goToDisruptionEditPage,
+        goToDisruptionSummary,
     },
 )(RealTimeView);

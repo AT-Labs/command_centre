@@ -5,13 +5,13 @@ import PropTypes from 'prop-types';
 import L from 'leaflet';
 import { has } from 'lodash-es';
 import { DISRUPTIONS_MARKER_CLUSTER_FOCUS_ZOOM } from '../../../../constants/traffic';
-import DisruptionDetails from './DisruptionDetails';
 import { generateUniqueID, getDisruptionsByStop } from '../../../../utils/helpers';
 import './DisruptionLayer.scss';
 import DisruptionMarker from './DisruptionMarker';
+import DisruptionDetails from './DisruptionDetails';
 
 export const DisruptionLayer = (props) => {
-    const { stops, disruptions, goToDisruptionEditPage, impacts, causes } = props;
+    const { stops, disruptions, goToDisruptionSummary, impacts, causes } = props;
     const polylineGroupRef = useRef();
 
     const getCoordinates = stop => [stop.stopLat, stop.stopLon];
@@ -39,13 +39,13 @@ export const DisruptionLayer = (props) => {
                             stopTitle={ `${stop.stopCode} - ${stop.stopName}` }
                             causes={ causes }
                             impacts={ impacts }
-                            goToDisruptionEditPage={ goToDisruptionEditPage }
+                            goToDisruptionSummary={ goToDisruptionSummary }
                         />
                     </Popup>
                 </DisruptionMarker>
             </React.Fragment>
         ) : null
-    ))), [stops, disruptions, causes, impacts]);
+    ))), [stops, disruptions]);
     return (
         <FeatureGroup ref={ polylineGroupRef }>
             <MarkerClusterGroup
@@ -66,7 +66,7 @@ DisruptionLayer.propTypes = {
     disruptions: PropTypes.array,
     impacts: PropTypes.array,
     causes: PropTypes.array,
-    goToDisruptionEditPage: PropTypes.func,
+    goToDisruptionSummary: PropTypes.func,
 };
 
 DisruptionLayer.defaultProps = {
@@ -74,5 +74,5 @@ DisruptionLayer.defaultProps = {
     disruptions: [],
     impacts: [],
     causes: [],
-    goToDisruptionEditPage: {},
+    goToDisruptionSummary: {},
 };
