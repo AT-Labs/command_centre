@@ -78,7 +78,7 @@ export const goToDisruptionsView = (message, { setActiveDisruption }) => (dispat
     if (setActiveDisruption) dispatch(updateActiveDisruptionId(message.incidentId));
 };
 
-export const goToDisruptionEditPage = (message, { setActiveDisruption }) => (dispatch) => {
+export const goToDisruptionSummary = (message, { setActiveDisruption }) => (dispatch) => {
     dispatch(updateMainView(VIEW_TYPE.MAIN.CONTROL));
     dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS));
     dispatch(updateActiveControlEntityId(message.disruptionId.toString()));
