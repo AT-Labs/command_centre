@@ -7,11 +7,12 @@ import { Marker } from 'react-leaflet';
 import { generateUniqueID } from '../../../utils/helpers';
 import Icon from '../Icon/Icon';
 
-const IconMarker = ({
+const IconMarker = React.forwardRef(({
     location, imageName, size, offset, className, ...props
-}) => (
+}, ref) => (
     <Marker
         { ...props }
+        ref={ ref }
         key={ generateUniqueID() }
         icon={ new L.DivIcon({
             html: ReactDOMServer.renderToString(<Icon icon={ imageName } />),
@@ -20,7 +21,7 @@ const IconMarker = ({
             className,
         }) }
         position={ location } />
-);
+));
 
 IconMarker.propTypes = {
     location: PropTypes.array.isRequired,
