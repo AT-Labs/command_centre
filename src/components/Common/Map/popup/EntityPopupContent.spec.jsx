@@ -3,12 +3,18 @@
  */
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Provider } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import { EntityPopupContent } from './EntityPopupContent';
 import '@testing-library/jest-dom';
+import * as mapActions from '../../../../redux/actions/realtime/map';
+
+jest.mock('react-redux', () => ({
+    ...jest.requireActual('react-redux'),
+    useDispatch: jest.fn(),
+}));
 
 const mockStore = configureMockStore();
 const theme = createTheme();
@@ -49,6 +55,16 @@ const renderWithProviders = (ui, store) => render(
 );
 
 describe('EntityPopupContent', () => {
+    let dispatchMock;
+    beforeEach(() => {
+        dispatchMock = jest.fn();
+        useDispatch.mockReturnValue(dispatchMock);
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('renders route popup content', () => {
         const store = mockStore({});
         renderWithProviders(
@@ -102,5 +118,27 @@ describe('EntityPopupContent', () => {
             store,
         );
         expect(screen.getByText('1234 - Main St')).toBeInTheDocument();
+    });
+
+    it('dispatches updateHoveredEntityKey and routeSelected for route entity', () => {
+        const store = mockStore({});
+        renderWithProviders(
+            <EntityPopupContent { ...defaultProps } entity={ routeEntity } />,
+            store,
+        );
+        fireEvent.click(screen.getByText('View details'));
+        expect(dispatchMock).toHaveBeenCalledWith(mapActions.updateHoveredEntityKey(''));
+        expect(dispatchMock).toHaveBeenCalledWith(expect.any(Function));
+    });
+
+    it('dispatches updateHoveredEntityKey and stopSelected for stop entity', () => {
+        const store = mockStore({});
+        renderWithProviders(
+            <EntityPopupContent { ...defaultProps } entity={ stopEntity } />,
+            store,
+        );
+        fireEvent.click(screen.getByText('View details'));
+        expect(dispatchMock).toHaveBeenCalledWith(mapActions.updateHoveredEntityKey(''));
+        expect(dispatchMock).toHaveBeenCalledWith(expect.any(Function));
     });
 });
