@@ -6,12 +6,9 @@ import sinon from 'sinon';
 import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
-import * as disruptionApi from '../../../../utils/transmitters/disruption-mgt-api';
-import * as appSettings from '../../../selectors/appSettings';
 import ACTION_TYPE from '../../../action-types';
 import * as stopDetailActions from './stop';
 import { utcDateFormatWithoutTZ } from '../../../../utils/dateUtils';
-import {getDisruptionsByStop} from "./stop";
 
 const mockStore = configureMockStore([thunk]);
 let store;
@@ -422,93 +419,6 @@ describe('Stop detail actions', () => {
             ];
 
             expect(store.getActions()).to.eql(expectedActions);
-        });
-    });
-
-    context('getDisruptionsByStop', () => {
-        const stop = {key: 'stop-key', stop_code: '1234'};
-
-        it('dispatches actions on successful API call', async () => {
-            sandbox.stub(appSettings, 'useStopBasedDisruptionSearch').returns(true);
-            const disruptions = [{ id: 1 }];
-            sandbox.stub(disruptionApi, 'getDisruptionsByFilters').resolves({ disruptions });
-
-            await store.dispatch(getDisruptionsByStop(stop));
-
-            const actions = store.getActions();
-            expect(actions[0]).to.eql({ type: ACTION_TYPE.DATA_LOADING, payload: { isLoading: true } });
-            expect(actions[1]).to.eql({
-                type: ACTION_TYPE.FETCH_STOP_DISRUPTIONS,
-                payload: { entityKey: stop.key, disruptions },
-            });
-            expect(actions[2]).to.eql({ type: ACTION_TYPE.DATA_LOADING, payload: { isLoading: false } });
-        });
-
-        it('dispatches error action on API failure', async () => {
-            sandbox.stub(appSettings, 'useStopBasedDisruptionSearch').returns(true);
-            const error = new Error('fail');
-            sandbox.stub(disruptionApi, 'getDisruptionsByFilters').rejects(error);
-
-            await store.dispatch(getDisruptionsByStop(stop));
-
-            const actions = store.getActions();
-            expect(actions[0]).to.eql({ type: ACTION_TYPE.DATA_LOADING, payload: { isLoading: true } });
-            expect(actions[1]).to.eql({
-                type: 'data-error',
-                payload: { error: { error: { disruptionsByStop: error } } },
-            });
-            expect(actions[2]).to.eql({ type: ACTION_TYPE.DATA_LOADING, payload: { isLoading: false } });
-        });
-
-        it('returns nothing if useDisruptionSearch is false', async () => {
-            sandbox.stub(appSettings, 'useStopBasedDisruptionSearch').returns(false);
-            const getDisruptionsByFilters = sandbox.stub(disruptionApi, 'getDisruptionsByFilters');
-
-            await store.dispatch(getDisruptionsByStop(stop));
-
-            expect(getDisruptionsByFilters.notCalled).to.be.true;
-            expect(store.getActions()).to.eql([]);
-        });
-    });
-
-    context('stopChecked', () => {
-        const stop = { key: 'stop-key', stop_code: '1234' };
-        const disruptions= [{id: 1}];
-
-        const versionedRoutes = [
-            {
-                route_id: '10601-20180910114240_v70.21',
-                shape_wkt: 'shape_wkt',
-            },
-            {
-                route_id: '10601-20180921103729_v70.37',
-                shape_wkt: 'shape_wkt',
-            },
-        ];
-
-        it('should dispatch actions to get routes and disruptions for a stop', async () => {
-            sandbox.stub(appSettings, 'useStopBasedDisruptionSearch').returns(true);
-            const getRoutesByStopStub = sandbox.stub(ccStatic, 'getRoutesByStop').resolves(versionedRoutes);
-            const getDisruptionsByFiltersStub = sandbox.stub(disruptionApi, 'getDisruptionsByFilters').resolves({ disruptions });
-
-            await store.dispatch(stopDetailActions.stopChecked(stop));
-
-            sinon.assert.calledOnce(getRoutesByStopStub);
-            sinon.assert.calledWith(getRoutesByStopStub, stop.stop_code);
-            sinon.assert.calledOnce(getDisruptionsByFiltersStub);
-            sinon.assert.calledWith(getDisruptionsByFiltersStub, sinon.match.has('stopCode', stop.stop_code));
-        });
-
-        it('should dispatch actions to get only routes for a stop', async () => {
-            sandbox.stub(appSettings, 'useStopBasedDisruptionSearch').returns(false);
-            const getRoutesByStopStub = sandbox.stub(ccStatic, 'getRoutesByStop').resolves(versionedRoutes);
-            const getDisruptionsByFiltersStub = sandbox.stub(disruptionApi, 'getDisruptionsByFilters').resolves({ disruptions });
-
-            await store.dispatch(stopDetailActions.stopChecked(stop));
-
-            sinon.assert.calledOnce(getRoutesByStopStub);
-            sinon.assert.calledWith(getRoutesByStopStub, stop.stop_code);
-            sinon.assert.notCalled(getDisruptionsByFiltersStub);
         });
     });
 });
