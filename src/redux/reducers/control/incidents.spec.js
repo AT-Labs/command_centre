@@ -1,8 +1,8 @@
-import reducer, { INIT_STATE } from '../path-to-reducer';
+import reducer, { INIT_STATE } from './incidents';
 import ACTION_TYPE from '../../action-types';
 import EDIT_TYPE from '../../../types/edit-types';
 
-describe('incidents reducer', () => {
+describe('incidents reducer (Jest)', () => {
     it('should return the initial state', () => {
         expect(reducer(undefined, {})).toEqual(INIT_STATE);
     });
@@ -47,9 +47,7 @@ describe('incidents reducer', () => {
             ...INIT_STATE,
             activeIncidentId: 'not-null',
         };
-        const action = {
-            type: ACTION_TYPE.RESET_INCIDENT_STATE,
-        };
+        const action = { type: ACTION_TYPE.RESET_INCIDENT_STATE };
         expect(reducer(preloadedState, action)).toEqual(INIT_STATE);
     });
 
@@ -62,9 +60,7 @@ describe('incidents reducer', () => {
     });
 
     it('should handle UPDATE_INCIDENT_FILTERS', () => {
-        const filters = {
-            selectedStatus: 'active',
-        };
+        const filters = { selectedStatus: 'active' };
         const action = {
             type: ACTION_TYPE.UPDATE_INCIDENT_FILTERS,
             payload: { filters },

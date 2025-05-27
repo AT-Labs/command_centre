@@ -1,0 +1,223 @@
+import configureMockStore from 'redux-mock-store';
+import thunk from 'redux-thunk';
+
+import * as actions from './incidents';
+import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
+import * as ccStatic from '../../../utils/transmitters/cc-static';
+
+import ACTION_TYPE from '../../action-types';
+import ERROR_TYPE from '../../../types/error-types';
+import { STATUSES } from '../../../types/disruptions-types';
+
+const middlewares = [thunk];
+const mockStore = configureMockStore(middlewares);
+
+jest.mock('../../../utils/transmitters/disruption-mgt-api');
+jest.mock('../../../utils/transmitters/cc-static');
+
+describe('Incidents Actions (Jest)', () => {
+    let store;
+
+    beforeEach(() => {
+        store = mockStore({
+            appSettings: {},
+            control: {
+                incidents: {
+                    cachedRoutesToStops: {},
+                    cachedStopsToRoutes: {},
+                    cachedShapes: {},
+                },
+            },
+            static: {
+                routes: {},
+                stops: {},
+            },
+        });
+
+        jest.clearAllMocks();
+    });
+
+    it('dispatches actions for getDisruptionsAndIncidents on success', async () => {
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [
+                { disruptionId: 1, impact: 'Delay', affectedEntities: [], incidentId: 1 },
+                { disruptionId: 2, impact: 'Detour', affectedEntities: [], incidentId: 2 },
+            ],
+            _links: { permissions: { view: true } },
+        });
+
+        await store.dispatch(actions.getDisruptionsAndIncidents());
+        const dispatched = store.getActions();
+
+        expect(dispatched).toEqual(expect.arrayContaining([
+            expect.objectContaining({ type: 'update-control-set-all-incidents' }),
+            expect.objectContaining({ type: 'update-control-incidents-permissions' }),
+            expect.objectContaining({ type: 'fetch-control-incidents-disruptions' }),
+            expect.objectContaining({ type: 'update-control-incidents-loading' }),
+        ]));
+    });
+
+    it('dispatches setBannerError on getDisruptionsAndIncidents failure', async () => {
+        disruptionsMgtApi.getDisruptions.mockRejectedValue(new Error('Fetch error'));
+        ERROR_TYPE.fetchDisruptionsEnabled = true;
+
+        await store.dispatch(actions.getDisruptionsAndIncidents());
+        const dispatched = store.getActions();
+
+        expect(dispatched).toEqual(expect.arrayContaining([
+            expect.objectContaining({ type: 'update-control-incidents-loading' }),
+        ]));
+    });
+
+    it('dispatches correct actions on updateIncident success', async () => {
+        disruptionsMgtApi.updateDisruption.mockResolvedValue({});
+
+        const incident = { disruptionId: 1, incidentNo: 'INC123', status: STATUSES.ACTIVE, createNotification: true };
+        await store.dispatch(actions.updateIncident(incident));
+        const dispatched = store.getActions();
+
+        expect(dispatched).toEqual(expect.arrayContaining([
+            { type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING, payload: { isRequesting: true, resultIncidentId: 1 } },
+            { type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_RESULT, payload: expect.anything() },
+            { type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING, payload: { isRequesting: false, resultIncidentId: 1 } },
+        ]));
+    });
+
+    it('dispatches correct actions on createIncident success', async () => {
+        disruptionsMgtApi.createDisruption.mockResolvedValue({
+            disruptionId: 99,
+            incidentNo: 'NEW123',
+            version: 1,
+            createNotification: true,
+        });
+
+        await store.dispatch(actions.createIncident({ status: STATUSES.ACTIVE }));
+        const dispatched = store.getActions();
+
+        expect(dispatched).toEqual(expect.arrayContaining([
+            {
+                type: 'update-control-incident-action-requesting',
+                payload: {
+                    isRequesting: true,
+                    resultIncidentId: undefined,
+                },
+            },
+            {
+                type: 'update-control-incident-action-result',
+                payload: {
+                    resultIncidentId: 99,
+                    resultStatus: 'success',
+                    resultMessage: 'Disruption number #NEW123 created successfully.',
+                    resultCreateNotification: true,
+                    resultIncidentVersion: undefined,
+                },
+            },
+            {
+                type: 'set-modal-status',
+                payload: {
+                    isOpen: true,
+                },
+            },
+            {
+                type: 'update-control-incident-action-requesting',
+                payload: {
+                    isRequesting: false,
+                    resultIncidentId: undefined,
+                },
+            },
+            {
+                type: 'update-incident-affected-entities',
+                payload: {
+                    affectedRoutes: [
+                    ],
+                },
+            },
+            {
+                type: 'set-modal-error',
+                payload: {
+                    error: 'Unable to load disruptions, please try again',
+                },
+            },
+            {
+                type: 'update-control-incidents-loading',
+                payload: {
+                    isLoading: false,
+                },
+            },
+        ]));
+    });
+
+    it('calls updateIncident inside publishDraftIncident and dispatches actions', async () => {
+        disruptionsMgtApi.updateDisruption.mockResolvedValue({});
+
+        const incident = {
+            disruptionId: 3,
+            incidentNo: 'INC789',
+            status: STATUSES.DRAFT,
+            createNotification: true,
+        };
+
+        const result = await store.dispatch(actions.publishDraftIncident(incident));
+        const dispatched = store.getActions();
+
+        expect(dispatched).toEqual(expect.arrayContaining([
+            expect.objectContaining({ type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING }),
+            expect.objectContaining({ type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_RESULT }),
+        ]));
+        expect(result).toEqual({});
+    });
+
+    it('dispatches actions for getStopsByRoute when data is fetched', async () => {
+        const mockStops = [
+            { stopId: 'STOP1', stopName: 'Main St', routeId: 'ROUTE123' },
+            { stopId: 'STOP2', stopName: 'Second Ave' },
+        ];
+        ccStatic.getStopsByRoute.mockResolvedValue(mockStops);
+
+        const routes = [
+            {
+                routeId: 'ROUTE123',
+                routeVariantName: 'Head Sign A',
+                shape_wkt: 'shape_wkt',
+                vehicles: [],
+            },
+            {
+                routeId: 'ROUTE123',
+                routeVariantName: 'Head Sign B',
+                shape_wkt: 'shape_wkt',
+                vehicles: [],
+            },
+        ];
+        await store.dispatch(actions.getStopsByRoute(routes));
+
+        expect(ccStatic.getStopsByRoute).toHaveBeenCalledWith(routes[0].routeId);
+        const dispatched = store.getActions();
+        expect(dispatched).toEqual(expect.arrayContaining([
+            expect.objectContaining({ type: 'update-control-incidents-loading-stops-by-route' }),
+        ]));
+    });
+
+    it('dispatches actions for getRoutesByStop when data is fetched', async () => {
+        const mockRoutes = [
+            { routeId: 'ROUTE1', routeName: 'Route 1' },
+            { routeId: 'ROUTE2', routeName: 'Route 2' },
+        ];
+        ccStatic.getRoutesByStop.mockResolvedValue(mockRoutes);
+
+        const stops = [
+            {
+                locationType: 0,
+                stopCode: '1599',
+                stopId: '1599-20180921103729_v70.37',
+                stopName: 'Westgate Stop B',
+            },
+        ];
+        await store.dispatch(actions.getRoutesByStop(stops));
+
+        expect(ccStatic.getRoutesByStop).toHaveBeenCalledWith(stops[0].stopCode);
+        const dispatched = store.getActions();
+        expect(dispatched).toEqual(expect.arrayContaining([
+            expect.objectContaining({ type: 'update-control-incidents-loading-routes-by-stop' }),
+        ]));
+    });
+});
