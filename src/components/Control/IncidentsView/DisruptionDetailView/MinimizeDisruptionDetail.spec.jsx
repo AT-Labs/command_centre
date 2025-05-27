@@ -13,6 +13,11 @@ import { STATUSES } from '../../../../types/disruptions-types';
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
+jest.mock('../../../../utils/control/alert-cause-effect', () => ({
+    useAlertCauses: () => [{ value: 'ACCIDENT', label: 'Accident' }],
+    useAlertEffects: () => [{ value: 'SIGNIFICANT_DELAYS', label: 'Significant Delays' }],
+}));
+
 const disruptionMock = {
     affectedEntities: [],
     incidentNo: '1234',
