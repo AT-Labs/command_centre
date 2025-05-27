@@ -9,15 +9,9 @@ import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
 import MinimizeDisruptionDetail from './MinimizeDisruptionDetail';
 import { STATUSES } from '../../../../types/disruptions-types';
-import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
-
-jest.mock('../../../../utils/control/alert-cause-effect', () => ({
-    useAlertCauses: () => [{ value: 'ACCIDENT', label: 'Accident' }],
-    useAlertEffects: () => [{ value: 'SIGNIFICANT_DELAYS', label: 'Significant Delays' }],
-}));
 
 const disruptionMock = {
     affectedEntities: [],
