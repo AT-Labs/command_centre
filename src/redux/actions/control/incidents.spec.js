@@ -15,7 +15,7 @@ const mockStore = configureMockStore(middlewares);
 jest.mock('../../../utils/transmitters/disruption-mgt-api');
 jest.mock('../../../utils/transmitters/cc-static');
 
-describe('Incidents Actions (Jest)', () => {
+describe('Incidents Actions', () => {
     let store;
 
     beforeEach(() => {
@@ -23,9 +23,29 @@ describe('Incidents Actions (Jest)', () => {
             appSettings: {},
             control: {
                 incidents: {
-                    cachedRoutesToStops: {},
-                    cachedStopsToRoutes: {},
+                    cachedStopsToRoutes: [
+                        {
+                            locationType: 0,
+                            stopCode: '1599',
+                            stopId: '1599-20180921103729_v70.37',
+                            stopName: 'Westgate Stop B',
+                        },
+                    ],
                     cachedShapes: {},
+                    cachedRoutesToStops: [
+                        {
+                            routeId: 'ROUTE123',
+                            routeVariantName: 'Head Sign A',
+                            shape_wkt: 'shape_wkt',
+                            vehicles: [],
+                        },
+                        {
+                            routeId: 'ROUTE123',
+                            routeVariantName: 'Head Sign B',
+                            shape_wkt: 'shape_wkt',
+                            vehicles: [],
+                        },
+                    ],
                 },
             },
             static: {

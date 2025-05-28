@@ -459,7 +459,7 @@ export const deleteAffectedEntities = () => (dispatch) => {
     });
 };
 
-const addShapesToEntities = (entities, routesWithShapes) => entities.map((entity) => {
+export const addShapesToEntities = (entities, routesWithShapes) => entities.map((entity) => {
     const mappedEntity = { ...entity };
     if (mappedEntity.routeId) {
         const route = routesWithShapes.find(routeWithShapes => entity.routeId === routeWithShapes.routeId);
