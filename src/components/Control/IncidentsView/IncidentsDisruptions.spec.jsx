@@ -197,7 +197,7 @@ describe('IncidentsDisruptions Component', () => {
     });
 
     it('calls goToNotificationsView on notification icon click', () => {
-        const { container } = render(
+        render(
             <Provider store={ store }>
                 <IncidentsDisruptions
                     { ...mockProps }
@@ -210,7 +210,6 @@ describe('IncidentsDisruptions Component', () => {
             </Provider>,
         );
 
-        console.log(container.innerHTML);
         const button = screen.getByLabelText('view-notification');
         fireEvent.click(button);
 
