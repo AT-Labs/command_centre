@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import { FormGroup, Input, Label, FormFeedback } from 'reactstrap';
 import { IoIosArrowDropdown } from 'react-icons/io';
+import '../style.scss';
 
 export const DisruptionDetailSelect = (props) => {
     const { value, options, label, id, disabled, onChange, invalid, feedback, onBlur } = props;
