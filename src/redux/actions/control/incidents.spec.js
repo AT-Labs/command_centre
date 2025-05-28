@@ -17,6 +17,7 @@ jest.mock('../../../utils/transmitters/cc-static');
 
 describe('Incidents Actions', () => {
     let store;
+    let dispatch;
 
     beforeEach(() => {
         store = mockStore({
@@ -53,7 +54,7 @@ describe('Incidents Actions', () => {
                 stops: {},
             },
         });
-
+        dispatch = jest.fn();
         jest.clearAllMocks();
     });
 
@@ -239,5 +240,105 @@ describe('Incidents Actions', () => {
         expect(dispatched).toEqual(expect.arrayContaining([
             expect.objectContaining({ type: 'update-control-incidents-loading-routes-by-stop' }),
         ]));
+    });
+
+    it('should create an action with stopsByRoute and default isLoadingStopsByRoute=false', () => {
+        const stopsByRoute = { route1: ['stop1', 'stop2'] };
+        const expectedAction = {
+            type: ACTION_TYPE.UPDATE_INCIDENT_STOPS_BY_ROUTE,
+            payload: {
+                stopsByRoute,
+                isLoadingStopsByRoute: false,
+            },
+        };
+
+        expect(actions.updateStopsByRoute(stopsByRoute)).toEqual(expectedAction);
+    });
+
+    it('should create an action with stopsByRoute and isLoadingStopsByRoute=true', () => {
+        const stopsByRoute = { route2: ['stop3'] };
+        const expectedAction = {
+            type: ACTION_TYPE.UPDATE_INCIDENT_STOPS_BY_ROUTE,
+            payload: {
+                stopsByRoute,
+                isLoadingStopsByRoute: true,
+            },
+        };
+
+        expect(actions.updateStopsByRoute(stopsByRoute, true)).toEqual(expectedAction);
+    });
+
+    it('should create an action with routesByStop and default isLoadingRoutesByStop=false', () => {
+        const routesByStop = { stop1: ['route1', 'route2'] };
+        const expectedAction = {
+            type: ACTION_TYPE.UPDATE_INCIDENT_ROUTES_BY_STOP,
+            payload: {
+                routesByStop,
+                isLoadingRoutesByStop: false,
+            },
+        };
+
+        expect(actions.updateRoutesByStop(routesByStop)).toEqual(expectedAction);
+    });
+
+    it('should create an action with routesByStop and isLoadingRoutesByStop=true', () => {
+        const routesByStop = { stop2: ['route3'] };
+        const expectedAction = {
+            type: ACTION_TYPE.UPDATE_INCIDENT_ROUTES_BY_STOP,
+            payload: {
+                routesByStop,
+                isLoadingRoutesByStop: true,
+            },
+        };
+
+        expect(actions.updateRoutesByStop(routesByStop, true)).toEqual(expectedAction);
+    });
+
+    test('openCreateIncident dispatches updateOpenCreateIncident', () => {
+        const isEnabled = true;
+        actions.openCreateIncident(isEnabled)(dispatch);
+
+        expect(dispatch).toHaveBeenCalledWith({
+            payload: {
+                isCreateEnabled: isEnabled,
+            },
+            type: ACTION_TYPE.OPEN_CREATE_INCIDENTS,
+        });
+    });
+
+    test('openCreateDiversion dispatches correct action', () => {
+        const isEnabled = true;
+        actions.openCreateDiversion(isEnabled)(dispatch);
+
+        expect(dispatch).toHaveBeenCalledWith({
+            payload: {
+                isCreateDiversionEnabled: isEnabled,
+            },
+            type: 'open-create-diversion',
+        });
+    });
+
+    test('resetState returns correct action', () => {
+        expect(actions.resetState()).toEqual({
+            type: ACTION_TYPE.RESET_INCIDENT_STATE,
+        });
+    });
+
+    test('deleteAffectedEntities dispatches correct action', () => {
+        actions.deleteAffectedEntities()(dispatch);
+
+        expect(dispatch).toHaveBeenCalledWith({
+            type: ACTION_TYPE.DELETE_INCIDENT_AFFECTED_ENTITIES,
+            payload: {
+                activeStep: 2,
+                showSelectedRoutes: false,
+                affectedEntities: {
+                    affectedRoutes: [],
+                    affectedStops: [],
+                },
+                stopsByRoute: {},
+                routesByStop: {},
+            },
+        });
     });
 });

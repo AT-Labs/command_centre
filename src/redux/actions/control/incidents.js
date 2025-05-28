@@ -182,8 +182,12 @@ export const getDisruptionsAndIncidents = () => (dispatch, getState) => {
                     // Merge affectedEntities
                     existing.affectedEntities = existing.affectedEntities.concat(disruption.affectedEntities);
                     // Merge unique impact values
-                    const existingImpacts = new Set(existing.impact.split(',').map(s => s.trim()));
-                    const newImpacts = disruption.impact.split(',').map(s => s.trim());
+                    const rawImpacts = existing.impact.split(',');
+                    const trimmedImpacts = rawImpacts.map(impact => impact.trim());
+                    const existingImpacts = new Set(trimmedImpacts);
+
+                    const rawNewImpacts = disruption.impact.split(',');
+                    const newImpacts = rawNewImpacts.map(impact => impact.trim());
                     newImpacts.forEach(impact => existingImpacts.add(impact));
                     existing.impact = Array.from(existingImpacts).join(', ');
                 } else {
