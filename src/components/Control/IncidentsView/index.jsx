@@ -124,19 +124,17 @@ export class IncidentsView extends React.Component {
                                 page={ currentPage }
                                 disruptions={ filteredDisruptions }
                                 incidents={ paginatedIncidents } />
-                            <>
-                                <PageInfo
-                                    currentPage={ currentPage }
-                                    itemsPerPage={ PAGE_SIZE }
-                                    itemsTotal={ filteredIncidents.length }
-                                />
-                                <Pagination
-                                    currentPage={ currentPage }
-                                    itemsTotal={ filteredIncidents.length }
-                                    itemsPerPage={ PAGE_SIZE }
-                                    onPageClick={ page => this.handlePageChange(page) }
-                                />
-                            </>
+                            <PageInfo
+                                currentPage={ currentPage }
+                                itemsPerPage={ PAGE_SIZE }
+                                itemsTotal={ filteredIncidents.length }
+                            />
+                            <Pagination
+                                currentPage={ currentPage }
+                                itemsTotal={ filteredIncidents.length }
+                                itemsPerPage={ PAGE_SIZE }
+                                onPageClick={ page => this.handlePageChange(page) }
+                            />
                         </div>
                     )}
             </div>

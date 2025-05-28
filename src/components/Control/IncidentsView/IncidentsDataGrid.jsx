@@ -61,7 +61,7 @@ export const IncidentDataGrid = (props) => {
 
     const getSortButton = (sortBy, title) => (
         [
-            <div className="d-flex align-content-center">
+            <div className="d-flex align-content-center" key={ sortBy + title }>
                 <SortButton
                     className="mr-1"
                     active={

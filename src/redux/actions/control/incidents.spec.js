@@ -104,6 +104,73 @@ describe('Incidents Actions', () => {
         ]));
     });
 
+    it('dispatches correct actions on updateIncident success with DRAFT status', async () => {
+        disruptionsMgtApi.updateDisruption.mockResolvedValue({});
+
+        const incident = {
+            disruptionId: 1,
+            incidentNo: 'INC123',
+            status: STATUSES.DRAFT,
+            createNotification: false,
+            header: 'Draft Incident',
+            cause: 'Testing',
+        };
+
+        await store.dispatch(actions.updateIncident(incident));
+        const dispatched = store.getActions();
+
+        expect(dispatched).toEqual(expect.arrayContaining([
+            {
+                type: 'update-control-incident-action-requesting',
+                payload: {
+                    isRequesting: true,
+                    resultIncidentId: 1,
+                },
+            },
+            {
+                type: 'update-control-incident-action-result',
+                payload: {
+                    resultIncidentId: 1,
+                    resultStatus: 'success',
+                    resultMessage: 'Draft disruption number #INC123 saved successfully.',
+                    resultCreateNotification: false,
+                    resultIncidentVersion: undefined,
+                },
+            },
+        ]));
+    });
+
+    it('dispatches correct actions on updateIncident failure', async () => {
+        disruptionsMgtApi.updateDisruption.mockRejectedValue({ code: 'ERR_FAILED' });
+
+        const incident = {
+            disruptionId: 1,
+            incidentNo: 'INC456',
+            status: STATUSES.PUBLISHED,
+            createNotification: true,
+        };
+
+        await store.dispatch(actions.updateIncident(incident));
+        const dispatched = store.getActions();
+
+        expect(dispatched).toEqual(expect.arrayContaining([
+            {
+                payload: { isRequesting: true, resultIncidentId: 1 },
+                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING,
+            },
+            {
+                type: 'update-control-incident-action-result',
+                payload: {
+                    resultIncidentId: 1,
+                    resultStatus: 'danger',
+                    resultMessage: 'Failed to update disruption INC456.',
+                    resultCreateNotification: undefined,
+                    resultIncidentVersion: undefined,
+                },
+            },
+        ]));
+    });
+
     it('dispatches correct actions on createIncident success', async () => {
         disruptionsMgtApi.createDisruption.mockResolvedValue({
             disruptionId: 99,

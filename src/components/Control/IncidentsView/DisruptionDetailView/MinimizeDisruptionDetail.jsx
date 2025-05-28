@@ -204,7 +204,7 @@ const MinimizeDisruptionDetail = (props) => {
                                         />
                                     </div>
                                 </div>
-                                <div className="col-6" incident-creation__wizard-select-details__select>
+                                <div className="col-6 incident-creation__wizard-select-details__select">
                                     <FormGroup className="mt-2">
                                         <DisruptionDetailSelect
                                             id="disruption-detail__severity"
