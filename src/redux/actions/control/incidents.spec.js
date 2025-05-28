@@ -341,4 +341,31 @@ describe('Incidents Actions', () => {
             },
         });
     });
+
+    it('dispatches updateIncidentsPermissionsAction with the correct payload', () => {
+        const mockPermissions = { canEdit: true };
+
+        const mockAction = {
+            type: ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_PERMISSIONS,
+            payload: {
+                permissions: mockPermissions,
+            },
+        };
+
+        actions.updateIncidentsPermissions(mockPermissions)(dispatch);
+
+        expect(dispatch).toHaveBeenCalledWith(mockAction);
+    });
+
+    it('dispatches copyIncidentToClipboard with the correct payload', async () => {
+        const isCopied = true;
+        const mockAction = {
+            type: ACTION_TYPE.COPY_INCIDENT,
+            payload: { isCopied },
+        };
+
+        await actions.updateCopyDisruptionState(isCopied)(dispatch);
+
+        expect(dispatch).toHaveBeenCalledWith(mockAction);
+    });
 });
