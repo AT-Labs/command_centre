@@ -11,7 +11,7 @@ describe('Incident Selectors', () => {
     const mockState = {
         control: {
             incidents: {
-                incidents: [{ incidentId: '1' }, { incidentId: '2' }],
+                incidents: [{ incidentId: '1', impact: 'test 1' }, { incidentId: '2', impact: 'test 2' }],
                 disruptions: [
                     {
                         disruptionId: '1',
@@ -51,7 +51,7 @@ describe('Incident Selectors', () => {
 
     it('should get grouped incidents', () => {
         const result = selectors.getGroupedIncidents(mockState);
-        expect(result).toEqual([{ incidentId: '1' }, { incidentId: '2' }]);
+        expect(result).toEqual([{ impact: 'test 1', incidentId: '1' }, { impact: 'test 2', incidentId: '2' }]);
     });
 
     it('should get incident creation permission', () => {
@@ -74,6 +74,7 @@ describe('Incident Selectors', () => {
         const result = selectors.getFilteredIncidents(mockState);
         expect(result).toHaveLength(1);
         expect(result[0].incidentId).toBe('1');
+        expect(result[0].impact).toBe('high');
     });
 
     it('should get sorted incidents', () => {
