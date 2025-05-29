@@ -10,10 +10,9 @@ import { HiOutlineCheckCircle } from 'react-icons/hi';
 import { uniqueId } from 'lodash-es';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
-import DisruptionDetail from './DisruptionDetail';
 import MinimizeDisruptionDetail from './DisruptionDetailView/MinimizeDisruptionDetail';
 import { LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_END_TIME, LABEL_START_TIME, LABEL_STATUS, LABEL_DISRUPTION_NOTES,
-} from '../../../constants/incidents';
+} from '../../../constants/disruptions';
 import { dateTimeFormat } from '../../../utils/dateUtils';
 import { STATUSES } from '../../../types/disruptions-types';
 import { DEFAULT_IMPACT } from '../../../types/disruption-cause-and-effect';
@@ -181,7 +180,7 @@ export const IncidentsDisruptions = (props) => {
     const getDetailPanelContent = React.useCallback(
         ({ row }) => (
             <Box sx={ { padding: '10px 10px 10px 10px' } }>
-                { props.useViewDisruptionDetailsPage ? <MinimizeDisruptionDetail disruption={ row } /> : <DisruptionDetail disruption={ row } /> }
+                <MinimizeDisruptionDetail disruption={ row } />
             </Box>
         ),
         [],

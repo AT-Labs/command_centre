@@ -40,23 +40,23 @@ import {
 } from '../../../../redux/selectors/control/disruptions';
 import DetailLoader from '../../../Common/Loader/DetailLoader';
 import { DisruptionDetailSelect } from '../DisruptionDetail/DisruptionDetailSelect';
-import DisruptionLabelAndText from '../DisruptionDetail/DisruptionLabelAndText';
+import DisruptionLabelAndText from '../../DisruptionsView/DisruptionDetail/DisruptionLabelAndText';
 import {
     formatCreatedUpdatedTime,
     recurrenceRadioOptions,
     momentFromDateTime,
 } from '../../../../utils/control/disruptions';
-import DisruptionSummaryModal from '../DisruptionDetail/DisruptionSummaryModal';
+import DisruptionSummaryModal from '../../DisruptionsView/DisruptionDetail/DisruptionSummaryModal';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 import EDIT_TYPE from '../../../../types/edit-types';
 import ConfirmationModal from '../../Common/ConfirmationModal/ConfirmationModal';
 import { confirmationModalTypes } from '../types';
-import { LastNoteView } from '../DisruptionDetail/LastNoteView';
+import { LastNoteView } from '../../DisruptionsView/DisruptionDetail/LastNoteView';
 import { fetchEndDateFromRecurrence } from '../../../../utils/recurrence';
 import '../style.scss';
-import '../DisruptionDetail/styles.scss';
+import '../../DisruptionsView/DisruptionDetail/styles.scss';
 
-const MinimizeDisruptionDetail = (props) => {
+export const MinimizeDisruptionDetail = (props) => {
     const { disruption, isRequesting, resultDisruptionId, resultStatus, resultMessage } = props;
     const { NONE, COPY } = confirmationModalTypes;
     const {
@@ -204,7 +204,7 @@ const MinimizeDisruptionDetail = (props) => {
                                         />
                                     </div>
                                 </div>
-                                <div className="col-6" incident-creation__wizard-select-details__select>
+                                <div className="col-6 incident-creation__wizard-select-details__select">
                                     <FormGroup className="mt-2">
                                         <DisruptionDetailSelect
                                             id="disruption-detail__severity"

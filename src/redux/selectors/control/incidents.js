@@ -100,7 +100,6 @@ export const getFilteredDisruptions = createSelector(
     getSelectedImpactFilter,
     (allIncidents, selectedEntity, selectedStatus, selectedStartDate, selectedEndDate, selectedImpact) => {
         let filteredIncidents = [...allIncidents];
-        // console.log('getFilteredIncidents:', allIncidents);
         if (get(selectedEntity, 'data.route_id')) {
             filteredIncidents = filteredIncidents.filter(({ affectedEntities }) => (
                 affectedEntities.find(entity => entity.routeId === get(selectedEntity, 'data.route_id'))
