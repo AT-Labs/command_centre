@@ -399,7 +399,7 @@ export const getRoutesByStop = stops => async (dispatch, getState) => {
                     if (routesByStop[stop.stopCode]) {
                         routesByStop[stop.stopCode] = routesByStop[stop.stopCode].map(route => ({
                             ...route,
-                            routeColor: allRoutes[route.routeId] && allRoutes[route.routeId].route_color,
+                            routeColor: allRoutes[route.routeId]?.route_color,
                         }));
                     }
                 });
@@ -492,7 +492,7 @@ export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
     let affectedRoutesWithShapes = [];
 
     currentRoutes.map(route => (
-        { ...route, routeColor: allRoutes[route.routeId] && allRoutes[route.routeId].route_color }
+        { ...route, routeColor: allRoutes[route.routeId]?.route_color }
     )).forEach((route) => {
         if (cachedShapes[route.routeId]) {
             routesWithShapes.push({ ...route, shapeWkt: cachedShapes[route.routeId] });
