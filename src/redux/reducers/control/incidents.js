@@ -70,23 +70,23 @@ const handleIncidentsRoutesLoadingUpdate = (state, { payload: { isIncidentsRoute
 const handleUpdateActiveIncidentId = (state, { payload: { activeIncidentId } }) => ({ ...state, activeIncidentId });
 const handleIncidentsDisruptionsUpdate = (state, { payload: { disruptions } }) => ({ ...state, disruptions });
 const handleIncidentsPermissionsUpdate = (state, { payload: { permissions } }) => ({ ...state, permissions });
-const handleIncidentActionRequestingUpdate = (state, { payload: { isRequesting, resultIncidentId = state.action.resultIncidentId } }) => ({
+const handleIncidentActionRequestingUpdate = (state, { payload: { isRequesting, resultDisruptionId = state.action.resultDisruptionId } }) => ({
     ...state,
     action: {
         ...state.action,
         isRequesting,
-        resultIncidentId,
+        resultDisruptionId,
     },
 });
-const handleIncidentActionResultUpdate = (state, { payload: { resultIncidentId, resultMessage, resultStatus, resultCreateNotification, resultIncidentVersion } }) => ({
+const handleIncidentActionResultUpdate = (state, { payload: { resultDisruptionId, resultMessage, resultStatus, resultCreateNotification, resultDisruptionVersion } }) => ({
     ...state,
     action: {
         ...state.action,
         resultMessage,
         resultStatus,
-        resultIncidentId,
+        resultDisruptionId,
         resultCreateNotification,
-        resultIncidentVersion,
+        resultDisruptionVersion,
     },
 });
 
