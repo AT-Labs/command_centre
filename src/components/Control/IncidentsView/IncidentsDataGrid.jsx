@@ -59,33 +59,44 @@ export const IncidentDataGrid = (props) => {
         ]
     );
 
-    const getSortButton = (sortBy, title) => (
-        [
-            <div className="d-flex align-content-center" key={ sortBy + title }>
-                <SortButton
-                    className="mr-1"
-                    active={
-                        props.incidentsSortingParams && props.incidentsSortingParams.sortBy === sortBy
-                            ? props.incidentsSortingParams.order
-                            : null
-                    }
-                    onClick={ order => props.updateIncidentsSortingParams({
-                        sortBy,
-                        order,
-                    }) } />
-                <div>{title}</div>
-            </div>,
-        ]
-    );
-
     const INCIDENT_COLUMNS = [
         {
-            label: () => getSortButton('incidentDisruptionNo', 'DISRUPTION'),
-            key: 'incidentDisruptionNo',
+            label: () => (
+                <div className="d-flex align-content-center">
+                    <SortButton
+                        className="mr-1"
+                        active={
+                            props.incidentsSortingParams && props.incidentsSortingParams.sortBy === 'incidentCauseNo'
+                                ? props.incidentsSortingParams.order
+                                : null
+                        }
+                        onClick={ order => props.updateIncidentsSortingParams({
+                            sortBy: 'incidentCauseNo',
+                            order,
+                        }) } />
+                    <div>CAUSE</div>
+                </div>
+            ),
+            key: 'incidentCauseNo',
             cols: 'col-1',
         },
         {
-            label: () => getSortButton('incidentTitle', 'DISRUPTION TITLE'),
+            label: () => (
+                <div className="d-flex align-content-center">
+                    <SortButton
+                        className="mr-1"
+                        active={
+                            props.incidentsSortingParams && props.incidentsSortingParams.sortBy === 'incidentTitle'
+                                ? props.incidentsSortingParams.order
+                                : null
+                        }
+                        onClick={ order => props.updateIncidentsSortingParams({
+                            sortBy: 'incidentTitle',
+                            order,
+                        }) } />
+                    <div>CAUSE TITLE</div>
+                </div>
+            ),
             key: 'incidentTitle',
             cols: 'col-2',
         },

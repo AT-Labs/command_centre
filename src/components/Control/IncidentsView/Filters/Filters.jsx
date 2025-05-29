@@ -40,7 +40,7 @@ const Filters = (props) => {
                 <FilterByDate
                     selectedDate={ props.selectedStartDate }
                     maxDate={ props.selectedEndDate }
-                    onChange={ date => props.updateIncidentFilters({ selectedStartDate: date?.[0] }) } />
+                    onChange={ date => props.updateIncidentFilters({ selectedStartDate: date && date[0] }) } />
             </div>
             <div className="dates-filter__separator col-pixel-width-100" />
             <div className="dates-filter col-2">
@@ -48,10 +48,10 @@ const Filters = (props) => {
                     selectedDate={ props.selectedEndDate }
                     minDate={ props.selectedStartDate }
                     onChange={ (date) => {
-                        if (date?.[0]) {
+                        if (date && date[0]) {
                             date[0].setHours(23, 59, 59, 999);
                         }
-                        props.updateIncidentFilters({ selectedEndDate: date?.[0] });
+                        props.updateIncidentFilters({ selectedEndDate: date && date[0] });
                     } } />
             </div>
         </section>

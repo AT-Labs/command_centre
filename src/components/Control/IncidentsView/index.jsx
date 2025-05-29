@@ -25,6 +25,7 @@ import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
 import './style.scss';
 import IncidentsDataGrid from './IncidentsDataGrid';
 import { PAGE_SIZE } from './types';
+import CreateIncident from './IncidentCreation/CreateIncident/index';
 
 export class IncidentsView extends React.Component {
     constructor(props) {
@@ -90,7 +91,7 @@ export class IncidentsView extends React.Component {
                     this.props.updateAffectedRoutesState([]);
                     this.props.updateAffectedStopsState([]);
                 } }>
-                Create a new Disruption
+                Create a new Cause
             </Button>
         </div>
     );
@@ -109,7 +110,7 @@ export class IncidentsView extends React.Component {
                         <div className="ml-4 mr-4">
                             <div className="control-incidents-view__header mt-4">
                                 <div>
-                                    <h1>Disruptions</h1>
+                                    <h1>Causes</h1>
                                 </div>
                                 <div className="d-flex justify-content-end align-items-center">
                                     { isCreateAllowed && this.createIncidentButton() }
@@ -124,19 +125,22 @@ export class IncidentsView extends React.Component {
                                 page={ currentPage }
                                 disruptions={ filteredDisruptions }
                                 incidents={ paginatedIncidents } />
-                            <PageInfo
-                                currentPage={ currentPage }
-                                itemsPerPage={ PAGE_SIZE }
-                                itemsTotal={ filteredIncidents.length }
-                            />
-                            <Pagination
-                                currentPage={ currentPage }
-                                itemsTotal={ filteredIncidents.length }
-                                itemsPerPage={ PAGE_SIZE }
-                                onPageClick={ page => this.handlePageChange(page) }
-                            />
+                            <>
+                                <PageInfo
+                                    currentPage={ currentPage }
+                                    itemsPerPage={ PAGE_SIZE }
+                                    itemsTotal={ filteredIncidents.length }
+                                />
+                                <Pagination
+                                    currentPage={ currentPage }
+                                    itemsTotal={ filteredIncidents.length }
+                                    itemsPerPage={ PAGE_SIZE }
+                                    onPageClick={ page => this.handlePageChange(page) }
+                                />
+                            </>
                         </div>
                     )}
+                {isCreateOpen && isCreateAllowed && <CreateIncident />}
             </div>
         );
     }

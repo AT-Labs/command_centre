@@ -28,7 +28,7 @@ import { goToNotificationsView } from '../../../redux/actions/control/link';
 
 import './Header.scss';
 
-export function Header(props) {
+function Header(props) {
     const location = useLocation();
     const history = useHistory();
     const [isOpen, setIsOpen] = useState(false);

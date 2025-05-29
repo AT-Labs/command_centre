@@ -182,12 +182,8 @@ export const getDisruptionsAndIncidents = () => (dispatch, getState) => {
                     // Merge affectedEntities
                     existing.affectedEntities = existing.affectedEntities.concat(disruption.affectedEntities);
                     // Merge unique impact values
-                    const rawImpacts = existing.impact.split(',');
-                    const trimmedImpacts = rawImpacts.map(impact => impact.trim());
-                    const existingImpacts = new Set(trimmedImpacts);
-
-                    const rawNewImpacts = disruption.impact.split(',');
-                    const newImpacts = rawNewImpacts.map(impact => impact.trim());
+                    const existingImpacts = new Set(existing.impact.split(',').map(s => s.trim()));
+                    const newImpacts = disruption.impact.split(',').map(s => s.trim());
                     newImpacts.forEach(impact => existingImpacts.add(impact));
                     existing.impact = Array.from(existingImpacts).join(', ');
                 } else {
@@ -399,7 +395,7 @@ export const getRoutesByStop = stops => async (dispatch, getState) => {
                     if (routesByStop[stop.stopCode]) {
                         routesByStop[stop.stopCode] = routesByStop[stop.stopCode].map(route => ({
                             ...route,
-                            routeColor: allRoutes[route.routeId]?.route_color,
+                            routeColor: allRoutes[route.routeId] && allRoutes[route.routeId].route_color,
                         }));
                     }
                 });
@@ -463,7 +459,7 @@ export const deleteAffectedEntities = () => (dispatch) => {
     });
 };
 
-export const addShapesToEntities = (entities, routesWithShapes) => entities.map((entity) => {
+const addShapesToEntities = (entities, routesWithShapes) => entities.map((entity) => {
     const mappedEntity = { ...entity };
     if (mappedEntity.routeId) {
         const route = routesWithShapes.find(routeWithShapes => entity.routeId === routeWithShapes.routeId);
@@ -492,7 +488,7 @@ export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
     let affectedRoutesWithShapes = [];
 
     currentRoutes.map(route => (
-        { ...route, routeColor: allRoutes[route.routeId]?.route_color }
+        { ...route, routeColor: allRoutes[route.routeId] && allRoutes[route.routeId].route_color }
     )).forEach((route) => {
         if (cachedShapes[route.routeId]) {
             routesWithShapes.push({ ...route, shapeWkt: cachedShapes[route.routeId] });
