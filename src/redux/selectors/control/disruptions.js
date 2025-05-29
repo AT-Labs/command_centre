@@ -137,3 +137,6 @@ export const getFilteredDisruptions = createSelector(
 );
 
 export const getDisruptionsDatagridConfig = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'datagridConfig'));
+
+export const isDiversionCreationOpen = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'isCreateDiversionEnabled'));
+export const getDiversionEditMode = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'diversionEditMode'));
