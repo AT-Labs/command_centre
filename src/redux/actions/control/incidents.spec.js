@@ -235,6 +235,61 @@ describe('Incidents Actions', () => {
         ]));
     });
 
+    it('merges affectedEntities when disruptions share the same incidentId', async () => {
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [
+                { disruptionId: 1, impact: 'Delay', affectedEntities: ['E1'], incidentId: 5 },
+                { disruptionId: 2, impact: 'Delay', affectedEntities: ['E2'], incidentId: 5 },
+            ],
+            _links: { permissions: {} },
+        });
+
+        await store.dispatch(actions.getDisruptionsAndIncidents());
+
+        const dispatched = store.getActions();
+        const merged = dispatched.find(a => a.type === 'update-control-set-all-incidents').payload.allIncidents[0];
+
+        expect(merged.incidentId).toBe(5);
+        expect(merged.affectedEntities).toEqual(expect.arrayContaining(['E1', 'E2']));
+    });
+
+    it('merges impact values uniquely when disruptions share the same incidentId', async () => {
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [
+                { disruptionId: 1, impact: 'Delay', affectedEntities: [], incidentId: 10 },
+                { disruptionId: 2, impact: 'Detour', affectedEntities: [], incidentId: 10 },
+                { disruptionId: 3, impact: 'Delay', affectedEntities: [], incidentId: 10 },
+            ],
+            _links: { permissions: {} },
+        });
+
+        await store.dispatch(actions.getDisruptionsAndIncidents());
+
+        const dispatched = store.getActions();
+        const merged = dispatched.find(a => a.type === 'update-control-set-all-incidents').payload.allIncidents[0];
+
+        const impactSet = new Set(merged.impact.split(',').map(i => i.trim()));
+        expect(impactSet).toEqual(new Set(['Delay', 'Detour']));
+    });
+
+    it('trims and merges impact strings correctly', async () => {
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [
+                { disruptionId: 1, impact: ' Delay , Closure ', affectedEntities: [], incidentId: 20 },
+                { disruptionId: 2, impact: 'Detour', affectedEntities: [], incidentId: 20 },
+            ],
+            _links: { permissions: {} },
+        });
+
+        await store.dispatch(actions.getDisruptionsAndIncidents());
+
+        const dispatched = store.getActions();
+        const merged = dispatched.find(a => a.type === 'update-control-set-all-incidents').payload.allIncidents[0];
+
+        const impactSet = new Set(merged.impact.split(',').map(i => i.trim()));
+        expect(impactSet).toEqual(new Set(['Delay', 'Closure', 'Detour']));
+    });
+
     it('calls updateIncident inside publishDraftIncident and dispatches actions', async () => {
         disruptionsMgtApi.updateDisruption.mockResolvedValue({});
 
@@ -434,5 +489,26 @@ describe('Incidents Actions', () => {
         await actions.updateCopyDisruptionState(isCopied)(dispatch);
 
         expect(dispatch).toHaveBeenCalledWith(mockAction);
+    });
+
+    it('dispatches UPDATE_CONTROL_ACTIVE_INCIDENT_ID and clearIncidentActionResult', () => {
+        const incidentId = 'incident-123';
+
+        actions.updateActiveIncidentId(incidentId)(dispatch);
+
+        expect(dispatch).toHaveBeenCalledWith({
+            type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_INCIDENT_ID,
+            payload: { activeIncidentId: incidentId },
+        });
+
+        expect(dispatch).toHaveBeenCalledWith({
+            payload: {
+                incidentId: null,
+                resultIncidentVersion: null,
+                resultMessage: null,
+                resultStatus: null,
+            },
+            type: 'update-control-incident-action-result',
+        });
     });
 });
