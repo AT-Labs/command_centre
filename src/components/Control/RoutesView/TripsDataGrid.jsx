@@ -62,7 +62,7 @@ const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed
 
 const formatSourceColumn = row => (isTripAdded(row) ? <FaCheckCircle className="icon-blue-check" size={ 18 } /> : '');
 
-const formatOnHoldColumn = row => (IsOnHoldTrip(row.tripInstance) ? 'Y' : 'N');
+const formatOnHoldColumn = tripInstance => (IsOnHoldTrip(tripInstance) ? 'Y' : 'N');
 
 const formatHideColumn = (row) => {
     const display = get(row.tripInstance, 'display');
@@ -219,7 +219,7 @@ export const TripsDataGrid = (props) => {
             filterOperators: getGridSingleSelectOperators(true).filter(
                 operator => operator.value === 'is',
             ),
-            renderCell: params => formatOnHoldColumn(params.row),
+            renderCell: params => formatOnHoldColumn(params.row.tripInstance),
         }] : [],
         {
             field: 'vehicleLabel',
@@ -402,6 +402,7 @@ export const TripsDataGrid = (props) => {
 
     const rows = props.tripInstances.map(tripInstance => ({
         routeVariantId: tripInstance.routeVariantId,
+        ...(props.useHoldTrip && { onHold: formatOnHoldColumn(tripInstance) }),
         startTime: getTripTimeDisplay(tripInstance.startTime),
         endTime: getTripTimeDisplay(tripInstance.endTime),
         routeType: tripInstance.routeType,

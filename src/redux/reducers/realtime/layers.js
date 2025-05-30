@@ -5,8 +5,10 @@ export const INIT_STATE = {
     showIncidents: false,
     selectedIncidentFilters: [],
     selectedCongestionFilters: [],
+    selectedDisruptionFilters: [],
     showRouteAlerts: false,
     showAllRouteAlerts: false,
+    showDisruptions: false,
     selectedRouteAlerts: [],
 
     showRoadworks: false,
@@ -20,6 +22,12 @@ export const INIT_STATE = {
 const handleUpdateShowIncidents = (state, { payload: { showIncidents } }) => ({ ...state, showIncidents });
 const handleUpdateSelectedIncidentFilters = (state, { payload: { selectedIncidentFilters } }) => ({ ...state, selectedIncidentFilters });
 const handleUpdateSelectedCongestionFilters = (state, { payload: { selectedCongestionFilters } }) => ({ ...state, selectedCongestionFilters });
+const handleUpdateSelectedDisruptionFilters = (state, { payload: { selectedDisruptionFilters } }) => ({ ...state, selectedDisruptionFilters });
+const handleUpdateShowDisruptions = (state, { payload: { showDisruptions, selectedDisruptionFilters } }) => ({
+    ...state,
+    showDisruptions,
+    selectedDisruptionFilters,
+});
 const handleUpdateShowRouteAlerts = (state, { payload: { showRouteAlerts } }) => ({ ...state, showRouteAlerts });
 const handleUpdateShowAllRouteAlerts = (state, { payload: { showAllRouteAlerts } }) => ({ ...state, showAllRouteAlerts });
 const handleUpdateSelectedRouteAlerts = (state, { payload: { selectedRouteAlerts } }) => ({ ...state, selectedRouteAlerts });
@@ -50,6 +58,8 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_SHOW_ROUTE_ALERTS]: handleUpdateShowRouteAlerts,
     [ACTION_TYPE.UPDATE_SHOW_ALL_ROUTE_ALERTS]: handleUpdateShowAllRouteAlerts,
     [ACTION_TYPE.UPDATE_SELECTED_ROUTE_ALERTS]: handleUpdateSelectedRouteAlerts,
+    [ACTION_TYPE.UPDATE_SELECTED_DISRUPTION_FILTERS]: handleUpdateSelectedDisruptionFilters,
+    [ACTION_TYPE.UPDATE_SHOW_DISRUPTIONS]: handleUpdateShowDisruptions,
 
     // Roadworks
     [ACTION_TYPE.UPDATE_SHOW_ROADWORKS]: handleUpdateShowRoadworks,
