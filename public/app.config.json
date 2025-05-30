@@ -37,6 +37,5 @@
     "useDiversion": "false",
     "useHideSkippedStop": "false",
     "useHoldTrip": "false",
-    "useStopBasedDisruptionsLayer": "false",
-    "useParentChildIncident": "false"
+    "useTripOperationNotes": "false"
 }
