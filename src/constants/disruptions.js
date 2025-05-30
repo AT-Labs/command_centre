@@ -41,6 +41,8 @@ export const LABEL_END_TIME_DATE = 'End Time/Date';
 export const LABEL_IS_RECURRING = 'Recurring?';
 export const LABEL_RECURRING_PERIOD = 'Recurring Period';
 
+export const LABEL_CAUSE_HEADER = 'Cause Title';
+
 export const STOP_NOT_AVAILABLE = 'Stop not available';
 
 export const FREQUENCY_TYPE = {

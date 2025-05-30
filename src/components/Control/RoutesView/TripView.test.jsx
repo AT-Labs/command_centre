@@ -122,7 +122,7 @@ describe('<TripView />', () => {
         });
 
         context('When trip is NOT STARTED', () => {
-            const trip = { ...trainTrip, status: 'NOT_STARTED', _links: { permissions: [{ _rel: 'cancel' }, { _rel: 'delay' }, { _rel: 'advancer' }] } };
+            const trip = { ...busTrip, status: 'NOT_STARTED', _links: { permissions: [{ _rel: 'cancel' }, { _rel: 'delay' }, { _rel: 'advancer' }] } };
             let result;
             beforeEach(() => {
                 wrapper = setup({ tripInstance: trip, useHoldTrip: true });
@@ -141,19 +141,6 @@ describe('<TripView />', () => {
 
             it('should contain Hold button', () => {
                 expect(find(result, { label: 'Hold trip' })).to.not.be.undefined;  // eslint-disable-line
-            });
-        });
-
-        context('When it is a bus trip, Hold trip button is not defined', () => {
-            const trip = { ...busTrip, status: 'NOT_STARTED', _links: { permissions: [{ _rel: 'cancel' }, { _rel: 'delay' }, { _rel: 'advancer' }] } };
-            let result;
-            beforeEach(() => {
-                wrapper = setup({ tripInstance: trip, useHoldTrip: true });
-                result = wrapper.instance().getButtonBarConfig(trip);
-            });
-
-            it('should not contain Hold button', () => {
-                expect(find(result, { label: 'Hold trip' })).to.be.undefined;  // eslint-disable-line
             });
         });
 

@@ -135,7 +135,7 @@ export class TripView extends React.Component {
         const isDelayEditPossible = isInProgress || isNotStarted || isMissed;
         const isMoveTripToNextStopPermitted = IS_LOGIN_NOT_REQUIRED || isMoveToStopPermitted(tripInstance);
         const isMoveTripToNextStopPossible = isInProgress || isMissed || isNotStarted;
-        const isOnHoldPossible = (isNotStarted || isInProgress) && VEHICLE_TYPE[tripInstance.routeType].type === 'Train';
+        const isOnHoldPossible = isNotStarted || isInProgress;
 
         if (isCancelPermitted && isCancelPossible) {
             buttonBarConfig.push({
