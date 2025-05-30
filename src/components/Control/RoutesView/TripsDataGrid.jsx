@@ -36,9 +36,7 @@ import { CustomSelectionHeader } from './CustomSelectionHeader';
 import { getAllStops } from '../../../redux/selectors/static/stops';
 import { StopSearchDataGridOperators } from '../Common/DataGrid/OmniSearchDataGridOperator';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
-import {
-    useDiversion, useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences, useHoldTrip, useTripOperationNotes,
-} from '../../../redux/selectors/appSettings';
+import { useDiversion, useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences, useHoldTrip } from '../../../redux/selectors/appSettings';
 import { getUserPreferences } from '../../../utils/transmitters/command-centre-config-api';
 import { updateRoutesTripsDatagridConfig, updateDefaultRoutesTripsDatagridConfig } from '../../../redux/actions/datagrid';
 import { getRoutesTripsDatagridConfig } from '../../../redux/selectors/datagrid';
@@ -46,7 +44,6 @@ import { mergeRouteFilters } from '../../../redux/actions/control/routes/filters
 import { LABEL_DISRUPTION } from '../../../constants/disruptions';
 import { transformIncidentNo } from '../../../utils/control/disruptions';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
-import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
 
 export const renderDisruptionIdCell = ({ row }) => {
     const formattedDisruptionId = transformIncidentNo(row.disruptionId);
@@ -329,18 +326,6 @@ export const TripsDataGrid = (props) => {
             renderCell: params => formatStatusColumn(params.row),
             filterable: false,
         },
-        ...(props.useTripOperationNotes
-            ? [
-                {
-                    field: 'operationNotes',
-                    headerName: 'operation Notes',
-                    width: 150,
-                    renderCell: RenderCellExpand,
-                    filterable: false,
-                    hide: true,
-                },
-            ]
-            : []),
         {
             field: 'delay',
             headerName: 'Delay / Early',
@@ -418,7 +403,6 @@ export const TripsDataGrid = (props) => {
             ...tripInstance,
             stops: markStopsAsFirstOrLast(tripInstance.stops),
         },
-        operationNotes: tripInstance.operationNotes,
     }));
 
     const getDetailPanelContent = React.useCallback(
@@ -535,7 +519,6 @@ TripsDataGrid.propTypes = {
     updateDefaultRoutesTripsDatagridConfig: PropTypes.func.isRequired,
     mergeRouteFilters: PropTypes.func.isRequired,
     useHoldTrip: PropTypes.bool.isRequired,
-    useTripOperationNotes: PropTypes.bool.isRequired,
 };
 
 TripsDataGrid.defaultProps = {
@@ -562,7 +545,6 @@ export default connect(
         useRoutesTripsFilterCollapse: useRoutesTripsFilterCollapse(state),
         useRoutesTripsPreferences: useRoutesTripsPreferences(state),
         useHoldTrip: useHoldTrip(state),
-        useTripOperationNotes: useTripOperationNotes(state),
     }),
     {
         selectSingleTrip,

@@ -11,7 +11,6 @@ export const MESSAGE_ACTION_TYPES = {
     bulkStatusUpdate: 'bulkStatusUpdate',
     bulkStopStatusUpdate: 'bulkStopStatusUpdate',
     updateDestination: 'updateDestination',
-    tripOperationNotesUpdate: 'tripOperationNotesUpdate',
 };
 
 export default [
