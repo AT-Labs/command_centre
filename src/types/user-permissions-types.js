@@ -12,6 +12,7 @@ export default {
         HIDE_TRIP: 'hide',
         NEW_TRIP: 'new',
         HIDE_STOP: 'hide',
+        EDIT_OPERATION_NOTES: 'operation_notes',
     },
     BLOCKS: {
         ADD_BLOCK: 'add',

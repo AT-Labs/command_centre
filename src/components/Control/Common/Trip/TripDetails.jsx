@@ -22,7 +22,7 @@ const TripDetails = ({ data }) => {
     ));
 
     const getColumns = columns => columns.map(column => (
-        <div className="col" key={ kebabCase(column[0].name) }>
+        <div className="col-4" key={ kebabCase(column[0].name) }>
             <dl className="row m-0">
                 { getRows(column) }
             </dl>
