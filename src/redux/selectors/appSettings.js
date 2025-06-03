@@ -61,4 +61,3 @@ export const useHideSkippedStop = createSelector(getAppSettingsState, appSetting
 export const useStopBasedDisruptionsLayer = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useStopBasedDisruptionsLayer') === 'true'));
 export const useHoldTrip = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useHoldTrip') === 'true'));
 export const useTripOperationNotes = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useTripOperationNotes') === 'true'));
-export const useParentChildIncident = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useParentChildIncident') === 'true'));
