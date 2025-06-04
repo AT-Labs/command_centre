@@ -38,6 +38,5 @@
     "useHideSkippedStop": "false",
     "useHoldTrip": "false",
     "useStopBasedDisruptionsLayer": "false",
-    "useTripOperationNotes": "false",
-    "useParentChildIncident": "false"
+    "useTripOperationNotes": "false"
 }

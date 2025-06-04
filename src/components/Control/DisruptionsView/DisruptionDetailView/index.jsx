@@ -7,16 +7,17 @@ import DisruptionDetail from './DisruptionDetail';
 import Loader from '../../../Common/Loader/Loader';
 import {
     clearDisruptionActionResult,
-    openCreateDiversion,
     updateDisruptionsPermissions,
 } from '../../../../redux/actions/control/disruptions';
-import { getDisruptionAction, isDisruptionUpdateAllowed, isDiversionCreationOpen } from '../../../../redux/selectors/control/disruptions';
+import { getDisruptionAction, isDisruptionUpdateAllowed } from '../../../../redux/selectors/control/disruptions';
 import { updateActiveControlEntityId } from '../../../../redux/actions/navigation';
 import { getActiveControlEntityId } from '../../../../redux/selectors/navigation';
 import { getDisruption as getDisruptionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
 import { transformIncidentNo } from '../../../../utils/control/disruptions';
 import { DISRUPTION_POLLING_INTERVAL } from '../../../../constants/disruptions';
-import CreateDiversion from '../DiversionCreation';
+import DiversionManager from '../DiversionManager';
+import { getIsDiversionManagerOpen } from '../../../../redux/selectors/control/diversions';
+import { openDiversionManager } from '../../../../redux/actions/control/diversions';
 
 const DisruptionDetailsPage = (props) => {
     const { resultStatus, resultMessage, resultDisruptionId, resultCreateNotification, isCopied } = props;
@@ -126,8 +127,8 @@ const DisruptionDetailsPage = (props) => {
                     onClose={ () => props.clearDisruptionActionResult() }
                 />
             )}
-            { props.isCreateDiversionOpen
-                ? <CreateDiversion disruption={ disruption } onCancelled={ () => props.openCreateDiversion(false) } />
+            { props.isDiversionManagerOpen
+                ? <DiversionManager disruption={ disruption } onCancelled={ () => props.openDiversionManager(false) } />
                 : (
                     <>
                         <h2>
@@ -152,8 +153,8 @@ DisruptionDetailsPage.propTypes = {
     activeControlEntityId: PropTypes.string.isRequired,
     updateActiveControlEntityId: PropTypes.func.isRequired,
     updateDisruptionsPermissions: PropTypes.func.isRequired,
-    isCreateDiversionOpen: PropTypes.bool,
-    openCreateDiversion: PropTypes.func.isRequired,
+    isDiversionManagerOpen: PropTypes.bool,
+    openDiversionManager: PropTypes.func.isRequired,
 };
 
 DisruptionDetailsPage.defaultProps = {
@@ -162,16 +163,16 @@ DisruptionDetailsPage.defaultProps = {
     resultCreateNotification: false,
     resultDisruptionId: null,
     isCopied: false,
-    isCreateDiversionOpen: false,
+    isDiversionManagerOpen: false,
 };
 
 export default connect(state => ({
     ...getDisruptionAction(state),
     activeControlEntityId: getActiveControlEntityId(state),
-    isCreateDiversionOpen: isDiversionCreationOpen(state),
+    isDiversionManagerOpen: getIsDiversionManagerOpen(state),
 }), {
     clearDisruptionActionResult,
     updateActiveControlEntityId,
     updateDisruptionsPermissions,
-    openCreateDiversion,
+    openDiversionManager,
 })(DisruptionDetailsPage);

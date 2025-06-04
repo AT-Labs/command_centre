@@ -6,6 +6,7 @@ import {
     findDifferences,
     parseWKT,
     toWKT,
+    deduplicateCoordinates,
 } from './ShapeHelper.js';
 
 describe('calculateDistance', () => {
@@ -124,5 +125,49 @@ describe('toWKT', () => {
         const coords = [[10, 30], [30, 10], [40, 40]];
         const wkt = toWKT(coords);
         expect(wkt).toBe('LINESTRING(30 10,10 30,40 40)');
+    });
+});
+
+describe('deduplicateCoordinates', () => {
+    it('should return an empty array when input is empty', () => {
+        expect(deduplicateCoordinates([])).toEqual([]);
+    });
+
+    it('should return the same array when there is only one element', () => {
+        expect(deduplicateCoordinates([[1, 2]])).toEqual([[1, 2]]);
+    });
+
+    it('should return the same array when there are no duplicates', () => {
+        const input = [[1, 2], [3, 4], [5, 6]];
+        expect(deduplicateCoordinates(input)).toEqual(input);
+    });
+
+    it('should remove consecutive duplicates', () => {
+        const input = [[1, 2], [1, 2], [3, 4]];
+        const expected = [[1, 2], [3, 4]];
+        expect(deduplicateCoordinates(input)).toEqual(expected);
+    });
+
+    it('should remove all duplicates when all elements are the same', () => {
+        const input = [[1, 2], [1, 2], [1, 2]];
+        const expected = [[1, 2]];
+        expect(deduplicateCoordinates(input)).toEqual(expected);
+    });
+
+    it('should remove multiple groups of duplicates', () => {
+        const input = [[1, 2], [1, 2], [3, 4], [3, 4], [5, 6]];
+        const expected = [[1, 2], [3, 4], [5, 6]];
+        expect(deduplicateCoordinates(input)).toEqual(expected);
+    });
+
+    it('should not remove non-consecutive duplicates', () => {
+        const input = [[1, 2], [3, 4], [1, 2]];
+        expect(deduplicateCoordinates(input)).toEqual(input);
+    });
+
+    it('should return an empty array if input is not an array', () => {
+        expect(deduplicateCoordinates('not an array')).toEqual([]);
+        expect(deduplicateCoordinates(123)).toEqual([]);
+        expect(deduplicateCoordinates({})).toEqual([]);
     });
 });
