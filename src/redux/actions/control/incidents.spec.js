@@ -531,7 +531,7 @@ describe('Incidents Actions', () => {
             },
         };
 
-        store = mockStore(state); 
+        store = mockStore(state);
         await store.dispatch(actions.createIncident(mockIncident));
         const dispatched = store.getActions();
 
