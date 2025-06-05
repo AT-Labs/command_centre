@@ -45,6 +45,10 @@ const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiv
         setDeleteDialogOpen(false);
     };
 
+    const handleEditRequest = (diversion) => {
+        editDiversion(diversion);
+    };
+
     const renderHeader = diversion => (
         <div className="d-flex flex-row">
             <button

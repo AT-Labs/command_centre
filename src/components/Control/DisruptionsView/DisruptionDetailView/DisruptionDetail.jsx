@@ -952,6 +952,7 @@ const DisruptionDetailView = (props) => {
                     onClose={ () => setIsViewDiversionsModalOpen(false) }
                     onEditDiversion={ editDiversion }
                     isOpen={ isViewDiversionsModalOpen }
+                    onEdi
                 />
                 { props.usePassengerImpact && (
                     <DisruptionPassengerImpactGridModal
