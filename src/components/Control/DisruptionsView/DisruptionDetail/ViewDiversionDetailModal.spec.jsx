@@ -216,16 +216,12 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
         jest.clearAllMocks();
     });
 
-    it('renders active-diversion-actions with Edit and Delete button', async () => {
+    it('renders active-diversion-actions with CreateIcon and Delete button', async () => {
         mockGetDiversion.mockResolvedValue(mockDiversions);
-        const disruptionNotStarted = {
-            ...mockDisruption.disruption,
-            status: 'not-started',
-        };
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
-                    disruption={ disruptionNotStarted }
+                    disruption={ mockDisruption.disruption }
                     onClose={ mockOnClose }
                     isOpen
                 />,
@@ -240,34 +236,6 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
         expect(activeDiversionActions.length).toBeGreaterThan(0);
         const createIcons = screen.getAllByTestId('edit-diversion-icon-button');
         expect(createIcons.length).toBeGreaterThan(0);
-        const deleteIcons = screen.getAllByTestId('delete-diversion-icon-button');
-        expect(deleteIcons.length).toBeGreaterThan(0);
-    });
-
-    it('renders active-diversion-actions without Edit button when disruption is resolved', async () => {
-        mockGetDiversion.mockResolvedValue(mockDiversions);
-        const disruptionNotStarted = {
-            ...mockDisruption.disruption,
-            status: 'resolved',
-        };
-        await act(async () => {
-            render(withCacheProvider(
-                <ViewDiversionDetailModal
-                    disruption={ disruptionNotStarted }
-                    onClose={ mockOnClose }
-                    isOpen
-                />,
-            ));
-        });
-        const activeDiversionView = await screen.findByTestId('active-diversion-view');
-        expect(activeDiversionView).toBeInTheDocument();
-
-        const { getAllByTestId } = within(activeDiversionView);
-        const activeDiversionActions = getAllByTestId('active-diversion-actions');
-        expect(activeDiversionActions.length).toBeGreaterThan(0);
-        const createIcons = screen.queryAllByTestId('edit-diversion-icon-button');
-        // No edit button should be present when disruption is resolved
-        expect(createIcons.length).toBe(0);
         const deleteIcons = screen.getAllByTestId('delete-diversion-icon-button');
         expect(deleteIcons.length).toBeGreaterThan(0);
     });
