@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+import PropTypes, { object } from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
@@ -116,7 +116,9 @@ export const AffectedEntities = (props) => {
                                                 id="view-and-edit-diversions-btn"
                                                 onClick={ props.viewDiversionsAction }
                                             >
-                                            View & edit diversions ({diversions.length ?? 0})
+                                                View & edit diversions (
+                                                {diversions.length ?? 0}
+                                                )
                                                 <MdEast size={ 20 } color="black" className="ml-1" />
                                             </Button>
                                         )}
@@ -150,6 +152,7 @@ export const AffectedEntities = (props) => {
 };
 
 AffectedEntities.propTypes = {
+    diversions: PropTypes.arrayOf(object),
     editLabel: PropTypes.string,
     editAction: PropTypes.func,
     addDiversionAction: PropTypes.func,
@@ -184,7 +187,7 @@ AffectedEntities.defaultProps = {
     viewPassengerImpactAction: null,
     startTime: null,
     endTime: null,
-    diversions: 0,
+    diversions: [],
 };
 
 export default connect(state => ({

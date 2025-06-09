@@ -99,6 +99,7 @@ import { DisruptionPassengerImpactGridModal } from '../DisruptionDetail/Disrupti
 import { useDraftDisruptions, usePassengerImpact } from '../../../../redux/selectors/appSettings';
 import { updateActiveControlEntityId } from '../../../../redux/actions/navigation';
 import { shareToEmail } from '../../../../utils/control/disruption-sharing';
+import { reportError } from '../../../../redux/actions/activity';
 
 import '../DisruptionDetail/styles.scss';
 import { ViewDiversionDetailModal } from '../DisruptionDetail/ViewDiversionDetailModal';
@@ -594,7 +595,7 @@ const DisruptionDetailView = (props) => {
                         viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                         showViewPassengerImpactButton={ props.usePassengerImpact }
                         viewPassengerImpactAction={ () => setIsViewPassengerImpactModalOpen(true) }
-                        viewDiversionsAction={() => setIsViewDiversionsModalOpen(true)}
+                        viewDiversionsAction={ () => setIsViewDiversionsModalOpen(true) }
                         diversions={ diversions }
                     />
                     <section className="col-6">

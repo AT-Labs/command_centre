@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+import PropTypes, { object } from 'prop-types';
 
 import { deleteDiversion as deleteDiversionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
@@ -97,7 +97,7 @@ const ViewDiversionDetailModal = (props) => {
                             deleteDiversion={ deleteDiversion }
                             editDiversion={ editDiversion }
                             isEditingEnabled={ isEditingEnabled }
-                            diversions={props.diversions }
+                            diversions={ props.diversions }
                             expandedRows={ expandedRows }
                             toggleExpand={ toggleExpand }
                             incidentNo={ props.disruption.incidentNo }
@@ -114,15 +114,16 @@ const ViewDiversionDetailModal = (props) => {
 };
 
 ViewDiversionDetailModal.propTypes = {
-    diversions: PropTypes.arrayOf(PropTypes.shape({
-        diversionId: PropTypes.string.isRequired,
-        diversionRouteVariants: PropTypes.array.isRequired,
-    })),
+    diversions: PropTypes.arrayOf(object),
     setRefresh: PropTypes.func.isRequired,
     disruption: PropTypes.any.isRequired,
     onClose: PropTypes.func.isRequired,
     isOpen: PropTypes.bool.isRequired,
     onEditDiversion: PropTypes.func.isRequired,
+};
+
+ViewDiversionDetailModal.defaultProps = {
+    diversions: [],
 };
 
 export { ViewDiversionDetailModal };
