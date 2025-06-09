@@ -49,7 +49,7 @@ export const NotificationsView = (props) => {
     const GRID_COLUMNS = [
         {
             field: 'sourceId',
-            headerName: '#DISRUPTION',
+            headerName: '#CAUSE',
             flex: 1,
             filterOperators: sourceIdDataGridOperator,
             ...(props.useDisruptionsNotificationsDirectLink ? {
@@ -66,6 +66,29 @@ export const NotificationsView = (props) => {
             } : {
                 valueGetter: ({ row: { source: { identifier: incidentId } } }) => transformIncidentNo(incidentId),
             }),
+        },
+        {
+            field: 'effectId',
+            headerName: '#EFFECT',
+            flex: 1,
+            filterOperators: sourceIdDataGridOperator,
+            renderCell: ({ row }) => {
+                const effectId = row.effect?.identifier || row.effectIdentifier || row.source.identifier;
+                return (
+                    <Button
+                        aria-label="go-to-disruptions-effect"
+                        variant="text"
+                        onClick={ () => {
+                            props.goToDisruptionsView({ incidentId: effectId }, { setActiveDisruption: true });
+                        } }>
+                        {transformIncidentNo(effectId)}
+                    </Button>
+                );
+            },
+            valueGetter: ({ row }) => {
+                const effectId = row.effect?.identifier || row.effectIdentifier || row.source.identifier;
+                return transformIncidentNo(effectId);
+            },
         },
         {
             field: 'sourceVersion',
