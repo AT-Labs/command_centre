@@ -12,6 +12,7 @@ import CustomCollapse from '../../Common/CustomCollapse/CustomCollapse';
 import { useDiversion } from '../../../redux/selectors/appSettings';
 
 export const AffectedEntities = (props) => {
+    const diversions = props.diversions || [];
     const groupByEntityRender = (groupById, groupTitle, groupText, children) => (
         <li key={ groupById }>
             <div className="font-size-sm font-weight-bold">
@@ -115,7 +116,7 @@ export const AffectedEntities = (props) => {
                                                 id="view-and-edit-diversions-btn"
                                                 onClick={ props.viewDiversionsAction }
                                             >
-                                                View & edit diversions
+                                            View & edit diversions ({diversions.length ?? 0})
                                                 <MdEast size={ 20 } color="black" className="ml-1" />
                                             </Button>
                                         )}
@@ -183,6 +184,7 @@ AffectedEntities.defaultProps = {
     viewPassengerImpactAction: null,
     startTime: null,
     endTime: null,
+    diversions: 0,
 };
 
 export default connect(state => ({

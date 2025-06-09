@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { connect } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
@@ -103,6 +103,7 @@ import { shareToEmail } from '../../../../utils/control/disruption-sharing';
 import '../DisruptionDetail/styles.scss';
 import { ViewDiversionDetailModal } from '../DisruptionDetail/ViewDiversionDetailModal';
 import { updateDiversionMode, openDiversionManager, updateDiversionToEdit } from '../../../../redux/actions/control/diversions';
+import { getDiversion as getDiversionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
 
 const { STOP } = SEARCH_RESULT_TYPE;
 
@@ -112,6 +113,7 @@ const DisruptionDetailView = (props) => {
 
     const causes = useAlertCauses();
     const impacts = useAlertEffects();
+    const dispatch = useDispatch();
 
     const formatEndDateFromEndTime = disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '';
     const fetchEndDate = () => (disruption.recurrent ? fetchEndDateFromRecurrence(disruption.recurrencePattern) : formatEndDateFromEndTime);
@@ -147,6 +149,8 @@ const DisruptionDetailView = (props) => {
     const [lastNote, setLastNote] = useState();
     const [isViewPassengerImpactModalOpen, setIsViewPassengerImpactModalOpen] = useState(false);
     const [isViewDiversionsModalOpen, setIsViewDiversionsModalOpen] = useState(false);
+    const [diversions, setDiversions] = useState(null);
+    const [refresh, setRefresh] = useState(false);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqWith([...affectedRoutes, ...props.routes], (routeA, routeB) => routeA.routeId === routeB.routeId && routeA.stopCode === routeB.stopCode);
@@ -263,6 +267,19 @@ const DisruptionDetailView = (props) => {
             setLastNote(disruptionNotes[disruptionNotes.length - 1]);
         }
     }, [disruption.lastUpdatedTime, lastNote]);
+
+    useEffect(() => {
+        const fetchDiversions = async () => {
+            try {
+                const data = await getDiversionAPI(disruption.disruptionId);
+                setDiversions(data);
+            } catch (error) {
+                dispatch(reportError({ error: { fetchDiversionDetails: error } }, true));
+                setDiversions(null);
+            }
+        };
+        fetchDiversions();
+    }, [refresh]);
 
     const handleUpdateDisruption = () => props.actions.updateDisruption(setDisruption());
 
@@ -577,7 +594,8 @@ const DisruptionDetailView = (props) => {
                         viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                         showViewPassengerImpactButton={ props.usePassengerImpact }
                         viewPassengerImpactAction={ () => setIsViewPassengerImpactModalOpen(true) }
-                        viewDiversionsAction={ () => setIsViewDiversionsModalOpen(true) }
+                        viewDiversionsAction={() => setIsViewDiversionsModalOpen(true)}
+                        diversions={ diversions }
                     />
                     <section className="col-6">
                         <div className="row">
@@ -952,6 +970,8 @@ const DisruptionDetailView = (props) => {
                     onClose={ () => setIsViewDiversionsModalOpen(false) }
                     onEditDiversion={ editDiversion }
                     isOpen={ isViewDiversionsModalOpen }
+                    setRefresh={ setRefresh }
+                    diversions={ diversions }
                 />
                 { props.usePassengerImpact && (
                     <DisruptionPassengerImpactGridModal

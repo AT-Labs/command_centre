@@ -13,7 +13,6 @@ import Main from '../Common/OffCanvasLayout/Main/Main';
 import OffCanvasLayout from '../Common/OffCanvasLayout/OffCanvasLayout';
 import SecondarySidePanel from '../Common/OffCanvasLayout/SecondarySidePanel/SecondarySidePanel';
 import StopMessagesView from './StopMessagingView/StopMessagesView';
-import IncidentsView from './IncidentsView';
 import DisruptionsView from './DisruptionsView';
 import DisruptionDetailView from './DisruptionsView/DisruptionDetailView';
 import AlertsView from './Alerts/AlertsView';
@@ -34,7 +33,6 @@ const ControlView = (props) => {
     const isAlertsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.ALERTS;
     const isFleetsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.FLEETS;
     const isDisruptionsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS;
-    const isIncidentsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.INCIDENTS;
     const isTripReplaysView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.TRIP_REPLAYS;
     const isDataManagementView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.DATA_MANAGEMENT;
     const isNotificationsView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.NOTIFICATIONS;
@@ -55,7 +53,6 @@ const ControlView = (props) => {
                     { isStopMessagesView && <StopMessagesView /> }
                     { isAlertsView && <AlertsView /> }
                     { isFleetsView && <FleetsView /> }
-                    { isIncidentsView && <IncidentsView />}
                     { isDisruptionsView && !isDisruptionDetailsView && <DisruptionsView /> }
                     { isDisruptionDetailsView && <DisruptionDetailView /> }
                     { isTripReplaysView && <TripReplaysView /> }

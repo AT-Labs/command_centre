@@ -23,7 +23,6 @@ export default {
         ALERTS: 'control-alerts',
         FLEETS: 'control-fleets',
         DISRUPTIONS: 'control-disruptions',
-        INCIDENTS: 'control-incidents',
         TRIP_REPLAYS: 'control-trip-replay',
         DATA_MANAGEMENT: 'control-data-management',
         STOP_MESSAGES: 'control-messages',
