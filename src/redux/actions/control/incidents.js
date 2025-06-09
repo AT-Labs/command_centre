@@ -553,13 +553,6 @@ export const toggleIncidentModals = (type, isOpen) => ({
     },
 });
 
-export const toggleWorkaroundPanel = isOpen => ({
-    type: ACTION_TYPE.SET_WORKAROUND_PANEL_STATUS,
-    payload: {
-        isOpen,
-    },
-});
-
 export const updateCurrentStep = activeStep => ({
     type: ACTION_TYPE.UPDATE_INCIDENT_CURRENT_STEP,
     payload: {

@@ -15,11 +15,12 @@ const RouteShapeEditor = (props) => {
     const [center, setCenter] = useState([-36.8485, 174.7633]);
     const [originalShape, setOriginalShape] = useState(props.routeVariant?.shapeWkt);
     const [originalCoords, setOriginalCoords] = useState([]);
-    const [updatedCoords, setUpdatedCoords] = useState([]);
-    const [diversionPolyline, setDiversionPolyline] = useState([]);
-    const [editablePolyline, setEditablePolyline] = useState([]);
+    const [editablePolyline, setEditablePolyline] = useState(props.initialShape ? parseWKT(props.initialShape) : []);
+    const [updatedCoords, setUpdatedCoords] = useState([]); // For editing mode
     const [isEditablePolylineVisible, setIsEditablePolylineVisible] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
+
+    const [diversionPolyline, setDiversionPolyline] = useState([]);
 
     const mapRef = useRef();
     const featureGroupRef = useRef();
@@ -71,12 +72,18 @@ const RouteShapeEditor = (props) => {
         if (originalShape?.startsWith('LINESTRING')) {
             const coords = parseWKT(originalShape);
             setOriginalCoords(coords);
-            setEditablePolyline(coords);
+            if (props.initialShape) {
+                setEditablePolyline(parseWKT(props.initialShape));
+                setUpdatedCoords(parseWKT(props.initialShape));
+            } else {
+                setEditablePolyline(coords);
+            }
+
             if (coords.length > 0 && mapRef.current) {
                 setCenter(coords[0]);
             }
         }
-    }, [originalShape]);
+    }, [originalShape, props.initialShape]);
 
     useEffect(() => {
         if (props.routeVariant?.shapeWkt) {
@@ -117,6 +124,11 @@ const RouteShapeEditor = (props) => {
                 zoom={ 14 }
                 style={ { height: '100%', width: '100%' } }
                 ref={ mapRef }
+                whenReady={ (mapInstance) => {
+                    // Create a custom pane for the diversion polyline
+                    const diversionPane = mapInstance.target.createPane('diversionPane');
+                    diversionPane.style.zIndex = 650; // Set a higher zIndex to ensure it's on top
+                } }
             >
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -142,13 +154,26 @@ const RouteShapeEditor = (props) => {
                         })}
                     </FeatureGroup>
                 )}
-                {isEditablePolylineVisible && editablePolyline.length > 0 && (
+                {diversionPolyline.length > 0 && (
+                    <FeatureGroup pane="diversionPane">
+                        <Polyline
+                            positions={ diversionPolyline }
+                            color="RED"
+                            weight={ 8 }
+                        >
+                            <Tooltip sticky="true">
+                                <span>Diversion Shape</span>
+                            </Tooltip>
+                        </Polyline>
+                    </FeatureGroup>
+                )}
+                {isEditablePolylineVisible && (
                     <FeatureGroup ref={ featureGroupRef }>
                         <Polyline
                             positions={ editablePolyline }
                             color="DEEPSKYBLUE"
                             weight={ 5 }
-                            opacity={ props.visible ? 0.8 : 0 }
+                            opacity={ props.visible ? 0.5 : 0 }
                         >
                             <Tooltip sticky="true">
                                 { `${props.routeVariant?.routeVariantId} - ${props.routeVariant?.routeLongName}` }
@@ -174,25 +199,12 @@ const RouteShapeEditor = (props) => {
 
                     </FeatureGroup>
                 )}
-                {diversionPolyline.length > 0 && (
-                    <FeatureGroup>
-                        <Polyline
-                            positions={ diversionPolyline }
-                            color="RED"
-                            weight={ 5 }
-                        >
-                            <Tooltip sticky="true">
-                                <spa>Diversion Shape</spa>
-                            </Tooltip>
-                        </Polyline>
-                    </FeatureGroup>
-                )}
                 {!isEditing && (
                     <FeatureGroup>
                         { props.additionalRouteVariants
                             .filter(rv => rv.visible)
                             .map(rv => (
-                                <Polyline key={ rv.routeVariantId } positions={ parseWKT(rv.shapeWkt) } color={ rv.color } weight={ 5 } opacity={ 0.6 }>
+                                <Polyline key={ rv.routeVariantId } positions={ parseWKT(rv.shapeWkt) } color={ rv.color } weight={ 5 } opacity={ 0.5 }>
                                     <Tooltip sticky="true">
                                         { `${rv.routeVariantId} - ${rv.routeLongName}` }
                                     </Tooltip>
@@ -207,6 +219,7 @@ const RouteShapeEditor = (props) => {
 
 RouteShapeEditor.propTypes = {
     routeVariant: PropTypes.object,
+    initialShape: PropTypes.string,
     highlightedStops: PropTypes.array,
     visible: PropTypes.bool,
     additionalRouteVariants: PropTypes.array,
@@ -217,6 +230,7 @@ RouteShapeEditor.propTypes = {
 RouteShapeEditor.defaultProps = {
     visible: true,
     routeVariant: {},
+    initialShape: null,
     highlightedStops: [],
     additionalRouteVariants: [],
     stopCheckRadius: 20,

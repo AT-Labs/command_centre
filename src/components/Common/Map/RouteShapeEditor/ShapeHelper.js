@@ -125,18 +125,33 @@ export const findDifferences = (original, updated) => {
     return [];
 };
 
+// Deduplicate consecutive coordinates
+export const deduplicateCoordinates = (coordinates) => {
+    if (!Array.isArray(coordinates) || coordinates.length === 0) return [];
+    const deduped = [coordinates[0]];
+    for (let i = 1; i < coordinates.length; i++) {
+        const prev = deduped[deduped.length - 1];
+        const curr = coordinates[i];
+        if (prev[0] !== curr[0] || prev[1] !== curr[1]) {
+            deduped.push(curr);
+        }
+    }
+    return deduped;
+};
+
 // Function to parse WKT LINESTRING into an array of coordinates
 export const parseWKT = (wkt) => {
     const coords = wkt
         .replace('LINESTRING(', '')
         .replace(')', '')
         .split(',')
-        .map(pair => pair.trim().split(' ').map(Number).reverse()); // Trim whitespace, then process
-    return coords;
+        .map(pair => pair.trim().split(' ').map(Number).reverse());
+    return deduplicateCoordinates(coords);
 };
 
 // Function to convert coordinates back into WKT format
 export const toWKT = (coordinates) => {
-    const wktCoords = coordinates.map(latlng => `${latlng[1]} ${latlng[0]}`).join(',');
+    const deduped = deduplicateCoordinates(coordinates);
+    const wktCoords = deduped.map(latlng => `${latlng[1]} ${latlng[0]}`).join(',');
     return `LINESTRING(${wktCoords})`;
 };

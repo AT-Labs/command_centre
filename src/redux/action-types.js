@@ -50,6 +50,7 @@ export default {
     FETCH_STOP_PID_MESSAGES: 'fetch-stop-pid-messages',
     FETCH_STOP_PID_INFORMATION: 'fetch-stop-pid-information',
     FETCH_STOP_ROUTES_STOPS: 'fetch-stop-routes-stops',
+    FETCH_STOP_DISRUPTIONS: 'fetch-stop-disruptions',
     UPDATE_STOP_VEHICLE_PREDICATE: 'update-stop-vehicle-predicate',
     // Route detail
     FETCH_ROUTE_INFO: 'fetch-route-info',
@@ -245,9 +246,10 @@ export default {
     UPDATE_DISRUPTION_FILTERS: 'update-disruption-filters',
     UPDATE_DISRUPTION_DATAGRID_CONFIG: 'update-disruption-datagrid-config',
     UPDATE_DIVERSION_EDIT_MODE: 'update-diversion-edit-mode',
-    OPEN_CREATE_DIVERSION: 'open-create-diversion',
+    UPDATE_DIVERSION_TO_EDIT: 'update-diversion-to-edit',
+    OPEN_DIVERSION_MANAGER: 'open-diversion-manager',
     ADD_DIVERSION: 'add-diversion',
-    UPDATE_DIVERSION_CREATION_STATE: 'update-diversion-creation-state',
+    UPDATE_DIVERSION_RESULT_STATE: 'update-diversion-result-state',
 
     // Incidents
     FETCH_CONTROL_INCIDENTS_DISRUPTIONS: 'fetch-control-incidents-disruptions',
@@ -282,7 +284,6 @@ export default {
     UPDATE_INCIDENT_TO_EDIT: 'update-incident-to-edit',
     UPDATE_INCIDENT_FILTERS: 'update-incident-filters',
     UPDATE_INCIDENT_DATAGRID_CONFIG: 'update-incident-datagrid-config',
-    SET_WORKAROUND_PANEL_STATUS: 'set-workaround-panel-status',
     // UPDATE_INCIDENT_DIVERSION_EDIT_MODE: 'update-incident-diversion-edit-mode',
     // OPEN_INCIDENT_CREATE_DIVERSION: 'open-incident-create-diversion',
     // ADD_INCIDENT_DIVERSION: 'add-incident-diversion',

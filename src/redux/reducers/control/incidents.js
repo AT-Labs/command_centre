@@ -60,7 +60,6 @@ export const INIT_STATE = {
     },
     isCreateDiversionEnabled: false,
     diversionEditMode: EDIT_TYPE.CREATE,
-    isWorkaroundPanelOpen: false,
 };
 
 const handleIncidentsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });
@@ -71,23 +70,23 @@ const handleIncidentsRoutesLoadingUpdate = (state, { payload: { isIncidentsRoute
 const handleUpdateActiveIncidentId = (state, { payload: { activeIncidentId } }) => ({ ...state, activeIncidentId });
 const handleIncidentsDisruptionsUpdate = (state, { payload: { disruptions } }) => ({ ...state, disruptions });
 const handleIncidentsPermissionsUpdate = (state, { payload: { permissions } }) => ({ ...state, permissions });
-const handleIncidentActionRequestingUpdate = (state, { payload: { isRequesting, resultDisruptionId = state.action.resultDisruptionId } }) => ({
+const handleIncidentActionRequestingUpdate = (state, { payload: { isRequesting, resultIncidentId = state.action.resultIncidentId } }) => ({
     ...state,
     action: {
         ...state.action,
         isRequesting,
-        resultDisruptionId,
+        resultIncidentId,
     },
 });
-const handleIncidentActionResultUpdate = (state, { payload: { resultDisruptionId, resultMessage, resultStatus, resultCreateNotification, resultDisruptionVersion } }) => ({
+const handleIncidentActionResultUpdate = (state, { payload: { resultIncidentId, resultMessage, resultStatus, resultCreateNotification, resultIncidentVersion } }) => ({
     ...state,
     action: {
         ...state.action,
         resultMessage,
         resultStatus,
-        resultDisruptionId,
+        resultIncidentId,
         resultCreateNotification,
-        resultDisruptionVersion,
+        resultIncidentVersion,
     },
 });
 
@@ -137,10 +136,6 @@ const handleOpenCreateDiversion = (state, { payload: { isCreateDiversionEnabled 
 const handleUpdateDiversionEditMode = (state, { payload: { diversionEditMode } }) => ({ ...state, diversionEditMode });
 const handleUpdateSetAllIncidents = (state, { payload: { allIncidents } }) => ({ ...state, incidents: allIncidents });
 const handleSortingParamsUpdate = (state, { payload: { sortingParams } }) => ({ ...state, sortingParams });
-const handleWorkaroundPanel = (state, { payload: { isOpen } }) => ({
-    ...state,
-    isWorkaroundPanelOpen: isOpen,
-});
 
 export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_PERMISSIONS]: handleIncidentsPermissionsUpdate,
@@ -176,5 +171,4 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_SET_ALL_INCIDENTS]: handleUpdateSetAllIncidents,
     [ACTION_TYPE.UPDATE_CONTROL_ACTIVE_INCIDENT]: handleUpdateActiveIncidentId,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_SORTING_PARAMS]: handleSortingParamsUpdate,
-    [ACTION_TYPE.SET_WORKAROUND_PANEL_STATUS]: handleWorkaroundPanel,
 }, INIT_STATE);

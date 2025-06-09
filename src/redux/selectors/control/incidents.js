@@ -188,5 +188,3 @@ export const getSortedIncidents = createSelector(
         ? orderBy(allIncidents, incidentSortingParams.sortBy, incidentSortingParams.order)
         : allIncidents),
 );
-
-export const isWorkaroundPanelOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isWorkaroundPanelOpen'));
