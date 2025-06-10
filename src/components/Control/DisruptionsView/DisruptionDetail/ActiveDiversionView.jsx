@@ -68,7 +68,7 @@ const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiv
                         Routes
                         {' '}
                         {' '}
-                        {diversion.diversionRouteVariants.map(m => getShortRouteId(m.routeId)).join(', ')}
+                        {[...new Set(diversion.diversionRouteVariants.map(m => getShortRouteId(m.routeId)))].join(', ')}
                     </span>
                 )}
             </span>
