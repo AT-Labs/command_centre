@@ -7,13 +7,6 @@ import { getDiversion as getDiversionAPI, deleteDiversion as deleteDiversionAPI 
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import { ActiveDiversionView } from './ActiveDiversionView';
 import { DISRUPTIONS_MESSAGE_TYPE } from '../../../../types/disruptions-types';
-import { DISRUPTION_STATUS } from '../types';
-
-const editableStatuses = [
-    DISRUPTION_STATUS.NOT_STARTED,
-    DISRUPTION_STATUS.IN_PROGRESS,
-    DISRUPTION_STATUS.DRAFT,
-];
 
 const ViewDiversionDetailModal = (props) => {
     const [diversions, setDiversions] = useState(null);
@@ -21,8 +14,6 @@ const ViewDiversionDetailModal = (props) => {
     const [expandedRows, setExpandedRows] = useState({});
     const dispatch = useDispatch();
     const [refresh, setRefresh] = useState(false);
-
-    const isEditingEnabled = editableStatuses.includes(props.disruption.status);
 
     useEffect(() => {
         const fetchDiversions = async () => {
@@ -74,11 +65,6 @@ const ViewDiversionDetailModal = (props) => {
         setRefresh(prevRefresh => !prevRefresh);
     };
 
-    const editDiversion = (diversion) => {
-        props.onClose();
-        props.onEditDiversion(diversion);
-    };
-
     return (
         <div data-testid="active-diversion-detail">
             <CustomMuiDialog
@@ -113,8 +99,6 @@ const ViewDiversionDetailModal = (props) => {
                         </button>
                         <ActiveDiversionView
                             deleteDiversion={ deleteDiversion }
-                            editDiversion={ editDiversion }
-                            isEditingEnabled={ isEditingEnabled }
                             diversions={ diversions }
                             expandedRows={ expandedRows }
                             toggleExpand={ toggleExpand }
@@ -135,7 +119,6 @@ ViewDiversionDetailModal.propTypes = {
     disruption: PropTypes.any.isRequired,
     onClose: PropTypes.func.isRequired,
     isOpen: PropTypes.bool.isRequired,
-    onEditDiversion: PropTypes.func.isRequired,
 };
 
 export { ViewDiversionDetailModal };

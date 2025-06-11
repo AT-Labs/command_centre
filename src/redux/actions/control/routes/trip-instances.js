@@ -29,7 +29,7 @@ import { ACTION_RESULT } from '../../../../types/add-trip-types';
 import { captureError } from '../../../../utils/logger';
 import { UpdateStopPlatformError } from '../../../../types/exception-types';
 import { getRoutesTripsDatagridConfig } from '../../../selectors/datagrid';
-import { useHideSkippedStop } from '../../../selectors/appSettings';
+import { useHideSkippedStop, useTripCancellationCause } from '../../../selectors/appSettings';
 
 const loadTripInstances = (tripInstances, timestamp) => ({
     type: ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES,
@@ -271,12 +271,6 @@ export const updateTripInstanceOnHold = (options, successMessage, actionType, er
     dispatch,
 );
 
-export const updateTripInstanceOperationNotes = (options, successMessage, actionType, errorMessage) => dispatch => handleTripInstanceUpdate(
-    () => TRIP_MGT_API.updateTripOperationNotes(options),
-    { ...options, successMessage, actionType, errorMessage },
-    dispatch,
-);
-
 export const updateTripInstanceDelay = (options, successMessage) => (dispatch) => {
     handleTripInstanceUpdate(
         () => TRIP_MGT_API.updateTripDelay(options),
@@ -363,7 +357,8 @@ const bulkTripInstanceActions = (operateTrips, action, selectedTrips) => async (
     }
 };
 
-export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, successMessage, errorMessage, recurrenceSetting, selectedTrips) => async (dispatch) => {
+export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, successMessage, errorMessage, recurrenceSetting, selectedTrips) => async (dispatch, getState) => {
+    const isUseTripCancellationCauseEnabled = useTripCancellationCause(getState());
     const action = trip => updateTripInstanceStatus(
         {
             tripStatus,
@@ -379,6 +374,7 @@ export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, s
             display: recurrenceSetting.display,
             agencyId: trip.agencyId,
             routeShortName: trip.routeShortName,
+            ...(isUseTripCancellationCauseEnabled && recurrenceSetting.cancellationCause ? { cancellationCause: recurrenceSetting.cancellationCause } : null),
         },
         successMessage,
         MESSAGE_ACTION_TYPES.bulkStatusUpdate,
@@ -412,21 +408,6 @@ export const bulkUpdateTripsOnHold = (operateTrips, successMessage, errorMessage
         },
         successMessage,
         MESSAGE_ACTION_TYPES.bulkStatusUpdate,
-        errorMessage,
-    );
-    await dispatch(bulkTripInstanceActions(operateTrips, action, {}));
-};
-
-export const bulkUpdateTripsOperationNotes = (operateTrips, successMessage, errorMessage, operationNotes) => async (dispatch) => {
-    const action = trip => updateTripInstanceOperationNotes(
-        {
-            operationNotes,
-            tripId: trip.tripId,
-            startTime: trip.startTime,
-            serviceDate: trip.serviceDate,
-        },
-        successMessage,
-        MESSAGE_ACTION_TYPES.tripOperationNotesUpdate,
         errorMessage,
     );
     await dispatch(bulkTripInstanceActions(operateTrips, action, {}));

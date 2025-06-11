@@ -8,7 +8,6 @@ import {
     isLiveTrafficQueryValid,
     isMapCenterQueryValid,
     isMapZoomLevelQueryValid,
-    isDisruptionsQueryValid,
 } from './realtimeMap';
 
 describe('Query Validation Tests', () => {
@@ -90,12 +89,5 @@ describe('Query Validation Tests', () => {
         expect(isMapZoomLevelQueryValid('-5')).toBe(true);
         expect(isMapZoomLevelQueryValid('InvalidZoom')).toBe(false);
         expect(isMapZoomLevelQueryValid('')).toBe(false);
-    });
-
-    test('isDisruptionsQueryValid validates correctly', () => {
-        expect(isDisruptionsQueryValid('InvalidFilter')).toBe(false);
-        expect(isDisruptionsQueryValid('')).toBe(false);
-        expect(isDisruptionsQueryValid('Active, Active')).toBe(false);
-        expect(isDisruptionsQueryValid('Active,Planned')).toBe(true);
     });
 });

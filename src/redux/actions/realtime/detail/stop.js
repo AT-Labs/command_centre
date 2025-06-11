@@ -12,8 +12,7 @@ import {
     calculateScheduledAndActualTimes, clearDetail, isWithinNextHalfHour, isWithinPastHalfHour, updateViewDetailKey,
 } from './common';
 import { getAllocations, getVehicleAllocationByTrip, getNumberOfCarsByAllocations } from '../../../selectors/control/blocks';
-import { useNewMonitoring, useStopBasedDisruptionsSearch } from '../../../selectors/appSettings';
-import * as disruptionApi from '../../../../utils/transmitters/disruption-mgt-api';
+import { useNewMonitoring } from '../../../selectors/appSettings';
 
 export const getRoutesByStop = stop => (dispatch, getState) => {
     const stopCode = stop.stop_code;
@@ -42,31 +41,6 @@ export const getRoutesByStop = stop => (dispatch, getState) => {
         });
 };
 
-export const getDisruptionsByStop = stop => async (dispatch, getState) => {
-    const state = getState();
-    const entityKey = stop.key;
-    const useDisruptionSearch = useStopBasedDisruptionsSearch(state);
-    if (!useDisruptionSearch) return;
-    const stopCode = stop.stop_code;
-    dispatch(updateDataLoading(true));
-    try {
-        const filters = {
-            onlyWithStops: true,
-            statuses: ['in-progress', 'not-started'],
-            stopCode,
-        };
-        const data = await disruptionApi.getDisruptionsByFilters(filters);
-        dispatch({
-            type: ACTION_TYPE.FETCH_STOP_DISRUPTIONS,
-            payload: { entityKey, disruptions: data.disruptions },
-        });
-    } catch (error) {
-        dispatch(reportError({ error: { disruptionsByStop: error } }));
-    } finally {
-        dispatch(updateDataLoading(false));
-    }
-};
-
 export const stopSelected = stop => (dispatch) => {
     dispatch(clearDetail(true));
     dispatch(getRoutesByStop(stop));
@@ -80,7 +54,6 @@ export const stopSelected = stop => (dispatch) => {
 
 export const stopChecked = stop => (dispatch) => {
     dispatch(getRoutesByStop(stop));
-    dispatch(getDisruptionsByStop(stop));
 };
 
 export const fetchUpcomingVehicles = stopId => (dispatch, getState) => {

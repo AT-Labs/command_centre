@@ -6,7 +6,6 @@ import { getGridSingleSelectOperators, getGridStringOperators, GRID_CHECKBOX_SEL
 import { lowerCase, get, words, upperFirst, map, isEqual } from 'lodash-es';
 import moment from 'moment';
 import { FaCheckCircle, FaEyeSlash } from 'react-icons/fa';
-import { GiDetour } from 'react-icons/gi';
 
 import TripView from './TripView';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
@@ -38,7 +37,7 @@ import { getAllStops } from '../../../redux/selectors/static/stops';
 import { StopSearchDataGridOperators } from '../Common/DataGrid/OmniSearchDataGridOperator';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
 import {
-    useDiversion, useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences, useHoldTrip, useTripOperationNotes,
+    useDiversion, useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences, useHoldTrip, useTripCancellationCause,
 } from '../../../redux/selectors/appSettings';
 import { getUserPreferences } from '../../../utils/transmitters/command-centre-config-api';
 import { updateRoutesTripsDatagridConfig, updateDefaultRoutesTripsDatagridConfig } from '../../../redux/actions/datagrid';
@@ -47,7 +46,7 @@ import { mergeRouteFilters } from '../../../redux/actions/control/routes/filters
 import { LABEL_DISRUPTION } from '../../../constants/disruptions';
 import { transformIncidentNo } from '../../../utils/control/disruptions';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
-import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
+import { useAlertCauses } from '../../../utils/control/alert-cause-effect';
 
 export const renderDisruptionIdCell = ({ row }) => {
     const formattedDisruptionId = transformIncidentNo(row.disruptionId);
@@ -63,7 +62,7 @@ const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed
 
 const formatSourceColumn = row => (isTripAdded(row) ? <FaCheckCircle className="icon-blue-check" size={ 18 } /> : '');
 
-const formatOnHoldColumn = tripInstance => (IsOnHoldTrip(tripInstance) ? 'Y' : 'N');
+const formatOnHoldColumn = row => (IsOnHoldTrip(row.tripInstance) ? 'Y' : 'N');
 
 const formatHideColumn = (row) => {
     const display = get(row.tripInstance, 'display');
@@ -104,6 +103,7 @@ export const TripsDataGrid = (props) => {
     const [isSavedDatagridConfigReady, setIsSavedDatagridConfigReady] = useState(false);
     const isSavedDatagridConfigReadyRef = useRef(isSavedDatagridConfigReady);
     const getAgenciesRef = useRef(() => props.agencies);
+    const causes = useAlertCauses();
 
     useEffect(() => {
         getAgenciesRef.current = () => props.agencies;
@@ -170,30 +170,13 @@ export const TripsDataGrid = (props) => {
             ),
             renderCell: params => renderIconColumnContent(params),
         },
-
-        ...(props.useDiversion) ? [{
+        {
             field: 'routeVariantId',
             headerName: 'Route Variant',
             width: 150,
             type: 'string',
             filterable: false,
-            renderCell: params => (
-                <span>
-                    <span>{params.value}</span>
-                    {params.row?.type === 'Detoured' && (
-                        <span>
-                            <GiDetour size="24px" />
-                        </span>
-                    )}
-                </span>
-            ),
-        }] : [{
-            field: 'routeVariantId',
-            headerName: 'Route Variant',
-            width: 150,
-            type: 'string',
-            filterable: false,
-        }],
+        },
         ...(props.useAddTrip && !props.useDiversion) ? [{
             field: 'source',
             headerName: 'New',
@@ -237,7 +220,7 @@ export const TripsDataGrid = (props) => {
             filterOperators: getGridSingleSelectOperators(true).filter(
                 operator => operator.value === 'is',
             ),
-            renderCell: params => formatOnHoldColumn(params.row.tripInstance),
+            renderCell: params => formatOnHoldColumn(params.row),
         }] : [],
         {
             field: 'vehicleLabel',
@@ -347,13 +330,12 @@ export const TripsDataGrid = (props) => {
             renderCell: params => formatStatusColumn(params.row),
             filterable: false,
         },
-        ...(props.useTripOperationNotes
+        ...(props.useTripCancellationCause
             ? [
                 {
-                    field: 'operationNotes',
-                    headerName: 'operation Notes',
+                    field: 'cancellationCause',
+                    headerName: 'Cause of cancellation',
                     width: 150,
-                    renderCell: RenderCellExpand,
                     filterable: false,
                     hide: true,
                 },
@@ -418,9 +400,15 @@ export const TripsDataGrid = (props) => {
         },
     ];
 
+    const getTripCancellationCause = (tripInstance, causesList) => {
+        if (tripInstance.status === TRIP_STATUS_TYPES.cancelled && tripInstance.cancellationCause) {
+            return (causesList.find(cause => cause.value === tripInstance.cancellationCause))?.label || tripInstance.cancellationCause;
+        }
+        return '';
+    };
+
     const rows = props.tripInstances.map(tripInstance => ({
         routeVariantId: tripInstance.routeVariantId,
-        ...(props.useHoldTrip && { onHold: formatOnHoldColumn(tripInstance) }),
         startTime: getTripTimeDisplay(tripInstance.startTime),
         endTime: getTripTimeDisplay(tripInstance.endTime),
         routeType: tripInstance.routeType,
@@ -436,7 +424,7 @@ export const TripsDataGrid = (props) => {
             ...tripInstance,
             stops: markStopsAsFirstOrLast(tripInstance.stops),
         },
-        operationNotes: tripInstance.operationNotes,
+        ...(props.useTripCancellationCause ? { cancellationCause: getTripCancellationCause(tripInstance, causes) } : {}),
     }));
 
     const getDetailPanelContent = React.useCallback(
@@ -553,7 +541,7 @@ TripsDataGrid.propTypes = {
     updateDefaultRoutesTripsDatagridConfig: PropTypes.func.isRequired,
     mergeRouteFilters: PropTypes.func.isRequired,
     useHoldTrip: PropTypes.bool.isRequired,
-    useTripOperationNotes: PropTypes.bool.isRequired,
+    useTripCancellationCause: PropTypes.bool.isRequired,
 };
 
 TripsDataGrid.defaultProps = {
@@ -580,7 +568,7 @@ export default connect(
         useRoutesTripsFilterCollapse: useRoutesTripsFilterCollapse(state),
         useRoutesTripsPreferences: useRoutesTripsPreferences(state),
         useHoldTrip: useHoldTrip(state),
-        useTripOperationNotes: useTripOperationNotes(state),
+        useTripCancellationCause: useTripCancellationCause(state),
     }),
     {
         selectSingleTrip,

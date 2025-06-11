@@ -3,7 +3,6 @@ import VEHICLE_OCCUPANCY_STATUS_TYPE from '../types/vehicle-occupancy-status-typ
 import VEHICLE_TYPE_DETAILS, { VEHICLE_TYPES } from '../types/vehicle-types';
 import { RoadworksFilterCategories } from '../components/RealTime/TrafficFilters/RoadworksFilterBlock';
 import { CONGESTION_COLORS } from '../constants/traffic';
-import { DisruptionFilterCategories } from '../components/RealTime/TrafficFilters/DisruptionFilter';
 
 const validateQueryValuesWithSet = (query, allowedValuesArray) => {
     const values = query.split(',');
@@ -136,12 +135,6 @@ export const isRoadworksQueryValid = (query) => {
     if (!query) return false;
 
     return validateQueryValuesWithSet(query, new Set(RoadworksFilterCategories.map(category => category.id)));
-};
-
-export const isDisruptionsQueryValid = (query) => {
-    if (!query) return false;
-
-    return validateQueryValuesWithSet(query, new Set(DisruptionFilterCategories.map(category => category)));
 };
 
 export const isLiveTrafficQueryValid = (query) => {

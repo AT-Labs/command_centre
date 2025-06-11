@@ -42,20 +42,4 @@ describe('getIconNameByIncidentCategory', () => {
     it('should return "default icon" for an undefined category', () => {
         expect(getIconByIncidentCategory('NonExistentCategory')).to.deep.equal(<FaQuestion color="#D52923" className="icon" />);
     });
-
-    it('should return the correct icon name for each category', () => {
-        expect(getIconByIncidentCategory(Category.Accidents, true)).to.deep.equal(<FaCarBurst color="black" className="icon" />);
-        expect(getIconByIncidentCategory(Category.WeatherEnvironmentalConditions, true)).to.deep.equal(<FaCloudShowersHeavy color="black" className="icon" />);
-        expect(getIconByIncidentCategory(Category.RoadConditions, true)).to.deep.equal(<FaRoadCircleExclamation color="black" className="icon" />);
-        expect(getIconByIncidentCategory(Category.Emergencies, true)).to.deep.equal(<AiTwotoneAlert color="black" className="icon" />);
-        expect(getIconByIncidentCategory(Category.TrafficCongestion, true)).to.deep.equal(<Icon icon="incident-jam-black" />);
-        expect(getIconByIncidentCategory(Category.SpecialEvents, true)).to.deep.equal(<FaCalendarDay color="black" className="icon" />);
-        expect(getIconByIncidentCategory(Category.Roadworks, true)).to.deep.equal(<Icon icon="incident-roadwork-black" />);
-        expect(getIconByIncidentCategory(Category.RoadClosed, true)).to.deep.equal(<AiFillCloseCircle color="black" className="icon" />);
-        expect(getIconByIncidentCategory(Category.Unknown, true)).to.deep.equal(<FaQuestion color="black" className="icon" />);
-    });
-
-    it('should return "default icon" for an undefined category', () => {
-        expect(getIconByIncidentCategory('NonExistentCategory', true)).to.deep.equal(<FaQuestion color="black" className="icon" />);
-    });
 });
