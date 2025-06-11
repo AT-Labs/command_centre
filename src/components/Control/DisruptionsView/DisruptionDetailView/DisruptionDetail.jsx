@@ -980,7 +980,6 @@ DisruptionDetailView.propTypes = {
     useDraftDisruptions: PropTypes.bool.isRequired,
     isReadOnlyMode: PropTypes.bool,
     actions: PropTypes.objectOf(PropTypes.func).isRequired,
-    updateDiversionMode: PropTypes.func.isRequired,
 };
 
 DisruptionDetailView.defaultProps = {
