@@ -1,0 +1,51 @@
+@import '../../../../assets/styles/variables';
+
+.passenger-impact-drawer {
+    left: $side-panel-width-large;
+    position: fixed;
+    z-index: 401;
+    display: flex;
+    height: calc(100vh - #{$header-height});
+    width: calc(100vw - #{$side-panel-width-large});
+    max-width: 1000px;
+
+    & .handler-wrap {
+        display: flex;
+        align-items: center;
+        margin-left: -70px;
+        & .button-container {
+            display: flex;
+            align-items: center;
+        }
+        & .handler {
+            transform: rotate(90deg);
+            text-transform: none;
+            top: 45%;
+            border-radius: 4px 4px 0 0;
+            background-color: $at-magenta;
+            white-space: nowrap;
+        }
+        & :disabled {
+            color: $at-ocean !important;
+            background-color: $at-light-gray !important;
+        }
+        & .spinner-wrapper {
+            margin-left: 115px;
+        }
+    }
+
+    & .disabled {
+        margin-left: -115px !important;
+    }
+
+    & .open {
+        display: block;
+        background-color: #FAFAFA;
+        border-radius: 0 4px 4px 0;
+        width: 100%;
+    }
+
+    & .closed {
+        display: none;
+    }
+}

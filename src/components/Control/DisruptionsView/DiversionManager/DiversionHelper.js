@@ -1,4 +1,4 @@
-import { parseWKT, projectPointOnSegment, findProjectionOnPolyline, calculateDistance, mergeCoordinates, toWKT } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
+import { parseWKT, projectPointOnSegment, findProjectionOnPolyline, calculateDistance } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
 
 export const AffectedStopDistanceThreshold = 20;
 export const MergeDistanceThreshold = 20;
@@ -129,46 +129,3 @@ export const getUniqueStops = (stops) => {
         return true;
     });
 };
-
-// Returns true if the diversion has been modified in editing mode
-export function hasDiversionModified({
-    isEditingMode,
-    diversionShapeWkt,
-    originalDiversionShapeWkt,
-    selectedOtherRouteVariants,
-    editingDiversions,
-}) {
-    if (!isEditingMode) return false;
-    if (diversionShapeWkt !== originalDiversionShapeWkt) {
-        return true;
-    }
-    if (selectedOtherRouteVariants.length !== editingDiversions.length - 1) {
-        // -1 because the base route variant is not included in selectedOtherRouteVariants
-        return true;
-    }
-    return selectedOtherRouteVariants.some((variant) => {
-        const originalVariant = editingDiversions.find(ed => ed.routeVariantId === variant.routeVariantId);
-        if (!originalVariant) return true; // New variant added
-        return variant.shapeWkt !== originalVariant.shapeWkt;
-    });
-}
-
-// Returns an array of unique stop IDs from affectedStops
-export function getUniqueAffectedStopIds(affectedStops) {
-    return [...new Set(affectedStops.map(stop => stop.stopId))];
-}
-
-export function mergeDiversionToRouteVariant(
-    routeVariant,
-    originalShapeWkt,
-    diversionShapeWkt,
-) {
-    const originalCoordinates = parseWKT(originalShapeWkt);
-    const mergedCoordinates = mergeCoordinates(originalCoordinates, parseWKT(diversionShapeWkt));
-    return {
-        ...routeVariant,
-        shapeWkt: toWKT(mergedCoordinates),
-        color: generateUniqueColor(routeVariant.routeVariantId),
-        visible: true,
-    };
-}
