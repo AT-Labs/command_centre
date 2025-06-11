@@ -45,12 +45,8 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
                             </ListSubheader>
                         ),
                         ...inboundVariants.map(variant => (
-                            <MenuItem
-                                key={ variant.routeVariantId }
-                                value={ variant.routeVariantId }
-                                disabled={ variant.hasTripModifications === true }
-                            >
-                                {`${variant.routeVariantId} - ${variant.routeLongName}`}
+                            <MenuItem key={ variant.routeVariantId } value={ variant.routeVariantId }>
+                                { `${variant.routeVariantId} - ${variant.routeLongName}` }
                             </MenuItem>
                         )),
 
@@ -61,12 +57,8 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
                             </ListSubheader>
                         ),
                         ...outboundVariants.map(variant => (
-                            <MenuItem
-                                key={ variant.routeVariantId }
-                                value={ variant.routeVariantId }
-                                disabled={ variant.hasTripModifications === true }
-                            >
-                                {`${variant.routeVariantId} - ${variant.routeLongName}`}
+                            <MenuItem key={ variant.routeVariantId } value={ variant.routeVariantId }>
+                                { `${variant.routeVariantId} - ${variant.routeLongName}` }
                             </MenuItem>
                         )),
                     ];
