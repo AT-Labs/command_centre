@@ -51,6 +51,30 @@ describe('<AffectedEntities />', () => {
         expect(wrapper.find(Button).contains('Edit')).toBeFalsy();
     });
 
+    it('should display Add Diversion button', () => {
+        const affectedEntities = [
+            { routeId: 'route5', routeShortName: '5', routeType: 3, type: 'route' },
+            { routeId: 'route6', routeShortName: '6', routeType: 3, type: 'route' },
+            { routeId: 'route7', routeShortName: '7', routeType: 3, type: 'route' },
+            { routeId: 'route8', routeShortName: '8', routeType: 3, type: 'route' },
+        ];
+
+        wrapper = setup({ statusNotResolved: true, useDiversion: true, affectedEntities, startTime: '2025-06-26T21:55:00.000Z', endTime: '2025-07-02T00:00:00.000Z ' });
+        expect(wrapper.find(Button).contains('Add Diversion')).toBeTruthy();
+    });
+
+    it('should not display Add Diversion button', () => {
+        const affectedEntities = [
+            { routeId: 'route5', routeShortName: '5', routeType: 3, type: 'route' },
+            { routeId: 'route6', routeShortName: '6', routeType: 3, type: 'route' },
+            { routeId: 'route7', routeShortName: '7', routeType: 3, type: 'route' },
+            { routeId: 'route8', routeShortName: '8', routeType: 3, type: 'route' },
+        ];
+
+        wrapper = setup({ statusNotResolved: false, useDiversion: true, affectedEntities, startTime: '2025-06-26T21:55:00.000Z', endTime: '2025-07-02T00:00:00.000Z ' });
+        expect(wrapper.find(Button).contains('Add Diversion')).toBeFalsy();
+    });
+
     it('should display combined entities', () => {
         const affectedEntities = [
             { routeId: 'route1', routeShortName: '1', type: 'route' },
