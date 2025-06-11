@@ -39,7 +39,5 @@
     "useHoldTrip": "false",
     "useStopBasedDisruptionsLayer": "false",
     "useTripOperationNotes": "false",
-    "useStopBasedDisruptionsSearch": "false",
-    "useParentChildIncident": "false",
-    "useNotificationEffectColumn": "true"
+    "useStopBasedDisruptionsSearch": "false"
 }

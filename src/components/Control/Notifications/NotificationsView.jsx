@@ -24,7 +24,7 @@ import { updateQueryParams } from '../../../redux/actions/navigation';
 import Message from '../Common/Message/Message';
 import { goToDisruptionsView } from '../../../redux/actions/control/link';
 import { ALERT_MESSAGE_TYPE } from '../../../types/message-types';
-import { useDisruptionsNotificationsDirectLink, useNotificationEffectColumn } from '../../../redux/selectors/appSettings';
+import { useDisruptionsNotificationsDirectLink } from '../../../redux/selectors/appSettings';
 import Loader from '../../Common/Loader/Loader';
 import { useAlertCauses } from '../../../utils/control/alert-cause-effect';
 
@@ -49,7 +49,7 @@ export const NotificationsView = (props) => {
     const GRID_COLUMNS = [
         {
             field: 'sourceId',
-            headerName: '#CAUSE',
+            headerName: '#DISRUPTION',
             flex: 1,
             filterOperators: sourceIdDataGridOperator,
             ...(props.useDisruptionsNotificationsDirectLink ? {
@@ -67,29 +67,6 @@ export const NotificationsView = (props) => {
                 valueGetter: ({ row: { source: { identifier: incidentId } } }) => transformIncidentNo(incidentId),
             }),
         },
-        ...(props.useNotificationEffectColumn ? [{
-            field: 'effectId',
-            headerName: '#EFFECT',
-            flex: 1,
-            filterOperators: sourceIdDataGridOperator,
-            renderCell: ({ row }) => {
-                const effectId = row.effect?.identifier || row.effectIdentifier || row.source.identifier;
-                return (
-                    <Button
-                        aria-label="go-to-disruptions-effect"
-                        variant="text"
-                        onClick={ () => {
-                            props.goToDisruptionsView({ incidentId: effectId }, { setActiveDisruption: true });
-                        } }>
-                        {transformIncidentNo(effectId)}
-                    </Button>
-                );
-            },
-            valueGetter: ({ row }) => {
-                const effectId = row.effect?.identifier || row.effectIdentifier || row.source.identifier;
-                return transformIncidentNo(effectId);
-            },
-        }] : []),
         {
             field: 'sourceVersion',
             headerName: 'VERSION',
@@ -320,7 +297,6 @@ NotificationsView.propTypes = {
     selectedNotification: PropTypes.object,
     goToDisruptionsView: PropTypes.func.isRequired,
     useDisruptionsNotificationsDirectLink: PropTypes.bool.isRequired,
-    useNotificationEffectColumn: PropTypes.bool.isRequired,
 };
 
 NotificationsView.defaultProps = {
@@ -334,7 +310,6 @@ export default connect(
         rowCount: getNotificationsFilterCount(state),
         selectedNotification: getSelectedNotification(state),
         useDisruptionsNotificationsDirectLink: useDisruptionsNotificationsDirectLink(state),
-        useNotificationEffectColumn: useNotificationEffectColumn(state),
     }),
     {
         updateNotificationsDatagridConfig,
