@@ -96,7 +96,7 @@ export const AffectedEntities = (props) => {
                                     </div>
                                 )}
                                 <div>
-                                    { showAddDiversion
+                                    {showAddDiversion && props.statusNotResolved
                                     && (
                                         <Button
                                             className="btn cc-btn-link pr-0 font-weight-bold"
@@ -166,6 +166,7 @@ AffectedEntities.propTypes = {
     showViewPassengerImpactButton: PropTypes.bool,
     viewPassengerImpactAction: PropTypes.func,
     useDiversion: PropTypes.bool.isRequired,
+    statusNotResolved: PropTypes.bool.isRequired,
 };
 
 AffectedEntities.defaultProps = {
