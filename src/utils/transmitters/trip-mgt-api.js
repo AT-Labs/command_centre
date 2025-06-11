@@ -245,6 +245,13 @@ const updateTripOnHoldGqlMutation = gql`
         }
     }`;
 
+const updateTripOperationNotesGqlMutation = gql`
+    mutation($tripId: String!, $serviceDate: Moment!, $startTime: String!, $operationNotes: String!) {
+        updateTripOperationNotes( tripId: $tripId, serviceDate: $serviceDate, startTime: $startTime, operationNotes: $operationNotes) {
+            ${tripInstanceFields}
+        }
+    }`;
+
 export const updateTripDisplay = (options) => {
     const { tripId, serviceDate, startTime, display } = options;
 
@@ -325,6 +332,21 @@ export const updateTripOnHold = (options) => {
                 params: 'updateTripOnHold',
                 authToken: token,
             }).then(response => result(response, 'data.updateTripOnHold', {}))
+        ));
+};
+
+export const updateTripOperationNotes = (options) => {
+    const { tripId, serviceDate, startTime, operationNotes } = options;
+
+    return getAuthToken()
+        .then(token => (
+            mutateStatic({
+                url: `${REACT_APP_TRIP_MGT_QUERY_URL}/trips`,
+                mutation: updateTripOperationNotesGqlMutation,
+                variables: { tripId, serviceDate, startTime, operationNotes },
+                params: 'updateTripOperationNotes',
+                authToken: token,
+            }).then(response => result(response, 'data.updateTripOperationNotes', {}))
         ));
 };
 

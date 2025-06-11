@@ -37,7 +37,7 @@ import { getAllStops } from '../../../redux/selectors/static/stops';
 import { StopSearchDataGridOperators } from '../Common/DataGrid/OmniSearchDataGridOperator';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
 import {
-    useDiversion, useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences, useHoldTrip, useTripCancellationCause,
+    useDiversion, useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences, useHoldTrip, useTripOperationNotes, useTripCancellationCause,
 } from '../../../redux/selectors/appSettings';
 import { getUserPreferences } from '../../../utils/transmitters/command-centre-config-api';
 import { updateRoutesTripsDatagridConfig, updateDefaultRoutesTripsDatagridConfig } from '../../../redux/actions/datagrid';
@@ -46,6 +46,7 @@ import { mergeRouteFilters } from '../../../redux/actions/control/routes/filters
 import { LABEL_DISRUPTION } from '../../../constants/disruptions';
 import { transformIncidentNo } from '../../../utils/control/disruptions';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
+import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
 import { useAlertCauses } from '../../../utils/control/alert-cause-effect';
 
 export const renderDisruptionIdCell = ({ row }) => {
@@ -62,7 +63,7 @@ const isTripCompleted = tripStatus => tripStatus === TRIP_STATUS_TYPES.completed
 
 const formatSourceColumn = row => (isTripAdded(row) ? <FaCheckCircle className="icon-blue-check" size={ 18 } /> : '');
 
-const formatOnHoldColumn = row => (IsOnHoldTrip(row.tripInstance) ? 'Y' : 'N');
+const formatOnHoldColumn = tripInstance => (IsOnHoldTrip(tripInstance) ? 'Y' : 'N');
 
 const formatHideColumn = (row) => {
     const display = get(row.tripInstance, 'display');
@@ -220,7 +221,7 @@ export const TripsDataGrid = (props) => {
             filterOperators: getGridSingleSelectOperators(true).filter(
                 operator => operator.value === 'is',
             ),
-            renderCell: params => formatOnHoldColumn(params.row),
+            renderCell: params => formatOnHoldColumn(params.row.tripInstance),
         }] : [],
         {
             field: 'vehicleLabel',
@@ -330,6 +331,18 @@ export const TripsDataGrid = (props) => {
             renderCell: params => formatStatusColumn(params.row),
             filterable: false,
         },
+        ...(props.useTripOperationNotes
+            ? [
+                {
+                    field: 'operationNotes',
+                    headerName: 'operation Notes',
+                    width: 150,
+                    renderCell: RenderCellExpand,
+                    filterable: false,
+                    hide: true,
+                },
+            ]
+            : []),
         ...(props.useTripCancellationCause
             ? [
                 {
@@ -409,6 +422,7 @@ export const TripsDataGrid = (props) => {
 
     const rows = props.tripInstances.map(tripInstance => ({
         routeVariantId: tripInstance.routeVariantId,
+        ...(props.useHoldTrip && { onHold: formatOnHoldColumn(tripInstance) }),
         startTime: getTripTimeDisplay(tripInstance.startTime),
         endTime: getTripTimeDisplay(tripInstance.endTime),
         routeType: tripInstance.routeType,
@@ -424,6 +438,7 @@ export const TripsDataGrid = (props) => {
             ...tripInstance,
             stops: markStopsAsFirstOrLast(tripInstance.stops),
         },
+        operationNotes: tripInstance.operationNotes,
         ...(props.useTripCancellationCause ? { cancellationCause: getTripCancellationCause(tripInstance, causes) } : {}),
     }));
 
@@ -541,6 +556,7 @@ TripsDataGrid.propTypes = {
     updateDefaultRoutesTripsDatagridConfig: PropTypes.func.isRequired,
     mergeRouteFilters: PropTypes.func.isRequired,
     useHoldTrip: PropTypes.bool.isRequired,
+    useTripOperationNotes: PropTypes.bool.isRequired,
     useTripCancellationCause: PropTypes.bool.isRequired,
 };
 
@@ -568,6 +584,7 @@ export default connect(
         useRoutesTripsFilterCollapse: useRoutesTripsFilterCollapse(state),
         useRoutesTripsPreferences: useRoutesTripsPreferences(state),
         useHoldTrip: useHoldTrip(state),
+        useTripOperationNotes: useTripOperationNotes(state),
         useTripCancellationCause: useTripCancellationCause(state),
     }),
     {

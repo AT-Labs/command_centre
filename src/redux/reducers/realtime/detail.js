@@ -124,6 +124,11 @@ const handleRouteByStop = (state, { payload: { entityKey, routes } }) => ({
     selectedSearchResults: updateSelectedSearchResults(state.selectedSearchResults, entityKey, { routes }),
 });
 
+const handleDisruptionsByStop = (state, { payload: { entityKey, disruptions } }) => ({
+    ...state,
+    selectedSearchResults: updateSelectedSearchResults(state.selectedSearchResults, entityKey, { disruptions }),
+});
+
 const handleGetTrip = (state, { payload: { entityKey, trip } }) => ({
     ...state,
     vehicle: {
@@ -213,6 +218,7 @@ export default handleActions({
     [ACTION_TYPE.FETCH_VEHICLE_PAST_STOPS]: handlePastStopsOfSelectedVehicle,
     [ACTION_TYPE.UPDATE_SELECTED_STOP]: handleSelectedStop,
     [ACTION_TYPE.FETCH_STOP_ROUTES]: handleRouteByStop,
+    [ACTION_TYPE.FETCH_STOP_DISRUPTIONS]: handleDisruptionsByStop,
     [ACTION_TYPE.FETCH_STOP_UPCOMING_VEHICLES]: handleUpcomingVehiclesOfSelectedStop,
     [ACTION_TYPE.FETCH_STOP_PAST_VEHICLES]: handlePastVehiclesOfSelectedStop,
     [ACTION_TYPE.FETCH_STOP_PID_MESSAGES]: handlePidMessagesOfSelectedStop,

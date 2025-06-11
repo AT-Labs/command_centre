@@ -20,6 +20,7 @@ export const isSkipStopPermitted = stopInstance => isContainingPermission(stopIn
 export const isChangeStopPermitted = stopInstance => isContainingPermission(stopInstance, ROUTES.CHANGE_STOP);
 export const isRecurringCancellationUpdatePermitted = recurring => isContainingPermission(recurring, RECURRING_CANCELLATIONS.UPDATE_RECURRING_CANCELLATIONS);
 export const isHideSkippedStopPermitted = stopInstance => isContainingPermission(stopInstance, ROUTES.HIDE_STOP);
+export const isEditOperationNotesPermitted = tripInstance => isContainingPermission(tripInstance, ROUTES.EDIT_OPERATION_NOTES);
 
 // Blocks
 export const isGlobalAddBlocksPermitted = permissions => isGlobalActionPermitted(permissions, BLOCKS.ADD_BLOCK);
