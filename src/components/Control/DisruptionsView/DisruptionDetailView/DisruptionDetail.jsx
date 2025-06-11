@@ -89,7 +89,7 @@ import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 import EDIT_TYPE from '../../../../types/edit-types';
 import { getDatePickerOptions } from '../../../../utils/dateUtils';
 import ConfirmationModal from '../../Common/ConfirmationModal/ConfirmationModal';
-import { confirmationModalTypes, DISRUPTION_STATUS } from '../types';
+import { confirmationModalTypes } from '../types';
 import { ViewWorkaroundsModal } from '../DisruptionDetail/ViewWorkaroundsModal';
 import { LastNoteView } from '../DisruptionDetail/LastNoteView';
 import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
@@ -106,17 +106,9 @@ import { updateDiversionMode, openDiversionManager, updateDiversionToEdit } from
 
 const { STOP } = SEARCH_RESULT_TYPE;
 
-const disruptionStatus = [
-    DISRUPTION_STATUS.NOT_STARTED,
-    DISRUPTION_STATUS.IN_PROGRESS,
-    DISRUPTION_STATUS.DRAFT,
-];
-
 const DisruptionDetailView = (props) => {
     const { disruption, isRequesting, resultDisruptionId, isLoading, isReadOnlyMode } = props;
     const { NONE, EDIT, COPY } = confirmationModalTypes;
-
-    const statusNotResolved = disruptionStatus.includes(disruption.status);
 
     const causes = useAlertCauses();
     const impacts = useAlertEffects();
@@ -586,7 +578,6 @@ const DisruptionDetailView = (props) => {
                         showViewPassengerImpactButton={ props.usePassengerImpact }
                         viewPassengerImpactAction={ () => setIsViewPassengerImpactModalOpen(true) }
                         viewDiversionsAction={ () => setIsViewDiversionsModalOpen(true) }
-                        statusNotResolved={ statusNotResolved }
                     />
                     <section className="col-6">
                         <div className="row">
@@ -961,7 +952,6 @@ const DisruptionDetailView = (props) => {
                     onClose={ () => setIsViewDiversionsModalOpen(false) }
                     onEditDiversion={ editDiversion }
                     isOpen={ isViewDiversionsModalOpen }
-                    statusNotResolved={ statusNotResolved }
                 />
                 { props.usePassengerImpact && (
                     <DisruptionPassengerImpactGridModal

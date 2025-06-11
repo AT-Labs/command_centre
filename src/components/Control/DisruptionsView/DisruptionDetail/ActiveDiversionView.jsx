@@ -31,7 +31,7 @@ const gridColumns = [
     { field: 'directionId', headerName: 'Direction', width: 180, align: 'left', renderCell: createRenderCell('directionId') },
 ];
 
-const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiversion, editDiversion, statusNotResolved, incidentNo }) => {
+const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiversion, editDiversion, isEditingEnabled, incidentNo }) => {
     const getShortRouteId = routeId => routeId.split('-')[0];
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [selectedDiversionId, setSelectedDiversionId] = useState(null);
@@ -73,7 +73,7 @@ const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiv
                 )}
             </span>
             <span className="d-flex" data-testid="active-diversion-actions">
-                { statusNotResolved && (
+                { isEditingEnabled && (
                     <IconButton onClick={ () => editDiversion(diversion) } data-testid="edit-diversion-icon-button">
                         <CreateIcon />
                     </IconButton>
@@ -141,7 +141,7 @@ ActiveDiversionView.propTypes = {
     toggleExpand: PropTypes.func.isRequired,
     deleteDiversion: PropTypes.func.isRequired,
     editDiversion: PropTypes.func.isRequired,
-    statusNotResolved: PropTypes.bool.isRequired,
+    isEditingEnabled: PropTypes.bool.isRequired,
     incidentNo: PropTypes.string.isRequired,
 };
 
