@@ -179,7 +179,6 @@ const DiversionManager = (props) => {
     };
 
     useEffect(() => {
-        console.log('DiversionManager useEffect - selectedOtherRouteVariants updated', selectedOtherRouteVariants);
         // Find affected stops when diversion shape or the list of selected other route variants are updated.
         if (diversionShapeWkt?.length > 0 && modifiedBaseRouteVariant) {
             let updatedAffectedStops = [];
@@ -216,7 +215,7 @@ const DiversionManager = (props) => {
             editingDiversions,
         });
         setIsUpdated(isModified);
-    }, [selectedOtherRouteVariants]);
+    }, [diversionShapeWkt, selectedOtherRouteVariants]);
 
     // Fetch route variants when the component mounts
     useEffect(() => {
