@@ -3,7 +3,6 @@ import React, { useRef } from 'react';
 import { keyBy } from 'lodash-es';
 import { Button } from 'reactstrap';
 import sinon from 'sinon';
-import '@testing-library/jest-dom';
 import { AffectedEntities } from './AffectedEntities';
 
 let sandbox;
