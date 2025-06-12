@@ -1,5 +1,4 @@
-import { canMerge, createAffectedStop, createModifiedRouteVariant, generateUniqueColor,
-    getMinDistanceToPolyline, getUniqueAffectedStopIds, getUniqueStops, hasDiversionModified, isAffectedStop } from './DiversionHelper';
+import { canMerge, createAffectedStop, createModifiedRouteVariant, generateUniqueColor, getMinDistanceToPolyline, getUniqueStops, isAffectedStop } from './DiversionHelper';
 
 describe('generateUniqueColor', () => {
     it('generates a valid hex color', () => {
@@ -103,83 +102,5 @@ describe('getUniqueStops', () => {
             { routeId: '2', directionId: 0, stopId: 'A' },
             { routeId: '1', directionId: 1, stopId: 'A' },
         ]);
-    });
-});
-
-describe('hasDiversionModified', () => {
-    const baseArgs = {
-        isEditingMode: true,
-        diversionShapeWkt: 'LINESTRING(1 2,3 4)',
-        originalDiversionShapeWkt: 'LINESTRING(1 2,3 4)',
-        selectedOtherRouteVariants: [],
-        editingDiversions: [{ routeVariantId: 'rv1', shapeWkt: 'LINESTRING(1 2,3 4)' }],
-    };
-
-    it('returns false if not in editing mode', () => {
-        expect(hasDiversionModified({ ...baseArgs, isEditingMode: false })).toBe(false);
-    });
-
-    it('returns true if diversionShapeWkt is different', () => {
-        expect(
-            hasDiversionModified({
-                ...baseArgs,
-                diversionShapeWkt: 'LINESTRING(5 6,7 8)',
-            }),
-        ).toBe(true);
-    });
-
-    it('returns true if selectedOtherRouteVariants length is different', () => {
-        expect(
-            hasDiversionModified({
-                ...baseArgs,
-                selectedOtherRouteVariants: [{ routeVariantId: 'rv2', shapeWkt: 'LINESTRING(1 2,3 4)' }],
-            }),
-        ).toBe(true);
-    });
-
-    it('returns true if a variant shapeWkt is different', () => {
-        expect(
-            hasDiversionModified({
-                ...baseArgs,
-                selectedOtherRouteVariants: [{ routeVariantId: 'rv1', shapeWkt: 'LINESTRING(9 9,10 10)' }],
-                editingDiversions: [{ routeVariantId: 'rv1', shapeWkt: 'LINESTRING(1 2,3 4)' }],
-            }),
-        ).toBe(true);
-    });
-
-    it('returns true if a new variant is added', () => {
-        expect(
-            hasDiversionModified({
-                ...baseArgs,
-                selectedOtherRouteVariants: [{ routeVariantId: 'rv2', shapeWkt: 'LINESTRING(1 2,3 4)' }],
-                editingDiversions: [{ routeVariantId: 'rv1', shapeWkt: 'LINESTRING(1 2,3 4)' }],
-            }),
-        ).toBe(true);
-    });
-
-    it('returns false if everything matches', () => {
-        expect(
-            hasDiversionModified({
-                ...baseArgs,
-                selectedOtherRouteVariants: [],
-                editingDiversions: [{ routeVariantId: 'rv1', shapeWkt: 'LINESTRING(1 2,3 4)' }],
-            }),
-        ).toBe(false);
-    });
-});
-
-describe('getUniqueAffectedStopIds', () => {
-    it('returns unique stopIds', () => {
-        const affectedStops = [
-            { stopId: '1' },
-            { stopId: '2' },
-            { stopId: '1' },
-            { stopId: '3' },
-        ];
-        expect(getUniqueAffectedStopIds(affectedStops)).toEqual(['1', '2', '3']);
-    });
-
-    it('returns empty array for empty input', () => {
-        expect(getUniqueAffectedStopIds([])).toEqual([]);
     });
 });
