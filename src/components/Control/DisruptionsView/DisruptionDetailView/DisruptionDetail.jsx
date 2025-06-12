@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { connect } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
@@ -89,7 +89,7 @@ import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
 import EDIT_TYPE from '../../../../types/edit-types';
 import { getDatePickerOptions } from '../../../../utils/dateUtils';
 import ConfirmationModal from '../../Common/ConfirmationModal/ConfirmationModal';
-import { confirmationModalTypes, DISRUPTION_STATUS } from '../types';
+import { confirmationModalTypes } from '../types';
 import { ViewWorkaroundsModal } from '../DisruptionDetail/ViewWorkaroundsModal';
 import { LastNoteView } from '../DisruptionDetail/LastNoteView';
 import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
@@ -99,27 +99,22 @@ import { DisruptionPassengerImpactGridModal } from '../DisruptionDetail/Disrupti
 import { useDraftDisruptions, usePassengerImpact } from '../../../../redux/selectors/appSettings';
 import { updateActiveControlEntityId } from '../../../../redux/actions/navigation';
 import { shareToEmail } from '../../../../utils/control/disruption-sharing';
+import { reportError } from '../../../../redux/actions/activity';
 
 import '../DisruptionDetail/styles.scss';
 import { ViewDiversionDetailModal } from '../DisruptionDetail/ViewDiversionDetailModal';
 import { updateDiversionMode, openDiversionManager, updateDiversionToEdit } from '../../../../redux/actions/control/diversions';
+import { getDiversion as getDiversionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
 
 const { STOP } = SEARCH_RESULT_TYPE;
-
-const disruptionStatus = [
-    DISRUPTION_STATUS.NOT_STARTED,
-    DISRUPTION_STATUS.IN_PROGRESS,
-    DISRUPTION_STATUS.DRAFT,
-];
 
 const DisruptionDetailView = (props) => {
     const { disruption, isRequesting, resultDisruptionId, isLoading, isReadOnlyMode } = props;
     const { NONE, EDIT, COPY } = confirmationModalTypes;
 
-    const statusNotResolved = disruptionStatus.includes(disruption.status);
-
     const causes = useAlertCauses();
     const impacts = useAlertEffects();
+    const dispatch = useDispatch();
 
     const formatEndDateFromEndTime = disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '';
     const fetchEndDate = () => (disruption.recurrent ? fetchEndDateFromRecurrence(disruption.recurrencePattern) : formatEndDateFromEndTime);
@@ -155,6 +150,8 @@ const DisruptionDetailView = (props) => {
     const [lastNote, setLastNote] = useState();
     const [isViewPassengerImpactModalOpen, setIsViewPassengerImpactModalOpen] = useState(false);
     const [isViewDiversionsModalOpen, setIsViewDiversionsModalOpen] = useState(false);
+    const [diversions, setDiversions] = useState(null);
+    const [shouldRefetchDiversions, setShouldRefetchDiversions] = useState(false);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqWith([...affectedRoutes, ...props.routes], (routeA, routeB) => routeA.routeId === routeB.routeId && routeA.stopCode === routeB.stopCode);
@@ -271,6 +268,19 @@ const DisruptionDetailView = (props) => {
             setLastNote(disruptionNotes[disruptionNotes.length - 1]);
         }
     }, [disruption.lastUpdatedTime, lastNote]);
+
+    useEffect(() => {
+        const fetchDiversions = async () => {
+            try {
+                const data = await getDiversionAPI(disruption.disruptionId);
+                setDiversions(data);
+            } catch (error) {
+                dispatch(reportError({ error: { fetchDiversionDetails: error } }, true));
+                setDiversions(null);
+            }
+        };
+        fetchDiversions();
+    }, [shouldRefetchDiversions]);
 
     const handleUpdateDisruption = () => props.actions.updateDisruption(setDisruption());
 
@@ -586,7 +596,7 @@ const DisruptionDetailView = (props) => {
                         showViewPassengerImpactButton={ props.usePassengerImpact }
                         viewPassengerImpactAction={ () => setIsViewPassengerImpactModalOpen(true) }
                         viewDiversionsAction={ () => setIsViewDiversionsModalOpen(true) }
-                        statusNotResolved={ statusNotResolved }
+                        diversions={ diversions }
                     />
                     <section className="col-6">
                         <div className="row">
@@ -961,7 +971,8 @@ const DisruptionDetailView = (props) => {
                     onClose={ () => setIsViewDiversionsModalOpen(false) }
                     onEditDiversion={ editDiversion }
                     isOpen={ isViewDiversionsModalOpen }
-                    statusNotResolved={ statusNotResolved }
+                    setShouldRefetchDiversions={ setShouldRefetchDiversions }
+                    diversions={ diversions }
                 />
                 { props.usePassengerImpact && (
                     <DisruptionPassengerImpactGridModal

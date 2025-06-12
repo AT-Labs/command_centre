@@ -12,12 +12,11 @@ import thunk from 'redux-thunk';
 import { ViewDiversionDetailModal } from './ViewDiversionDetailModal';
 import { deleteDiversion } from '../../../../utils/transmitters/disruption-mgt-api';
 
-const mockGetDiversion = jest.fn();
 jest.mock('../../../../utils/transmitters/disruption-mgt-api', () => ({
     ...(jest.requireActual('../../../../utils/transmitters/disruption-mgt-api')),
-    getDiversion: diversions => mockGetDiversion(diversions),
     deleteDiversion: jest.fn(() => Promise.resolve()),
 }));
+
 const mockStore = configureStore([thunk]);
 const store = mockStore({
     realtime: {
@@ -68,6 +67,7 @@ const mockDisruption = {
     onClose: jest.fn(),
     isOpen: true,
 };
+
 const mockOnClose = jest.fn();
 describe('<ViewDiversionDetailModal />', () => {
     beforeEach(() => {
@@ -84,10 +84,13 @@ describe('<ViewDiversionDetailModal />', () => {
             diversionRouteVariants: [],
         },
         ];
-        mockGetDiversion.mockResolvedValue(mockDiversionsEmpty);
+
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
+                    diversions={ mockDiversionsEmpty }
+                    setShouldRefetchDiversions={ setShouldRefetchDiversions => setShouldRefetchDiversions(true) }
+                    onEditDiversion={ setRefresh => setRefresh(true) }
                     disruption={ mockDisruption.disruption }
                     onClose={ mockDisruption.onClose }
                     isOpen={ mockDisruption.isOpen }
@@ -97,11 +100,14 @@ describe('<ViewDiversionDetailModal />', () => {
         expect(screen.getByText('Close')).toBeInTheDocument();
         expect(mockDiversionsEmpty.length).toBe(2);
     });
+
     it('toggles "Collapse All" back to "Expand All" on second click', async () => {
-        mockGetDiversion.mockResolvedValue(mockDiversions);
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
+                    diversions={ mockDiversions }
+                    setShouldRefetchDiversions={ jest.fn() }
+                    onEditDiversion={ jest.fn() }
                     disruption={ mockDisruption.disruption }
                     onClose={ mockOnClose }
                     isOpen
@@ -115,11 +121,14 @@ describe('<ViewDiversionDetailModal />', () => {
         fireEvent.click(expandAllButton);
         expect(expandAllButton).toHaveTextContent('Expand All');
     });
+
     it('renders no diversions message and hides expand button when diversions is empty', async () => {
-        mockGetDiversion.mockResolvedValue([]);
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
+                    diversions={ [] }
+                    setShouldRefetchDiversions={ jest.fn() }
+                    onEditDiversion={ jest.fn() }
                     disruption={ mockDisruption.disruption }
                     onClose={ mockOnClose }
                     isOpen
@@ -130,11 +139,14 @@ describe('<ViewDiversionDetailModal />', () => {
         expect(screen.queryByTestId('expand-all-button')).not.toBeInTheDocument();
         expect(screen.getByText('Close')).toBeInTheDocument();
     });
+
     it('renders "Expand All" button and ActiveDiversionView when diversions is not null', async () => {
-        mockGetDiversion.mockResolvedValue(mockDiversions);
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
+                    diversions={ mockDiversions }
+                    setShouldRefetchDiversions={ jest.fn() }
+                    onEditDiversion={ jest.fn() }
                     disruption={ mockDisruption.disruption }
                     onClose={ mockOnClose }
                     isOpen
@@ -145,11 +157,14 @@ describe('<ViewDiversionDetailModal />', () => {
         expect(screen.getByText('Expand All')).toBeInTheDocument();
         expect(screen.getByText('Close')).toBeInTheDocument();
     });
+
     it('renders Expand All button initially and toggles to Collapse All on click', async () => {
-        mockGetDiversion.mockResolvedValue(mockDiversions);
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
+                    diversions={ mockDiversions }
+                    setShouldRefetchDiversions={ jest.fn() }
+                    onEditDiversion={ jest.fn() }
                     disruption={ mockDisruption.disruption }
                     onClose={ mockOnClose }
                     isOpen
@@ -164,11 +179,14 @@ describe('<ViewDiversionDetailModal />', () => {
         });
         expect(expandAllButton).toHaveTextContent('Collapse All');
     });
+
     it('toggles "Expand All" and "Collapse All" button text on click', async () => {
-        mockGetDiversion.mockResolvedValue(mockDiversions);
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
+                    diversions={ mockDiversions }
+                    setShouldRefetchDiversions={ jest.fn() }
+                    onEditDiversion={ jest.fn() }
                     disruption={ mockDisruption.disruption }
                     onClose={ mockOnClose }
                     isOpen
@@ -180,10 +198,14 @@ describe('<ViewDiversionDetailModal />', () => {
         fireEvent.click(expandAllButton);
         expect(expandAllButton).toHaveTextContent('Collapse All');
     });
+
     it('calls onClose when "Close" button is clicked', async () => {
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
+                    diversions={ mockDiversions }
+                    setShouldRefetchDiversions={ jest.fn() }
+                    onEditDiversion={ jest.fn() }
                     disruption={ mockDisruption.disruption }
                     onClose={ mockOnClose }
                     isOpen
@@ -194,17 +216,22 @@ describe('<ViewDiversionDetailModal />', () => {
         fireEvent.click(closeButton);
         expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
+
     it('renders no diversions message and hides expand button when diversions is null', async () => {
-        mockGetDiversion.mockRejectedValue(new Error('API error'));
+        const emptyMockDiversions = null;
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
+                    diversions={ emptyMockDiversions }
+                    setShouldRefetchDiversions={ jest.fn() }
+                    onEditDiversion={ jest.fn() }
                     disruption={ mockDisruption.disruption }
                     onClose={ mockOnClose }
                     isOpen
                 />,
             ));
         });
+
         expect(screen.getByText('No diversions added to this disruption.')).toBeInTheDocument();
         expect(screen.queryByTestId('expand-all-button')).not.toBeInTheDocument();
         expect(screen.getByText('Close')).toBeInTheDocument();
@@ -217,7 +244,6 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
     });
 
     it('renders active-diversion-actions with Edit and Delete button', async () => {
-        mockGetDiversion.mockResolvedValue(mockDiversions);
         const disruptionNotStarted = {
             ...mockDisruption.disruption,
             status: 'not-started',
@@ -225,7 +251,9 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
-                    statusNotResolved
+                    diversions={ mockDiversions }
+                    setShouldRefetchDiversions={ jest.fn() }
+                    onEditDiversion={ jest.fn() }
                     disruption={ disruptionNotStarted }
                     onClose={ mockOnClose }
                     isOpen
@@ -246,7 +274,6 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
     });
 
     it('renders active-diversion-actions without Edit button when disruption is resolved', async () => {
-        mockGetDiversion.mockResolvedValue(mockDiversions);
         const disruptionNotStarted = {
             ...mockDisruption.disruption,
             status: 'resolved',
@@ -254,6 +281,9 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
+                    diversions={ mockDiversions }
+                    setShouldRefetchDiversions={ jest.fn() }
+                    onEditDiversion={ jest.fn() }
                     disruption={ disruptionNotStarted }
                     onClose={ mockOnClose }
                     isOpen
@@ -267,6 +297,7 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
         const activeDiversionActions = getAllByTestId('active-diversion-actions');
         expect(activeDiversionActions.length).toBeGreaterThan(0);
         const createIcons = screen.queryAllByTestId('edit-diversion-icon-button');
+
         // No edit button should be present when disruption is resolved
         expect(createIcons.length).toBe(0);
         const deleteIcons = screen.getAllByTestId('delete-diversion-icon-button');
@@ -274,10 +305,12 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
     });
 
     it('can launch the delete modal correctly', async () => {
-        mockGetDiversion.mockResolvedValue(mockDiversions);
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
+                    diversions={ mockDiversions }
+                    setShouldRefetchDiversions={ jest.fn() }
+                    onEditDiversion={ jest.fn() }
                     disruption={ mockDisruption.disruption }
                     onClose={ mockOnClose }
                     isOpen
@@ -295,10 +328,12 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
     });
 
     it('should call delete API and refresh screen when delete confimed', async () => {
-        mockGetDiversion.mockResolvedValue(mockDiversions);
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
+                    diversions={ mockDiversions }
+                    setShouldRefetchDiversions={ setShouldRefetchDiversions => setShouldRefetchDiversions(true) }
+                    onEditDiversion={ jest.fn() }
                     disruption={ mockDisruption.disruption }
                     onClose={ mockOnClose }
                     isOpen
@@ -306,7 +341,6 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
             ));
         });
         expect(deleteDiversion).toHaveBeenCalledTimes(0);
-        expect(mockGetDiversion).toHaveBeenCalledTimes(1);
         const deleteIcons = screen.getAllByTestId('delete-diversion-icon-button');
         await act(async () => {
             const deleteButton = deleteIcons[0];
@@ -316,15 +350,16 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
         await act(async () => {
             fireEvent.click(deleteModalOkButton);
         });
-        expect(mockGetDiversion).toHaveBeenCalledTimes(2); // It is refreshed
         expect(deleteDiversion).toHaveBeenCalledTimes(1); // It is deleted
     });
 
     it('should not call delete API and refresh screen when delete cancelled', async () => {
-        mockGetDiversion.mockResolvedValue(mockDiversions);
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
+                    diversions={ mockDiversions }
+                    setShouldRefetchDiversions={ setShouldRefetchDiversions => setShouldRefetchDiversions(true) }
+                    onEditDiversion={ jest.fn() }
                     disruption={ mockDisruption.disruption }
                     onClose={ mockOnClose }
                     isOpen
@@ -332,7 +367,6 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
             ));
         });
         expect(deleteDiversion).toHaveBeenCalledTimes(0);
-        expect(mockGetDiversion).toHaveBeenCalledTimes(1);
         const deleteIcons = screen.getAllByTestId('delete-diversion-icon-button');
         await act(async () => {
             const deleteButton = deleteIcons[0];
@@ -342,7 +376,6 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
         await act(async () => {
             fireEvent.click(deleteModalCancelButton);
         });
-        expect(mockGetDiversion).toHaveBeenCalledTimes(1); // It is not refreshed
         expect(deleteDiversion).toHaveBeenCalledTimes(0); // It is not deleted
     });
 });
