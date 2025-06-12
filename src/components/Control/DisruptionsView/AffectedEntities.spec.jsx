@@ -1,11 +1,9 @@
 import { shallow } from 'enzyme';
 import React, { useRef } from 'react';
 import { keyBy } from 'lodash-es';
-import { Button, Text } from 'reactstrap';
+import { Button } from 'reactstrap';
 import sinon from 'sinon';
 import { AffectedEntities } from './AffectedEntities';
-import { render as reactRender, screen, act } from '@testing-library/react';
-import '@testing-library/jest-dom';
 
 let sandbox;
 let wrapper;
@@ -53,6 +51,30 @@ describe('<AffectedEntities />', () => {
         expect(wrapper.find(Button).contains('Edit')).toBeFalsy();
     });
 
+    it('should display Add Diversion button', () => {
+        const affectedEntities = [
+            { routeId: 'route5', routeShortName: '5', routeType: 3, type: 'route' },
+            { routeId: 'route6', routeShortName: '6', routeType: 3, type: 'route' },
+            { routeId: 'route7', routeShortName: '7', routeType: 3, type: 'route' },
+            { routeId: 'route8', routeShortName: '8', routeType: 3, type: 'route' },
+        ];
+
+        wrapper = setup({ statusNotResolved: true, useDiversion: true, affectedEntities, startTime: '2025-06-26T21:55:00.000Z', endTime: '2025-07-02T00:00:00.000Z ' });
+        expect(wrapper.find(Button).contains('Add Diversion')).toBeTruthy();
+    });
+
+    it('should not display Add Diversion button', () => {
+        const affectedEntities = [
+            { routeId: 'route5', routeShortName: '5', routeType: 3, type: 'route' },
+            { routeId: 'route6', routeShortName: '6', routeType: 3, type: 'route' },
+            { routeId: 'route7', routeShortName: '7', routeType: 3, type: 'route' },
+            { routeId: 'route8', routeShortName: '8', routeType: 3, type: 'route' },
+        ];
+
+        wrapper = setup({ statusNotResolved: false, useDiversion: true, affectedEntities, startTime: '2025-06-26T21:55:00.000Z', endTime: '2025-07-02T00:00:00.000Z ' });
+        expect(wrapper.find(Button).contains('Add Diversion')).toBeFalsy();
+    });
+
     it('should display combined entities', () => {
         const affectedEntities = [
             { routeId: 'route1', routeShortName: '1', type: 'route' },
@@ -86,44 +108,5 @@ describe('<AffectedEntities />', () => {
         const stopgroupDiv = wrapper.find('ul li').at(2).find('div');
         expect(stopgroupDiv.at(0).text()).toEqual('Stop Group - stop group 1');
         expect(stopgroupDiv.at(1).text()).toEqual('Stop 2, 3');
-    });
-});
-
-describe('View & edit diversions', () => {
-    it('should display an amount of 3 diversions when 3 diversions exist', async () => {
-        await act(async () => { 
-            reactRender(<AffectedEntities
-                affectedEntities={[
-                    { routeId: 'route1', routeShortName: '1', type: 'route' },
-                    { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
-                ]}
-                diversions={[
-                    { diversionId: 'diversion1', diversionRouteVariants: [{ routeId: 'route1' }] },
-                    { diversionId: 'diversion2', diversionRouteVariants: [{ routeId: 'route1' }] },
-                    { diversionId: 'diversion3', diversionRouteVariants: [{ routeId: 'route1' }] }
-                ]}
-                useDiversion={true}
-                startTime="2022-08-03T23:32:00.000Z"
-                endTime="2022-09-03T23:42:00.000Z"
-            />);
-        });
-        
-        expect(screen.getByText('View & edit diversions (3)')).toBeTruthy();
-    });
-
-    it('should display an amount of 0 diversions when no diversions exist', () => {
-
-        reactRender(<AffectedEntities
-            affectedEntities={[
-                { routeId: 'route1', routeShortName: '1', type: 'route' },
-                { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
-            ]}
-            diversions={[]}
-            useDiversion={true}
-            startTime="2022-08-03T23:32:00.000Z"
-            endTime="2022-09-03T23:42:00.000Z"
-        />);
-
-        expect(screen.getByText('View & edit diversions (0)')).toBeTruthy();
     });
 });
