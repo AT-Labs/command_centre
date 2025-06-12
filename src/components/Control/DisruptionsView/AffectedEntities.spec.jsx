@@ -25,7 +25,6 @@ const defaultProps = {
     endTime: '2022-09-03T23:42:00.000Z',
     useDiversion: true,
     viewDiversionsAction: jest.fn(),
-    isEditDisabled: true,
 };
 
 describe('<AffectedEntities />', () => {
@@ -42,21 +41,21 @@ describe('<AffectedEntities />', () => {
             ] }
             isEditDisabled={ false }
         />);
-        const editButton = screen.getByText('Edit');
+        const editButton = screen.getByTestId('edit-routes-and-stops-btn');
         expect(editButton).toBeInTheDocument();
     });
 
     it('should not display edit button', () => {
         render(<AffectedEntities
             { ...defaultProps }
-            isEditDisabled={ false }
             affectedEntities={ [
                 { routeId: 'route1', routeShortName: '1', type: 'route' },
                 { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
             ] }
+            isEditDisabled
         />);
-        const editButton = screen.getByText('Edit');
-        expect(editButton).toBeInTheDocument();
+        const editButton = screen.queryByTestId('edit-routes-and-stops-btn');
+        expect(editButton).not.toBeInTheDocument();
     });
 
     it('should display combined entities', () => {

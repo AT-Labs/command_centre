@@ -77,6 +77,7 @@ export const AffectedEntities = (props) => {
                                         <Button
                                             className="btn cc-btn-link pr-0 font-weight-bold"
                                             id="edit-routes-and-stops-btn"
+                                            data-testid="edit-routes-and-stops-btn"
                                             onClick={ props.editAction }
                                             disabled={ props.isEditDisabled }>
                                             { props.editLabel }
