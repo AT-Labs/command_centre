@@ -62,4 +62,3 @@ export const useStopBasedDisruptionsLayer = createSelector(getAppSettingsState, 
 export const useHoldTrip = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useHoldTrip') === 'true'));
 export const useStopBasedDisruptionsSearch = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useStopBasedDisruptionsSearch') === 'true'));
 export const useTripOperationNotes = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useTripOperationNotes') === 'true'));
-export const useTripCancellationCause = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useTripCancellationCause') === 'true'));

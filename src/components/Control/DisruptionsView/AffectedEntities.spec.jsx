@@ -1,9 +1,11 @@
 import { shallow } from 'enzyme';
 import React, { useRef } from 'react';
 import { keyBy } from 'lodash-es';
-import { Button } from 'reactstrap';
+import { Button, Text } from 'reactstrap';
 import sinon from 'sinon';
 import { AffectedEntities } from './AffectedEntities';
+import { render as reactRender, screen, act } from '@testing-library/react';
+import '@testing-library/jest-dom';
 
 let sandbox;
 let wrapper;
@@ -84,5 +86,44 @@ describe('<AffectedEntities />', () => {
         const stopgroupDiv = wrapper.find('ul li').at(2).find('div');
         expect(stopgroupDiv.at(0).text()).toEqual('Stop Group - stop group 1');
         expect(stopgroupDiv.at(1).text()).toEqual('Stop 2, 3');
+    });
+});
+
+describe('View & edit diversions', () => {
+    it('should display an amount of 3 diversions when 3 diversions exist', async () => {
+        await act(async () => { 
+            reactRender(<AffectedEntities
+                affectedEntities={[
+                    { routeId: 'route1', routeShortName: '1', type: 'route' },
+                    { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
+                ]}
+                diversions={[
+                    { diversionId: 'diversion1', diversionRouteVariants: [{ routeId: 'route1' }] },
+                    { diversionId: 'diversion2', diversionRouteVariants: [{ routeId: 'route1' }] },
+                    { diversionId: 'diversion3', diversionRouteVariants: [{ routeId: 'route1' }] }
+                ]}
+                useDiversion={true}
+                startTime="2022-08-03T23:32:00.000Z"
+                endTime="2022-09-03T23:42:00.000Z"
+            />);
+        });
+        
+        expect(screen.getByText('View & edit diversions (3)')).toBeTruthy();
+    });
+
+    it('should display an amount of 0 diversions when no diversions exist', () => {
+
+        reactRender(<AffectedEntities
+            affectedEntities={[
+                { routeId: 'route1', routeShortName: '1', type: 'route' },
+                { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
+            ]}
+            diversions={[]}
+            useDiversion={true}
+            startTime="2022-08-03T23:32:00.000Z"
+            endTime="2022-09-03T23:42:00.000Z"
+        />);
+
+        expect(screen.getByText('View & edit diversions (0)')).toBeTruthy();
     });
 });

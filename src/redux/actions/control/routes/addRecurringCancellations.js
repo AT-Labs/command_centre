@@ -59,7 +59,6 @@ const formatRecurringCancellationData = (recurringCancellationData) => {
         dayPattern: JSON.stringify(recurringCancellationData.selectedWeekdays),
         routeShortName: recurringCancellationData.route,
         agencyId: recurringCancellationData.operator,
-        cancellationCause: recurringCancellationData.cancellationCause,
     };
     return savingRecurringCancellationData;
 };
