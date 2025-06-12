@@ -78,7 +78,7 @@ describe('mergeCoordinates', () => {
         const firstList = [[0, 0], [10, 10]];
         const secondList = [[0, 5], [5, 5]];
         const merged = mergeCoordinates(firstList, secondList);
-        expect(merged).toEqual([]);
+        expect(merged).toEqual([[0, 0], [10, 10]]);
     });
 });
 

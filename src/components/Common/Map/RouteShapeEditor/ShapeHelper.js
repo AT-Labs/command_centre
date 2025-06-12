@@ -68,7 +68,7 @@ export const deduplicateCoordinates = (coordinates) => {
 export const mergeCoordinates = (firstList, secondList) => {
     // Both list should at least have 3 points to ensure a valid merge
     if (!Array.isArray(firstList) || !Array.isArray(secondList) || firstList.length < 3 || secondList.length < 3) {
-        return [];
+        return firstList;
     }
     // Step 1: Find the starting connector coordinate (first point of the second list)
     const firstSecondCoord = secondList[0];
