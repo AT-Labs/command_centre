@@ -68,17 +68,17 @@ describe('findProjectionOnPolyline', () => {
 
 describe('mergeCoordinates', () => {
     it('merges second list into first list between projected points', () => {
-        const firstList = [[0, 0], [0, 10], [10, 10]];
-        const secondList = [[0, 5], [5, 5], [10, 5]];
+        const firstList = [[0, 0], [0, 10], [10, 10], [11, 11]];
+        const secondList = [[0, 10], [5, 5], [10, 10]];
         const merged = mergeCoordinates(firstList, secondList);
-        expect(merged).toEqual([[0, 0], [0, 5], [5, 5], [10, 5], [10, 10]]);
+        expect(merged).toEqual([[0, 0], [0, 10], [5, 5], [10, 10], [11, 11]]);
     });
 
-    it('handles single-segment first list', () => {
+    it('handles merge when list length < 3', () => {
         const firstList = [[0, 0], [10, 10]];
         const secondList = [[0, 5], [5, 5]];
         const merged = mergeCoordinates(firstList, secondList);
-        expect(merged).toEqual([[0, 0], [0, 5], [5, 5], [10, 10]]);
+        expect(merged).toEqual([]);
     });
 });
 

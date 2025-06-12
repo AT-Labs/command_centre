@@ -1,5 +1,6 @@
 import { canMerge, createAffectedStop, createModifiedRouteVariant, generateUniqueColor,
-    getMinDistanceToPolyline, getUniqueAffectedStopIds, getUniqueStops, hasDiversionModified, isAffectedStop } from './DiversionHelper';
+    getMinDistanceToPolyline, getUniqueAffectedStopIds, getUniqueStops, hasDiversionModified, isAffectedStop, 
+    mergeDiversionToRouteVariant } from './DiversionHelper';
 
 describe('generateUniqueColor', () => {
     it('generates a valid hex color', () => {
@@ -22,7 +23,7 @@ describe('generateUniqueColor', () => {
 
 describe('getMinDistanceToPolyline', () => {
     it('returns 0 when stop is on the polyline', () => {
-        const wkt = 'LINESTRING (174.71309 -36.72237,174.71309 -36.72239,174.71324 -36.72239,174.71332 -36.72235,174.71334 -36.72228)';
+        const wkt = 'LINESTRING(174.71309 -36.72237,174.71309 -36.72239,174.71324 -36.72239,174.71332 -36.72235,174.71334 -36.72228)';
         const stopLatLng = [-36.72239, 174.71309];
         const distance = getMinDistanceToPolyline(stopLatLng, wkt);
         expect(distance).toBeCloseTo(0, 5);
@@ -31,8 +32,8 @@ describe('getMinDistanceToPolyline', () => {
 
 describe('canMerge', () => {
     it('returns true when both start and end of diversion are close to original', () => {
-        const originalWKT = 'LINESTRING (0 0, 0 0.001)';
-        const diversionWKT = 'LINESTRING (0 0.0001, 0 0.0002)';
+        const originalWKT = 'LINESTRING(0 0, 0 0.001)';
+        const diversionWKT = 'LINESTRING(0 0.0001, 0 0.0002)';
         expect(canMerge(originalWKT, diversionWKT)).toBe(true);
     });
 });
@@ -60,14 +61,14 @@ describe('createAffectedStop', () => {
 describe('createModifiedRouteVariant', () => {
     it('creates a modified route variant object with correct properties', () => {
         const routeVariant = { routeVariantId: '789', routeId: '456', routeLongName: 'Route 1 Long', directionId: 0 };
-        const shapeWkt = 'LINESTRING (0 0, 1 1)';
+        const shapeWkt = 'LINESTRING(0 0, 1 1)';
         const modifiedVariant = createModifiedRouteVariant(routeVariant, shapeWkt);
         expect(modifiedVariant).toEqual({
             routeVariantId: '789',
             routeId: '456',
             routeVariantName: 'Route 1 Long',
             directionId: 0,
-            shapeWkt: 'LINESTRING (0 0, 1 1)',
+            shapeWkt: 'LINESTRING(0 0, 1 1)',
         });
     });
 });
@@ -75,13 +76,13 @@ describe('createModifiedRouteVariant', () => {
 describe('isAffectedStop', () => {
     it('returns false when stop is close to the polyline', () => {
         const stop = { stopLat: -36.72237, stopLon: 174.71309 };
-        const shapeWkt = 'LINESTRING (174.71309 -36.72237,174.71309 -36.72239,174.71324 -36.72239,174.71332 -36.72235,174.71334 -36.72228)';
+        const shapeWkt = 'LINESTRING(174.71309 -36.72237,174.71309 -36.72239,174.71324 -36.72239,174.71332 -36.72235,174.71334 -36.72228)';
         expect(isAffectedStop(stop, shapeWkt)).toBe(false);
     });
 
     it('returns true when stop is far from the polyline', () => {
         const stop = { stopLat: -38.72237, stopLon: 176.71309 };
-        const shapeWkt = 'LINESTRING (174.71309 -36.72237,174.71309 -36.72239,174.71324 -36.72239,174.71332 -36.72235,174.71334 -36.72228)';
+        const shapeWkt = 'LINESTRING(174.71309 -36.72237,174.71309 -36.72239,174.71324 -36.72239,174.71332 -36.72235,174.71334 -36.72228)';
         expect(isAffectedStop(stop, shapeWkt)).toBe(true);
     });
 });
@@ -181,5 +182,27 @@ describe('getUniqueAffectedStopIds', () => {
 
     it('returns empty array for empty input', () => {
         expect(getUniqueAffectedStopIds([])).toEqual([]);
+    });
+});
+
+describe('mergeDiversionToRouteVariant', () => {
+    it('returns a new route variant object with merged shapeWkt, color, and visible=true', () => {
+        const routeVariant = {
+            routeVariantId: '123',
+            routeId: '456',
+            routeLongName: 'NX1 Albany to Britomart',
+            directionId: 0,
+        };
+        // Simple shapes for test
+        const originalShapeWkt = 'LINESTRING(0 0,0 10,10 10,11 11)';
+        const diversionShapeWkt = 'LINESTRING(0 10,5 5,10 10)';
+        const result = mergeDiversionToRouteVariant(routeVariant, originalShapeWkt, diversionShapeWkt);
+
+        expect(result.routeVariantId).toBe('123');
+        expect(result.routeId).toBe('456');
+        expect(result.routeLongName).toBe('NX1 Albany to Britomart');
+        expect(result.directionId).toBe(0);
+        expect(result.visible).toBe(true);
+        expect(result.shapeWkt).toBe('LINESTRING(0 0,0 10,5 5,10 10,11 11)');
     });
 });
