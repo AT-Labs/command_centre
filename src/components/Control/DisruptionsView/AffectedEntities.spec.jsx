@@ -16,22 +16,22 @@ jest.mock('react', () => ({
     useRef: jest.fn(() => ({ current: { clientHeight: 100 } })),
 }));
 
+const defaultProps = {
+    affectedEntities: [
+        { routeId: 'route1', routeShortName: '1', type: 'route' },
+        { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
+    ],
+    startTime: '2022-08-03T23:32:00.000Z',
+    endTime: '2022-09-03T23:42:00.000Z',
+    useDiversion: true,
+    viewDiversionsAction: jest.fn(),
+    isEditDisabled: true,
+};
+
 describe('<AffectedEntities />', () => {
     afterEach(() => {
         cleanup();
     });
-
-    const defaultProps = {
-        affectedEntities: [
-            { routeId: 'route1', routeShortName: '1', type: 'route' },
-            { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
-        ],
-        startTime: '2022-08-03T23:32:00.000Z',
-        endTime: '2022-09-03T23:42:00.000Z',
-        useDiversion: true,
-        viewDiversionsAction: jest.fn(),
-        isEditDisabled: true,
-    };
 
     it('should display edit button', () => {
         render(<AffectedEntities
@@ -109,17 +109,6 @@ describe('<AffectedEntities />', () => {
 });
 
 describe('View & edit diversions', () => {
-    const defaultProps = {
-        affectedEntities: [
-            { routeId: 'route1', routeShortName: '1', type: 'route' },
-            { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
-        ],
-        startTime: '2022-08-03T23:32:00.000Z',
-        endTime: '2022-09-03T23:42:00.000Z',
-        useDiversion: true,
-        viewDiversionsAction: jest.fn(),
-    };
-
     it('should display an amount of 3 diversions when 3 diversions exist', () => {
         render(
             <AffectedEntities
