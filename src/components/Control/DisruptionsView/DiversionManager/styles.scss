@@ -3,9 +3,6 @@
 .side-panel-control-component-view {
     & .side-panel {
         overflow-x: hidden;
-        .side-panel__inner {
-            box-shadow: none;
-        }
     }
     & .side-panel__scroll-size {
         height: calc(100vh - 149px);
