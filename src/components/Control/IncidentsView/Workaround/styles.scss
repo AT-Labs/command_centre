@@ -1,0 +1,23 @@
+@import '../../../../assets/styles/variables';
+
+.workaround-types {
+    label {
+        margin-left: 1rem !important;
+        font-weight: bold;
+    }
+}
+
+.workaround-input {
+    .MuiFilledInput-root {
+        border: 1px solid $at-ocean;
+        border-radius: 4px;
+        padding: 6px 12px;
+        font-size: 16px;
+    }
+    .MuiFilledInput-input {
+        padding: 1px;
+    }
+    .MuiFormHelperText-contained {
+        margin-left: 1px;
+    }
+}
