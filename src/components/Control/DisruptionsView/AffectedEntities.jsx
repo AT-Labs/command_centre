@@ -114,7 +114,6 @@ export const AffectedEntities = (props) => {
                                             <Button
                                                 className="btn cc-btn-link pr-0 font-weight-bold"
                                                 id="view-and-edit-diversions-btn"
-                                                data-testid="view-and-edit-diversions-btn"
                                                 onClick={ props.viewDiversionsAction }
                                             >
                                                 View & edit diversions (

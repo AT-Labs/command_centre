@@ -120,7 +120,7 @@ describe('View & edit diversions', () => {
             />,
         );
 
-        const button = screen.getByTestId('view-and-edit-diversions-btn');
+        const button = screen.getByText('View & edit diversions (3)');
         expect(button).toBeInTheDocument();
         expect(button).toHaveTextContent('View & edit diversions (3)');
     });
@@ -133,7 +133,7 @@ describe('View & edit diversions', () => {
             />,
         );
 
-        const button = screen.getByTestId('view-and-edit-diversions-btn');
+        const button = screen.getByText('View & edit diversions (1)');
         expect(button).toBeInTheDocument();
         expect(button).toHaveTextContent('View & edit diversions (1)');
     });
@@ -141,7 +141,7 @@ describe('View & edit diversions', () => {
     it('should display an amount of 0 diversions when no diversions exist', () => {
         render(<AffectedEntities { ...defaultProps } diversions={ [] } />);
 
-        const button = screen.getByTestId('view-and-edit-diversions-btn');
+        const button = screen.getByText('View & edit diversions (0)');
         expect(button).toBeInTheDocument();
         expect(button).toHaveTextContent('View & edit diversions (0)');
     });
@@ -159,7 +159,7 @@ describe('View & edit diversions', () => {
             />,
         );
 
-        const button = screen.queryByTestId('view-and-edit-diversions-btn');
+        const button = screen.queryByText('View & edit diversions (3)');
         expect(button).not.toBeInTheDocument();
     });
 
@@ -171,13 +171,12 @@ describe('View & edit diversions', () => {
                 diversions={ [
                     { diversionId: 1, diversionRouteVariants: [], routeId: 'route1' },
                     { diversionId: 2, diversionRouteVariants: [], routeId: 'route1' },
-                    { diversionId: 3, diversionRouteVariants: [], routeId: 'route1' },
                 ] }
                 viewDiversionsAction={ viewDiversionsAction }
             />,
         );
 
-        const button = screen.getByTestId('view-and-edit-diversions-btn');
+        const button = screen.getByText('View & edit diversions (2)');
         expect(button).toBeInTheDocument();
         await fireEvent.click(button);
         expect(viewDiversionsAction).toHaveBeenCalled();
