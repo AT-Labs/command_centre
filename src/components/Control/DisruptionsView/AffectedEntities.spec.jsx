@@ -1,54 +1,61 @@
-import { shallow } from 'enzyme';
-import React, { useRef } from 'react';
-import { keyBy } from 'lodash-es';
-import { Button } from 'reactstrap';
-import sinon from 'sinon';
+/**
+ * @jest-environment jsdom
+ */
+import React from 'react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { AffectedEntities } from './AffectedEntities';
-
-let sandbox;
-let wrapper;
 
 jest.mock('react', () => ({
     ...jest.requireActual('react'),
     useRef: jest.fn(),
 }));
 
-const mockUseRef = (ref) => {
-    const defaultRef = { current: { clientHeight: 100 } };
-    useRef.mockReturnValue(ref || defaultRef);
-};
+jest.mock('react', () => ({
+    ...jest.requireActual('react'),
+    useRef: jest.fn(() => ({ current: { clientHeight: 100 } })),
+}));
 
-const componentPropsMock = {
-    editLabel: 'Edit',
-    editAction: () => {},
-    isEditDisabled: true,
-    affectedEntities: [],
-    stopGroups: [],
-};
-
-const setup = (customProps) => {
-    const props = { ...componentPropsMock };
-    Object.assign(props, customProps);
-    wrapper = shallow(<AffectedEntities { ...props } />);
-    return wrapper;
+const defaultProps = {
+    affectedEntities: [
+        { routeId: 'route1', routeShortName: '1', type: 'route' },
+        { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
+    ],
+    startTime: '2022-08-03T23:32:00.000Z',
+    endTime: '2022-09-03T23:42:00.000Z',
+    useDiversion: true,
+    viewDiversionsAction: jest.fn(),
 };
 
 describe('<AffectedEntities />', () => {
-    beforeEach(() => {
-        sandbox = sinon.createSandbox();
-        mockUseRef();
+    afterEach(() => {
+        cleanup();
     });
 
-    afterEach(() => { sandbox.restore(); });
-
     it('should display edit button', () => {
-        wrapper = setup({ isEditDisabled: false });
-        expect(wrapper.find(Button).contains('Edit')).toBeTruthy();
+        render(<AffectedEntities
+            { ...defaultProps }
+            affectedEntities={ [
+                { routeId: 'route1', routeShortName: '1', type: 'route' },
+                { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
+            ] }
+            isEditDisabled={ false }
+        />);
+        const editButton = screen.getByText('Edit');
+        expect(editButton).toBeInTheDocument();
     });
 
     it('should not display edit button', () => {
-        wrapper = setup({ isEditDisabled: true });
-        expect(wrapper.find(Button).contains('Edit')).toBeFalsy();
+        render(<AffectedEntities
+            { ...defaultProps }
+            affectedEntities={ [
+                { routeId: 'route1', routeShortName: '1', type: 'route' },
+                { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
+            ] }
+            isEditDisabled
+        />);
+        const editButton = screen.queryByText('Edit');
+        expect(editButton).not.toBeInTheDocument();
     });
 
     it('should display combined entities', () => {
@@ -65,24 +72,114 @@ describe('<AffectedEntities />', () => {
             { routeId: 'route8', routeShortName: '8', type: 'route', directionId: 1, stopCode: '8' },
             { routeId: 'route8', routeShortName: '8', type: 'route', directionId: 1, stopCode: '9' },
         ];
-        wrapper = setup({ affectedEntities });
-        expect(wrapper.find(Button).contains('View more')).toBeFalsy();
-        expect(wrapper.find('ul').children()).toHaveLength(8);
+        render(<AffectedEntities
+            { ...defaultProps }
+            affectedEntities={ affectedEntities }
+            isEditDisabled={ false }
+        />);
+
+        expect(screen.queryByText('View more')).not.toBeInTheDocument();
+        const listItems = screen.getAllByRole('listitem');
+        expect(listItems).toHaveLength(8);
     });
 
     it('should display combined entities with stop groups', () => {
+        const stopGroups = [{ id: 1, title: 'stop group 1' }].reduce((acc, group) => {
+            acc[group.id] = group;
+            return acc;
+        }, {});
         const affectedEntities = [
             { routeId: 'route1', routeShortName: '1', type: 'route' },
             { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
             { stopId: 'stop2', stopCode: '2', groupId: 1, text: '2', type: 'stop' },
             { stopId: 'stop3', stopCode: '3', groupId: 1, text: '3', type: 'stop' },
         ];
-        const stopGroups = keyBy([{ id: 1, title: 'stop group 1' }], group => group.id);
-        wrapper = setup({ affectedEntities, stopGroups });
+        render(<AffectedEntities
+            stopGroups={ stopGroups }
+            affectedEntities={ affectedEntities }
+            isEditDisabled={ false }
+        />);
 
-        expect(wrapper.find('ul').children()).toHaveLength(3);
-        const stopgroupDiv = wrapper.find('ul li').at(2).find('div');
-        expect(stopgroupDiv.at(0).text()).toEqual('Stop Group - stop group 1');
-        expect(stopgroupDiv.at(1).text()).toEqual('Stop 2, 3');
+        const listItems = screen.getAllByRole('listitem');
+        expect(listItems).toHaveLength(3);
+        expect(screen.getByText('Stop Group - stop group 1')).toBeInTheDocument();
+        expect(screen.getByText('Stop 2, 3')).toBeInTheDocument();
+    });
+});
+
+describe('View & edit diversions', () => {
+    it('should display an amount of 3 diversions when 3 diversions exist', () => {
+        render(
+            <AffectedEntities
+                { ...defaultProps }
+                diversions={ [
+                    { diversionId: 1, diversionRouteVariants: [], routeId: 'route1' },
+                    { diversionId: 2, diversionRouteVariants: [], routeId: 'route1' },
+                    { diversionId: 3, diversionRouteVariants: [], routeId: 'route1' },
+                ] }
+            />,
+        );
+
+        const button = screen.getByTestId('view-and-edit-diversions-btn');
+        expect(button).toBeInTheDocument();
+        expect(button).toHaveTextContent('View & edit diversions (3)');
+    });
+
+    it('should display an amount of 1 diversion when diversion list is 1', () => {
+        render(
+            <AffectedEntities
+                { ...defaultProps }
+                diversions={ [{ diversionId: 1, diversionRouteVariants: [], routeId: 'route1' }] }
+            />,
+        );
+
+        const button = screen.getByTestId('view-and-edit-diversions-btn');
+        expect(button).toBeInTheDocument();
+        expect(button).toHaveTextContent('View & edit diversions (1)');
+    });
+
+    it('should display an amount of 0 diversions when no diversions exist', () => {
+        render(<AffectedEntities { ...defaultProps } diversions={ [] } />);
+
+        const button = screen.getByTestId('view-and-edit-diversions-btn');
+        expect(button).toBeInTheDocument();
+        expect(button).toHaveTextContent('View & edit diversions (0)');
+    });
+
+    it('should not render the diversions button when useDiversion is false', () => {
+        render(
+            <AffectedEntities
+                { ...defaultProps }
+                useDiversion={ false }
+                diversions={ [
+                    { diversionId: 1, diversionRouteVariants: [], routeId: 'route1' },
+                    { diversionId: 2, diversionRouteVariants: [], routeId: 'route1' },
+                    { diversionId: 3, diversionRouteVariants: [], routeId: 'route1' },
+                ] }
+            />,
+        );
+
+        const button = screen.queryByTestId('view-and-edit-diversions-btn');
+        expect(button).not.toBeInTheDocument();
+    });
+
+    it('should call viewDiversionsAction when the button is clicked', async () => {
+        const viewDiversionsAction = jest.fn();
+        render(
+            <AffectedEntities
+                { ...defaultProps }
+                diversions={ [
+                    { diversionId: 1, diversionRouteVariants: [], routeId: 'route1' },
+                    { diversionId: 2, diversionRouteVariants: [], routeId: 'route1' },
+                    { diversionId: 3, diversionRouteVariants: [], routeId: 'route1' },
+                ] }
+                viewDiversionsAction={ viewDiversionsAction }
+            />,
+        );
+
+        const button = screen.getByTestId('view-and-edit-diversions-btn');
+        expect(button).toBeInTheDocument();
+        await fireEvent.click(button);
+        expect(viewDiversionsAction).toHaveBeenCalled();
     });
 });
