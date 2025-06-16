@@ -578,6 +578,7 @@ const DisruptionDetailView = (props) => {
                         showViewPassengerImpactButton={ props.usePassengerImpact }
                         viewPassengerImpactAction={ () => setIsViewPassengerImpactModalOpen(true) }
                         viewDiversionsAction={ () => setIsViewDiversionsModalOpen(true) }
+                        disruptionStatus={ disruption.status }
                     />
                     <section className="col-6">
                         <div className="row">
