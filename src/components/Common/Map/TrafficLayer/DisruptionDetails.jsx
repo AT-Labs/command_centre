@@ -14,7 +14,7 @@ import {
 } from '../../../../utils/control/disruptions';
 
 const DisruptionDetails = (props) => {
-    const { disruptions, causes, impacts, goToDisruptionEditPage, stopTitle } = props;
+    const { disruptions, causes, impacts, goToDisruptionEditPage, stopCode, stopName } = props;
     const [index, setIndex] = useState(0);
 
     const handleNext = () => {
@@ -25,12 +25,19 @@ const DisruptionDetails = (props) => {
         setIndex(prevIndex => Math.max(prevIndex - 1, 0));
     };
 
-    const getUniqueRouteNames = (disruption) => {
-        const routes = disruption?.affectedEntities
-            ?.map(entity => entity?.routeShortName?.trim())
-            ?.filter(Boolean);
+    const getRouteNamesByStopCode = (disruption) => {
+        if (!Array.isArray(disruption?.affectedEntities) || !stopCode) return '-';
+        const routes = disruption.affectedEntities
+            .filter(entity => entity?.stopCode === stopCode && entity?.routeShortName)
+            .map(entity => entity.routeShortName.trim());
+        return routes.length ? [...new Set(routes)].join(', ') : '-';
+    };
 
-        return routes?.length ? [...new Set(routes)].join(', ') : '-';
+    const getStopTitle = () => {
+        if (stopCode && stopName) {
+            return `${stopCode} - ${stopName}`;
+        }
+        return '-';
     };
 
     return (
@@ -60,7 +67,7 @@ const DisruptionDetails = (props) => {
                 <div className="row">
                     <p>
                         <strong>
-                            { stopTitle }
+                            { getStopTitle() }
                         </strong>
                     </p>
                 </div>
@@ -110,16 +117,14 @@ const DisruptionDetails = (props) => {
                 <div className="row">
                     <div className="column">
                         <p><strong>Routes</strong></p>
-                        <p>{getUniqueRouteNames(disruptions[index])}</p>
+                        <p>{getRouteNamesByStopCode(disruptions[index])}</p>
                     </div>
                 </div>
                 <div className="row">
                     <div className="column">
                         <p><strong>Internal Notes</strong></p>
                         {disruptions[index]?.notes?.length > 0 ? (
-                            disruptions[index].notes.map(note => (
-                                <p key={ note.id }>{note.description}</p>
-                            ))
+                            <p>{disruptions[index].notes[disruptions[index].notes.length - 1].description}</p>
                         ) : (
                             <p>No notes added to this disruption.</p>
                         )}
@@ -148,7 +153,8 @@ const DisruptionDetails = (props) => {
 
 DisruptionDetails.propTypes = {
     disruptions: PropTypes.array,
-    stopTitle: PropTypes.string,
+    stopCode: PropTypes.string,
+    stopName: PropTypes.string,
     causes: PropTypes.array,
     impacts: PropTypes.array,
     goToDisruptionEditPage: PropTypes.func,
@@ -156,7 +162,8 @@ DisruptionDetails.propTypes = {
 
 DisruptionDetails.defaultProps = {
     disruptions: [],
-    stopTitle: '',
+    stopCode: '',
+    stopName: '',
     causes: [],
     impacts: [],
     goToDisruptionEditPage: undefined,
