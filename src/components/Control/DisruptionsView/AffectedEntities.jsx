@@ -29,6 +29,8 @@ export const AffectedEntities = (props) => {
         </li>
     );
 
+    const isDisruptionResolved = status => status === 'resolved';
+
     const getCombinedAffectedStopsRoutesStopGroups = () => {
         const affectedEntitiesByRoute = groupBy(props.affectedEntities.filter(entity => entity.type === 'route' || (entity.routeId && isEmpty(entity.stopCode))), 'routeId');
         const affectedEntitiesByStop = groupBy(props.affectedEntities.filter(entity => entity.type === 'stop' && !entity.groupId), 'stopCode');
@@ -58,8 +60,8 @@ export const AffectedEntities = (props) => {
 
     // We only support adding diversion to bus route at the moment.
     const isBusRoute = route => route.routeType === 3;
-
-    const showAddDiversion = props.useDiversion && props.startTime && props.endTime && props.affectedEntities.filter(isBusRoute).length > 0;
+    const showAddDiversion = props.useDiversion && props.startTime && props.endTime && !isDisruptionResolved(props.disruptionStatus)
+        && props.affectedEntities.filter(isBusRoute).length > 0;
 
     return (
         <section className={ `disruption__affected-entities ${props.heightSmall ? 'small' : ''} ${props.className}` }>
@@ -71,7 +73,7 @@ export const AffectedEntities = (props) => {
                                 <h3>Affected routes and stops</h3>
                             </div>
                             <div className="col-6 text-right">
-                                {!props.isEditDisabled && (
+                                { !props.isEditDisabled && (
                                     <div>
                                         <Button
                                             className="btn cc-btn-link pr-0 font-weight-bold"
@@ -83,7 +85,7 @@ export const AffectedEntities = (props) => {
                                         </Button>
                                     </div>
                                 )}
-                                {props.showViewWorkaroundsButton && (
+                                { props.showViewWorkaroundsButton && (
                                     <div>
                                         <Button
                                             className="btn cc-btn-link pr-0 font-weight-bold"
@@ -120,7 +122,7 @@ export const AffectedEntities = (props) => {
                                             </Button>
                                         )}
                                 </div>
-                                {props.showViewPassengerImpactButton && (
+                                { props.showViewPassengerImpactButton && (
                                     <div>
                                         <Button
                                             className="btn cc-btn-link pr-0 font-weight-bold"
@@ -166,6 +168,7 @@ AffectedEntities.propTypes = {
     showViewPassengerImpactButton: PropTypes.bool,
     viewPassengerImpactAction: PropTypes.func,
     useDiversion: PropTypes.bool.isRequired,
+    disruptionStatus: PropTypes.string.isRequired,
 };
 
 AffectedEntities.defaultProps = {

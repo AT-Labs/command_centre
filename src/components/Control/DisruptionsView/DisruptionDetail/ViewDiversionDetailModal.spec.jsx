@@ -225,6 +225,7 @@ describe('<ViewDiversionDetailModal /> - Deleting Operation', () => {
         await act(async () => {
             render(withCacheProvider(
                 <ViewDiversionDetailModal
+                    statusNotResolved
                     disruption={ disruptionNotStarted }
                     onClose={ mockOnClose }
                     isOpen
