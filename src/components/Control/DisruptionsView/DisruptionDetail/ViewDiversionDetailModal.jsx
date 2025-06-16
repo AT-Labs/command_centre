@@ -1,41 +1,50 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes, { object } from 'prop-types';
+import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
 
-import { deleteDiversion as deleteDiversionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
+import { reportError } from '../../../../redux/actions/activity';
+import { getDiversion as getDiversionAPI, deleteDiversion as deleteDiversionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import { ActiveDiversionView } from './ActiveDiversionView';
 import { DISRUPTIONS_MESSAGE_TYPE } from '../../../../types/disruptions-types';
-import { DISRUPTION_STATUS } from '../types';
-
-const editableStatuses = [
-    DISRUPTION_STATUS.NOT_STARTED,
-    DISRUPTION_STATUS.IN_PROGRESS,
-    DISRUPTION_STATUS.DRAFT,
-];
 
 const ViewDiversionDetailModal = (props) => {
+    const [diversions, setDiversions] = useState(null);
     const [allExpanded, setAllExpanded] = useState(false);
     const [expandedRows, setExpandedRows] = useState({});
+    const dispatch = useDispatch();
+    const [refresh, setRefresh] = useState(false);
 
-    const isEditingEnabled = editableStatuses.includes(props.disruption.status);
+    useEffect(() => {
+        const fetchDiversions = async () => {
+            try {
+                const data = await getDiversionAPI(props.disruption.disruptionId);
+                setDiversions(data);
+            } catch (error) {
+                dispatch(reportError({ error: { fetchDiversionDetails: error } }, true));
+                setDiversions(null);
+            }
+        };
+        fetchDiversions();
+    }, [refresh]);
 
     // Update allExpanded based on whether all rows are expanded
     useEffect(() => {
-        if (props.diversions?.length) {
-            const allRowsExpanded = props.diversions.every(
+        if (diversions && diversions.length > 0) {
+            const allRowsExpanded = diversions.every(
                 diversion => expandedRows[diversion.diversionId],
             );
             setAllExpanded(allRowsExpanded);
         } else {
             setAllExpanded(false);
         }
-    }, [expandedRows, props.diversions]);
+    }, [expandedRows, diversions]);
 
     const toggleExpandAll = () => {
         if (allExpanded) {
             setExpandedRows({}); // Collapse all
         } else {
-            const newExpandedRows = props.diversions.reduce((acc, diversion) => {
+            const newExpandedRows = diversions.reduce((acc, diversion) => {
                 acc[diversion.diversionId] = true;
                 return acc;
             }, {});
@@ -53,7 +62,7 @@ const ViewDiversionDetailModal = (props) => {
 
     const deleteDiversion = async (diversionId) => {
         await deleteDiversionAPI(diversionId);
-        props.setShouldRefetchDiversions(prevRefetch => !prevRefetch);
+        setRefresh(prevRefresh => !prevRefresh);
     };
 
     const editDiversion = (diversion) => {
@@ -83,7 +92,7 @@ const ViewDiversionDetailModal = (props) => {
                     </div>
                 ) }
             >
-                {props.diversions?.length ? (
+                {diversions?.length ? (
                     <>
                         <button
                             className="expand-all-button-style"
@@ -96,8 +105,8 @@ const ViewDiversionDetailModal = (props) => {
                         <ActiveDiversionView
                             deleteDiversion={ deleteDiversion }
                             editDiversion={ editDiversion }
-                            isEditingEnabled={ isEditingEnabled }
-                            diversions={ props.diversions }
+                            statusNotResolved={ props.statusNotResolved }
+                            diversions={ diversions }
                             expandedRows={ expandedRows }
                             toggleExpand={ toggleExpand }
                             incidentNo={ props.disruption.incidentNo }
@@ -114,16 +123,11 @@ const ViewDiversionDetailModal = (props) => {
 };
 
 ViewDiversionDetailModal.propTypes = {
-    diversions: PropTypes.arrayOf(object),
-    setShouldRefetchDiversions: PropTypes.func.isRequired,
     disruption: PropTypes.any.isRequired,
     onClose: PropTypes.func.isRequired,
     isOpen: PropTypes.bool.isRequired,
     onEditDiversion: PropTypes.func.isRequired,
-};
-
-ViewDiversionDetailModal.defaultProps = {
-    diversions: [],
+    statusNotResolved: PropTypes.bool.isRequired,
 };
 
 export { ViewDiversionDetailModal };

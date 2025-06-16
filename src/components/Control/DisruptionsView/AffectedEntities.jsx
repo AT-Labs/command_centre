@@ -1,4 +1,4 @@
-import PropTypes, { object } from 'prop-types';
+import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
@@ -12,7 +12,6 @@ import CustomCollapse from '../../Common/CustomCollapse/CustomCollapse';
 import { useDiversion } from '../../../redux/selectors/appSettings';
 
 export const AffectedEntities = (props) => {
-    const diversions = props.diversions || [];
     const groupByEntityRender = (groupById, groupTitle, groupText, children) => (
         <li key={ groupById }>
             <div className="font-size-sm font-weight-bold">
@@ -97,7 +96,7 @@ export const AffectedEntities = (props) => {
                                     </div>
                                 )}
                                 <div>
-                                    { showAddDiversion
+                                    {showAddDiversion && props.statusNotResolved
                                     && (
                                         <Button
                                             className="btn cc-btn-link pr-0 font-weight-bold"
@@ -116,9 +115,7 @@ export const AffectedEntities = (props) => {
                                                 id="view-and-edit-diversions-btn"
                                                 onClick={ props.viewDiversionsAction }
                                             >
-                                                View & edit diversions (
-                                                {diversions.length}
-                                                )
+                                                View & edit diversions
                                                 <MdEast size={ 20 } color="black" className="ml-1" />
                                             </Button>
                                         )}
@@ -152,7 +149,6 @@ export const AffectedEntities = (props) => {
 };
 
 AffectedEntities.propTypes = {
-    diversions: PropTypes.arrayOf(object),
     editLabel: PropTypes.string,
     editAction: PropTypes.func,
     addDiversionAction: PropTypes.func,
@@ -170,6 +166,7 @@ AffectedEntities.propTypes = {
     showViewPassengerImpactButton: PropTypes.bool,
     viewPassengerImpactAction: PropTypes.func,
     useDiversion: PropTypes.bool.isRequired,
+    statusNotResolved: PropTypes.bool.isRequired,
 };
 
 AffectedEntities.defaultProps = {
@@ -187,7 +184,6 @@ AffectedEntities.defaultProps = {
     viewPassengerImpactAction: null,
     startTime: null,
     endTime: null,
-    diversions: [],
 };
 
 export default connect(state => ({
