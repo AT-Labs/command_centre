@@ -107,14 +107,16 @@ export const Workarounds = (props) => {
                                 <strong>{getImpactLabel(disruption.impact)}</strong>
                             </Button>
                             {disruption.affectedEntities.affectedRoutes && disruption.affectedEntities.affectedRoutes.length > 0 && (
-                                disruption.affectedEntities.affectedRoutes.map(route => (
-                                    <p className="p-lr12-tb6 m-0" key={ `${disruption.id}_${route.routeId}` }>Route - {route.routeShortName}</p>
-                                ))
+                                disruption.affectedEntities.affectedRoutes.filter((item, index, self) => index === self.findIndex(i => i.routeShortName === item.routeShortName))
+                                    .map(route => (
+                                        <p className="p-lr12-tb6 m-0" key={ `${disruption.id}_${route.routeId}` }>Route - {route.routeShortName}</p>
+                                    ))
                             )}
                             {disruption.affectedEntities.affectedStops && disruption.affectedEntities.affectedStops.length > 0 && (
-                                disruption.affectedEntities.affectedStops.map(stop => (
-                                    <p className="p-lr12-tb6 m-0" key={ `${disruption.id}_${stop.stopId}` }>Stop {stop.text}</p>
-                                ))
+                                disruption.affectedEntities.affectedStops.filter((item, index, self) => index === self.findIndex(i => i.stopId === item.stopId))
+                                    .map(stop => (
+                                        <p className="p-lr12-tb6 m-0" key={ `${disruption.id}_${stop.stopId}` }>Stop - {stop.text}</p>
+                                    ))
                             )}
                         </li>
                     ))}

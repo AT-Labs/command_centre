@@ -92,6 +92,26 @@ export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
     };
 };
 
+const getMode = (disruption) => {
+    const modes = [...disruption.affectedEntities.affectedRoutes.map(route => VEHICLE_TYPES[route.routeType].type),
+        ...disruption.affectedEntities.affectedStops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType].type)];
+    return modes;
+};
+
+export const buildIncidentSubmitBody = (incident) => {
+    const modes = incident.disruptions.flatMap(disruption => getMode(disruption));
+    return {
+        ...incident,
+        mode: uniq(modes).join(', '),
+        disruptions: incident.disruptions.flatMap(disruption => buildSubmitBody(
+            disruption,
+            disruption.affectedEntities.affectedRoutes,
+            disruption.affectedEntities.affectedStops,
+            disruption.workarounds,
+        )),
+    };
+};
+
 const transformKeysToCamelCase = obj => transform(obj, (acc, value, key, target) => {
     const camelKey = isArray(target) ? key : camelCase(key);
     acc[camelKey] = isObject(value) ? transformKeysToCamelCase(value) : value;

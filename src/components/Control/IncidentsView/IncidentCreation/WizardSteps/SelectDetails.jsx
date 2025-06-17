@@ -40,10 +40,8 @@ import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/al
 import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 
 export const SelectDetails = (props) => {
-    const { startDate, startTime, endDate, endTime, cause, header, url, severity } = props.data;
+    const { startDate, startTime, endDate, endTime, cause, header, url, severity, modalOpenedTime } = props.data;
     const { recurrent, duration, recurrencePattern } = props.data;
-
-    const [modalOpenedTime] = useState(moment().second(0).millisecond(0));
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [activePeriods, setActivePeriods] = useState([]);
     const [alertDialogMessage, setAlertDialogMessage] = useState(null);
@@ -56,7 +54,6 @@ export const SelectDetails = (props) => {
     const [isStartTimeDirty, setIsStartTimeDirty] = useState(false);
     const [isStartDateDirty, setIsStartDateDirty] = useState(false);
     const [isEndDateDirty, setIsEndDateDirty] = useState(false);
-    const [cssEndDateInvalid, setCssEndDateInvalid] = useState('');
     const maxActivePeriodsCount = 100;
 
     const startTimeValid = () => isStartTimeValid(startDate, startTime, modalOpenedTime, recurrent);
@@ -222,7 +219,6 @@ export const SelectDetails = (props) => {
     };
 
     const causes = useAlertCauses();
-    /*  const impacts = useAlertEffects(); */
 
     return (
         <div className="disruption-creation__wizard-select-details">
@@ -436,14 +432,13 @@ export const SelectDetails = (props) => {
                 </div>
             </Form>
             <Footer
+                isDraftOrCreateMode={ false }
                 updateCurrentStep={ props.updateCurrentStep }
                 onStepUpdate={ props.onStepUpdate }
                 toggleIncidentModals={ props.toggleIncidentModals }
                 isSubmitDisabled={ props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
-                isDraftSubmitDisabled={ isDraftSubmitDisabled }
                 nextButtonValue="Continue"
                 onContinue={ () => onContinue() }
-                onSubmitDraft={ () => onSaveDraft() }
             />
             <CustomMuiDialog
                 title="Disruption Active Periods"

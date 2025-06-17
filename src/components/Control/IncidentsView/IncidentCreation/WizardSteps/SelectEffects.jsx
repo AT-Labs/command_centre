@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { isEmpty, sortBy, forOwn, omitBy, pickBy, uniqueId } from 'lodash-es';
+import { isEmpty, sortBy, forOwn, omitBy, pickBy, uniqueId, some } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { AiOutlinePlusCircle, AiOutlineMinusCircle } from 'react-icons/ai';
@@ -99,6 +99,8 @@ export const SelectEffects = (props) => {
         endTime: incidentEndTime,
         endDate: incidentEndDate,
         severity: incidentSeverity,
+        cause: incidentCause,
+        modalOpenedTime,
     } = props.data;
     const setupDisruption = () => {
         const now = moment();
@@ -115,6 +117,7 @@ export const SelectEffects = (props) => {
             endTime: incidentEndTime || '',
             endDate: incidentEndDate || '',
             severity: incidentSeverity || DEFAULT_SEVERITY.value,
+            cause: incidentCause || DEFAULT_CAUSE.value,
             key: uniqueId('DISR'),
             ...(recurrenceDates && {
                 recurrencePattern: {
@@ -129,7 +132,6 @@ export const SelectEffects = (props) => {
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
     const { ROUTE, STOP, STOP_GROUP } = SEARCH_RESULT_TYPE;
-    const [modalOpenedTime] = useState(moment(`${incidentStartDate}T${incidentStartTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`));
     const impactValid = key => !isEmpty(disruptions.find(d => d.key === key).impact);
 
     const getDisruptionByKey = key => disruptions.find(d => d.key === key);
@@ -228,7 +230,11 @@ export const SelectEffects = (props) => {
         );
     };
 
+    const startTimeValidForAllDisruptions = () => disruptions.every(disruption => startTimeValid(disruption.key));
+
     const startDateValid = key => isStartDateValid(disruptions.find(d => d.key === key).startDate, modalOpenedTime, incidentRecurrent);
+
+    const startDateValidForAllDisruptions = () => disruptions.every(disruption => startDateValid(disruption.key));
 
     const endTimeValid = (key) => {
         const disruption = getDisruptionByKey(key);
@@ -240,12 +246,18 @@ export const SelectEffects = (props) => {
         );
     };
 
+    const endTimeValidForAllDisruptions = () => disruptions.every(disruption => endTimeValid(disruption.key));
+
     const endDateValid = (key) => {
         const disruption = getDisruptionByKey(key);
         return isEndDateValid(disruption.endDate, disruption.startDate, incidentRecurrent);
     };
 
+    const endDateValidForAllDisruptions = () => disruptions.every(disruption => endDateValid(disruption.key));
+
     const durationValid = key => isDurationValid(disruptions.find(d => d.key === key).duration, incidentRecurrent);
+
+    const durationValidForAllDisruptions = () => disruptions.every(disruption => durationValid(disruption.key));
 
     const isDateTimeValid = key => startTimeValid(key) && startDateValid(key) && endDateValid(key);
 
@@ -257,27 +269,36 @@ export const SelectEffects = (props) => {
         return true;
     };
 
+    const activePeriodsValidForAllDisruptionsV2 = () => {
+        if (incidentRecurrent) {
+            return disruptions.every(disruption => isActivePeriodsValid(disruption.recurrencePattern, disruption.duration, disruption.maxActivePeriodsCount));
+        }
+        return true;
+    };
+
+    const isEndDateAndEndTimeValid = disruption => !isEmpty(disruption.endDate) && isEmpty(disruption.endTime);
+
     const isRequiredPropsEmpty = () => {
-        const isPropsEmpty = disruptions.every(disruption => disruption.startTime !== ''
-            && disruption.startDate !== ''
-            && disruption.impact !== ''
-            && disruption.cause !== ''
-            && disruption.severity !== '');
+        const isPropsEmpty = disruptions.some(disruption => some([disruption.startTime, disruption.startDate, disruption.impact, disruption.cause, disruption.severity], isEmpty));
         const isEndTimeRequiredAndEmpty = !incidentRecurrent
-            && disruptions.every(disruption => disruption.endDate !== '')
-            && disruptions.every(disruption => disruption.endTime === '');
+            && disruptions.some(isEndDateAndEndTimeValid);
         const isWeekdayRequiredAndEmpty = incidentRecurrent
-            && disruptions.every(disruption => disruption.recurrencePattern.byweekday === '');
-        console.log('isRequiredPropsEmpty', isPropsEmpty, isEndTimeRequiredAndEmpty, isWeekdayRequiredAndEmpty);
+            && disruptions.some(disruption => isEmpty(disruption.recurrencePattern.byweekday));
         return isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
     };
 
     const isRequiredDraftPropsEmpty = () => !disruptions.every(disruption => disruption.impact !== '');
 
-    const isSubmitDisabled = isRequiredPropsEmpty(); /* || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() || !durationValid()  TODO*/
+    const isSubmitDisabled = isRequiredPropsEmpty()
+        || !startTimeValidForAllDisruptions()
+        || !startDateValidForAllDisruptions()
+        || !endTimeValidForAllDisruptions()
+        || !endDateValidForAllDisruptions()
+        || !durationValidForAllDisruptions();
     const isDraftSubmitDisabled = isRequiredDraftPropsEmpty();
 
     const onSaveDraft = () => {
+        updateDisruptionsState();
         if (!props.isEditMode) {
             props.onStepUpdate(3);
             props.onSubmitDraft();
@@ -286,11 +307,10 @@ export const SelectEffects = (props) => {
         }
     };
 
-    const onContinue = () => { // TODO update state
+    const onContinue = () => {
         updateDisruptionsState();
         if (!props.isEditMode) {
-            // removeNotFoundFromStopGroups();
-            props.onUpdateEntitiesValidation(true); // TODO hardcoded true
+            props.onUpdateEntitiesValidation(!isSubmitDisabled && activePeriodsValidForAllDisruptionsV2());
             props.onStepUpdate(2);
             props.updateCurrentStep(3);
         } else {

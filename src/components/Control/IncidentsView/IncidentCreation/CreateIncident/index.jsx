@@ -41,6 +41,7 @@ import {
     itemToEntityTransformers,
     toCamelCaseKeys,
     generateDisruptionActivePeriods,
+    buildIncidentSubmitBody,
 } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
@@ -77,9 +78,7 @@ const INIT_STATE = {
     startDate: '',
     endTime: '',
     endDate: '',
-    impact: DEFAULT_IMPACT.value,
     cause: DEFAULT_CAUSE.value,
-    //  affectedEntities: [],
     activePeriods: [],
     mode: '-',
     status: STATUSES.NOT_STARTED,
@@ -87,7 +86,6 @@ const INIT_STATE = {
     description: '',
     url: '',
     createNotification: false,
-    // exemptAffectedTrips: false,
     recurrent: false,
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
@@ -95,7 +93,6 @@ const INIT_STATE = {
     severity: DEFAULT_SEVERITY.value,
     // passengerCount: undefined,
 
-    causeTitle: '',
     notes: '',
     disruptions: [],
 };
@@ -152,7 +149,6 @@ export class CreateIncident extends React.Component {
                         ...recurrenceDates,
                     },
                 }),
-                // affectedEntities: [...this.props.routes, ...this.props.stops],
                 status: STATUSES.NOT_STARTED,
                 disruptionType,
             },
@@ -196,9 +192,9 @@ export class CreateIncident extends React.Component {
                         ...recurrenceDates,
                     },
                 }),
-                // affectedEntities: [...this.props.routes, ...this.props.stops],
                 status: STATUSES.NOT_STARTED,
                 disruptionType,
+                modalOpenedTime: moment().second(0).millisecond(0),
             },
         });
     };
@@ -221,6 +217,7 @@ export class CreateIncident extends React.Component {
                 ...incidentToEdit,
                 ...(startTime && { startTime: startTime.toISOString() }),
                 ...(endTime && { endTime: endTime.toISOString() }),
+                modalOpenedTime: moment().second(0).millisecond(0),
             },
         });
     };
@@ -231,10 +228,10 @@ export class CreateIncident extends React.Component {
         this.setState({
             incidentData: {
                 ...INIT_STATE,
-                // affectedEntities: [...this.props.routes, ...this.props.stops],
                 startTime: this.props.isCreateOpen ? now.format(TIME_FORMAT) : INIT_STATE.startTime,
                 startDate: now.format(DATE_FORMAT),
                 disruptionType,
+                modalOpenedTime: moment().second(0).millisecond(0),
             },
         });
     };
@@ -305,6 +302,7 @@ export class CreateIncident extends React.Component {
         };
         console.warn('onSubmit incidentData', incidentData);
         console.warn('onSubmit incidentData', buildSubmitBody(disruption, this.props.routes, this.props.stops, incidentData.workarounds));
+        console.error('buildIncidentSubmitBody', buildIncidentSubmitBody(incidentData));
         // this.props.createIncident(buildSubmitBody(disruption, this.props.routes, this.props.stops, incidentData.workarounds)); // TODO
     };
 
