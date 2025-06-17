@@ -87,8 +87,7 @@ export const EntityPopupContent = ({
                 </IconButton>
                 <DisruptionDetails
                     disruptions={ entity.disruptions }
-                    stopCode={ entity.stop_code }
-                    stopName={ entity.stop_name }
+                    stopTitle={ `${entity.stop_code} - ${entity.stop_name}` }
                     impacts={ impacts }
                     causes={ causes }
                     goToDisruptionEditPage={ goToDisruptionEditPage }
