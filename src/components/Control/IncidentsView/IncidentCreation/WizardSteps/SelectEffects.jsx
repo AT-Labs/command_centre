@@ -304,7 +304,7 @@ export const SelectEffects = (props) => {
     const removeNotFoundFromStopGroups = () => {
         disruptions.forEach((disruption) => {
             const filterStops = disruption.affectedEntities.affectedStops.filter(stop => stop.stopCode !== 'Not Found');
-            if (filterStops.length !== disruption.affectedEntities.affectedStops) {
+            if (filterStops.length !== disruption.affectedEntities.affectedStops.length) {
                 onAffectedEntitiesUpdate(disruption.key, 'affectedStops', filterStops);
             }
         });
