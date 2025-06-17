@@ -18,25 +18,14 @@ jest.mock('react', () => ({
 
 const defaultProps = {
     affectedEntities: [
-        { routeId: 'route1', routeShortName: '1', type: 'route' },
-        { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
+        { routeId: 'route5', routeShortName: '5', routeType: 3, type: 'route' },
+        { routeId: 'route6', routeShortName: '6', routeType: 3, type: 'route' },
+        { routeId: 'route7', routeShortName: '7', routeType: 3, type: 'route' },
+        { routeId: 'route8', routeShortName: '8', routeType: 3, type: 'route' },
     ],
     startTime: '2022-08-03T23:32:00.000Z',
-    endTime: '2022-09-03T23:42:00.000Z',
-    useDiversion: true,
-    viewDiversionsAction: jest.fn(),
+    endTime: '2022-08-04T23:32:00.000Z',
 };
-
-// const defaultProps = {
-//     affectedEntities: [
-//         { routeId: 'route5', routeShortName: '5', routeType: 3, type: 'route' },
-//         { routeId: 'route6', routeShortName: '6', routeType: 3, type: 'route' },
-//         { routeId: 'route7', routeShortName: '7', routeType: 3, type: 'route' },
-//         { routeId: 'route8', routeShortName: '8', routeType: 3, type: 'route' },
-//     ],
-//     startTime: '2022-08-03T23:32:00.000Z',
-//     endTime: '2022-08-04T23:32:00.000Z',
-// };
 
 describe('<AffectedEntities />', () => {
     afterEach(() => {
@@ -193,6 +182,7 @@ describe('View & edit diversions', () => {
                     { diversionId: 2, diversionRouteVariants: [], routeId: 'route1' },
                     { diversionId: 3, diversionRouteVariants: [], routeId: 'route1' },
                 ] }
+                useDiversion
             />,
         );
 
@@ -206,6 +196,7 @@ describe('View & edit diversions', () => {
             <AffectedEntities
                 { ...defaultProps }
                 diversions={ [{ diversionId: 1, diversionRouteVariants: [], routeId: 'route1' }] }
+                useDiversion
             />,
         );
 
@@ -215,7 +206,7 @@ describe('View & edit diversions', () => {
     });
 
     it('should display an amount of 0 diversions when no diversions exist', () => {
-        render(<AffectedEntities { ...defaultProps } diversions={ [] } />);
+        render(<AffectedEntities { ...defaultProps } useDiversion diversions={ [] } />);
 
         const button = screen.getByText('View & edit diversions (0)');
         expect(button).toBeInTheDocument();
@@ -249,6 +240,7 @@ describe('View & edit diversions', () => {
                     { diversionId: 2, diversionRouteVariants: [], routeId: 'route1' },
                 ] }
                 viewDiversionsAction={ viewDiversionsAction }
+                useDiversion
             />,
         );
 
