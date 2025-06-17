@@ -1,4 +1,4 @@
-import { parseWKT, projectPointOnSegment, findProjectionOnPolyline, calculateDistance } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
+import { parseWKT, projectPointOnSegment, findProjectionOnPolyline, calculateDistance, mergeCoordinates, toWKT } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
 
 export const AffectedStopDistanceThreshold = 20;
 export const MergeDistanceThreshold = 20;
@@ -156,4 +156,19 @@ export function hasDiversionModified({
 // Returns an array of unique stop IDs from affectedStops
 export function getUniqueAffectedStopIds(affectedStops) {
     return [...new Set(affectedStops.map(stop => stop.stopId))];
+}
+
+export function mergeDiversionToRouteVariant(
+    routeVariant,
+    originalShapeWkt,
+    diversionShapeWkt,
+) {
+    const originalCoordinates = parseWKT(originalShapeWkt);
+    const mergedCoordinates = mergeCoordinates(originalCoordinates, parseWKT(diversionShapeWkt));
+    return {
+        ...routeVariant,
+        shapeWkt: toWKT(mergedCoordinates),
+        color: generateUniqueColor(routeVariant.routeVariantId),
+        visible: true,
+    };
 }
