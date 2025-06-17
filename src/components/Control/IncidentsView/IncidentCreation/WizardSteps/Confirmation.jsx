@@ -2,13 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
-import { GridLinkOperator } from '@mui/x-data-grid-pro';
 import Message from '../../../Common/Message/Message';
 import DetailLoader from '../../../../Common/Loader/DetailLoader';
 import {
     clearDisruptionActionResult,
-    updateActiveDisruptionId,
-    openCreateIncident, deleteAffectedEntities, updateDisruptionsDatagridConfig } from '../../../../../redux/actions/control/incidents';
+    updateActiveIncident,
+    openCreateIncident,
+    deleteAffectedEntities,
+    updateDisruptionsDatagridConfig,
+    updateIncidentsSortingParams,
+    clearActiveIncident } from '../../../../../redux/actions/control/incidents';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
 import { getDisruptionsDatagridConfig } from '../../../../../redux/selectors/control/incidents';
 import { goToNotificationsView } from '../../../../../redux/actions/control/link';
@@ -82,9 +85,12 @@ const Confirmation = (props) => {
                             onClick={ () => {
                                 props.openCreateIncident(false);
                                 props.deleteAffectedEntities();
+                                props.updateIncidentsSortingParams({});
+                                console.error('isModalOpen', props.isModalOpen);
                                 if (!props.isModalOpen && resultIncidentId) {
-                                    props.updateDisruptionsDatagridConfig({ ...props.datagridConfig, filterModel: { items: [], linkOperator: GridLinkOperator.And } });
-                                    setTimeout(() => props.updateActiveDisruptionId(resultIncidentId), 0);
+                                    console.error('test condition');
+                                    props.clearActiveIncident();
+                                    setTimeout(() => props.updateActiveIncident(resultIncidentId), 0);
                                 }
                             } }>
                             { resultIncidentId ? getDisruptionDetailsButtonLabel() : 'Close' }
@@ -97,14 +103,9 @@ const Confirmation = (props) => {
                                 onClick={ () => {
                                     props.openCreateIncident(false);
                                     props.deleteAffectedEntities();
-                                    props.goToNotificationsView({
-                                        version: props.response.resultDisruptionVersion,
-                                        disruptionId: props.response.resultIncidentId,
-                                        source: 'DISR',
-                                        new: true,
-                                    });
+                                    props.goToNotificationsView();
                                 } }>
-                                View notification details
+                                View all notifications
                             </Button>
                         </div>
                     ) }
@@ -117,14 +118,14 @@ const Confirmation = (props) => {
 Confirmation.propTypes = {
     response: PropTypes.object,
     clearDisruptionActionResult: PropTypes.func.isRequired, // eslint-disable-line
-    updateActiveDisruptionId: PropTypes.func.isRequired,
+    updateActiveIncident: PropTypes.func.isRequired,
     isModalOpen: PropTypes.bool.isRequired,
     openCreateIncident: PropTypes.func.isRequired,
     deleteAffectedEntities: PropTypes.func.isRequired,
-    datagridConfig: PropTypes.object.isRequired,
-    updateDisruptionsDatagridConfig: PropTypes.func.isRequired,
     goToNotificationsView: PropTypes.func.isRequired,
     useDisruptionsNotificationsDirectLink: PropTypes.bool.isRequired,
+    updateIncidentsSortingParams: PropTypes.func.isRequired,
+    clearActiveIncident: PropTypes.func.isRequired,
 };
 
 Confirmation.defaultProps = {
@@ -139,10 +140,12 @@ export default connect(
     }),
     {
         clearDisruptionActionResult,
-        updateActiveDisruptionId,
+        updateActiveIncident,
         openCreateIncident,
         deleteAffectedEntities,
         updateDisruptionsDatagridConfig,
         goToNotificationsView,
+        updateIncidentsSortingParams,
+        clearActiveIncident,
     },
 )(Confirmation);

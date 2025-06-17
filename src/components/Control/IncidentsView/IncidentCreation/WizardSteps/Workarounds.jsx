@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Button, Input, Label } from 'reactstrap';
-import { isEditEnabled, isWorkaroundPanelOpen } from '../../../../../redux/selectors/control/incidents';
+import { isEditEnabled, isWorkaroundPanelOpen, getDisruptionKeyToWorkaroundEdit } from '../../../../../redux/selectors/control/incidents';
 import { toggleIncidentModals, updateCurrentStep, toggleWorkaroundPanel, updateDisruptionKeyToWorkaroundEdit } from '../../../../../redux/actions/control/incidents';
 import Footer from './Footer';
 import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
@@ -92,7 +92,7 @@ export const Workarounds = (props) => {
                         />
                     </div>
                     {filteredDisruptions.map(disruption => (
-                        <li key={ disruption.key } className="disruption-effect-item">
+                        <li key={ disruption.key } className={ `disruption-effect-item ${props.disruptionKeyToEdit === disruption.key ? 'active' : ''}` }>
                             <Button
                                 className="btn cc-btn-link p-lr12-tb6 m-0"
                                 onClick={ () => openWorkaroundPanel(disruption) }>
@@ -150,6 +150,7 @@ Workarounds.propTypes = {
     toggleWorkaroundPanel: PropTypes.func.isRequired,
     updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
     isWorkaroundPanelOpen: PropTypes.bool,
+    disruptionKeyToEdit: PropTypes.string,
 };
 
 Workarounds.defaultProps = {
@@ -162,10 +163,12 @@ Workarounds.defaultProps = {
     isFinishDisabled: false,
     useDraftDisruptions: false,
     isWorkaroundPanelOpen: false,
+    disruptionKeyToEdit: '',
 };
 
 export default connect(state => ({
     isEditMode: isEditEnabled(state),
     useDraftDisruptions: useDraftDisruptions(state),
     isWorkaroundPanelOpen: isWorkaroundPanelOpen(state),
+    disruptionKeyToEdit: getDisruptionKeyToWorkaroundEdit(state),
 }), { toggleIncidentModals, updateCurrentStep, toggleWorkaroundPanel, updateDisruptionKeyToWorkaroundEdit })(Workarounds);

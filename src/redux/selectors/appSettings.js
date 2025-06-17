@@ -63,4 +63,3 @@ export const useHoldTrip = createSelector(getAppSettingsState, appSettingState =
 export const useStopBasedDisruptionsSearch = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useStopBasedDisruptionsSearch') === 'true'));
 export const useTripOperationNotes = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useTripOperationNotes') === 'true'));
 export const useParentChildIncident = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useParentChildIncident') === 'true'));
-export const useNotificationEffectColumn = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useNotificationEffectColumn') === 'true'));

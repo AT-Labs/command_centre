@@ -394,7 +394,7 @@ button.continue {
 .disruption-workarounds-effects {
     background-color: rgb(242, 243, 245);
 
-    .disruption-effect-item:nth-child(odd) {
+    .disruption-effect-item.active {
         background-color: rgb(206, 212, 219);
     }
 }
