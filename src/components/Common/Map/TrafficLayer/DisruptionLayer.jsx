@@ -35,9 +35,8 @@ export const DisruptionLayer = (props) => {
                         minWidth={ 400 }
                         closeButton={ false }>
                         <DisruptionDetails
-                            disruptions={ getDisruptionsByStop(disruptions, stop.stopCode) }
-                            stopName={ stop.stopName }
-                            stopCode={ stop.stopCode }
+                            disruptions={ getDisruptionsByStop(disruptions, stop) }
+                            stopTitle={ `${stop.stopCode} - ${stop.stopName}` }
                             causes={ causes }
                             impacts={ impacts }
                             goToDisruptionEditPage={ goToDisruptionEditPage }

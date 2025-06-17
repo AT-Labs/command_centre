@@ -143,3 +143,18 @@ export const getDisruptionsByFilters = (filters) => {
     return fetchWithAuthHeader(url, { method: GET })
         .then(response => jsonResponseHandling(response));
 };
+
+export const createIncident = (incident) => {
+    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/incidents/`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: POST,
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(incident),
+        },
+    ).then(response => jsonResponseHandling(response));
+};

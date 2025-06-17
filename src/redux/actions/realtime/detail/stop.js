@@ -14,7 +14,6 @@ import {
 import { getAllocations, getVehicleAllocationByTrip, getNumberOfCarsByAllocations } from '../../../selectors/control/blocks';
 import { useNewMonitoring, useStopBasedDisruptionsSearch } from '../../../selectors/appSettings';
 import * as disruptionApi from '../../../../utils/transmitters/disruption-mgt-api';
-import { getDisruptionsByStop as filterDisruptionsByStop } from '../../../../utils/helpers';
 
 export const getRoutesByStop = stop => (dispatch, getState) => {
     const stopCode = stop.stop_code;
@@ -59,7 +58,7 @@ export const getDisruptionsByStop = stop => async (dispatch, getState) => {
         const data = await disruptionApi.getDisruptionsByFilters(filters);
         dispatch({
             type: ACTION_TYPE.FETCH_STOP_DISRUPTIONS,
-            payload: { entityKey, disruptions: filterDisruptionsByStop(data.disruptions, stopCode) },
+            payload: { entityKey, disruptions: data.disruptions },
         });
     } catch (error) {
         dispatch(reportError({ error: { disruptionsByStop: error } }));
