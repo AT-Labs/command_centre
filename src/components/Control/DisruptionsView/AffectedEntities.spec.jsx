@@ -71,7 +71,7 @@ describe('<AffectedEntities />', () => {
             },
             {
                 useDiversion: false,
-                disruptionStatus: undefined,
+                disruptionStatus: 'in-progress',
                 display: false,
                 description: 'Should not display Add Diversion when useDiversion is false',
             },
