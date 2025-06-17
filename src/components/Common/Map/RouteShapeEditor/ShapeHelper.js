@@ -50,26 +50,8 @@ export const findProjectionOnPolyline = (point, polyline) => {
     return { projection, segmentIndex, distance };
 };
 
-// Deduplicate consecutive coordinates
-export const deduplicateCoordinates = (coordinates) => {
-    if (!Array.isArray(coordinates) || coordinates.length === 0) return [];
-    const deduped = [coordinates[0]];
-    for (let i = 1; i < coordinates.length; i++) {
-        const prev = deduped[deduped.length - 1];
-        const curr = coordinates[i];
-        if (prev[0] !== curr[0] || prev[1] !== curr[1]) {
-            deduped.push(curr);
-        }
-    }
-    return deduped;
-};
-
 // Merge the second list into the first list
 export const mergeCoordinates = (firstList, secondList) => {
-    // Both list should at least have 3 points to ensure a valid merge
-    if (!Array.isArray(firstList) || !Array.isArray(secondList) || firstList.length < 3 || secondList.length < 3) {
-        return firstList;
-    }
     // Step 1: Find the starting connector coordinate (first point of the second list)
     const firstSecondCoord = secondList[0];
     const { segmentIndex: startIndex } = findProjectionOnPolyline(firstSecondCoord, firstList);
@@ -85,7 +67,7 @@ export const mergeCoordinates = (firstList, secondList) => {
         ...firstList.slice(endIndex + 1),
     ];
 
-    return deduplicateCoordinates(mergedList);
+    return mergedList;
 };
 
 export const findDifferences = (original, updated) => {
@@ -141,6 +123,20 @@ export const findDifferences = (original, updated) => {
     }
 
     return [];
+};
+
+// Deduplicate consecutive coordinates
+export const deduplicateCoordinates = (coordinates) => {
+    if (!Array.isArray(coordinates) || coordinates.length === 0) return [];
+    const deduped = [coordinates[0]];
+    for (let i = 1; i < coordinates.length; i++) {
+        const prev = deduped[deduped.length - 1];
+        const curr = coordinates[i];
+        if (prev[0] !== curr[0] || prev[1] !== curr[1]) {
+            deduped.push(curr);
+        }
+    }
+    return deduped;
 };
 
 // Function to parse WKT LINESTRING into an array of coordinates

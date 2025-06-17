@@ -6,7 +6,6 @@ import { getGridSingleSelectOperators, getGridStringOperators, GRID_CHECKBOX_SEL
 import { lowerCase, get, words, upperFirst, map, isEqual } from 'lodash-es';
 import moment from 'moment';
 import { FaCheckCircle, FaEyeSlash } from 'react-icons/fa';
-import { GiDetour } from 'react-icons/gi';
 
 import TripView from './TripView';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
@@ -170,30 +169,13 @@ export const TripsDataGrid = (props) => {
             ),
             renderCell: params => renderIconColumnContent(params),
         },
-
-        ...(props.useDiversion) ? [{
+        {
             field: 'routeVariantId',
             headerName: 'Route Variant',
             width: 150,
             type: 'string',
             filterable: false,
-            renderCell: params => (
-                <span>
-                    <span>{params.value}</span>
-                    {params.row?.type === 'Detoured' && (
-                        <span>
-                            <GiDetour size="24px" />
-                        </span>
-                    )}
-                </span>
-            ),
-        }] : [{
-            field: 'routeVariantId',
-            headerName: 'Route Variant',
-            width: 150,
-            type: 'string',
-            filterable: false,
-        }],
+        },
         ...(props.useAddTrip && !props.useDiversion) ? [{
             field: 'source',
             headerName: 'New',

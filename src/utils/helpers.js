@@ -195,6 +195,4 @@ export const getDisruptionsUniqueStops = (disruptions) => {
                 && !isChildTrainPlatform(entity)));
 };
 
-export const getDisruptionsByStop = (disruptions, stopCode) => disruptions.filter(disruption => disruption.affectedEntities.some(
-    entity => entity.type === 'stop' && entity.stopCode === stopCode,
-));
+export const getDisruptionsByStop = (disruptions, stop) => disruptions.filter(disruption => disruption.affectedEntities.some(entity => entity.stopCode === stop.stopCode));
