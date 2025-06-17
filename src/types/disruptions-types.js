@@ -80,12 +80,6 @@ export const DISRUPTION_CREATION_STEPS = {
     ADD_WORKAROUNDS: 'Add Workarounds',
 };
 
-export const INCIDENTS_CREATION_STEPS = {
-    ENTER_DETAILS: 'Enter Details',
-    ADD_EFFECTS: 'Add Effects',
-    ADD_WORKAROUNDS: 'Add Workarounds',
-};
-
 export const DISRUPTIONS_MESSAGE_TYPE = {
     noWorkaroundsMessage: 'No workarounds added for this disruption.',
     noNotesMessage: 'No notes added to this disruption',

@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+import PropTypes, { object } from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
@@ -12,6 +12,7 @@ import CustomCollapse from '../../Common/CustomCollapse/CustomCollapse';
 import { useDiversion } from '../../../redux/selectors/appSettings';
 
 export const AffectedEntities = (props) => {
+    const diversions = props.diversions || [];
     const groupByEntityRender = (groupById, groupTitle, groupText, children) => (
         <li key={ groupById }>
             <div className="font-size-sm font-weight-bold">
@@ -28,6 +29,8 @@ export const AffectedEntities = (props) => {
             )) }
         </li>
     );
+
+    const isDisruptionResolved = status => status === 'resolved';
 
     const getCombinedAffectedStopsRoutesStopGroups = () => {
         const affectedEntitiesByRoute = groupBy(props.affectedEntities.filter(entity => entity.type === 'route' || (entity.routeId && isEmpty(entity.stopCode))), 'routeId');
@@ -58,8 +61,8 @@ export const AffectedEntities = (props) => {
 
     // We only support adding diversion to bus route at the moment.
     const isBusRoute = route => route.routeType === 3;
-
-    const showAddDiversion = props.useDiversion && props.startTime && props.endTime && props.affectedEntities.filter(isBusRoute).length > 0;
+    const showAddDiversion = props.useDiversion && props.startTime && props.endTime && !isDisruptionResolved(props.disruptionStatus)
+        && props.affectedEntities.filter(isBusRoute).length > 0;
 
     return (
         <section className={ `disruption__affected-entities ${props.heightSmall ? 'small' : ''} ${props.className}` }>
@@ -71,7 +74,7 @@ export const AffectedEntities = (props) => {
                                 <h3>Affected routes and stops</h3>
                             </div>
                             <div className="col-6 text-right">
-                                {!props.isEditDisabled && (
+                                { !props.isEditDisabled && (
                                     <div>
                                         <Button
                                             className="btn cc-btn-link pr-0 font-weight-bold"
@@ -83,7 +86,7 @@ export const AffectedEntities = (props) => {
                                         </Button>
                                     </div>
                                 )}
-                                {props.showViewWorkaroundsButton && (
+                                { props.showViewWorkaroundsButton && (
                                     <div>
                                         <Button
                                             className="btn cc-btn-link pr-0 font-weight-bold"
@@ -115,12 +118,14 @@ export const AffectedEntities = (props) => {
                                                 id="view-and-edit-diversions-btn"
                                                 onClick={ props.viewDiversionsAction }
                                             >
-                                                View & edit diversions
+                                                View & edit diversions (
+                                                {diversions.length}
+                                                )
                                                 <MdEast size={ 20 } color="black" className="ml-1" />
                                             </Button>
                                         )}
                                 </div>
-                                {props.showViewPassengerImpactButton && (
+                                { props.showViewPassengerImpactButton && (
                                     <div>
                                         <Button
                                             className="btn cc-btn-link pr-0 font-weight-bold"
@@ -149,6 +154,7 @@ export const AffectedEntities = (props) => {
 };
 
 AffectedEntities.propTypes = {
+    diversions: PropTypes.arrayOf(object),
     editLabel: PropTypes.string,
     editAction: PropTypes.func,
     addDiversionAction: PropTypes.func,
@@ -166,6 +172,7 @@ AffectedEntities.propTypes = {
     showViewPassengerImpactButton: PropTypes.bool,
     viewPassengerImpactAction: PropTypes.func,
     useDiversion: PropTypes.bool.isRequired,
+    disruptionStatus: PropTypes.string.isRequired,
 };
 
 AffectedEntities.defaultProps = {
@@ -183,6 +190,7 @@ AffectedEntities.defaultProps = {
     viewPassengerImpactAction: null,
     startTime: null,
     endTime: null,
+    diversions: [],
 };
 
 export default connect(state => ({

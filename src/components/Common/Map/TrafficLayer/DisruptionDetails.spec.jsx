@@ -25,6 +25,10 @@ const mockDisruptions = [
         {
             id: '53b16796-381f-49da-a14e-8aaaf2dea4ab',
             description: 'test 2',
+        },
+        {
+            id: '53b16796-381f-49da-a14e-8aaaf2dea4ae',
+            description: 'test 3',
         }],
         affectedEntities: [
             {
@@ -32,6 +36,7 @@ const mockDisruptions = [
                 routeShortName: '105',
                 routeType: 3,
                 type: 'route',
+                stopCode: '1234',
             },
             {
                 routeId: 'S505-202',
@@ -57,7 +62,8 @@ const mockDisruptions = [
     },
 ];
 
-const mockStopTitle = '1234 - Test Stop';
+const mockStopCode = '1234';
+const mockStopName = 'Test Stop';
 
 const mockCauses = [
     { value: 'CONGESTION', label: 'Congestion' },
@@ -73,7 +79,8 @@ const mockGoToDisruptionEditPage = jest.fn();
 
 const componentPropsMock = {
     disruptions: mockDisruptions,
-    stopTitle: mockStopTitle,
+    stopCode: mockStopCode,
+    stopName: mockStopName,
     causes: mockCauses,
     impacts: mockImpacts,
     goToDisruptionEditPage: mockGoToDisruptionEditPage,
@@ -205,10 +212,8 @@ describe('DisruptionDetails Component', () => {
         expect(wrapper.find('.column').at(7).find('p').at(1)
             .text()).toBe('Tu, W'); // checking scheduled Period
         expect(wrapper.find('.column').at(8).find('p').at(1)
-            .text()).toBe('105, 505'); // checking routes
+            .text()).toBe('105'); // checking routes
         expect(wrapper.find('.column').at(9).find('p').at(1)
-            .text()).toBe('test'); // checking first note
-        expect(wrapper.find('.column').at(9).find('p').at(2)
-            .text()).toBe('test 2'); // checking second note
+            .text()).toBe('test 3'); // checking last note
     });
 });
