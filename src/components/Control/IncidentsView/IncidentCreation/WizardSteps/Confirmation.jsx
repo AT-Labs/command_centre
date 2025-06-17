@@ -86,9 +86,7 @@ const Confirmation = (props) => {
                                 props.openCreateIncident(false);
                                 props.deleteAffectedEntities();
                                 props.updateIncidentsSortingParams({});
-                                console.error('isModalOpen', props.isModalOpen);
                                 if (!props.isModalOpen && resultIncidentId) {
-                                    console.error('test condition');
                                     props.clearActiveIncident();
                                     setTimeout(() => props.updateActiveIncident(resultIncidentId), 0);
                                 }
