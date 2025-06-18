@@ -158,3 +158,19 @@ export const createIncident = (incident) => {
         },
     ).then(response => jsonResponseHandling(response));
 };
+
+export const updateIncident = (incident) => {
+    const { incidentId } = incident;
+    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/incidents/${incidentId}`;
+    return fetchWithAuthHeader(
+        url,
+        {
+            method: PUT,
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(incident),
+        },
+    ).then(response => jsonResponseHandling(response));
+};

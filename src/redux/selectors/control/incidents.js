@@ -44,7 +44,7 @@ export const getStopsByRoute = createSelector(getIncidentsState, incidentsState 
 export const getRoutesByStop = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'routesByStop'));
 export const isEditEnabled = createSelector(getIncidentsState, incidentsState => incidentsState.editMode === EDIT_TYPE.EDIT);
 export const getEditMode = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'editMode'));
-export const getSourceIncidentNo = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'sourceIncidentNo'));
+export const getSourceIncidentId = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'sourceIncidentId'));
 
 export const getAffectedStops = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'affectedEntities.affectedStops'));
 export const getAffectedRoutes = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'affectedEntities.affectedRoutes'));

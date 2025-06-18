@@ -3,16 +3,52 @@ import { shallow } from 'enzyme';
 import { withHooks } from 'jest-react-hooks-shallow';
 import { DISRUPTION_TYPE, WORKAROUND_TYPES } from '../../../../types/disruptions-types';
 import { WorkaroundsForm } from './WorkaroundsForm';
-import { routeBasedEffectedEntities } from '../../../../utils/control/disruption-workarounds.spec';
+import { routeBasedEffectedEntities, stopBasedEffectedEntities } from '../../../../utils/control/disruption-workarounds.spec';
 
 let wrapper;
+
+const routeBasedEffectedEntitiesSelectedStops = [
+    {
+        category: { type: 'route', icon: '', label: 'Routes' },
+        labelKey: 'routeShortName',
+        parentStationStopId: '122-34ecc043',
+        parentStationStopName: 'Kingsland Train Station',
+        routeId: 'WEST-201',
+        routeShortName: 'WEST',
+        routeType: 2,
+        stopCode: '9304',
+        stopId: '9304-dcb2ed75',
+        stopName: 'Kingsland Train Station 1',
+        text: 'WEST',
+        type: 'route',
+        valueKey: 'routeId',
+    },
+    {
+        category: { type: 'route', icon: '', label: 'Routes' },
+        parentStationStopCode: '129',
+        parentStationStopId: '129-f22f268a',
+        parentStationStopName: 'New Lynn Train Station',
+        routeId: 'WEST-201',
+        routeShortName: 'WEST',
+        stopCode: '9314',
+        stopId: '9314-15d82116',
+        stopName: 'New Lynn Train Station 1',
+        stopSequence: 1,
+        text: 'WEST',
+        type: 'route',
+        valueKey: 'routeId',
+    },
+];
 
 const defaultState = {
     disruption: {
         disruptionType: DISRUPTION_TYPE.ROUTES,
-        affectedEntities: routeBasedEffectedEntities,
+        affectedEntities: {
+            affectedRoutes: routeBasedEffectedEntities,
+            affectedStops: [],
+        },
     },
-    onDataUpdate: jest.fn(),
+    onWorkaroundUpdate: jest.fn(),
 };
 
 function setup(customProps) {
@@ -41,7 +77,10 @@ describe('<WorkaroundsForm />', () => {
             setup({
                 disruption: {
                     disruptionType: DISRUPTION_TYPE.ROUTES,
-                    affectedEntities: [routeBasedEffectedEntities[0]],
+                    affectedEntities: {
+                        affectedRoutes: [routeBasedEffectedEntities[0]],
+                        affectedStops: [],
+                    },
                 },
             });
             const radioButtons = wrapper.find('RadioButtons').shallow().find('[type="radio"]');
@@ -51,9 +90,17 @@ describe('<WorkaroundsForm />', () => {
         });
     });
 
-    describe('behaviours', () => {
+    describe('behaviors', () => {
         it('Should switch to related workaround input list when selected workaround type', () => {
-            setup();
+            setup({
+                disruption: {
+                    disruptionType: DISRUPTION_TYPE.ROUTES,
+                    affectedEntities: {
+                        affectedRoutes: routeBasedEffectedEntitiesSelectedStops,
+                        affectedStops: [],
+                    },
+                },
+            });
             const radioButtons = wrapper.find('RadioButtons').shallow().find('[type="radio"]');
 
             expect(wrapper.find('WorkaroundInput').at(0).prop('workaroundType')).toEqual(WORKAROUND_TYPES.all.key);
@@ -64,46 +111,16 @@ describe('<WorkaroundsForm />', () => {
             radioButtons.at(2).renderProp('onChange')(true);
             expect(wrapper.find('WorkaroundInput').at(0).prop('workaroundType')).toEqual(WORKAROUND_TYPES.stop.key);
         });
-
-        it('Should fire data update with all workaround when input text is updated', () => {
-            setup();
-            const input = wrapper.find('WorkaroundInput').shallow().find('Styled(ForwardRef(TextField))');
-            input.renderProp('onChange')({ target: { value: 'workaround text' } });
-            expect(defaultState.onDataUpdate).toHaveBeenCalledWith(
-                'workarounds',
-                [{
-                    type: 'all',
-                    workaround: 'workaround text',
-                }],
-            );
-        });
-
-        it('Should fire data update with workarounds for route when swithed to route and input text is updated', () => {
-            setup();
-            const radioButtons = wrapper.find('RadioButtons').shallow().find('[type="radio"]');
-            radioButtons.at(1).renderProp('onChange')(true);
-
-            const input = wrapper.find('WorkaroundInput').at(2).shallow().find('Styled(ForwardRef(TextField))');
-            input.renderProp('onChange')({ target: { value: 'workaround text' } });
-            expect(defaultState.onDataUpdate).toHaveBeenCalledWith('workarounds', [{
-                type: 'route',
-                workaround: 'workaround text',
-                routeShortName: 'NX2',
-                stopCode: '4222',
-            }, {
-                type: 'route',
-                workaround: 'workaround text',
-                routeShortName: 'NX2',
-                stopCode: '7037',
-            }]);
-        });
     });
 
     describe('hooks', () => {
         it('Should update workarounds if affectedEntities is updated', () => {
             const disruption = {
                 disruptionType: DISRUPTION_TYPE.ROUTES,
-                affectedEntities: [routeBasedEffectedEntities[0]],
+                affectedEntities: {
+                    affectedRoutes: [routeBasedEffectedEntities[0]],
+                    affectedStops: [],
+                },
                 workarounds: [{
                     type: 'route',
                     workaround: 'workaround text',
@@ -114,21 +131,23 @@ describe('<WorkaroundsForm />', () => {
             withHooks(() => {
                 setup({ disruption });
 
-                expect(defaultState.onDataUpdate).toHaveBeenCalledWith(
-                    'workarounds',
-                    [{
-                        type: 'route',
-                        routeShortName: '83',
-                        workaround: 'workaround text',
-                    }],
-                );
+                const radioButtons = wrapper.find('RadioButtons').shallow().find('[type="radio"]');
+                expect(radioButtons.at(0).prop('disabled')).toBeFalsy();
+                expect(radioButtons.at(1).prop('disabled')).toBeFalsy();
+                expect(radioButtons.at(2).prop('disabled')).toBeTruthy();
 
                 wrapper.setProps({ disruption: {
                     ...disruption,
-                    affectedEntities: [routeBasedEffectedEntities[1]],
+                    affectedEntities: {
+                        affectedRoutes: [],
+                        affectedStops: [stopBasedEffectedEntities[3]],
+                    },
                 } });
 
-                expect(defaultState.onDataUpdate).toHaveBeenCalledWith('workarounds', []);
+                const radioButtonsAfterUpdate = wrapper.find('RadioButtons').shallow().find('[type="radio"]');
+                expect(radioButtonsAfterUpdate.at(0).prop('disabled')).toBeFalsy();
+                expect(radioButtonsAfterUpdate.at(1).prop('disabled')).toBeTruthy();
+                expect(radioButtonsAfterUpdate.at(2).prop('disabled')).toBeFalsy();
             });
         });
     });

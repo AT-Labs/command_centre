@@ -16,7 +16,7 @@ import {
     getCachedShapes,
     getCachedRoutesToStops,
     getCachedStopsToRoutes,
-    getSourceIncidentNo,
+    getSourceIncidentId,
     getEditMode,
 } from '../../selectors/control/incidents';
 import { getAllRoutes } from '../../selectors/static/routes';
@@ -216,21 +216,21 @@ export const getDisruptionsAndIncidents = () => (dispatch, getState) => {
 };
 
 export const updateIncident = incident => async (dispatch) => {
-    const { disruptionId, incidentId, createNotification } = incident;
-    dispatch(updateRequestingIncidentState(true, disruptionId));
+    const { incidentId, createNotification } = incident;
+    dispatch(updateRequestingIncidentState(true, incidentId));
 
     let result;
     try {
-        result = await disruptionsMgtApi.updateDisruption(incident);
+        result = await disruptionsMgtApi.updateIncident(incident);
         if (incident.status === STATUSES.DRAFT) {
-            dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.SAVE_DRAFT_SUCCESS(incidentId, false)));
+            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.SAVE_DRAFT_SUCCESS(incidentId, false)));
         } else {
-            dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentId, createNotification)));
+            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_SUCCESS(incidentId, createNotification)));
         }
     } catch (error) {
-        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
+        dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
     } finally {
-        dispatch(updateRequestingIncidentState(false, disruptionId));
+        dispatch(updateRequestingIncidentState(false, incidentId));
     }
     await dispatch(getDisruptionsAndIncidents());
 
@@ -261,7 +261,7 @@ export const publishDraftIncident = incident => async (dispatch) => {
     let response;
     dispatch(updateRequestingIncidentState(true, incident.incidentId));
     try {
-        response = await disruptionsMgtApi.updateDisruption(incident);
+        response = await disruptionsMgtApi.updateIncident(incident);
         dispatch(
             updateRequestingIncidentResult(
                 incident.incidentId,
@@ -281,7 +281,7 @@ export const publishDraftIncident = incident => async (dispatch) => {
 export const createNewIncident = incident => async (dispatch, getState) => {
     let response;
     const state = getState();
-    const sourceIncidentNo = getSourceIncidentNo(state);
+    const sourceIncidentId = getSourceIncidentId(state);
     const myEditMode = getEditMode(state);
     dispatch(updateRequestingIncidentState(true));
     try {
@@ -290,7 +290,7 @@ export const createNewIncident = incident => async (dispatch, getState) => {
             dispatch(
                 updateRequestingIncidentResult(
                     response.incidentId,
-                    ACTION_RESULT.COPY_SUCCESS(response.incidentId, response.version, response.createNotification, sourceIncidentNo),
+                    ACTION_RESULT.COPY_SUCCESS(response.incidentId, response.version, response.createNotification, sourceIncidentId),
                 ),
             );
         } else {
@@ -421,25 +421,16 @@ const updateOpenCreateIncident = isCreateEnabled => ({
     },
 });
 
-export const openCopyIncident = (isCreateEnabled, sourceIncidentNo) => ({
+export const openCopyIncident = (isCreateEnabled, sourceIncidentId) => ({
     type: ACTION_TYPE.OPEN_COPY_INCIDENTS,
     payload: {
         isCreateEnabled,
-        sourceIncidentNo,
+        sourceIncidentId,
     },
 });
 
 export const openCreateIncident = isCreateEnabled => (dispatch) => {
     dispatch(updateOpenCreateIncident(isCreateEnabled));
-};
-
-export const openCreateDiversion = isCreateDiversionEnabled => (dispatch) => {
-    dispatch({
-        type: ACTION_TYPE.OPEN_CREATE_DIVERSION,
-        payload: {
-            isCreateDiversionEnabled,
-        },
-    });
 };
 
 export const resetState = () => ({
@@ -570,13 +561,6 @@ export const updateEditMode = editModeParam => ({
     type: ACTION_TYPE.UPDATE_INCIDENT_EDIT_MODE,
     payload: {
         editMode: editModeParam,
-    },
-});
-
-export const updateDiversionMode = editMode => ({
-    type: ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE,
-    payload: {
-        diversionEditMode: editMode,
     },
 });
 

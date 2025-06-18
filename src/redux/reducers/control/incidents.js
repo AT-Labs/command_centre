@@ -40,7 +40,7 @@ export const INIT_STATE = {
     },
     shapes: [],
     editMode: EDIT_TYPE.CREATE,
-    sourceIncidentNo: null,
+    sourceIncidentId: null,
     filters: {
         selectedEntity: {},
         selectedStatus: '',
@@ -101,7 +101,7 @@ const handleCopyIncidentsUpdate = (state, { payload: { isCopied } }) => ({
 });
 
 const handleOpenIncidents = (state, { payload: { isCreateEnabled } }) => ({ ...state, isCreateEnabled });
-const handleOpenCopyIncidents = (state, { payload: { isCreateEnabled, sourceIncidentNo } }) => ({ ...state, isCreateEnabled, sourceIncidentNo });
+const handleOpenCopyIncidents = (state, { payload: { isCreateEnabled, sourceIncidentId } }) => ({ ...state, isCreateEnabled, sourceIncidentId });
 const handleUpdateAffectedEntities = (state, { payload }) => ({ ...state, affectedEntities: { ...state.affectedEntities, ...payload } });
 const handleUpdateCachedShapes = (state, { payload }) => ({ ...state, cachedShapes: { ...state.cachedShapes, ...payload.shapes } });
 const handleUpdateCachedRoutesToStops = (state, { payload }) => ({ ...state, cachedRoutesToStops: { ...state.cachedRoutesToStops, ...payload.routesToStops } });
