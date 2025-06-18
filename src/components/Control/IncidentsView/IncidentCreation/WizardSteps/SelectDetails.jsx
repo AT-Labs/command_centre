@@ -47,11 +47,11 @@ export const SelectDetails = (props) => {
     const [activePeriods, setActivePeriods] = useState([]);
     const [alertDialogMessage, setAlertDialogMessage] = useState(null);
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
-    const [isTitleDirty, setTitleDirty] = useState(false);
-    const [isSeverityDirty, setSeverityDirty] = useState(false);
-    const [isCauseDirty, setCauseDirty] = useState(false);
-    const [isDurationDirty, setDurationDirty] = useState(false);
-    const [isRecurrencePatternDirty, setRecurrencePatternDirty] = useState(false);
+    const [isTitleDirty, setIsTitleDirty] = useState(false);
+    const [isSeverityDirty, setIsSeverityDirty] = useState(false);
+    const [isCauseDirty, setIsCauseDirty] = useState(false);
+    const [isDurationDirty, setIsDurationDirty] = useState(false);
+    const [isRecurrencePatternDirty, setIsRecurrencePatternDirty] = useState(false);
     const [isStartTimeDirty, setIsStartTimeDirty] = useState(false);
     const [isStartDateDirty, setIsStartDateDirty] = useState(false);
     const [isEndDateDirty, setIsEndDateDirty] = useState(false);
@@ -81,25 +81,25 @@ export const SelectDetails = (props) => {
     };
 
     const onBlurTitle = () => {
-        setTitleDirty(true);
+        setIsTitleDirty(true);
     };
 
     const onBlurDuration = () => {
-        setDurationDirty(true);
+        setIsDurationDirty(true);
     };
 
     const onChangeSeverity = (selectedItem) => {
-        setSeverityDirty(true);
+        setIsSeverityDirty(true);
         props.onDataUpdate('severity', selectedItem);
     };
 
     const onChangeCause = (selectedItem) => {
-        setCauseDirty(true);
+        setIsCauseDirty(true);
         props.onDataUpdate('cause', selectedItem);
     };
 
     const onUpdateRecurrencePattern = (byweekday) => {
-        setRecurrencePatternDirty(true);
+        setIsRecurrencePatternDirty(true);
         props.onDataUpdate('recurrencePattern', { ...recurrencePattern, byweekday });
     };
 
