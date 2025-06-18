@@ -42,7 +42,6 @@ export const RoutesByStopMultiSelect = (props) => {
     };
 
     const saveStopsState = stops => props.updateAffectedStops(sortBy(stops, sortedStop => sortedStop.stopCode));
-    // props.updateAffectedStopsState(sortBy(stops, sortedStop => sortedStop.stopCode));
 
     const flattenStopGroups = stopGroups => Object.values(stopGroups).flat();
 

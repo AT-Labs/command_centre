@@ -391,10 +391,8 @@ export const SelectEffects = (props) => {
         setRequireMapUpdate(true);
     };
 
-    const onDisruptionTypeUpdate = (index, disruptionType) => {
-        const updatedDisruptions = [...disruptions];
-        updatedDisruptions[index].disruptionType = disruptionType;
-        updateDisruptionsState(updatedDisruptions);
+    const onDisruptionTypeUpdate = (key, disruptionType) => {
+        updateDisruption(key, { disruptionType });
     };
 
     const addDisruption = () => {

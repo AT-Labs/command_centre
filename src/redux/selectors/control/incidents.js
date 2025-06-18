@@ -186,7 +186,7 @@ export const getSortedIncidents = createSelector(
     getIncidentsSortingParams,
     (allIncidents, incidentSortingParams) => (!isEmpty(incidentSortingParams)
         ? orderBy(allIncidents, incidentSortingParams.sortBy, incidentSortingParams.order)
-        : allIncidents.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime))),
+        : allIncidents.toSorted((a, b) => new Date(b.createdTime) - new Date(a.createdTime))),
 );
 
 export const isWorkaroundPanelOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isWorkaroundPanelOpen'));

@@ -1,57 +1,146 @@
-import { shallow } from 'enzyme';
-import React, { useRef } from 'react';
-import { keyBy } from 'lodash-es';
-import { Button } from 'reactstrap';
-import sinon from 'sinon';
+/**
+ * @jest-environment jsdom
+ */
+import React from 'react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { AffectedEntities } from './AffectedEntities';
-
-let sandbox;
-let wrapper;
 
 jest.mock('react', () => ({
     ...jest.requireActual('react'),
-    useRef: jest.fn(),
+    useRef: jest.fn(() => ({ current: { clientHeight: 100 } })),
 }));
 
-const mockUseRef = (ref) => {
-    const defaultRef = { current: { clientHeight: 100 } };
-    useRef.mockReturnValue(ref || defaultRef);
-};
-
-const componentPropsMock = {
-    editLabel: 'Edit',
-    editAction: () => {},
-    isEditDisabled: true,
-    affectedEntities: [],
-    stopGroups: [],
-};
-
-const setup = (customProps) => {
-    const props = { ...componentPropsMock };
-    Object.assign(props, customProps);
-    wrapper = shallow(<AffectedEntities { ...props } />);
-    return wrapper;
+const defaultProps = {
+    affectedEntities: [
+        { routeId: 'route5', routeShortName: '5', routeType: 3, type: 'route' },
+        { routeId: 'route6', routeShortName: '6', routeType: 3, type: 'route' },
+        { routeId: 'route7', routeShortName: '7', routeType: 3, type: 'route' },
+        { routeId: 'route8', routeShortName: '8', routeType: 3, type: 'route' },
+    ],
+    startTime: '2022-08-03T23:32:00.000Z',
+    endTime: '2022-08-04T23:32:00.000Z',
 };
 
 describe('<AffectedEntities />', () => {
-    beforeEach(() => {
-        sandbox = sinon.createSandbox();
-        mockUseRef();
+    afterEach(() => {
+        cleanup();
     });
 
-    afterEach(() => { sandbox.restore(); });
-
     it('should display edit button', () => {
-        wrapper = setup({ isEditDisabled: false });
-        expect(wrapper.find(Button).contains('Edit')).toBeTruthy();
+        render(
+            <AffectedEntities
+                { ...defaultProps }
+                isEditDisabled={ false }
+            />,
+        );
+        const editButton = screen.getByText('Edit');
+        expect(editButton).toBeInTheDocument();
     });
 
     it('should not display edit button', () => {
-        wrapper = setup({ isEditDisabled: true });
-        expect(wrapper.find(Button).contains('Edit')).toBeFalsy();
+        render(
+            <AffectedEntities
+                { ...defaultProps }
+                isEditDisabled
+            />,
+        );
+        const editButton = screen.queryByText('Edit');
+        expect(editButton).not.toBeInTheDocument();
     });
 
-    it('should display combined entities', () => {
+    describe('Add Diversion button', () => {
+        test.each([
+            {
+                useDiversion: true,
+                disruptionStatus: 'not-started',
+                display: true,
+                description: 'Should display Add Diversion when useDiversion is true and status is not-started',
+            },
+            {
+                useDiversion: true,
+                disruptionStatus: 'in-progress',
+                display: true,
+                description: 'Should display Add Diversion when useDiversion is true and status is in-progress',
+            },
+            {
+                useDiversion: true,
+                disruptionStatus: 'draft',
+                display: true,
+                description: 'Should display Add Diversion when useDiversion is true and status is draft',
+            },
+            {
+                useDiversion: false,
+                disruptionStatus: 'in-progress',
+                display: false,
+                description: 'Should not display Add Diversion when useDiversion is false',
+            },
+            {
+                useDiversion: true,
+                disruptionStatus: 'resolved',
+                display: false,
+                description: 'Should not display Add Diversion when useDiversion is true and status is resolved',
+            },
+            {
+                useDiversion: false,
+                disruptionStatus: 'in-progress',
+                display: false,
+                description: 'Should not display Add Diversion when useDiversion is false and status is in-progress',
+            },
+        ])('$description', ({ useDiversion, disruptionStatus, display }) => {
+            render(
+                <AffectedEntities
+                    { ...defaultProps }
+                    useDiversion={ useDiversion }
+                    disruptionStatus={ disruptionStatus }
+                />,
+            );
+            const addDiversionButton = screen.queryByText('Add Diversion');
+            if (display) {
+                expect(addDiversionButton).toBeInTheDocument();
+            } else {
+                expect(addDiversionButton).not.toBeInTheDocument();
+            }
+        });
+
+        it('Should not display Add Diversion when useDiversion is true, status is not-started and endTime is null', async () => {
+            const startTime = '2022-08-03T23:32:00.000Z';
+            const endTime = null;
+            render(
+                <AffectedEntities
+                    affectedEntities={ defaultProps.affectedEntities }
+                    useDiversion
+                    disruptionStatus="not-started"
+                    isEditDisabled={ false }
+                    startTime={ startTime }
+                    endTime={ endTime }
+                />,
+            );
+            const addDiversionButton = screen.queryByText('Add Diversion');
+            expect(addDiversionButton).not.toBeInTheDocument();
+        });
+
+        it('Should not display Add Diversion when useDiversion is true, status is not-started and routeType is not bus', async () => {
+            const affectedEntities = [
+                { routeId: 'route5', routeShortName: '5', routeType: 2, type: 'route' },
+                { routeId: 'route6', routeShortName: '6', routeType: 1, type: 'route' },
+            ];
+            render(
+                <AffectedEntities
+                    affectedEntities={ affectedEntities }
+                    useDiversion
+                    disruptionStatus="not-started"
+                    isEditDisabled={ false }
+                    startTime={ defaultProps.startTime }
+                    endTime={ defaultProps.endTime }
+                />,
+            );
+            const addDiversionButton = screen.queryByText('Add Diversion');
+            expect(addDiversionButton).not.toBeInTheDocument();
+        });
+    });
+
+    it('Should display combined entities', () => {
         const affectedEntities = [
             { routeId: 'route1', routeShortName: '1', type: 'route' },
             { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
@@ -65,24 +154,117 @@ describe('<AffectedEntities />', () => {
             { routeId: 'route8', routeShortName: '8', type: 'route', directionId: 1, stopCode: '8' },
             { routeId: 'route8', routeShortName: '8', type: 'route', directionId: 1, stopCode: '9' },
         ];
-        wrapper = setup({ affectedEntities });
-        expect(wrapper.find(Button).contains('View more')).toBeFalsy();
-        expect(wrapper.find('ul').children()).toHaveLength(8);
+        render(
+            <AffectedEntities
+                { ...defaultProps }
+                affectedEntities={ affectedEntities }
+                isEditDisabled={ false }
+            />,
+        );
+
+        expect(screen.queryByText('View more')).not.toBeInTheDocument();
+        const listItems = screen.getAllByRole('listitem');
+        expect(listItems).toHaveLength(8);
     });
 
-    it('should display combined entities with stop groups', () => {
+    it('Should display combined entities with stop groups', () => {
+        const stopGroups = [{ id: 1, title: 'stop group 1' }].reduce((acc, group) => {
+            acc[group.id] = group;
+            return acc;
+        }, {});
         const affectedEntities = [
             { routeId: 'route1', routeShortName: '1', type: 'route' },
             { stopId: 'stop1', stopCode: '1', text: '1', type: 'stop' },
             { stopId: 'stop2', stopCode: '2', groupId: 1, text: '2', type: 'stop' },
             { stopId: 'stop3', stopCode: '3', groupId: 1, text: '3', type: 'stop' },
         ];
-        const stopGroups = keyBy([{ id: 1, title: 'stop group 1' }], group => group.id);
-        wrapper = setup({ affectedEntities, stopGroups });
+        render(
+            <AffectedEntities
+                stopGroups={ stopGroups }
+                affectedEntities={ affectedEntities }
+                isEditDisabled={ false }
+            />,
+        );
 
-        expect(wrapper.find('ul').children()).toHaveLength(3);
-        const stopgroupDiv = wrapper.find('ul li').at(2).find('div');
-        expect(stopgroupDiv.at(0).text()).toEqual('Stop Group - stop group 1');
-        expect(stopgroupDiv.at(1).text()).toEqual('Stop 2, 3');
+        const listItems = screen.getAllByRole('listitem');
+        expect(listItems).toHaveLength(3);
+        expect(screen.getByText('Stop Group - stop group 1')).toBeInTheDocument();
+        expect(screen.getByText('Stop 2, 3')).toBeInTheDocument();
+    });
+});
+
+describe('View & edit diversions', () => {
+    test.each([
+        {
+            diversions: [
+                { diversionId: 1, diversionRouteVariants: [], routeId: 'route1' },
+                { diversionId: 2, diversionRouteVariants: [], routeId: 'route1' },
+                { diversionId: 3, diversionRouteVariants: [], routeId: 'route1' },
+            ],
+            useDiversion: true,
+            expectedText: 'View & edit diversions (3)',
+            display: true,
+            description: 'Should display (3) when 3 diversions exist',
+        },
+        {
+            diversions: [{ diversionId: 1, diversionRouteVariants: [], routeId: 'route1' }],
+            useDiversion: true,
+            expectedText: 'View & edit diversions (1)',
+            display: true,
+            description: 'Should display (1) when 1 diversion exists',
+        },
+        {
+            diversions: [],
+            useDiversion: true,
+            expectedText: 'View & edit diversions (0)',
+            display: true,
+            description: 'Should display (0) when no diversions exist',
+        },
+        {
+            diversions: [
+                { diversionId: 1, diversionRouteVariants: [], routeId: 'route1' },
+                { diversionId: 2, diversionRouteVariants: [], routeId: 'route1' },
+                { diversionId: 3, diversionRouteVariants: [], routeId: 'route1' },
+            ],
+            useDiversion: false,
+            expectedText: 'View & edit diversions (3)',
+            display: false,
+            description: 'Should not display (3) when useDiversion is false',
+        },
+    ])('$description', ({ diversions, useDiversion, expectedText, display }) => {
+        render(
+            <AffectedEntities
+                { ...defaultProps }
+                diversions={ diversions }
+                useDiversion={ useDiversion }
+            />,
+        );
+        const button = screen.queryByText(expectedText);
+        if (display) {
+            expect(button).toBeInTheDocument();
+            expect(button).toHaveTextContent(expectedText);
+        } else {
+            expect(button).not.toBeInTheDocument();
+        }
+    });
+
+    it('should call viewDiversionsAction when the button is clicked', async () => {
+        const viewDiversionsAction = jest.fn();
+        render(
+            <AffectedEntities
+                { ...defaultProps }
+                diversions={ [
+                    { diversionId: 1, diversionRouteVariants: [], routeId: 'route1' },
+                    { diversionId: 2, diversionRouteVariants: [], routeId: 'route1' },
+                ] }
+                viewDiversionsAction={ viewDiversionsAction }
+                useDiversion
+            />,
+        );
+
+        const button = screen.getByText('View & edit diversions (2)');
+        expect(button).toBeInTheDocument();
+        await fireEvent.click(button);
+        expect(viewDiversionsAction).toHaveBeenCalled();
     });
 });

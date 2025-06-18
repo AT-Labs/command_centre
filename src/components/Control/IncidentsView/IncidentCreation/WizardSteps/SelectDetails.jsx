@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { isEmpty, some } from 'lodash-es';
@@ -40,6 +40,7 @@ import { useAlertCauses } from '../../../../../utils/control/alert-cause-effect'
 import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 
 export const SelectDetails = (props) => {
+    const iconContextValue = useMemo(() => ({ className: 'text-warning w-100 m-2' }), []);
     const { startDate, startTime, endDate, endTime, cause, header, url, severity, modalOpenedTime } = props.data;
     const { recurrent, duration, recurrencePattern } = props.data;
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
@@ -450,7 +451,7 @@ export const SelectDetails = (props) => {
                 } }
                 onClose={ () => setIsAlertModalOpen(false) }
                 isModalOpen={ isAlertModalOpen }>
-                <IconContext.Provider value={ { className: 'text-warning w-100 m-2' } }>
+                <IconContext.Provider value={ iconContextValue }>
                     <FaExclamationTriangle size={ 40 } />
                 </IconContext.Provider>
                 <p className="font-weight-light text-center mb-0">{ alertDialogMessage }</p>

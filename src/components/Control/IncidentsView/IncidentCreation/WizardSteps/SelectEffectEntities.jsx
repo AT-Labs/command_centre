@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { connect } from 'react-redux';
 import { filter, isEmpty, sortBy, forOwn, omitBy, pickBy, groupBy } from 'lodash-es';
 import PropTypes from 'prop-types';
@@ -37,7 +37,8 @@ import {
 } from '../../../../../utils/control/disruptions';
 
 export const SelectEffectEntities = (props) => {
-    const { index, affectedEntities, disruptionType, disruptionKey } = props;
+    const iconContextValue = useMemo(() => ({ className: 'text-warning w-100 m-2' }), []);
+    const { affectedEntities, disruptionType, disruptionKey } = props;
     const { ROUTE, STOP, STOP_GROUP } = SEARCH_RESULT_TYPE;
     const { NONE, CHANGE_DISRUPTION_TYPE, REMOVE_SELECTED_ENTITY, RESET_SELECTED_ENTITIES } = confirmationModalTypes;
     const isRouteType = type => type === ROUTE.type;
@@ -286,9 +287,9 @@ export const SelectEffectEntities = (props) => {
 
     const toggleDisruptionType = () => {
         if (disruptionType === DISRUPTION_TYPE.ROUTES) {
-            props.onDisruptionTypeUpdate(index, DISRUPTION_TYPE.STOPS);
+            props.onDisruptionTypeUpdate(disruptionKey, DISRUPTION_TYPE.STOPS);
         } else {
-            props.onDisruptionTypeUpdate(index, DISRUPTION_TYPE.ROUTES);
+            props.onDisruptionTypeUpdate(disruptionKey, DISRUPTION_TYPE.ROUTES);
         }
     };
 
@@ -389,14 +390,6 @@ export const SelectEffectEntities = (props) => {
                 entityToItemTransformers={ entityToItemTransformers }
                 itemToEntityTransformers={ itemToEntityTransformers }
             />
-            {/* { (selectedEntities.length > 0) && (
-                <div className="card-header pt-0 pb-3 bg-transparent">
-                    <ResetButton
-                        className="search__reset p-0"
-                        onClick={ () => setConfirmationModalType(RESET_SELECTED_ENTITIES) }
-                    />
-                </div>
-            )} */}
             <div className="selection-container h-100">
                 <ul className="p-0">
                     <StopsByRouteMultiSelect
@@ -431,7 +424,7 @@ export const SelectEffectEntities = (props) => {
                 } }
                 onClose={ () => setIsAlertModalOpen(false) }
                 isModalOpen={ isAlertModalOpen }>
-                <IconContext.Provider value={ { className: 'text-warning w-100 m-2' } }>
+                <IconContext.Provider value={ iconContextValue }>
                     <FaExclamationTriangle size={ 40 } />
                 </IconContext.Provider>
                 <p className="font-weight-light text-center mb-0">{`${totalEntities} ${itemsSelectedText()} have been selected. Please reduce the selection to less than the maximum allowed of ${maxNumberOfEntities}`}</p>
@@ -456,7 +449,6 @@ SelectEffectEntities.propTypes = {
     stops: PropTypes.object.isRequired,
     stopGroups: PropTypes.object.isRequired,
     data: PropTypes.object,
-    index: PropTypes.number.isRequired,
     affectedEntities: PropTypes.object.isRequired,
     onAffectedEntitiesUpdate: PropTypes.func.isRequired,
     disruptionType: PropTypes.string.isRequired,

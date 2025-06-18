@@ -34,9 +34,8 @@ const componentPropsMock = {
     routesTripsDatagridConfig: {},
 };
 
-const setup = (customProps) => {
-    const props = { ...componentPropsMock };
-    Object.assign(props, customProps);
+const setup = (customProps = {}) => {
+    const props = { ...componentPropsMock, ...customProps };
     return shallow(<TripsDataGrid { ...props } />);
 };
 
@@ -101,6 +100,40 @@ describe('TripsDataGrid', () => {
             expect(disruptionCol).toBeDefined();
             expect(disruptionCol.headerName).toBe('Disruption');
             expect(typeof disruptionCol.renderCell).toBe('function');
+        });
+
+        it('should render routeVariantId with a diversion icon floated right if type is detoured', () => {
+            wrapper = setup({
+                useDiversion: true,
+            });
+            const columns = wrapper.find('CustomDataGrid').prop('columns');
+            const routeVariantCol = columns.find(col => col.field === 'routeVariantId');
+            expect(routeVariantCol).toBeDefined();
+            expect(typeof routeVariantCol.renderCell).toBe('function');
+
+            // Simulate a row with type 'Detoured' and required fields
+            const params = {
+                value: 'RV123',
+                row: {
+                    type: 'Detoured',
+                    routeVariantId: 'RV123',
+                },
+            };
+            const cell = routeVariantCol.renderCell(params);
+
+            // Expecting
+            // <span>
+            //    <span>RV123</span> <--- span 0
+            //    <span><GiDetour /></span> <--- span 1
+            // </span>
+            expect(cell.type).toBe('span');
+            const children = React.Children.toArray(cell.props.children);
+            expect(children.length).toBe(2);
+            expect(children[0].type).toBe('span');
+            expect(children[0].props.children).toBe('RV123');
+            expect(children[1].type).toBe('span');
+            const icon = children[1].props.children;
+            expect(icon && (icon.type.displayName || icon.type.name)).toBe('GiDetour');
         });
     });
 });

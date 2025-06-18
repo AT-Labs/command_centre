@@ -430,7 +430,7 @@ describe('Stop detail actions', () => {
 
         it('dispatches actions on successful API call', async () => {
             sandbox.stub(appSettings, 'useStopBasedDisruptionsSearch').returns(true);
-            const disruptions = [{ id: 1 }];
+            const disruptions = [{ id: 1, affectedEntities:[{stopCode: "1234", type: "stop" }] }];
             sandbox.stub(disruptionApi, 'getDisruptionsByFilters').resolves({ disruptions });
 
             await store.dispatch(getDisruptionsByStop(stop));

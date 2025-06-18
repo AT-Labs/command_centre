@@ -7,9 +7,9 @@ import WorkaroundInput from './WorkaroundInput';
 import './styles.scss';
 
 export const WorkaroundsForm = forwardRef((props, ref) => {
-    const { disruptionType/* , workarounds  */ } = props.disruption;
+    const { disruptionType } = props.disruption;
     const [workarounds, setWorkarounds] = useState(props.disruption.workarounds || []);
-    const affectedEntities = [...props.disruption.affectedEntities.affectedRoutes, ...props.disruption.affectedEntities.affectedStops] || [];
+    const affectedEntities = [...(props.disruption.affectedEntities.affectedRoutes || []), ...(props.disruption.affectedEntities.affectedStops || [])];
     const defaultAllWorkaroundsValue = Object.keys(WORKAROUND_TYPES).map(type => ({ [type]: [] }));
     const [checkedWorkaroundType, setCheckedWorkaroundType] = useState(workarounds?.length ? workarounds[0].type : WORKAROUND_TYPES.all.key);
     const [allWorkarounds, setAllWorkarounds] = useState({ ...defaultAllWorkaroundsValue, [checkedWorkaroundType]: workarounds });
@@ -32,10 +32,6 @@ export const WorkaroundsForm = forwardRef((props, ref) => {
         props.onWorkaroundUpdate(props.disruption.key, workarounds);
         setCheckedWorkaroundType(WORKAROUND_TYPES.all.key);
     };
-
-    /* useEffect(() => {
-        updateWorkaroundsInDisruption(updateWorkaroundsByAffectedEntities(affectedEntities, workarounds, disruptionType, checkedWorkaroundType));
-    }, [JSON.stringify(affectedEntities)]); */
 
     useEffect(() => {
         if (props.disruption) {

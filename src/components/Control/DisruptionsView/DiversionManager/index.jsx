@@ -14,8 +14,9 @@ import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
 import { createDiversion, updateDiversion, resetDiversionResult } from '../../../../redux/actions/control/diversions';
 import { getDiversionResultState, getDiversionForEditing, getDiversionEditMode } from '../../../../redux/selectors/control/diversions';
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
-import { generateUniqueColor, isAffectedStop, createAffectedStop,
-    getUniqueStops, createModifiedRouteVariant, canMerge, hasDiversionModified, getUniqueAffectedStopIds } from './DiversionHelper';
+import { isAffectedStop, createAffectedStop,
+    getUniqueStops, createModifiedRouteVariant, canMerge, hasDiversionModified, getUniqueAffectedStopIds,
+    mergeDiversionToRouteVariant } from './DiversionHelper';
 import { mergeCoordinates, parseWKT, toWKT } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
 import dateTypes from '../../../../types/date-types';
 import EDIT_TYPE from '../../../../types/edit-types';
@@ -83,16 +84,9 @@ const DiversionManager = (props) => {
 
         // set the selected route variants
         const selectedRouteVariants = routeVariants.filter(rv => editingDiversions.some(ed => ed.routeVariantId === rv.routeVariantId));
-        const updatedSelectedRouteVariants = selectedRouteVariants.filter(v => v.routeVariantId !== baseRouteVariantId).map((rv) => {
-            const originalCoordinates = parseWKT(rv.shapeWkt);
-            const mergedCoordinates = mergeCoordinates(originalCoordinates, parseWKT(diversionShapeWkt));
-            return {
-                ...rv,
-                shapeWkt: toWKT(mergedCoordinates),
-                color: generateUniqueColor(rv.routeVariantId),
-                visible: true,
-            };
-        });
+        const updatedSelectedRouteVariants = selectedRouteVariants.filter(v => v.routeVariantId !== baseRouteVariantId)
+            .map(rv => mergeDiversionToRouteVariant(rv, rv.shapeWkt, props.diversion.diversionShapeWkt));
+
         setBaseRouteVariantOnly(selectedRouteVariants.length === 1);
         setSecondaryRouteVariantsList(routeVariants
             .filter(rv => rv.routeVariantId !== baseRouteVariantId
@@ -161,14 +155,7 @@ const DiversionManager = (props) => {
 
     const handleSelectOtherVariant = (variant) => {
         if (variant) {
-            const originalCoordinates = parseWKT(variant.shapeWkt);
-            const mergedCoordinates = mergeCoordinates(originalCoordinates, parseWKT(diversionShapeWkt));
-            const updatedAdditionalRouteVariants = [...selectedOtherRouteVariants, {
-                ...variant,
-                shapeWkt: toWKT(mergedCoordinates),
-                color: generateUniqueColor(variant.routeVariantId),
-                visible: true,
-            }];
+            const updatedAdditionalRouteVariants = [...selectedOtherRouteVariants, mergeDiversionToRouteVariant(variant, variant.shapeWkt, diversionShapeWkt)];
             setSelectedOtherRouteVariants(updatedAdditionalRouteVariants);
             setSecondaryRouteVariantsList(secondaryRouteVariantsList
                 .map(v => (v.routeVariantId === variant.routeVariantId ? ({
@@ -206,15 +193,17 @@ const DiversionManager = (props) => {
             setAffectedStops([]);
         }
 
-        // Check if the diversion has been modified
-        const isModified = hasDiversionModified({
-            isEditingMode,
-            diversionShapeWkt,
-            originalDiversionShapeWkt: props.diversion.diversionShapeWkt,
-            selectedOtherRouteVariants,
-            editingDiversions,
-        });
-        setIsUpdated(isModified);
+        if (isEditingMode) {
+            // Check if the diversion has been modified
+            const isModified = hasDiversionModified({
+                isEditingMode,
+                diversionShapeWkt,
+                originalDiversionShapeWkt: props.diversion.diversionShapeWkt,
+                selectedOtherRouteVariants,
+                editingDiversions,
+            });
+            setIsUpdated(isModified);
+        }
     }, [diversionShapeWkt, selectedOtherRouteVariants]);
 
     // Fetch route variants when the component mounts
@@ -234,9 +223,7 @@ const DiversionManager = (props) => {
             const updatedOtherRouteVariants = selectedOtherRouteVariants.map((rv) => {
                 const originalRouteVariant = routeVariantsList.find(x => x.routeVariantId === rv.routeVariantId);
                 if (originalRouteVariant) {
-                    const originalCoordinates = parseWKT(originalRouteVariant.shapeWkt);
-                    const mergedCoordinates = mergeCoordinates(originalCoordinates, parseWKT(updatedDiversionShape));
-                    return { ...rv, shapeWkt: toWKT(mergedCoordinates) };
+                    return mergeDiversionToRouteVariant(rv, originalRouteVariant.shapeWkt, updatedDiversionShape);
                 }
                 return rv;
             });
@@ -321,7 +308,20 @@ const DiversionManager = (props) => {
                     || v.directionId !== selectedBaseRouteVariant.directionId
                     || !canMerge(v.shapeWkt, diversionShapeWkt),
             }));
-            setSecondaryRouteVariantsList(updatedSecondaryList);
+            // Automatically select all available route variants that has no trip modifications and can be merged
+            const availableRouteVariants = updatedSecondaryList.filter(v => !v.hasTripModifications && !v.hidden);
+            if (availableRouteVariants.length > 0) {
+                const updatedSelectedOtherRouteVariants = availableRouteVariants.map(rv => mergeDiversionToRouteVariant(rv, rv.shapeWkt, diversionShapeWkt));
+                setSelectedOtherRouteVariants(updatedSelectedOtherRouteVariants);
+                setSecondaryRouteVariantsList(updatedSecondaryList.map(v => ({
+                    ...v,
+                    hidden: availableRouteVariants
+                        .some(rv => rv.routeVariantId === v.routeVariantId) ? true : v.hidden, // Hide all as we automatically select all available route variants
+                })));
+            } else {
+                setSelectedOtherRouteVariants([]);
+                setSecondaryRouteVariantsList(updatedSecondaryList);
+            }
         }
     };
 
