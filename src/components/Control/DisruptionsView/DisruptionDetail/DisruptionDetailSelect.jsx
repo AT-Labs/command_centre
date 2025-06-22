@@ -3,14 +3,17 @@ import PropTypes from 'prop-types';
 
 import { FormGroup, Input, Label, FormFeedback } from 'reactstrap';
 import { IoIosArrowDropdown } from 'react-icons/io';
+import '../../IncidentsView/style.scss';
 
 export const DisruptionDetailSelect = (props) => {
     const { value, options, label, id, disabled, onChange, invalid, feedback, onBlur } = props;
+    const inputClassName = props.useParentChildIncident ? 'incident-creation__wizard-select-details__select'
+        : 'disruption-creation__wizard-select-details__select';
     return (
         <FormGroup className={ `${props.className} position-relative` }>
             <Label for={ id }><span className="font-size-md font-weight-bold">{ label }</span></Label>
             <Input type="select"
-                className="w-100 border border-dark disruption-creation__wizard-select-details__select position-relative"
+                className={ `w-100 border border-dark ${inputClassName} position-relative` }
                 disabled={ disabled }
                 id={ id }
                 value={ value }
@@ -46,6 +49,7 @@ DisruptionDetailSelect.propTypes = {
     className: PropTypes.string,
     invalid: PropTypes.bool,
     feedback: PropTypes.string,
+    useParentChildIncident: PropTypes.bool,
 };
 
 DisruptionDetailSelect.defaultProps = {
@@ -56,4 +60,5 @@ DisruptionDetailSelect.defaultProps = {
     feedback: '',
     onBlur: () => {},
     onChange: () => {},
+    useParentChildIncident: false,
 };
