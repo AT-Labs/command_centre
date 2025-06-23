@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { FaExclamation } from 'react-icons/fa';
 import { find } from 'lodash-es';
@@ -12,10 +12,52 @@ import {
     getDurationWithoutSeconds,
     transformIncidentNo,
 } from '../../../../utils/control/disruptions';
+import * as ccStatic from '../../../../utils/transmitters/cc-static';
+import Loader from '../../Loader/Loader';
 
 const DisruptionDetails = (props) => {
     const { disruptions, causes, impacts, goToDisruptionEditPage, stopCode, stopName } = props;
     const [index, setIndex] = useState(0);
+    const [fetchedRoutes, setFetchedRoutes] = useState('-');
+    const [loadingRoutes, setLoadingRoutes] = useState(false);
+
+    const getRouteNamesByStopCode = (disruption) => {
+        if (!Array.isArray(disruption?.affectedEntities) || !stopCode) return '-';
+        const routes = disruption.affectedEntities
+            .filter(entity => entity?.stopCode === stopCode && entity?.routeShortName)
+            .map(entity => entity.routeShortName.trim());
+        return routes.length ? [...new Set(routes)].join(', ') : null;
+    };
+
+    useEffect(() => {
+        let isMounted = true;
+        const needsFetch = disruptions.some(
+            disruption => getRouteNamesByStopCode(disruption) === null,
+        );
+        if (needsFetch && stopCode) {
+            setLoadingRoutes(true);
+            ccStatic.getRoutesByStop(stopCode)
+                .then((data) => {
+                    if (!isMounted) return;
+                    setFetchedRoutes(
+                        data?.length
+                            ? [...new Set(data.map(route => route.route_short_name))].join(', ')
+                            : '-',
+                    );
+                })
+                .catch(() => {
+                    if (!isMounted) return;
+                    setFetchedRoutes('-');
+                })
+                .finally(() => {
+                    if (!isMounted) return;
+                    setLoadingRoutes(false);
+                });
+        }
+        return () => {
+            isMounted = false;
+        };
+    }, [disruptions, stopCode]);
 
     const handleNext = () => {
         setIndex(prevIndex => Math.min(prevIndex + 1, disruptions.length - 1));
@@ -25,20 +67,14 @@ const DisruptionDetails = (props) => {
         setIndex(prevIndex => Math.max(prevIndex - 1, 0));
     };
 
-    const getRouteNamesByStopCode = (disruption) => {
-        if (!Array.isArray(disruption?.affectedEntities) || !stopCode) return '-';
-        const routes = disruption.affectedEntities
-            .filter(entity => entity?.stopCode === stopCode && entity?.routeShortName)
-            .map(entity => entity.routeShortName.trim());
-        return routes.length ? [...new Set(routes)].join(', ') : '-';
-    };
-
     const getStopTitle = () => {
         if (stopCode && stopName) {
             return `${stopCode} - ${stopName}`;
         }
         return '-';
     };
+
+    const currentDisruption = disruptions[index];
 
     return (
         <div className="disruption-incident-container">
@@ -53,78 +89,84 @@ const DisruptionDetails = (props) => {
                     <p>
                         <Button
                             onClick={ () => goToDisruptionEditPage(
-                                { disruptionId: disruptions[index].disruptionId },
+                                { disruptionId: currentDisruption.disruptionId },
                                 { setActiveDisruption: true },
                             ) }
-                            style={ { color: 'black', textDecoration: 'underline', fontWeight: 'bold', padding: '0' } }
+                            style={ {
+                                color: 'black',
+                                textDecoration: 'underline',
+                                fontWeight: 'bold',
+                                padding: '0',
+                            } }
                             variant="text"
                         >
-                            {transformIncidentNo(disruptions[index].disruptionId)}
+                            {transformIncidentNo(currentDisruption.disruptionId)}
                         </Button>
-                        {`: ${disruptions[index].header}`}
+                        {`: ${currentDisruption.header}`}
                     </p>
                 </div>
                 <div className="row">
                     <p>
-                        <strong>
-                            { getStopTitle() }
-                        </strong>
+                        <strong>{getStopTitle()}</strong>
                     </p>
                 </div>
                 <div className="row">
                     <div className="column">
                         <p><strong>Start time</strong></p>
-                        <p>{disruptions[index]?.startTime ? formatCreatedUpdatedTime(disruptions[index]?.startTime) : '-'}</p>
+                        <p>{currentDisruption?.startTime ? formatCreatedUpdatedTime(currentDisruption?.startTime) : '-'}</p>
                     </div>
                     <div className="column">
                         <p><strong>End time</strong></p>
-                        <p>{disruptions[index]?.endTime ? formatCreatedUpdatedTime(disruptions[index]?.endTime) : '-'}</p>
+                        <p>{currentDisruption?.endTime ? formatCreatedUpdatedTime(currentDisruption?.endTime) : '-'}</p>
                     </div>
                 </div>
                 <div className="row">
                     <div className="column">
                         <p><strong>Duration</strong></p>
-                        <p>{disruptions[index]?.duration ? getDurationWithoutSeconds(disruptions[index]) : '-'}</p>
+                        <p>{currentDisruption?.duration ? getDurationWithoutSeconds(currentDisruption) : '-'}</p>
                     </div>
                     <div className="column">
                         <p><strong>Severity</strong></p>
-                        <p>{find(SEVERITIES, { value: disruptions[index].severity })?.label || '-'}</p>
+                        <p>{find(SEVERITIES, { value: currentDisruption.severity })?.label || '-'}</p>
                     </div>
                 </div>
                 <div className="row">
                     <div className="column">
                         <p><strong>Cause</strong></p>
-                        <p>{(find(causes, { value: disruptions[index].cause }))?.label || '-'}</p>
+                        <p>{find(causes, { value: currentDisruption.cause })?.label || '-'}</p>
                     </div>
                     <div className="column">
                         <p><strong>Effect</strong></p>
-                        <p>{(find(impacts, { value: disruptions[index].impact }))?.label || '-'}</p>
+                        <p>{find(impacts, { value: currentDisruption.impact })?.label || '-'}</p>
                     </div>
                 </div>
                 <div className="row">
                     <div className="column">
                         <p><strong>Scheduled?</strong></p>
-                        <p>{disruptions[index]?.recurrent ? 'Y' : 'N'}</p>
+                        <p>{currentDisruption?.recurrent ? 'Y' : 'N'}</p>
                     </div>
                     <div className="column">
                         <p><strong>Scheduled Period</strong></p>
-                        { disruptions[index]?.recurrencePattern?.byweekday?.length > 0 ? (
-                            <p>{disruptions[index].recurrencePattern.byweekday.map(day => WEEKDAYS[day]).join(', ')}</p>
-                        )
-                            : (<p>-</p>)}
+                        {currentDisruption?.recurrencePattern?.byweekday?.length > 0 ? (
+                            <p>{currentDisruption.recurrencePattern.byweekday.map(day => WEEKDAYS[day]).join(', ')}</p>
+                        ) : (<p>-</p>)}
                     </div>
                 </div>
                 <div className="row">
                     <div className="column">
                         <p><strong>Routes</strong></p>
-                        <p>{getRouteNamesByStopCode(disruptions[index])}</p>
+                        {
+                            loadingRoutes
+                                ? <span><Loader className="loader--small" /></span>
+                                : <span>{getRouteNamesByStopCode(currentDisruption) ?? fetchedRoutes ?? '-'}</span>
+                        }
                     </div>
                 </div>
                 <div className="row">
                     <div className="column">
                         <p><strong>Internal Notes</strong></p>
-                        {disruptions[index]?.notes?.length > 0 ? (
-                            <p>{disruptions[index].notes[disruptions[index].notes.length - 1].description}</p>
+                        {currentDisruption?.notes?.length > 0 ? (
+                            <p>{currentDisruption.notes[currentDisruption.notes.length - 1].description}</p>
                         ) : (
                             <p>No notes added to this disruption.</p>
                         )}
