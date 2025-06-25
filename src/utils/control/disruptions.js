@@ -364,6 +364,7 @@ export const getDurationWithoutSeconds = (disruption) => {
     const duration = buildDuration(disruption);
     if (!duration) return '-';
     const { hours, minutes } = duration;
+    if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return '-';
     return `${hours} hours, ${minutes} minutes`;
 };
 

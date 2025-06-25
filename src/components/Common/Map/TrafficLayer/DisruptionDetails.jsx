@@ -123,7 +123,7 @@ const DisruptionDetails = (props) => {
                 <div className="row">
                     <div className="column">
                         <p><strong>Duration</strong></p>
-                        <p>{currentDisruption?.duration ? getDurationWithoutSeconds(currentDisruption) : '-'}</p>
+                        <p>{getDurationWithoutSeconds(currentDisruption)}</p>
                     </div>
                     <div className="column">
                         <p><strong>Severity</strong></p>

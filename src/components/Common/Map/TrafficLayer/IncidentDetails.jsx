@@ -11,8 +11,8 @@ import './IncidentDetails.scss';
 const IncidentDetails = props => (
     <div className="traffic-incident-container">
         <div className="header">
-            <div className="icon-container">
-                { getIconByIncidentCategory(props.incident?.type?.category) }
+            <div className={ `icon-container${props.useNewColors ? ' new-color' : ''}` }>
+                { getIconByIncidentCategory(props.incident?.type?.category, props.useNewColors) }
             </div>
 
             <h2 className="title">{props.incident?.type?.name}</h2>
@@ -67,6 +67,11 @@ const IncidentDetails = props => (
 
 IncidentDetails.propTypes = {
     incident: PropTypes.object.isRequired,
+    useNewColors: PropTypes.bool,
+};
+
+IncidentDetails.defaultProps = {
+    useNewColors: false,
 };
 
 export default IncidentDetails;

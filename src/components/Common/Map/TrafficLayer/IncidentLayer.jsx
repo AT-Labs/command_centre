@@ -66,7 +66,7 @@ export const IncidentLayer = (props) => {
             useNewColors={ useNewColors }
         >
             <Tooltip direction="top" offset={ [0, -50] }>
-                <IncidentDetails incident={ incident } />
+                <IncidentDetails incident={ incident } useNewColors={ useNewColors } />
             </Tooltip>
         </IncidentMarker>
     );
