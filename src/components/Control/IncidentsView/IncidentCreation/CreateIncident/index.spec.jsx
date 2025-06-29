@@ -19,30 +19,13 @@ jest.mock('../../../../Common/Map/StopsLayer/SelectedStopsMarker', () => jest.fn
 jest.mock('./DrawLayer', () => jest.fn());
 
 jest.mock('../../../../Common/CustomModal/CustomModal', () => jest.fn());
+
 const disruptionActivePeriodsMock = [
     {
         endTime: 1732571652,
         startTime: 1732312452,
     },
 ];
-
-/* 
-const disruptionShapeMock = {
-    type: 'circle',
-    coordinates: [
-        {
-            lat: -36.72166946698102,
-            lng: 174.7056841850281,
-        },
-    ],
-    radius: 63.91801531070022,
-};
-
-const disruptionDataMock = {
-    activePeriods: disruptionActivePeriodsMock,
-    disruptionType: 'type',
-    endTime: '11:10:00',
-}; */
 
 jest.mock('../../../../../utils/control/disruptions', () => ({
     generateDisruptionActivePeriods: jest.fn().mockReturnValue(disruptionActivePeriodsMock),
