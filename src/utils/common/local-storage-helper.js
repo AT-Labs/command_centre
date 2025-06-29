@@ -17,7 +17,7 @@ export const fetchFromLocalStorage = async (cacheKey, cacheExpirationTime, fetch
 
     const data = await fetchFromApiFunc();
 
-    if (Array.isArray(data) && data.length > 0) {
+    if (data?.length > 0) {
         localStorage.setItem(cacheKey, JSON.stringify({ data, timestamp: Date.now() }));
     }
 

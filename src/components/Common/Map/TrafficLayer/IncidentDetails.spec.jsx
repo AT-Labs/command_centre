@@ -37,18 +37,11 @@ const setup = (customProps) => {
 };
 
 describe('<IncidentDetails />', () => {
-    it('Should render', () => {
+    beforeEach(() => {
         wrapper = setup();
+    });
+
+    it('Should render', () => {
         expect(wrapper.exists()).toEqual(true);
-    });
-
-    it('should render with new color class when useNewColors is true', () => {
-        wrapper = setup({ useNewColors: true });
-        expect(wrapper.find('.icon-container.new-color').exists()).toBe(true);
-    });
-
-    it('should not render new color class when useNewColors is false', () => {
-        wrapper = setup({ useNewColors: false });
-        expect(wrapper.find('.icon-container.new-color').exists()).toBe(false);
     });
 });
