@@ -18,7 +18,7 @@ export const DisruptionLayer = (props) => {
 
     const handleGetClusterIcon = cluster => new L.DivIcon({
         className: 'incident-market-cluster',
-        html: `<div style="background-color: magenta; opacity: 0.7; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; color: white;">${cluster.getChildCount()}</div>`,
+        html: `<div style="background-color: #D52923; opacity: 0.7; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; color: white;">${cluster.getChildCount()}</div>`,
     });
 
     const renderDisruptionFeatures = useMemo(() => (stops.map(stop => (

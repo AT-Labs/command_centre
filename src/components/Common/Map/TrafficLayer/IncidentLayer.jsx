@@ -31,10 +31,13 @@ export const IncidentLayer = (props) => {
         }
     }, [props.data]);
 
-    const handleGetClusterIcon = cluster => new L.DivIcon({
-        className: 'incident-market-cluster',
-        html: `<div style="background-color: #D52923; opacity: 0.7; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; color: white;">${cluster.getChildCount()}</div>`,
-    });
+    const handleGetClusterIcon = (cluster) => {
+        const color = props.useNewColors ? '#666666' : '#D52923';
+        return new L.DivIcon({
+            className: 'incident-market-cluster',
+            html: `<div style="background-color: ${color}; opacity: 0.7; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; color: white;">${cluster.getChildCount()}</div>`,
+        });
+    };
 
     const getIconPoint = (isPoint, coordinates) => {
         if (isPoint) {
@@ -63,7 +66,7 @@ export const IncidentLayer = (props) => {
             useNewColors={ useNewColors }
         >
             <Tooltip direction="top" offset={ [0, -50] }>
-                <IncidentDetails incident={ incident } />
+                <IncidentDetails incident={ incident } useNewColors={ useNewColors } />
             </Tooltip>
         </IncidentMarker>
     );

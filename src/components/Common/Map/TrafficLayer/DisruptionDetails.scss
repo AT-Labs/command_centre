@@ -65,6 +65,13 @@
         }
     }
 
+    .loader--small {
+        width: 17px;
+        height: 17px;
+        min-width: 17px;
+        min-height: 17px;
+    }
+
     .footer {
         display: flex;
         justify-content: center;
