@@ -49,22 +49,22 @@ describe('<WorkaroundPanel />', () => {
         expect(wrapper.exists()).toEqual(true);
         const spinner = wrapper.find('.loading-spinner');
         expect(spinner).toHaveLength(1);
-        const closeButton = wrapper.find('.close');
+        const closeButton = wrapper.find('.close-workaround');
         expect(closeButton).toHaveLength(1);
-        const saveButton = wrapper.find('.save');
+        const saveButton = wrapper.find('.close-workaround');
         expect(saveButton).toHaveLength(1);
     });
 
     it('Should fire onSubmit when save button is clicked', () => {
         wrapper = setup();
-        wrapper.find('.save').props().onClick();
+        wrapper.find('.save-workaround').props().onClick();
         expect(componentPropsMock.toggleWorkaroundPanel).toHaveBeenCalledWith(false);
         expect(componentPropsMock.updateDisruptionKeyToWorkaroundEdit).toHaveBeenCalledWith('');
     });
 
     it('Should fire onClose when save button is clicked', () => {
         wrapper = setup();
-        wrapper.find('.close').props().onClick();
+        wrapper.find('.close-workaround').props().onClick();
         expect(componentPropsMock.toggleWorkaroundPanel).toHaveBeenCalledWith(false);
         expect(componentPropsMock.updateDisruptionKeyToWorkaroundEdit).toHaveBeenCalledWith('');
     });

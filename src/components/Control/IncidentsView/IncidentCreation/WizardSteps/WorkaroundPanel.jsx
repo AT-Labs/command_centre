@@ -43,14 +43,14 @@ export const WorkaroundPanel = (props) => {
                 <footer className="row m-0 justify-content-between p-4 position-fixed">
                     <div className="col-4">
                         <Button
-                            className="btn cc-btn-link close"
+                            className="btn cc-btn-link btn-block close-workaround"
                             onClick={ () => onClose() }>
                             Close
                         </Button>
                     </div>
                     <div className="col-4">
                         <Button
-                            className="btn cc-btn-primary btn-block save"
+                            className="btn cc-btn-primary btn-block save-workaround"
                             onClick={ () => onSubmit() }>
                             Save
                         </Button>
