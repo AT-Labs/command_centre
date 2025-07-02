@@ -1,0 +1,31 @@
+@import './../../../../assets/styles/variables';
+
+.disruption-filters {
+    .search-filter {
+        .omni-search {
+            .search__clear {
+                top: 5px;
+            }
+        }
+    }
+
+    .dates-filter-label {
+        text-align: right;
+        min-width: 130px;
+    }
+
+    .dates-filter {
+        &__separator {
+            position: relative;
+            top: 18px;
+            width: 20px;
+            height: 2px;
+            background-color: black;
+        }
+    }
+
+    .filter-by-date__clear {
+        top: 5px;
+        right: 10px;
+    }
+}
