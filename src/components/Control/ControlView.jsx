@@ -47,7 +47,7 @@ const ControlView = (props) => {
         <OffCanvasLayout>
             <Main className="control-view">
                 <ErrorBanner />
-                <div className={ classNames({ 'p-4': (!isTripReplaysView && !isDisruptionsView), 'h-100': isHeight100Percent }) }>
+                <div className={ classNames({ 'p-4': ((!isTripReplaysView && !isDisruptionsView && !isIncidentsView)), 'h-100': isHeight100Percent }) }>
                     { isBlocksView && <BlocksView /> }
                     { isRoutesView && !props.useRoutesTripsDatagrid && <CommonView /> }
                     { isRoutesView && props.useRoutesTripsDatagrid && <RoutesAndTripsView /> }

@@ -5,6 +5,8 @@ import { IncidentsView } from './index';
 import { PAGE_SIZE } from './types';
 import IncidentsDataGrid from './IncidentsDataGrid';
 
+jest.mock('./IncidentCreation/CreateIncident/index', () => () => <div />);
+
 jest.useFakeTimers();
 
 describe('IncidentsView', () => {
