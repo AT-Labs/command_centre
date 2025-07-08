@@ -13,8 +13,6 @@ export const routeBasedEffectedEntities = [
         routeShortName: '83',
         routeId: '83-123',
         type: 'route',
-        category: { type: 'route', icon: '', label: 'Routes' },
-        valueKey: 'routeId',
     },
     {
         routeShortName: 'NX1',
@@ -23,8 +21,6 @@ export const routeBasedEffectedEntities = [
         stopCode: '4222',
         stopName: 'Stop A Constellation',
         type: 'route',
-        category: { type: 'route', icon: '', label: 'Routes' },
-        valueKey: 'routeId',
     },
     {
         routeShortName: 'NX2',
@@ -33,8 +29,6 @@ export const routeBasedEffectedEntities = [
         stopCode: '4222',
         stopName: 'Stop A Constellation',
         type: 'route',
-        category: { type: 'route', icon: '', label: 'Routes' },
-        valueKey: 'routeId',
     },
     {
         routeShortName: 'NX2',
@@ -43,12 +37,10 @@ export const routeBasedEffectedEntities = [
         stopCode: '7037',
         stopName: 'Daldy Street',
         type: 'route',
-        category: { type: 'route', icon: '', label: 'Routes' },
-        valueKey: 'routeId',
     },
 ];
 
-export const stopBasedEffectedEntities = [
+const stopBasedEffectedEntities = [
     {
         routeShortName: 'NX1',
         routeId: 'NX1-203',
@@ -56,8 +48,6 @@ export const stopBasedEffectedEntities = [
         stopCode: '4222',
         stopName: 'Stop A Constellation',
         type: 'stop',
-        valueKey: 'stopId',
-        category: { type: 'stop', icon: '', label: 'Stops' },
     },
     {
         routeShortName: 'NX2',
@@ -66,8 +56,6 @@ export const stopBasedEffectedEntities = [
         stopCode: '4222',
         stopName: 'Stop A Constellation',
         type: 'stop',
-        valueKey: 'stopId',
-        category: { type: 'stop', icon: '', label: 'Stops' },
     },
     {
         routeShortName: 'NX2',
@@ -76,16 +64,12 @@ export const stopBasedEffectedEntities = [
         stopCode: '7037',
         stopName: 'Daldy Street',
         type: 'stop',
-        valueKey: 'stopId',
-        category: { type: 'stop', icon: '', label: 'Stops' },
     },
     {
         stopId: '1377-hash',
         stopCode: '1377',
         stopName: '47 Lunn Avenue',
         type: 'stop',
-        valueKey: 'stopId',
-        category: { type: 'stop', icon: '', label: 'Stops' },
     },
 ];
 
