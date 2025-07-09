@@ -577,7 +577,7 @@ const removeNonNullableFilters = model => model
         ...item,
         value: item.value ?? ' ', // type can be undefined, so we replace it with single space so its not filtered. Its trim() later
     }))
-    ?.filter(item => !!item.value && (!Array.isArray(item.value) || item.value.length > 0));
+    ?.filter(item => item.value != null && (!Array.isArray(item.value) || item.value.length > 0));
 
 export const getFilters = (model, state) => {
     let filters = removeNonNullableFilters(model);
@@ -596,6 +596,7 @@ export const getFilters = (model, state) => {
         ...(item.columnField === 'vehicleLabel' && { vehicleLabels: item.value }),
         ...(item.columnField === 'referenceId' && { referenceIds: item.value }),
         ...(item.columnField === 'trackingStatus' && { trackingStatuses: item.value }),
+        ...(item.columnField === 'directionId' && { directionId: item.value }),
         ...(item.columnField === 'firstStopCode' && { firstStopCode: item.value?.data?.stop_code }),
         ...(item.columnField === 'lastStopCode' && { lastStopCode: item.value?.data?.stop_code }),
     }), {});

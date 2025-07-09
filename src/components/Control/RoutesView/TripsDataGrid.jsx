@@ -49,6 +49,7 @@ import { transformIncidentNo } from '../../../utils/control/disruptions';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
 import { useAlertCauses } from '../../../utils/control/alert-cause-effect';
+import { DIRECTIONS } from '../DisruptionsView/types';
 
 export const renderDisruptionIdCell = ({ row }) => {
     const formattedDisruptionId = transformIncidentNo(row.disruptionId);
@@ -291,6 +292,28 @@ export const TripsDataGrid = (props) => {
             hide: true,
         },
         {
+            field: 'directionId',
+            headerName: 'Direction',
+            width: 150,
+            type: 'singleSelect',
+            valueOptions: Object.entries(DIRECTIONS).map(([value, label]) => ({
+                value: Number(value),
+                label,
+            })),
+            filterOperators: getGridSingleSelectOperators(true).filter(
+                operator => operator.value === 'is',
+            ),
+            valueGetter: ({ row }) => {
+                const directionId = get(row.tripInstance, 'directionId');
+                return directionId;
+            },
+            renderCell: ({ row }) => {
+                const directionId = get(row.tripInstance, 'directionId');
+                return DIRECTIONS[directionId] ?? '';
+            },
+            hide: true,
+        },
+        {
             field: 'referenceId',
             headerName: 'Ref #',
             width: 100,
@@ -452,6 +475,7 @@ export const TripsDataGrid = (props) => {
         ...(props.useAddTrip && { source: tripInstance.source }),
         type: tripInstance.type,
         disruptionId: tripInstance.disruptionId,
+        directionId: tripInstance.directionId,
         tripInstance: {
             ...tripInstance,
             stops: markStopsAsFirstOrLast(tripInstance.stops),
