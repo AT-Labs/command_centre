@@ -9,15 +9,18 @@ import PropTypes from 'prop-types';
 import { findDifferences, parseWKT, toWKT } from './ShapeHelper';
 import IconMarker from '../../IconMarker/IconMarker';
 import { generateUniqueID } from '../../../../utils/helpers';
+import { DEFAULT_AUCKLAND_COORDINATES, DIVERSION_SHAPE_COLOR, DIVERSION_SHAPE_OPACITY,
+    DIVERSION_SHAPE_WEIGHT, ROUTE_SHAPE_COLOR, ROUTE_SHAPE_OPACITY, ROUTE_SHAPE_WEIGHT } from './constants';
 
 L.drawLocal.edit.handlers.edit.tooltip.text = 'Drag the red dots to update the shape for the selected route variant.';
 
 const RouteShapeEditor = (props) => {
-    const initialPolyline = props.initialShape ? parseWKT(props.initialShape) : [];
-    const [center, setCenter] = useState([-36.8485, 174.7633]);
-    const [originalShape, setOriginalShape] = useState(props.routeVariant?.shapeWkt);
+    // Map
+    const [center, setCenter] = useState(DEFAULT_AUCKLAND_COORDINATES);
+    const mapRef = useRef();
+
     const [originalCoords, setOriginalCoords] = useState([]);
-    const [editablePolyline, setEditablePolyline] = useState(initialPolyline);
+    const [editablePolyline, setEditablePolyline] = useState(props.initialShape ? parseWKT(props.initialShape) : []);
     const [updatedCoords, setUpdatedCoords] = useState([]);
     const [isEditablePolylineVisible, setIsEditablePolylineVisible] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
@@ -28,11 +31,10 @@ const RouteShapeEditor = (props) => {
     const [editingAction, setEditingAction] = useState(null);
     const [undoStack, setUndoStack] = useState([]);
 
-    const mapRef = useRef();
     const isProcessingEdit = useRef(false);
 
     // Only allow user to modify the shape when there is no other additional route variants.
-    const editable = props.additionalRouteVariants.length === 0;
+    const editable = props.additionalRouteVariants.length === 0 && editablePolyline?.length > 0;
 
     const toCoordinates = latlngs => latlngs.map(item => [item.lat, item.lng]);
 
@@ -45,7 +47,6 @@ const RouteShapeEditor = (props) => {
         if (isProcessingEdit.current) return;
         isProcessingEdit.current = true;
         setTimeout(() => { isProcessingEdit.current = false; }, 1000); // reset after 1s
-        console.log('Called!');
         const { layers } = e;
         layers.eachLayer((layer) => {
             if (layer instanceof L.Polyline) {
@@ -67,11 +68,7 @@ const RouteShapeEditor = (props) => {
     useEffect(() => {
         if (editingAction) {
             // Add the current state to the undo stack
-            setUndoStack((prevStack) => {
-                const newStack = [...prevStack, editingAction];
-                console.log('UndoStack after edit:', newStack.map(s => s.name));
-                return newStack;
-            });
+            setUndoStack(prevStack => [...prevStack, editingAction]);
         }
     }, [editingAction]);
 
@@ -80,12 +77,7 @@ const RouteShapeEditor = (props) => {
         if (undoStack.length < 2) return; // No previous state to revert to
 
         const previousEntry = undoStack[undoStack.length - 2];
-        console.log('Undoing to:', previousEntry.polyline);
-        setUndoStack((stack) => {
-            const updatedStack = stack.slice(0, -1);
-            console.log('UndoStack after undo:', updatedStack.map(s => s.name));
-            return updatedStack;
-        }); // Remove last entry
+        setUndoStack(stack => stack.slice(0, -1)); // Remove last entry
         setEditablePolyline(previousEntry.polyline);
         if (previousEntry.polyline === originalCoords) {
             setUpdatedCoords([]);
@@ -129,29 +121,26 @@ const RouteShapeEditor = (props) => {
     };
 
     useEffect(() => {
-        if (originalShape?.startsWith('LINESTRING')) {
-            const coords = parseWKT(originalShape);
-            setOriginalCoords(coords);
-            if (props.initialShape) {
-                const initialCoords = parseWKT(props.initialShape);
-                setEditablePolyline(initialCoords);
-                setUpdatedCoords(parseWKT(props.initialShape));
-                setUndoStack([{ name: 'Initial', polyline: initialCoords }]);
-            } else {
-                setEditablePolyline(coords);
-                setUndoStack([{ name: 'Initial', polyline: coords }]);
-            }
+        if (props.initialShape) {
+            const initialCoords = parseWKT(props.initialShape);
+            setEditablePolyline(initialCoords);
+            setUpdatedCoords(parseWKT(props.initialShape));
+            setUndoStack([{ name: 'Initial', polyline: initialCoords }]);
+        } else {
+            setEditablePolyline(originalCoords);
+            setUndoStack([{ name: 'Initial', polyline: originalCoords }]);
+        }
+    }, [originalCoords, props.initialShape]);
 
+    useEffect(() => {
+        const originalShape = props.routeVariant?.shapeWkt;
+        if (originalShape?.startsWith('LINESTRING')) {
+            const coords = parseWKT(props.routeVariant?.shapeWkt);
+            setOriginalCoords(coords);
+            setUpdatedCoords([]);
             if (coords.length > 0 && mapRef.current) {
                 setCenter(coords[0]);
             }
-        }
-    }, [originalShape, props.initialShape]);
-
-    useEffect(() => {
-        if (props.routeVariant?.shapeWkt) {
-            setOriginalShape(props.routeVariant.shapeWkt);
-            setUpdatedCoords([]);
         }
 
         // This is to fix the leaflet issue where the state of editor preserves previous layer.
@@ -227,9 +216,9 @@ const RouteShapeEditor = (props) => {
                     <FeatureGroup key={ `base-${featureGroupKey}` }>
                         <Polyline
                             positions={ editablePolyline }
-                            color="DEEPSKYBLUE"
-                            weight={ 5 }
-                            opacity={ props.visible ? 0.5 : 0 }
+                            color={ ROUTE_SHAPE_COLOR }
+                            weight={ ROUTE_SHAPE_WEIGHT }
+                            opacity={ props.visible ? ROUTE_SHAPE_OPACITY : 0 }
                         >
                             <Tooltip sticky="true">
                                 { `${props.routeVariant?.routeVariantId} - ${props.routeVariant?.routeLongName}` }
@@ -260,7 +249,11 @@ const RouteShapeEditor = (props) => {
                         { props.additionalRouteVariants
                             .filter(rv => rv.visible)
                             .map(rv => (
-                                <Polyline key={ rv.routeVariantId } positions={ parseWKT(rv.shapeWkt) } color={ rv.color } weight={ 5 } opacity={ 0.5 }>
+                                <Polyline key={ rv.routeVariantId }
+                                    positions={ parseWKT(rv.shapeWkt) }
+                                    color={ rv.color }
+                                    weight={ ROUTE_SHAPE_WEIGHT }
+                                    opacity={ ROUTE_SHAPE_OPACITY }>
                                     <Tooltip sticky="true">
                                         { `${rv.routeVariantId} - ${rv.routeLongName}` }
                                     </Tooltip>
@@ -272,9 +265,9 @@ const RouteShapeEditor = (props) => {
                     <FeatureGroup key={ `diversion-${featureGroupKey}` }>
                         <Polyline
                             positions={ diversionPolyline }
-                            color="RED"
-                            weight={ 8 }
-                            opacity={ 0.8 }
+                            color={ DIVERSION_SHAPE_COLOR }
+                            weight={ DIVERSION_SHAPE_WEIGHT }
+                            opacity={ DIVERSION_SHAPE_OPACITY }
                         >
                             <Tooltip sticky="true">
                                 <span>Diversion Shape</span>
