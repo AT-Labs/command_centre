@@ -6,7 +6,7 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 import './RouteShapeEditor.scss';
 import L from 'leaflet';
 import PropTypes from 'prop-types';
-import { findDifferences, parseWKT, toWKT } from './ShapeHelper';
+import { findDifferences, parseWKT, toCoordinates, toWKT } from './ShapeHelper';
 import IconMarker from '../../IconMarker/IconMarker';
 import { generateUniqueID } from '../../../../utils/helpers';
 import { DEFAULT_AUCKLAND_COORDINATES, DIVERSION_SHAPE_COLOR, DIVERSION_SHAPE_OPACITY,
@@ -19,68 +19,62 @@ const RouteShapeEditor = (props) => {
     const [center, setCenter] = useState(DEFAULT_AUCKLAND_COORDINATES);
     const mapRef = useRef();
 
+    // Shapes
     const [originalCoords, setOriginalCoords] = useState([]);
     const [editablePolyline, setEditablePolyline] = useState(props.initialShape ? parseWKT(props.initialShape) : []);
-    const [updatedCoords, setUpdatedCoords] = useState([]);
     const [isEditablePolylineVisible, setIsEditablePolylineVisible] = useState(true);
-    const [isEditing, setIsEditing] = useState(false);
     const [diversionPolyline, setDiversionPolyline] = useState([]);
+    const [updatedCoords, setUpdatedCoords] = useState([]);
 
-    // Undo stack for editable polyline, each entry: { name: string, polyline: array }
-    const [featureGroupKey, setFeatureGroupKey] = useState(0);
-    const [editingAction, setEditingAction] = useState(null);
+    // Undo stack for editable polyline
+    const [featureGroupKey, setFeatureGroupKey] = useState(0); // Key to force remount FeatureGroup Editor
+    const [editingAction, setEditingAction] = useState(null); // Last editing action
     const [undoStack, setUndoStack] = useState([]);
 
+    // Editor
+    const [isEditing, setIsEditing] = useState(false);
     const isProcessingEdit = useRef(false);
-
     // Only allow user to modify the shape when there is no other additional route variants.
     const editable = props.additionalRouteVariants.length === 0 && editablePolyline?.length > 0;
-
-    const toCoordinates = latlngs => latlngs.map(item => [item.lat, item.lng]);
 
     const onEdited = (e) => {
         // Leaflet Draw's internal event listeners can get duplicated.
         // This is because the EditControl component (from react-leaflet-draw) attaches event listeners to the map/layers,
         // and when you remount, the old listeners may not be fully cleaned up before new ones are attached.
         // This results in onEdited being called multiple times for a single user edit.
-        // This is a known issue with react-leaflet-draw and forced remounts.
+        // This is a known issue with old version of react-leaflet-draw and forced remounts.
         if (isProcessingEdit.current) return;
         isProcessingEdit.current = true;
         setTimeout(() => { isProcessingEdit.current = false; }, 1000); // reset after 1s
+
+        // Processing the edited polyline
         const { layers } = e;
         layers.eachLayer((layer) => {
             if (layer instanceof L.Polyline) {
                 const latlngs = layer.getLatLngs();
                 if (latlngs.length > 0) {
                     const coordinates = toCoordinates(latlngs);
-                    // Record state
-                    const newEntry = {
+                    // Record snapshot for undo
+                    const newSnapshotAction = {
                         name: `Edit ${generateUniqueID()}`,
                         polyline: coordinates,
                     };
-                    setEditingAction(newEntry);
+                    setEditingAction(newSnapshotAction);
                     setUpdatedCoords(coordinates);
                 }
             }
         });
     };
 
-    useEffect(() => {
-        if (editingAction) {
-            // Add the current state to the undo stack
-            setUndoStack(prevStack => [...prevStack, editingAction]);
-        }
-    }, [editingAction]);
-
     // Undo handler
     const handleUndo = () => {
+        // Undo stack should have at least 2 entries (Initial + New) to revert to a previous state
         if (undoStack.length < 2) return; // No previous state to revert to
-
         const previousEntry = undoStack[undoStack.length - 2];
         setUndoStack(stack => stack.slice(0, -1)); // Remove last entry
         setEditablePolyline(previousEntry.polyline);
         if (previousEntry.polyline === originalCoords) {
-            setUpdatedCoords([]);
+            setUpdatedCoords([]); // This means there is no updated shape
         } else {
             setUpdatedCoords(previousEntry.polyline);
         }
@@ -119,6 +113,14 @@ const RouteShapeEditor = (props) => {
 
         return Array.from(stopMap.values());
     };
+
+    // Record the last editing action to the undo stack
+    useEffect(() => {
+        if (editingAction) {
+            // Add the current state to the undo stack
+            setUndoStack(prevStack => [...prevStack, editingAction]);
+        }
+    }, [editingAction]);
 
     useEffect(() => {
         if (props.initialShape) {

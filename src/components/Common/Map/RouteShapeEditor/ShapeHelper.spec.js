@@ -7,6 +7,7 @@ import {
     parseWKT,
     toWKT,
     deduplicateCoordinates,
+    toCoordinates,
 } from './ShapeHelper.js';
 
 describe('calculateDistance', () => {
@@ -169,5 +170,24 @@ describe('deduplicateCoordinates', () => {
         expect(deduplicateCoordinates('not an array')).toEqual([]);
         expect(deduplicateCoordinates(123)).toEqual([]);
         expect(deduplicateCoordinates({})).toEqual([]);
+    });
+});
+
+describe('toCoordinates', () => {
+    it('converts array of LatLng objects to [lat, lng] arrays', () => {
+        const latlngs = [
+            { lat: 10, lng: 20 },
+            { lat: 30, lng: 40 },
+            { lat: -5, lng: 100 },
+        ];
+        expect(toCoordinates(latlngs)).toEqual([
+            [10, 20],
+            [30, 40],
+            [-5, 100],
+        ]);
+    });
+
+    it('returns an empty array when input is empty', () => {
+        expect(toCoordinates([])).toEqual([]);
     });
 });
