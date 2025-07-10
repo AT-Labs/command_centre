@@ -10,17 +10,13 @@ import { FormGroup, Label, Input } from 'reactstrap';
 import { DATE_FORMAT_DDMMYYYY, getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { getRecurringTextWithFrom } from '../../../../../utils/recurrence';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
-import { useHideTrip, useTripCancellationCause } from '../../../../../redux/selectors/appSettings';
-import { useAlertCauses } from '../../../../../utils/control/alert-cause-effect';
-
+import { useHideTrip } from '../../../../../redux/selectors/appSettings';
 import './RecurrentTripCancellation.scss';
 
 const RecurrentTripCancellation = (props) => {
-    const { startDate, endDate, selectedWeekdays, cancellationCause } = props.setting;
+    const { startDate, endDate, selectedWeekdays } = props.setting;
     const { startDatePickerMinimumDate, endDatePickerMinimumDate } = props.options;
     const { allowUpdate, allowHideTrip } = props;
-
-    const causes = useAlertCauses();
 
     useEffect(() => {
         if (startDate && endDate && moment(startDate, DATE_FORMAT_DDMMYYYY).isAfter(moment(endDate, DATE_FORMAT_DDMMYYYY))) {
@@ -42,10 +38,6 @@ const RecurrentTripCancellation = (props) => {
 
     const handleHideTrip = (event) => {
         props.onChange({ display: !event.currentTarget.checked });
-    };
-
-    const handleTripCancellationCause = (value) => {
-        props.onChange({ cancellationCause: value });
     };
 
     const datePickerOptions = getDatePickerOptions(startDatePickerMinimumDate);
@@ -102,45 +94,6 @@ const RecurrentTripCancellation = (props) => {
                     </FormGroup>
                 )}
             </div>
-            {props.useTripCancellationCause && (
-                <div>
-                    <FormGroup className="position-relative">
-                        <Label for="ecurrent-trip-cancellation__cause">
-                            <span className="font-size-md font-weight-bold">
-                                Cause
-                            </span>
-                            (Optional)
-                        </Label>
-                        <Input
-                            type="select"
-                            className="w-100 border border-dark disruption-creation__wizard-select-details__select position-relative"
-                            id="recurrent-trip-cancellation__cause"
-                            value={ cancellationCause }
-                            onChange={ e => handleTripCancellationCause(
-                                e.currentTarget.value,
-                            ) }
-                        >
-                            {causes.map((item) => {
-                                if (item.label !== undefined) {
-                                    return (
-                                        <option
-                                            key={ item.label }
-                                            value={ item.value || '' }
-                                        >
-                                            {item.label}
-                                        </option>
-                                    );
-                                }
-                                return (
-                                    <option key={ item } value={ item }>
-                                        {item}
-                                    </option>
-                                );
-                            })}
-                        </Input>
-                    </FormGroup>
-                </div>
-            )}
             {
                 props.useHideTrip && allowHideTrip && (
                     <div className="text-center">
@@ -166,7 +119,6 @@ RecurrentTripCancellation.propTypes = {
         startDate: PropTypes.string.isRequired,
         endDate: PropTypes.string,
         selectedWeekdays: PropTypes.array.isRequired,
-        cancellationCause: PropTypes.string.isRequired,
     }).isRequired,
     options: PropTypes.shape({
         startDatePickerMinimumDate: PropTypes.string.isRequired,
@@ -175,7 +127,6 @@ RecurrentTripCancellation.propTypes = {
     allowUpdate: PropTypes.bool,
     allowHideTrip: PropTypes.bool.isRequired,
     useHideTrip: PropTypes.bool.isRequired,
-    useTripCancellationCause: PropTypes.bool.isRequired,
 };
 
 RecurrentTripCancellation.defaultProps = {
@@ -188,7 +139,6 @@ RecurrentTripCancellation.defaultProps = {
 export default connect(
     state => ({
         useHideTrip: useHideTrip(state),
-        useTripCancellationCause: useTripCancellationCause(state),
     }),
     null,
 )(RecurrentTripCancellation);
