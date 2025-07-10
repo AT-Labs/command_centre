@@ -9,6 +9,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ReadMore from '@mui/icons-material/ReadMore';
 import { GridFooterContainer, GridFooter } from '@mui/x-data-grid-pro';
+
 import AlertMessage from '../../../Common/AlertMessage/AlertMessage';
 import AddRecurringCancellationModal from './AddRecurringCancellationModal';
 import RecurringCancellationFooter from './RecurringCancellationFooter';
@@ -37,6 +38,8 @@ import { SERVICE_DATE_FORMAT, PAGE_SIZE } from '../../../../utils/control/routes
 import DATE_TYPE from '../../../../types/date-types';
 import { DATE_FORMAT_DDMMYYYY, dateTimeFormat } from '../../../../utils/dateUtils';
 import { isRecurringCancellationUpdatePermitted } from '../../../../utils/user-permissions';
+import { useAlertCauses } from '../../../../utils/control/alert-cause-effect';
+import { useTripCancellationCause } from '../../../../redux/selectors/appSettings';
 
 import './RecurringCancellationsView.scss';
 
@@ -52,6 +55,7 @@ export const RecurringCancellationsView = (props) => {
     const [rowData, setRowData] = useState(null);
     const [multipleRowData, setMultipleRowRowData] = useState([]);
     const [selectedRow, setSelectedRow] = React.useState([]);
+    const causes = useAlertCauses();
 
     const onNewCancellationModalOpen = () => {
         setActionState({
@@ -252,6 +256,7 @@ export const RecurringCancellationsView = (props) => {
         updatedBy: recurringCancellation.updatedBy,
         goToRoutesView: props.goToRoutesView,
         allData: recurringCancellation,
+        cancellationCause: (causes.find(cause => cause.value === recurringCancellation.cancellationCause))?.label || recurringCancellation.cancellationCause,
     }));
 
     const getColumns = () => [
@@ -296,6 +301,15 @@ export const RecurringCancellationsView = (props) => {
             headerName: 'RECURRENCE',
             width: 200,
         },
+        ...(props.useTripCancellationCause
+            ? [
+                {
+                    field: 'cancellationCause',
+                    headerName: 'CAUSE OF CANCELLATION',
+                    width: 200,
+                },
+            ]
+            : []),
         {
             field: 'lastUpdated',
             headerName: 'LAST UPDATED',
@@ -407,6 +421,7 @@ RecurringCancellationsView.propTypes = {
     recurringCancellationRedirection: PropTypes.func.isRequired,
     redirectionStatus: PropTypes.object.isRequired,
     serviceDate: PropTypes.string.isRequired,
+    useTripCancellationCause: PropTypes.bool.isRequired,
 };
 
 RecurringCancellationsView.defaultProps = {
@@ -423,6 +438,7 @@ export default connect(
         isRecurringCancellationUpdateAllowed: isRecurringCancellationUpdateAllowed(state),
         redirectionStatus: getRecurringCancellationRedirectionStatus(state),
         serviceDate: getServiceDate(state),
+        useTripCancellationCause: useTripCancellationCause(state),
     }),
     {
         goToRoutesView,
