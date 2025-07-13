@@ -3,13 +3,13 @@ import { FeatureGroup, Polyline, Tooltip } from 'react-leaflet';
 import { useSelector } from 'react-redux';
 import { AiFillWarning } from 'react-icons/ai';
 import { generateUniqueID } from '../../../../utils/helpers';
-import { 
-    ROUTE_ALERTS_REFRESH_INTERVAL, 
+import {
+    ROUTE_ALERTS_REFRESH_INTERVAL,
     CONGESTION_THRESHOLD_BLUE,
     CONGESTION_THRESHOLD_GREEN,
     CONGESTION_THRESHOLD_DARK_ORANGE,
     CONGESTION_THRESHOLD_MAROON,
-    CONGESTION_COLORS
+    CONGESTION_COLORS,
 } from '../../../../constants/traffic';
 import './RouteAlertsLayer.scss';
 import { formatSeconds } from '../../../../utils/dateUtils';
