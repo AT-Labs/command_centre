@@ -69,7 +69,7 @@ const TrafficFilters = (props) => {
 
     const switchTrafficHandler = (value) => {
         if (value) {
-            onTrafficFlowsCheckboxChange([CONGESTION_COLORS.BLACK, CONGESTION_COLORS.BLACK, CONGESTION_COLORS.DARK_ORANGE, CONGESTION_COLORS.BLUE, CONGESTION_COLORS.MAROON]);
+            onTrafficFlowsCheckboxChange([CONGESTION_COLORS.BLUE, CONGESTION_COLORS.GREEN, CONGESTION_COLORS.DARK_ORANGE, CONGESTION_COLORS.MAROON, CONGESTION_COLORS.BLACK]);
         } else {
             setSelectedCongestionFilters([]);
             if (props.onCongestionFiltersChanged) {
