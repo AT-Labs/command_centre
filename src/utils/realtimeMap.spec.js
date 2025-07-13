@@ -68,12 +68,10 @@ describe('Query Validation Tests', () => {
     });
 
     test('isLiveTrafficQueryValid validates correctly', () => {
-        expect(isLiveTrafficQueryValid('Green,DarkOrange')).toBe(true);
+        expect(isLiveTrafficQueryValid('Green,Yellow')).toBe(true);
         expect(isLiveTrafficQueryValid('Maroon')).toBe(true);
-        expect(isLiveTrafficQueryValid('Blue,Black')).toBe(true);
         expect(isLiveTrafficQueryValid('InvalidFilter')).toBe(false);
-        expect(isLiveTrafficQueryValid('Green,Green')).toBe(false);
-        expect(isLiveTrafficQueryValid('Yellow')).toBe(false);
+        expect(isLiveTrafficQueryValid('Red,Red')).toBe(false);
         expect(isLiveTrafficQueryValid('')).toBe(false);
     });
 
