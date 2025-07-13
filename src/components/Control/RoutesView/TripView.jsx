@@ -242,7 +242,7 @@ export class TripView extends React.Component {
             });
         }
 
-        if (isCancelPermitted && this.props.useHoldTrip && isOnHoldPossible && isBeforeTomorrow) {
+        if (isCancelPermitted && this.props.useHoldTrip && isOnHoldPossible) {
             buttonBarConfig.push({
                 label: tripInstance.onHold ? 'Release trip' : 'Hold trip',
                 action: () => {

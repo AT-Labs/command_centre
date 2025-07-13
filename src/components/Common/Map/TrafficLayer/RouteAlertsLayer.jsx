@@ -3,7 +3,14 @@ import { FeatureGroup, Polyline, Tooltip } from 'react-leaflet';
 import { useSelector } from 'react-redux';
 import { AiFillWarning } from 'react-icons/ai';
 import { generateUniqueID } from '../../../../utils/helpers';
-import { CONGESTION_THRESHOLD_LOW, ROUTE_ALERTS_REFRESH_INTERVAL, CONGESTION_THRESHOLD_MEDIUM } from '../../../../constants/traffic';
+import { 
+    ROUTE_ALERTS_REFRESH_INTERVAL, 
+    CONGESTION_THRESHOLD_BLUE,
+    CONGESTION_THRESHOLD_GREEN,
+    CONGESTION_THRESHOLD_DARK_ORANGE,
+    CONGESTION_THRESHOLD_MAROON,
+    CONGESTION_COLORS
+} from '../../../../constants/traffic';
 import './RouteAlertsLayer.scss';
 import { formatSeconds } from '../../../../utils/dateUtils';
 import * as routeMonitoringApi from '../../../../utils/transmitters/route-monitoring-api';
@@ -15,13 +22,19 @@ const RouteAlertsLayer = () => {
     const abortControllerRef = useRef(null);
 
     const getColor = (relativeSpeed) => {
-        if (relativeSpeed >= CONGESTION_THRESHOLD_LOW) {
-            return 'Green';
+        if (relativeSpeed >= CONGESTION_THRESHOLD_BLUE) {
+            return CONGESTION_COLORS.BLUE;
         }
-        if (relativeSpeed >= CONGESTION_THRESHOLD_MEDIUM) {
-            return 'Orange';
+        if (relativeSpeed >= CONGESTION_THRESHOLD_GREEN) {
+            return CONGESTION_COLORS.GREEN;
         }
-        return 'Red';
+        if (relativeSpeed >= CONGESTION_THRESHOLD_DARK_ORANGE) {
+            return CONGESTION_COLORS.DARK_ORANGE;
+        }
+        if (relativeSpeed >= CONGESTION_THRESHOLD_MAROON) {
+            return CONGESTION_COLORS.MAROON;
+        }
+        return CONGESTION_COLORS.BLACK;
     };
 
     const fetchRouteAlertData = async (routeIds, fetchAll) => {
@@ -29,7 +42,7 @@ const RouteAlertsLayer = () => {
             if (fetchAll) {
                 const allData = await routeMonitoringApi.fetchAllRouteAlertDetails();
                 const filteredRoutes = allData.map((route) => {
-                    const filteredSegments = (route.detailedSegments || []).filter(segment => (segment.currentSpeed / segment.typicalSpeed <= CONGESTION_THRESHOLD_MEDIUM));
+                    const filteredSegments = (route.detailedSegments || []).filter(segment => (segment.currentSpeed / segment.typicalSpeed <= CONGESTION_THRESHOLD_DARK_ORANGE));
                     return {
                         ...route,
                         detailedSegments: filteredSegments,

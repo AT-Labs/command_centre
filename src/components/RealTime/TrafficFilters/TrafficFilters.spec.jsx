@@ -19,7 +19,7 @@ jest.mock('../../../redux/selectors/appSettings', () => ({
 describe('TrafficFilters Component', () => {
     let wrapper;
     const defaultProps = {
-        selectedCongestionFilters: [CONGESTION_COLORS.GREEN],
+        selectedCongestionFilters: [CONGESTION_COLORS.BLUE],
         selectedIncidentFilters: [Category[0]],
         isExpand: true,
         isExpandHandler: jest.fn(),

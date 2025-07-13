@@ -70,14 +70,20 @@
             margin-right: 5px;
             border-radius: .25rem !important;
         }
-        .high-box-card {
-            background-color: #D52A23;
+        .blue-corridor-card {
+            background-color: #0000FF;
         }
-        .medium-box-card {
-            background-color: #B39B00;
-        }
-        .low-box-card {
+        .green-corridor-card {
             background-color: #7AB639;
+        }
+        .dark-orange-corridor-card {
+            background-color: #ff4d01;
+        }
+        .maroon-corridor-card {
+            background-color: #800000;
+        }
+        .black-corridor-card {
+            background-color: #000000;
         }
     }
 }
