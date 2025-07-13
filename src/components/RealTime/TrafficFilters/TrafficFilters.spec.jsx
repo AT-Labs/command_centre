@@ -89,7 +89,7 @@ describe('TrafficFilters Component', () => {
             const greenCheckbox = wrapper.find(`Input[id="${CONGESTION_COLORS.GREEN}"]`);
             greenCheckbox.simulate('change');
             expect(defaultProps.onCongestionFiltersChanged).toHaveBeenCalledWith(
-                expect.arrayContaining([CONGESTION_COLORS.GREEN])
+                expect.arrayContaining([CONGESTION_COLORS.GREEN]),
             );
         });
 
@@ -97,7 +97,7 @@ describe('TrafficFilters Component', () => {
             const darkOrangeCheckbox = wrapper.find(`Input[id="${CONGESTION_COLORS.DARK_ORANGE}"]`);
             darkOrangeCheckbox.simulate('change');
             expect(defaultProps.onCongestionFiltersChanged).toHaveBeenCalledWith(
-                expect.arrayContaining([CONGESTION_COLORS.DARK_ORANGE])
+                expect.arrayContaining([CONGESTION_COLORS.DARK_ORANGE]),
             );
         });
 
@@ -105,7 +105,7 @@ describe('TrafficFilters Component', () => {
             const maroonCheckbox = wrapper.find(`Input[id="${CONGESTION_COLORS.MAROON}"]`);
             maroonCheckbox.simulate('change');
             expect(defaultProps.onCongestionFiltersChanged).toHaveBeenCalledWith(
-                expect.arrayContaining([CONGESTION_COLORS.MAROON])
+                expect.arrayContaining([CONGESTION_COLORS.MAROON]),
             );
         });
 
@@ -113,7 +113,7 @@ describe('TrafficFilters Component', () => {
             const blackCheckbox = wrapper.find(`Input[id="${CONGESTION_COLORS.BLACK}"]`);
             blackCheckbox.simulate('change');
             expect(defaultProps.onCongestionFiltersChanged).toHaveBeenCalledWith(
-                expect.arrayContaining([CONGESTION_COLORS.BLACK])
+                expect.arrayContaining([CONGESTION_COLORS.BLACK]),
             );
         });
     });

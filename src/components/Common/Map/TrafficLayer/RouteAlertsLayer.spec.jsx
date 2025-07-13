@@ -120,12 +120,20 @@ describe('RouteAlertsLayer', () => {
 
         routeMonitoringApi.fetchAllRouteAlertDetails.mockResolvedValue(mockRouteData);
 
+        store = mockStore({
+            realtime: {
+                layers: {
+                    showRouteAlerts: false,
+                    showAllRouteAlerts: true,
+                    selectedRouteAlerts: [],
+                },
+            },
+        });
+
         await act(async () => {
             render(
                 <Provider store={ store }>
-                    <Map center={ [0, 0] } zoom={ 10 }>
-                        <RouteAlertsLayer />
-                    </Map>
+                    <RouteAlertsLayer />
                 </Provider>,
             );
         });
