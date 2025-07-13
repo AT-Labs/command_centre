@@ -214,7 +214,7 @@ const CarsDetails = ({ cars, onClose, onUpdateImpacts, filterByYesterdayTodayTom
                 </div>
             </div>
             <div>
-                {!isTMPLoading && allWorksite && allWorksite.tmps && allWorksite.tmps.length > 0 && (
+                {!isTMPLoading && allWorksite?.tmps?.length > 0 && (
                     <FormGroup>
                         <Label for="select-tmp">
                             <span className="font-size-md font-weight-bold">
@@ -246,7 +246,7 @@ const CarsDetails = ({ cars, onClose, onUpdateImpacts, filterByYesterdayTodayTom
                     </FormGroup>
                 )}
 
-                {!isTMPLoading && allWorksite && (!allWorksite.tmps || allWorksite.tmps.length === 0) && (
+                {!isTMPLoading && allWorksite && !allWorksite.tmps?.length && (
                     <div className="alert alert-warning" role="alert">
                         No TMPs valid for the selected date range.
                     </div>

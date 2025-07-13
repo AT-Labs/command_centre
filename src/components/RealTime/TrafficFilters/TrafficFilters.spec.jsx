@@ -83,4 +83,38 @@ describe('TrafficFilters Component', () => {
         wrapper.find('.show-all-text').simulate('click');
         expect(wrapper.find('.incident-items').hasClass('contract-incident-items')).toBe(false);
     });
+
+    describe('Traffic flow checkbox onChange handlers', () => {
+        it('should call onTrafficFlowsCheckboxChange when GREEN traffic checkbox is clicked', () => {
+            const greenCheckbox = wrapper.find(`Input[id="${CONGESTION_COLORS.GREEN}"]`);
+            greenCheckbox.simulate('change');
+            expect(defaultProps.onCongestionFiltersChanged).toHaveBeenCalledWith(
+                expect.arrayContaining([CONGESTION_COLORS.GREEN])
+            );
+        });
+
+        it('should call onTrafficFlowsCheckboxChange when DARK_ORANGE traffic checkbox is clicked', () => {
+            const darkOrangeCheckbox = wrapper.find(`Input[id="${CONGESTION_COLORS.DARK_ORANGE}"]`);
+            darkOrangeCheckbox.simulate('change');
+            expect(defaultProps.onCongestionFiltersChanged).toHaveBeenCalledWith(
+                expect.arrayContaining([CONGESTION_COLORS.DARK_ORANGE])
+            );
+        });
+
+        it('should call onTrafficFlowsCheckboxChange when MAROON traffic checkbox is clicked', () => {
+            const maroonCheckbox = wrapper.find(`Input[id="${CONGESTION_COLORS.MAROON}"]`);
+            maroonCheckbox.simulate('change');
+            expect(defaultProps.onCongestionFiltersChanged).toHaveBeenCalledWith(
+                expect.arrayContaining([CONGESTION_COLORS.MAROON])
+            );
+        });
+
+        it('should call onTrafficFlowsCheckboxChange when BLACK traffic checkbox is clicked', () => {
+            const blackCheckbox = wrapper.find(`Input[id="${CONGESTION_COLORS.BLACK}"]`);
+            blackCheckbox.simulate('change');
+            expect(defaultProps.onCongestionFiltersChanged).toHaveBeenCalledWith(
+                expect.arrayContaining([CONGESTION_COLORS.BLACK])
+            );
+        });
+    });
 });
