@@ -3,7 +3,7 @@ import { FeatureGroup, Polyline, Tooltip } from 'react-leaflet';
 import { useSelector } from 'react-redux';
 import { AiFillWarning } from 'react-icons/ai';
 import { generateUniqueID } from '../../../../utils/helpers';
-import { 
+import {
     CONGESTION_THRESHOLD_LOW,
     CONGESTION_THRESHOLD_LIGHT,
     CONGESTION_THRESHOLD_HEAVY,
