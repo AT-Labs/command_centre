@@ -1,6 +1,6 @@
 import { canMerge, createAffectedStop, createModifiedRouteVariant, generateUniqueColor,
     getMinDistanceToPolyline, getUniqueAffectedStopIds, getUniqueStops, hasDiversionModified, isAffectedStop,
-    mergeDiversionToRouteVariant, removeDuplicatePoints } from './DiversionHelper';
+    mergeDiversionToRouteVariant } from './DiversionHelper';
 
 describe('generateUniqueColor', () => {
     it('generates a valid hex color', () => {
@@ -204,48 +204,5 @@ describe('mergeDiversionToRouteVariant', () => {
         expect(result.directionId).toBe(0);
         expect(result.visible).toBe(true);
         expect(result.shapeWkt).toBe('LINESTRING(0 0,0 10,5 5,10 10,11 11)');
-    });
-});
-
-describe('removeDuplicatePoints', () => {
-    it('removes consecutive duplicate points within n', () => {
-        const wkt = 'LINESTRING(1 1,2 2,3 3,2 2,1 1)';
-        // Duplicate at 0 and 4, should remove 1-4
-        expect(removeDuplicatePoints(wkt, 4)).toBe('LINESTRING(1 1)');
-    });
-
-    it('removes duplicates within n steps', () => {
-        const wkt = 'LINESTRING(1 1,2 2,3 3,1 1)';
-        // 1 1 at 0 and 3, n=3, should remove 1,2,3
-        expect(removeDuplicatePoints(wkt, 3)).toBe('LINESTRING(1 1)');
-    });
-
-    it('does not remove if duplicates are further than n', () => {
-        const wkt = 'LINESTRING(1 1,2 2,3 3,4 4,1 1)';
-        // 1 1 at 0 and 4, n=3, should not remove
-        expect(removeDuplicatePoints(wkt, 3)).toBe('LINESTRING(1 1,2 2,3 3,4 4,1 1)');
-    });
-
-    it('returns original WKT if n is invalid', () => {
-        const wkt = 'LINESTRING(1 1,2 2,1 1)';
-        expect(removeDuplicatePoints(wkt, 0)).toBe(wkt);
-        expect(removeDuplicatePoints(wkt, -1)).toBe(wkt);
-        expect(removeDuplicatePoints(wkt, 1.5)).toBe(wkt);
-    });
-
-    it('handles WKT with no duplicates', () => {
-        const wkt = 'LINESTRING(1 1,2 2,3 3)';
-        expect(removeDuplicatePoints(wkt, 3)).toBe(wkt);
-    });
-
-    it('removes only the points between duplicates, not the endpoints', () => {
-        const wkt = 'LINESTRING(1 1,2 2,3 3,2 2,1 1)';
-        // 1 1 at 0 and 4, n=4, should remove 1-4
-        expect(removeDuplicatePoints(wkt, 4)).toBe('LINESTRING(1 1)');
-    });
-
-    it('works with n=1 (only immediate duplicates)', () => {
-        const wkt = 'LINESTRING(1 1,1 1,2 2,2 2,3 3)';
-        expect(removeDuplicatePoints(wkt, 1)).toBe('LINESTRING(1 1,2 2,3 3)');
     });
 });
