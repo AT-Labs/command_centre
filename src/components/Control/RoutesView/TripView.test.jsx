@@ -76,7 +76,7 @@ describe('<TripView />', () => {
             });
 
             it('Should contain Block ID', () => {
-                    wrapper = setup({ tripInstance: trainTrip });
+                wrapper = setup({ tripInstance: trainTrip });
                 const result = flatten(wrapper.instance().getTripDetailsData(trainTrip));
                 expect(find(result, { value: '123' })).to.not.be.undefined; // eslint-disable-line
             });
