@@ -173,8 +173,9 @@ export function mergeDiversionToRouteVariant(
     };
 }
 
-// Function to remove duplicate points from a WKT LINESTRING based on the rule:
+// Function to remove duplicate points from a WKT based on the rule:
 // If duplicate points are at indices x and x+k (1 <= k <= n), remove points at x+1 through x+k
+// This is to improve the UX of the shape editor as those duplicate points create dot handlers (remove or add) around the bus stops
 export function removeDuplicatePoints(wkt, n = 3) {
     // Validate n: ensure it's a positive integer
     if (!Number.isInteger(n) || n < 1) {
