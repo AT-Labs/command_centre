@@ -3,7 +3,14 @@ import { FeatureGroup, Polyline, Tooltip } from 'react-leaflet';
 import { useSelector } from 'react-redux';
 import { AiFillWarning } from 'react-icons/ai';
 import { generateUniqueID } from '../../../../utils/helpers';
-import { CONGESTION_THRESHOLD_LOW, ROUTE_ALERTS_REFRESH_INTERVAL, CONGESTION_THRESHOLD_MEDIUM } from '../../../../constants/traffic';
+import { 
+    CONGESTION_THRESHOLD_LOW,
+    CONGESTION_THRESHOLD_LIGHT,
+    CONGESTION_THRESHOLD_HEAVY,
+    ROUTE_ALERTS_REFRESH_INTERVAL,
+    CONGESTION_THRESHOLD_MEDIUM,
+    CONGESTION_COLORS,
+} from '../../../../constants/traffic';
 import './RouteAlertsLayer.scss';
 import { formatSeconds } from '../../../../utils/dateUtils';
 import * as routeMonitoringApi from '../../../../utils/transmitters/route-monitoring-api';
@@ -16,12 +23,18 @@ const RouteAlertsLayer = () => {
 
     const getColor = (relativeSpeed) => {
         if (relativeSpeed >= CONGESTION_THRESHOLD_LOW) {
-            return 'Green';
+            return CONGESTION_COLORS.BLUE;
+        }
+        if (relativeSpeed >= CONGESTION_THRESHOLD_LIGHT) {
+            return CONGESTION_COLORS.GREEN;
         }
         if (relativeSpeed >= CONGESTION_THRESHOLD_MEDIUM) {
-            return 'Orange';
+            return CONGESTION_COLORS.MAROON;
         }
-        return 'Red';
+        if (relativeSpeed >= CONGESTION_THRESHOLD_HEAVY) {
+            return CONGESTION_COLORS.DARK_ORANGE;
+        }
+        return CONGESTION_COLORS.BLACK;
     };
 
     const fetchRouteAlertData = async (routeIds, fetchAll) => {

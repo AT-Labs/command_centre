@@ -69,7 +69,7 @@ const TrafficFilters = (props) => {
 
     const switchTrafficHandler = (value) => {
         if (value) {
-            onTrafficFlowsCheckboxChange([CONGESTION_COLORS.GREEN, CONGESTION_COLORS.YELLOW, CONGESTION_COLORS.ORANGE, CONGESTION_COLORS.RED, CONGESTION_COLORS.MAROON]);
+            onTrafficFlowsCheckboxChange([CONGESTION_COLORS.BLUE, CONGESTION_COLORS.GREEN, CONGESTION_COLORS.DARK_ORANGE, CONGESTION_COLORS.MAROON, CONGESTION_COLORS.BLACK]);
         } else {
             setSelectedCongestionFilters([]);
             if (props.onCongestionFiltersChanged) {
@@ -92,7 +92,7 @@ const TrafficFilters = (props) => {
                 </div>
                 <div className="incident-filters-block">
                     <div className="layers-sub-title d-flex flex-row justify-content-between align-items-center my-2">
-                        <h4 className="font-weight-bolder m-0">Live traffic incidents</h4>
+                        <h4 className="font-weight-bolder m-0">TomTom incidents</h4>
                         <CustomizedSwitch
                             id="incident-filters-switch"
                             checked={ selectedIncidentFilters?.length > 0 }
@@ -128,7 +128,7 @@ const TrafficFilters = (props) => {
                 </div>
                 <div className="congestion-filters-block">
                     <div className="layers-sub-title d-flex flex-row justify-content-between align-items-center my-2">
-                        <h4 className="font-weight-bolder m-0">Live traffic</h4>
+                        <h4 className="font-weight-bolder m-0">TomTom live traffic</h4>
                         <CustomizedSwitch
                             id="congestion-filters-switch"
                             checked={ selectedCongestionFilters?.length > 0 }
@@ -137,13 +137,25 @@ const TrafficFilters = (props) => {
                     </div>
                     {selectedCongestionFilters?.length > 0 && (
                         <div className="traffic-level-items">
-                            <div>
-                                <span>(Compared to free-flow speed)</span>
+                            <div className="d-flex flex-row justify-content-between">
+                                <div className="d-flex flex-row align-items-center">
+                                    <div className="traffic-card blue-traffic-card" />
+                                    <span htmlFor={ CONGESTION_COLORS.BLUE }>90% and above of free flow speed</span>
+                                </div>
+                                <div>
+                                    <Input
+                                        id={ CONGESTION_COLORS.BLUE }
+                                        type="checkbox"
+                                        className=""
+                                        onChange={ () => onTrafficFlowsCheckboxChange([CONGESTION_COLORS.BLUE]) }
+                                        size={ 20 }
+                                        checked={ selectedCongestionFilters.includes(CONGESTION_COLORS.BLUE) } />
+                                </div>
                             </div>
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
                                     <div className="traffic-card green-traffic-card" />
-                                    <span htmlFor={ CONGESTION_COLORS.GREEN }>90% and above</span>
+                                    <span htmlFor={ CONGESTION_COLORS.GREEN }>70% - 89% of free flow speed</span>
                                 </div>
                                 <div>
                                     <Input
@@ -157,53 +169,23 @@ const TrafficFilters = (props) => {
                             </div>
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
-                                    <div className="traffic-card yellow-traffic-card" />
-                                    <span htmlFor={ CONGESTION_COLORS.YELLOW }>70% - 89%</span>
+                                    <div className="traffic-card dark-orange-traffic-card" />
+                                    <span htmlFor={ CONGESTION_COLORS.DARK_ORANGE }>50% - 69% of free flow speed</span>
                                 </div>
                                 <div>
                                     <Input
-                                        id={ CONGESTION_COLORS.YELLOW }
+                                        id={ CONGESTION_COLORS.DARK_ORANGE }
                                         type="checkbox"
                                         className=""
-                                        onChange={ () => onTrafficFlowsCheckboxChange([CONGESTION_COLORS.YELLOW]) }
+                                        onChange={ () => onTrafficFlowsCheckboxChange([CONGESTION_COLORS.DARK_ORANGE]) }
                                         size={ 20 }
-                                        checked={ selectedCongestionFilters.includes(CONGESTION_COLORS.YELLOW) } />
-                                </div>
-                            </div>
-                            <div className="d-flex flex-row justify-content-between">
-                                <div className="d-flex flex-row align-items-center">
-                                    <div className="traffic-card orange-traffic-card" />
-                                    <span htmlFor={ CONGESTION_COLORS.ORANGE }>50% - 69%</span>
-                                </div>
-                                <div>
-                                    <Input
-                                        id={ CONGESTION_COLORS.ORANGE }
-                                        type="checkbox"
-                                        className=""
-                                        onChange={ () => onTrafficFlowsCheckboxChange([CONGESTION_COLORS.ORANGE]) }
-                                        size={ 20 }
-                                        checked={ selectedCongestionFilters.includes(CONGESTION_COLORS.ORANGE) } />
-                                </div>
-                            </div>
-                            <div className="d-flex flex-row justify-content-between">
-                                <div className="d-flex flex-row align-items-center">
-                                    <div className="traffic-card red-traffic-card" />
-                                    <span htmlFor={ CONGESTION_COLORS.RED }>40% - 49%</span>
-                                </div>
-                                <div>
-                                    <Input
-                                        id={ CONGESTION_COLORS.RED }
-                                        type="checkbox"
-                                        className=""
-                                        onChange={ () => onTrafficFlowsCheckboxChange([CONGESTION_COLORS.RED]) }
-                                        size={ 20 }
-                                        checked={ selectedCongestionFilters.includes(CONGESTION_COLORS.RED) } />
+                                        checked={ selectedCongestionFilters.includes(CONGESTION_COLORS.DARK_ORANGE) } />
                                 </div>
                             </div>
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
                                     <div className="traffic-card maroon-traffic-card" />
-                                    <span htmlFor={ CONGESTION_COLORS.MAROON }>39% and below</span>
+                                    <span htmlFor={ CONGESTION_COLORS.MAROON }>40% - 49% of free flow speed</span>
                                 </div>
                                 <div>
                                     <Input
@@ -213,6 +195,21 @@ const TrafficFilters = (props) => {
                                         onChange={ () => onTrafficFlowsCheckboxChange([CONGESTION_COLORS.MAROON]) }
                                         size={ 20 }
                                         checked={ selectedCongestionFilters.includes(CONGESTION_COLORS.MAROON) } />
+                                </div>
+                            </div>
+                            <div className="d-flex flex-row justify-content-between">
+                                <div className="d-flex flex-row align-items-center">
+                                    <div className="traffic-card black-traffic-card" />
+                                    <span htmlFor={ CONGESTION_COLORS.BLACK }>39% and below of free flow speed</span>
+                                </div>
+                                <div>
+                                    <Input
+                                        id={ CONGESTION_COLORS.BLACK }
+                                        type="checkbox"
+                                        className=""
+                                        onChange={ () => onTrafficFlowsCheckboxChange([CONGESTION_COLORS.BLACK]) }
+                                        size={ 20 }
+                                        checked={ selectedCongestionFilters.includes(CONGESTION_COLORS.BLACK) } />
                                 </div>
                             </div>
                         </div>
