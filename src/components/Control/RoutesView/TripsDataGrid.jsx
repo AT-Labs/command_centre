@@ -38,7 +38,7 @@ import { getAllStops } from '../../../redux/selectors/static/stops';
 import { StopSearchDataGridOperators } from '../Common/DataGrid/OmniSearchDataGridOperator';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
 import {
-    useDiversion, useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences, useHoldTrip, useTripOperationNotes, useTripCancellationCause,
+    useDiversion, useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences, useHoldTrip, useTripOperationNotes,
 } from '../../../redux/selectors/appSettings';
 import { getUserPreferences } from '../../../utils/transmitters/command-centre-config-api';
 import { updateRoutesTripsDatagridConfig, updateDefaultRoutesTripsDatagridConfig } from '../../../redux/actions/datagrid';
@@ -48,8 +48,6 @@ import { LABEL_DISRUPTION } from '../../../constants/disruptions';
 import { transformIncidentNo } from '../../../utils/control/disruptions';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
-import { useAlertCauses } from '../../../utils/control/alert-cause-effect';
-import { DIRECTIONS } from '../DisruptionsView/types';
 
 export const renderDisruptionIdCell = ({ row }) => {
     const formattedDisruptionId = transformIncidentNo(row.disruptionId);
@@ -106,7 +104,6 @@ export const TripsDataGrid = (props) => {
     const [isSavedDatagridConfigReady, setIsSavedDatagridConfigReady] = useState(false);
     const isSavedDatagridConfigReadyRef = useRef(isSavedDatagridConfigReady);
     const getAgenciesRef = useRef(() => props.agencies);
-    const causes = useAlertCauses();
 
     useEffect(() => {
         getAgenciesRef.current = () => props.agencies;
@@ -292,28 +289,6 @@ export const TripsDataGrid = (props) => {
             hide: true,
         },
         {
-            field: 'directionId',
-            headerName: 'Direction',
-            width: 150,
-            type: 'singleSelect',
-            valueOptions: Object.entries(DIRECTIONS).map(([value, label]) => ({
-                value: Number(value),
-                label,
-            })),
-            filterOperators: getGridSingleSelectOperators(true).filter(
-                operator => operator.value === 'is',
-            ),
-            valueGetter: ({ row }) => {
-                const directionId = get(row.tripInstance, 'directionId');
-                return directionId;
-            },
-            renderCell: ({ row }) => {
-                const directionId = get(row.tripInstance, 'directionId');
-                return DIRECTIONS[directionId] ?? '';
-            },
-            hide: true,
-        },
-        {
             field: 'referenceId',
             headerName: 'Ref #',
             width: 100,
@@ -384,17 +359,6 @@ export const TripsDataGrid = (props) => {
                 },
             ]
             : []),
-        ...(props.useTripCancellationCause
-            ? [
-                {
-                    field: 'cancellationCause',
-                    headerName: 'Cause of cancellation',
-                    width: 150,
-                    filterable: false,
-                    hide: true,
-                },
-            ]
-            : []),
         {
             field: 'delay',
             headerName: 'Delay / Early',
@@ -454,13 +418,6 @@ export const TripsDataGrid = (props) => {
         },
     ];
 
-    const getTripCancellationCause = (tripInstance, causesList) => {
-        if (tripInstance.status === TRIP_STATUS_TYPES.cancelled && tripInstance.cancellationCause) {
-            return (causesList.find(cause => cause.value === tripInstance.cancellationCause))?.label || tripInstance.cancellationCause;
-        }
-        return '';
-    };
-
     const rows = props.tripInstances.map(tripInstance => ({
         routeVariantId: tripInstance.routeVariantId,
         ...(props.useHoldTrip && { onHold: formatOnHoldColumn(tripInstance) }),
@@ -475,13 +432,11 @@ export const TripsDataGrid = (props) => {
         ...(props.useAddTrip && { source: tripInstance.source }),
         type: tripInstance.type,
         disruptionId: tripInstance.disruptionId,
-        directionId: tripInstance.directionId,
         tripInstance: {
             ...tripInstance,
             stops: markStopsAsFirstOrLast(tripInstance.stops),
         },
         operationNotes: tripInstance.operationNotes,
-        ...(props.useTripCancellationCause ? { cancellationCause: getTripCancellationCause(tripInstance, causes) } : {}),
     }));
 
     const getDetailPanelContent = React.useCallback(
@@ -599,7 +554,6 @@ TripsDataGrid.propTypes = {
     mergeRouteFilters: PropTypes.func.isRequired,
     useHoldTrip: PropTypes.bool.isRequired,
     useTripOperationNotes: PropTypes.bool.isRequired,
-    useTripCancellationCause: PropTypes.bool.isRequired,
 };
 
 TripsDataGrid.defaultProps = {
@@ -627,7 +581,6 @@ export default connect(
         useRoutesTripsPreferences: useRoutesTripsPreferences(state),
         useHoldTrip: useHoldTrip(state),
         useTripOperationNotes: useTripOperationNotes(state),
-        useTripCancellationCause: useTripCancellationCause(state),
     }),
     {
         selectSingleTrip,

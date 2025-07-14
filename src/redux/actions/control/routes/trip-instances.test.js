@@ -1274,13 +1274,6 @@ describe("getFilters", () => {
             expectedKey: "notType",
             expectedValue: "",
         },
-        {
-            columnField: "directionId",
-            operatorValue: "is",
-            value: 'Inbound/Anticlockwise', 
-            expectedKey: "directionId",
-            expectedValue: "Inbound/Anticlockwise",
-        },
     ];
 
     testCases.forEach(

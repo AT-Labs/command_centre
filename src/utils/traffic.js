@@ -1,29 +1,29 @@
 import {
-    CONGESTION_THRESHOLD_BLUE,
-    CONGESTION_THRESHOLD_GREEN,
-    CONGESTION_THRESHOLD_DARK_ORANGE,
+    CONGESTION_THRESHOLD_RED,
     CONGESTION_THRESHOLD_MAROON,
-    CONGESTION_THRESHOLD_BLACK,
+    CONGESTION_THRESHOLD_YELLOW,
+    CONGESTION_THRESHOLD_ORANGE,
+    CONGESTION_THRESHOLD_GREEN,
     CONGESTION_COLORS,
 } from '../constants/traffic';
 
 export const getColor = (relativeSpeed) => {
-    if (relativeSpeed >= CONGESTION_THRESHOLD_BLUE || !relativeSpeed) {
-        return CONGESTION_COLORS.BLUE;
-    }
-    if (relativeSpeed >= CONGESTION_THRESHOLD_GREEN) {
+    if (relativeSpeed >= CONGESTION_THRESHOLD_GREEN || !relativeSpeed) {
         return CONGESTION_COLORS.GREEN;
     }
-    if (relativeSpeed >= CONGESTION_THRESHOLD_DARK_ORANGE) {
-        return CONGESTION_COLORS.DARK_ORANGE;
+    if (relativeSpeed >= CONGESTION_THRESHOLD_YELLOW) {
+        return CONGESTION_COLORS.YELLOW;
+    }
+    if (relativeSpeed >= CONGESTION_THRESHOLD_ORANGE) {
+        return CONGESTION_COLORS.ORANGE;
+    }
+    if (relativeSpeed >= CONGESTION_THRESHOLD_RED) {
+        return CONGESTION_COLORS.RED;
     }
     if (relativeSpeed >= CONGESTION_THRESHOLD_MAROON) {
         return CONGESTION_COLORS.MAROON;
     }
-    if (relativeSpeed >= CONGESTION_THRESHOLD_BLACK) {
-        return CONGESTION_COLORS.BLACK;
-    }
-    return CONGESTION_COLORS.BLUE;
+    return CONGESTION_COLORS.GREEN;
 };
 
 export const applyFilters = (relativeSpeed, filters) => {
