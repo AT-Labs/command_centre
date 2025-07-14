@@ -172,3 +172,56 @@ export function mergeDiversionToRouteVariant(
         visible: true,
     };
 }
+
+// Function to remove duplicate points from a WKT LINESTRING based on the rule:
+// If duplicate points are at indices x and x+k (1 <= k <= n), remove points at x+1 through x+k
+export function removeDuplicatePoints(wkt, n = 3) {
+    // Validate n: ensure it's a positive integer
+    if (!Number.isInteger(n) || n < 1) {
+        return wkt; // Return original WKT if n is invalid
+    }
+
+    // Parse WKT LINESTRING into an array of coordinate pairs
+    const coordsString = wkt.replace('LINESTRING(', '').replace(')', '');
+    const coords = coordsString.split(',').map((point, index) => {
+        const [lon, lat] = point.trim().split(' ').map(Number);
+        return { lon, lat, index };
+    });
+
+    // Array to track indices to keep (true = keep, false = remove)
+    const keepIndices = new Array(coords.length).fill(true);
+
+    // Iterate through each point as a potential start of a duplicate pair
+    for (let x = 0; x < coords.length; x++) {
+        // Skip if this index is already marked for removal
+        // eslint-disable-next-line no-continue
+        if (!keepIndices[x]) continue;
+
+        const pointX = coords[x];
+
+        // Check for duplicates at x+k (1 <= k <= min(n, remaining length))
+        const maxK = Math.min(n, coords.length - x - 1);
+        for (let k = 1; k <= maxK; k++) {
+            const pointXPlusK = coords[x + k];
+
+            // Check if coordinates at x and x+k are identical
+            if (pointX.lon === pointXPlusK.lon && pointX.lat === pointXPlusK.lat) {
+                // Mark all points from x+1 to x+k for removal
+                for (let i = x + 1; i <= x + k; i++) {
+                    keepIndices[i] = false;
+                }
+                // Break after finding the first duplicate to avoid overlapping removals
+                break;
+            }
+        }
+    }
+
+    // Filter coordinates to keep only those marked true
+    const filteredCoords = coords.filter((_, index) => keepIndices[index]);
+
+    // Reconstruct the WKT LINESTRING
+    const newCoordsString = filteredCoords
+        .map(coord => `${coord.lon} ${coord.lat}`)
+        .join(',');
+    return `LINESTRING(${newCoordsString})`;
+}

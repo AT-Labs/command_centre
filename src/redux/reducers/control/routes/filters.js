@@ -22,6 +22,7 @@ export const INIT_STATE = {
     routeShortName: '',
     routeVariantId: '',
     trackingStatuses: [],
+    directionId: '',
     sorting: { sortBy: 'startTime', order: 'asc' },
     delayRange: { min: null, max: null },
     source: '',
