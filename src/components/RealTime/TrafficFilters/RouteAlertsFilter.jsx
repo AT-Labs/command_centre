@@ -163,7 +163,7 @@ const RouteAlertsFilter = () => {
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
                                     <div className="box blue-corridor-card" />
-                                    <span>90% and above of typical speed</span>
+                                    <span>90% and above of free flow speed</span>
                                 </div>
                             </div>
                         </div>
@@ -171,7 +171,7 @@ const RouteAlertsFilter = () => {
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
                                     <div className="box green-corridor-card" />
-                                    <span>70% - 89% of typical speed</span>
+                                    <span>70% - 89% of free flow speed</span>
                                 </div>
                             </div>
                         </div>
@@ -179,7 +179,7 @@ const RouteAlertsFilter = () => {
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
                                     <div className="box dark-orange-corridor-card" />
-                                    <span>50% - 69% of typical speed</span>
+                                    <span>50% - 69% of free flow speed</span>
                                 </div>
                             </div>
                         </div>
@@ -187,7 +187,7 @@ const RouteAlertsFilter = () => {
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
                                     <div className="box maroon-corridor-card" />
-                                    <span>40% - 49% of typical speed</span>
+                                    <span>40% - 49% of free flow speed</span>
                                 </div>
                             </div>
                         </div>
@@ -195,7 +195,7 @@ const RouteAlertsFilter = () => {
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
                                     <div className="box black-corridor-card" />
-                                    <span>39% and below of typical speed</span>
+                                    <span>39% and below of free flow speed</span>
                                 </div>
                             </div>
                         </div>
