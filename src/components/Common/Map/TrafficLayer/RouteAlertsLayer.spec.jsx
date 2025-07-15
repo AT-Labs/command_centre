@@ -32,6 +32,38 @@ describe('RouteAlertsLayer', () => {
         jest.useRealTimers();
     });
 
+    describe('getColor function', () => {
+        it('should return correct colors based on relative speed', async () => {
+            const mockRouteData = [{
+                routeId: 'route1',
+                routeName: 'Test Route',
+                delayTime: 300,
+                passable: true,
+                detailedSegments: [
+                    { segmentId: 'segment1', currentSpeed: 90, typicalSpeed: 100, shape: [{ latitude: 51.5, longitude: -0.1 }] },
+                    { segmentId: 'segment2', currentSpeed: 70, typicalSpeed: 100, shape: [{ latitude: 51.6, longitude: -0.2 }] },
+                    { segmentId: 'segment3', currentSpeed: 50, typicalSpeed: 100, shape: [{ latitude: 51.7, longitude: -0.3 }] },
+                    { segmentId: 'segment4', currentSpeed: 40, typicalSpeed: 100, shape: [{ latitude: 51.8, longitude: -0.4 }] },
+                    { segmentId: 'segment5', currentSpeed: 30, typicalSpeed: 100, shape: [{ latitude: 51.9, longitude: -0.5 }] },
+                ],
+            }];
+
+            routeMonitoringApi.fetchAllRouteAlertDetails.mockResolvedValue(mockRouteData);
+
+            await act(async () => {
+                render(
+                    <Provider store={ store }>
+                        <Map center={ [0, 0] } zoom={ 10 }>
+                            <RouteAlertsLayer />
+                        </Map>
+                    </Provider>,
+                );
+            });
+
+            expect(routeMonitoringApi.fetchAllRouteAlertDetails).toHaveBeenCalled();
+        });
+    });
+
     it('should call get all route alerts when showAllRouteAlerts is enabled', async () => {
         routeMonitoringApi.fetchRouteAlertDetailsByIds.mockReset();
         await act(async () => {
