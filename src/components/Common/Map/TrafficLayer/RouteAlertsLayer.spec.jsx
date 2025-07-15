@@ -3,8 +3,9 @@ import { render, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { Map } from 'react-leaflet';
-import RouteAlertsLayer from './RouteAlertsLayer';
+import RouteAlertsLayer, { getColor } from './RouteAlertsLayer';
 import * as routeMonitoringApi from '../../../../utils/transmitters/route-monitoring-api';
+import { CONGESTION_COLORS } from '../../../../constants/traffic';
 
 const mockStore = configureStore([]);
 jest.mock('../../../../utils/transmitters/route-monitoring-api');
@@ -31,39 +32,6 @@ describe('RouteAlertsLayer', () => {
     afterAll(() => {
         jest.useRealTimers();
     });
-
-    describe('getColor function', () => {
-        it('should return correct colors based on relative speed', async () => {
-            const mockRouteData = [{
-                routeId: 'route1',
-                routeName: 'Test Route',
-                delayTime: 300,
-                passable: true,
-                detailedSegments: [
-                    { segmentId: 'segment1', currentSpeed: 90, typicalSpeed: 100, shape: [{ latitude: 51.5, longitude: -0.1 }] },
-                    { segmentId: 'segment2', currentSpeed: 70, typicalSpeed: 100, shape: [{ latitude: 51.6, longitude: -0.2 }] },
-                    { segmentId: 'segment3', currentSpeed: 50, typicalSpeed: 100, shape: [{ latitude: 51.7, longitude: -0.3 }] },
-                    { segmentId: 'segment4', currentSpeed: 40, typicalSpeed: 100, shape: [{ latitude: 51.8, longitude: -0.4 }] },
-                    { segmentId: 'segment5', currentSpeed: 30, typicalSpeed: 100, shape: [{ latitude: 51.9, longitude: -0.5 }] },
-                ],
-            }];
-
-            routeMonitoringApi.fetchAllRouteAlertDetails.mockResolvedValue(mockRouteData);
-
-            await act(async () => {
-                render(
-                    <Provider store={ store }>
-                        <Map center={ [0, 0] } zoom={ 10 }>
-                            <RouteAlertsLayer />
-                        </Map>
-                    </Provider>,
-                );
-            });
-
-            expect(routeMonitoringApi.fetchAllRouteAlertDetails).toHaveBeenCalled();
-        });
-    });
-
     it('should call get all route alerts when showAllRouteAlerts is enabled', async () => {
         routeMonitoringApi.fetchRouteAlertDetailsByIds.mockReset();
         await act(async () => {
@@ -126,50 +94,25 @@ describe('RouteAlertsLayer', () => {
         expect(routeMonitoringApi.fetchRouteAlertDetailsByIds).not.toHaveBeenCalled();
     });
 
-    it('should filter segments based on congestion threshold when showAllRouteAlerts is enabled', async () => {
-        const mockRouteData = [
-            {
-                routeId: 'route1',
-                routeName: 'Test Route',
-                delayTime: 300,
-                passable: true,
-                detailedSegments: [
-                    {
-                        segmentId: 'segment1',
-                        currentSpeed: 30,
-                        typicalSpeed: 60,
-                        shape: [{ latitude: 51.5, longitude: -0.1 }],
-                    },
-                    {
-                        segmentId: 'segment2',
-                        currentSpeed: 40,
-                        typicalSpeed: 60,
-                        shape: [{ latitude: 51.6, longitude: -0.2 }],
-                    },
-                ],
-            },
-        ];
-
-        routeMonitoringApi.fetchAllRouteAlertDetails.mockResolvedValue(mockRouteData);
-
-        store = mockStore({
-            realtime: {
-                layers: {
-                    showRouteAlerts: false,
-                    showAllRouteAlerts: true,
-                    selectedRouteAlerts: [],
-                },
-            },
+    describe('getColor function logic', () => {
+        it('should return BLUE for high speed', () => {
+            expect(getColor(0.9)).toBe(CONGESTION_COLORS.BLUE);
         });
 
-        await act(async () => {
-            render(
-                <Provider store={ store }>
-                    <RouteAlertsLayer />
-                </Provider>,
-            );
+        it('should return GREEN for good speed', () => {
+            expect(getColor(0.7)).toBe(CONGESTION_COLORS.GREEN);
         });
 
-        expect(routeMonitoringApi.fetchAllRouteAlertDetails).toHaveBeenCalled();
+        it('should return MAROON for medium speed', () => {
+            expect(getColor(0.5)).toBe(CONGESTION_COLORS.MAROON);
+        });
+
+        it('should return DARK_ORANGE for low speed', () => {
+            expect(getColor(0.4)).toBe(CONGESTION_COLORS.DARK_ORANGE);
+        });
+
+        it('should return BLACK for very low speed', () => {
+            expect(getColor(0.39)).toBe(CONGESTION_COLORS.BLACK);
+        });
     });
 });

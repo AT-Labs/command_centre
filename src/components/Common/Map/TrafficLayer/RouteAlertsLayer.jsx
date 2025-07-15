@@ -16,26 +16,26 @@ import { formatSeconds } from '../../../../utils/dateUtils';
 import * as routeMonitoringApi from '../../../../utils/transmitters/route-monitoring-api';
 import { getLayersState } from '../../../../redux/selectors/realtime/layers';
 
+export const getColor = (relativeSpeed) => {
+    if (relativeSpeed >= CONGESTION_THRESHOLD_LOW) {
+        return CONGESTION_COLORS.BLUE;
+    }
+    if (relativeSpeed >= CONGESTION_THRESHOLD_LIGHT) {
+        return CONGESTION_COLORS.GREEN;
+    }
+    if (relativeSpeed >= CONGESTION_THRESHOLD_MEDIUM) {
+        return CONGESTION_COLORS.MAROON;
+    }
+    if (relativeSpeed >= CONGESTION_THRESHOLD_HEAVY) {
+        return CONGESTION_COLORS.DARK_ORANGE;
+    }
+    return CONGESTION_COLORS.BLACK;
+};
+
 const RouteAlertsLayer = () => {
     const { showRouteAlerts, showAllRouteAlerts, selectedRouteAlerts } = useSelector(getLayersState);
     const [routesData, setRoutesData] = useState([]);
     const abortControllerRef = useRef(null);
-
-    const getColor = (relativeSpeed) => {
-        if (relativeSpeed >= CONGESTION_THRESHOLD_LOW) {
-            return CONGESTION_COLORS.BLUE;
-        }
-        if (relativeSpeed >= CONGESTION_THRESHOLD_LIGHT) {
-            return CONGESTION_COLORS.GREEN;
-        }
-        if (relativeSpeed >= CONGESTION_THRESHOLD_MEDIUM) {
-            return CONGESTION_COLORS.MAROON;
-        }
-        if (relativeSpeed >= CONGESTION_THRESHOLD_HEAVY) {
-            return CONGESTION_COLORS.DARK_ORANGE;
-        }
-        return CONGESTION_COLORS.BLACK;
-    };
 
     const fetchRouteAlertData = async (routeIds, fetchAll) => {
         try {
