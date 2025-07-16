@@ -3,11 +3,6 @@ import { shallow } from 'enzyme';
 import { expect } from 'chai';
 import { VehicleDetails } from './VehicleDetails';
 
-const MockVehicleCapacityOccupancy = () => <div data-testid="vehicle-capacity-occupancy" />;
-
-const originalModule = require('./VehicleCapacityOccupancy');
-originalModule.default = MockVehicleCapacityOccupancy;
-
 describe('VehicleDetails Component', () => {
     const defaultProps = {
         vehicleDetail: {
