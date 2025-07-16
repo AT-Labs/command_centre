@@ -7,18 +7,12 @@ import { slice, uniqueId } from 'lodash-es';
 import './IncidentsDataGrid.scss';
 import { IncidentType, PAGE_SIZE } from './types';
 import ControlTable from '../Common/ControlTable/ControlTable';
-import { clearActiveIncident,
-    updateActiveIncident,
-    updateIncidentsSortingParams,
-    updateEditMode,
-    setIncidentToUpdate,
-    setIncidentLoaderState } from '../../../redux/actions/control/incidents';
+import { clearActiveIncident, updateActiveIncident, updateIncidentsSortingParams } from '../../../redux/actions/control/incidents';
 import { getActiveIncident, getIncidentsLoadingState, getIncidentsSortingParams, getSortedIncidents } from '../../../redux/selectors/control/incidents';
 import IncidentsDisruptions from './IncidentsDisruptions';
 import { useViewDisruptionDetailsPage } from '../../../redux/selectors/appSettings';
 import SortButton from '../Common/SortButton/SortButton';
 import { useAlertEffects } from '../../../utils/control/alert-cause-effect';
-import EDIT_TYPE from '../../../types/edit-types';
 
 export const IncidentDataGrid = (props) => {
     const impacts = useAlertEffects();
@@ -56,9 +50,7 @@ export const IncidentDataGrid = (props) => {
         <Tooltip title="Open & Edit Incident" placement="top-end" key={ uniqueId(incident.incidentId) }>
             <IconButton aria-label="open-edit-incident"
                 onClick={ () => {
-                    // props.setIncidentLoaderState(true);
-                    props.setIncidentToUpdate(incident.incidentId);
-                    props.updateEditMode(EDIT_TYPE.EDIT);
+                    window.open(`/control-main-view/control-incidents/${incident.incidentId.toString()}`, '_blank');
                 } }>
                 <BsPencilSquare />
             </IconButton>
@@ -153,9 +145,6 @@ IncidentDataGrid.propTypes = {
     incidentsSortingParams: PropTypes.object.isRequired,
     // eslint-disable-next-line react/no-unused-prop-types
     updateIncidentsSortingParams: PropTypes.func.isRequired,
-    updateEditMode: PropTypes.func.isRequired,
-    setIncidentToUpdate: PropTypes.func.isRequired,
-    setIncidentLoaderState: PropTypes.func.isRequired,
 };
 
 IncidentDataGrid.defaultProps = {
@@ -177,8 +166,5 @@ export default connect(
         clearActiveIncident,
         updateActiveIncident,
         updateIncidentsSortingParams,
-        updateEditMode,
-        setIncidentToUpdate,
-        setIncidentLoaderState,
     },
 )(IncidentDataGrid);
