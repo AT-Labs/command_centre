@@ -148,7 +148,8 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
                 </div>
                 {summary.depotName && (
                     <p className="font-size-sm font-weight-light mt-0 mb-0">
-                        Depot:&nbsp;{summary.depotName}
+                        Depot:&nbsp;
+                        {summary.depotName}
                     </p>
                 )}
                 { isCopyTrip(summary) && <TripUpdateTag type={ TRIP_UPDATE_TYPE.COPY_TRIP } /> }

@@ -35,7 +35,7 @@ export const clearCurrentTrip = () => ({
 
 const enrichTripWithDepotInfo = (trip, state) => {
     const fleetState = getFleetState(state);
-    const vehicleId = trip.vehicleId;
+    const { vehicleId } = trip;
     const fleetInfo = fleetState[vehicleId];
     const depotName = fleetInfo ? fleetInfo.agency?.depot?.name : null;
 

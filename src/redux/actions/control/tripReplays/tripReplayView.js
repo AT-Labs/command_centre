@@ -25,13 +25,12 @@ export const updateTripReplayRedirected = isRedirected => ({
 export const updateTrips = (trips, hasMore, totalResults) => (dispatch, getState) => {
     const state = getState();
     const fleetState = getFleetState(state);
-    
-    // Enrich trip data with depot information
-    const enrichedTrips = trips.map(trip => {
-        const vehicleId = trip.vehicleId;
+
+    const enrichedTrips = trips.map((trip) => {
+        const { vehicleId } = trip;
         const fleetInfo = fleetState[vehicleId];
         const depotName = fleetInfo ? fleetInfo.agency?.depot?.name : null;
-        
+
         return {
             ...trip,
             depotName,
