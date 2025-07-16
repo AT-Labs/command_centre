@@ -25,7 +25,6 @@ import { updateDisruptionFilters } from '../../../../redux/actions/control/disru
 import Icon from '../../../Common/Icon/Icon';
 import './TripDetail.scss';
 import { TripDetailIcon } from '../TripDetailIcon';
-import { useParentChildIncident } from '../../../../redux/selectors/appSettings';
 
 const renderDate = date => (date && moment(date).format('dddd, DD MMMM YYYY'));
 
@@ -107,7 +106,7 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
 
         updateFilters(filters);
         updateView(VIEW_TYPE.MAIN.CONTROL);
-        navigate(useParentChildIncident ? VIEW_TYPE.CONTROL_DETAIL.INCIDENTS : VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS);
+        navigate(VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS);
     }, [searchResults]);
 
     const navigateToDisruption = () => {
@@ -147,6 +146,12 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
                         <u>{summary.vehicleLabel}</u>
                     </p>
                 </div>
+                {summary.depotName && (
+                    <p className="font-size-sm font-weight-light mt-0 mb-0">
+                        Depot:&nbsp;
+                        {summary.depotName}
+                    </p>
+                )}
                 { isCopyTrip(summary) && <TripUpdateTag type={ TRIP_UPDATE_TYPE.COPY_TRIP } /> }
                 { tripHasDisruption(summary) && (
                     <button
@@ -205,7 +210,6 @@ export default connect(state => ({
     status: getTripStatus(state),
     vehiclePositions: getVehiclePositions(state),
     searchResults: getSearchResults(state),
-    useParentChildIncident: useParentChildIncident(state),
 }), {
     updateFilters: updateDisruptionFilters,
     updateView: updateMainView,

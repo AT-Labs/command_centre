@@ -7,6 +7,7 @@ import { setBannerError } from '../../activity';
 import { updateTripReplayDisplaySingleTrip } from './tripReplayView';
 import { updatePrevTripValue } from './prevFilterValue';
 import { getAllRoutes } from '../../../selectors/static/routes';
+import { getFleetState } from '../../../selectors/static/fleet';
 import { vehicleReplayEvents } from '../vehicleReplays/vehicleReplay';
 import { useTripHistory, tripHistoryEnabledFromDate } from '../../../selectors/appSettings';
 import { getTripReplayTrips } from '../../../selectors/control/tripReplays/tripReplayView';
@@ -32,13 +33,28 @@ export const clearCurrentTrip = () => ({
     },
 });
 
+const enrichTripWithDepotInfo = (trip, state) => {
+    const fleetState = getFleetState(state);
+    const { vehicleId } = trip;
+    const fleetInfo = fleetState[vehicleId];
+    const depotName = fleetInfo ? fleetInfo.agency?.depot?.name : null;
+
+    return {
+        ...trip,
+        depotName,
+    };
+};
+
 export const selectTrip = trip => (dispatch, getState) => {
     const state = getState();
     dispatch(vehicleReplayEvents(null, null, 0, false));
     dispatch(updatePrevTripValue(trip));
     dispatch(updateLoadingTripReplayState(true));
+
+    const enrichedTrip = enrichTripWithDepotInfo(trip, state);
+
     // update current trip detail with the existing information passed from list
-    dispatch(updateTripReplayCurrentTripDetail(trip));
+    dispatch(updateTripReplayCurrentTripDetail(enrichedTrip));
 
     if (useTripHistory(state)
         && (!tripHistoryEnabledFromDate(state) || moment(trip.serviceDate) >= moment(tripHistoryEnabledFromDate(state)))
@@ -47,7 +63,8 @@ export const selectTrip = trip => (dispatch, getState) => {
         const allRoutes = getAllRoutes(state);
         const routeColor = get(find(allRoutes, { route_short_name: get(tripDetail, 'routeShortName') }), 'route_color');
         const tripDetailWithRouteColor = { ...tripDetail, route: { ...tripDetail.route, routeColor } };
-        dispatch(updateTripReplayCurrentTripDetail(tripDetailWithRouteColor));
+        const enrichedTripDetail = enrichTripWithDepotInfo(tripDetailWithRouteColor, state);
+        dispatch(updateTripReplayCurrentTripDetail(enrichedTripDetail));
         dispatch(updateTripReplayDisplaySingleTrip(true));
         dispatch(updateLoadingTripReplayState(false));
         return;
@@ -58,8 +75,9 @@ export const selectTrip = trip => (dispatch, getState) => {
             const allRoutes = getAllRoutes(state);
             const routeColor = get(find(allRoutes, { route_short_name: get(tripDetail, 'routeShortName') }), 'route_color');
             const tripDetailWithRouteColor = { ...tripDetail, route: { ...tripDetail.route, routeColor } };
+            const enrichedTripDetail = enrichTripWithDepotInfo(tripDetailWithRouteColor, state);
             // enrich current trip detail with data fetched from backend
-            dispatch(updateTripReplayCurrentTripDetail(tripDetailWithRouteColor));
+            dispatch(updateTripReplayCurrentTripDetail(enrichedTripDetail));
             dispatch(updateTripReplayDisplaySingleTrip(true));
         })
         .catch((error) => {
