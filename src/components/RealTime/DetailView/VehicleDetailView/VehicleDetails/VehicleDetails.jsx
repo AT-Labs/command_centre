@@ -114,7 +114,6 @@ VehicleDetails.defaultProps = {
     vehicleFleetInfo: {},
 };
 
-// Export the unconnected component for testing
 export { VehicleDetails };
 
 export default connect(
