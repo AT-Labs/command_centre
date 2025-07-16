@@ -10,44 +10,15 @@
     max-width: 1000px;
     border-left: 1px solid #D0D3D7;
 
-    & .handler-wrap {
-        display: flex;
-        align-items: center;
-        margin-left: -70px;
-        & .button-container {
-            display: flex;
-            align-items: center;
-        }
-        & .handler {
-            transform: rotate(90deg);
-            text-transform: none;
-            top: 45%;
-            border-radius: 4px 4px 0 0;
-            background-color: $at-magenta;
-            white-space: nowrap;
-        }
-        & :disabled {
-            color: $at-ocean !important;
-            background-color: $at-light-gray !important;
-        }
-        & .spinner-wrapper {
-            margin-left: 115px;
-        }
-    }
-
     & .disabled {
         margin-left: -115px !important;
     }
 
-    & .open {
+    & .mui-paper {
         display: block;
         background-color: #FAFAFA;
         border-radius: 0 4px 4px 0;
         width: 100%;
-    }
-
-    & .closed {
-        display: none;
     }
 
     .btn-block.save-workaround {
@@ -59,4 +30,14 @@
     .btn-block.close-workaround {
         padding: .375rem .75rem;
     }
+
+    .loading-spinner {
+        left: 46%;
+        position: absolute;
+        top: 45%;
+    }
+}
+
+.workaround-panel.edit-flow-workaround-panel {
+    left: calc(#{$side-panel-width-large} + 1px + #{$side-panel-width-large}); 
 }
