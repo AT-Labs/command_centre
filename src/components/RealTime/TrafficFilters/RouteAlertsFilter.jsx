@@ -126,7 +126,7 @@ const RouteAlertsFilter = () => {
     return (
         <div className="alerts-filters-block">
             <div className="layers-sub-title d-flex flex-row justify-content-between align-items-center my-2">
-                <h4 className="font-weight-bolder m-0">TomTom corridors</h4>
+                <h4 className="font-weight-bolder m-0">Corridors</h4>
                 <CustomizedSwitch
                     className="alerts-filters-switch"
                     checked={ showRouteAlerts }
@@ -162,40 +162,24 @@ const RouteAlertsFilter = () => {
                         <div className="corridor-level-items mt-2">
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
-                                    <div className="box blue-corridor-card" />
-                                    <span>90% and above of free flow speed</span>
+                                    <div className="box high-box-card" />
+                                    <span>Less than 50% of typical speed</span>
                                 </div>
                             </div>
                         </div>
                         <div className="corridor-level-items mt-2">
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
-                                    <div className="box green-corridor-card" />
-                                    <span>70% - 89% of free flow speed</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="corridor-level-items mt-2">
-                            <div className="d-flex flex-row justify-content-between">
-                                <div className="d-flex flex-row align-items-center">
-                                    <div className="box dark-orange-corridor-card" />
-                                    <span>50% - 69% of free flow speed</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="corridor-level-items mt-2">
-                            <div className="d-flex flex-row justify-content-between">
-                                <div className="d-flex flex-row align-items-center">
-                                    <div className="box maroon-corridor-card" />
-                                    <span>40% - 49% of free flow speed</span>
+                                    <div className="box medium-box-card" />
+                                    <span>Between 50% and 80% of typical speed</span>
                                 </div>
                             </div>
                         </div>
                         <div className="corridor-level-items my-2">
                             <div className="d-flex flex-row justify-content-between">
                                 <div className="d-flex flex-row align-items-center">
-                                    <div className="box black-corridor-card" />
-                                    <span>39% and below of free flow speed</span>
+                                    <div className="box low-box-card" />
+                                    <span>Between 80% to 100% of typical speed</span>
                                 </div>
                             </div>
                         </div>
