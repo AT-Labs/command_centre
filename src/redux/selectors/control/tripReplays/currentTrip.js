@@ -43,4 +43,3 @@ export const getVehicleInfo = createSelector(getCurrentTripState, tripDetail => 
 export const getTripInfo = createSelector(getCurrentTripState, tripDetail => pick(tripDetail, ['tripId', 'tripStart', 'tripSignOn']));
 export const getOperatorCode = createSelector(getCurrentTripState, tripDetail => result(tripDetail, 'agencyId'));
 export const getTripSignOn = createSelector(getCurrentTripState, tripDetail => result(tripDetail, 'tripSignOn'));
-export const getVehicleDepotName = createSelector(getFleetByVehicleId, fleetInfo => result(fleetInfo, 'agency.depot.name'));

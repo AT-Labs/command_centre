@@ -2,7 +2,6 @@
     flex-grow: 1; /* Take up the remaining width */
     height: 100%; /* Full height for the map panel */
     background-color: #FFF;
-    position: relative;
 }
 
 .leaflet-editing-icon {
@@ -13,14 +12,4 @@
     background-color: #DF332A !important;
     border-radius: 50% !important;
     display: inline-block !important;
-}
-
-.route-shape-editor-buttons {
-    position: absolute;
-    top: 10px;
-    left: 70px;
-    z-index: 1000;
-    display: flex;
-    gap: 10px;
-    pointer-events: auto;
 }

@@ -1,0 +1,43 @@
+@import '../../../../../assets/styles/variables.scss';
+
+.workaround-panel {
+    left: $side-panel-width-large;
+    position: fixed;
+    z-index: 401;
+    display: flex;
+    height: calc(100vh - #{$header-height});
+    width: calc(#{$side-panel-width-large} + 1px);
+    max-width: 1000px;
+    border-left: 1px solid #D0D3D7;
+
+    & .disabled {
+        margin-left: -115px !important;
+    }
+
+    & .mui-paper {
+        display: block;
+        background-color: #FAFAFA;
+        border-radius: 0 4px 4px 0;
+        width: 100%;
+    }
+
+    .btn-block.save-workaround {
+        margin-top: 2px;
+        margin-bottom: 2px;
+        color: white !important;
+    }
+
+    .btn-block.close-workaround {
+        padding: .375rem .75rem;
+    }
+
+    .loading-spinner {
+        left: 46%;
+        position: absolute;
+        top: 45%;
+    }
+}
+
+.workaround-panel.edit-flow-workaround-panel {
+    left: calc(#{$side-panel-width-large} + 1px + #{$side-panel-width-large}); 
+}
