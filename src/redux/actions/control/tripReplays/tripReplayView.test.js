@@ -114,7 +114,7 @@ describe('Trip replay view actions', () => {
             store.dispatch(updateTrips(mockTrips, hasMore, totalResults));
 
             const expectedEnrichedTrips = [
-                { vehicleId: 'vehicle1', routeId: 'route1', depotName: null },
+                { vehicleId: 'vehicle1', routeId: 'route1', depotName: undefined },
             ];
 
             const expectedAction = {
@@ -136,6 +136,7 @@ describe('Trip replay view actions', () => {
         let useTripHistoryStub;
         let tripHistoryEnabledFromDateStub;
         let getTripReplayTripsStub;
+        let getTripByIdStub;
 
         beforeEach(() => {
             getFleetStateStub = sandbox.stub(fleetSelectors, 'getFleetState');
