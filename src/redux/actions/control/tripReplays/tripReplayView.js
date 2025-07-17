@@ -1,4 +1,5 @@
 import ACTION_TYPE from '../../../action-types';
+import { getFleetState } from '../../../selectors/static/fleet';
 
 export const updateTripReplayDisplayFilters = isFiltersViewDisplayed => ({
     type: ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_DISPLAY_FILTERS,
