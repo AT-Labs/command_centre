@@ -10,7 +10,7 @@ import {
     getVehiclePositions,
     getTripStatus,
     getOperationalEvents,
-} from '../../../../redux/selectors/control/tripReplays/currentTrip';
+} from '../../../../redux/selectors/control/tripReplays/currentTripSelector';
 import { navigateToVehicleTab } from '../../../../redux/actions/control/tripReplays/prevFilterValue';
 import { search } from '../../../../redux/actions/search';
 import { getSearchResults } from '../../../../redux/selectors/search';
