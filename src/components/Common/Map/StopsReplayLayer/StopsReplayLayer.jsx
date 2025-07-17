@@ -5,7 +5,7 @@ import { FeatureGroup } from 'react-leaflet';
 import { get, has } from 'lodash-es';
 import StopMarker from './StopMarker';
 import './StopsReplayLayer.scss';
-import { getCurrentTripState } from '../../../../redux/selectors/control/tripReplays/currentTripSelector';
+import { getCurrentTripState } from '../../../../redux/selectors/control/tripReplays/currentTrip';
 
 function StopsReplayLayer(props) {
     const { stops, selectedKeyEvent, hoveredKeyEvent, selectedKeyEventId, currentTrip, clearSelectedKeyEvent } = props;

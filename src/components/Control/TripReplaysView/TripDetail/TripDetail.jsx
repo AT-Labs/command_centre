@@ -10,7 +10,7 @@ import {
     getVehiclePositions,
     getTripStatus,
     getOperationalEvents,
-} from '../../../../redux/selectors/control/tripReplays/currentTripSelector';
+} from '../../../../redux/selectors/control/tripReplays/currentTrip';
 import { navigateToVehicleTab } from '../../../../redux/actions/control/tripReplays/prevFilterValue';
 import { search } from '../../../../redux/actions/search';
 import { getSearchResults } from '../../../../redux/selectors/search';
@@ -146,12 +146,6 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
                         <u>{summary.vehicleLabel}</u>
                     </p>
                 </div>
-                {summary.depotName && (
-                    <p className="font-size-sm font-weight-light mt-0 mb-0">
-                        Depot:&nbsp;
-                        {summary.depotName}
-                    </p>
-                )}
                 { isCopyTrip(summary) && <TripUpdateTag type={ TRIP_UPDATE_TYPE.COPY_TRIP } /> }
                 { tripHasDisruption(summary) && (
                     <button

@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { CircleMarker, Popup } from 'react-leaflet';
 import VehiclePositionTooltip from './VehiclePositionTooltip';
 import PopupContent from '../popup/PopupContent';
-import { getCurrentTripState } from '../../../../redux/selectors/control/tripReplays/currentTripSelector';
+import { getCurrentTripState } from '../../../../redux/selectors/control/tripReplays/currentTrip';
 import { formatUnixTime } from '../../../../utils/helpers';
 
 const getCoordinates = position => [

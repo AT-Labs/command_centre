@@ -2,7 +2,7 @@ import ACTION_TYPE from '../../../action-types';
 import { updateTripReplayDisplaySingleTrip, updateTripReplayRedirected, updateTripReplayDisplayFilters } from './tripReplayView';
 import { updateTripReplaySearchTerm, handleSearchDateChange, search } from './filters';
 import { getVehicleReplayStatusAndPosition } from '../vehicleReplays/vehicleReplay';
-import { getFleetByVehicleId } from '../../../selectors/control/tripReplays/currentTripSelector';
+import { getFleetByVehicleId } from '../../../selectors/control/tripReplays/currentTrip';
 import { getTripReplayFilters } from '../../../selectors/control/tripReplays/filters';
 
 export const updatePrevFilterValue = filterValues => ({

@@ -2,7 +2,7 @@ import { isEmpty } from 'lodash-es';
 import { createSelector } from 'reselect';
 import {
     getShape,
-} from './currentTripSelector';
+} from './currentTrip';
 
 export const getBoundsToFit = createSelector(getShape, (shape) => {
     let pointsInBounds = [];

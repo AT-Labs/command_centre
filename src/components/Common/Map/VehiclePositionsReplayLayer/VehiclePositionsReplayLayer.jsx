@@ -5,7 +5,7 @@ import * as moment from 'moment';
 import * as L from 'leaflet';
 import { get, isEmpty, isEqual } from 'lodash-es';
 import { FeatureGroup, LeafletConsumer } from 'react-leaflet';
-import { getVehiclePositions, getTripSignOn } from '../../../../redux/selectors/control/tripReplays/currentTripSelector';
+import { getVehiclePositions, getTripSignOn } from '../../../../redux/selectors/control/tripReplays/currentTrip';
 import VehiclePositionMarker from './VehiclePositionMarker';
 import './VehiclePositionsReplayLayer.scss';
 
