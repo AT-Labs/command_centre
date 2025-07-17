@@ -56,14 +56,10 @@ describe('VehicleDetails Component', () => {
 
     it('should display depot information when available', () => {
         const wrapper = setup();
-        const depotRow = wrapper.findWhere(node =>
-            node.type() === 'dt' && node.text() === 'Depot:',
-        );
+        const depotRow = wrapper.findWhere(node => node.type() === 'dt' && node.text() === 'Depot:');
         expect(depotRow.exists()).to.equal(true);
 
-        const depotValue = wrapper.findWhere(node =>
-            node.type() === 'dd' && node.text() === 'Test Depot',
-        );
+        const depotValue = wrapper.findWhere(node => node.type() === 'dd' && node.text() === 'Test Depot');
         expect(depotValue.exists()).to.equal(true);
     });
 
@@ -80,43 +76,31 @@ describe('VehicleDetails Component', () => {
         };
         const wrapper = setup(propsWithoutDepot);
 
-        const depotRow = wrapper.findWhere(node =>
-            node.type() === 'dt' && node.text() === 'Depot:',
-        );
+        const depotRow = wrapper.findWhere(node => node.type() === 'dt' && node.text() === 'Depot:');
         expect(depotRow.exists()).to.equal(false);
     });
 
     it('should display operator information', () => {
         const wrapper = setup();
-        const operatorRow = wrapper.findWhere(node =>
-            node.type() === 'dt' && node.text() === 'Operator:',
-        );
+        const operatorRow = wrapper.findWhere(node => node.type() === 'dt' && node.text() === 'Operator:');
         expect(operatorRow.exists()).to.equal(true);
 
-        const operatorValue = wrapper.findWhere(node =>
-            node.type() === 'dd' && node.text() === 'Test Agency',
-        );
+        const operatorValue = wrapper.findWhere(node => node.type() === 'dd' && node.text() === 'Test Agency');
         expect(operatorValue.exists()).to.equal(true);
     });
 
     it('should display route information when trip is available', () => {
         const wrapper = setup();
-        const routeRow = wrapper.findWhere(node =>
-            node.type() === 'dt' && node.text() === 'Route:',
-        );
+        const routeRow = wrapper.findWhere(node => node.type() === 'dt' && node.text() === 'Route:');
         expect(routeRow.exists()).to.equal(true);
     });
 
     it('should display tags when available', () => {
         const wrapper = setup();
-        const tagsRow = wrapper.findWhere(node =>
-            node.type() === 'dt' && node.text() === 'Tags:',
-        );
+        const tagsRow = wrapper.findWhere(node => node.type() === 'dt' && node.text() === 'Tags:');
         expect(tagsRow.exists()).to.equal(true);
 
-        const tagsValue = wrapper.findWhere(node =>
-            node.type() === 'dd' && node.text() === 'test-tag',
-        );
+        const tagsValue = wrapper.findWhere(node => node.type() === 'dd' && node.text() === 'test-tag');
         expect(tagsValue.exists()).to.equal(true);
     });
 
@@ -130,9 +114,7 @@ describe('VehicleDetails Component', () => {
         };
         const wrapper = setup(propsWithoutTags);
 
-        const tagsRow = wrapper.findWhere(node =>
-            node.type() === 'dt' && node.text() === 'Tags:',
-        );
+        const tagsRow = wrapper.findWhere(node => node.type() === 'dt' && node.text() === 'Tags:');
         expect(tagsRow.exists()).to.equal(false);
     });
 
@@ -146,14 +128,10 @@ describe('VehicleDetails Component', () => {
         };
         const wrapper = setup(propsWithoutTrip);
 
-        const descriptionRow = wrapper.findWhere(node =>
-            node.type() === 'dt' && node.text() === 'Description:',
-        );
+        const descriptionRow = wrapper.findWhere(node => node.type() === 'dt' && node.text() === 'Description:');
         expect(descriptionRow.exists()).to.equal(true);
 
-        const descriptionValue = wrapper.findWhere(node =>
-            node.type() === 'dd' && node.text() === 'Not In Service',
-        );
+        const descriptionValue = wrapper.findWhere(node => node.type() === 'dd' && node.text() === 'Not In Service');
         expect(descriptionValue.exists()).to.equal(true);
     });
 
@@ -168,14 +146,10 @@ describe('VehicleDetails Component', () => {
         };
         const wrapper = setup(propsWithUnscheduledTag);
 
-        const descriptionRow = wrapper.findWhere(node =>
-            node.type() === 'dt' && node.text() === 'Description:',
-        );
+        const descriptionRow = wrapper.findWhere(node => node.type() === 'dt' && node.text() === 'Description:');
         expect(descriptionRow.exists()).to.equal(true);
 
-        const descriptionValue = wrapper.findWhere(node =>
-            node.type() === 'dd' && node.text() === 'Unscheduled Service',
-        );
+        const descriptionValue = wrapper.findWhere(node => node.type() === 'dd' && node.text() === 'Unscheduled Service');
         expect(descriptionValue.exists()).to.equal(true);
     });
 });
