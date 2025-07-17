@@ -114,6 +114,8 @@ VehicleDetails.defaultProps = {
     vehicleFleetInfo: {},
 };
 
+export { VehicleDetails };
+
 export default connect(
     state => ({
         vehicleDetail: getVehicleDetail(state),
