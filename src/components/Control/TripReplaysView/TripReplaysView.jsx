@@ -9,7 +9,7 @@ import { IconButton } from '@mui/material';
 import BorderOuterOutlinedIcon from '@mui/icons-material/BorderOuterOutlined';
 import Filters from './Filters/Filters';
 import { getTripReplayFilters } from '../../../redux/selectors/control/tripReplays/filters';
-import { getTripInfo, getRouteColor, getShape, getStops } from '../../../redux/selectors/control/tripReplays/currentTrip';
+import { getTripInfo, getRouteColor, getShape, getStops } from '../../../redux/selectors/control/tripReplays/currentTripSelector';
 import { getPreviousTripReplayFilterValues, getPreviousTripReplayTripValues } from '../../../redux/selectors/control/tripReplays/prevFilterValue';
 import {
     getTripReplayHasMore,

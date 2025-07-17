@@ -9,7 +9,7 @@ import {
     getRouteShortName, getStops,
     getTripInfo,
     getVehicleInfo,
-} from '../../../../redux/selectors/control/tripReplays/currentTrip';
+} from '../../../../redux/selectors/control/tripReplays/currentTripSelector';
 import { formatUnixDatetime } from '../../../../utils/helpers';
 import { occupancyStatusToMessage } from '../../../../types/vehicle-occupancy-status-types';
 
