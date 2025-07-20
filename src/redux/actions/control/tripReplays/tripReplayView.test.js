@@ -275,5 +275,83 @@ describe('Trip replay view actions', () => {
                 done();
             }, 100);
         });
+
+        // Test cases for depotName logic: fleetInfo ? fleetInfo.agency?.depot?.name : null
+        it('Should handle all depot name scenarios', () => {
+            const baseTrip = { id: 'trip', vehicleId: 'vehicle', serviceDate: '2023-01-15', routeShortName: 'R1' };
+            const baseTripDetail = { id: 'trip', vehicleId: 'vehicle', routeShortName: 'R1', route: {} };
+            const baseRoutes = [{ route_short_name: 'R1', route_color: '#FF0000' }];
+
+            const testCases = [
+                {
+                    name: 'vehicle not found in fleet state',
+                    fleetState: { otherVehicle: { agency: { depot: { name: 'Other Depot' } } } },
+                    expectedDepotName: null
+                },
+                {
+                    name: 'vehicle has no agency',
+                    fleetState: { vehicle: { someProperty: 'value' } },
+                    expectedDepotName: undefined
+                },
+                {
+                    name: 'agency is null',
+                    fleetState: { vehicle: { agency: null } },
+                    expectedDepotName: undefined
+                },
+                {
+                    name: 'agency has no depot',
+                    fleetState: { vehicle: { agency: { agencyName: 'Test Agency' } } },
+                    expectedDepotName: undefined
+                },
+                {
+                    name: 'depot is null',
+                    fleetState: { vehicle: { agency: { depot: null } } },
+                    expectedDepotName: undefined
+                },
+                {
+                    name: 'depot name is null',
+                    fleetState: { vehicle: { agency: { depot: { name: null, location: 'Location' } } } },
+                    expectedDepotName: null
+                },
+                {
+                    name: 'depot name exists',
+                    fleetState: { vehicle: { agency: { depot: { name: 'Test Depot' } } } },
+                    expectedDepotName: 'Test Depot'
+                }
+            ];
+
+            testCases.forEach(({ name, fleetState, expectedDepotName }) => {
+                const mockState = { static: { fleet: fleetState, routes: baseRoutes } };
+
+                getFleetStateStub.returns(fleetState);
+                getAllRoutesStub.returns(baseRoutes);
+                useTripHistoryStub.returns(true);
+                tripHistoryEnabledFromDateStub.returns(null);
+                getTripReplayTripsStub.returns([baseTripDetail]);
+
+                store = mockStore(mockState);
+                store.clearActions();
+
+                store.dispatch(selectTrip(baseTrip));
+
+                const actions = store.getActions();
+                const tripDetailActions = actions.filter(action =>
+                    action.type === ACTION_TYPE.UPDATE_CONTROL_TRIP_REPLAYS_CURRENT_TRIP_DETAIL
+                );
+
+                expect(tripDetailActions).to.have.length(2, `Failed for case: ${name}`);
+
+                if (expectedDepotName === null) {
+                    expect(tripDetailActions[0].payload.detail.depotName).to.be.null;
+                    expect(tripDetailActions[1].payload.detail.depotName).to.be.null;
+                } else if (expectedDepotName === undefined) {
+                    expect(tripDetailActions[0].payload.detail.depotName).to.be.undefined;
+                    expect(tripDetailActions[1].payload.detail.depotName).to.be.undefined;
+                } else {
+                    expect(tripDetailActions[0].payload.detail.depotName).to.equal(expectedDepotName);
+                    expect(tripDetailActions[1].payload.detail.depotName).to.equal(expectedDepotName);
+                }
+            });
+        });
     });
 });
