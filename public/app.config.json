@@ -40,6 +40,6 @@
     "useStopBasedDisruptionsLayer": "false",
     "useTripOperationNotes": "false",
     "useStopBasedDisruptionsSearch": "false",
-    "useTripCancellationCause": "false",
-    "useParentChildIncident": "false"
+    "useParentChildIncident": "false",
+    "useNotificationEffectColumn": "false"
 }

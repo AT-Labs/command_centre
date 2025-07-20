@@ -676,6 +676,7 @@ export const SelectEffects = (props) => {
                     <div className="disruption-display-block">
                         <SelectEffectEntities
                             disruptionKey={ disruption.key }
+                            index={ index }
                             affectedEntities={ disruption.affectedEntities }
                             onAffectedEntitiesUpdate={ onAffectedEntitiesUpdate }
                             resetAffectedEntities={ resetAffectedEntities }

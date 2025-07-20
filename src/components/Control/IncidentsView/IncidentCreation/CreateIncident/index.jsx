@@ -7,9 +7,6 @@ import { AiOutlineClose } from 'react-icons/ai';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 import { RRule } from 'rrule';
-import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
-import { Box, Button as MuiButton } from '@mui/material';
-import Add from '@mui/icons-material/Add';
 import { DATE_FORMAT, TIME_FORMAT } from '../../../../../constants/disruptions';
 import {
     createNewIncident,
@@ -19,10 +16,6 @@ import {
     updateIncident,
     searchByDrawing,
     updateAffectedStopsState,
-    toggleEditEffectPanel,
-    updateDisruptionIncidentNoToEditEffect,
-    updateDisruptionKeyToWorkaroundEdit,
-    toggleWorkaroundPanel,
 } from '../../../../../redux/actions/control/incidents';
 import {
     getAffectedRoutes,
@@ -37,9 +30,6 @@ import {
     isIncidentCreationOpen,
     getBoundsToFit,
     getIncidentsLoadingState,
-    isEditEffectPanelOpen,
-    getDisruptionIncidentNoToEditEffect,
-    isWorkaroundPanelOpen,
 } from '../../../../../redux/selectors/control/incidents';
 import { STATUSES, DISRUPTION_TYPE, INCIDENTS_CREATION_STEPS, DEFAULT_SEVERITY, ALERT_TYPES } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
@@ -80,7 +70,6 @@ import DrawLayer from './DrawLayer';
 import { usePassengerImpact, useGeoSearchRoutesByDisruptionPeriod, useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import WorkaroundPanel from '../WizardSteps/WorkaroundPanel';
-import EditEffectPanel from '../EditIncidentDetails/EditEffectPanel';
 
 const INIT_STATE = {
     startTime: '',
@@ -215,40 +204,17 @@ export class CreateIncident extends React.Component {
 
     setupDataEdit = () => {
         const { incidentToEdit } = this.props;
-        console.warn('setupDataEdit', incidentToEdit);
-        const { startTime, endTime, disruptions } = incidentToEdit;
-        const routes = disruptions.map(disruption => disruption.affectedEntities.type === 'route').flat();
-        const disruptionType = routes.length > 0 ? DISRUPTION_TYPE.ROUTES : DISRUPTION_TYPE.STOPS;
-        const updatedDisruptions = disruptions.map((disruption) => {
-            const type = disruption.affectedEntities.some(entity => entity.type === 'route') ? DISRUPTION_TYPE.ROUTES : DISRUPTION_TYPE.STOPS;
-            console.error('type', type);
-            return {
-                ...disruption,
-                ...(disruption.startTime && { startTime: moment(disruption.startTime).format(TIME_FORMAT) }),
-                ...(disruption.startTime && { startDate: moment(disruption.startTime).format(DATE_FORMAT) }),
-                ...(disruption.endTime && { endTime: moment(disruption.endTime).format(TIME_FORMAT) }),
-                ...(disruption.endTime && { endDate: moment(disruption.endTime).format(DATE_FORMAT) }),
-                ...(disruption.affectedEntities.length > 0 && {
-                    affectedEntities: {
-                        affectedStops: [...disruption.affectedEntities.filter(entity => entity.type === 'stop')],
-                        affectedRoutes: [...disruption.affectedEntities.filter(entity => entity.type === 'route')],
-                    },
-                }),
-                disruptionType: type,
-                key: disruption.incidentNo,
-            };
-        });
+        const { startTime, endTime } = incidentToEdit;
+
+        const disruptionType = isEmpty(this.props.routes) && !isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
         this.setState({
             incidentData: {
                 ...INIT_STATE,
                 disruptionType,
                 ...incidentToEdit,
-                ...(startTime && { startTime: moment(startTime).format(TIME_FORMAT) }),
-                ...(startTime && { startDate: moment(startTime).format(DATE_FORMAT) }),
-                ...(endTime && { endTime: moment(endTime).format(TIME_FORMAT) }),
-                ...(endTime && { endDate: moment(endTime).format(DATE_FORMAT) }),
-                modalOpenedTime: (startTime ? moment(startTime) : moment()).second(0).millisecond(0),
-                disruptions: [...updatedDisruptions],
+                ...(startTime && { startTime: startTime.toISOString() }),
+                ...(endTime && { endTime: endTime.toISOString() }),
+                modalOpenedTime: moment().second(0).millisecond(0),
             },
         });
     };
@@ -272,9 +238,7 @@ export class CreateIncident extends React.Component {
             this.props.updateCurrentStep(1);
             this.setupDataCopy();
         } else if (this.props.editMode === EDIT_TYPE.EDIT) {
-            console.warn('componentDidMount edit');
-            // this.props.updateCurrentStep(2);
-            this.props.updateCurrentStep(1);
+            this.props.updateCurrentStep(2);
             this.setupDataEdit();
         } else {
             this.props.updateCurrentStep(1);
@@ -397,7 +361,7 @@ export class CreateIncident extends React.Component {
 
     onSubmitUpdate = async () => {
         const { incidentData } = this.state;
-        const incidentRequest = buildSubmitBody(this.props.incidentToEdit, this.props.routes, this.props.stops, incidentData.workarounds); // todo
+        const incidentRequest = buildSubmitBody(this.props.incidentToEdit, this.props.routes, this.props.stops, incidentData.workarounds);
         this.props.updateIncident(incidentRequest);
         this.props.openCreateIncident(false);
         this.props.toggleIncidentModals('isConfirmationOpen', true);
@@ -407,16 +371,6 @@ export class CreateIncident extends React.Component {
         const type = `is${modalType}Open`;
         this.setState({ [type]: isOpen });
         this.props.toggleIncidentModals(type, isOpen);
-    };
-
-    closeEffectEditPanel = () => {
-        this.props.toggleEditEffectPanel(false);
-        this.props.updateDisruptionIncidentNoToEditEffect('');
-    };
-
-    openWorkaroundPanel = () => {
-        this.props.updateDisruptionKeyToWorkaroundEdit(this.props.disruptionIncidentNoToEdit);
-        this.props.toggleWorkaroundPanel(true);
     };
 
     renderSteps = () => {
@@ -462,9 +416,9 @@ export class CreateIncident extends React.Component {
             const titleByMode = {
                 [EDIT_TYPE.CREATE]: 'Create a new Disruption',
                 [EDIT_TYPE.COPY]: `Copy Disruption #${this.props.incidentToEdit.incidentNo}`,
-                [EDIT_TYPE.EDIT]: `Disruption #CCD${this.props.incidentToEdit.incidentId}`,
+                [EDIT_TYPE.EDIT]: 'Edit Disruption',
             };
-            return this.props.activeStep === 1 && <h2 className="pl-4 pr-4 pt-4">{titleByMode[this.props.editMode]}</h2>;
+            return this.props.activeStep === 1 && <h2 className="pl-4 pr-4">{titleByMode[this.props.editMode]}</h2>;
         };
         return (
             <div className="sidepanel-control-component-view d-flex">
@@ -474,109 +428,46 @@ export class CreateIncident extends React.Component {
                     isActive
                     className="sidepanel-primary-panel disruption-creation__sidepanel side-panel__scroll-size"
                     toggleButton={ false }>
-                    {this.props.editMode !== EDIT_TYPE.EDIT && (
-                        <div className="disruption-creation__container h-100">
-                            {this.renderSteps()}
-                            {renderMainHeading()}
-                            <Wizard
-                                className="disruption-creation__wizard container p-0"
-                                data={ incidentData }
-                                response={ this.props.action }
-                                onDataUpdate={ this.updateData }
-                                onSubmit={ this.onSubmit }
-                                onSubmitDraft={ useDraftDisruptions && this.onSubmitDraft }>
-                                <SelectDetails onUpdateDetailsValidation={ this.onUpdateDetailsValidation } />
-                                <SelectEffects
-                                    onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
-                                    onSubmitUpdate={ this.onSubmitUpdate } />
-                                <Workarounds
-                                    isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
-                                    onSubmitUpdate={ this.onSubmitUpdate } />
-                            </Wizard>
-                            <CustomModal
-                                className="disruption-creation__modal"
-                                title={ this.props.action.resultIncidentId ? 'Disruption created' : 'Log a disruption' }
-                                isModalOpen={ isConfirmationOpen }>
-                                <Confirmation response={ this.props.action } />
-                            </CustomModal>
-                            <CustomModal
-                                className="disruption-creation__modal"
-                                title="Log a disruption"
-                                isModalOpen={ this.props.isCancellationOpen }>
-                                <Cancellation />
-                            </CustomModal>
-                        </div>
-                    )}
-                    {this.props.editMode === EDIT_TYPE.EDIT && (
-                        <div className="disruption-edit__container h-100">
-                            <div className="label-with-icon">
-                                {renderMainHeading()}
-                                {' '}
-                                {this.props.isEditEffectPanelOpen
-                                    && (
-                                        <KeyboardDoubleArrowLeftIcon onClick={ this.closeEffectEditPanel }
-                                            className="collapse-icon"
-                                            style={ { color: '#399CDB', fontSize: '48px' } } />
-                                    )}
-                            </div>
-                            <SelectDetails
-                                onUpdateDetailsValidation={ this.onUpdateDetailsValidation }
-                                data={ incidentData }
-                                response={ this.props.action }
-                                onDataUpdate={ this.updateData }
-                                onSubmit={ this.onSubmit }
-                                onSubmitDraft={ useDraftDisruptions && this.onSubmitDraft } />
-                            <CustomModal
-                                className="disruption-creation__modal"
-                                title={ this.props.action.resultIncidentId ? 'Disruption created' : 'Log a disruption' }
-                                isModalOpen={ isConfirmationOpen }>
-                                <Confirmation response={ this.props.action } />
-                            </CustomModal>
-                            <CustomModal
-                                className="disruption-creation__modal"
-                                title="Log a disruption"
-                                isModalOpen={ this.props.isCancellationOpen }>
-                                <Cancellation />
-                            </CustomModal>
-                        </div>
-                    )}
+                    <div className="disruption-creation__container h-100">
+                        {this.renderSteps()}
+                        {renderMainHeading()}
+                        <Wizard
+                            className="disruption-creation__wizard container p-0"
+                            data={ incidentData }
+                            response={ this.props.action }
+                            onDataUpdate={ this.updateData }
+                            onSubmit={ this.onSubmit }
+                            onSubmitDraft={ useDraftDisruptions && this.onSubmitDraft }>
+                            {this.props.editMode !== EDIT_TYPE.EDIT && (<SelectDetails onUpdateDetailsValidation={ this.onUpdateDetailsValidation } />)}
+                            <SelectEffects
+                                onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
+                                onSubmitUpdate={ this.onSubmitUpdate } />
+                            <Workarounds
+                                isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
+                                onSubmitUpdate={ this.onSubmitUpdate } />
+                        </Wizard>
+                        <CustomModal
+                            className="disruption-creation__modal"
+                            title={ this.props.action.resultIncidentId ? 'Disruption created' : 'Log a disruption' }
+                            isModalOpen={ isConfirmationOpen }>
+                            <Confirmation response={ this.props.action } />
+                        </CustomModal>
+                        <CustomModal
+                            className="disruption-creation__modal"
+                            title="Log a disruption"
+                            isModalOpen={ this.props.isCancellationOpen }>
+                            <Cancellation />
+                        </CustomModal>
+                    </div>
                 </SidePanel>
                 <WorkaroundPanel
                     disruptions={ incidentData.disruptions }
                     onWorkaroundUpdate={ this.updateDisruptionWorkaround }
                 />
-                {/* { this.props.editMode === EDIT_TYPE.EDIT && this.props.isEditEffectPanelOpen && !this.props.isWorkaroundPanelOpen && (
-                    <Box className={ `handler-wrap ${false && 'disabled'}` } direction="column" justifyContent="center">
-                        <div className="button-container">
-                            <MuiButton
-                                variant="contained"
-                                color="secondary"
-                                className="handler"
-                                startIcon={ <Add /> }
-                                onClick={ () => this.openWorkaroundPanel() }
-                                disabled={ false }
-                            >
-                                Workarounds
-                            </MuiButton>
-                        </div>
-                    </Box>
-                )} */}
-                {this.props.editMode === EDIT_TYPE.EDIT && (
-                    <EditEffectPanel
-                        disruptions={ incidentData.disruptions }
-                        onWorkaroundUpdate={ this.updateDisruptionWorkaround }
-                        modalOpenedTime={ incidentData.modalOpenedTime
-                            ? moment(incidentData.modalOpenedTime).toISOString()
-                            : '' }
-                        disruptionRecurrent={ incidentData.recurrent }
-                        onDisruptionsUpdate={ this.updateData }
-                    />
-                )}
                 <Map
                     shouldOffsetForSidePanel
                     boundsToFit={ this.props.boundsToFit }
                     isLoading={ this.props.isLoading }
-                    /* style={ { marginLeft: '1220px' } } */
                 >
                     <ShapeLayer
                         shapes={ this.props.shapes }
@@ -659,13 +550,6 @@ CreateIncident.propTypes = {
     isLoading: PropTypes.bool,
     usePassengerImpact: PropTypes.bool.isRequired,
     useGeoSearchRoutesByDisruptionPeriod: PropTypes.bool.isRequired,
-    toggleEditEffectPanel: PropTypes.func.isRequired,
-    updateDisruptionIncidentNoToEditEffect: PropTypes.func.isRequired,
-    isEditEffectPanelOpen: PropTypes.bool,
-    disruptionIncidentNoToEdit: PropTypes.string,
-    toggleWorkaroundPanel: PropTypes.func.isRequired,
-    updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
-    isWorkaroundPanelOpen: PropTypes.bool,
 };
 
 CreateIncident.defaultProps = {
@@ -679,9 +563,6 @@ CreateIncident.defaultProps = {
     routeColors: [],
     incidentToEdit: {},
     isLoading: false,
-    isEditEffectPanelOpen: false,
-    disruptionIncidentNoToEdit: '',
-    isWorkaroundPanelOpen: false,
 };
 
 export default connect(state => ({
@@ -702,9 +583,6 @@ export default connect(state => ({
     usePassengerImpact: usePassengerImpact(state),
     useGeoSearchRoutesByDisruptionPeriod: useGeoSearchRoutesByDisruptionPeriod(state),
     useDraftDisruptions: useDraftDisruptions(state),
-    isEditEffectPanelOpen: isEditEffectPanelOpen(state),
-    disruptionIncidentNoToEdit: getDisruptionIncidentNoToEditEffect(state),
-    isWorkaroundPanelOpen: isWorkaroundPanelOpen(state),
 }), {
     createNewIncident,
     openCreateIncident,
@@ -713,8 +591,4 @@ export default connect(state => ({
     updateIncident,
     searchByDrawing,
     updateAffectedStopsState,
-    toggleEditEffectPanel,
-    updateDisruptionIncidentNoToEditEffect,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
 })(CreateIncident);

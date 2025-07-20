@@ -51,7 +51,6 @@ export const getTrips = ({
     disruptionId,
     display,
     onHold,
-    directionId,
 }) => {
     const variables = { serviceDate };
     if (agencyId) { variables.agencyId = agencyId; }
@@ -83,7 +82,6 @@ export const getTrips = ({
     if (notType != null) { variables.notType = notType; }
     if (disruptionId) { variables.disruptionId = disruptionId; }
     if (onHold) { variables.onHold = onHold; }
-    if (directionId != null) { variables.directionId = directionId; }
 
     const url = `${REACT_APP_TRIP_MGT_QUERY_URL}/tripinstances`;
     return fetchWithAuthHeader(

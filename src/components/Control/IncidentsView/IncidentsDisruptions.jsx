@@ -16,8 +16,8 @@ import { LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_END_TIME, LABEL_START_T
 import { dateTimeFormat } from '../../../utils/dateUtils';
 import { STATUSES } from '../../../types/disruptions-types';
 import { DEFAULT_IMPACT } from '../../../types/disruption-cause-and-effect';
-import { getActiveDisruptionId, getIncidentsDatagridConfig } from '../../../redux/selectors/control/incidents';
-import { updateIncidentsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState } from '../../../redux/actions/control/incidents';
+import { getActiveDisruptionId, getDisruptionsDatagridConfig } from '../../../redux/selectors/control/incidents';
+import { updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState } from '../../../redux/actions/control/incidents';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
 
 import './IncidentsDisruptions.scss';
@@ -228,11 +228,11 @@ IncidentsDisruptions.defaultProps = {
 
 export default connect(
     state => ({
-        datagridConfig: getIncidentsDatagridConfig(state),
+        datagridConfig: getDisruptionsDatagridConfig(state),
         activeDisruptionId: getActiveDisruptionId(state),
         useViewDisruptionDetailsPage: useViewDisruptionDetailsPage(state),
     }),
     {
-        updateIncidentsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState, goToNotificationsView,
+        updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState, goToNotificationsView,
     },
 )(IncidentsDisruptions);

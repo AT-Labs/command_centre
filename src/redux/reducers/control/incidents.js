@@ -12,7 +12,7 @@ export const INIT_STATE = {
     cachedShapes: {},
     cachedRoutesToStops: {},
     cachedStopsToRoutes: {},
-    incidentToEdit: {},
+    disruptionToEdit: {},
     affectedEntities: {
         affectedRoutes: [],
         affectedStops: [],
@@ -24,7 +24,6 @@ export const INIT_STATE = {
     isLoading: false,
     isLoadingStopsByRoute: false,
     isLoadingRoutesByStop: false,
-    isIncidentForEditLoading: false,
     isConfirmationOpen: false,
     isCancellationOpen: false,
     isDisruptionsReverseGeocodeLoading: false,
@@ -52,7 +51,7 @@ export const INIT_STATE = {
     datagridConfig: {
         columns: [],
         page: 0,
-        pageSize: 100,
+        pageSize: 10,
         sortModel: [],
         density: 'standard',
         routeSelection: '',
@@ -63,19 +62,15 @@ export const INIT_STATE = {
     diversionEditMode: EDIT_TYPE.CREATE,
     isWorkaroundPanelOpen: false,
     disruptionKeyToWorkaroundEdit: '',
-    disruptionIncidentNoToEditEffect: '',
-    isEditEffectPanelOpen: false,
 };
 
 const handleIncidentsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });
 const handleIncidentsLoadingStopsByRouteUpdate = (state, { payload: { isLoadingStopsByRoute } }) => ({ ...state, isLoadingStopsByRoute });
 const handleIncidentsLoadingRoutesByStopUpdate = (state, { payload: { isLoadingRoutesByStop } }) => ({ ...state, isLoadingRoutesByStop });
-const handleIncidentForEditLoadingUpdate = (state, { payload: { isIncidentForEditLoading } }) => ({ ...state, isIncidentForEditLoading });
 const handleIncidentsReverseGeocodeLoadingUpdate = (state, { payload: { isIncidentsReverseGeocodeLoading } }) => ({ ...state, isIncidentsReverseGeocodeLoading });
 const handleIncidentsRoutesLoadingUpdate = (state, { payload: { isIncidentsRoutesLoading } }) => ({ ...state, isIncidentsRoutesLoading });
 const handleUpdateActiveIncidentId = (state, { payload: { activeIncidentId } }) => ({ ...state, activeIncidentId });
 const handleIncidentsDisruptionsUpdate = (state, { payload: { disruptions } }) => ({ ...state, disruptions });
-const handleIncidentsUpdate = (state, { payload: { incidents } }) => ({ ...state, incidents });
 const handleIncidentsPermissionsUpdate = (state, { payload: { permissions } }) => ({ ...state, permissions });
 const handleIncidentActionRequestingUpdate = (state, { payload: { isRequesting, resultIncidentId = state.action.resultIncidentId } }) => ({
     ...state,
@@ -134,7 +129,7 @@ const handleAffectedEntities = (state, { payload: {
 });
 const handleResetState = () => ({ ...INIT_STATE });
 const handleUpdateEditMode = (state, { payload: { editMode } }) => ({ ...state, editMode });
-const handleIncidentToEdit = (state, { payload: { incidentToEdit } }) => ({ ...state, incidentToEdit });
+const handleIncidentToEdit = (state, { payload: { disruptionToEdit } }) => ({ ...state, disruptionToEdit });
 const handleUpdateIncidentFilters = (state, { payload: { filters } }) => ({ ...state, filters: { ...state.filters, ...filters } });
 
 const handleDatagridConfig = (state, action) => ({ ...state, datagridConfig: { ...state.datagridConfig, ...action.payload } });
@@ -142,15 +137,13 @@ const handleDatagridConfig = (state, action) => ({ ...state, datagridConfig: { .
 const handleOpenCreateDiversion = (state, { payload: { isCreateDiversionEnabled } }) => ({ ...state, isCreateDiversionEnabled });
 const handleUpdateDiversionEditMode = (state, { payload: { diversionEditMode } }) => ({ ...state, diversionEditMode });
 const handleUpdateSetAllIncidents = (state, { payload: { allIncidents } }) => ({ ...state, incidents: allIncidents });
-const handleUpdateSetAllIncidentsDisruptions = (state, { payload: { allDisruptions } }) => ({ ...state, disruptions: allDisruptions });
 const handleSortingParamsUpdate = (state, { payload: { sortingParams } }) => ({ ...state, sortingParams });
 const handleWorkaroundPanel = (state, { payload: { isOpen } }) => ({
     ...state,
     isWorkaroundPanelOpen: isOpen,
 });
-const handleEditEffectPanel = (state, { payload: { isEditEffectPanelOpen } }) => ({ ...state, isEditEffectPanelOpen });
+
 const handleDisruptionKeyToWorkaroundEdit = (state, { payload: { disruptionKeyToWorkaroundEdit } }) => ({ ...state, disruptionKeyToWorkaroundEdit });
-const handleDisruptionIncidentNoToEditEffect = (state, { payload: { disruptionIncidentNoToEditEffect } }) => ({ ...state, disruptionIncidentNoToEditEffect });
 
 export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_PERMISSIONS]: handleIncidentsPermissionsUpdate,
@@ -160,9 +153,7 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_LOADING]: handleIncidentsLoadingUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_LOADING_STOPS_BY_ROUTE]: handleIncidentsLoadingStopsByRouteUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_LOADING_ROUTES_BY_STOP]: handleIncidentsLoadingRoutesByStopUpdate,
-    [ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING]: handleIncidentForEditLoadingUpdate,
     [ACTION_TYPE.FETCH_CONTROL_INCIDENTS_DISRUPTIONS]: handleIncidentsDisruptionsUpdate,
-    [ACTION_TYPE.FETCH_CONTROL_INCIDENTS]: handleIncidentsUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING]: handleIncidentActionRequestingUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_RESULT]: handleIncidentActionResultUpdate,
     [ACTION_TYPE.COPY_INCIDENT]: handleCopyIncidentsUpdate,
@@ -186,11 +177,8 @@ export default handleActions({
     [ACTION_TYPE.OPEN_CREATE_DIVERSION]: handleOpenCreateDiversion,
     [ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE]: handleUpdateDiversionEditMode,
     [ACTION_TYPE.UPDATE_CONTROL_SET_ALL_INCIDENTS]: handleUpdateSetAllIncidents,
-    [ACTION_TYPE.UPDATE_CONTROL_SET_ALL_INCIDENTS_DISRUPTIONS]: handleUpdateSetAllIncidentsDisruptions,
     [ACTION_TYPE.UPDATE_CONTROL_ACTIVE_INCIDENT]: handleUpdateActiveIncidentId,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_SORTING_PARAMS]: handleSortingParamsUpdate,
     [ACTION_TYPE.SET_WORKAROUND_PANEL_STATUS]: handleWorkaroundPanel,
     [ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_WORKAROUND_EDIT]: handleDisruptionKeyToWorkaroundEdit,
-    [ACTION_TYPE.SET_EDIT_EFFECT_PANEL_STATUS]: handleEditEffectPanel,
-    [ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_EDIT_EFFECT]: handleDisruptionIncidentNoToEditEffect,
 }, INIT_STATE);

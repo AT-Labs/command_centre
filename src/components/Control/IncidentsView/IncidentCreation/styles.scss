@@ -80,40 +80,6 @@
             border-bottom: 1px solid rgb(206, 212, 219);
             box-shadow: none;
         }
-
-        .label-with-icon {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .collapse-icon {
-            padding-right: 15px;
-            cursor: pointer;
-        }
-
-        & .handler-wrap {
-            display: flex;
-            align-items: center;
-            left: calc(#{$side-panel-width-large} + #{$side-panel-width-large} - 55px);
-            position: fixed;
-            z-index: 500;
-            top: 150px;
-
-            & .button-container {
-                display: flex;
-                align-items: center;
-            }
-            & .handler {
-                transform: rotate(90deg);
-                text-transform: none;
-                top: 45%;
-                border-radius: 4px 4px 0 0;
-                background-color: $at-shore;
-                white-space: nowrap;
-                width: 150px;
-            }
-        }
     }
 
     .disruption-creation__sidepanel {
@@ -246,11 +212,6 @@
         padding-right: 25px;
     }
 }
-
-.disruption-edit__container {
-    background-color: #FFF;
-}
-
 .disruption-creation__steps {
     margin-bottom: 30px;
 
@@ -436,8 +397,4 @@ button.continue {
     .disruption-effect-item.active {
         background-color: rgb(206, 212, 219);
     }
-}
-
-.pointer-event-none {
-    pointer-events: none;
 }

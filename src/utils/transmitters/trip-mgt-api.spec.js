@@ -54,28 +54,6 @@ describe('getTrips', () => {
         });
     });
 
-    it('should send filter for direction if set', async () => {
-        jest.spyOn(auth, 'fetchWithAuthHeader').mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                blah: 'hello',
-                tripInstances: [],
-            }),
-        });
-
-        const filter = {
-            directionId: 0,
-        };
-        await getTrips(filter);
-
-        // Validations
-        const { body } = auth.fetchWithAuthHeader.mock.calls[0][1];
-        expect(auth.fetchWithAuthHeader).toHaveBeenCalledTimes(1);
-        expect(JSON.parse(body)).toEqual({
-            directionId: 0,
-        });
-    });
-
     it('should send empty filter when nothing set', async () => {
         jest.spyOn(auth, 'fetchWithAuthHeader').mockResolvedValue({
             ok: true,

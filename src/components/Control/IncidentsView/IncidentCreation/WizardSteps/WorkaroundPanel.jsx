@@ -1,13 +1,11 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Box, Paper, Stack, CircularProgress } from '@mui/material';
+import { Button, Paper, Stack, CircularProgress } from '@mui/material';
 import { connect } from 'react-redux';
-import Add from '@mui/icons-material/Add';
-import { getEditMode, isWorkaroundPanelOpen, getDisruptionKeyToWorkaroundEdit, getDisruptionIncidentNoToEditEffect } from '../../../../../redux/selectors/control/incidents';
+import { isWorkaroundPanelOpen, getDisruptionKeyToWorkaroundEdit } from '../../../../../redux/selectors/control/incidents';
 
 import { WorkaroundsForm } from '../../Workaround/WorkaroundsForm';
 import { toggleWorkaroundPanel, updateDisruptionKeyToWorkaroundEdit } from '../../../../../redux/actions/control/incidents';
-import EDIT_TYPE from '../../../../../types/edit-types';
 import './WorkaroundPanel.scss';
 
 export const WorkaroundPanel = (props) => {
@@ -33,34 +31,32 @@ export const WorkaroundPanel = (props) => {
     };
 
     return (
-        <div className={ `workaround-panel ${props.editMode === EDIT_TYPE.EDIT ? 'edit-flow-workaround-panel' : ''} ${props.isWorkaroundPanelOpen ? '' : 'pointer-event-none'}` }>
-            {props.isWorkaroundPanelOpen && (
-                <Paper component={ Stack } direction="column" justifyContent="center" className="mui-paper">
-                    {disruption && Object.keys(disruption).length > 0
-                        ? (<WorkaroundsForm ref={ formRef } disruption={ disruption } onWorkaroundUpdate={ props.onWorkaroundUpdate } />)
-                        : (
-                            <div className="spinner-wrapper">
-                                <CircularProgress size={ 50 } className="loading-spinner" />
-                            </div>
-                        )}
-                    <footer className="row m-0 justify-content-between p-4 position-fixed">
-                        <div className="col-4">
-                            <Button
-                                className="btn cc-btn-link btn-block close-workaround"
-                                onClick={ () => onClose() }>
-                                Close
-                            </Button>
+        <div className="workaround-panel">
+            <Paper component={ Stack } direction="column" justifyContent="center" className={ props.isWorkaroundPanelOpen ? 'open' : 'closed' }>
+                {disruption && Object.keys(disruption).length > 0
+                    ? (<WorkaroundsForm ref={ formRef } disruption={ disruption } onWorkaroundUpdate={ props.onWorkaroundUpdate } />)
+                    : (
+                        <div className="spinner-wrapper">
+                            <CircularProgress size={ 50 } className="loading-spinner" />
                         </div>
-                        <div className="col-4">
-                            <Button
-                                className="btn cc-btn-primary btn-block save-workaround"
-                                onClick={ () => onSubmit() }>
-                                Save
-                            </Button>
-                        </div>
-                    </footer>
-                </Paper>
-            )}
+                    )}
+                <footer className="row m-0 justify-content-between p-4 position-fixed">
+                    <div className="col-4">
+                        <Button
+                            className="btn cc-btn-link btn-block close-workaround"
+                            onClick={ () => onClose() }>
+                            Close
+                        </Button>
+                    </div>
+                    <div className="col-4">
+                        <Button
+                            className="btn cc-btn-primary btn-block save-workaround"
+                            onClick={ () => onSubmit() }>
+                            Save
+                        </Button>
+                    </div>
+                </footer>
+            </Paper>
         </div>
     );
 };
@@ -72,20 +68,16 @@ WorkaroundPanel.propTypes = {
     disruptionKeyToEdit: PropTypes.string,
     onWorkaroundUpdate: PropTypes.func.isRequired,
     updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
-    editMode: PropTypes.string,
 };
 
 WorkaroundPanel.defaultProps = {
     isWorkaroundPanelOpen: false,
     disruptionKeyToEdit: '',
-    editMode: EDIT_TYPE.CREATE,
 };
 
 export default connect(state => ({
     isWorkaroundPanelOpen: isWorkaroundPanelOpen(state),
     disruptionKeyToEdit: getDisruptionKeyToWorkaroundEdit(state),
-    editMode: getEditMode(state),
-    disruptionIncidentNoToEdit: getDisruptionIncidentNoToEditEffect(state),
 }), {
     toggleWorkaroundPanel,
     updateDisruptionKeyToWorkaroundEdit,

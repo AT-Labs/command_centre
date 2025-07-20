@@ -41,7 +41,6 @@ const AddRecurringCancellationModal = (props) => {
         startTime: '',
         operator: '',
         route: '',
-        cancellationCause: 'OTHER',
     };
     const [recurrenceSetting, setRecurrenceSetting] = useState(recurrenceSettingInitialState);
 
@@ -61,7 +60,6 @@ const AddRecurringCancellationModal = (props) => {
                 startTime: rowData.startTime,
                 operator: rowData.agencyId,
                 route: rowData.routeShortName ? rowData.routeShortName : '',
-                cancellationCause: rowData.cancellationCause,
             });
         }
     }, [rowData]);
