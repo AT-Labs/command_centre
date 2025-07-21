@@ -740,12 +740,8 @@ export const updateActiveIncident = activeIncidentId => (dispatch) => {
 
 export const setIncidentToUpdate = (incidentId, incidentNo) => (dispatch) => {
     dispatch(updateLoadingIncidentForEditState(true));
-    console.log('setIncidentToUpdate incidentId', incidentId);
-    console.log('setIncidentToUpdate incidentNo', incidentNo);
-    // const state = getState();
     return disruptionsMgtApi.getIncident(incidentId)
         .then((response) => {
-            console.log('setIncidentToUpdate response', response);
             const { _links, ...incidentData } = response;
             dispatch(updateIncidentToEdit(incidentData));
         })
@@ -759,7 +755,6 @@ export const setIncidentToUpdate = (incidentId, incidentNo) => (dispatch) => {
             dispatch(updateLoadingIncidentForEditState(false));
             dispatch(openCreateIncident(true));
             if (incidentNo) {
-                console.log('setIncidentToUpdate after request incidentNo', incidentNo);
                 dispatch(updateDisruptionIncidentNoToEditEffect(incidentNo));
                 dispatch(toggleEditEffectPanel(true));
             }
