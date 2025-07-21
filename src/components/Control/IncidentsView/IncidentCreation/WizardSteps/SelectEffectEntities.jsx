@@ -352,7 +352,6 @@ export const SelectEffectEntities = (props) => {
     };
 
     const activeConfirmationModalProps = confirmationModalProps[confirmationModalType];
-
     return (
         <div className="select_disruption">
             <RadioButtons

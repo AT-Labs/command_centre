@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { isEmpty, sortBy, forOwn, omitBy, pickBy, uniqueId, some } from 'lodash-es';
+import { isEmpty, sortBy, uniqueId, some } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { AiOutlinePlusCircle, AiOutlineMinusCircle } from 'react-icons/ai';
@@ -10,12 +10,10 @@ import moment from 'moment';
 import { RRule } from 'rrule';
 import { BsArrowRepeat } from 'react-icons/bs';
 import {
-    getAffectedRoutes,
     getStopsByRoute as findStopsByRoute,
     isEditEnabled,
     getIncidentToEdit,
 } from '../../../../../redux/selectors/control/incidents';
-import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
 import { DISRUPTION_TYPE, STATUSES, SEVERITIES, DEFAULT_SEVERITY } from '../../../../../types/disruptions-types';
 import {
     updateCurrentStep,
@@ -28,11 +26,7 @@ import {
 import Footer from './Footer';
 import { search } from '../../../../../redux/actions/search';
 import { getSearchResults } from '../../../../../redux/selectors/search';
-import { getAllStops } from '../../../../../redux/selectors/static/stops';
-import { getStopGroupsIncludingDeleted } from '../../../../../redux/selectors/control/dataManagement/stopGroups';
-import { getStopGroupName } from '../../../../../utils/control/dataManagement';
 import {
-    formatStopsInStopGroup,
     isEndDateValid,
     isEndTimeValid,
     isStartDateValid,
@@ -125,6 +119,7 @@ export const SelectEffects = (props) => {
             cause: incidentCause || DEFAULT_CAUSE.value,
             header: incidentHeader || '',
             key: uniqueId('DISR'),
+            recurrent: incidentRecurrent,
             ...(recurrenceDates && {
                 recurrencePattern: {
                     ...recurrencePattern,
@@ -138,58 +133,10 @@ export const SelectEffects = (props) => {
     const [activePeriods, setActivePeriods] = useState([]);
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
-    const { ROUTE, STOP, STOP_GROUP } = SEARCH_RESULT_TYPE;
     const impactValid = key => !isEmpty(disruptions.find(d => d.key === key).impact);
 
     const getDisruptionByKey = key => disruptions.find(d => d.key === key);
     const updateDisruptionsState = () => props.onDataUpdate('disruptions', disruptions);
-    const saveStopsState = stops => props.updateAffectedStopsState(sortBy(stops, sortedStop => sortedStop.stopCode));
-
-    const addKeys = (routes = [], stops = [], stopGroups = null) => {
-        const routesModified = routes.map(route => ({
-            ...route,
-            valueKey: 'routeId',
-            labelKey: 'routeShortName',
-            type: ROUTE.type,
-        }));
-        const stopsModified = stops.map(stop => ({
-            ...stop,
-            valueKey: 'stopCode',
-            labelKey: 'stopCode',
-            type: STOP.type,
-        }));
-        const stopGroupsModified = [];
-        if (stopGroups) {
-            forOwn(stopGroups, (stopGroupStops, groupId) => {
-                stopGroupsModified.push({
-                    groupId: +groupId,
-                    groupName: getStopGroupName(props.stopGroups, groupId),
-                    category: {
-                        icon: '',
-                        label: 'Stop groups',
-                        type: STOP_GROUP.type,
-                    },
-                    valueKey: 'groupId',
-                    labelKey: 'groupName',
-                    stops: stopGroupStops,
-                    type: STOP_GROUP.type,
-                });
-            });
-        }
-        return [...routesModified, ...stopsModified, ...stopGroupsModified];
-    };
-
-    const addRemoveStopsByGroup = (currentStopGroups, selectedStopGroups) => {
-        // remove stops that have been deselected
-        const updatedStopGroups = omitBy(currentStopGroups, (_value, key) => !selectedStopGroups[key]);
-
-        // find and add stops from stop groups that aren't in currently selected list
-        const stopGroupsToAdd = selectedStopGroups ? pickBy(selectedStopGroups, (_value, key) => !currentStopGroups[key]) : {};
-
-        return { ...updatedStopGroups, ...stopGroupsToAdd };
-    };
-
-    const flattenStopGroups = stopGroups => Object.values(stopGroups).flat();
 
     const getOptionalLabel = label => (
         <>
@@ -323,15 +270,10 @@ export const SelectEffects = (props) => {
         if (requireMapUpdate) {
             removeNotFoundFromStopGroups();
             const routes = disruptions.map(disruption => disruption.affectedEntities.affectedRoutes).flat();
-            const singleStops = disruptions.map(disruption => disruption.affectedEntities.affectedStops).filter(entity => !entity.groupId).flat();
-            const stopGroups = disruptions.map(disruption => disruption.affectedEntities.affectedStops).filter(entity => !!entity.groupId);
+            const stops = disruptions.map(disruption => disruption.affectedEntities.affectedStops).flat();
+            props.updateAffectedStopsState(sortBy(stops, sortedStop => sortedStop.stopCode));
 
-            const stopGroupsWithFormattedStops = stopGroups?.length > 0 ? formatStopsInStopGroup(stopGroups, props.stops) : {};
-            const allStopGroups = addRemoveStopsByGroup(stopGroups, stopGroupsWithFormattedStops);
-
-            saveStopsState([...addKeys([], singleStops), ...flattenStopGroups(allStopGroups)]);
-
-            if (routes.length !== props.affectedRoutes.length) {
+            if (routes.length > 0) {
                 props.updateAffectedRoutesState(routes);
                 props.getRoutesByShortName(routes);
             }
@@ -478,7 +420,7 @@ export const SelectEffects = (props) => {
 
     return (
         <div className="select_disruption">
-            {disruptions.map((disruption, index) => (
+            {disruptions.map(disruption => (
                 <Form key={ `${disruption.key}_form` } className="row my-3 p-4 incident-effect">
                     { disruptions.length > 1 && (
                         <div className="col-12">
@@ -676,7 +618,6 @@ export const SelectEffects = (props) => {
                     <div className="disruption-display-block">
                         <SelectEffectEntities
                             disruptionKey={ disruption.key }
-                            index={ index }
                             affectedEntities={ disruption.affectedEntities }
                             onAffectedEntitiesUpdate={ onAffectedEntitiesUpdate }
                             resetAffectedEntities={ resetAffectedEntities }
@@ -723,11 +664,8 @@ SelectEffects.propTypes = {
     updateAffectedStopsState: PropTypes.func.isRequired,
     updateAffectedRoutesState: PropTypes.func.isRequired,
     getRoutesByShortName: PropTypes.func.isRequired,
-    affectedRoutes: PropTypes.array.isRequired,
     isEditMode: PropTypes.bool,
     toggleIncidentModals: PropTypes.func.isRequired,
-    stops: PropTypes.object.isRequired,
-    stopGroups: PropTypes.object.isRequired,
     data: PropTypes.object,
     onUpdateEntitiesValidation: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
@@ -743,13 +681,10 @@ SelectEffects.defaultProps = {
 };
 
 export default connect(state => ({
-    affectedRoutes: getAffectedRoutes(state),
     findStopsByRoute: findStopsByRoute(state),
     isEditMode: isEditEnabled(state),
     disruptionToEdit: getIncidentToEdit(state),
     searchResults: getSearchResults(state),
-    stops: getAllStops(state),
-    stopGroups: getStopGroupsIncludingDeleted(state),
     useDraftDisruptions: useDraftDisruptions(state),
 }), {
     updateCurrentStep,
