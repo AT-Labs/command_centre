@@ -65,6 +65,9 @@ export const INIT_STATE = {
     disruptionKeyToWorkaroundEdit: '',
     disruptionIncidentNoToEditEffect: '',
     isEditEffectPanelOpen: false,
+    isRequiresToUpdateNotes: false,
+    isWorkaroundsNeedsToBeUpdated: false,
+    disruptionForWorkaroundEdit: {},
 };
 
 const handleIncidentsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });
@@ -151,6 +154,9 @@ const handleWorkaroundPanel = (state, { payload: { isOpen } }) => ({
 const handleEditEffectPanel = (state, { payload: { isEditEffectPanelOpen } }) => ({ ...state, isEditEffectPanelOpen });
 const handleDisruptionKeyToWorkaroundEdit = (state, { payload: { disruptionKeyToWorkaroundEdit } }) => ({ ...state, disruptionKeyToWorkaroundEdit });
 const handleDisruptionIncidentNoToEditEffect = (state, { payload: { disruptionIncidentNoToEditEffect } }) => ({ ...state, disruptionIncidentNoToEditEffect });
+const handleUpdateEffectRequiresToUpdateNotes = (state, { payload: { isRequiresToUpdateNotes } }) => ({ ...state, isRequiresToUpdateNotes });
+const handleUpdateWorkaroundsForm = (state, { payload: { isWorkaroundsNeedsToBeUpdated } }) => ({ ...state, isWorkaroundsNeedsToBeUpdated });
+const handleDisruptionForWorkaroundEdit = (state, { payload: { disruptionForWorkaroundEdit } }) => ({ ...state, disruptionForWorkaroundEdit });
 
 export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_PERMISSIONS]: handleIncidentsPermissionsUpdate,
@@ -193,4 +199,7 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_WORKAROUND_EDIT]: handleDisruptionKeyToWorkaroundEdit,
     [ACTION_TYPE.SET_EDIT_EFFECT_PANEL_STATUS]: handleEditEffectPanel,
     [ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_EDIT_EFFECT]: handleDisruptionIncidentNoToEditEffect,
+    [ACTION_TYPE.UPDATE_EFFECT_REQUIRES_TO_UPDATE_NOTES]: handleUpdateEffectRequiresToUpdateNotes,
+    [ACTION_TYPE.UPDATE_WORKAROUNDS_NEED_TO_BE_UPDATED]: handleUpdateWorkaroundsForm,
+    [ACTION_TYPE.SET_DISRUPTION_FOR_WORKAROUND_EDIT]: handleDisruptionForWorkaroundEdit,
 }, INIT_STATE);

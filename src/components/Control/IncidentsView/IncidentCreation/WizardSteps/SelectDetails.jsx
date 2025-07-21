@@ -25,7 +25,7 @@ import {
     toggleWorkaroundPanel,
     updateDisruptionKeyToWorkaroundEdit } from '../../../../../redux/actions/control/incidents';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
-import { STATUSES, SEVERITIES } from '../../../../../types/disruptions-types';
+import { SEVERITIES } from '../../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
     HEADER_MAX_LENGTH,
@@ -46,7 +46,7 @@ import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
 import CustomMuiDialog from '../../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../../Common/ActivePeriods/ActivePeriods';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
-import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText, isActivePeriodsValid } from '../../../../../utils/recurrence';
+import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText, isActivePeriodsValid, parseRecurrencePattern } from '../../../../../utils/recurrence';
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
@@ -229,7 +229,7 @@ export const SelectDetails = (props) => {
     };
 
     const onSave = () => {
-        console.warn('save');
+        props.onSubmitUpdate();
     };
 
     const onCancel = (modal, isOpen) => {
@@ -279,6 +279,7 @@ export const SelectDetails = (props) => {
     const openEditPanel = (incidentNo) => {
         props.updateDisruptionIncidentNoToEditEffect(incidentNo);
         props.toggleEditEffectPanel(true);
+        props.updateDisruptionKeyToWorkaroundEdit(incidentNo);
     };
 
     const impacts = useAlertEffects();
@@ -299,16 +300,17 @@ export const SelectDetails = (props) => {
     useEffect(() => {
         const term = debouncedSearchTerm.toLowerCase();
         const filtered = disruptions.filter(d => d.impact?.toLowerCase().includes(term)
-            || d.affectedEntities?.some(entity => entity.type === 'route' && entity.routeShortName.toLowerCase().includes(term))
-            || d.affectedEntities?.some(entity => entity.type === 'stop' && entity.text.toLowerCase().includes(term)));
+            || d.affectedEntities?.affectedRoutes.some(entity => entity.routeShortName.toLowerCase().includes(term))
+            || d.affectedEntities?.affectedStops.some(entity => entity.text.toLowerCase().includes(term)));
         setFilteredDisruptions(filtered);
     }, [debouncedSearchTerm]);
 
     useEffect(() => {
-        if (disruptions && disruptions.length > 0/* !== filteredDisruptions.length */) {
+        if (disruptions && disruptions.length !== filteredDisruptions.length) {
             setFilteredDisruptions(disruptions);
         }
     }, [disruptions]);
+    const statusOptions = getStatusOptions(startDate, startTime, now, status);
 
     return (
         <div className="disruption-creation__wizard-select-details">
@@ -362,11 +364,11 @@ export const SelectDetails = (props) => {
                 )}
                 { props.editMode === EDIT_TYPE.EDIT && (
                     <div className="col-6">
-                        <DisruptionDetailSelect 
+                        <DisruptionDetailSelect
                             id="disruption-detail__status"
                             className=""
                             value={ status }
-                            options={ getStatusOptions(startDate, startTime, now) }
+                            options={ statusOptions }
                             label={ LABEL_STATUS }
                             onChange={ setDisruptionStatus } />
                     </div>
@@ -496,7 +498,7 @@ export const SelectDetails = (props) => {
                             : !isEmpty(recurrencePattern.byweekday)) && (
                             <div className="col-12 mb-3">
                                 <BsArrowRepeat size={ 22 } />
-                                <span className="pl-1">{ getRecurrenceText(recurrencePattern) }</span>
+                                <span className="pl-1">{ getRecurrenceText(parseRecurrencePattern(recurrencePattern)) }</span>
                             </div>
                         )}
                         { (props.useDraftDisruptions
@@ -596,25 +598,16 @@ export const SelectDetails = (props) => {
                         </div>
                         {filteredDisruptions.map(disruption => (
                             <li key={ disruption.key } className={ `disruption-effect-item ${props.disruptionIncidentNoToEdit === disruption.incidentNo ? 'active' : ''}` }>
-                                {disruption.incidentNo !== '' && (
-                                    <div>
-                                        <Button
-                                            className="btn cc-btn-link p-lr12-tb6 m-0"
-                                            onClick={ () => openEditPanel(disruption.incidentNo) }>
-                                            <strong>{disruption.incidentNo}</strong>
-                                        </Button>
-                                        <p className="p-lr12-tb6 m-0">
-                                            {getImpactLabel(disruption.impact)}
-                                        </p>
-                                    </div>
-                                )}
-                                {disruption.incidentNo === '' && (
+                                <div>
                                     <Button
                                         className="btn cc-btn-link p-lr12-tb6 m-0"
-                                        onClick={ () => console.warn('openWorkaroundPanel(disruption)') }>
-                                        <strong>{getImpactLabel(disruption.impact)}</strong>
+                                        onClick={ () => openEditPanel(disruption.incidentNo) }>
+                                        <strong>{disruption.incidentNo}</strong>
                                     </Button>
-                                )}
+                                    <p className="p-lr12-tb6 m-0">
+                                        {getImpactLabel(disruption.impact)}
+                                    </p>
+                                </div>
                                 {disruption.affectedEntities.affectedRoutes && disruption.affectedEntities.affectedRoutes.length > 0 && (
                                     disruption.affectedEntities.affectedRoutes.filter((item, index, self) => index
                                     === self.findIndex(i => i.routeShortName === item.routeShortName))
@@ -726,4 +719,5 @@ export default connect(state => ({
     toggleEditEffectPanel,
     updateDisruptionIncidentNoToEditEffect,
     toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit })(SelectDetails);
+    updateDisruptionKeyToWorkaroundEdit,
+})(SelectDetails);

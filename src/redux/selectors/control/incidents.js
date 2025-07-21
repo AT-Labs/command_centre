@@ -260,3 +260,6 @@ export const isWorkaroundPanelOpen = createSelector(getIncidentsState, incidents
 export const getDisruptionKeyToWorkaroundEdit = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'disruptionKeyToWorkaroundEdit'));
 export const isEditEffectPanelOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isEditEffectPanelOpen'));
 export const getDisruptionIncidentNoToEditEffect = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'disruptionIncidentNoToEditEffect'));
+export const isRequiresToUpdateNotes = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isRequiresToUpdateNotes'));
+export const isWorkaroundsNeedsToBeUpdated = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isWorkaroundsNeedsToBeUpdated'));
+export const getDisruptionForWorkaroundEdit = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'disruptionForWorkaroundEdit'));

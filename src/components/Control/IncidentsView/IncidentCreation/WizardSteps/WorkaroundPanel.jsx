@@ -1,12 +1,17 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Box, Paper, Stack, CircularProgress } from '@mui/material';
+import { Button, Paper, Stack, CircularProgress } from '@mui/material';
 import { connect } from 'react-redux';
-import Add from '@mui/icons-material/Add';
-import { getEditMode, isWorkaroundPanelOpen, getDisruptionKeyToWorkaroundEdit, getDisruptionIncidentNoToEditEffect } from '../../../../../redux/selectors/control/incidents';
+import { getEditMode,
+    isWorkaroundPanelOpen,
+    getDisruptionKeyToWorkaroundEdit,
+    getDisruptionIncidentNoToEditEffect,
+    isWorkaroundsNeedsToBeUpdated,
+    getDisruptionForWorkaroundEdit,
+} from '../../../../../redux/selectors/control/incidents';
 
 import { WorkaroundsForm } from '../../Workaround/WorkaroundsForm';
-import { toggleWorkaroundPanel, updateDisruptionKeyToWorkaroundEdit } from '../../../../../redux/actions/control/incidents';
+import { toggleWorkaroundPanel, updateDisruptionKeyToWorkaroundEdit, setRequireToUpdateWorkaroundsState } from '../../../../../redux/actions/control/incidents';
 import EDIT_TYPE from '../../../../../types/edit-types';
 import './WorkaroundPanel.scss';
 
@@ -16,8 +21,19 @@ export const WorkaroundPanel = (props) => {
     const formRef = useRef();
 
     useEffect(() => {
-        setDisruption(disruptions.find(d => d.key === disruptionKeyToEdit));
+        if (props.disruptionForWorkaroundEdit && Object.keys(props.disruptionForWorkaroundEdit).length > 0) {
+            setDisruption(props.disruptionForWorkaroundEdit);
+        } else {
+            setDisruption(disruptions.find(d => d.key === disruptionKeyToEdit));
+        }
     }, [disruptionKeyToEdit]);
+
+    useEffect(() => {
+        if (props.isWorkaroundsNeedsToBeUpdated && props.disruptionForWorkaroundEdit && Object.keys(props.disruptionForWorkaroundEdit).length > 0) {
+            setDisruption(props.disruptionForWorkaroundEdit);
+            props.setRequireToUpdateWorkaroundsState(false);
+        }
+    }, [props.isWorkaroundsNeedsToBeUpdated]);
 
     const onSubmit = () => {
         formRef.current?.saveForm();
@@ -43,14 +59,16 @@ export const WorkaroundPanel = (props) => {
                                 <CircularProgress size={ 50 } className="loading-spinner" />
                             </div>
                         )}
-                    <footer className="row m-0 justify-content-between p-4 position-fixed">
-                        <div className="col-4">
-                            <Button
-                                className="btn cc-btn-link btn-block close-workaround"
-                                onClick={ () => onClose() }>
-                                Close
-                            </Button>
-                        </div>
+                    <footer className={ `row m-0 p-4 position-fixed incident-footer-min-height ${props.editMode === EDIT_TYPE.EDIT ? 'justify-content-end' : 'justify-content-between'}` }>
+                        {props.editMode !== EDIT_TYPE.EDIT && (
+                            <div className="col-4">
+                                <Button
+                                    className="btn cc-btn-link btn-block close-workaround"
+                                    onClick={ () => onClose() }>
+                                    Close
+                                </Button>
+                            </div>
+                        )}
                         <div className="col-4">
                             <Button
                                 className="btn cc-btn-primary btn-block save-workaround"
@@ -73,12 +91,17 @@ WorkaroundPanel.propTypes = {
     onWorkaroundUpdate: PropTypes.func.isRequired,
     updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
     editMode: PropTypes.string,
+    isWorkaroundsNeedsToBeUpdated: PropTypes.bool,
+    setRequireToUpdateWorkaroundsState: PropTypes.func.isRequired,
+    disruptionForWorkaroundEdit: PropTypes.object,
 };
 
 WorkaroundPanel.defaultProps = {
     isWorkaroundPanelOpen: false,
     disruptionKeyToEdit: '',
     editMode: EDIT_TYPE.CREATE,
+    isWorkaroundsNeedsToBeUpdated: false,
+    disruptionForWorkaroundEdit: {},
 };
 
 export default connect(state => ({
@@ -86,7 +109,10 @@ export default connect(state => ({
     disruptionKeyToEdit: getDisruptionKeyToWorkaroundEdit(state),
     editMode: getEditMode(state),
     disruptionIncidentNoToEdit: getDisruptionIncidentNoToEditEffect(state),
+    isWorkaroundsNeedsToBeUpdated: isWorkaroundsNeedsToBeUpdated(state),
+    disruptionForWorkaroundEdit: getDisruptionForWorkaroundEdit(state),
 }), {
     toggleWorkaroundPanel,
     updateDisruptionKeyToWorkaroundEdit,
+    setRequireToUpdateWorkaroundsState,
 })(WorkaroundPanel);

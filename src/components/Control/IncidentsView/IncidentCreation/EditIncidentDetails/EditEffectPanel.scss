@@ -20,7 +20,6 @@
             display: grid;
             grid-template-columns: 30% 70%;
             grid-template-rows: auto auto;
-            gap: 8px;
             width: 100%;
 
             .last-note-label {
@@ -71,10 +70,6 @@
         position: relative;
     }
 
-    & .disabled {
-        margin-left: -115px !important;
-    }
-
     & .mui-paper {
         display: flex;
         flex-direction: column;
@@ -108,5 +103,9 @@
         padding: 4px;
         margin-top: 4px;
         font-size: .9rem;
+    }
+
+    .justify-content-end {
+        justify-content: flex-end;
     }
 }
