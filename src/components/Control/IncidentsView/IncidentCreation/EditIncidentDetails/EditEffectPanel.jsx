@@ -47,7 +47,8 @@ import {
 import {
     generateActivePeriodsFromRecurrencePattern,
     getRecurrenceText,
-    parseRecurrencePattern } from '../../../../../utils/recurrence';
+    parseRecurrencePattern,
+    isActivePeriodsValid } from '../../../../../utils/recurrence';
 import { DISRUPTION_TYPE, SEVERITIES, DEFAULT_SEVERITY, STATUSES } from '../../../../../types/disruptions-types';
 import SelectEffectEntities from '../WizardSteps/SelectEffectEntities';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
@@ -68,7 +69,8 @@ import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
 import HistoryNotesModal from './HistoryNotesModal';
 import { shareToEmail } from '../../../../../utils/control/disruption-sharing';
-import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
+import CustomMuiDialog from '../../../../Common/CustomMuiDialog/CustomMuiDialog';
+import ActivePeriods from '../../../../Common/ActivePeriods/ActivePeriods';
 import './EditEffectPanel.scss';
 
 const INIT_EFFECT_STATE = {
@@ -181,12 +183,12 @@ export const EditEffectPanel = (props) => {
     const onChangeEndDate = (date, isRecurrent) => {
         if (isRecurrent) {
             if (date.length === 0) {
-                /* if (props.useDraftDisruptions) {
+                if (disruption.status === STATUSES.DRAFT) {
                     updateDisruption({ endDate: '', isEndDateDirty: false });
-                } else { */
-                updateDisruption({ isEndDateDirty: true });
-                setIsEndDateDirty(true);
-                // }
+                } else {
+                    updateDisruption({ isEndDateDirty: true });
+                    setIsEndDateDirty(true);
+                }
             } else {
                 updateDisruption({ endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '' });
                 setIsEndDateDirty(false);
@@ -199,7 +201,7 @@ export const EditEffectPanel = (props) => {
 
     const onBlurEndDate = (date, isRecurrent) => {
         if (isRecurrent) {
-            if (date.length === 0 /* && !props.useDraftDisruptions */) {
+            if (date.length === 0 && disruption.status !== STATUSES.DRAFT) {
                 setIsEndDateDirty(true);
             } else {
                 setIsEndDateDirty(false);
@@ -210,6 +212,7 @@ export const EditEffectPanel = (props) => {
     };
 
     const onUpdateRecurrencePattern = (byweekday) => {
+        setIsRecurrencePatternDirty(true);
         setDisruption(prev => ({
             ...prev,
             recurrencePattern: { ...prev.recurrencePattern, byweekday },
@@ -317,6 +320,13 @@ export const EditEffectPanel = (props) => {
     const shareToEmailHandler = async () => {
         const disruptionEntity = setDisruptionEntity();
         shareToEmail(disruptionEntity);
+    };
+
+    const activePeriodsValidV2 = () => {
+        if (disruption.recurrent) {
+            return isActivePeriodsValid(disruption.recurrencePattern, disruption.duration, disruption.maxActivePeriodsCount);
+        }
+        return true;
     };
 
     const onBlurTitle = () => {
@@ -600,9 +610,9 @@ export const EditEffectPanel = (props) => {
                                         value={ disruption.startTime }
                                         onChange={ (event) => {
                                             updateDisruption({ startTime: event.target.value });
-                                            setIsStartTimeDirty(false);
+                                            setIsStartTimeDirty(true);
                                         } }
-                                        invalid={ (/* props.useDraftDisruptions ? (!disruption.isStartTimeDirty && !startTimeValid(disruption.key)) : */ !startTimeValid()) }
+                                        invalid={ (disruption.status === STATUSES.DRAFT ? (isStartTimeDirty && !startTimeValid(disruption.key)) : !startTimeValid()) }
                                     />
                                     <FormFeedback>Not valid values</FormFeedback>
                                 </FormGroup>
@@ -641,6 +651,38 @@ export const EditEffectPanel = (props) => {
                                     </FormGroup>
                                 )}
                             </div>
+                            { disruptionRecurrent && (
+                                <>
+                                    <div className="col-6 text-center">
+                                        <WeekdayPicker
+                                            selectedWeekdays={ disruption.recurrencePattern.byweekday || [] }
+                                            onUpdate={ byweekday => onUpdateRecurrencePattern(byweekday) }
+                                        />
+                                    </div>
+                                    <div className="col-6 pb-3 text-center">
+                                        <Button disabled={ isViewAllDisabled() }
+                                            className="showActivePeriods btn btn-secondary lh-1"
+                                            onClick={ () => displayActivePeriods() }>
+                                            View All
+                                        </Button>
+                                    </div>
+                                    { (disruption.status === STATUSES.DRAFT
+                                        ? (!isEmpty(disruption.recurrencePattern.byweekday) && activePeriodsValidV2(disruption.key))
+                                        : !isEmpty(disruption.recurrencePattern.byweekday)) && (
+                                        <div className="col-12 mb-3">
+                                            <BsArrowRepeat size={ 22 } />
+                                            <span className="pl-1">{ getRecurrenceText(parseRecurrencePattern(disruption.recurrencePattern)) }</span>
+                                        </div>
+                                    )}
+                                    { (disruption.status === STATUSES.DRAFT
+                                        ? (disruption.isRecurrencePatternDirty && (isEmpty(disruption.recurrencePattern.byweekday) || !activePeriodsValidV2(disruption.key)))
+                                        : (isRecurrencePatternDirty && isEmpty(disruption.recurrencePattern.byweekday))) && (
+                                        <div className="col-12 mb-3">
+                                            <span className="disruption-recurrence-invalid">Please select recurrence</span>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                             <div className="col-6">
                                 <FormGroup>
                                     <DisruptionDetailSelect
@@ -700,38 +742,6 @@ export const EditEffectPanel = (props) => {
                                     </span>
                                 </div>
                             )}
-                            { disruptionRecurrent && (
-                                <>
-                                    <div className="col-6 text-center">
-                                        <WeekdayPicker
-                                            selectedWeekdays={ disruption.recurrencePattern.byweekday || [] }
-                                            onUpdate={ byweekday => onUpdateRecurrencePattern(byweekday) }
-                                        />
-                                    </div>
-                                    <div className="col-6 pb-3 text-center">
-                                        <Button disabled={ isViewAllDisabled() }
-                                            className="showActivePeriods btn btn-secondary lh-1"
-                                            onClick={ () => displayActivePeriods() }>
-                                            View All
-                                        </Button>
-                                    </div>
-                                    { (/* props.useDraftDisruptions
-                                        ? (!isEmpty(disruption.recurrencePattern.byweekday) && activePeriodsValidV2(disruption.key))
-                                        :  */!isEmpty(disruption.recurrencePattern.byweekday)) && (
-                                        <div className="col-12 mb-3">
-                                            <BsArrowRepeat size={ 22 } />
-                                            <span className="pl-1">{ getRecurrenceText(parseRecurrencePattern(disruption.recurrencePattern)) }</span>
-                                        </div>
-                                    )}
-                                    { (/* props.useDraftDisruptions
-                                        ? (disruption.isRecurrencePatternDirty && (isEmpty(disruption.recurrencePattern.byweekday) || !activePeriodsValidV2(disruption.key)))
-                                        :  */(isRecurrencePatternDirty && isEmpty(disruption.recurrencePattern.byweekday))) && (
-                                        <div className="col-12 mb-3">
-                                            <span className="disruption-recurrence-invalid">Please select recurrence</span>
-                                        </div>
-                                    )}
-                                </>
-                            )}
                             <div className="col-12">
                                 <FormGroup className="disruption-creation__checkbox">
                                     <Input
@@ -788,6 +798,12 @@ export const EditEffectPanel = (props) => {
                 disruption={ disruption }
                 isModalOpen={ historyNotesModalOpen }
                 onClose={ () => setHistoryNotesModalOpen(false) } />
+            <CustomMuiDialog
+                title="Disruption Active Periods"
+                onClose={ () => setActivePeriodsModalOpen(false) }
+                isOpen={ activePeriodsModalOpen }>
+                <ActivePeriods activePeriods={ activePeriods } />
+            </CustomMuiDialog>
         </div>
     );
 };
@@ -797,11 +813,9 @@ EditEffectPanel.propTypes = {
     toggleEditEffectPanel: PropTypes.func.isRequired,
     isEditEffectPanelOpen: PropTypes.bool,
     disruptionIncidentNoToEdit: PropTypes.string,
-    // onWorkaroundUpdate: PropTypes.func.isRequired,
     updateDisruptionIncidentNoToEditEffect: PropTypes.func.isRequired,
     disruptionRecurrent: PropTypes.bool.isRequired,
     modalOpenedTime: PropTypes.string.isRequired,
-    onDisruptionsUpdate: PropTypes.func.isRequired,
     isWorkaroundPanelOpen: PropTypes.bool,
     toggleWorkaroundPanel: PropTypes.func.isRequired,
     updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
@@ -810,8 +824,6 @@ EditEffectPanel.propTypes = {
     isWorkaroundsRequiresToUpdate: PropTypes.bool.isRequired,
     updateIsWorkaroundsRequiresToUpdateState: PropTypes.func.isRequired,
     updateDisruptionAction: PropTypes.func.isRequired,
-    affectedRoutes: PropTypes.array.isRequired,
-    stopGroups: PropTypes.object.isRequired,
     updateAffectedRoutesState: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
     getRoutesByShortName: PropTypes.func.isRequired,
@@ -831,8 +843,6 @@ export default connect(state => ({
     isEditEffectPanelOpen: isEditEffectPanelOpen(state),
     disruptionIncidentNoToEdit: getDisruptionIncidentNoToEditEffect(state),
     isWorkaroundPanelOpen: isWorkaroundPanelOpen(state),
-    affectedRoutes: getAffectedRoutes(state),
-    stopGroups: getStopGroupsIncludingDeleted(state),
 }), {
     toggleEditEffectPanel,
     updateDisruptionIncidentNoToEditEffect,

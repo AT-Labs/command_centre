@@ -7,11 +7,9 @@ import CustomModal from '../../../../Common/CustomModal/CustomModal';
 
 const HistoryNotesModal = (props) => {
     const generateModalFooter = () => (
-        <>
-            <Button onClick={ () => props.onClose() } className="cc-btn-primary">
-                Close
-            </Button>
-        </>
+        <Button onClick={ () => props.onClose() } className="cc-btn-primary">
+            Close
+        </Button>
     );
     return (
         <CustomModal
@@ -33,6 +31,10 @@ const HistoryNotesModal = (props) => {
                         ))}
                     </tbody>
                 </Table>
+            )}
+
+            {(!Array.isArray(props.disruption.notes) || props.disruption.notes.length === 0) && (
+                <p className="col-3">No notes to display</p>
             )}
         </CustomModal>
     );

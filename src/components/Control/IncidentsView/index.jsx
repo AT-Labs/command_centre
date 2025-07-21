@@ -15,18 +15,19 @@ import {
     isIncidentCreationAllowed,
     isIncidentCreationOpen,
     getFilteredDisruptions,
-    getIncidentsWithDisruptions,
-    getIncidentForEditLoadingState,
     getFilteredIncidents,
+    getIncidentForEditLoadingState,
 } from '../../../redux/selectors/control/incidents';
 import { DISRUPTION_POLLING_INTERVAL } from '../../../constants/disruptions';
 import Filters from './Filters/Filters';
 import { getStopGroups } from '../../../redux/actions/control/dataManagement';
 import EDIT_TYPE from '../../../types/edit-types';
+import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
+import './style.scss';
 import IncidentsDataGrid from './IncidentsDataGrid';
+import { PAGE_SIZE } from './types';
 import CreateIncident from './IncidentCreation/CreateIncident/index';
 import LoadingOverlay from '../../Common/Overlay/LoadingOverlay';
-import './style.scss';
 
 export class IncidentsView extends React.Component {
     constructor(props) {
@@ -102,7 +103,11 @@ export class IncidentsView extends React.Component {
     );
 
     render() {
-        const { mergedIncidentsAndDisruptions, isCreateAllowed, isCreateOpen, isIncidentLoading } = this.props;
+        const { filteredDisruptions, filteredIncidents, isCreateAllowed, isCreateOpen, isIncidentLoading } = this.props;
+        const { currentPage } = this.state;
+        // Calculate paginated data
+        const startIndex = (currentPage - 1) * PAGE_SIZE;
+        const paginatedIncidents = filteredIncidents.slice(startIndex, startIndex + PAGE_SIZE);
         return (
             <div className="control-incidents-view">
                 { isIncidentLoading && (
@@ -128,7 +133,20 @@ export class IncidentsView extends React.Component {
                                 </div>
                             </div>
                             <IncidentsDataGrid
-                                mergedIncidentsAndDisruptions={ mergedIncidentsAndDisruptions } />
+                                page={ currentPage }
+                                disruptions={ filteredDisruptions }
+                                incidents={ paginatedIncidents } />
+                            <PageInfo
+                                currentPage={ currentPage }
+                                itemsPerPage={ PAGE_SIZE }
+                                itemsTotal={ filteredIncidents.length }
+                            />
+                            <Pagination
+                                currentPage={ currentPage }
+                                itemsTotal={ filteredIncidents.length }
+                                itemsPerPage={ PAGE_SIZE }
+                                onPageClick={ page => this.handlePageChange(page) }
+                            />
                         </div>
                     )}
                 {isCreateOpen && isCreateAllowed && <CreateIncident />}
@@ -140,7 +158,6 @@ export class IncidentsView extends React.Component {
 IncidentsView.propTypes = {
     filteredDisruptions: PropTypes.array,
     filteredIncidents: PropTypes.array,
-    mergedIncidentsAndDisruptions: PropTypes.array,
     getDisruptionsAndIncidents: PropTypes.func.isRequired,
     isCreateAllowed: PropTypes.bool.isRequired,
     isCreateOpen: PropTypes.bool,
@@ -152,14 +169,9 @@ IncidentsView.propTypes = {
     isIncidentLoading: PropTypes.bool,
 };
 
-IncidentsView.defaultProps = {
-    mergedIncidentsAndDisruptions: [],
-};
-
 export default connect(state => ({
     filteredDisruptions: getFilteredDisruptions(state),
     filteredIncidents: getFilteredIncidents(state),
-    mergedIncidentsAndDisruptions: getIncidentsWithDisruptions(state),
     isCreateOpen: isIncidentCreationOpen(state),
     isCreateAllowed: isIncidentCreationAllowed(state),
     isIncidentLoading: getIncidentForEditLoadingState(state),

@@ -253,7 +253,6 @@ export default {
 
     // Incidents
     FETCH_CONTROL_INCIDENTS_DISRUPTIONS: 'fetch-control-incidents-disruptions',
-    FETCH_CONTROL_INCIDENTS: 'fetch-control-incidents',
     UPDATE_CONTROL_INCIDENTS_PERMISSIONS: 'update-control-incidents-permissions',
     UPDATE_CONTROL_INCIDENTS_LOADING: 'update-control-incidents-loading',
     UPDATE_CONTROL_INCIDENTS_LOADING_STOPS_BY_ROUTE: 'update-control-incidents-loading-stops-by-route',
@@ -265,7 +264,6 @@ export default {
     UPDATE_CONTROL_ACTIVE_INCIDENT_ID: 'update-control-active-incident-id',
     UPDATE_CONTROL_ACTIVE_INCIDENT: 'update-control-active-incident',
     UPDATE_CONTROL_SET_ALL_INCIDENTS: 'update-control-set-all-incidents',
-    UPDATE_CONTROL_SET_ALL_INCIDENTS_DISRUPTIONS: 'update-control-set-all-incidents-disruptions',
     UPDATE_INCIDENTS_REVERSE_GEOCODE_LOADING_STATE: 'update-incident-reverse-geocode-loading-state',
     UPDATE_INCIDENTS_ROUTES_LOADING_STATE: 'update-incident-routes-loading-state',
     UPDATE_INCIDENT_SELECTED_ROUTES: 'update-incident-selected-routes',

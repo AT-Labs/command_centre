@@ -303,21 +303,6 @@ export class CreateIncident extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (!prevProps.isRequiresToUpdateNotes && this.props.isRequiresToUpdateNotes) {
-            /*  const { incidentData } = this.state;
-            this.setState(() => ({
-                incidentDataEditFieldsValues: {
-                    startTime: incidentData.startTime,
-                    startDate: incidentData.startDate,
-                    endTime: incidentData.endTime,
-                    endDate: incidentData.endDate,
-                    cause: incidentData.cause,
-                    status: incidentData.status,
-                    header: incidentData.header,
-                    duration: incidentData.duration,
-                    recurrencePattern: incidentData.recurrencePattern,
-                    severity: incidentData.severity,
-                },
-            })); */
             this.setupDataEdit(true); // for updating form on add note
         }
     }
@@ -352,7 +337,6 @@ export class CreateIncident extends React.Component {
                 workaroundsToSync: newWorkarounds,
                 isWorkaroundsRequiresToUpdate: true,
             });
-            // this.setState({ isWorkaroundsRequiresToUpdate: true });
         } else {
             this.setState(prevState => ({
                 incidentData: { ...prevState.incidentData,
@@ -453,7 +437,6 @@ export class CreateIncident extends React.Component {
         if (!isEmpty(incidentData.endDate) && !isEmpty(incidentData.endTime)) {
             endTimeMoment = momentFromDateTime(incidentData.endDate, incidentData.endTime);
         }
-        // const { startDate, endDate, activePeriods, description, createNotification, disruptionType, modalOpenedTime, ...incident } = {
         const incident = {
             ...incidentData,
             endTime: endTimeMoment,
@@ -476,13 +459,6 @@ export class CreateIncident extends React.Component {
         this.props.toggleEditEffectPanel(false);
         this.props.updateDisruptionIncidentNoToEditEffect('');
     };
-
-    openWorkaroundPanel = () => {
-        this.props.updateDisruptionKeyToWorkaroundEdit(this.props.disruptionIncidentNoToEdit);
-        this.props.toggleWorkaroundPanel(true);
-    };
-
-    // updateIsEffectRequiresToUpdateState = isEffectRequiresUpdate => this.setState({ isEffectRequiresUpdate });
 
     renderSteps = () => {
         const steps = {
