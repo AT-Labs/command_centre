@@ -19,8 +19,6 @@ import {
     updateAffectedStopsState,
     toggleEditEffectPanel,
     updateDisruptionIncidentNoToEditEffect,
-    updateDisruptionKeyToWorkaroundEdit,
-    toggleWorkaroundPanel,
     setRequireToUpdateIncidentForEditState,
     getRoutesByShortName,
     updateAffectedRoutesState,
@@ -39,7 +37,6 @@ import {
     getBoundsToFit,
     getIncidentsLoadingState,
     isEditEffectPanelOpen,
-    getDisruptionIncidentNoToEditEffect,
     isRequiresToUpdateNotes,
 } from '../../../../../redux/selectors/control/incidents';
 import { STATUSES, DISRUPTION_TYPE, INCIDENTS_CREATION_STEPS, DEFAULT_SEVERITY, ALERT_TYPES } from '../../../../../types/disruptions-types';
@@ -695,9 +692,6 @@ CreateIncident.propTypes = {
     toggleEditEffectPanel: PropTypes.func.isRequired,
     updateDisruptionIncidentNoToEditEffect: PropTypes.func.isRequired,
     isEditEffectPanelOpen: PropTypes.bool,
-    disruptionIncidentNoToEdit: PropTypes.string,
-    toggleWorkaroundPanel: PropTypes.func.isRequired,
-    updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
     isRequiresToUpdateNotes: PropTypes.bool,
     setRequireToUpdateIncidentForEditState: PropTypes.func.isRequired,
     getRoutesByShortName: PropTypes.func.isRequired,
@@ -716,7 +710,6 @@ CreateIncident.defaultProps = {
     incidentToEdit: {},
     isLoading: false,
     isEditEffectPanelOpen: false,
-    disruptionIncidentNoToEdit: '',
     isRequiresToUpdateNotes: false,
 };
 
@@ -739,7 +732,6 @@ export default connect(state => ({
     useGeoSearchRoutesByDisruptionPeriod: useGeoSearchRoutesByDisruptionPeriod(state),
     useDraftDisruptions: useDraftDisruptions(state),
     isEditEffectPanelOpen: isEditEffectPanelOpen(state),
-    disruptionIncidentNoToEdit: getDisruptionIncidentNoToEditEffect(state),
     isRequiresToUpdateNotes: isRequiresToUpdateNotes(state),
 }), {
     createNewIncident,
@@ -751,8 +743,6 @@ export default connect(state => ({
     updateAffectedStopsState,
     toggleEditEffectPanel,
     updateDisruptionIncidentNoToEditEffect,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
     setRequireToUpdateIncidentForEditState,
     getRoutesByShortName,
     updateAffectedRoutesState,

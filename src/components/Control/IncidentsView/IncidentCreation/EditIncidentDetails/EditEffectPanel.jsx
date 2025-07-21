@@ -15,14 +15,13 @@ import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArro
 import { isEditEffectPanelOpen,
     getDisruptionIncidentNoToEditEffect,
     isWorkaroundPanelOpen,
-    getAffectedRoutes,
 } from '../../../../../redux/selectors/control/incidents';
-import { getStopGroupsIncludingDeleted } from '../../../../../redux/selectors/control/dataManagement/stopGroups';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
 import {
     LABEL_CUSTOMER_IMPACT,
     LABEL_START_DATE,
     DATE_FORMAT,
+    TIME_FORMAT,
     LABEL_END_DATE,
     LABEL_END_TIME,
     LABEL_START_TIME,
@@ -243,7 +242,7 @@ export const EditEffectPanel = (props) => {
         props.setRequireToUpdateWorkaroundsState(true);
     };
 
-    const resetAffectedEntities = (disruptionKey) => {
+    const resetAffectedEntities = () => {
         setDisruption(prev => ({
             ...prev,
             affectedEntities: {
@@ -252,6 +251,8 @@ export const EditEffectPanel = (props) => {
             },
         }));
         setRequireMapUpdate(true);
+        props.updateAffectedStopsState([]);
+        props.updateAffectedRoutesState([]);
     };
 
     const onDisruptionTypeUpdate = (key, disruptionType) => {
@@ -268,26 +269,32 @@ export const EditEffectPanel = (props) => {
 
     const setDisruptionStatus = (selectedStatus) => {
         updateDisruption({ status: selectedStatus });
-        /*
-        if (status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.RESOLVED) {
-            setStartDate(moment().format(DATE_FORMAT));
-            setStartTime(moment().format(TIME_FORMAT));
-            setEndDate(moment().format(DATE_FORMAT));
-            setEndTime(moment().format(TIME_FORMAT));
-        } else if (disruption.status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.IN_PROGRESS) {
-            setStartDate(moment().format(DATE_FORMAT));
-            setStartTime(moment().format(TIME_FORMAT));
-        } else if (disruption.status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.NOT_STARTED) {
-            setStartDate(moment(disruption.startTime).format(DATE_FORMAT));
-            setStartTime(moment(disruption.startTime).format(TIME_FORMAT));
-            setEndDate('');
-            setEndTime('');
-        } else if (disruption.status === STATUSES.IN_PROGRESS && selectedStatus === STATUSES.RESOLVED) {
-            setEndDate(moment().format(DATE_FORMAT));
-            setEndTime(moment().format(TIME_FORMAT));
-        }
 
-        setIsRecurrenceDirty(true); */
+        if (disruption.status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.RESOLVED) {
+            updateDisruption({
+                startDate: moment().format(DATE_FORMAT),
+                startTime: moment().format(TIME_FORMAT),
+                endDate: moment().format(DATE_FORMAT),
+                endTime: moment().format(TIME_FORMAT),
+            });
+        } else if (disruption.status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.IN_PROGRESS) {
+            updateDisruption({
+                startDate: moment().format(DATE_FORMAT),
+                startTime: moment().format(TIME_FORMAT),
+            });
+        } else if (disruption.status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.NOT_STARTED) {
+            updateDisruption({
+                startDate: moment(disruption.startTime).format(DATE_FORMAT),
+                startTime: moment(disruption.startTime).format(TIME_FORMAT),
+                endDate: '',
+                endTime: '',
+            });
+        } else if (disruption.status === STATUSES.IN_PROGRESS && selectedStatus === STATUSES.RESOLVED) {
+            updateDisruption({
+                endDate: moment().format(DATE_FORMAT),
+                endTime: moment().format(TIME_FORMAT),
+            });
+        }
     };
 
     const setDisruptionEntity = () => {
