@@ -1,0 +1,42 @@
+.detailPanel-magnify-button {
+    position: absolute;
+    z-index: 999;
+    right: 15px;
+    top: 20px;
+
+    &.magnify {
+        position: fixed;
+        top: 90px;
+        right: 25px;
+    }
+}
+
+form.magnify {
+    position: fixed;
+    top: 80px;
+    bottom: 0;
+    right: 3px;
+    left: 20px;
+    background: white;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding-bottom: 30px;
+}
+
+.icon-in-progress {
+    color: #E30084;
+}
+.icon-not-started {
+    color: #DC831A;
+}
+
+.custom-data-grid-fit-content {
+    height: fit-content;
+
+    .MuiDataGrid-root {
+        div:nth-of-type(2) {
+            height: fit-content !important;
+            padding: 0 !important;
+        }
+    }
+}
