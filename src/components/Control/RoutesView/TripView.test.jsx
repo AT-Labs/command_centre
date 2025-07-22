@@ -271,7 +271,7 @@ describe('<TripView />', () => {
             const trip = { ...trainTrip, status: 'NOT_STARTED', _links: { permissions: [{ _rel: 'cancel' }, { _rel: 'delay' }, { _rel: 'advancer' }] } };
             let result;
             beforeEach(() => {
-                wrapper = setup({ tripInstance: trip, serviceDate: moment().add(1, 'days').format() });
+                wrapper = setup({ tripInstance: trip, serviceDate: moment().add(1, 'days').format(), useHoldTrip: true });
                 result = wrapper.instance().getButtonBarConfig(trip);
             });
 
@@ -286,6 +286,10 @@ describe('<TripView />', () => {
             });
             it('should not contain View in Blocks button', () => {
                 expect(find(result, { label: 'View in Blocks' })).to.be.undefined;  // eslint-disable-line
+            });
+
+            it('should not contain onHold button', () => {
+                expect(find(result, { label: 'Hold trip' })).to.be.undefined;  // eslint-disable-line
             });
         });
 
