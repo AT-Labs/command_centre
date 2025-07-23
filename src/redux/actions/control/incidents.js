@@ -226,8 +226,7 @@ export const getDisruptionsAndIncidents = () => (dispatch, getState) => {
             })
             .finally(() => dispatch(updateLoadingIncidentsState(false)));
     })
-        .catch((error) => {
-            console.log(error);
+        .catch(() => {
             if (ERROR_TYPE.fetchDisruptionsEnabled) {
                 const errorMessage = ERROR_TYPE.fetchIncidents;
                 dispatch(setBannerError(errorMessage));

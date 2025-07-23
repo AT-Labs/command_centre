@@ -17,7 +17,6 @@ import {
     getFilteredDisruptions,
     getIncidentsWithDisruptions,
     getIncidentForEditLoadingState,
-    getFilteredIncidents,
 } from '../../../redux/selectors/control/incidents';
 import { DISRUPTION_POLLING_INTERVAL } from '../../../constants/disruptions';
 import Filters from './Filters/Filters';
@@ -40,7 +39,6 @@ export class IncidentsView extends React.Component {
 
     static defaultProps = {
         filteredDisruptions: [],
-        filteredIncidents: [],
         isCreateOpen: false,
         isIncidentLoading: false,
     };
@@ -139,7 +137,6 @@ export class IncidentsView extends React.Component {
 
 IncidentsView.propTypes = {
     filteredDisruptions: PropTypes.array,
-    filteredIncidents: PropTypes.array,
     mergedIncidentsAndDisruptions: PropTypes.array,
     getDisruptionsAndIncidents: PropTypes.func.isRequired,
     isCreateAllowed: PropTypes.bool.isRequired,
@@ -158,7 +155,6 @@ IncidentsView.defaultProps = {
 
 export default connect(state => ({
     filteredDisruptions: getFilteredDisruptions(state),
-    filteredIncidents: getFilteredIncidents(state),
     mergedIncidentsAndDisruptions: getIncidentsWithDisruptions(state),
     isCreateOpen: isIncidentCreationOpen(state),
     isCreateAllowed: isIncidentCreationAllowed(state),
