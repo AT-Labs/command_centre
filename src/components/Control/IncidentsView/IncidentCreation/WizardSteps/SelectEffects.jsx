@@ -119,6 +119,7 @@ export const SelectEffects = (props) => {
             cause: incidentCause || DEFAULT_CAUSE.value,
             header: incidentHeader || '',
             key: uniqueId('DISR'),
+            recurrent: incidentRecurrent,
             ...(recurrenceDates && {
                 recurrencePattern: {
                     ...recurrencePattern,
