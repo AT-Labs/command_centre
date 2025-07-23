@@ -25,7 +25,6 @@ import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
 import './style.scss';
 import IncidentsDataGrid from './IncidentsDataGrid';
 import { PAGE_SIZE } from './types';
-import CreateIncident from './IncidentCreation/CreateIncident/index';
 
 export class IncidentsView extends React.Component {
     constructor(props) {
@@ -138,7 +137,6 @@ export class IncidentsView extends React.Component {
                             />
                         </div>
                     )}
-                {isCreateOpen && isCreateAllowed && <CreateIncident />}
             </div>
         );
     }

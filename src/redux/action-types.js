@@ -284,8 +284,6 @@ export default {
     UPDATE_INCIDENT_TO_EDIT: 'update-incident-to-edit',
     UPDATE_INCIDENT_FILTERS: 'update-incident-filters',
     UPDATE_INCIDENT_DATAGRID_CONFIG: 'update-incident-datagrid-config',
-    SET_WORKAROUND_PANEL_STATUS: 'set-workaround-panel-status',
-    UPDATE_DISRUPTION_KEY_TO_WORKAROUND_EDIT: 'update-disruption-key-to-workaround-edit',
     // UPDATE_INCIDENT_DIVERSION_EDIT_MODE: 'update-incident-diversion-edit-mode',
     // OPEN_INCIDENT_CREATE_DIVERSION: 'open-incident-create-diversion',
     // ADD_INCIDENT_DIVERSION: 'add-incident-diversion',

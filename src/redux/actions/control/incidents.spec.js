@@ -90,9 +90,9 @@ describe('Incidents Actions', () => {
     });
 
     it('dispatches correct actions on updateIncident success', async () => {
-        disruptionsMgtApi.updateIncident.mockResolvedValue({});
+        disruptionsMgtApi.updateDisruption.mockResolvedValue({});
 
-        const incident = { incidentId: 1, header: 'INC123', status: STATUSES.ACTIVE, createNotification: true };
+        const incident = { disruptionId: 1, incidentNo: 'INC123', status: STATUSES.ACTIVE, createNotification: true };
         await store.dispatch(actions.updateIncident(incident));
         const dispatched = store.getActions();
 
@@ -104,10 +104,11 @@ describe('Incidents Actions', () => {
     });
 
     it('dispatches correct actions on updateIncident success with DRAFT status', async () => {
-        disruptionsMgtApi.updateIncident.mockResolvedValue({});
+        disruptionsMgtApi.updateDisruption.mockResolvedValue({});
 
         const incident = {
-            incidentId: 1,
+            disruptionId: 1,
+            incidentNo: 'INC123',
             status: STATUSES.DRAFT,
             createNotification: false,
             header: 'Draft Incident',
@@ -130,7 +131,7 @@ describe('Incidents Actions', () => {
                 payload: {
                     resultIncidentId: 1,
                     resultStatus: 'success',
-                    resultMessage: 'Draft disruption number #1 saved successfully.',
+                    resultMessage: 'Draft disruption number #INC123 saved successfully.',
                     resultCreateNotification: false,
                     resultIncidentVersion: undefined,
                 },
@@ -139,11 +140,11 @@ describe('Incidents Actions', () => {
     });
 
     it('dispatches correct actions on updateIncident failure', async () => {
-        disruptionsMgtApi.updateIncident.mockRejectedValue({ code: 'ERR_FAILED' });
+        disruptionsMgtApi.updateDisruption.mockRejectedValue({ code: 'ERR_FAILED' });
 
         const incident = {
-            incidentId: 1,
-            header: 'INC456',
+            disruptionId: 1,
+            incidentNo: 'INC456',
             status: STATUSES.PUBLISHED,
             createNotification: true,
         };
@@ -161,7 +162,7 @@ describe('Incidents Actions', () => {
                 payload: {
                     resultIncidentId: 1,
                     resultStatus: 'danger',
-                    resultMessage: 'Failed to update disruption 1.',
+                    resultMessage: 'Failed to update disruption INC456.',
                     resultCreateNotification: undefined,
                     resultIncidentVersion: undefined,
                 },
@@ -170,14 +171,14 @@ describe('Incidents Actions', () => {
     });
 
     it('dispatches correct actions on createIncident success', async () => {
-        disruptionsMgtApi.createIncident.mockResolvedValue({
-            incidentId: 99,
-            header: 'NEW123',
+        disruptionsMgtApi.createDisruption.mockResolvedValue({
+            disruptionId: 99,
+            incidentNo: 'NEW123',
             version: 1,
             createNotification: true,
         });
 
-        await store.dispatch(actions.createNewIncident({ status: STATUSES.ACTIVE }));
+        await store.dispatch(actions.createIncident({ status: STATUSES.ACTIVE }));
         const dispatched = store.getActions();
 
         expect(dispatched).toEqual(expect.arrayContaining([
@@ -193,7 +194,7 @@ describe('Incidents Actions', () => {
                 payload: {
                     resultIncidentId: 99,
                     resultStatus: 'success',
-                    resultMessage: 'Disruption number #99 created successfully.',
+                    resultMessage: 'Disruption number #NEW123 created successfully.',
                     resultCreateNotification: true,
                     resultIncidentVersion: undefined,
                 },
@@ -289,11 +290,11 @@ describe('Incidents Actions', () => {
     });
 
     it('calls updateIncident inside publishDraftIncident and dispatches actions', async () => {
-        disruptionsMgtApi.updateIncident.mockResolvedValue({});
+        disruptionsMgtApi.updateDisruption.mockResolvedValue({});
 
         const incident = {
-            incidentId: 3,
-            header: 'INC789',
+            disruptionId: 3,
+            incidentNo: 'INC789',
             status: STATUSES.DRAFT,
             createNotification: true,
         };
@@ -308,12 +309,12 @@ describe('Incidents Actions', () => {
         expect(result).toEqual({});
     });
 
-    it('dispatches error result when updateIncident throws inside publishDraftIncident', async () => {
-        disruptionsMgtApi.updateIncident.mockRejectedValue({ code: 'ERR_CODE_XYZ' });
+    it('dispatches error result when updateDisruption throws inside publishDraftIncident', async () => {
+        disruptionsMgtApi.updateDisruption.mockRejectedValue({ code: 'ERR_CODE_XYZ' });
 
         const incident = {
-            incidentId: 5,
-            header: 'INC999',
+            disruptionId: 5,
+            incidentNo: 'INC999',
             status: STATUSES.DRAFT,
             createNotification: true,
         };
@@ -514,9 +515,9 @@ describe('Incidents Actions', () => {
     it('dispatches COPY_SUCCESS result when in COPY mode', async () => {
         const mockIncident = { disruptionId: 1, status: 'DRAFT' };
 
-        disruptionsMgtApi.createIncident.mockResolvedValue({
-            incidentId: 1,
-            header: 'INC111',
+        disruptionsMgtApi.createDisruption.mockResolvedValue({
+            disruptionId: 1,
+            incidentNo: 'INC111',
             version: 2,
             createNotification: true,
         });
@@ -525,13 +526,13 @@ describe('Incidents Actions', () => {
             control: {
                 incidents: {
                     editMode: EDIT_TYPE.COPY,
-                    sourceIncidentId: 'INC_SOURCE',
+                    sourceIncidentNo: 'INC_SOURCE',
                 },
             },
         };
 
         store = mockStore(state);
-        await store.dispatch(actions.createNewIncident(mockIncident));
+        await store.dispatch(actions.createIncident(mockIncident));
         const dispatched = store.getActions();
 
         expect(dispatched).toEqual(expect.arrayContaining([
@@ -547,7 +548,7 @@ describe('Incidents Actions', () => {
                     resultCreateNotification: true,
                     resultIncidentId: 1,
                     resultIncidentVersion: undefined,
-                    resultMessage: 'Disruption #1 copied from #INC_SOURCE',
+                    resultMessage: 'Disruption #INC111 copied from #INC_SOURCE',
                     resultStatus: 'success',
                 },
                 type: 'update-control-incident-action-result',
@@ -620,18 +621,18 @@ describe('Incidents Actions', () => {
 
     it('dispatches CREATE_ERROR result when createDisruption throws', async () => {
         const mockIncident = { disruptionId: 3, status: 'DRAFT' };
-        disruptionsMgtApi.createIncident.mockRejectedValue({ code: 'ERR_CREATE' });
+        disruptionsMgtApi.createDisruption.mockRejectedValue({ code: 'ERR_CREATE' });
 
         store = mockStore({
             control: {
                 incidents: {
                     editMode: EDIT_TYPE.NEW,
-                    sourceIncidentId: null,
+                    sourceIncidentNo: null,
                 },
             },
         });
 
-        await store.dispatch(actions.createNewIncident(mockIncident));
+        await store.dispatch(actions.createIncident(mockIncident));
         const dispatched = store.getActions();
 
         expect(dispatched).toEqual(expect.arrayContaining([
@@ -716,19 +717,6 @@ describe('Incidents Actions', () => {
                 type: 'update-control-incidents-loading',
             },
         ]));
-    });
-
-    test('openCreateDiversion dispatches correct action', () => {
-        const isEnabled = true;
-        actions.openCreateDiversion(isEnabled)(dispatch);
-
-        expect(dispatch).toHaveBeenCalledWith({
-            payload: {
-                isCreateDiversionEnabled: isEnabled,
-            },
-            // diversion test not in scope for now
-            type: undefined,
-        });
     });
 
     test('resetState returns correct action', () => {

@@ -44,7 +44,7 @@ export const getStopsByRoute = createSelector(getIncidentsState, incidentsState 
 export const getRoutesByStop = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'routesByStop'));
 export const isEditEnabled = createSelector(getIncidentsState, incidentsState => incidentsState.editMode === EDIT_TYPE.EDIT);
 export const getEditMode = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'editMode'));
-export const getSourceIncidentId = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'sourceIncidentId'));
+export const getSourceIncidentNo = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'sourceIncidentNo'));
 
 export const getAffectedStops = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'affectedEntities.affectedStops'));
 export const getAffectedRoutes = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'affectedEntities.affectedRoutes'));
@@ -186,9 +186,5 @@ export const getSortedIncidents = createSelector(
     getIncidentsSortingParams,
     (allIncidents, incidentSortingParams) => (!isEmpty(incidentSortingParams)
         ? orderBy(allIncidents, incidentSortingParams.sortBy, incidentSortingParams.order)
-        : allIncidents.toSorted((a, b) => new Date(b.createdTime) - new Date(a.createdTime))),
+        : allIncidents),
 );
-
-export const isWorkaroundPanelOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isWorkaroundPanelOpen'));
-
-export const getDisruptionKeyToWorkaroundEdit = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'disruptionKeyToWorkaroundEdit'));
