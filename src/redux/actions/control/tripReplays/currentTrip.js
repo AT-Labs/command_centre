@@ -7,7 +7,6 @@ import { setBannerError } from '../../activity';
 import { updateTripReplayDisplaySingleTrip } from './tripReplayView';
 import { updatePrevTripValue } from './prevFilterValue';
 import { getAllRoutes } from '../../../selectors/static/routes';
-import { getFleetState } from '../../../selectors/static/fleet';
 import { vehicleReplayEvents } from '../vehicleReplays/vehicleReplay';
 import { useTripHistory, tripHistoryEnabledFromDate } from '../../../selectors/appSettings';
 import { getTripReplayTrips } from '../../../selectors/control/tripReplays/tripReplayView';
