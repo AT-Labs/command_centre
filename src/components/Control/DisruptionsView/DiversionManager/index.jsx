@@ -16,7 +16,7 @@ import { getDiversionResultState, getDiversionForEditing, getDiversionEditMode }
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
 import { isAffectedStop, createAffectedStop,
     getUniqueStops, createModifiedRouteVariant, canMerge, hasDiversionModified, getUniqueAffectedStopIds,
-    mergeDiversionToRouteVariant, removeDuplicatePoints } from './DiversionHelper';
+    mergeDiversionToRouteVariant } from './DiversionHelper';
 import { mergeCoordinates, parseWKT, toWKT } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
 import dateTypes from '../../../../types/date-types';
 import EDIT_TYPE from '../../../../types/edit-types';
@@ -117,11 +117,7 @@ const DiversionManager = (props) => {
                 ...(endDate !== null && { serviceDateTo: endDate }),
                 ...(endTime !== null && { endTime }),
             };
-            let { routeVariants } = await searchRouteVariants(search);
-            if (routeVariants?.length > 0) {
-                // Remove duplicate points around bus stops in the shapeWkt
-                routeVariants = routeVariants.map(rv => ({ ...rv, shapeWkt: removeDuplicatePoints(rv.shapeWkt) }));
-            }
+            const { routeVariants } = await searchRouteVariants(search);
             setRouteVariantsList(routeVariants);
             if (isEditingMode && routeVariants && props.diversion) {
                 props.diversion.diversionRouteVariants.forEach((rv) => {

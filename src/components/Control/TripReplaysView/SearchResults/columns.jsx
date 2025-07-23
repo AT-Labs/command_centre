@@ -42,11 +42,6 @@ export const getColumns = (searchType) => {
             </div>
         ),
     }, {
-        header: 'Depot',
-        headerClassName: 'font-size-sm',
-        cellClassName: 'font-size-sm',
-        formatter: ({ depotName }) => depotName || '-',
-    }, {
         header: 'Scheduled First Stop Departure',
         headerClassName: 'trip-replay-progress__fixed-table-cell--scheduled-time font-size-sm alignment',
         cellClassName: 'trip-replay-progress__fixed-table-cell--scheduled-time font-size-sm text-left',
