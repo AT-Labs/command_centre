@@ -559,26 +559,24 @@ export const SelectDetails = (props) => {
                         </FormGroup>
                     </div>
                 )}
-                {false && (
-                    <div className="col-12">
-                        <FormGroup>
-                            <Label for="disruption-creation__wizard-select-details__url">
-                                <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
-                            </Label>
-                            <Input
-                                id="disruption-creation__wizard-select-details__url"
-                                className="w-100 border border-dark"
-                                type="url"
-                                maxLength={ URL_MAX_LENGTH }
-                                value={ url }
-                                placeholder="e.g. https://at.govt.nz"
-                                onChange={ event => props.onDataUpdate('url', event.target.value) }
-                                invalid={ !isUrlValid(url) }
-                            />
-                            <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
-                        </FormGroup>
-                    </div>
-                )}
+                <div className="col-12 d-none">
+                    <FormGroup>
+                        <Label for="disruption-creation__wizard-select-details__url">
+                            <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
+                        </Label>
+                        <Input
+                            id="disruption-creation__wizard-select-details__url"
+                            className="w-100 border border-dark"
+                            type="url"
+                            maxLength={ URL_MAX_LENGTH }
+                            value={ url }
+                            placeholder="e.g. https://at.govt.nz"
+                            onChange={ event => props.onDataUpdate('url', event.target.value) }
+                            invalid={ !isUrlValid(url) }
+                        />
+                        <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
+                    </FormGroup>
+                </div>
             </Form>
             { props.editMode === EDIT_TYPE.EDIT && (
                 <div className="ml-4 mr-4 ">

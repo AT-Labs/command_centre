@@ -261,7 +261,6 @@ export const IncidentsDataGrid = (props) => {
             }
             return { ...incident, path: [incident.incidentDisruptionNo || incident.incidentId] };
         });
-        console.log(res.slice(0, 2));
         return res;
     };
 
