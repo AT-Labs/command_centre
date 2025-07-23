@@ -727,7 +727,8 @@ describe('Incidents Actions', () => {
             payload: {
                 isCreateDiversionEnabled: isEnabled,
             },
-            type: undefined, //diversion test not in scope for now
+            // diversion test not in scope for now
+            type: undefined,
         });
     });
 
