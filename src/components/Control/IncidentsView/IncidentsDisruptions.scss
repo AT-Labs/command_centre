@@ -29,3 +29,14 @@ form.magnify {
 .icon-not-started {
     color: #DC831A;
 }
+
+.custom-data-grid-fit-content {
+    height: fit-content;
+
+    .MuiDataGrid-root {
+        div:nth-of-type(2) {
+            height: fit-content !important;
+            padding: 0 !important;
+        }
+    }
+}

@@ -39,7 +39,7 @@ describe('Incident Selectors', () => {
                 activeStep: 1,
                 cachedShapes: [],
                 editMode: EDIT_TYPE.EDIT,
-                sourceIncidentNo: '123',
+                sourceIncidentId: '123',
                 affectedEntities: {
                     affectedStops: [],
                     affectedRoutes: [],

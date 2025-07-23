@@ -80,11 +80,11 @@ describe('incidents reducer (Jest)', () => {
     it('should handle OPEN_COPY_INCIDENTS', () => {
         const action = {
             type: ACTION_TYPE.OPEN_COPY_INCIDENTS,
-            payload: { isCreateEnabled: true, sourceIncidentNo: 'INC123' },
+            payload: { isCreateEnabled: true, sourceIncidentId: 'INC123' },
         };
         const newState = reducer(undefined, action);
         expect(newState.isCreateEnabled).toBe(true);
-        expect(newState.sourceIncidentNo).toBe('INC123');
+        expect(newState.sourceIncidentId).toBe('INC123');
     });
 
     it('should handle UPDATE_CONTROL_INCIDENTS_SORTING_PARAMS', () => {
