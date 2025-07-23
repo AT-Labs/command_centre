@@ -48,33 +48,55 @@ export const NotificationsView = (props) => {
     const causes = useAlertCauses();
 
     const GRID_COLUMNS = [
-        {
-            field: 'parentSourceId',
-            headerName: '#DISRUPTION',
-            flex: 1,
-            filterOperators: ParentSourceIdDataGridOperator,
-            renderCell: ({ row: { source: { parentIdentifier: parentSourceId } } }) => transformParentSourceIdNo(parentSourceId),
-        },
-        ...(props.useNotificationEffectColumn ? [{
-            field: 'sourceId',
-            headerName: '#EFFECT',
-            flex: 1,
-            filterOperators: sourceIdDataGridOperator,
-            renderCell: ({ row: { source: { identifier: incidentId, parentIdentifier: causeId } } }) => (
-                <Button
-                    aria-label="go-to-disruptions-effect"
-                    variant="text"
-                    onClick={ () => {
-                        props.goToIncidentsView({
-                            incidentDisruptionNo: causeId,
-                        }, { setActiveIncident: true });
-                    } }>
-                    {transformIncidentNo(incidentId)}
-                </Button>
-            ),
+        ...(!props.useNotificationEffectColumn ? [
+            {
+                field: 'sourceId',
+                headerName: '#DISRUPTION',
+                flex: 1,
+                filterOperators: sourceIdDataGridOperator,
+                ...(props.useDisruptionsNotificationsDirectLink ? {
+                    renderCell: ({ row: { source: { identifier: incidentId } } }) => (
+                        <Button
+                            aria-label="go-to-disruptions"
+                            variant="text"
+                            onClick={ () => {
+                                props.goToDisruptionsView({ incidentId }, { setActiveDisruption: true });
+                            } }>
+                            {transformIncidentNo(incidentId)}
+                        </Button>
+                    ),
+                } : {
+                    valueGetter: ({ row: { source: { identifier: incidentId } } }) => transformIncidentNo(incidentId),
+                }),
+            },
+        ] : []),
+        ...(props.useNotificationEffectColumn ? [
+            {
+                field: 'parentSourceId',
+                headerName: '#DISRUPTION',
+                flex: 1,
+                filterOperators: ParentSourceIdDataGridOperator,
+                renderCell: ({ row: { source: { parentIdentifier: parentSourceId } } }) => transformParentSourceIdNo(parentSourceId),
+            }, {
+                field: 'sourceId',
+                headerName: '#EFFECT',
+                flex: 1,
+                filterOperators: sourceIdDataGridOperator,
+                renderCell: ({ row: { source: { identifier: incidentId, parentIdentifier: causeId } } }) => (
+                    <Button
+                        aria-label="go-to-disruptions-effect"
+                        variant="text"
+                        onClick={ () => {
+                            props.goToIncidentsView({
+                                incidentDisruptionNo: causeId,
+                            }, { setActiveIncident: true });
+                        } }>
+                        {transformIncidentNo(incidentId)}
+                    </Button>
+                ),
 
-            valueGetter: ({ row: { source: { identifier: incidentId } } }) => transformIncidentNo(incidentId),
-        }] : []),
+                valueGetter: ({ row: { source: { identifier: incidentId } } }) => transformIncidentNo(incidentId),
+            }] : []),
         {
             field: 'sourceVersion',
             headerName: 'VERSION',

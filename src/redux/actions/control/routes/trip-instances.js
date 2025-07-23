@@ -29,7 +29,7 @@ import { ACTION_RESULT } from '../../../../types/add-trip-types';
 import { captureError } from '../../../../utils/logger';
 import { UpdateStopPlatformError } from '../../../../types/exception-types';
 import { getRoutesTripsDatagridConfig } from '../../../selectors/datagrid';
-import { useHideSkippedStop } from '../../../selectors/appSettings';
+import { useHideSkippedStop, useTripCancellationCause } from '../../../selectors/appSettings';
 
 const loadTripInstances = (tripInstances, timestamp) => ({
     type: ACTION_TYPE.FETCH_CONTROL_TRIP_INSTANCES,
@@ -363,7 +363,8 @@ const bulkTripInstanceActions = (operateTrips, action, selectedTrips) => async (
     }
 };
 
-export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, successMessage, errorMessage, recurrenceSetting, selectedTrips) => async (dispatch) => {
+export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, successMessage, errorMessage, recurrenceSetting, selectedTrips) => async (dispatch, getState) => {
+    const isUseTripCancellationCauseEnabled = useTripCancellationCause(getState());
     const action = trip => updateTripInstanceStatus(
         {
             tripStatus,
@@ -379,6 +380,7 @@ export const collectTripsDataAndUpdateTripsStatus = (operateTrips, tripStatus, s
             display: recurrenceSetting.display,
             agencyId: trip.agencyId,
             routeShortName: trip.routeShortName,
+            ...(isUseTripCancellationCauseEnabled && recurrenceSetting.cancellationCause ? { cancellationCause: recurrenceSetting.cancellationCause } : null),
         },
         successMessage,
         MESSAGE_ACTION_TYPES.bulkStatusUpdate,
@@ -575,7 +577,7 @@ const removeNonNullableFilters = model => model
         ...item,
         value: item.value ?? ' ', // type can be undefined, so we replace it with single space so its not filtered. Its trim() later
     }))
-    ?.filter(item => !!item.value && (!Array.isArray(item.value) || item.value.length > 0));
+    ?.filter(item => item.value != null && (!Array.isArray(item.value) || item.value.length > 0));
 
 export const getFilters = (model, state) => {
     let filters = removeNonNullableFilters(model);
@@ -594,6 +596,7 @@ export const getFilters = (model, state) => {
         ...(item.columnField === 'vehicleLabel' && { vehicleLabels: item.value }),
         ...(item.columnField === 'referenceId' && { referenceIds: item.value }),
         ...(item.columnField === 'trackingStatus' && { trackingStatuses: item.value }),
+        ...(item.columnField === 'directionId' && { directionId: item.value }),
         ...(item.columnField === 'firstStopCode' && { firstStopCode: item.value?.data?.stop_code }),
         ...(item.columnField === 'lastStopCode' && { lastStopCode: item.value?.data?.stop_code }),
     }), {});

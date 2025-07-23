@@ -159,3 +159,6 @@ export const toWKT = (coordinates) => {
     const wktCoords = deduped.map(latlng => `${latlng[1]} ${latlng[0]}`).join(',');
     return `LINESTRING(${wktCoords})`;
 };
+
+// Convert leaflet LatLng objects to coordinates array
+export const toCoordinates = latlngs => latlngs.map(item => [item.lat, item.lng]);

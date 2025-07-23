@@ -101,7 +101,8 @@ export class IncidentsView extends React.Component {
 
     render() {
         const { filteredDisruptions, filteredIncidents, isCreateAllowed, isCreateOpen, activeIncident } = this.props;
-        let { currentPage, userChangedPage } = this.state;
+        let { currentPage } = this.state;
+        const { userChangedPage } = this.state;
 
         const sortedIncidents = [...filteredIncidents].sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
 
@@ -109,7 +110,6 @@ export class IncidentsView extends React.Component {
             const idx = sortedIncidents.findIndex(i => i.incidentId === activeIncident.incidentId);
             if (idx !== -1) {
                 currentPage = Math.floor(idx / PAGE_SIZE) + 1;
-                console.log('[IncidentsView] render: activeIncidentId', activeIncident.incidentId, '-> page', currentPage);
             }
         }
 
@@ -167,9 +167,7 @@ IncidentsView.propTypes = {
     updateAffectedRoutesState: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
     getStopGroups: PropTypes.func.isRequired,
-    activeIncident: PropTypes.object,
-    location: PropTypes.object,
-
+    activeIncident: PropTypes.object.isRequired,
 };
 
 export default withRouter(connect(
@@ -180,5 +178,5 @@ export default withRouter(connect(
         isCreateAllowed: isIncidentCreationAllowed(state),
         activeIncident: getActiveIncident(state),
     }),
-    { getDisruptionsAndIncidents, openCreateIncident, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState, getStopGroups }
+    { getDisruptionsAndIncidents, openCreateIncident, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState, getStopGroups },
 )(IncidentsView));
