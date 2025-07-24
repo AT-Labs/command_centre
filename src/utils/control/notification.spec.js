@@ -522,10 +522,10 @@ describe('findNotificationByQuery', () => {
         expect(result.notificationContentId).to.equal('b');
     });
 
-    it('should return notification with max by version and disruptionId if not specified', () => {
+    it('should return notification with max by version if disruptionId not specified', () => {
         const query = { disruptionId: 10 };
         const result = findNotificationByQuery(query, notifications, false);
-        expect(result.notificationContentId).to.equal('c');
+        expect(result.notificationContentId).to.equal('b');
     });
 
     it('should return null if no match', () => {

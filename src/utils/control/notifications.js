@@ -51,27 +51,19 @@ export const buildQueryParams = (query, useNotificationEffectColumn) => [
 ];
 
 export const findNotificationByQuery = (query, notifications, useNotificationEffectColumn) => {
-    let filteredNotifications = notifications;
-    if (query.parentDisruptionId != null && useNotificationEffectColumn) {
-        filteredNotifications = notifications.filter(
-            n => n.source?.parentIdentifier === Number(query.parentDisruptionId),
-        );
-    }
+    const filtered = notifications.filter((n) => {
+        if (query.parentDisruptionId != null && useNotificationEffectColumn) {
+            if (n.source?.parentIdentifier !== Number(query.parentDisruptionId)) return false;
+        }
+        if (query.disruptionId != null && n.source?.identifier !== Number(query.disruptionId)) return false;
+        return !(query.version != null && n.source?.version !== Number(query.version));
+    });
 
-    if (query.disruptionId != null && query.version != null) {
-        filteredNotifications = filteredNotifications.filter(
-            n => n.source?.identifier === Number(query.disruptionId) && n.source?.version === Number(query.version),
-        );
-    } else {
-        // filter by max disruptionId and max version
-        const maxIdentifier = Math.max(...filteredNotifications.map(n => n.source.identifier));
-        const filteredByMaxIdentifier = filteredNotifications.filter(n => n.source.identifier === maxIdentifier);
+    if (filtered.length === 0) return null;
 
-        return filteredByMaxIdentifier.reduce(
-            (max, curr) => (curr.source.version > max.source.version ? curr : max),
-            filteredByMaxIdentifier[0],
-        );
-    }
+    if (filtered.length === 1) return filtered[0];
 
-    return filteredNotifications.length === 0 ? null : filteredNotifications[0];
+    // Sort by identifier descending, then version descending
+    return filtered.sort((a, b) => b.source.identifier - a.source.identifier
+        || b.source.version - a.source.version)[0];
 };
