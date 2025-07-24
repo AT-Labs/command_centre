@@ -24,20 +24,11 @@ export const IncidentDataGrid = (props) => {
         </div>
     );
 
-    const getRowId = (incident) => {
-        const id = String(incident.incidentId);
-        return id;
-    };
+    const getRowId = incident => String(incident.incidentId);
 
-    const isRowActive = (incident) => {
-        const active = !!(props.activeIncident && (props.activeIncident.incidentId === incident.incidentId));
-        return active;
-    };
+    const isRowActive = incident => !!(props.activeIncident && (props.activeIncident.incidentId === incident.incidentId));
 
-    const isRowFocused = (incident) => {
-        const focused = !!(props.activeIncident && (props.activeIncident.incidentId === incident.incidentId));
-        return focused;
-    };
+    const isRowFocused = incident => !!(props.activeIncident && (props.activeIncident.incidentId === incident.incidentId));
 
     const handleIncidentClick = (incident) => {
         if (isRowActive(incident)) {

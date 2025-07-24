@@ -20,7 +20,7 @@ import { dateTimeFormat } from '../../../utils/dateUtils';
 import { getStopGroups } from '../../../redux/actions/control/dataManagement';
 import { DEFAULT_CAUSE } from '../../../types/disruption-cause-and-effect';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
-import { buildQueryParams, findNotificationByQuery, flatInformedEntities } from '../../../utils/control/notifications';
+import { flatInformedEntities } from '../../../utils/control/notifications';
 import { updateQueryParams } from '../../../redux/actions/navigation';
 import Message from '../Common/Message/Message';
 import { goToDisruptionsView, goToIncidentsView } from '../../../redux/actions/control/link';
@@ -39,39 +39,15 @@ export const NotificationsView = (props) => {
     const NOTIFICATIONS_POLLING_INTERVAL = 10000;
     const isActiveNoti = notification => notification.condition === 'published' && notification.status === 'in-progress';
     const disruptionId = query.get('disruptionId');
-    const parentDisruptionId = query.get('incidentId');
     const version = query.get('version');
     const source = query.get('source');
     const isNew = query.get('new') === 'true';
 
     const isQueryParamsValid = disruptionId && version && source;
-    const isQueryIncidentParamsValid = (parentDisruptionId || (disruptionId && version)) && source;
 
     const causes = useAlertCauses();
 
     const GRID_COLUMNS = [
-        ...(!props.useNotificationEffectColumn ? [
-            {
-                field: 'sourceId',
-                headerName: '#DISRUPTION',
-                flex: 1,
-                filterOperators: sourceIdDataGridOperator,
-                ...(props.useDisruptionsNotificationsDirectLink ? {
-                    renderCell: ({ row: { source: { identifier: incidentId } } }) => (
-                        <Button
-                            aria-label="go-to-disruptions"
-                            variant="text"
-                            onClick={ () => {
-                                props.goToDisruptionsView({ incidentId }, { setActiveDisruption: true });
-                            } }>
-                            {transformIncidentNo(incidentId)}
-                        </Button>
-                    ),
-                } : {
-                    valueGetter: ({ row: { source: { identifier: incidentId } } }) => transformIncidentNo(incidentId),
-                }),
-            },
-        ] : []),
         ...(props.useNotificationEffectColumn ? [
             {
                 field: 'parentSourceId',
@@ -98,7 +74,28 @@ export const NotificationsView = (props) => {
                 ),
 
                 valueGetter: ({ row: { source: { identifier: incidentId } } }) => transformIncidentNo(incidentId),
-            }] : []),
+            }] : [
+            {
+                field: 'sourceId',
+                headerName: '#DISRUPTION',
+                flex: 1,
+                filterOperators: sourceIdDataGridOperator,
+                ...(props.useDisruptionsNotificationsDirectLink ? {
+                    renderCell: ({ row: { source: { identifier: incidentId } } }) => (
+                        <Button
+                            aria-label="go-to-disruptions"
+                            variant="text"
+                            onClick={ () => {
+                                props.goToDisruptionsView({ incidentId }, { setActiveDisruption: true });
+                            } }>
+                            {transformIncidentNo(incidentId)}
+                        </Button>
+                    ),
+                } : {
+                    valueGetter: ({ row: { source: { identifier: incidentId } } }) => transformIncidentNo(incidentId),
+                }),
+            },
+        ]),
         {
             field: 'sourceVersion',
             headerName: 'VERSION',
@@ -228,20 +225,23 @@ export const NotificationsView = (props) => {
     }, []);
 
     useEffect(() => {
-        if (isQueryParamsValid || (isQueryIncidentParamsValid && props.useNotificationEffectColumn)) {
+        if (isQueryParamsValid) {
             props.updateNotificationsDatagridConfig({
                 ...props.datagridConfig,
                 filterModel: {
                     ...props.datagridConfig.filterModel,
-                    items: buildQueryParams({ parentDisruptionId, disruptionId, version, source }, props.useNotificationEffectColumn),
+                    items: [
+                        { id: uniqueId(), columnField: 'sourceId', operatorValue: '==', value: { id: disruptionId, source: 'DISR' } },
+                        { id: uniqueId(), columnField: 'sourceType', operatorValue: '==', value: source },
+                    ],
                 },
             });
         }
-    }, [parentDisruptionId, disruptionId, version, source]);
+    }, [disruptionId, version, source]);
 
     useEffect(() => {
-        if (isQueryParamsValid || (isQueryIncidentParamsValid && props.useNotificationEffectColumn)) {
-            const notification = findNotificationByQuery({ parentDisruptionId, disruptionId, version, source }, props.notifications, props.useNotificationEffectColumn);
+        if (isQueryParamsValid) {
+            const notification = props.notifications.find(n => n.source.identifier === Number(disruptionId) && n.source.version === Number(version));
             if (notification) {
                 props.updateSelectedNotification(notification);
                 setShowFeedbackMessage(false);

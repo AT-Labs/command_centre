@@ -101,14 +101,9 @@ const Confirmation = (props) => {
                                 onClick={ () => {
                                     props.openCreateIncident(false);
                                     props.deleteAffectedEntities();
-                                    props.goToNotificationsView({
-                                        version: props.response.resultIncidentVersion,
-                                        incidentId: props.response.resultIncidentId,
-                                        source: 'DISR',
-                                        new: true,
-                                    });
+                                    props.goToNotificationsView();
                                 } }>
-                                View notifications
+                                View all notifications
                             </Button>
                         </div>
                     ) }
