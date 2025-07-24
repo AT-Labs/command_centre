@@ -1,5 +1,3 @@
-import { uniqueId } from 'lodash-es';
-
 export const getTitle = (items) => {
     const infos = items.find(element => element.name === 'title');
     if (infos) return infos.content;
@@ -38,32 +36,4 @@ export const flatInformedEntities = (informedEntities) => {
         });
     });
     return result;
-};
-
-export const buildQueryParams = (query, useNotificationEffectColumn) => [
-    ...(query.parentDisruptionId && useNotificationEffectColumn
-        ? [{ id: uniqueId(), columnField: 'parentSourceId', operatorValue: '==', value: query.parentDisruptionId }]
-        : []),
-    ...(query.disruptionId != null
-        ? [{ id: uniqueId(), columnField: 'sourceId', operatorValue: '==', value: { id: query.disruptionId, source: 'DISR' } }]
-        : []),
-    { id: uniqueId(), columnField: 'sourceType', operatorValue: '==', value: query.source },
-];
-
-export const findNotificationByQuery = (query, notifications, useNotificationEffectColumn) => {
-    const filtered = notifications.filter((n) => {
-        if (query.parentDisruptionId != null && useNotificationEffectColumn) {
-            if (n.source?.parentIdentifier !== Number(query.parentDisruptionId)) return false;
-        }
-        if (query.disruptionId != null && n.source?.identifier !== Number(query.disruptionId)) return false;
-        return !(query.version != null && n.source?.version !== Number(query.version));
-    });
-
-    if (filtered.length === 0) return null;
-
-    if (filtered.length === 1) return filtered[0];
-
-    // Sort by identifier descending, then version descending
-    return filtered.sort((a, b) => b.source.identifier - a.source.identifier
-        || b.source.version - a.source.version)[0];
 };

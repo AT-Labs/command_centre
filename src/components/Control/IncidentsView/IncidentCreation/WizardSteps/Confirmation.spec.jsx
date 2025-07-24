@@ -161,7 +161,7 @@ describe('Confirmation Component', () => {
                 <Confirmation { ...defaultProps } />
             </Provider>,
         );
-        const button = screen.getByRole('button', { name: /view notifications/i });
+        const button = screen.getByRole('button', { name: /view all notifications/i });
         expect(button).not.toBeNull();
         fireEvent.click(button);
 
