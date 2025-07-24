@@ -80,10 +80,6 @@ export class IncidentsView extends React.Component {
         return !isEqual(this.props.filteredDisruptions, nextProps.filteredDisruptions);
     }
 
-    handlePageChange = (page) => {
-        this.setState({ currentPage: page });
-    };
-
     createIncidentButton = () => (
         <div className="incident-creation">
             <Button
