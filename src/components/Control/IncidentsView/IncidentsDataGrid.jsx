@@ -24,20 +24,7 @@ export const IncidentDataGrid = (props) => {
         </div>
     );
 
-    const getRowId = (incident) => {
-        const id = String(incident.incidentId);
-        return id;
-    };
-
-    const isRowActive = (incident) => {
-        const active = !!(props.activeIncident && (props.activeIncident.incidentId === incident.incidentId));
-        return active;
-    };
-
-    const isRowFocused = (incident) => {
-        const focused = !!(props.activeIncident && (props.activeIncident.incidentId === incident.incidentId));
-        return focused;
-    };
+    const isRowActive = incident => !!(props.activeIncident && (props.activeIncident.incidentId === incident.incidentId));
 
     const handleIncidentClick = (incident) => {
         if (isRowActive(incident)) {
@@ -131,6 +118,8 @@ export const IncidentDataGrid = (props) => {
         );
     }
 
+    const getRowId = incident => incident.incidentId;
+
     return (
         <ControlTable
             columns={ INCIDENT_COLUMNS }
@@ -139,7 +128,6 @@ export const IncidentDataGrid = (props) => {
             isLoading={ props.isLoading }
             rowOnClick={ handleIncidentClick }
             rowActive={ isRowActive }
-            rowFocused={ isRowFocused }
             rowBody={ renderRowBody } />
     );
 };
