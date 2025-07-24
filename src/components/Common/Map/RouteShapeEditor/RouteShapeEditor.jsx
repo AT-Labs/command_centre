@@ -181,8 +181,7 @@ const RouteShapeEditor = (props) => {
             <LeafletMap
                 key={ props.routeVariant?.routeVariantId }
                 center={ center }
-                zoom={ 16 }
-                maxZoom={ 19 }
+                zoom={ 14 }
                 style={ { height: '100%', width: '100%' } }
                 ref={ mapRef }
                 whenReady={ (mapInstance) => {

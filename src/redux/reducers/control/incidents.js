@@ -31,7 +31,7 @@ export const INIT_STATE = {
     showSelectedRoutes: false,
     activeStep: 1,
     action: {
-        resultDisruptionId: null,
+        resultIncidentId: null,
         isRequesting: false,
         resultStatus: null,
         resultMessage: null,
@@ -40,7 +40,7 @@ export const INIT_STATE = {
     },
     shapes: [],
     editMode: EDIT_TYPE.CREATE,
-    sourceIncidentNo: null,
+    sourceIncidentId: null,
     filters: {
         selectedEntity: {},
         selectedStatus: '',
@@ -60,6 +60,8 @@ export const INIT_STATE = {
     },
     isCreateDiversionEnabled: false,
     diversionEditMode: EDIT_TYPE.CREATE,
+    isWorkaroundPanelOpen: false,
+    disruptionKeyToWorkaroundEdit: '',
 };
 
 const handleIncidentsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });
@@ -78,7 +80,7 @@ const handleIncidentActionRequestingUpdate = (state, { payload: { isRequesting, 
         resultIncidentId,
     },
 });
-const handleIncidentActionResultUpdate = (state, { payload: { resultIncidentId, resultMessage, resultStatus, resultCreateNotification, resultIncidentVersion } }) => ({
+const handleIncidentActionResultUpdate = (state, { payload: { resultIncidentId, resultMessage, resultStatus, resultCreateNotification, resultDisruptionVersion } }) => ({
     ...state,
     action: {
         ...state.action,
@@ -86,7 +88,7 @@ const handleIncidentActionResultUpdate = (state, { payload: { resultIncidentId, 
         resultStatus,
         resultIncidentId,
         resultCreateNotification,
-        resultIncidentVersion,
+        resultDisruptionVersion,
     },
 });
 
@@ -99,7 +101,7 @@ const handleCopyIncidentsUpdate = (state, { payload: { isCopied } }) => ({
 });
 
 const handleOpenIncidents = (state, { payload: { isCreateEnabled } }) => ({ ...state, isCreateEnabled });
-const handleOpenCopyIncidents = (state, { payload: { isCreateEnabled, sourceIncidentNo } }) => ({ ...state, isCreateEnabled, sourceIncidentNo });
+const handleOpenCopyIncidents = (state, { payload: { isCreateEnabled, sourceIncidentId } }) => ({ ...state, isCreateEnabled, sourceIncidentId });
 const handleUpdateAffectedEntities = (state, { payload }) => ({ ...state, affectedEntities: { ...state.affectedEntities, ...payload } });
 const handleUpdateCachedShapes = (state, { payload }) => ({ ...state, cachedShapes: { ...state.cachedShapes, ...payload.shapes } });
 const handleUpdateCachedRoutesToStops = (state, { payload }) => ({ ...state, cachedRoutesToStops: { ...state.cachedRoutesToStops, ...payload.routesToStops } });
@@ -136,6 +138,12 @@ const handleOpenCreateDiversion = (state, { payload: { isCreateDiversionEnabled 
 const handleUpdateDiversionEditMode = (state, { payload: { diversionEditMode } }) => ({ ...state, diversionEditMode });
 const handleUpdateSetAllIncidents = (state, { payload: { allIncidents } }) => ({ ...state, incidents: allIncidents });
 const handleSortingParamsUpdate = (state, { payload: { sortingParams } }) => ({ ...state, sortingParams });
+const handleWorkaroundPanel = (state, { payload: { isOpen } }) => ({
+    ...state,
+    isWorkaroundPanelOpen: isOpen,
+});
+
+const handleDisruptionKeyToWorkaroundEdit = (state, { payload: { disruptionKeyToWorkaroundEdit } }) => ({ ...state, disruptionKeyToWorkaroundEdit });
 
 export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_PERMISSIONS]: handleIncidentsPermissionsUpdate,
@@ -171,4 +179,6 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_SET_ALL_INCIDENTS]: handleUpdateSetAllIncidents,
     [ACTION_TYPE.UPDATE_CONTROL_ACTIVE_INCIDENT]: handleUpdateActiveIncidentId,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_SORTING_PARAMS]: handleSortingParamsUpdate,
+    [ACTION_TYPE.SET_WORKAROUND_PANEL_STATUS]: handleWorkaroundPanel,
+    [ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_WORKAROUND_EDIT]: handleDisruptionKeyToWorkaroundEdit,
 }, INIT_STATE);

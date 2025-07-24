@@ -3,6 +3,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 import { isEqual } from 'lodash-es';
+import { withRouter } from 'react-router-dom';
 
 import {
     getDisruptionsAndIncidents,
@@ -16,6 +17,7 @@ import {
     isIncidentCreationOpen,
     getFilteredDisruptions,
     getFilteredIncidents,
+    getActiveIncident,
 } from '../../../redux/selectors/control/incidents';
 import { DISRUPTION_POLLING_INTERVAL } from '../../../constants/disruptions';
 import Filters from './Filters/Filters';
@@ -25,6 +27,7 @@ import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
 import './style.scss';
 import IncidentsDataGrid from './IncidentsDataGrid';
 import { PAGE_SIZE } from './types';
+import CreateIncident from './IncidentCreation/CreateIncident/index';
 
 export class IncidentsView extends React.Component {
     constructor(props) {
@@ -33,6 +36,7 @@ export class IncidentsView extends React.Component {
         this.state = {
             timer: undefined,
             currentPage: 1,
+            userChangedPage: false,
         };
     }
 
@@ -77,7 +81,7 @@ export class IncidentsView extends React.Component {
     }
 
     handlePageChange = (page) => {
-        this.setState({ currentPage: page });
+        this.setState({ currentPage: page, userChangedPage: true });
     };
 
     createIncidentButton = () => (
@@ -96,12 +100,21 @@ export class IncidentsView extends React.Component {
     );
 
     render() {
-        const { filteredDisruptions, filteredIncidents, isCreateAllowed, isCreateOpen } = this.props;
-        const { currentPage } = this.state;
+        const { filteredDisruptions, filteredIncidents, isCreateAllowed, isCreateOpen, activeIncident } = this.props;
+        let { currentPage } = this.state;
+        const { userChangedPage } = this.state;
 
-        // Calculate paginated data
+        const sortedIncidents = [...filteredIncidents].sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
+
+        if (!userChangedPage && activeIncident && activeIncident.incidentId) {
+            const idx = sortedIncidents.findIndex(i => i.incidentId === activeIncident.incidentId);
+            if (idx !== -1) {
+                currentPage = Math.floor(idx / PAGE_SIZE) + 1;
+            }
+        }
+
         const startIndex = (currentPage - 1) * PAGE_SIZE;
-        const paginatedIncidents = filteredIncidents.slice(startIndex, startIndex + PAGE_SIZE);
+        const paginatedIncidents = sortedIncidents.slice(startIndex, startIndex + PAGE_SIZE);
         return (
             <div className="control-incidents-view">
                 {!isCreateOpen
@@ -127,16 +140,17 @@ export class IncidentsView extends React.Component {
                             <PageInfo
                                 currentPage={ currentPage }
                                 itemsPerPage={ PAGE_SIZE }
-                                itemsTotal={ filteredIncidents.length }
+                                itemsTotal={ sortedIncidents.length }
                             />
                             <Pagination
                                 currentPage={ currentPage }
-                                itemsTotal={ filteredIncidents.length }
+                                itemsTotal={ sortedIncidents.length }
                                 itemsPerPage={ PAGE_SIZE }
-                                onPageClick={ page => this.handlePageChange(page) }
+                                onPageClick={ this.handlePageChange }
                             />
                         </div>
                     )}
+                {isCreateOpen && isCreateAllowed && <CreateIncident />}
             </div>
         );
     }
@@ -153,12 +167,16 @@ IncidentsView.propTypes = {
     updateAffectedRoutesState: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
     getStopGroups: PropTypes.func.isRequired,
-
+    activeIncident: PropTypes.object.isRequired,
 };
 
-export default connect(state => ({
-    filteredDisruptions: getFilteredDisruptions(state),
-    filteredIncidents: getFilteredIncidents(state),
-    isCreateOpen: isIncidentCreationOpen(state),
-    isCreateAllowed: isIncidentCreationAllowed(state),
-}), { getDisruptionsAndIncidents, openCreateIncident, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState, getStopGroups })(IncidentsView);
+export default withRouter(connect(
+    state => ({
+        filteredDisruptions: getFilteredDisruptions(state),
+        filteredIncidents: getFilteredIncidents(state),
+        isCreateOpen: isIncidentCreationOpen(state),
+        isCreateAllowed: isIncidentCreationAllowed(state),
+        activeIncident: getActiveIncident(state),
+    }),
+    { getDisruptionsAndIncidents, openCreateIncident, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState, getStopGroups },
+)(IncidentsView));
