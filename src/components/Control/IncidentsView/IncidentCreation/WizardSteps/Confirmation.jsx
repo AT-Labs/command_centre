@@ -102,7 +102,7 @@ const Confirmation = (props) => {
                                     props.openCreateIncident(false);
                                     props.deleteAffectedEntities();
                                     props.goToNotificationsView({
-                                        version: props.response.resultIncidentVersion,
+                                        version: props.response.resultIncidentVersion ?? 1,
                                         incidentId: props.response.resultIncidentId,
                                         source: 'DISR',
                                         new: true,

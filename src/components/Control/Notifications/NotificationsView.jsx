@@ -269,12 +269,26 @@ export const NotificationsView = (props) => {
         props.updateSelectedNotification(notification);
     };
 
+    const getAlertMessage = () => {
+        const isParentIncident = parentDisruptionId != null && props.useNotificationEffectColumn;
+        const id = isParentIncident ? parentDisruptionId : disruptionId;
+        const transformNo = isParentIncident ? transformParentSourceIdNo : transformIncidentNo;
+
+        return {
+            id: uniqueId(id),
+            type: ALERT_MESSAGE_TYPE,
+            body: `Notification for Disruption ${transformNo(id)} version ${version} is being created...`,
+            tripId: undefined,
+        };
+    };
+
     return (
         <div className="control-notifications-view">
             <div className="mb-3">
                 <h1>Notifications - Service Alerts</h1>
             </div>
-            { props.useDisruptionsNotificationsDirectLink && isQueryParamsValid && isNew && showFeedbackMessage && (
+            { props.useDisruptionsNotificationsDirectLink
+                && (isQueryParamsValid || (isQueryIncidentParamsValid && props.useNotificationEffectColumn)) && isNew && showFeedbackMessage && (
                 <>
                     <div className="row mb-3">
                         <div className="col-md-6 offset-md-3">
@@ -282,11 +296,7 @@ export const NotificationsView = (props) => {
                                 autoDismiss={ false }
                                 isDismissible={ false }
                                 zIndex={ 1000 }
-                                message={ {
-                                    id: uniqueId(disruptionId),
-                                    type: ALERT_MESSAGE_TYPE,
-                                    body: `Notification for Disruption ${transformIncidentNo(disruptionId)} version ${version} is being created...`,
-                                } } />
+                                message={ getAlertMessage() } />
                         </div>
                     </div>
                     <div className="notification-page-overlay">
