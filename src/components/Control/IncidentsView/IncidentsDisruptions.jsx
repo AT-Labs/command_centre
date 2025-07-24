@@ -201,7 +201,7 @@ export const IncidentsDisruptions = (props) => {
                 updateDatagridConfig={ config => props.updateDisruptionsDatagridConfig(config) }
                 getDetailPanelContent={ getDetailPanelContent }
                 getRowId={ row => row.disruptionId }
-                gridClassNames="vh-50"
+                gridClassNames="custom-data-grid-fit-content"
                 calculateDetailPanelHeight={ props.useViewDisruptionDetailsPage ? () => 400 : calculateDetailPanelHeight }
                 expandedDetailPanels={ props.activeDisruptionId ? [props.activeDisruptionId] : null }
                 onRowExpanded={ ids => updateActiveDisruption(ids) }

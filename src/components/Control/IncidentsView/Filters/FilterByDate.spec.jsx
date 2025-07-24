@@ -19,9 +19,7 @@ describe('FilterByDate', () => {
         const input = screen.getByPlaceholderText('Select date');
         fireEvent.focus(input);
 
-        const todayLabel = moment().format('MMMM D, YYYY');
-
-        const dateButton = await screen.findByLabelText(todayLabel);
+        const dateButton = await screen.findByLabelText(moment().subtract(3, 'days').format('MMMM D, YYYY'));
         fireEvent.click(dateButton);
 
         expect(handleChange).toHaveBeenCalledTimes(1);
