@@ -1,3 +1,5 @@
+import { uniqueId } from 'lodash-es';
+
 export const getTitle = (items) => {
     const infos = items.find(element => element.name === 'title');
     if (infos) return infos.content;
