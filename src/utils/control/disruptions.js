@@ -163,12 +163,6 @@ export const transformIncidentNo = (disruptionId) => {
     return `DISR${disruptionId.toString().padStart(6, '0')}`;
 };
 
-export const transformParentSourceIdNo = (id) => {
-    if (!id) return null;
-
-    return `CCD${id.toString().padStart(6, '0')}`;
-};
-
 export const getRecurrenceDates = (startDate, startTime, endDate) => {
     const recurrenceDates = {};
     if (startDate && startTime) {

@@ -99,8 +99,8 @@ export const IncidentsDataGrid = (props) => {
 
     const getViewNotificationButtons = (row, source, callback = () => {}) => {
         const { disruptionId, version, status } = row;
-        return (
-            [
+        return disruptionId
+            ? (
                 <Tooltip title="View notification" placement="top-end" key={ uniqueId(disruptionId) }>
                     <span>
                         <IconButton
@@ -111,9 +111,9 @@ export const IncidentsDataGrid = (props) => {
                             <BsFillChatTextFill />
                         </IconButton>
                     </span>
-                </Tooltip>,
-            ]
-        );
+                </Tooltip>
+            )
+            : [];
     };
 
     const getIncidentsButton = incident => (
