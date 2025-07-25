@@ -53,6 +53,11 @@ describe('IncidentsView', () => {
         expect(wrapper.find(Button).exists()).toBe(true);
     });
 
+    /* it('should change page on handlePageChange', () => {
+        wrapper.instance().handlePageChange(3);
+        expect(wrapper.state('currentPage')).toBe(3);
+    }); */
+
     it('should call incident creation methods on button click', () => {
         wrapper.find(Button).simulate('click');
         expect(defaultProps.openCreateIncident).toHaveBeenCalledWith(true);
