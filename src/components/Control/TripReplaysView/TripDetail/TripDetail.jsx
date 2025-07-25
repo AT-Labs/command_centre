@@ -25,6 +25,7 @@ import { updateDisruptionFilters } from '../../../../redux/actions/control/disru
 import Icon from '../../../Common/Icon/Icon';
 import './TripDetail.scss';
 import { TripDetailIcon } from '../TripDetailIcon';
+import { useParentChildIncident } from '../../../../redux/selectors/appSettings';
 
 const renderDate = date => (date && moment(date).format('dddd, DD MMMM YYYY'));
 
@@ -106,7 +107,7 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
 
         updateFilters(filters);
         updateView(VIEW_TYPE.MAIN.CONTROL);
-        navigate(VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS);
+        navigate(useParentChildIncident ? VIEW_TYPE.CONTROL_DETAIL.INCIDENTS : VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS);
     }, [searchResults]);
 
     const navigateToDisruption = () => {
@@ -204,6 +205,7 @@ export default connect(state => ({
     status: getTripStatus(state),
     vehiclePositions: getVehiclePositions(state),
     searchResults: getSearchResults(state),
+    useParentChildIncident: useParentChildIncident(state),
 }), {
     updateFilters: updateDisruptionFilters,
     updateView: updateMainView,
