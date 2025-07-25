@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { getTitle, getDescription, getAndParseInformedEntities, flatInformedEntities } from './notifications';
+import { getTitle, getDescription, getAndParseInformedEntities, flatInformedEntities, findNotificationByQuery, buildQueryParams } from './notifications';
 
 const data = {
     items: [
@@ -472,5 +472,71 @@ describe('flatInformedEntities', () => {
             },
         ];
         expect(flatInformedEntities(informedEntities)).to.deep.equal(expected);
+    });
+});
+
+describe('buildQueryParams', () => {
+    it('should build params with parentDisruptionId and useNotificationEffectColumn', () => {
+        const query = { parentDisruptionId: 123, disruptionId: 456, source: 'DISR' };
+        const params = buildQueryParams(query, true);
+        expect(params.some(p => p.columnField === 'parentSourceId')).to.equal(true);
+        expect(params.some(p => p.columnField === 'sourceId')).to.equal(true);
+        expect(params.some(p => p.columnField === 'sourceType')).to.equal(true);
+    });
+
+    it('should not include parentSourceId if useNotificationEffectColumn is false', () => {
+        const query = { parentDisruptionId: 123, disruptionId: 456, source: 'DISR' };
+        const params = buildQueryParams(query, false);
+        expect(params.some(p => p.columnField === 'parentSourceId')).to.equal(false);
+    });
+
+    it('should handle missing disruptionId', () => {
+        const query = { parentDisruptionId: 123, source: 'DISR' };
+        const params = buildQueryParams(query, true);
+        expect(params.some(p => p.columnField === 'sourceId')).to.equal(false);
+    });
+
+    it('should always include sourceType', () => {
+        const query = { source: 'DISR' };
+        const params = buildQueryParams(query, false);
+        expect(params.some(p => p.columnField === 'sourceType')).to.equal(true);
+    });
+});
+
+describe('findNotificationByQuery', () => {
+    const notifications = [
+        { source: { parentIdentifier: 1, identifier: 10, version: 1, title: 'A', type: 'DISR' }, notificationContentId: 'a' },
+        { source: { parentIdentifier: 1, identifier: 10, version: 2, title: 'B', type: 'DISR' }, notificationContentId: 'b' },
+        { source: { parentIdentifier: 2, identifier: 20, version: 1, title: 'C', type: 'DISR' }, notificationContentId: 'c' },
+    ];
+
+    it('should filter by parentDisruptionId and useNotificationEffectColumn', () => {
+        const query = { parentDisruptionId: 1 };
+        const result = findNotificationByQuery(query, notifications, true);
+        expect(['a', 'b']).to.include(result.notificationContentId);
+    });
+
+    it('should filter by disruptionId and version', () => {
+        const query = { disruptionId: 10, version: 2 };
+        const result = findNotificationByQuery(query, notifications, false);
+        expect(result.notificationContentId).to.equal('b');
+    });
+
+    it('should return notification with max by version if disruptionId not specified', () => {
+        const query = { disruptionId: 10 };
+        const result = findNotificationByQuery(query, notifications, false);
+        expect(result.notificationContentId).to.equal('b');
+    });
+
+    it('should return null if no match', () => {
+        const query = { disruptionId: 999, version: 1 };
+        const result = findNotificationByQuery(query, notifications, false);
+        expect(result).to.equal(null);
+    });
+
+    it('should handle empty items', () => {
+        const query = { disruptionId: 10, version: 1 };
+        const result = findNotificationByQuery(query, [], false);
+        expect(result).to.equal(null);
     });
 });
