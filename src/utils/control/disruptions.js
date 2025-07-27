@@ -92,64 +92,6 @@ export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
     };
 };
 
-const getMode = disruption => [...disruption.affectedEntities.affectedRoutes.map(route => VEHICLE_TYPES[route.routeType].type),
-    ...disruption.affectedEntities.affectedStops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType].type)];
-
-export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, incidentUrl, isEditMode) => {
-    const startDate = disruption.startDate ? disruption.startDate : moment(disruption.startTime).format(DATE_FORMAT);
-    const startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
-    let endTimeMoment;
-    if (!isEmpty(disruption.endDate) && !isEmpty(disruption.endTime)) {
-        endTimeMoment = momentFromDateTime(disruption.endDate, disruption.endTime);
-    }
-    const modes = getMode(disruption);
-    const routesToRequest = disruption.affectedEntities.affectedRoutes.map((
-        { routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon },
-    ) => ({
-        routeId,
-        routeShortName,
-        routeType,
-        type,
-        notes: [],
-        ...(stopCode !== undefined && {
-            directionId,
-            stopId,
-            stopCode,
-            stopName,
-            stopLat,
-            stopLon,
-        }),
-    }));
-    const stopsToRequest = disruption.affectedEntities.affectedStops.map(entity => omit(entity, ['shapeWkt']));
-    return {
-        ...disruption,
-        ...(isEditMode ? { } : { header: incidentHeader }),
-        ...(isEditMode ? { } : { status: incidentStatus }),
-        ...(isEditMode ? { } : { cause: incidentCause }),
-        url: incidentUrl,
-        endTime: endTimeMoment,
-        startTime: startTimeMoment,
-        mode: uniq(modes).join(', '),
-        affectedEntities: [...routesToRequest, ...stopsToRequest],
-    };
-};
-
-export const buildIncidentSubmitBody = (incident, isEditMode) => {
-    const modes = incident.disruptions.flatMap(disruption => getMode(disruption));
-    return {
-        ...incident,
-        mode: uniq(modes).join(', '),
-        disruptions: incident.disruptions.flatMap(disruption => buildDisruptionSubmitBody(
-            disruption,
-            incident.header,
-            incident.status,
-            incident.cause,
-            incident.url,
-            isEditMode,
-        )),
-    };
-};
-
 const transformKeysToCamelCase = obj => transform(obj, (acc, value, key, target) => {
     const camelKey = isArray(target) ? key : camelCase(key);
     acc[camelKey] = isObject(value) ? transformKeysToCamelCase(value) : value;
@@ -161,12 +103,6 @@ export const transformIncidentNo = (disruptionId) => {
     if (!disruptionId) return null;
 
     return `DISR${disruptionId.toString().padStart(6, '0')}`;
-};
-
-export const transformParentSourceIdNo = (id) => {
-    if (!id) return null;
-
-    return `CCD${id.toString().padStart(6, '0')}`;
 };
 
 export const getRecurrenceDates = (startDate, startTime, endDate) => {

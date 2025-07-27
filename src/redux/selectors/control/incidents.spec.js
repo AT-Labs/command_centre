@@ -11,10 +11,7 @@ describe('Incident Selectors', () => {
     const mockState = {
         control: {
             incidents: {
-                incidents: [
-                    { incidentId: '1', impact: 'test 1', disruptions: ['1'] },
-                    { incidentId: '2', impact: 'test 2', disruptions: ['2'] },
-                ],
+                incidents: [{ incidentId: '1', impact: 'test 1' }, { incidentId: '2', impact: 'test 2' }],
                 disruptions: [
                     {
                         disruptionId: '1',
@@ -42,7 +39,7 @@ describe('Incident Selectors', () => {
                 activeStep: 1,
                 cachedShapes: [],
                 editMode: EDIT_TYPE.EDIT,
-                sourceIncidentId: '123',
+                sourceIncidentNo: '123',
                 affectedEntities: {
                     affectedStops: [],
                     affectedRoutes: [],
@@ -54,7 +51,7 @@ describe('Incident Selectors', () => {
 
     it('should get grouped incidents', () => {
         const result = selectors.getGroupedIncidents(mockState);
-        expect(result).toEqual([{ impact: 'test 1', incidentId: '1', disruptions: ['1'] }, { impact: 'test 2', incidentId: '2', disruptions: ['2'] }]);
+        expect(result).toEqual([{ impact: 'test 1', incidentId: '1' }, { impact: 'test 2', incidentId: '2' }]);
     });
 
     it('should get incident creation permission', () => {
@@ -77,77 +74,7 @@ describe('Incident Selectors', () => {
         const result = selectors.getFilteredIncidents(mockState);
         expect(result).toHaveLength(1);
         expect(result[0].incidentId).toBe('1');
-        expect(result[0].impact).toBe('test 1');
-    });
-
-    it('should merged impacts', () => {
-        const result = selectors.getIncidentsWithDisruptions(mockState);
-        expect(result).toHaveLength(2);
-        expect(result[0].incidentId).toBe('1');
-        expect(result[0].impact).toBe('test 1, high');
-    });
-
-    it('merges impact values uniquely when disruptions share the same incidentId', () => {
-        const noFilterState = {
-            ...mockState,
-            control: {
-                ...mockState.control,
-                incidents: {
-                    ...mockState.control.incidents,
-                    incidents: [
-                        { incidentId: 1, impact: 'test 1', disruptions: [1, 2, 3] },
-                        { incidentId: 2, impact: 'test 2', disruptions: [] },
-                    ],
-                    disruptions: [
-                        { disruptionId: 1, impact: 'Delay', affectedEntities: [], incidentId: 1 },
-                        { disruptionId: 2, impact: 'Detour', affectedEntities: [], incidentId: 1 },
-                        { disruptionId: 3, impact: 'Delay', affectedEntities: [], incidentId: 1 },
-                    ],
-                    filters: {
-                        selectedEntity: {},
-                        selectedStatus: '',
-                        selectedStartDate: null,
-                        selectedEndDate: null,
-                        selectedImpact: null,
-                    },
-                },
-            },
-        };
-
-        const result = selectors.getIncidentsWithDisruptions(noFilterState);
-        expect(result).toHaveLength(4);
-        expect(result[0].impact).toEqual('test 1, Delay, Detour');
-    });
-
-    it('merges affectedEntities when disruptions share the same incidentId', async () => {
-        const noFilterState = {
-            ...mockState,
-            control: {
-                ...mockState.control,
-                incidents: {
-                    ...mockState.control.incidents,
-                    incidents: [
-                        { impact: 'Delay', incidentId: 5, disruptions: [1, 2] },
-                    ],
-                    disruptions: [
-                        { disruptionId: 1, impact: 'Delay', affectedEntities: ['E1'], incidentId: 5 },
-                        { disruptionId: 2, impact: 'Delay', affectedEntities: ['E2'], incidentId: 5 },
-                    ],
-                    filters: {
-                        selectedEntity: {},
-                        selectedStatus: '',
-                        selectedStartDate: null,
-                        selectedEndDate: null,
-                        selectedImpact: null,
-                    },
-                },
-            },
-        };
-
-        const result = selectors.getIncidentsWithDisruptions(noFilterState);
-        expect(result).toHaveLength(3);
-        expect(result[0].incidentId).toBe(5);
-        expect(result[0].affectedEntities).toEqual(expect.arrayContaining(['E1', 'E2']));
+        expect(result[0].impact).toBe('high');
     });
 
     it('should get sorted incidents', () => {

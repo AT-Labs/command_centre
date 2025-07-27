@@ -2,8 +2,8 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import { Button } from 'reactstrap';
 import { IncidentsView } from './index';
-
-jest.mock('./IncidentCreation/CreateIncident/index', () => () => <div />);
+import { PAGE_SIZE } from './types';
+import IncidentsDataGrid from './IncidentsDataGrid';
 
 jest.useFakeTimers();
 
@@ -51,6 +51,19 @@ describe('IncidentsView', () => {
 
     it('should render the create incident button when isCreateAllowed is true', () => {
         expect(wrapper.find(Button).exists()).toBe(true);
+    });
+
+    it('should paginate incidents correctly', () => {
+        wrapper.setState({ currentPage: 2 });
+        const grid = wrapper.findWhere(node => node.type() === IncidentsDataGrid);
+        expect(grid.exists()).toBe(true);
+        const paginatedIncidents = defaultProps.filteredIncidents.slice(PAGE_SIZE, PAGE_SIZE * 2);
+        expect(grid.prop('incidents')).toEqual(paginatedIncidents);
+    });
+
+    it('should change page on handlePageChange', () => {
+        wrapper.instance().handlePageChange(3);
+        expect(wrapper.state('currentPage')).toBe(3);
     });
 
     it('should call incident creation methods on button click', () => {

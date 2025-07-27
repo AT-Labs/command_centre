@@ -16,7 +16,7 @@ import {
     getCachedShapes,
     getCachedRoutesToStops,
     getCachedStopsToRoutes,
-    getSourceIncidentId,
+    getSourceIncidentNo,
     getEditMode,
 } from '../../selectors/control/incidents';
 import { getAllRoutes } from '../../selectors/static/routes';
@@ -34,13 +34,6 @@ const loadIncidentsDisruptions = disruptions => ({
     type: ACTION_TYPE.FETCH_CONTROL_INCIDENTS_DISRUPTIONS,
     payload: {
         disruptions,
-    },
-});
-
-const loadIncidents = incidents => ({
-    type: ACTION_TYPE.FETCH_CONTROL_INCIDENTS,
-    payload: {
-        incidents,
     },
 });
 
@@ -65,13 +58,6 @@ const updateLoadingRoutesByStop = isLoadingRoutesByStop => ({
     },
 });
 
-const updateLoadingIncidentForEditState = isIncidentForEditLoading => ({
-    type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
-    payload: {
-        isIncidentForEditLoading,
-    },
-});
-
 const updateRequestingIncidentState = (isRequesting, resultIncidentId) => ({
     type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING,
     payload: {
@@ -91,13 +77,6 @@ export const setAllIncidents = allIncidents => ({
     type: ACTION_TYPE.UPDATE_CONTROL_SET_ALL_INCIDENTS,
     payload: {
         allIncidents,
-    },
-});
-
-export const setAllDisruptions = allDisruptions => ({
-    type: ACTION_TYPE.UPDATE_CONTROL_SET_ALL_INCIDENTS_DISRUPTIONS,
-    payload: {
-        allDisruptions,
     },
 });
 
@@ -184,51 +163,52 @@ export const updateRoutesByStop = (routesByStop, isLoadingRoutesByStop = false) 
     },
 });
 
-const updateRequiresToUpdateNotesState = isRequiresToUpdateNotes => ({
-    type: ACTION_TYPE.UPDATE_EFFECT_REQUIRES_TO_UPDATE_NOTES,
-    payload: {
-        isRequiresToUpdateNotes,
-    },
-});
-
-const updateWorkaroundsNeedsToBeUpdatedState = isWorkaroundsNeedsToBeUpdated => ({
-    type: ACTION_TYPE.UPDATE_WORKAROUNDS_NEED_TO_BE_UPDATED,
-    payload: {
-        isWorkaroundsNeedsToBeUpdated,
-    },
-});
-
 export const getDisruptionsAndIncidents = () => (dispatch, getState) => {
     const state = getState();
-    if (!state) {
-        return [];
-    }
-    return disruptionsMgtApi.getIncidents(useDraftDisruptions(state)).then((response) => {
-        const { incidents } = response;
-        return disruptionsMgtApi.getDisruptions(useDraftDisruptions(state))
-            .then((res) => {
-                const { disruptions, _links: { permissions } } = res;
-                if (disruptions.length > 0) {
-                    dispatch(setAllDisruptions(disruptions));
-                    dispatch(loadIncidentsDisruptions(disruptions));
+    return disruptionsMgtApi.getDisruptions(useDraftDisruptions(state))
+        .then((response) => {
+            const { disruptions, _links: { permissions } } = response;
+            const mergedMap = new Map();
+
+            disruptions.forEach((originalDisruption) => {
+                // This is fix needs until we have a proper data in DB
+                const disruption = {
+                    ...originalDisruption,
+                    incidentId: originalDisruption.incidentId || originalDisruption.disruptionId,
+                };
+
+                const existing = mergedMap.get(disruption.incidentId);
+                if (existing) {
+                    // Merge affectedEntities
+                    existing.affectedEntities = existing.affectedEntities.concat(disruption.affectedEntities);
+                    // Merge unique impact values
+                    const rawImpacts = existing.impact.split(',');
+                    const trimmedImpacts = rawImpacts.map(impact => impact.trim());
+                    const existingImpacts = new Set(trimmedImpacts);
+
+                    const rawNewImpacts = disruption.impact.split(',');
+                    const newImpacts = rawNewImpacts.map(impact => impact.trim());
+                    newImpacts.forEach(impact => existingImpacts.add(impact));
+                    existing.impact = Array.from(existingImpacts).join(', ');
+                } else {
+                    // Clone to avoid mutating original
+                    mergedMap.set(disruption.incidentId, {
+                        ...disruption,
+                        affectedEntities: [...disruption.affectedEntities],
+                        impact: disruption.impact || '',
+                    });
                 }
-                if (incidents.length > 0) {
-                    dispatch(setAllIncidents(incidents));
-                    dispatch(loadIncidents(incidents));
-                }
-                if (permissions) dispatch(updateIncidentsPermissionsAction(permissions));
-            })
-            .catch(() => {
-                if (ERROR_TYPE.fetchDisruptionsEnabled) {
-                    const errorMessage = ERROR_TYPE.fetchDisruptions;
-                    dispatch(setBannerError(errorMessage));
-                }
-            })
-            .finally(() => dispatch(updateLoadingIncidentsState(false)));
-    })
+            });
+
+            const sortedMergedDisruptions = Array.from(mergedMap.values())
+                .sort((a, b) => b.incidentId - a.incidentId);
+            dispatch(setAllIncidents(sortedMergedDisruptions));
+            dispatch(updateIncidentsPermissionsAction(permissions));
+            dispatch(loadIncidentsDisruptions(disruptions));
+        })
         .catch(() => {
             if (ERROR_TYPE.fetchDisruptionsEnabled) {
-                const errorMessage = ERROR_TYPE.fetchIncidents;
+                const errorMessage = ERROR_TYPE.fetchDisruptions;
                 dispatch(setBannerError(errorMessage));
             }
         })
@@ -236,21 +216,21 @@ export const getDisruptionsAndIncidents = () => (dispatch, getState) => {
 };
 
 export const updateIncident = incident => async (dispatch) => {
-    const { incidentId, createNotification } = incident;
-    dispatch(updateRequestingIncidentState(true, incidentId));
+    const { disruptionId, incidentNo, createNotification } = incident;
+    dispatch(updateRequestingIncidentState(true, disruptionId));
 
     let result;
     try {
-        result = await disruptionsMgtApi.updateIncident(incident);
+        result = await disruptionsMgtApi.updateDisruption(incident);
         if (incident.status === STATUSES.DRAFT) {
-            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.SAVE_DRAFT_SUCCESS(incidentId, false)));
+            dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.SAVE_DRAFT_SUCCESS(incidentNo, false)));
         } else {
-            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_SUCCESS(incidentId, createNotification)));
+            dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentNo, createNotification)));
         }
     } catch (error) {
-        dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
+        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentNo, error.code)));
     } finally {
-        dispatch(updateRequestingIncidentState(false, incidentId));
+        dispatch(updateRequestingIncidentState(false, disruptionId));
     }
     await dispatch(getDisruptionsAndIncidents());
 
@@ -279,46 +259,47 @@ export const updateActiveIncidentId = activeIncidentId => (dispatch) => {
 
 export const publishDraftIncident = incident => async (dispatch) => {
     let response;
-    dispatch(updateRequestingIncidentState(true, incident.incidentId));
+    dispatch(updateRequestingIncidentState(true, incident.disruptionId));
     try {
-        response = await disruptionsMgtApi.updateIncident(incident);
+        response = await disruptionsMgtApi.updateDisruption(incident);
         dispatch(
             updateRequestingIncidentResult(
-                incident.incidentId,
-                ACTION_RESULT.PUBLISH_DRAFT_SUCCESS(response.incidentId, response.version, response.createNotification),
+                incident.disruptionId,
+                ACTION_RESULT.PUBLISH_DRAFT_SUCCESS(response.incidentNo, response.version, response.createNotification),
             ),
         );
     } catch (error) {
-        dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.PUBLISH_DRAFT_ERROR(error.code)));
+        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.PUBLISH_DRAFT_ERROR(error.code)));
     } finally {
-        dispatch(updateRequestingIncidentState(false, incident.incidentId));
+        dispatch(updateRequestingIncidentState(false, incident.disruptionId));
     }
 
     await dispatch(getDisruptionsAndIncidents());
     return response;
 };
 
-export const createNewIncident = incident => async (dispatch, getState) => {
+export const createIncident = incident => async (dispatch, getState) => {
     let response;
     const state = getState();
-    const sourceIncidentId = getSourceIncidentId(state);
+    const sourceIncidentNo = getSourceIncidentNo(state);
     const myEditMode = getEditMode(state);
+
     dispatch(updateRequestingIncidentState(true));
     try {
-        response = await disruptionsMgtApi.createIncident(incident);
+        response = await disruptionsMgtApi.createDisruption(incident);
         if (myEditMode === EDIT_TYPE.COPY) {
             dispatch(
                 updateRequestingIncidentResult(
-                    response.incidentId,
-                    ACTION_RESULT.COPY_SUCCESS(response.incidentId, response.version, response.createNotification, sourceIncidentId),
+                    response.disruptionId,
+                    ACTION_RESULT.COPY_SUCCESS(response.incidentNo, response.version, response.createNotification, sourceIncidentNo),
                 ),
             );
         } else {
             const isNotificationCreated = (incident.status === STATUSES.DRAFT ? false : response.createNotification);
             dispatch(
                 updateRequestingIncidentResult(
-                    response.incidentId,
-                    ACTION_RESULT.CREATE_SUCCESS(response.incidentId, response.version, isNotificationCreated),
+                    response.disruptionId,
+                    ACTION_RESULT.CREATE_SUCCESS(response.incidentNo, response.version, isNotificationCreated),
                 ),
             );
         }
@@ -441,16 +422,25 @@ const updateOpenCreateIncident = isCreateEnabled => ({
     },
 });
 
-export const openCopyIncident = (isCreateEnabled, sourceIncidentId) => ({
+export const openCopyIncident = (isCreateEnabled, sourceIncidentNo) => ({
     type: ACTION_TYPE.OPEN_COPY_INCIDENTS,
     payload: {
         isCreateEnabled,
-        sourceIncidentId,
+        sourceIncidentNo,
     },
 });
 
 export const openCreateIncident = isCreateEnabled => (dispatch) => {
     dispatch(updateOpenCreateIncident(isCreateEnabled));
+};
+
+export const openCreateDiversion = isCreateDiversionEnabled => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.OPEN_CREATE_DIVERSION,
+        payload: {
+            isCreateDiversionEnabled,
+        },
+    });
 };
 
 export const resetState = () => ({
@@ -563,20 +553,6 @@ export const toggleIncidentModals = (type, isOpen) => ({
     },
 });
 
-export const toggleWorkaroundPanel = isOpen => ({
-    type: ACTION_TYPE.SET_WORKAROUND_PANEL_STATUS,
-    payload: {
-        isOpen,
-    },
-});
-
-export const toggleEditEffectPanel = isEditEffectPanelOpen => ({
-    type: ACTION_TYPE.SET_EDIT_EFFECT_PANEL_STATUS,
-    payload: {
-        isEditEffectPanelOpen,
-    },
-});
-
 export const updateCurrentStep = activeStep => ({
     type: ACTION_TYPE.UPDATE_INCIDENT_CURRENT_STEP,
     payload: {
@@ -588,6 +564,13 @@ export const updateEditMode = editModeParam => ({
     type: ACTION_TYPE.UPDATE_INCIDENT_EDIT_MODE,
     payload: {
         editMode: editModeParam,
+    },
+});
+
+export const updateDiversionMode = editMode => ({
+    type: ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE,
+    payload: {
+        diversionEditMode: editMode,
     },
 });
 
@@ -605,28 +588,14 @@ export const updateIncidentFilters = filter => ({
     },
 });
 
-export const updateDisruptionKeyToWorkaroundEdit = disruptionKeyToWorkaroundEdit => ({
-    type: ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_WORKAROUND_EDIT,
-    payload: {
-        disruptionKeyToWorkaroundEdit,
-    },
-});
-
-export const updateDisruptionIncidentNoToEditEffect = disruptionIncidentNoToEditEffect => ({
-    type: ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_EDIT_EFFECT,
-    payload: {
-        disruptionIncidentNoToEditEffect,
-    },
-});
-
 export const uploadIncidentFiles = (incident, file) => async (dispatch) => {
-    const { disruptionId, incidentId } = incident;
+    const { disruptionId, incidentNo } = incident;
     dispatch(updateRequestingIncidentState(true, disruptionId));
     try {
         await disruptionsMgtApi.uploadDisruptionFiles(incident, file);
-        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentId)));
+        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentNo)));
     } catch (error) {
-        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
+        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentNo, error.code)));
     } finally {
         dispatch(updateRequestingIncidentState(false, disruptionId));
     }
@@ -635,13 +604,13 @@ export const uploadIncidentFiles = (incident, file) => async (dispatch) => {
 };
 
 export const deleteIncidentFile = (incident, fileId) => async (dispatch) => {
-    const { disruptionId, incidentId } = incident;
+    const { disruptionId, incidentNo } = incident;
     dispatch(updateRequestingIncidentState(true, disruptionId));
     try {
         await disruptionsMgtApi.deleteDisruptionFile(incident, fileId);
-        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentId)));
+        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentNo)));
     } catch (error) {
-        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
+        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentNo, error.code)));
     } finally {
         dispatch(updateRequestingIncidentState(false, disruptionId));
     }
@@ -649,7 +618,7 @@ export const deleteIncidentFile = (incident, fileId) => async (dispatch) => {
     await dispatch(getDisruptionsAndIncidents());
 };
 
-export const updateIncidentsDatagridConfig = dataGridConfig => ({
+export const updateDisruptionsDatagridConfig = dataGridConfig => ({
     type: ACTION_TYPE.UPDATE_INCIDENT_DATAGRID_CONFIG,
     payload: dataGridConfig,
 });
@@ -657,7 +626,7 @@ export const updateIncidentsDatagridConfig = dataGridConfig => ({
 export const clearDisruptionActionResult = () => ({
     type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
     payload: {
-        incidentId: null,
+        disruptionId: null,
         resultStatus: null,
         resultMessage: null,
         resultDisruptionVersion: null,
@@ -750,74 +719,4 @@ export const clearActiveIncident = () => (dispatch) => {
 
 export const updateActiveIncident = activeIncidentId => (dispatch) => {
     dispatch(setActiveIncident(activeIncidentId));
-};
-
-export const setIncidentToUpdate = (incidentId, incidentNo, requireToUpdateForm = false) => (dispatch) => {
-    dispatch(updateLoadingIncidentForEditState(true));
-    return disruptionsMgtApi.getIncident(incidentId)
-        .then((response) => {
-            const { _links, ...incidentData } = response;
-            dispatch(updateIncidentToEdit(incidentData));
-        })
-        .catch(() => {
-            if (ERROR_TYPE.fetchDisruptionsEnabled) {
-                const errorMessage = ERROR_TYPE.incidentToEdit;
-                dispatch(setBannerError(errorMessage));
-            }
-        })
-        .finally(() => {
-            dispatch(updateLoadingIncidentForEditState(false));
-            dispatch(openCreateIncident(true));
-            if (requireToUpdateForm) {
-                dispatch(updateRequiresToUpdateNotesState(true));
-            }
-            if (incidentNo) {
-                dispatch(updateDisruptionIncidentNoToEditEffect(incidentNo));
-                dispatch(toggleEditEffectPanel(true));
-            }
-        });
-};
-
-export const setIncidentLoaderState = isIncidentForEditLoading => (dispatch) => {
-    dispatch(updateLoadingIncidentForEditState(isIncidentForEditLoading));
-};
-
-export const updateDisruption = disruption => async (dispatch) => {
-    dispatch(updateLoadingIncidentForEditState(true));
-    const { incidentId, incidentNo, createNotification } = disruption;
-    dispatch(updateRequestingIncidentState(true, incidentId));
-
-    let result;
-    try {
-        result = await disruptionsMgtApi.updateDisruption(disruption);
-        if (disruption.status === STATUSES.DRAFT) {
-            dispatch(updateRequestingIncidentResult(incidentId, ACTION_RESULT.SAVE_DRAFT_SUCCESS(incidentNo, false)));
-        } else {
-            dispatch(updateRequestingIncidentResult(incidentId, ACTION_RESULT.UPDATE_SUCCESS(incidentNo, createNotification)));
-        }
-    } catch (error) {
-        dispatch(updateRequestingIncidentResult(incidentId, ACTION_RESULT.UPDATE_ERROR(incidentNo, error.code)));
-    } finally {
-        dispatch(setIncidentToUpdate(incidentId, true));
-        dispatch(updateRequestingIncidentState(false, incidentId));
-    }
-    await dispatch(getDisruptionsAndIncidents());
-    return result;
-};
-
-export const setRequireToUpdateIncidentForEditState = isRequireUpdate => (dispatch) => {
-    dispatch(updateRequiresToUpdateNotesState(isRequireUpdate));
-};
-
-export const setRequireToUpdateWorkaroundsState = isWorkaroundsNeedsToBeUpdated => (dispatch) => {
-    dispatch(updateWorkaroundsNeedsToBeUpdatedState(isWorkaroundsNeedsToBeUpdated));
-};
-
-export const setDisruptionForWorkaroundEdit = disruptionForWorkaroundEdit => (dispatch) => {
-    dispatch({
-        type: ACTION_TYPE.SET_DISRUPTION_FOR_WORKAROUND_EDIT,
-        payload: {
-            disruptionForWorkaroundEdit,
-        },
-    });
 };
