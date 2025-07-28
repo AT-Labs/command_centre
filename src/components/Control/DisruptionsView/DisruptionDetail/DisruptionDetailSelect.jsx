@@ -6,29 +6,27 @@ import { IoIosArrowDropdown } from 'react-icons/io';
 import '../../IncidentsView/style.scss';
 
 export const DisruptionDetailSelect = (props) => {
-    const { value, options, label, id, disabled, onChange, invalid, feedback, onBlur, disabledClassName } = props;
+    const { value, options, label, id, disabled, onChange, invalid, feedback, onBlur } = props;
     const inputClassName = props.useParentChildIncident ? 'incident-creation__wizard-select-details__select'
         : 'disruption-creation__wizard-select-details__select';
     return (
         <FormGroup className={ `${props.className} position-relative` }>
             <Label for={ id }><span className="font-size-md font-weight-bold">{ label }</span></Label>
-            <div className={ `${disabled ? disabledClassName : ''}` }>
-                <Input type="select"
-                    className={ `w-100 border border-dark ${inputClassName} position-relative` }
-                    disabled={ disabled }
-                    id={ id }
-                    value={ value }
-                    invalid={ invalid }
-                    onBlur={ e => onBlur(e.currentTarget.value) }
-                    onChange={ e => onChange(e.currentTarget.value) }>
-                    {options.map((item) => {
-                        if (item.label !== undefined) {
-                            return <option key={ item.label } value={ item.value || '' }>{ item.label }</option>;
-                        }
-                        return (<option key={ item } value={ item }>{ item }</option>);
-                    })}
-                </Input>
-            </div>
+            <Input type="select"
+                className={ `w-100 border border-dark ${inputClassName} position-relative` }
+                disabled={ disabled }
+                id={ id }
+                value={ value }
+                invalid={ invalid }
+                onBlur={ e => onBlur(e.currentTarget.value) }
+                onChange={ e => onChange(e.currentTarget.value) }>
+                {options.map((item) => {
+                    if (item.label !== undefined) {
+                        return <option key={ item.label } value={ item.value || '' }>{ item.label }</option>;
+                    }
+                    return (<option key={ item } value={ item }>{ item }</option>);
+                })}
+            </Input>
             { !invalid && (
                 <IoIosArrowDropdown className="disruption-creation__wizard-select-details__icon position-absolute" size={ 22 } />
             )}
@@ -52,7 +50,6 @@ DisruptionDetailSelect.propTypes = {
     invalid: PropTypes.bool,
     feedback: PropTypes.string,
     useParentChildIncident: PropTypes.bool,
-    disabledClassName: PropTypes.string,
 };
 
 DisruptionDetailSelect.defaultProps = {
@@ -64,5 +61,4 @@ DisruptionDetailSelect.defaultProps = {
     onBlur: () => {},
     onChange: () => {},
     useParentChildIncident: false,
-    disabledClassName: '',
 };
