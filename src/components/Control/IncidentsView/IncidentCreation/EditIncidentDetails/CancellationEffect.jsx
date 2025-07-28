@@ -9,19 +9,32 @@ import { toggleIncidentModals,
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
     toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit } from '../../../../../redux/actions/control/incidents';
+    updateDisruptionKeyToWorkaroundEdit,
+    setRequestedDisruptionKeyToUpdateEditEffect,
+    setRequestToUpdateEditEffectState,
+} from '../../../../../redux/actions/control/incidents';
+import { getRequestedDisruptionKeyToUpdateEditEffect } from '../../../../../redux/selectors/control/incidents';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
 
-const Cancellation = (props) => {
-    const closeCreateIncident = () => {
-        props.openCreateIncident(false);
-        props.deleteAffectedEntities();
-        props.toggleIncidentModals('isCancellationOpen', false);
-        props.toggleWorkaroundPanel(false);
-        props.updateDisruptionKeyToWorkaroundEdit('');
-        props.toggleEditEffectPanel(false);
-        props.updateDisruptionKeyToEditEffect('');
+const CancellationEffect = (props) => {
+    const discardChanges = () => {
+        if (props.newDisruptionKeyToUpdateEditEffect === '') { // discard change and close edit effect panel
+            props.toggleWorkaroundPanel(false);
+            props.toggleEditEffectPanel(false);
+        }
+        props.updateDisruptionKeyToEditEffect(props.newDisruptionKeyToUpdateEditEffect);
+        props.updateDisruptionKeyToWorkaroundEdit(props.newDisruptionKeyToUpdateEditEffect);
+        props.setRequestedDisruptionKeyToUpdateEditEffect('');
+        props.setRequestToUpdateEditEffectState(false);
+        props.toggleIncidentModals('isCancellationEffectOpen', false);
     };
+
+    const keepEditing = () => {
+        props.setRequestedDisruptionKeyToUpdateEditEffect('');
+        props.setRequestToUpdateEditEffectState(false);
+        props.toggleIncidentModals('isCancellationEffectOpen', false);
+    };
+
     return (
 
         <div className="disruption-creation__wizard-confirmation">
@@ -37,14 +50,14 @@ const Cancellation = (props) => {
                 <div className="col-5">
                     <Button
                         className="btn cc-btn-secondary btn-block"
-                        onClick={ () => props.toggleIncidentModals('isCancellationOpen', false) }>
+                        onClick={ () => { keepEditing(); } }>
                         Keep editing
                     </Button>
                 </div>
                 <div className="col-5">
                     <Button
                         className="btn cc-btn-primary btn-block"
-                        onClick={ () => { closeCreateIncident(); } }>
+                        onClick={ () => { discardChanges(); } }>
                         Discard changes
                     </Button>
                 </div>
@@ -53,22 +66,27 @@ const Cancellation = (props) => {
     );
 };
 
-Cancellation.propTypes = {
+CancellationEffect.propTypes = {
     toggleIncidentModals: PropTypes.func.isRequired,
-    openCreateIncident: PropTypes.func.isRequired,
-    deleteAffectedEntities: PropTypes.func.isRequired,
     toggleEditEffectPanel: PropTypes.func.isRequired,
     toggleWorkaroundPanel: PropTypes.func.isRequired,
     updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
     updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
+    newDisruptionKeyToUpdateEditEffect: PropTypes.string.isRequired,
+    setRequestToUpdateEditEffectState: PropTypes.func.isRequired,
+    setRequestedDisruptionKeyToUpdateEditEffect: PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
     isModalOpen: isModalOpen(state),
+    newDisruptionKeyToUpdateEditEffect: getRequestedDisruptionKeyToUpdateEditEffect(state),
 }), { toggleIncidentModals,
     openCreateIncident,
     deleteAffectedEntities,
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
     toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit })(Cancellation);
+    updateDisruptionKeyToWorkaroundEdit,
+    setRequestToUpdateEditEffectState,
+    setRequestedDisruptionKeyToUpdateEditEffect,
+})(CancellationEffect);

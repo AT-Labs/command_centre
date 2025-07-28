@@ -100,6 +100,12 @@
             vertical-align: text-top;
         }
     }
+
+    .incident-loader {
+        left: 50%;
+        z-index: 501;
+        top: 50%;
+    }
 }
 
 .incident-creation__wizard-select-details {
