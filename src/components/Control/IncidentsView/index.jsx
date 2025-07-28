@@ -16,6 +16,7 @@ import {
     isIncidentCreationOpen,
     getFilteredDisruptions,
     getFilteredIncidents,
+    getIncidentForEditLoadingState,
 } from '../../../redux/selectors/control/incidents';
 import { DISRUPTION_POLLING_INTERVAL } from '../../../constants/disruptions';
 import Filters from './Filters/Filters';
@@ -25,6 +26,8 @@ import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
 import './style.scss';
 import IncidentsDataGrid from './IncidentsDataGrid';
 import { PAGE_SIZE } from './types';
+import CreateIncident from './IncidentCreation/CreateIncident/index';
+import LoadingOverlay from '../../Common/Overlay/LoadingOverlay';
 
 export class IncidentsView extends React.Component {
     constructor(props) {
@@ -40,6 +43,7 @@ export class IncidentsView extends React.Component {
         filteredDisruptions: [],
         filteredIncidents: [],
         isCreateOpen: false,
+        isIncidentLoading: false,
     };
 
     componentDidMount() {
@@ -73,6 +77,9 @@ export class IncidentsView extends React.Component {
         if (this.state.currentPage !== nextState.currentPage) {
             return true;
         }
+        if (this.props.isIncidentLoading !== nextProps.isIncidentLoading) {
+            return true;
+        }
         return !isEqual(this.props.filteredDisruptions, nextProps.filteredDisruptions);
     }
 
@@ -96,14 +103,19 @@ export class IncidentsView extends React.Component {
     );
 
     render() {
-        const { filteredDisruptions, filteredIncidents, isCreateAllowed, isCreateOpen } = this.props;
+        const { filteredDisruptions, filteredIncidents, isCreateAllowed, isCreateOpen, isIncidentLoading } = this.props;
         const { currentPage } = this.state;
-
         // Calculate paginated data
         const startIndex = (currentPage - 1) * PAGE_SIZE;
         const paginatedIncidents = filteredIncidents.slice(startIndex, startIndex + PAGE_SIZE);
         return (
             <div className="control-incidents-view">
+                { isIncidentLoading && (
+                    <div>
+                        <LoadingOverlay />
+                        <div className="loader position-fixed incident-loader" aria-label="Loading" />
+                    </div>
+                ) }
                 {!isCreateOpen
                     && (
                         <div className="ml-4 mr-4">
@@ -137,6 +149,7 @@ export class IncidentsView extends React.Component {
                             />
                         </div>
                     )}
+                {isCreateOpen && isCreateAllowed && <CreateIncident />}
             </div>
         );
     }
@@ -153,7 +166,7 @@ IncidentsView.propTypes = {
     updateAffectedRoutesState: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
     getStopGroups: PropTypes.func.isRequired,
-
+    isIncidentLoading: PropTypes.bool,
 };
 
 export default connect(state => ({
@@ -161,4 +174,5 @@ export default connect(state => ({
     filteredIncidents: getFilteredIncidents(state),
     isCreateOpen: isIncidentCreationOpen(state),
     isCreateAllowed: isIncidentCreationAllowed(state),
+    isIncidentLoading: getIncidentForEditLoadingState(state),
 }), { getDisruptionsAndIncidents, openCreateIncident, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState, getStopGroups })(IncidentsView);
