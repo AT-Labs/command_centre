@@ -217,7 +217,7 @@ export const StopsByRouteMultiSelect = (props) => {
             .map(direction => renderStopsByRouteDirection(route, direction));
     };
 
-    return ( // route
+    return (
         uniqBy(affectedRoutes, route => route.routeId).map(route => (
             <li className="selection-item border-0 card" key={ route.routeId }>
                 <ExpandableList
