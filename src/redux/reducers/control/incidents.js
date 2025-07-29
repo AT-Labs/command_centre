@@ -52,7 +52,7 @@ export const INIT_STATE = {
     datagridConfig: {
         columns: [],
         page: 0,
-        pageSize: 10,
+        pageSize: 100,
         sortModel: [],
         density: 'standard',
         routeSelection: '',
@@ -81,6 +81,7 @@ const handleIncidentsReverseGeocodeLoadingUpdate = (state, { payload: { isIncide
 const handleIncidentsRoutesLoadingUpdate = (state, { payload: { isIncidentsRoutesLoading } }) => ({ ...state, isIncidentsRoutesLoading });
 const handleUpdateActiveIncidentId = (state, { payload: { activeIncidentId } }) => ({ ...state, activeIncidentId });
 const handleIncidentsDisruptionsUpdate = (state, { payload: { disruptions } }) => ({ ...state, disruptions });
+const handleIncidentsUpdate = (state, { payload: { incidents } }) => ({ ...state, incidents });
 const handleIncidentsPermissionsUpdate = (state, { payload: { permissions } }) => ({ ...state, permissions });
 const handleIncidentActionRequestingUpdate = (state, { payload: { isRequesting, resultIncidentId = state.action.resultIncidentId } }) => ({
     ...state,
@@ -147,6 +148,7 @@ const handleDatagridConfig = (state, action) => ({ ...state, datagridConfig: { .
 const handleOpenCreateDiversion = (state, { payload: { isCreateDiversionEnabled } }) => ({ ...state, isCreateDiversionEnabled });
 const handleUpdateDiversionEditMode = (state, { payload: { diversionEditMode } }) => ({ ...state, diversionEditMode });
 const handleUpdateSetAllIncidents = (state, { payload: { allIncidents } }) => ({ ...state, incidents: allIncidents });
+const handleUpdateSetAllIncidentsDisruptions = (state, { payload: { allDisruptions } }) => ({ ...state, disruptions: allDisruptions });
 const handleSortingParamsUpdate = (state, { payload: { sortingParams } }) => ({ ...state, sortingParams });
 const handleWorkaroundPanel = (state, { payload: { isOpen } }) => ({
     ...state,
@@ -171,6 +173,7 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_LOADING_ROUTES_BY_STOP]: handleIncidentsLoadingRoutesByStopUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING]: handleIncidentForEditLoadingUpdate,
     [ACTION_TYPE.FETCH_CONTROL_INCIDENTS_DISRUPTIONS]: handleIncidentsDisruptionsUpdate,
+    [ACTION_TYPE.FETCH_CONTROL_INCIDENTS]: handleIncidentsUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING]: handleIncidentActionRequestingUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_RESULT]: handleIncidentActionResultUpdate,
     [ACTION_TYPE.COPY_INCIDENT]: handleCopyIncidentsUpdate,
@@ -194,6 +197,7 @@ export default handleActions({
     [ACTION_TYPE.OPEN_CREATE_DIVERSION]: handleOpenCreateDiversion,
     [ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE]: handleUpdateDiversionEditMode,
     [ACTION_TYPE.UPDATE_CONTROL_SET_ALL_INCIDENTS]: handleUpdateSetAllIncidents,
+    [ACTION_TYPE.UPDATE_CONTROL_SET_ALL_INCIDENTS_DISRUPTIONS]: handleUpdateSetAllIncidentsDisruptions,
     [ACTION_TYPE.UPDATE_CONTROL_ACTIVE_INCIDENT]: handleUpdateActiveIncidentId,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_SORTING_PARAMS]: handleSortingParamsUpdate,
     [ACTION_TYPE.SET_WORKAROUND_PANEL_STATUS]: handleWorkaroundPanel,

@@ -65,6 +65,12 @@ describe('Incidents Actions', () => {
             ],
             _links: { permissions: { view: true } },
         });
+        disruptionsMgtApi.getIncidents.mockResolvedValue({
+            incidents: [
+                { impact: 'Delay', incidentId: 1, disruptions: [1] },
+            ],
+            _links: { permissions: { view: true } },
+        });
 
         await store.dispatch(actions.getDisruptionsAndIncidents());
         const dispatched = store.getActions();
@@ -74,11 +80,24 @@ describe('Incidents Actions', () => {
             expect.objectContaining({ type: 'update-control-incidents-permissions' }),
             expect.objectContaining({ type: 'fetch-control-incidents-disruptions' }),
             expect.objectContaining({ type: 'update-control-incidents-loading' }),
+            expect.objectContaining({ type: 'fetch-control-incidents-disruptions' }),
         ]));
     });
 
-    it('dispatches setBannerError on getDisruptionsAndIncidents failure', async () => {
+    it('dispatches setBannerError on getDisruptions failure', async () => {
         disruptionsMgtApi.getDisruptions.mockRejectedValue(new Error('Fetch error'));
+        ERROR_TYPE.fetchDisruptionsEnabled = true;
+
+        await store.dispatch(actions.getDisruptionsAndIncidents());
+        const dispatched = store.getActions();
+
+        expect(dispatched).toEqual(expect.arrayContaining([
+            expect.objectContaining({ type: 'update-control-incidents-loading' }),
+        ]));
+    });
+
+    it('dispatches setBannerError on getIncidents failure', async () => {
+        disruptionsMgtApi.getIncidents.mockRejectedValue(new Error('Fetch error'));
         ERROR_TYPE.fetchDisruptionsEnabled = true;
 
         await store.dispatch(actions.getDisruptionsAndIncidents());
@@ -221,7 +240,7 @@ describe('Incidents Actions', () => {
             {
                 type: 'set-modal-error',
                 payload: {
-                    error: 'Unable to load disruptions, please try again',
+                    error: 'Unable to load incidents, please try again',
                 },
             },
             {
@@ -233,64 +252,8 @@ describe('Incidents Actions', () => {
         ]));
     });
 
-    it('merges affectedEntities when disruptions share the same incidentId', async () => {
-        disruptionsMgtApi.getDisruptions.mockResolvedValue({
-            disruptions: [
-                { disruptionId: 1, impact: 'Delay', affectedEntities: ['E1'], incidentId: 5 },
-                { disruptionId: 2, impact: 'Delay', affectedEntities: ['E2'], incidentId: 5 },
-            ],
-            _links: { permissions: {} },
-        });
-
-        await store.dispatch(actions.getDisruptionsAndIncidents());
-
-        const dispatched = store.getActions();
-        const merged = dispatched.find(a => a.type === 'update-control-set-all-incidents').payload.allIncidents[0];
-
-        expect(merged.incidentId).toBe(5);
-        expect(merged.affectedEntities).toEqual(expect.arrayContaining(['E1', 'E2']));
-    });
-
-    it('merges impact values uniquely when disruptions share the same incidentId', async () => {
-        disruptionsMgtApi.getDisruptions.mockResolvedValue({
-            disruptions: [
-                { disruptionId: 1, impact: 'Delay', affectedEntities: [], incidentId: 10 },
-                { disruptionId: 2, impact: 'Detour', affectedEntities: [], incidentId: 10 },
-                { disruptionId: 3, impact: 'Delay', affectedEntities: [], incidentId: 10 },
-            ],
-            _links: { permissions: {} },
-        });
-
-        await store.dispatch(actions.getDisruptionsAndIncidents());
-
-        const dispatched = store.getActions();
-        const merged = dispatched.find(a => a.type === 'update-control-set-all-incidents').payload.allIncidents[0];
-
-        const impactSet = new Set(merged.impact.split(',').map(i => i.trim()));
-        expect(impactSet).toEqual(new Set(['Delay', 'Detour']));
-    });
-
-    it('trims and merges impact strings correctly', async () => {
-        disruptionsMgtApi.getDisruptions.mockResolvedValue({
-            disruptions: [
-                { disruptionId: 1, impact: ' Delay , Closure ', affectedEntities: [], incidentId: 20 },
-                { disruptionId: 2, impact: 'Detour', affectedEntities: [], incidentId: 20 },
-            ],
-            _links: { permissions: {} },
-        });
-
-        await store.dispatch(actions.getDisruptionsAndIncidents());
-
-        const dispatched = store.getActions();
-        const merged = dispatched.find(a => a.type === 'update-control-set-all-incidents').payload.allIncidents[0];
-
-        const impactSet = new Set(merged.impact.split(',').map(i => i.trim()));
-        expect(impactSet).toEqual(new Set(['Delay', 'Closure', 'Detour']));
-    });
-
     it('calls updateIncident inside publishDraftIncident and dispatches actions', async () => {
         disruptionsMgtApi.updateIncident.mockResolvedValue({});
-
         const incident = {
             incidentId: 3,
             header: 'INC789',
@@ -310,7 +273,6 @@ describe('Incidents Actions', () => {
 
     it('dispatches error result when updateIncident throws inside publishDraftIncident', async () => {
         disruptionsMgtApi.updateIncident.mockRejectedValue({ code: 'ERR_CODE_XYZ' });
-
         const incident = {
             incidentId: 5,
             header: 'INC999',
@@ -345,44 +307,6 @@ describe('Incidents Actions', () => {
                     resultIncidentId: 5,
                 },
                 type: 'update-control-incident-action-requesting',
-            },
-            {
-                payload: {
-                    allIncidents: [
-                        {
-                            affectedEntities: [],
-                            disruptionId: 1,
-                            impact: 'Delay, Closure, Detour',
-                            incidentId: 20,
-                        },
-                    ],
-                },
-                type: 'update-control-set-all-incidents',
-            },
-            {
-                payload: {
-                    permissions: {},
-                },
-                type: 'update-control-incidents-permissions',
-            },
-            {
-                payload: {
-                    disruptions: [
-                        {
-                            affectedEntities: [],
-                            disruptionId: 1,
-                            impact: ' Delay , Closure ',
-                            incidentId: 20,
-                        },
-                        {
-                            affectedEntities: [],
-                            disruptionId: 2,
-                            impact: 'Detour',
-                            incidentId: 20,
-                        },
-                    ],
-                },
-                type: 'fetch-control-incidents-disruptions',
             },
             {
                 payload: {
@@ -573,44 +497,6 @@ describe('Incidents Actions', () => {
             },
             {
                 payload: {
-                    allIncidents: [
-                        {
-                            affectedEntities: [],
-                            disruptionId: 1,
-                            impact: 'Delay, Closure, Detour',
-                            incidentId: 20,
-                        },
-                    ],
-                },
-                type: 'update-control-set-all-incidents',
-            },
-            {
-                payload: {
-                    permissions: {},
-                },
-                type: 'update-control-incidents-permissions',
-            },
-            {
-                payload: {
-                    disruptions: [
-                        {
-                            affectedEntities: [],
-                            disruptionId: 1,
-                            impact: ' Delay , Closure ',
-                            incidentId: 20,
-                        },
-                        {
-                            affectedEntities: [],
-                            disruptionId: 2,
-                            impact: 'Detour',
-                            incidentId: 20,
-                        },
-                    ],
-                },
-                type: 'fetch-control-incidents-disruptions',
-            },
-            {
-                payload: {
                     isLoading: false,
                 },
                 type: 'update-control-incidents-loading',
@@ -670,44 +556,6 @@ describe('Incidents Actions', () => {
                     affectedRoutes: [],
                 },
                 type: 'update-incident-affected-entities',
-            },
-            {
-                payload: {
-                    allIncidents: [
-                        {
-                            affectedEntities: [],
-                            disruptionId: 1,
-                            impact: 'Delay, Closure, Detour',
-                            incidentId: 20,
-                        },
-                    ],
-                },
-                type: 'update-control-set-all-incidents',
-            },
-            {
-                payload: {
-                    permissions: {},
-                },
-                type: 'update-control-incidents-permissions',
-            },
-            {
-                payload: {
-                    disruptions: [
-                        {
-                            affectedEntities: [],
-                            disruptionId: 1,
-                            impact: ' Delay , Closure ',
-                            incidentId: 20,
-                        },
-                        {
-                            affectedEntities: [],
-                            disruptionId: 2,
-                            impact: 'Detour',
-                            incidentId: 20,
-                        },
-                    ],
-                },
-                type: 'fetch-control-incidents-disruptions',
             },
             {
                 payload: {
