@@ -273,11 +273,6 @@ export const SelectDetails = (props) => {
     const openEditEffectPanel = (disruption) => {
         props.setRequestedDisruptionKeyToUpdateEditEffect(disruption.incidentNo);
         props.setRequestToUpdateEditEffectState(true);
-
-        /* props.setDisruptionForWorkaroundEdit(disruption);
-        props.updateDisruptionKeyToEditEffect(disruption.incidentNo);
-        props.toggleEditEffectPanel(true);
-        props.updateDisruptionKeyToWorkaroundEdit(disruption.incidentNo); */
     };
 
     const impacts = useAlertEffects();

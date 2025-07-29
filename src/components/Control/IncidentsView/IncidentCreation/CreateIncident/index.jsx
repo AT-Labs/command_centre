@@ -251,7 +251,9 @@ export class CreateIncident extends React.Component {
                 ...(requireToUpdateForm && { cause: incidentData.cause }),
                 ...(requireToUpdateForm && { status: incidentData.status }),
                 ...(requireToUpdateForm && { severity: incidentData.severity }),
-                ...(requireToUpdateForm ? incidentData.modalOpenedTime : ({ modalOpenedTime: (startTime ? moment(startTime) : moment()).second(0).millisecond(0) })),
+                ...(requireToUpdateForm
+                    ? { modalOpenedTime: incidentData.modalOpenedTime }
+                    : ({ modalOpenedTime: (startTime ? moment(startTime) : moment()).second(0).millisecond(0) })),
                 disruptions: [...updatedDisruptions],
             },
         });

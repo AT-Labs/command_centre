@@ -9,7 +9,9 @@ import { toggleIncidentModals,
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
     toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit } from '../../../../../redux/actions/control/incidents';
+    updateDisruptionKeyToWorkaroundEdit,
+    setDisruptionForWorkaroundEdit,
+} from '../../../../../redux/actions/control/incidents';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
 
 const Cancellation = (props) => {
@@ -21,6 +23,7 @@ const Cancellation = (props) => {
         props.updateDisruptionKeyToWorkaroundEdit('');
         props.toggleEditEffectPanel(false);
         props.updateDisruptionKeyToEditEffect('');
+        props.setDisruptionForWorkaroundEdit({});
     };
     return (
 
@@ -61,6 +64,7 @@ Cancellation.propTypes = {
     toggleWorkaroundPanel: PropTypes.func.isRequired,
     updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
     updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
+    setDisruptionForWorkaroundEdit: PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
@@ -71,4 +75,6 @@ export default connect(state => ({
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
     toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit })(Cancellation);
+    updateDisruptionKeyToWorkaroundEdit,
+    setDisruptionForWorkaroundEdit,
+})(Cancellation);

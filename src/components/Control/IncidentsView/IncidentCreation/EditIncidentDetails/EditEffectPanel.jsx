@@ -684,7 +684,7 @@ export const EditEffectPanel = (props) => {
                                             updateDisruption({ startTime: event.target.value });
                                             setIsStartTimeDirty(true);
                                         } }
-                                        invalid={ (disruption.status === STATUSES.DRAFT ? (isStartTimeDirty && !startTimeValid(disruption.key)) : !startTimeValid()) }
+                                        invalid={ (disruption.status === STATUSES.DRAFT ? (isStartTimeDirty && !startTimeValid()) : !startTimeValid()) }
                                         disabled={ isResolved() }
                                     />
                                     <FormFeedback>Not valid values</FormFeedback>
@@ -743,7 +743,7 @@ export const EditEffectPanel = (props) => {
                                         </Button>
                                     </div>
                                     { (disruption.status === STATUSES.DRAFT
-                                        ? (!isEmpty(disruption.recurrencePattern.byweekday) && activePeriodsValidV2(disruption.key))
+                                        ? (!isEmpty(disruption.recurrencePattern.byweekday) && activePeriodsValidV2())
                                         : !isEmpty(disruption.recurrencePattern.byweekday)) && (
                                         <div className="col-12 mb-3">
                                             <BsArrowRepeat size={ 22 } />
@@ -751,7 +751,7 @@ export const EditEffectPanel = (props) => {
                                         </div>
                                     )}
                                     { (disruption.status === STATUSES.DRAFT
-                                        ? (disruption.isRecurrencePatternDirty && (isEmpty(disruption.recurrencePattern.byweekday) || !activePeriodsValidV2(disruption.key)))
+                                        ? (disruption.isRecurrencePatternDirty && (isEmpty(disruption.recurrencePattern.byweekday) || !activePeriodsValidV2()))
                                         : (isRecurrencePatternDirty && isEmpty(disruption.recurrencePattern.byweekday))) && (
                                         <div className="col-12 mb-3">
                                             <span className="disruption-recurrence-invalid">Please select recurrence</span>

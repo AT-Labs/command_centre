@@ -16,7 +16,9 @@ import {
     toggleEditEffectPanel,
     toggleWorkaroundPanel,
     updateDisruptionKeyToEditEffect,
-    updateDisruptionKeyToWorkaroundEdit } from '../../../../../redux/actions/control/incidents';
+    updateDisruptionKeyToWorkaroundEdit,
+    setDisruptionForWorkaroundEdit,
+} from '../../../../../redux/actions/control/incidents';
 
 const mockStore = configureStore([thunk]);
 
@@ -30,6 +32,7 @@ jest.mock('../../../../../redux/actions/control/incidents', () => ({
     toggleWorkaroundPanel: jest.fn(),
     updateDisruptionKeyToEditEffect: jest.fn(),
     updateDisruptionKeyToWorkaroundEdit: jest.fn(),
+    setDisruptionForWorkaroundEdit: jest.fn(),
 }));
 
 jest.mock('../../../../../redux/actions/control/link', () => ({
@@ -47,6 +50,7 @@ describe('Confirmation Component', () => {
         toggleWorkaroundPanel: jest.fn(),
         updateDisruptionKeyToEditEffect: jest.fn(),
         updateDisruptionKeyToWorkaroundEdit: jest.fn(),
+        setDisruptionForWorkaroundEdit: jest.fn(),
     };
 
     beforeEach(() => {
@@ -80,6 +84,9 @@ describe('Confirmation Component', () => {
         });
         updateDisruptionKeyToEditEffect.mockImplementation(disruptionKeyToEditEffect => (dispatch) => {
             dispatch({ type: 'MOCK_UPDATE_DISRUPTION_KEY_TO_EDIT_EFFECT', payload: disruptionKeyToEditEffect });
+        });
+        setDisruptionForWorkaroundEdit.mockImplementation(disruptionForWorkaroundEdit => (dispatch) => {
+            dispatch({ type: 'MOCK_DISRUPTION_FOR_WORKAROUND_EDIT', payload: disruptionForWorkaroundEdit });
         });
         store = mockStore({
             control:
@@ -144,5 +151,6 @@ describe('Confirmation Component', () => {
         expect(updateDisruptionKeyToWorkaroundEdit).toHaveBeenCalledWith('');
         expect(toggleEditEffectPanel).toHaveBeenCalledWith(false);
         expect(updateDisruptionKeyToEditEffect).toHaveBeenCalledWith('');
+        expect(setDisruptionForWorkaroundEdit).toHaveBeenCalledWith({});
     });
 });
