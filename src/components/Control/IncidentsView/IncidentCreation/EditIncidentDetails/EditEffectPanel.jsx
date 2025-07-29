@@ -504,7 +504,6 @@ export const EditEffectPanel = (props) => {
     const isResolved = () => disruption.status === STATUSES.RESOLVED;
 
     const discardEffectChanges = () => {
-        console.log('discardChanges side panel');
         if (props.newDisruptionKey === '') { // discard change and close edit effect panel
             props.toggleWorkaroundPanel(false);
             props.toggleEditEffectPanel(false);
@@ -903,7 +902,7 @@ export const EditEffectPanel = (props) => {
                 className="disruption-creation__modal"
                 title="Edit effect"
                 isModalOpen={ props.isCancellationEffectOpen }>
-                <CancellationEffect discardChanges={ () => discardEffectChanges() }/>
+                <CancellationEffect discardChanges={ () => discardEffectChanges() } />
             </CustomModal>
         </div>
     );

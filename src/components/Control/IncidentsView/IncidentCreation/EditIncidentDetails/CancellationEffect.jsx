@@ -4,16 +4,9 @@ import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 
 import { toggleIncidentModals,
-    openCreateIncident,
-    deleteAffectedEntities,
-    toggleEditEffectPanel,
-    updateDisruptionKeyToEditEffect,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
     setRequestedDisruptionKeyToUpdateEditEffect,
     setRequestToUpdateEditEffectState,
 } from '../../../../../redux/actions/control/incidents';
-import { getRequestedDisruptionKeyToUpdateEditEffect } from '../../../../../redux/selectors/control/incidents';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
 
 const CancellationEffect = (props) => {
@@ -56,11 +49,6 @@ const CancellationEffect = (props) => {
 
 CancellationEffect.propTypes = {
     toggleIncidentModals: PropTypes.func.isRequired,
-    toggleEditEffectPanel: PropTypes.func.isRequired,
-    toggleWorkaroundPanel: PropTypes.func.isRequired,
-    updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
-    updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
-    newDisruptionKeyToUpdateEditEffect: PropTypes.string.isRequired,
     setRequestToUpdateEditEffectState: PropTypes.func.isRequired,
     setRequestedDisruptionKeyToUpdateEditEffect: PropTypes.func.isRequired,
     discardChanges: PropTypes.func.isRequired,
@@ -68,14 +56,7 @@ CancellationEffect.propTypes = {
 
 export default connect(state => ({
     isModalOpen: isModalOpen(state),
-    newDisruptionKeyToUpdateEditEffect: getRequestedDisruptionKeyToUpdateEditEffect(state),
 }), { toggleIncidentModals,
-    openCreateIncident,
-    deleteAffectedEntities,
-    toggleEditEffectPanel,
-    updateDisruptionKeyToEditEffect,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
     setRequestToUpdateEditEffectState,
     setRequestedDisruptionKeyToUpdateEditEffect,
 })(CancellationEffect);
