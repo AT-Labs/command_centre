@@ -144,9 +144,6 @@ export const getDisruptionsByFilters = (filters) => {
         .then(response => jsonResponseHandling(response));
 };
 
-export const getIncidents = (includeDrafts = false) => fetchWithAuthHeader(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/incidents?includeDraft=${includeDrafts}`, { method: GET })
-    .then(response => jsonResponseHandling(response));
-
 export const createIncident = (incident) => {
     const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/incidents/`;
     return fetchWithAuthHeader(
@@ -176,10 +173,4 @@ export const updateIncident = (incident) => {
             body: JSON.stringify(incident),
         },
     ).then(response => jsonResponseHandling(response));
-};
-
-export const getIncident = (incidentId) => {
-    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/incidents/${incidentId}`;
-    return fetchWithAuthHeader(url, { method: GET })
-        .then(response => jsonResponseHandling(response));
 };

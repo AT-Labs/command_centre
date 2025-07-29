@@ -39,7 +39,6 @@ class Pane extends Component {
         ]),
         width: PropTypes.string,
         isVerticalLayout: PropTypes.bool,
-        disabled: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -51,7 +50,6 @@ class Pane extends Component {
         showCheckbox: true,
         labelKey: undefined,
         valueKey: undefined,
-        disabled: false,
     };
 
     constructor(props) {
@@ -87,7 +85,7 @@ class Pane extends Component {
                     <Button
                         className="btn cc-btn-link float-right p-0"
                         onClick={ () => this.onAction(items) }
-                        disabled={ this.props.isContentLoading || this.props.disabled }
+                        disabled={ this.props.isContentLoading }
                     >
                         Deselect
                     </Button>
@@ -174,8 +172,7 @@ class Pane extends Component {
                                     className="picklist__input form-control cc-form-control w-100 pl-5 pr-3"
                                     placeholder={ placeholder }
                                     value={ this.state.searchText }
-                                    onChange={ e => this.onChange(e) }
-                                    disabled={ this.props.disabled } />
+                                    onChange={ e => this.onChange(e) } />
                                 {!isEmpty(this.state.searchText)
                                     && (
                                         <Button
