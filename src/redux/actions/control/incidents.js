@@ -786,7 +786,7 @@ export const setIncidentToUpdate = (incidentId, incidentNo, requireToUpdateForm 
                 dispatch(updateRequiresToUpdateNotesState(true));
             }
             if (incidentNo) {
-                dispatch(updateDisruptionIncidentNoToEditEffect(incidentNo));
+                dispatch(updateDisruptionKeyToEditEffect(incidentNo));
                 dispatch(toggleEditEffectPanel(true));
             }
         });
