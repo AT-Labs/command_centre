@@ -8,6 +8,7 @@ import EDIT_TYPE from '../../../types/edit-types';
 export const getIncidentsState = state => result(state, 'control.incidents', {});
 export const getGroupedIncidents = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'incidents'));
 export const getIncidentsSortingParams = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'sortingParams'));
+export const getAllIncidents = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'incidents'));
 export const getAllDisruptions = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'disruptions'));
 export const getIncidentsPermissions = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'permissions'));
 export const getIncidentsLoadingState = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isLoading'));
@@ -99,78 +100,109 @@ export const getFilteredDisruptions = createSelector(
     getSelectedStartDateFilter,
     getSelectedEndDateFilter,
     getSelectedImpactFilter,
-    (allIncidents, selectedEntity, selectedStatus, selectedStartDate, selectedEndDate, selectedImpact) => {
-        let filteredIncidents = [...allIncidents];
+    (allDisruptions, selectedEntity, selectedStatus, selectedStartDate, selectedEndDate, selectedImpact) => {
+        let filteredDisruption = [...allDisruptions];
         if (get(selectedEntity, 'data.route_id')) {
-            filteredIncidents = filteredIncidents.filter(({ affectedEntities }) => (
+            filteredDisruption = filteredDisruption.filter(({ affectedEntities }) => (
                 affectedEntities.find(entity => entity.routeId === get(selectedEntity, 'data.route_id'))
             ));
         } else if (get(selectedEntity, 'data.stop_code')) {
-            filteredIncidents = filteredIncidents.filter(({ affectedEntities }) => (
+            filteredDisruption = filteredDisruption.filter(({ affectedEntities }) => (
                 affectedEntities.find(entity => entity.stopCode === get(selectedEntity, 'data.stop_code'))
             ));
         }
 
         if (selectedStatus) {
-            filteredIncidents = filteredIncidents.filter(({ status }) => (
+            filteredDisruption = filteredDisruption.filter(({ status }) => (
                 status === selectedStatus
             ));
         }
 
         if (selectedStartDate) {
-            filteredIncidents = filteredIncidents.filter(({ endTime }) => (
+            filteredDisruption = filteredDisruption.filter(({ endTime }) => (
                 !endTime || moment(endTime).isSameOrAfter(moment(selectedStartDate))
             ));
         }
         if (selectedEndDate) {
-            filteredIncidents = filteredIncidents.filter(({ startTime }) => (
+            filteredDisruption = filteredDisruption.filter(({ startTime }) => (
                 moment(startTime).isSameOrBefore(moment(selectedEndDate))
             ));
         }
 
         if (selectedImpact) {
-            filteredIncidents = filteredIncidents.filter(({ impact }) => (
+            filteredDisruption = filteredDisruption.filter(({ impact }) => (
                 impact === selectedImpact
             ));
         }
+        return filteredDisruption;
+    },
+);
+
+export const getFilteredIncidents = createSelector(
+    getAllIncidents,
+    getFilteredDisruptions,
+    (allIncidents, filteredDisruptions) => {
+        let filteredIncidents = [...allIncidents];
+        filteredIncidents = filteredIncidents.filter(incident => (filteredDisruptions.some(disruption => incident.disruptions.includes(disruption.disruptionId))));
         return filteredIncidents;
     },
 );
 
-export const getFilteredIncidents = createSelector(getFilteredDisruptions, (filteredIncidents) => {
-    const mergedMap = new Map();
-
-    filteredIncidents.forEach((originalDisruption) => {
-        // This is fix needs until we have a proper data in DB
-        const disruption = {
-            ...originalDisruption,
-            incidentId: originalDisruption.incidentId || originalDisruption.disruptionId,
-        };
-
-        const existing = mergedMap.get(disruption.incidentId);
-        if (existing) {
-            // Merge affectedEntities
-            existing.affectedEntities = existing.affectedEntities.concat(disruption.affectedEntities);
-            // Merge unique impact values
-            const existingImpacts = new Set(existing.impact.split(',').map(s => s.trim()));
-            const newImpacts = disruption.impact.split(',').map(s => s.trim());
-            newImpacts.forEach(impact => existingImpacts.add(impact));
-            existing.impact = Array.from(existingImpacts).join(', ');
-        } else {
-            // Clone to avoid mutating original
-            mergedMap.set(disruption.incidentId, {
-                ...disruption,
-                affectedEntities: [...disruption.affectedEntities],
-                impact: disruption.impact || '',
-            });
+export const getIncidentsWithDisruptions = createSelector(
+    getAllDisruptions,
+    getFilteredIncidents,
+    (allDisruptions, filteredIncidents) => {
+        if (isEmpty(allDisruptions) || isEmpty(filteredIncidents)) {
+            return [];
         }
-    });
+        const filteredDisruptions = allDisruptions.filter(disruption => (filteredIncidents.some(inc => inc.incidentId === disruption.incidentId)));
+        const mergedIncidentsAndDisruptions = [];
+        filteredIncidents.forEach((originalIncident) => {
+            mergedIncidentsAndDisruptions.push({
+                ...originalIncident,
+                affectedEntities: [],
+                impact: originalIncident.impact || '',
+            });
+        });
+        filteredDisruptions.forEach((originalDisruption) => {
+            // This is fix needs until we have a proper data in DB
+            const disruption = {
+                ...originalDisruption,
+                incidentId: originalDisruption.incidentId || originalDisruption.disruptionId * 100,
+                incidentDisruptionNo: originalDisruption.incidentDisruptionNo || originalDisruption.disruptionId * 100,
+            };
+            mergedIncidentsAndDisruptions.push({
+                ...disruption,
+            });
+            const existing = mergedIncidentsAndDisruptions.find(inc => disruption.incidentId === inc.incidentId && !inc.disruptionId);
+            if (existing) {
+                // Merge affectedEntities
+                existing.affectedEntities = existing.affectedEntities.concat(disruption.affectedEntities);
+                existing.incidentDisruptionNo = disruption.incidentDisruptionNo || existing.incidentDisruptionNo;
+                // Merge unique impact values
+                const existingImpacts = new Set(existing.impact.split(',').map(s => s.trim()));
+                const newImpacts = disruption.impact.split(',').map(s => s.trim());
+                newImpacts.forEach(impact => existingImpacts.add(impact));
+                existing.impact = Array.from(existingImpacts).join(', ');
+            } else {
+                // add the incident entity copied from disruption
+                const incident = {
+                    incidentId: disruption.incidentId,
+                    header: disruption.header,
+                    incidentDisruptionNo: disruption.incidentDisruptionNo,
+                    affectedEntities: [...disruption.affectedEntities],
+                    impact: disruption.impact || '',
+                };
+                mergedIncidentsAndDisruptions.push({
+                    ...incident,
+                });
+            }
+        });
+        return mergedIncidentsAndDisruptions;
+    },
+);
 
-    const mergedDisruptions = Array.from(mergedMap.values());
-    return mergedDisruptions;
-});
-
-export const getDisruptionsDatagridConfig = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'datagridConfig'));
+export const getIncidentsDatagridConfig = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'datagridConfig'));
 
 export const isDiversionCreationOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isCreateDiversionEnabled'));
 export const getDiversionEditMode = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'diversionEditMode'));
