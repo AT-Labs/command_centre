@@ -55,7 +55,8 @@ export const PaneSearch = (props) => {
                         clearHandlers={ clearHandlers() }
                         multiSearch
                         selectedEntities={ selectedEntities() }
-                        showTags={ false } />
+                        showTags={ false }
+                        isDisabled={ props.isDisabled } />
                 </div>
             </div>
         </div>
@@ -78,8 +79,10 @@ PaneSearch.propTypes = {
     entityToItemTransformers: PropTypes.object.isRequired,
     itemToEntityTransformers: PropTypes.object.isRequired,
     selectedItems: PropTypes.array.isRequired,
+    isDisabled: PropTypes.bool,
 };
 
 PaneSearch.defaultProps = {
     width: 'w-50',
+    isDisabled: false,
 };
