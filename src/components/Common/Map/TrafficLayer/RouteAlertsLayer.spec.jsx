@@ -32,6 +32,7 @@ describe('RouteAlertsLayer', () => {
     afterAll(() => {
         jest.useRealTimers();
     });
+
     it('should call get all route alerts when showAllRouteAlerts is enabled', async () => {
         routeMonitoringApi.fetchRouteAlertDetailsByIds.mockReset();
         await act(async () => {
