@@ -503,6 +503,21 @@ export const EditEffectPanel = (props) => {
     const isValuesChanged = !isEqual(disruption, originalDisruption);
     const isResolved = () => disruption.status === STATUSES.RESOLVED;
 
+    const discardEffectChanges = () => {
+        console.log('discardChanges side panel');
+        if (props.newDisruptionKey === '') { // discard change and close edit effect panel
+            props.toggleWorkaroundPanel(false);
+            props.toggleEditEffectPanel(false);
+        } else {
+            props.setDisruptionForWorkaroundEdit(disruptions.find(d => d.incidentNo === props.newDisruptionKey));
+        }
+        props.updateDisruptionKeyToEditEffect(props.newDisruptionKey);
+        props.updateDisruptionKeyToWorkaroundEdit(props.newDisruptionKey);
+        props.setRequestedDisruptionKeyToUpdateEditEffect('');
+        props.setRequestToUpdateEditEffectState(false);
+        props.toggleIncidentModals('isCancellationEffectOpen', false);
+    };
+
     useEffect(() => {
         if (props.isEditEffectUpdateRequested) {
             if (!props.isEditEffectPanelOpen && props.newDisruptionKey) { // open edit effect panel
@@ -886,9 +901,9 @@ export const EditEffectPanel = (props) => {
                 onClose={ () => setDisruptionsDetailsModalOpen(false) } />
             <CustomModal
                 className="disruption-creation__modal"
-                title="Log a disruption"
+                title="Edit effect"
                 isModalOpen={ props.isCancellationEffectOpen }>
-                <CancellationEffect />
+                <CancellationEffect discardChanges={ () => discardEffectChanges() }/>
             </CustomModal>
         </div>
     );

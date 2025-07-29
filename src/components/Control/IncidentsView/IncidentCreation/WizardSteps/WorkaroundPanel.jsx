@@ -12,7 +12,11 @@ import { getEditMode,
 import { STATUSES } from '../../../../../types/disruptions-types';
 
 import { WorkaroundsForm } from '../../Workaround/WorkaroundsForm';
-import { toggleWorkaroundPanel, updateDisruptionKeyToWorkaroundEdit, setRequireToUpdateWorkaroundsState } from '../../../../../redux/actions/control/incidents';
+import { toggleWorkaroundPanel,
+    updateDisruptionKeyToWorkaroundEdit,
+    setRequireToUpdateWorkaroundsState,
+    setDisruptionForWorkaroundEdit,
+} from '../../../../../redux/actions/control/incidents';
 import EDIT_TYPE from '../../../../../types/edit-types';
 import './WorkaroundPanel.scss';
 
@@ -45,6 +49,7 @@ export const WorkaroundPanel = (props) => {
     const onClose = () => {
         setDisruption(null);
         formRef.current?.cancelForm();
+        props.setDisruptionForWorkaroundEdit({});
         props.toggleWorkaroundPanel(false);
         props.updateDisruptionKeyToWorkaroundEdit('');
     };
@@ -100,6 +105,7 @@ WorkaroundPanel.propTypes = {
     isWorkaroundsNeedsToBeUpdated: PropTypes.bool,
     setRequireToUpdateWorkaroundsState: PropTypes.func.isRequired,
     disruptionForWorkaroundEdit: PropTypes.object,
+    setDisruptionForWorkaroundEdit: PropTypes.func.isRequired,
 };
 
 WorkaroundPanel.defaultProps = {
@@ -121,4 +127,5 @@ export default connect(state => ({
     toggleWorkaroundPanel,
     updateDisruptionKeyToWorkaroundEdit,
     setRequireToUpdateWorkaroundsState,
+    setDisruptionForWorkaroundEdit,
 })(WorkaroundPanel);

@@ -17,18 +17,6 @@ import { getRequestedDisruptionKeyToUpdateEditEffect } from '../../../../../redu
 import { isModalOpen } from '../../../../../redux/selectors/activity';
 
 const CancellationEffect = (props) => {
-    const discardChanges = () => {
-        if (props.newDisruptionKeyToUpdateEditEffect === '') { // discard change and close edit effect panel
-            props.toggleWorkaroundPanel(false);
-            props.toggleEditEffectPanel(false);
-        }
-        props.updateDisruptionKeyToEditEffect(props.newDisruptionKeyToUpdateEditEffect);
-        props.updateDisruptionKeyToWorkaroundEdit(props.newDisruptionKeyToUpdateEditEffect);
-        props.setRequestedDisruptionKeyToUpdateEditEffect('');
-        props.setRequestToUpdateEditEffectState(false);
-        props.toggleIncidentModals('isCancellationEffectOpen', false);
-    };
-
     const keepEditing = () => {
         props.setRequestedDisruptionKeyToUpdateEditEffect('');
         props.setRequestToUpdateEditEffectState(false);
@@ -57,7 +45,7 @@ const CancellationEffect = (props) => {
                 <div className="col-5">
                     <Button
                         className="btn cc-btn-primary btn-block"
-                        onClick={ () => { discardChanges(); } }>
+                        onClick={ () => { props.discardChanges(); } }>
                         Discard changes
                     </Button>
                 </div>
@@ -75,6 +63,7 @@ CancellationEffect.propTypes = {
     newDisruptionKeyToUpdateEditEffect: PropTypes.string.isRequired,
     setRequestToUpdateEditEffectState: PropTypes.func.isRequired,
     setRequestedDisruptionKeyToUpdateEditEffect: PropTypes.func.isRequired,
+    discardChanges: PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
