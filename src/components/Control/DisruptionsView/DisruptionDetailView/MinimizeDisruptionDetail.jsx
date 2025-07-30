@@ -7,7 +7,7 @@ import moment from 'moment';
 import Message from '../../Common/Message/Message';
 import { SEVERITIES, STATUSES } from '../../../../types/disruptions-types';
 import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
-import { useDraftDisruptions } from '../../../../redux/selectors/appSettings';
+import { useDraftDisruptions, useParentChildIncident } from '../../../../redux/selectors/appSettings';
 import {
     LABEL_CAUSE,
     LABEL_CREATED_BY,
@@ -55,8 +55,9 @@ import { LastNoteView } from '../DisruptionDetail/LastNoteView';
 import { fetchEndDateFromRecurrence } from '../../../../utils/recurrence';
 
 import '../DisruptionDetail/styles.scss';
+import '../../IncidentsView/style.scss';
 
-const MinimizeDisruptionDetail = (props) => {
+export const MinimizeDisruptionDetail = (props) => {
     const { disruption, isRequesting, resultDisruptionId, resultStatus, resultMessage } = props;
     const { NONE, COPY } = confirmationModalTypes;
     const {
@@ -83,6 +84,8 @@ const MinimizeDisruptionDetail = (props) => {
         return uniqRoutes.length !== affectedRoutes.length || uniqStops.length !== affectedStops.length
             || uniqRoutes.length !== props.routes.length || uniqStops.length !== props.stops.length;
     };
+
+    const incidentClassName = props.useParentChildIncident ? 'incident-creation__wizard-select-details__select' : '';
 
     const affectedEntitiesWithoutShape = toString(affectedEntities.map(entity => omit(entity, ['shapeWkt'])));
     useEffect(() => {
@@ -191,23 +194,25 @@ const MinimizeDisruptionDetail = (props) => {
                                     <div className="mt-2 position-relative form-group">
                                         <DisruptionLabelAndText id="disruption-detail__mode" label={ LABEL_MODE } text={ mode } />
                                     </div>
-                                    <div className="mt-2 position-relative form-group">
+                                    <div className={ `mt-2 position-relative form-group ${incidentClassName}` }>
                                         <DisruptionDetailSelect
                                             id="disruption-detail__cause"
                                             value={ cause }
                                             options={ causes }
                                             label={ LABEL_CAUSE }
+                                            useParentChildIncident={ props.useParentChildIncident }
                                             disabled
                                         />
                                     </div>
                                 </div>
-                                <div className="col-6">
+                                <div className={ `col-6 ${incidentClassName}` }>
                                     <FormGroup className="mt-2">
                                         <DisruptionDetailSelect
                                             id="disruption-detail__severity"
                                             value={ severity }
                                             options={ SEVERITIES }
                                             label={ LABEL_SEVERITY }
+                                            useParentChildIncident={ props.useParentChildIncident }
                                             disabled
                                         />
                                     </FormGroup>
@@ -216,6 +221,7 @@ const MinimizeDisruptionDetail = (props) => {
                                         value={ impact }
                                         options={ impacts }
                                         label={ LABEL_CUSTOMER_IMPACT }
+                                        useParentChildIncident={ props.useParentChildIncident }
                                         disabled
                                     />
                                 </div>
@@ -314,6 +320,7 @@ MinimizeDisruptionDetail.propTypes = {
     isCopied: PropTypes.bool,
     clearDisruptionActionResult: PropTypes.func.isRequired,
     useDraftDisruptions: PropTypes.bool,
+    useParentChildIncident: PropTypes.bool,
 };
 
 MinimizeDisruptionDetail.defaultProps = {
@@ -327,6 +334,7 @@ MinimizeDisruptionDetail.defaultProps = {
     resultMessage: '',
     resultStatus: '',
     useDraftDisruptions: false,
+    useParentChildIncident: false,
 };
 
 export default connect(state => ({
@@ -338,6 +346,7 @@ export default connect(state => ({
     stops: getAffectedStops(state),
     boundsToFit: getBoundsToFit(state),
     useDraftDisruptions: useDraftDisruptions(state),
+    useParentChildIncident: useParentChildIncident(state),
 }), {
     getRoutesByShortName,
     openCreateDisruption,
