@@ -19,7 +19,7 @@ const CustomTextField = styled(TextField)({
             backgroundColor: 'transparent',
         },
         '&.Mui-disabled': {
-            backgroundColor: '#E9ECEF',
+            backgroundColor: '#e9ecef',
         },
     },
 });

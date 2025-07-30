@@ -124,7 +124,6 @@ export const RoutesByStopMultiSelect = (props) => {
                     checked={ affectedSingleStops.findIndex(affectedStop => affectedStop.routeId === route.routeId && affectedStop.stopCode === stop.stopCode) >= 0 }
                     onChange={ e => toggleRoutesByStop(stop, route, e.target.checked) }
                     label={ `Route ${route.routeShortName}` }
-                    disabled={ props.isDisabled }
                 />
             </li>
         ));
@@ -137,7 +136,6 @@ export const RoutesByStopMultiSelect = (props) => {
                         checked={ allSelected }
                         onChange={ e => toggleAllRoutesByStop(stop, routesByStop, e.target.checked) }
                         label="Select All"
-                        disabled={ props.isDisabled }
                     />
                 </li>
             ),
@@ -158,7 +156,6 @@ export const RoutesByStopMultiSelect = (props) => {
                     removeAction={ () => removeAction(stop) }
                     className={ className }
                     label={ `Stop ${stop.text}` }
-                    disabled={ props.isDisabled }
                 >
                     { renderRoutesByStop(stop) }
                 </ExpandableList>
@@ -174,13 +171,11 @@ RoutesByStopMultiSelect.propTypes = {
     findRoutesByStop: PropTypes.object.isRequired,
     affectedStops: PropTypes.array.isRequired,
     updateAffectedStops: PropTypes.func.isRequired,
-    isDisabled: PropTypes.bool,
 };
 
 RoutesByStopMultiSelect.defaultProps = {
     className: '',
     removeAction: null,
-    isDisabled: false,
 };
 
 export default connect(state => ({
