@@ -10,7 +10,6 @@ import { parseStartAndDateTime } from './alerts';
 import { updateRoutesTripsDatagridConfig } from '../datagrid';
 
 import { updateActiveDisruptionId } from './disruptions';
-import { updateActiveIncident, clearActiveIncident } from './incidents';
 
 export const goToRoutesView = (trip, filters) => (dispatch) => {
     const {
@@ -77,16 +76,6 @@ export const goToDisruptionsView = (message, { setActiveDisruption }) => (dispat
     dispatch(updateMainView(VIEW_TYPE.MAIN.CONTROL));
     dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS));
     if (setActiveDisruption) dispatch(updateActiveDisruptionId(message.incidentId));
-};
-
-export const goToIncidentsView = (message, { setActiveIncident }) => (dispatch) => {
-    dispatch(updateMainView(VIEW_TYPE.MAIN.CONTROL));
-    dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.INCIDENTS));
-
-    if (setActiveIncident) {
-        dispatch(clearActiveIncident());
-        dispatch(updateActiveIncident(message.incidentDisruptionNo));
-    }
 };
 
 export const goToDisruptionEditPage = (message, { setActiveDisruption }) => (dispatch) => {
