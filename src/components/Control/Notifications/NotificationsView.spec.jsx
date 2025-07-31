@@ -1,5 +1,8 @@
 import { shallow } from 'enzyme';
 import React from 'react';
+import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
+import { Button } from '@mui/material';
 import { NotificationsView } from './NotificationsView';
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
 import NotificationsDetailView from './NotificationsDetailView';
@@ -22,6 +25,13 @@ jest.mock('../../../redux/selectors/appSettings', () => ({
     useDisruptionsNotificationsDirectLink: jest.fn(() => false),
     useNotificationEffectColumn: jest.fn(() => false),
 }));
+
+jest.mock('../../../utils/control/disruptions', () => ({
+    transformIncidentNo: jest.fn(id => `D${id}`),
+    transformParentSourceIdNo: jest.fn(id => `P${id}`),
+}));
+
+const mockStore = configureStore([]);
 
 const componentPropsMock = {
     datagridConfig: {
@@ -60,10 +70,29 @@ const componentPropsMock = {
     useNotificationEffectColumn: false,
 };
 
-const setup = (customProps) => {
+const setup = (customProps, storeState = {}) => {
     const props = { ...componentPropsMock };
     Object.assign(props, customProps);
-    return shallow(<NotificationsView { ...props } />);
+
+    const store = mockStore({
+        notifications: {
+            notifications: props.notifications,
+            datagridConfig: props.datagridConfig,
+            rowCount: props.rowCount,
+            selectedNotification: props.selectedNotification,
+        },
+        appSettings: {
+            useDisruptionsNotificationsDirectLink: props.useDisruptionsNotificationsDirectLink,
+            useNotificationEffectColumn: props.useNotificationEffectColumn,
+        },
+        ...storeState,
+    });
+
+    return shallow(
+        <Provider store={ store }>
+            <NotificationsView { ...props } />
+        </Provider>,
+    ).dive().dive();
 };
 
 describe('<NotificationsView />', () => {
@@ -84,50 +113,195 @@ describe('<NotificationsView />', () => {
     });
 
     describe('useNotificationEffectColumn behavior', () => {
-        test('should render single sourceId column when useNotificationEffectColumn is false', () => {
-            const wrapper = setup({ useNotificationEffectColumn: false });
-            const columns = wrapper.find(CustomDataGrid).prop('columns');
+        describe('when useNotificationEffectColumn is false', () => {
+            test('should render single sourceId column with #DISRUPTION header', () => {
+                const wrapper = setup({ useNotificationEffectColumn: false });
+                const columns = wrapper.find(CustomDataGrid).prop('columns');
 
-            const sourceIdColumns = columns.filter(col => col.field === 'sourceId');
-            const parentSourceIdColumns = columns.filter(col => col.field === 'parentSourceId');
+                const sourceIdColumns = columns.filter(col => col.field === 'sourceId');
+                const parentSourceIdColumns = columns.filter(col => col.field === 'parentSourceId');
 
-            expect(sourceIdColumns).toHaveLength(1);
-            expect(sourceIdColumns[0].headerName).toEqual('#DISRUPTION');
-            expect(parentSourceIdColumns).toHaveLength(0);
-            expect(columns).toHaveLength(10);
-        });
-
-        test('should render both parentSourceId and sourceId columns when useNotificationEffectColumn is true', () => {
-            const wrapper = setup({ useNotificationEffectColumn: true });
-            const columns = wrapper.find(CustomDataGrid).prop('columns');
-
-            const sourceIdColumns = columns.filter(col => col.field === 'sourceId');
-            const parentSourceIdColumns = columns.filter(col => col.field === 'parentSourceId');
-
-            expect(parentSourceIdColumns).toHaveLength(1);
-            expect(parentSourceIdColumns[0].headerName).toEqual('#DISRUPTION');
-            expect(sourceIdColumns).toHaveLength(1);
-            expect(sourceIdColumns[0].headerName).toEqual('#EFFECT');
-            expect(columns).toHaveLength(11);
-        });
-
-        test('should configure sourceId column differently based on useNotificationEffectColumn', () => {
-            const wrapperWithoutEffect = setup({
-                useNotificationEffectColumn: false,
-                useDisruptionsNotificationsDirectLink: true,
+                expect(sourceIdColumns).toHaveLength(1);
+                expect(sourceIdColumns[0].headerName).toEqual('#DISRUPTION');
+                expect(parentSourceIdColumns).toHaveLength(0);
+                expect(columns).toHaveLength(10);
             });
-            const columnsWithoutEffect = wrapperWithoutEffect.find(CustomDataGrid).prop('columns');
-            const sourceIdColWithoutEffect = columnsWithoutEffect.find(col => col.field === 'sourceId');
 
-            expect(sourceIdColWithoutEffect.headerName).toEqual('#DISRUPTION');
-            expect(sourceIdColWithoutEffect.renderCell).toBeDefined();
+            test('should configure sourceId column with valueGetter when direct link is disabled', () => {
+                const wrapper = setup({
+                    useNotificationEffectColumn: false,
+                    useDisruptionsNotificationsDirectLink: false,
+                });
+                const columns = wrapper.find(CustomDataGrid).prop('columns');
+                const sourceIdColumn = columns.find(col => col.field === 'sourceId');
 
-            const wrapperWithEffect = setup({ useNotificationEffectColumn: true });
-            const columnsWithEffect = wrapperWithEffect.find(CustomDataGrid).prop('columns');
-            const sourceIdColWithEffect = columnsWithEffect.find(col => col.field === 'sourceId');
+                expect(sourceIdColumn.valueGetter).toBeDefined();
+                expect(sourceIdColumn.renderCell).toBeUndefined();
+            });
 
-            expect(sourceIdColWithEffect.headerName).toEqual('#EFFECT');
-            expect(sourceIdColWithEffect.renderCell).toBeDefined();
+            test('should configure sourceId column with renderCell when direct link is enabled', () => {
+                const wrapper = setup({
+                    useNotificationEffectColumn: false,
+                    useDisruptionsNotificationsDirectLink: true,
+                });
+                const columns = wrapper.find(CustomDataGrid).prop('columns');
+                const sourceIdColumn = columns.find(col => col.field === 'sourceId');
+
+                expect(sourceIdColumn.renderCell).toBeDefined();
+                expect(sourceIdColumn.valueGetter).toBeUndefined();
+            });
+
+            test('should call goToDisruptionsView when sourceId button is clicked (with direct link)', () => {
+                const mockGoToDisruptionsView = jest.fn();
+                const wrapper = setup({
+                    useNotificationEffectColumn: false,
+                    useDisruptionsNotificationsDirectLink: true,
+                    goToDisruptionsView: mockGoToDisruptionsView,
+                });
+
+                const columns = wrapper.find(CustomDataGrid).prop('columns');
+                const sourceIdColumn = columns.find(col => col.field === 'sourceId');
+
+                const mockRow = { source: { identifier: 12345 } };
+                const renderedCell = sourceIdColumn.renderCell({ row: mockRow });
+
+                expect(renderedCell.type).toBe(Button);
+                expect(renderedCell.props.children).toBe('D12345');
+
+                renderedCell.props.onClick();
+                expect(mockGoToDisruptionsView).toHaveBeenCalledWith(
+                    { incidentId: 12345 },
+                    { setActiveDisruption: true },
+                );
+            });
+        });
+
+        describe('when useNotificationEffectColumn is true', () => {
+            test('should render both parentSourceId and sourceId columns', () => {
+                const wrapper = setup({ useNotificationEffectColumn: true });
+                const columns = wrapper.find(CustomDataGrid).prop('columns');
+
+                const sourceIdColumns = columns.filter(col => col.field === 'sourceId');
+                const parentSourceIdColumns = columns.filter(col => col.field === 'parentSourceId');
+
+                expect(parentSourceIdColumns).toHaveLength(1);
+                expect(parentSourceIdColumns[0].headerName).toEqual('#DISRUPTION');
+                expect(sourceIdColumns).toHaveLength(1);
+                expect(sourceIdColumns[0].headerName).toEqual('#EFFECT');
+                expect(columns).toHaveLength(11);
+            });
+
+            test('should configure parentSourceId column correctly', () => {
+                const wrapper = setup({ useNotificationEffectColumn: true });
+                const columns = wrapper.find(CustomDataGrid).prop('columns');
+                const parentSourceIdColumn = columns.find(col => col.field === 'parentSourceId');
+
+                expect(parentSourceIdColumn.headerName).toEqual('#DISRUPTION');
+                expect(parentSourceIdColumn.flex).toEqual(1);
+                expect(parentSourceIdColumn.renderCell).toBeDefined();
+                expect(parentSourceIdColumn.filterOperators).toBeDefined();
+            });
+
+            test('should configure sourceId column as #EFFECT with renderCell', () => {
+                const wrapper = setup({ useNotificationEffectColumn: true });
+                const columns = wrapper.find(CustomDataGrid).prop('columns');
+                const sourceIdColumn = columns.find(col => col.field === 'sourceId');
+
+                expect(sourceIdColumn.headerName).toEqual('#EFFECT');
+                expect(sourceIdColumn.renderCell).toBeDefined();
+                expect(sourceIdColumn.valueGetter).toBeDefined();
+            });
+
+            test('should render parentSourceId cell correctly', () => {
+                const wrapper = setup({ useNotificationEffectColumn: true });
+                const columns = wrapper.find(CustomDataGrid).prop('columns');
+                const parentSourceIdColumn = columns.find(col => col.field === 'parentSourceId');
+
+                const mockRow = {
+                    source: {
+                        parentIdentifier: 67890,
+                        identifier: 12345,
+                    },
+                };
+
+                const renderedCell = parentSourceIdColumn.renderCell({ row: mockRow });
+                expect(renderedCell).toBe('P67890');
+            });
+
+            test('should call goToIncidentsView when sourceId (effect) button is clicked', () => {
+                const mockGoToIncidentsView = jest.fn();
+                const wrapper = setup({
+                    useNotificationEffectColumn: true,
+                    goToIncidentsView: mockGoToIncidentsView,
+                });
+
+                const columns = wrapper.find(CustomDataGrid).prop('columns');
+                const sourceIdColumn = columns.find(col => col.field === 'sourceId');
+
+                const mockRow = {
+                    source: {
+                        identifier: 12345,
+                        parentIdentifier: 67890,
+                    },
+                };
+
+                const renderedCell = sourceIdColumn.renderCell({ row: mockRow });
+
+                expect(renderedCell.type).toBe(Button);
+                expect(renderedCell.props.children).toBe('D12345');
+                expect(renderedCell.props['aria-label']).toBe('go-to-disruptions-effect');
+
+                renderedCell.props.onClick();
+                expect(mockGoToIncidentsView).toHaveBeenCalledWith(
+                    { incidentDisruptionNo: 67890 },
+                    { setActiveIncident: true },
+                );
+            });
+
+            test('should have correct valueGetter for sourceId column', () => {
+                const wrapper = setup({ useNotificationEffectColumn: true });
+                const columns = wrapper.find(CustomDataGrid).prop('columns');
+                const sourceIdColumn = columns.find(col => col.field === 'sourceId');
+
+                const mockRow = { source: { identifier: 12345 } };
+                const value = sourceIdColumn.valueGetter({ row: mockRow });
+
+                expect(value).toBe('D12345');
+            });
+        });
+
+        describe('columns comparison between modes', () => {
+            test('should have different column configurations between effect modes', () => {
+                const wrapperWithoutEffect = setup({ useNotificationEffectColumn: false });
+                const wrapperWithEffect = setup({ useNotificationEffectColumn: true });
+
+                const columnsWithoutEffect = wrapperWithoutEffect.find(CustomDataGrid).prop('columns');
+                const columnsWithEffect = wrapperWithEffect.find(CustomDataGrid).prop('columns');
+
+                expect(columnsWithoutEffect).toHaveLength(10);
+                expect(columnsWithEffect).toHaveLength(11);
+
+                const sourceIdWithoutEffect = columnsWithoutEffect.find(col => col.field === 'sourceId');
+                const sourceIdWithEffect = columnsWithEffect.find(col => col.field === 'sourceId');
+
+                expect(sourceIdWithoutEffect.headerName).not.toEqual(sourceIdWithEffect.headerName);
+                expect(sourceIdWithoutEffect.headerName).toEqual('#DISRUPTION');
+                expect(sourceIdWithEffect.headerName).toEqual('#EFFECT');
+            });
+
+            test('should only have parentSourceId column when effect mode is enabled', () => {
+                const wrapperWithoutEffect = setup({ useNotificationEffectColumn: false });
+                const wrapperWithEffect = setup({ useNotificationEffectColumn: true });
+
+                const columnsWithoutEffect = wrapperWithoutEffect.find(CustomDataGrid).prop('columns');
+                const columnsWithEffect = wrapperWithEffect.find(CustomDataGrid).prop('columns');
+
+                const parentSourceIdWithoutEffect = columnsWithoutEffect.find(col => col.field === 'parentSourceId');
+                const parentSourceIdWithEffect = columnsWithEffect.find(col => col.field === 'parentSourceId');
+
+                expect(parentSourceIdWithoutEffect).toBeUndefined();
+                expect(parentSourceIdWithEffect).toBeDefined();
+            });
         });
     });
 

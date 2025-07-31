@@ -616,4 +616,12 @@ describe('transformParentSourceIdNo', () => {
     it('should handle string input as number', () => {
         expect(transformParentSourceIdNo('42')).to.eql('CCD000042');
     });
+
+    it('should return null if id is 0', () => {
+        expect(transformParentSourceIdNo(0)).to.eql(null);
+    });
+
+    it('should return null if id is empty string', () => {
+        expect(transformParentSourceIdNo('')).to.eql(null);
+    });
 });
