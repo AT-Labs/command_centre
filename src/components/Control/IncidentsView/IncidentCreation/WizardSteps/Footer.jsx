@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 
 export const Footer = props => (
-    <footer className="row m-0 justify-content-between p-4 position-fixed">
+    <footer className="row m-0 justify-content-between p-4 position-fixed incident-footer-min-height">
         <div className={ (props.useDraftDisruptions && props.isDraftOrCreateMode) ? 'col-3' : 'col-4' }>
             { props.onBack && (
                 <Button
