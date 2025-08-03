@@ -235,7 +235,7 @@ export class Search extends Component {
         };
 
         return (
-            <section className={ `search position-relative ${this.props.isLoading ? 'search--loading' : ''} ${this.props.isDisabled ? 'pointer-event-none' : ''}` }>
+            <section className={ `search position-relative ${this.props.isLoading ? 'search--loading' : ''}` }>
                 { !this.props.multiSearch && (
                     <Autosuggest
                         theme={ this.props.customTheme }

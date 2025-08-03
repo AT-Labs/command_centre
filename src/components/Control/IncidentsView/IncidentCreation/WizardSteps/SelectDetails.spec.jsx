@@ -94,7 +94,6 @@ const filledRecurrentIncidentData = {
 
 jest.mock('../../../../../utils/control/alert-cause-effect', () => ({
     useAlertCauses: jest.fn(),
-    useAlertEffects: jest.fn(),
 }));
 
 describe('SelectDetails Component', () => {

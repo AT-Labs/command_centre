@@ -13,7 +13,6 @@ export const getIncidentsPermissions = createSelector(getIncidentsState, inciden
 export const getIncidentsLoadingState = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isLoading'));
 export const getIncidentsLoadingStopsByRouteState = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isLoadingStopsByRoute'));
 export const getIncidentsLoadingRoutesByStopState = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isLoadingRoutesByStop'));
-export const getIncidentForEditLoadingState = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isIncidentForEditLoading'));
 
 export const getSelectedEntityFilter = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'filters.selectedEntity'));
 export const getSelectedStatusFilter = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'filters.selectedStatus'));
@@ -25,7 +24,7 @@ export const getIncidentsReverseGeocodeLoadingState = createSelector(getIncident
 export const getIncidentsRoutesLoadingState = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isDisruptionsRoutesLoading'));
 
 export const getActiveDisruptionId = createSelector(getIncidentsState, action => result(action, 'activeDisruptionId'));
-export const getIncidentToEdit = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'incidentToEdit'));
+export const getIncidentToEdit = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'disruptionToEdit'));
 
 export const isIncidentUpdateAllowed = incident => !!find(result(incident, '_links.permissions'), { _rel: USER_PERMISSIONS.DISRUPTIONS.EDIT_DISRUPTION });
 export const isIncidentCreationAllowed = createSelector(getIncidentsPermissions, permissions => !!find(permissions, { _rel: USER_PERMISSIONS.DISRUPTIONS.ADD_DISRUPTION }));
@@ -133,6 +132,7 @@ export const getFilteredDisruptions = createSelector(
                 impact === selectedImpact
             ));
         }
+
         return filteredIncidents;
     },
 );
@@ -190,12 +190,5 @@ export const getSortedIncidents = createSelector(
 );
 
 export const isWorkaroundPanelOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isWorkaroundPanelOpen'));
+
 export const getDisruptionKeyToWorkaroundEdit = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'disruptionKeyToWorkaroundEdit'));
-export const isEditEffectPanelOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isEditEffectPanelOpen'));
-export const getDisruptionKeyToEditEffect = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'disruptionKeyToEditEffect'));
-export const isRequiresToUpdateNotes = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isRequiresToUpdateNotes'));
-export const isWorkaroundsNeedsToBeUpdated = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isWorkaroundsNeedsToBeUpdated'));
-export const getDisruptionForWorkaroundEdit = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'disruptionForWorkaroundEdit'));
-export const isEditEffectUpdateRequested = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'requestToUpdateEditEffect'));
-export const getRequestedDisruptionKeyToUpdateEditEffect = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'requestedDisruptionKeyToUpdateEditEffect'));
-export const isCancellationEffectModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isCancellationEffectOpen'));

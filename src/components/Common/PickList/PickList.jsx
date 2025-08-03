@@ -56,7 +56,6 @@ class PickList extends Component {
         searchInCategory: PropTypes.array,
         entityToItemTransformers: PropTypes.object,
         itemToEntityTransformers: PropTypes.object,
-        isDisabled: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -98,7 +97,6 @@ class PickList extends Component {
         searchInCategory: [],
         entityToItemTransformers: {},
         itemToEntityTransformers: {},
-        isDisabled: false,
     };
 
     constructor(props) {
@@ -196,8 +194,7 @@ class PickList extends Component {
                         searchInCategory={ this.props.searchInCategory }
                         entityToItemTransformers={ this.props.entityToItemTransformers }
                         itemToEntityTransformers={ this.props.itemToEntityTransformers }
-                        selectedItems={ this.state.picklistSelectedValues }
-                        isDisabled={ this.props.isDisabled } />
+                        selectedItems={ this.state.picklistSelectedValues } />
                 ) }
                 { this.props.searchInCategory.length === 0 && (
                     <Pane
@@ -219,8 +216,7 @@ class PickList extends Component {
                         showSearch={ this.props.leftPanelShowSearch }
                         staticItemList={ this.getAvailableOptions() }
                         width={ this.props.width }
-                        valueKey={ this.props.valueKey }
-                        isDisabled={ this.props.isDisabled } />
+                        valueKey={ this.props.valueKey } />
                 ) }
                 {this.showSecondPane() && (
                     <Pane
@@ -243,8 +239,7 @@ class PickList extends Component {
                         showSearch={ this.props.rightPanelShowSearch }
                         width={ this.props.width }
                         valueKey={ this.props.valueKey }
-                        showCheckbox={ this.props.rightPaneShowCheckbox }
-                        isDisabled={ this.props.isDisabled } />
+                        showCheckbox={ this.props.rightPaneShowCheckbox } />
                 )}
             </section>
         );
