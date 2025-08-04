@@ -69,12 +69,12 @@ describe('incidents reducer (Jest)', () => {
     });
 
     it('should handle UPDATE_INCIDENT_TO_EDIT', () => {
-        const disruptionToEdit = { id: 'disruption1' };
+        const incidentToEdit = { id: 'disruption1' };
         const action = {
             type: ACTION_TYPE.UPDATE_INCIDENT_TO_EDIT,
-            payload: { disruptionToEdit },
+            payload: { incidentToEdit },
         };
-        expect(reducer(undefined, action).disruptionToEdit).toEqual(disruptionToEdit);
+        expect(reducer(undefined, action).incidentToEdit).toEqual(incidentToEdit);
     });
 
     it('should handle OPEN_COPY_INCIDENTS', () => {
