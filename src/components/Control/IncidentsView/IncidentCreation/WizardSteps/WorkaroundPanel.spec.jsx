@@ -32,7 +32,6 @@ const componentPropsMock = {
     toggleWorkaroundPanel: jest.fn(),
     onWorkaroundUpdate: jest.fn(),
     updateDisruptionKeyToWorkaroundEdit: jest.fn(),
-    setDisruptionForWorkaroundEdit: jest.fn(),
 };
 
 const setup = (customProps) => {
@@ -67,7 +66,6 @@ describe('<WorkaroundPanel />', () => {
         wrapper = setup();
         wrapper.find('.close-workaround').props().onClick();
         expect(componentPropsMock.toggleWorkaroundPanel).toHaveBeenCalledWith(false);
-        expect(componentPropsMock.setDisruptionForWorkaroundEdit).toHaveBeenCalledWith({});
         expect(componentPropsMock.updateDisruptionKeyToWorkaroundEdit).toHaveBeenCalledWith('');
     });
 

@@ -10,7 +10,7 @@
     "useRoutesTripsFilterCollapse": "false",
     "useCAFMapFilter": "false",
     "useDisruptionsNotificationsDirectLink": "false",
-    "useViewDisruptionDetailsPage": "true",
+    "useViewDisruptionDetailsPage": "false",
     "useTripHistory": "false",
     "tripHistoryEnabledFromDate": "",
     "useCongestionLayer": "false",
@@ -34,7 +34,7 @@
     "useNewMonitoring": "false",
     "useDraftDisruptions": "false",
     "useDisruptionDraftEmailSharing": "false",
-    "useDiversion": "true",
+    "useDiversion": "false",
     "useHideSkippedStop": "false",
     "useHoldTrip": "false",
     "useStopBasedDisruptionsLayer": "false",
@@ -42,5 +42,5 @@
     "useStopBasedDisruptionsSearch": "false",
     "useTripCancellationCause": "false",
     "useParentChildIncident": "false",
-    "useEditEffectPanel": "true"
+    "useNotificationEffectColumn": "false"
 }

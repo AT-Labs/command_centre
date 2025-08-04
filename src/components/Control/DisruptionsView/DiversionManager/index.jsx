@@ -388,24 +388,22 @@ const DiversionManager = (props) => {
                         ) }
                     </div>
                     <AffectedStops affectedStops={ affectedStops } />
-                    {/* Panel Footer - Always Visible */}
-                    <div className="panel-footer">
-                        <div className="d-flex justify-content-between align-items-center">
-                            <Button
-                                className="btn cc-btn-secondary"
-                                onClick={ onCancelClicked }
-                            >
+                    <footer className="row m-0 justify-content-between p-4 position-fixed">
+                        <div className="col-4 pl-0">
+                            <Button className="btn cc-btn-secondary btn-block pl-0" onClick={ onCancelClicked }>
                                 Cancel
                             </Button>
+                        </div>
+                        <div className="col-4">
                             <Button
-                                className="btn cc-btn-primary"
+                                className="btn cc-btn-primary btn-block continue"
                                 onClick={ onSaveClicked }
                                 disabled={ (isEditingMode && !isUpdated) || !isDiversionValid || props.resultState.isLoading }
                             >
                                 { buttonText }
                             </Button>
                         </div>
-                    </div>
+                    </footer>
                 </div>
             </SidePanel>
             <RouteShapeEditor

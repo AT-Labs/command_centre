@@ -31,13 +31,6 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
                     );
                     onSelectVariant(selectedVariant); // Pass the full variant object to the parent
                 } }
-                onClick={ () => {
-                    console.log('=== SELECTOR CLICKED ===');
-                    console.log('routeVariants:', routeVariants);
-                    console.log('routeVariantsLength:', routeVariants?.length);
-                    console.log('selectedRouteVariant:', selectedRouteVariant);
-                    console.log('disabled:', disabled);
-                } }
             >
                 {Object.entries(groupedByRoute).map(([routeShortName, variants]) => {
                     // Group variants by directionId within each route
