@@ -37,6 +37,13 @@ export const getIncidentActionState = createSelector(getIncidentAction, action =
 export const getIncidentActionResult = createSelector(getIncidentAction, action => pick(action, ['resultStatus', 'resultMessage']));
 export const getIncidentStepCreation = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'activeStep'));
 
+// EditEffectPanel selectors
+export const isEditEffectPanelOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isEditEffectPanelOpen'));
+export const getDisruptionKeyToEditEffect = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'disruptionKeyToEditEffect'));
+export const isEditEffectUpdateRequested = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'requestToUpdateEditEffect'));
+export const getRequestedDisruptionKeyToUpdateEditEffect = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'requestedDisruptionKeyToUpdateEditEffect'));
+export const isCancellationEffectModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isCancellationEffectOpen'));
+
 export const getCachedShapes = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'cachedShapes'));
 export const getCachedRoutesToStops = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'cachedRoutesToStops'));
 export const getCachedStopsToRoutes = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'cachedStopsToRoutes'));

@@ -11,31 +11,36 @@ export const INIT_STATE = {
         error: null,
     },
     diversion: null,
+    selectedRouteVariant: null,
 };
-const handleUpdateDiversionResultState = (state, { payload: { isLoading, diversionId, error } }) => ({
-    ...state,
-    diversionResultState: {
-        isLoading,
-        diversionId,
-        error,
-    },
-});
-
-const handleUpdateDiversionToEdit = (state, { payload: { diversion } }) => ({
-    ...state,
-    diversion,
-});
-
-const handleUpdateDiversionEditMode = (state, { payload: { diversionEditMode } }) => ({
-    ...state,
-    diversionEditMode,
-});
-
-const handleOpenDiversionManager = (state, { payload: { isDiversionManagerOpen } }) => ({ ...state, isDiversionManagerOpen });
 
 export default handleActions({
-    [ACTION_TYPE.OPEN_DIVERSION_MANAGER]: handleOpenDiversionManager,
-    [ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE]: handleUpdateDiversionEditMode,
-    [ACTION_TYPE.UPDATE_DIVERSION_RESULT_STATE]: handleUpdateDiversionResultState,
-    [ACTION_TYPE.UPDATE_DIVERSION_TO_EDIT]: handleUpdateDiversionToEdit,
+    [ACTION_TYPE.OPEN_DIVERSION_MANAGER]: (state, { payload: { isDiversionManagerOpen } }) => ({
+        ...state,
+        isDiversionManagerOpen,
+    }),
+
+    [ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE]: (state, { payload: { diversionEditMode } }) => ({
+        ...state,
+        diversionEditMode,
+    }),
+
+    [ACTION_TYPE.UPDATE_DIVERSION_RESULT_STATE]: (state, { payload: { isLoading, diversionId, error } }) => ({
+        ...state,
+        diversionResultState: {
+            isLoading,
+            diversionId,
+            error,
+        },
+    }),
+
+    [ACTION_TYPE.UPDATE_DIVERSION_TO_EDIT]: (state, { payload: { diversion } }) => ({
+        ...state,
+        diversion,
+    }),
+
+    [ACTION_TYPE.SET_SELECTED_ROUTE_VARIANT]: (state, { payload: { selectedRouteVariant } }) => ({
+        ...state,
+        selectedRouteVariant,
+    }),
 }, INIT_STATE);

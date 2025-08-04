@@ -670,13 +670,43 @@ export const updateDisruptionsDatagridConfig = dataGridConfig => ({
 });
 
 export const clearDisruptionActionResult = () => ({
-    type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
-    payload: {
-        incidentId: null,
-        resultStatus: null,
-        resultMessage: null,
-        resultDisruptionVersion: null,
-    },
+    type: ACTION_TYPE.CLEAR_CONTROL_DISRUPTION_ACTION_RESULT,
+});
+
+// EditEffectPanel actions
+export const toggleEditEffectPanel = isOpen => ({
+    type: ACTION_TYPE.TOGGLE_EDIT_EFFECT_PANEL,
+    payload: { isOpen },
+});
+
+export const updateDisruptionKeyToEditEffect = disruptionKey => ({
+    type: ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_EDIT_EFFECT,
+    payload: { disruptionKey },
+});
+
+export const setRequireToUpdateWorkaroundsState = requireToUpdate => ({
+    type: ACTION_TYPE.SET_REQUIRE_TO_UPDATE_WORKAROUNDS_STATE,
+    payload: { requireToUpdate },
+});
+
+export const setDisruptionForWorkaroundEdit = disruption => ({
+    type: ACTION_TYPE.SET_DISRUPTION_FOR_WORKAROUND_EDIT,
+    payload: { disruption },
+});
+
+export const setRequestToUpdateEditEffectState = requestToUpdate => ({
+    type: ACTION_TYPE.SET_REQUEST_TO_UPDATE_EDIT_EFFECT_STATE,
+    payload: { requestToUpdate },
+});
+
+export const setRequestedDisruptionKeyToUpdateEditEffect = disruptionKey => ({
+    type: ACTION_TYPE.SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT,
+    payload: { disruptionKey },
+});
+
+export const updateDisruption = updatedFields => ({
+    type: ACTION_TYPE.UPDATE_DISRUPTION,
+    payload: { updatedFields },
 });
 
 export const updateActiveDisruptionId = activeDisruptionId => (dispatch) => {

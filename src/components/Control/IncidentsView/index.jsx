@@ -27,6 +27,8 @@ import './style.scss';
 import IncidentsDataGrid from './IncidentsDataGrid';
 import { PAGE_SIZE } from './types';
 import CreateIncident from './IncidentCreation/CreateIncident/index';
+import EditEffectPanel from './IncidentCreation/EditIncidentDetails/EditEffectPanel';
+import { useEditEffectPanel } from '../../../redux/selectors/appSettings';
 import LoadingOverlay from '../../Common/Overlay/LoadingOverlay';
 
 export class IncidentsView extends React.Component {
@@ -43,6 +45,7 @@ export class IncidentsView extends React.Component {
         filteredDisruptions: [],
         filteredIncidents: [],
         isCreateOpen: false,
+        useEditEffectPanel: false,
         isIncidentLoading: false,
     };
 
@@ -150,6 +153,7 @@ export class IncidentsView extends React.Component {
                         </div>
                     )}
                 {isCreateOpen && isCreateAllowed && <CreateIncident />}
+                {this.props.useEditEffectPanel && <EditEffectPanel />}
             </div>
         );
     }
@@ -166,6 +170,7 @@ IncidentsView.propTypes = {
     updateAffectedRoutesState: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
     getStopGroups: PropTypes.func.isRequired,
+    useEditEffectPanel: PropTypes.bool,
     isIncidentLoading: PropTypes.bool,
 };
 
@@ -174,5 +179,6 @@ export default connect(state => ({
     filteredIncidents: getFilteredIncidents(state),
     isCreateOpen: isIncidentCreationOpen(state),
     isCreateAllowed: isIncidentCreationAllowed(state),
+    useEditEffectPanel: useEditEffectPanel(state),
     isIncidentLoading: getIncidentForEditLoadingState(state),
 }), { getDisruptionsAndIncidents, openCreateIncident, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState, getStopGroups })(IncidentsView);
