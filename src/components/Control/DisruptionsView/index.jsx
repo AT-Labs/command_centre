@@ -1,8 +1,9 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 import { isEqual } from 'lodash-es';
+import { useLocation } from 'react-router-dom';
 
 import { getDisruptions, openCreateDisruption, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState } from '../../../redux/actions/control/disruptions';
 import {
@@ -109,6 +110,8 @@ export class DisruptionsView extends React.Component {
         );
     }
 }
+
+
 
 DisruptionsView.propTypes = {
     filteredDisruptions: PropTypes.array,

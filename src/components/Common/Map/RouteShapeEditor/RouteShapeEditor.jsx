@@ -171,114 +171,130 @@ const RouteShapeEditor = (props) => {
     }, [updatedCoords, props.stopCheckRadius]);
 
     return (
-        <div className="map route-shape-editor-container">
+        <div className="map route-shape-editor-container" style={ { height: '100%', width: '100%' } }>
             { !isEditing && editable && (
                 <div className="route-shape-editor-buttons">
                     <button type="button" onClick={ handleReset }>Reset</button>
                     <button type="button" onClick={ handleUndo } disabled={ undoStack.length < 2 }>Undo</button>
                 </div>
             )}
-            <LeafletMap
-                key={ props.routeVariant?.routeVariantId }
-                center={ center }
-                zoom={ 16 }
-                maxZoom={ 19 }
-                style={ { height: '100%', width: '100%' } }
-                ref={ mapRef }
-                whenReady={ (mapInstance) => {
-                    // Create a custom pane for the diversion polyline
-                    const diversionPane = mapInstance.target.createPane('diversionPane');
-                    diversionPane.style.zIndex = 650; // Set a higher zIndex to ensure it's on top
-                } }
-            >
-                <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                {!isEditing && props.routeVariant?.stops?.length > 0 && (
-                    <FeatureGroup>
-                        {getAllUniqueStops().map((stop) => {
-                            const isHighlighted = props.highlightedStops.includes(stop.stopId);
-                            const marker = stop.stopLat ? (
-                                <IconMarker
-                                    key={ stop.stopId }
-                                    location={ [stop.stopLat, stop.stopLon] }
-                                    imageName={ isHighlighted ? 'bus-stop-red' : 'bus-stop' }
-                                    size={ 24 }
-                                >
-                                    <Tooltip>
-                                        {`${stop.stopCode} - ${stop.stopName}`}
-                                    </Tooltip>
-                                </IconMarker>
-                            ) : null;
-                            return marker;
-                        })}
-                    </FeatureGroup>
-                )}
-                {isEditablePolylineVisible && (
-                    <FeatureGroup key={ `base-${featureGroupKey}` }>
-                        <Polyline
-                            positions={ editablePolyline }
-                            color={ ROUTE_SHAPE_COLOR }
-                            weight={ ROUTE_SHAPE_WEIGHT }
-                            opacity={ props.visible ? ROUTE_SHAPE_OPACITY : 0 }
-                        >
-                            <Tooltip sticky="true">
-                                { `${props.routeVariant?.routeVariantId} - ${props.routeVariant?.routeLongName}` }
-                            </Tooltip>
-                        </Polyline>
-                        {editable && (
-                            <EditControl
-                                position="topleft"
-                                onEditStart={ () => setIsEditing(true) }
-                                onEdited={ onEdited }
-                                onEditStop={ () => setIsEditing(false) }
-                                draw={ {
-                                    rectangle: false,
-                                    circle: false,
-                                    circlemarker: false,
-                                    marker: false,
-                                    polygon: false,
-                                    polyline: false,
-                                } }
-                                edit={ { edit: true, remove: false } }
-                            />
-                        )}
+            {/* Simple fallback for testing */}
+            {!props.routeVariant && (
+                <div style={ {
+                    height: '100%',
+                    width: '100%',
+                    backgroundColor: '#f0f0f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '2px dashed #ccc',
+                } }>
+                    <div>Map placeholder - No route selected</div>
+                </div>
+            )}
+            {props.routeVariant && (
+                <LeafletMap
+                    key={ props.routeVariant?.routeVariantId }
+                    center={ center }
+                    zoom={ 16 }
+                    maxZoom={ 19 }
+                    style={ { height: '100%', width: '100%' } }
+                    ref={ mapRef }
+                    whenReady={ (mapInstance) => {
+                        // Create a custom pane for the diversion polyline
+                        const diversionPane = mapInstance.target.createPane('diversionPane');
+                        diversionPane.style.zIndex = 650; // Set a higher zIndex to ensure it's on top
+                    } }
+                >
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    {!isEditing && props.routeVariant?.stops?.length > 0 && (
+                        <FeatureGroup>
+                            {getAllUniqueStops().map((stop) => {
+                                const isHighlighted = props.highlightedStops.includes(stop.stopId);
+                                const marker = stop.stopLat ? (
+                                    <IconMarker
+                                        key={ stop.stopId }
+                                        location={ [stop.stopLat, stop.stopLon] }
+                                        imageName={ isHighlighted ? 'bus-stop-red' : 'bus-stop' }
+                                        size={ 24 }
+                                    >
+                                        <Tooltip>
+                                            {`${stop.stopCode} - ${stop.stopName}`}
+                                        </Tooltip>
+                                    </IconMarker>
+                                ) : null;
+                                return marker;
+                            })}
+                        </FeatureGroup>
+                    )}
+                    {isEditablePolylineVisible && (
+                        <FeatureGroup key={ `base-${featureGroupKey}` }>
+                            <Polyline
+                                positions={ editablePolyline }
+                                color={ ROUTE_SHAPE_COLOR }
+                                weight={ ROUTE_SHAPE_WEIGHT }
+                                opacity={ props.visible ? ROUTE_SHAPE_OPACITY : 0 }
+                            >
+                                <Tooltip sticky="true">
+                                    { `${props.routeVariant?.routeVariantId} - ${props.routeVariant?.routeLongName}` }
+                                </Tooltip>
+                            </Polyline>
+                            {editable && (
+                                <EditControl
+                                    position="topleft"
+                                    onEditStart={ () => setIsEditing(true) }
+                                    onEdited={ onEdited }
+                                    onEditStop={ () => setIsEditing(false) }
+                                    draw={ {
+                                        rectangle: false,
+                                        circle: false,
+                                        circlemarker: false,
+                                        marker: false,
+                                        polygon: false,
+                                        polyline: false,
+                                    } }
+                                    edit={ { edit: true, remove: false } }
+                                />
+                            )}
 
-                    </FeatureGroup>
-                )}
-                {!isEditing && (
-                    <FeatureGroup>
-                        { props.additionalRouteVariants
-                            .filter(rv => rv.visible)
-                            .map(rv => (
-                                <Polyline key={ rv.routeVariantId }
-                                    positions={ parseWKT(rv.shapeWkt) }
-                                    color={ rv.color }
-                                    weight={ ROUTE_SHAPE_WEIGHT }
-                                    opacity={ ROUTE_SHAPE_OPACITY }>
-                                    <Tooltip sticky="true">
-                                        { `${rv.routeVariantId} - ${rv.routeLongName}` }
-                                    </Tooltip>
-                                </Polyline>
-                            ))}
-                    </FeatureGroup>
-                )}
-                {diversionPolyline.length > 0 && (
-                    <FeatureGroup key={ `diversion-${featureGroupKey}` }>
-                        <Polyline
-                            positions={ diversionPolyline }
-                            color={ DIVERSION_SHAPE_COLOR }
-                            weight={ DIVERSION_SHAPE_WEIGHT }
-                            opacity={ DIVERSION_SHAPE_OPACITY }
-                        >
-                            <Tooltip sticky="true">
-                                <span>Diversion Shape</span>
-                            </Tooltip>
-                        </Polyline>
-                    </FeatureGroup>
-                )}
-            </LeafletMap>
+                        </FeatureGroup>
+                    )}
+                    {!isEditing && (
+                        <FeatureGroup>
+                            { props.additionalRouteVariants
+                                .filter(rv => rv.visible)
+                                .map(rv => (
+                                    <Polyline key={ rv.routeVariantId }
+                                        positions={ parseWKT(rv.shapeWkt) }
+                                        color={ rv.color }
+                                        weight={ ROUTE_SHAPE_WEIGHT }
+                                        opacity={ ROUTE_SHAPE_OPACITY }>
+                                        <Tooltip sticky="true">
+                                            { `${rv.routeVariantId} - ${rv.routeLongName}` }
+                                        </Tooltip>
+                                    </Polyline>
+                                ))}
+                        </FeatureGroup>
+                    )}
+                    {diversionPolyline.length > 0 && (
+                        <FeatureGroup key={ `diversion-${featureGroupKey}` }>
+                            <Polyline
+                                positions={ diversionPolyline }
+                                color={ DIVERSION_SHAPE_COLOR }
+                                weight={ DIVERSION_SHAPE_WEIGHT }
+                                opacity={ DIVERSION_SHAPE_OPACITY }
+                            >
+                                <Tooltip sticky="true">
+                                    <span>Diversion Shape</span>
+                                </Tooltip>
+                            </Polyline>
+                        </FeatureGroup>
+                    )}
+                </LeafletMap>
+            )}
         </div>
     );
 };
