@@ -2,6 +2,7 @@
 
 .side-panel-control-component-view {
     & .side-panel {
+        overflow-x: hidden;
         .side-panel__inner {
             box-shadow: none;
         }

@@ -271,17 +271,8 @@ export const SelectDetails = (props) => {
     };
 
     const openEditEffectPanel = (disruption) => {
-        // Открываем EditEffectPanel (как красная кнопка)
-        if (props.updateDisruptionKeyToEditEffect) {
-            props.updateDisruptionKeyToEditEffect(disruption.incidentNo);
-        }
-        
-        if (props.toggleEditEffectPanel) {
-            props.toggleEditEffectPanel(true);
-        }
-        
-        // Предотвращаем всплытие события
-        return false;
+        props.setRequestedDisruptionKeyToUpdateEditEffect(disruption.incidentNo);
+        props.setRequestToUpdateEditEffectState(true);
     };
 
     const impacts = useAlertEffects();
@@ -605,11 +596,7 @@ export const SelectDetails = (props) => {
                                 <div>
                                     <Button
                                         className="btn cc-btn-link p-lr12-tb6 m-0"
-                                        onClick={ (e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            openEditEffectPanel(disruption);
-                                        } }>
+                                        onClick={ () => openEditEffectPanel(disruption) }>
                                         <strong>{disruption.incidentNo}</strong>
                                     </Button>
                                     <p className="p-lr12-tb6 m-0">
