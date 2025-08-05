@@ -673,6 +673,16 @@ export const clearDisruptionActionResult = () => ({
     type: ACTION_TYPE.CLEAR_CONTROL_DISRUPTION_ACTION_RESULT,
 });
 
+export const updateActiveDisruptionId = activeDisruptionId => (dispatch) => {
+    dispatch({
+        type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_DISRUPTION_ID,
+        payload: {
+            activeDisruptionId,
+        },
+    });
+    dispatch(clearDisruptionActionResult());
+};
+
 const geographySearchRoutes = searchBody => async (dispatch, getState) => {
     const routesSearchResult = await ccStatic.geoSearch(searchBody, 'routes');
     const allRoutes = getAllRoutes(getState());
@@ -816,4 +826,3 @@ export const setDisruptionForWorkaroundEdit = disruptionForWorkaroundEdit => (di
         },
     });
 };
-

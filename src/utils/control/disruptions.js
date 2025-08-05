@@ -230,9 +230,15 @@ export const groupStopsByRouteElementByParentStation = (list) => {
     return result;
 };
 
-export const getDeduplcatedAffectedRoutes = affectedEntities => [...new Set(affectedEntities.filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))];
+export const getDeduplcatedAffectedRoutes = (affectedEntities) => {
+    if (!Array.isArray(affectedEntities)) return [];
+    return [...new Set(affectedEntities.filter((entity) => entity.routeId).map(({ routeShortName }) => routeShortName))];
+};
 
-export const getDeduplcatedAffectedStops = affectedEntities => [...new Set(affectedEntities.filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))];
+export const getDeduplcatedAffectedStops = (affectedEntities) => {
+    if (!Array.isArray(affectedEntities)) return [];
+    return [...new Set(affectedEntities.filter((entity) => entity.stopCode).map(({ stopCode }) => stopCode))];
+};
 
 export const filterOnlyRouteParams = route => pick(route, ['routeId', 'routeShortName', 'routeType', 'routeColor', 'shapeWkt', 'agencyId', 'agencyName',
     'text', 'category', 'icon', 'valueKey', 'labelKey', 'type']);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormControl, InputLabel, Select, MenuItem, ListSubheader } from '@mui/material';
+import Select from 'react-select';
 import PropTypes from 'prop-types';
 
 const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVariant, onSelectVariant }) => {
@@ -14,72 +14,72 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
     }, {});
 
     return (
-        <FormControl className="w-100 position-relative">
-            <InputLabel id="grouped-native-select-label">
+        <div className="w-100 position-relative">
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
                 { label }
-            </InputLabel>
+            </label>
             <Select
-                labelId="grouped-native-select-label"
-                id="grouped-native-select"
-                disabled={ disabled }
-                label={ label }
-                value={ selectedRouteVariant?.routeVariantId || '' } // Controlled value
-                onChange={ (event) => {
-                    const selectedId = event.target.value;
-                    const selectedVariant = routeVariants.find(
-                        variant => variant.routeVariantId === selectedId,
-                    );
-                    onSelectVariant(selectedVariant); // Pass the full variant object to the parent
+                isDisabled={ disabled }
+                value={ selectedRouteVariant ? {
+                    value: selectedRouteVariant.routeVariantId,
+                    label: `${selectedRouteVariant.routeVariantId} - ${selectedRouteVariant.routeLongName}`
+                } : null }
+                onChange={ (selectedOption) => {
+                    if (selectedOption) {
+                        const selectedVariant = routeVariants.find(
+                            variant => variant.routeVariantId === selectedOption.value,
+                        );
+                        onSelectVariant(selectedVariant);
+                    } else {
+                        onSelectVariant(null);
+                    }
                 } }
-                onClick={ () => {
-                    console.log('=== SELECTOR CLICKED ===');
-                    console.log('routeVariants:', routeVariants);
-                    console.log('routeVariantsLength:', routeVariants?.length);
-                    console.log('selectedRouteVariant:', selectedRouteVariant);
-                    console.log('disabled:', disabled);
-                } }
-            >
-                {Object.entries(groupedByRoute).map(([routeShortName, variants]) => {
+                options={Object.entries(groupedByRoute).map(([routeShortName, variants]) => {
                     // Group variants by directionId within each route
                     const inboundVariants = variants.filter(variant => variant.directionId === 0);
                     const outboundVariants = variants.filter(variant => variant.directionId === 1);
 
-                    return [
-                        // Inbound/Anticlockwise Group
-                        inboundVariants.length > 0 && (
-                            <ListSubheader key={ `${routeShortName}-inbound` }>
-                                {`Route ${routeShortName} Inbound/Anticlockwise`}
-                            </ListSubheader>
-                        ),
-                        ...inboundVariants.map(variant => (
-                            <MenuItem
-                                key={ variant.routeVariantId }
-                                value={ variant.routeVariantId }
-                                disabled={ variant.hasTripModifications === true }
-                            >
-                                {`${variant.routeVariantId} - ${variant.routeLongName}`}
-                            </MenuItem>
-                        )),
-
-                        // Outbound/Clockwise Group
-                        outboundVariants.length > 0 && (
-                            <ListSubheader key={ `${routeShortName}-outbound` }>
-                                {`Route ${routeShortName} Outbound/Clockwise`}
-                            </ListSubheader>
-                        ),
-                        ...outboundVariants.map(variant => (
-                            <MenuItem
-                                key={ variant.routeVariantId }
-                                value={ variant.routeVariantId }
-                                disabled={ variant.hasTripModifications === true }
-                            >
-                                {`${variant.routeVariantId} - ${variant.routeLongName}`}
-                            </MenuItem>
-                        )),
-                    ];
-                })}
-            </Select>
-        </FormControl>
+                    const options = [];
+                    
+                    // Add inbound group
+                    if (inboundVariants.length > 0) {
+                        options.push({
+                            label: `Route ${routeShortName} Inbound/Anticlockwise`,
+                            options: inboundVariants.map(variant => ({
+                                value: variant.routeVariantId,
+                                label: `${variant.routeVariantId} - ${variant.routeLongName}`,
+                                isDisabled: variant.hasTripModifications === true
+                            }))
+                        });
+                    }
+                    
+                    // Add outbound group
+                    if (outboundVariants.length > 0) {
+                        options.push({
+                            label: `Route ${routeShortName} Outbound/Clockwise`,
+                            options: outboundVariants.map(variant => ({
+                                value: variant.routeVariantId,
+                                label: `${variant.routeVariantId} - ${variant.routeLongName}`,
+                                isDisabled: variant.hasTripModifications === true
+                            }))
+                        });
+                    }
+                    
+                    return options;
+                }).flat()}
+                placeholder="Select a route variant"
+                styles={{
+                    control: (base) => ({
+                        ...base,
+                        zIndex: 999999
+                    }),
+                    menu: (base) => ({
+                        ...base,
+                        zIndex: 999999
+                    })
+                }}
+            />
+        </div>
     );
 };
 

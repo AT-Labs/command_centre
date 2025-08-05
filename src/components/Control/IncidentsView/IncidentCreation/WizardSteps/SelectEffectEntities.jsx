@@ -397,7 +397,7 @@ export const SelectEffectEntities = (props) => {
                 <ul className="p-0">
                     <StopsByRouteMultiSelect
                         key={ `${disruptionKey}_stops_by_route_multi_select` }
-                        affectedRoutes={ affectedEntities.affectedRoutes }
+                        affectedRoutes={ affectedEntities?.affectedRoutes || [] }
                         updateAffectedRoutes={ updateAffectedRoutes }
                         removeAction={ route => removeAction(route, ROUTE) }
                         className="select-stops-route"

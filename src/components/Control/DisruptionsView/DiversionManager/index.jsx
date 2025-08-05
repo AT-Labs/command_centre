@@ -34,6 +34,9 @@ const DiversionManager = (props) => {
     const resultAction = isEditingMode ? 'updated' : 'added';
     const buttonText = `${isEditingMode ? 'Update' : 'Create'} Diversion`;
     const editingDiversions = props.diversion?.diversionRouteVariants || [];
+    
+    // State for managing result modal delay
+    const [showResultModal, setShowResultModal] = useState(false);
 
     // For base route variant
     const [routeVariantsList, setRouteVariantsList] = useState([]);
@@ -58,14 +61,51 @@ const DiversionManager = (props) => {
     const [affectedStops, setAffectedStops] = useState([]);
 
     // Other variables
-    const isDiversionValid = modifiedBaseRouteVariant?.shapeWkt?.length > 0 && diversionShapeWkt?.length > 0;
+    const isDiversionValid = modifiedBaseRouteVariant?.shapeWkt?.length > 0 && 
+                             (isEditingMode ? diversionShapeWkt?.length > 0 : diversionShapeWkt?.length > 0);
     const [isUpdated, setIsUpdated] = useState(false);
 
     // We only support adding diversion to bus route at the moment.
     const isBusRoute = route => route.routeType === BUS_TYPE_ID;
-    const [routeIds] = useState(props.disruption?.affectedEntities?.length > 0
-        ? [...new Set(props.disruption?.affectedEntities.filter(isBusRoute).map(entity => entity.routeId))]
-        : []);
+    
+    // Handle both old array structure and new object structure
+    const getAffectedEntities = () => {
+        console.log('🔧 DiversionManager - props.disruption:', props.disruption);
+        console.log('🔧 DiversionManager - props.disruption.affectedEntities:', props.disruption?.affectedEntities);
+        
+        if (!props.disruption?.affectedEntities) return [];
+        
+        // New structure: { affectedRoutes: [...], affectedStops: [...] }
+        if (props.disruption.affectedEntities.affectedRoutes) {
+            console.log('🔧 DiversionManager - using affectedEntities.affectedRoutes:', props.disruption.affectedEntities.affectedRoutes);
+            return props.disruption.affectedEntities.affectedRoutes;
+        }
+        
+        // Old structure: array of entities
+        if (Array.isArray(props.disruption.affectedEntities)) {
+            console.log('🔧 DiversionManager - using affectedEntities array:', props.disruption.affectedEntities);
+            return props.disruption.affectedEntities;
+        }
+        
+        // Handle incident data structure (for DiversionManager from EditEffectPanel)
+        if (props.disruption.affectedRoutes) {
+            console.log('🔧 DiversionManager - using top-level affectedRoutes:', props.disruption.affectedRoutes);
+            return props.disruption.affectedRoutes;
+        }
+        
+        console.log('🔧 DiversionManager - no affected entities found');
+        return [];
+    };
+    
+    const [routeIds] = useState(() => {
+        const affectedEntities = getAffectedEntities();
+        const routeIds = affectedEntities.length > 0
+            ? [...new Set(affectedEntities.filter(isBusRoute).map(entity => entity.routeId))]
+            : [];
+        console.log('🔧 DiversionManager - affectedEntities:', affectedEntities);
+        console.log('🔧 DiversionManager - routeIds:', routeIds);
+        return routeIds;
+    });
 
     const initEditingMode = (routeVariants) => {
         // Select the base route in edit mode
@@ -117,7 +157,9 @@ const DiversionManager = (props) => {
                 ...(endDate !== null && { serviceDateTo: endDate }),
                 ...(endTime !== null && { endTime }),
             };
+            console.log('🔧 DiversionManager - searchRouteVariants params:', search);
             let { routeVariants } = await searchRouteVariants(search);
+            console.log('🔧 DiversionManager - searchRouteVariants response:', routeVariants);
             if (routeVariants?.length > 0) {
                 // Remove duplicate points around bus stops in the shapeWkt
                 routeVariants = routeVariants.map(rv => ({ ...rv, shapeWkt: removeDuplicatePoints(rv.shapeWkt) }));
@@ -149,10 +191,16 @@ const DiversionManager = (props) => {
                 setIsChangeVariantModalOpen(true);
             } else {
                 setSelectedBaseRouteVariant(variant);
+                // Initialize modifiedBaseRouteVariant with the original shape
+                setModifiedBaseRouteVariant(createModifiedRouteVariant(variant, variant.shapeWkt));
+                // Set the initial shape for the RouteShapeEditor to display
+                setInitialBaseRouteShape(variant.shapeWkt);
             }
         } else {
             // reset
             setSelectedBaseRouteVariant(null);
+            setModifiedBaseRouteVariant(null);
+            setInitialBaseRouteShape(null);
             setSecondaryRouteVariantsList([]);
         }
     };
@@ -245,12 +293,23 @@ const DiversionManager = (props) => {
 
     // Buttons
     const onCancelClicked = () => {
+        console.log('🔧 DiversionManager - onCancelClicked called');
         if (props.onCancelled) {
+            console.log('🔧 DiversionManager - calling props.onCancelled()');
             props.onCancelled();
+        } else {
+            console.log('🔧 DiversionManager - props.onCancelled is not provided');
         }
     };
 
+
+
     const onSaveClicked = async () => {
+        console.log('🔧 DiversionManager - onSaveClicked called');
+        console.log('🔧 DiversionManager - modifiedBaseRouteVariant:', modifiedBaseRouteVariant);
+        console.log('🔧 DiversionManager - diversionShapeWkt:', diversionShapeWkt);
+        console.log('🔧 DiversionManager - isEditingMode:', isEditingMode);
+        
         if (modifiedBaseRouteVariant && diversionShapeWkt) {
             let modifiedOtherRouteVariants = [];
             if (selectedOtherRouteVariants.length > 0) {
@@ -268,27 +327,75 @@ const DiversionManager = (props) => {
                 affectedStops,
             };
 
+            console.log('🔧 DiversionManager - diversionPayload:', diversionPayload);
+
             if (isEditingMode) {
+                console.log('🔧 DiversionManager - calling updateDiversion');
                 props.updateDiversion({
                     ...diversionPayload,
                     diversionId: props.diversion.diversionId,
                 });
             } else {
+                console.log('🔧 DiversionManager - calling createDiversion');
                 props.createDiversion(diversionPayload);
             }
+        } else {
+            console.log('🔧 DiversionManager - save conditions not met');
+            console.log('🔧 DiversionManager - modifiedBaseRouteVariant exists:', !!modifiedBaseRouteVariant);
+            console.log('🔧 DiversionManager - diversionShapeWkt exists:', !!diversionShapeWkt);
         }
     };
 
     const handleResultAction = (action) => {
+        console.log('🔧 DiversionManager - handleResultAction called with action:', action);
+        console.log('🔧 DiversionManager - props.onCancelled exists:', !!props.onCancelled);
+        console.log('🔧 DiversionManager - props.onDiversionCreated exists:', !!props.onDiversionCreated);
+        
+        setShowResultModal(false);
         props.resetDiversionResult();
+        
         if (action === ACTION_TYPE.NEW_DIVERSION) {
+            console.log('🔧 DiversionManager - NEW_DIVERSION action, calling reset()');
             reset();
         } else if (action === ACTION_TYPE.RETURN_TO_DISRUPTION) {
+            console.log('🔧 DiversionManager - RETURN_TO_DISRUPTION action');
+            // Close the DiversionManager modal
             if (props.onCancelled) {
+                console.log('🔧 DiversionManager - calling onCancelled()');
                 props.onCancelled();
+            } else {
+                console.log('🔧 DiversionManager - onCancelled prop is not provided');
+            }
+            // Trigger a refresh of the incident data to include the new diversion
+            if (props.onDiversionCreated) {
+                console.log('🔧 DiversionManager - calling onDiversionCreated()');
+                props.onDiversionCreated();
+            } else {
+                console.log('🔧 DiversionManager - onDiversionCreated prop is not provided');
             }
         }
     };
+    
+    // Auto-close modal when diversion is successfully created
+    useEffect(() => {
+        if (props.resultState?.diversionId && !props.resultState?.error && !props.resultState?.isLoading) {
+            console.log('🔧 DiversionManager - Success modal shown, user can choose to add more or close');
+            // Trigger a refresh of the incident data to include the new diversion
+            if (props.onDiversionCreated) {
+                console.log('🔧 DiversionManager - calling onDiversionCreated() for data refresh');
+                props.onDiversionCreated();
+            }
+            
+            // Add delay before showing result modal
+            setTimeout(() => {
+                setShowResultModal(true);
+            }, 800); // 800ms delay
+        } else {
+            setShowResultModal(false);
+        }
+    }, [props.resultState?.diversionId, props.resultState?.error, props.resultState?.isLoading]);
+    
+
 
     const handleOtherVisibilityChange = (routeVariantId) => {
         setSelectedOtherRouteVariants(prevVariants => prevVariants.map(variant => (variant.routeVariantId === routeVariantId
@@ -344,13 +451,144 @@ const DiversionManager = (props) => {
         );
     };
 
+    console.log('🔧 DiversionManager - render - resultState:', props.resultState);
+    console.log('🔧 DiversionManager - render - isLoading:', props.resultState?.isLoading);
+    console.log('🔧 DiversionManager - render - diversionId:', props.resultState?.diversionId);
+    console.log('🔧 DiversionManager - render - error:', props.resultState?.error);
+    console.log('🔧 DiversionManager - render - props.isOpen:', props.isOpen, typeof props.isOpen);
+    console.log('🔧 DiversionManager - render - props.disruption:', props.disruption);
+    console.log('🔧 DiversionManager - render - props.disruption?.affectedEntities:', props.disruption?.affectedEntities);
+    console.log('🔧 DiversionManager - render - should render:', props.isOpen ? 'YES' : 'NO');
+    console.log('🔧 DiversionManager - render - props.isOpen value:', props.isOpen);
+    console.log('🔧 DiversionManager - render - props.isOpen type:', typeof props.isOpen);
+    console.log('🔧 DiversionManager - render - props.isOpen === true:', props.isOpen === true);
+    console.log('🔧 DiversionManager - render - props.isOpen === false:', props.isOpen === false);
+    
+    // Hide DiversionManager when result modal is shown
+    const isResultModalOpen = showResultModal || (!props.resultState.isLoading && props.resultState?.error);
+    const shouldShowDiversionManager = props.isOpen && !isResultModalOpen;
+    
+                // Add CSS to hide map elements when result modal is shown
+    React.useEffect(() => {
+        if (isResultModalOpen) {
+            // Hide all map-related elements when result modal is shown
+            const mapElements = document.querySelectorAll('.leaflet-control-container, .leaflet-control-zoom, .leaflet-control-draw, .leaflet-pane, .leaflet-overlay-pane, .leaflet-marker-pane, .leaflet-tooltip-pane, .leaflet-popup-pane');
+            mapElements.forEach(element => {
+                if (element) {
+                    element.style.display = 'none';
+                    element.style.visibility = 'hidden';
+                    element.style.opacity = '0';
+                }
+            });
+            
+            // Also hide the entire map container
+            const mapContainer = document.querySelector('.leaflet-container');
+            if (mapContainer) {
+                mapContainer.style.display = 'none';
+                mapContainer.style.visibility = 'hidden';
+                mapContainer.style.opacity = '0';
+            }
+        } else {
+            // Show map elements when result modal is hidden
+            const mapElements = document.querySelectorAll('.leaflet-control-container, .leaflet-control-zoom, .leaflet-control-draw, .leaflet-pane, .leaflet-overlay-pane, .leaflet-marker-pane, .leaflet-tooltip-pane, .leaflet-popup-pane');
+            mapElements.forEach(element => {
+                if (element) {
+                    element.style.display = '';
+                    element.style.visibility = '';
+                    element.style.opacity = '';
+                }
+            });
+            
+            // Show the map container
+            const mapContainer = document.querySelector('.leaflet-container');
+            if (mapContainer) {
+                mapContainer.style.display = '';
+                mapContainer.style.visibility = '';
+                mapContainer.style.opacity = '';
+            }
+        }
+        
+        // Cleanup function
+        return () => {
+            const mapElements = document.querySelectorAll('.leaflet-control-container, .leaflet-control-zoom, .leaflet-control-draw, .leaflet-pane, .leaflet-overlay-pane, .leaflet-marker-pane, .leaflet-tooltip-pane, .leaflet-popup-pane');
+            mapElements.forEach(element => {
+                if (element) {
+                    element.style.display = '';
+                    element.style.visibility = '';
+                    element.style.opacity = '';
+                }
+            });
+            
+            const mapContainer = document.querySelector('.leaflet-container');
+            if (mapContainer) {
+                mapContainer.style.display = '';
+                mapContainer.style.visibility = '';
+                mapContainer.style.opacity = '';
+            }
+        };
+    }, [isResultModalOpen]);
+
+    // Add listener for Close button clicks when DiversionManager is open
+    React.useEffect(() => {
+        if (props.isOpen) {
+            const handleCloseButtonClick = () => {
+                console.log('🔧 DiversionManager - Close button clicked, hiding map elements');
+                // Hide all map elements when close button is clicked
+                const mapElements = document.querySelectorAll('.leaflet-control-container, .leaflet-control-zoom, .leaflet-control-draw, .leaflet-pane, .leaflet-overlay-pane, .leaflet-marker-pane, .leaflet-tooltip-pane, .leaflet-popup-pane');
+                mapElements.forEach(element => {
+                    if (element) {
+                        element.style.display = 'none';
+                        element.style.visibility = 'hidden';
+                        element.style.opacity = '0';
+                    }
+                });
+                
+                // Also hide the entire map container
+                const mapContainer = document.querySelector('.leaflet-container');
+                if (mapContainer) {
+                    mapContainer.style.display = 'none';
+                    mapContainer.style.visibility = 'hidden';
+                    mapContainer.style.opacity = '0';
+                }
+            };
+
+            // Find the Close button and add event listener
+            const closeButton = document.querySelector('.disruption-creation-close-disruptions');
+            if (closeButton) {
+                closeButton.addEventListener('click', handleCloseButtonClick);
+                
+                // Cleanup function
+                return () => {
+                    closeButton.removeEventListener('click', handleCloseButtonClick);
+                };
+            }
+        }
+    }, [props.isOpen]);
+    
     return (
-        <div className="side-panel-control-component-view d-flex">
+        <div className="side-panel-control-component-view d-flex" style={{ 
+            zIndex: 9999, 
+            position: 'relative',
+            ...(isResultModalOpen ? {
+                display: 'none',
+                visibility: 'hidden',
+                opacity: '0'
+            } : {})
+        }}>
+            {console.log('🔧 DiversionManager - SidePanel props.isOpen:', props.isOpen, typeof props.isOpen)}
+            {console.log('🔧 DiversionManager - isResultModalOpen:', isResultModalOpen)}
+            {console.log('🔧 DiversionManager - shouldShowDiversionManager:', shouldShowDiversionManager)}
             <SidePanel
-                isOpen
+                isOpen={shouldShowDiversionManager}
                 isActive
                 className="side-panel-primary-panel side-panel__scroll-size"
                 toggleButton={ false }
+                style={ isResultModalOpen ? { 
+                    display: 'none', 
+                    visibility: 'hidden', 
+                    opacity: '0',
+                    zIndex: '-1'
+                } : {} }
             >
                 <div className="diversion-creation-container">
                     <h2 className="pl-4 pr-4">{ title }</h2>
@@ -393,7 +631,12 @@ const DiversionManager = (props) => {
                         <div className="d-flex justify-content-between align-items-center">
                             <Button
                                 className="btn cc-btn-secondary"
-                                onClick={ onCancelClicked }
+                                onClick={ (e) => {
+                                    console.log('🔧 Cancel button clicked!');
+                                    console.log('🔧 Event:', e);
+                                    onCancelClicked();
+                                } }
+                                style={{ zIndex: 9999 }}
                             >
                                 Cancel
                             </Button>
@@ -408,14 +651,16 @@ const DiversionManager = (props) => {
                     </div>
                 </div>
             </SidePanel>
-            <RouteShapeEditor
-                routeVariant={ selectedBaseRouteVariant }
-                initialShape={ initialBaseRouteShape }
-                additionalRouteVariants={ selectedOtherRouteVariants }
-                highlightedStops={ getUniqueAffectedStopIds(affectedStops) }
-                onShapeUpdated={ onShapeUpdated }
-                visible={ isBaseRouteVariantVisible }
-                className="map" />
+            {shouldShowDiversionManager && (
+                <RouteShapeEditor
+                    routeVariant={ selectedBaseRouteVariant }
+                    initialShape={ initialBaseRouteShape }
+                    additionalRouteVariants={ selectedOtherRouteVariants }
+                    highlightedStops={ getUniqueAffectedStopIds(affectedStops) }
+                    onShapeUpdated={ onShapeUpdated }
+                    visible={ isBaseRouteVariantVisible }
+                    className="map" />
+            )}
             <CustomModal
                 className="change-selected-route-variant-modal"
                 title="Change Selected Route Variant"
@@ -428,17 +673,38 @@ const DiversionManager = (props) => {
                     onCancel={ () => setIsChangeVariantModalOpen(false) }
                 />
             </CustomModal>
-            <CustomModal
-                className="diversion-result-modal"
-                title={ title }
-                isModalOpen={ !props.resultState.isLoading && (props.resultState?.diversionId || props.resultState?.error) }>
-                <DiversionResultModal
-                    showNewDiversionButton={ !isEditingMode }
-                    result={ props.resultState?.diversionId ? `Diversion #${props.resultState?.diversionId} has been ${resultAction}.` : null }
-                    error={ props.resultState?.error?.message }
-                    onAction={ handleResultAction }
-                />
-            </CustomModal>
+            {/* Show result modal for both success and errors */}
+            {(() => {
+                const isModalOpen = showResultModal || (!props.resultState.isLoading && props.resultState?.error);
+                console.log('🔧 DiversionManager - DiversionResultModal isModalOpen:', isModalOpen);
+                console.log('🔧 DiversionManager - DiversionResultModal result:', props.resultState?.diversionId ? `Diversion #${props.resultState?.diversionId} has been ${resultAction}.` : null);
+                console.log('🔧 DiversionManager - DiversionResultModal error:', props.resultState?.error?.message);
+                return (
+                    <CustomModal
+                        className="diversion-result-modal"
+                        title={ title }
+                        isModalOpen={ isModalOpen }
+                        onClose={ () => {
+                            console.log('🔧 DiversionManager - Result modal closed by X button');
+                            setShowResultModal(false);
+                            // Close the DiversionManager when result modal is closed
+                            if (props.onCancelled) {
+                                console.log('🔧 DiversionManager - calling onCancelled() for X button close');
+                                props.onCancelled();
+                            }
+                            // Reset the result state
+                            props.resetDiversionResult();
+                        } }
+                        style={{ zIndex: 999999 }}>
+                        <DiversionResultModal
+                            showNewDiversionButton={ !isEditingMode }
+                            result={ props.resultState?.diversionId ? `Diversion #${props.resultState?.diversionId} has been ${resultAction}.` : null }
+                            error={ props.resultState?.error?.message }
+                            onAction={ handleResultAction }
+                        />
+                    </CustomModal>
+                );
+            })()}
         </div>
     );
 };
@@ -450,6 +716,7 @@ DiversionManager.propTypes = {
     resetDiversionResult: PropTypes.func.isRequired,
     disruption: PropTypes.object,
     onCancelled: PropTypes.func,
+    onDiversionCreated: PropTypes.func,
     resultState: PropTypes.object,
     diversion: PropTypes.object,
 };
@@ -457,6 +724,7 @@ DiversionManager.propTypes = {
 DiversionManager.defaultProps = {
     disruption: null,
     onCancelled: null,
+    onDiversionCreated: null,
     resultState: {
         isLoading: false,
         diversionId: null,

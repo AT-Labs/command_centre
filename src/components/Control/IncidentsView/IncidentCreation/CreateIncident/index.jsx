@@ -82,6 +82,9 @@ import { usePassengerImpact, useGeoSearchRoutesByDisruptionPeriod, useDraftDisru
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import WorkaroundPanel from '../WizardSteps/WorkaroundPanel';
 import EditEffectPanel from '../EditIncidentDetails/EditEffectPanel';
+import DiversionManager from '../../../DisruptionsView/DiversionManager';
+import { openDiversionManager, updateDiversionMode, updateDiversionToEdit } from '../../../../../redux/actions/control/diversions';
+import { getIsDiversionManagerOpen } from '../../../../../redux/selectors/control/diversions';
 
 const INIT_STATE = {
     startTime: '',
@@ -313,7 +316,16 @@ export class CreateIncident extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
+        console.log('🔧 CreateIncident - componentDidUpdate');
+        console.log('🔧 CreateIncident - prevProps.isRequiresToUpdateNotes:', prevProps.isRequiresToUpdateNotes);
+        console.log('🔧 CreateIncident - this.props.isRequiresToUpdateNotes:', this.props.isRequiresToUpdateNotes);
+        console.log('🔧 CreateIncident - prevProps.disruptionToEdit:', prevProps.disruptionToEdit);
+        console.log('🔧 CreateIncident - this.props.disruptionToEdit:', this.props.disruptionToEdit);
+        console.log('🔧 CreateIncident - prevProps.isDiversionManagerOpen:', prevProps.isDiversionManagerOpen);
+        console.log('🔧 CreateIncident - this.props.isDiversionManagerOpen:', this.props.isDiversionManagerOpen);
+        
         if (!prevProps.isRequiresToUpdateNotes && this.props.isRequiresToUpdateNotes) {
+            console.log('🔧 CreateIncident - updating form on add note');
             this.setupDataEdit(true); // for updating form on add note
         }
     }
@@ -464,10 +476,44 @@ export class CreateIncident extends React.Component {
         const type = `is${modalType}Open`;
         this.setState({ [type]: isOpen });
         this.props.toggleIncidentModals(type, isOpen);
+        
+        // If closing the modal (isOpen = false), hide map elements and close DiversionManager
+        if (!isOpen) {
+            console.log('🔧 CreateIncident - toggleModal closing, hiding map elements and closing DiversionManager');
+            
+            // Hide all map elements when close button is clicked
+            const mapElements = document.querySelectorAll('.leaflet-control-container, .leaflet-control-zoom, .leaflet-control-draw, .leaflet-pane, .leaflet-overlay-pane, .leaflet-marker-pane, .leaflet-tooltip-pane, .leaflet-popup-pane');
+            mapElements.forEach(element => {
+                if (element) {
+                    element.style.display = 'none';
+                    element.style.visibility = 'hidden';
+                    element.style.opacity = '0';
+                }
+            });
+            
+            // Also hide the entire map container
+            const mapContainer = document.querySelector('.leaflet-container');
+            if (mapContainer) {
+                mapContainer.style.display = 'none';
+                mapContainer.style.visibility = 'hidden';
+                mapContainer.style.opacity = '0';
+            }
+            
+            // Close DiversionManager if it's open
+            if (this.props.isDiversionManagerOpen) {
+                console.log('🔧 CreateIncident - closing DiversionManager');
+                this.props.openDiversionManager(false);
+            }
+        }
     };
 
     closeEffectEditPanel = () => {
+        console.log('🔧 CreateIncident - closeEffectEditPanel called');
         // Закрываем обе панели при нажатии на стрелку в основном окне
+        // Reset diversion manager state
+        this.props.openDiversionManager(false);
+        this.props.updateDiversionMode(EDIT_TYPE.CREATE);
+        this.props.updateDiversionToEdit(null);
         this.props.toggleEditEffectPanel(false);
         this.props.toggleWorkaroundPanel(false);
         this.props.updateDisruptionKeyToEditEffect('');
@@ -625,6 +671,51 @@ export class CreateIncident extends React.Component {
                         toggleEditEffectPanel={ this.props.toggleEditEffectPanel }
                     />
                 )}
+                {/* DiversionManager rendered at root level to avoid modal conflicts */}
+                {console.log('🔧 CreateIncident - isDiversionManagerOpen:', this.props.isDiversionManagerOpen, typeof this.props.isDiversionManagerOpen)}
+                {console.log('🔧 CreateIncident - should render DiversionManager:', this.props.isDiversionManagerOpen ? 'YES' : 'NO')}
+                {this.props.isDiversionManagerOpen && (
+                    (() => {
+                        console.log('🔧 CreateIncident - Rendering DiversionManager');
+                        return (
+                            <DiversionManager 
+                                disruption={{
+                                    ...this.props.disruptionToEdit,
+                                    // Extract the disruptionId from the first disruption
+                                    disruptionId: this.props.disruptionToEdit?.disruptions?.[0]?.disruptionId,
+                                    // Transform incident data structure to match DiversionManager expectations
+                                    // Extract affected entities from the first disruption and separate routes/stops
+                                    affectedEntities: (() => {
+                                        const affectedEntities = this.props.disruptionToEdit?.disruptions?.[0]?.affectedEntities || [];
+                                        return {
+                                            affectedRoutes: affectedEntities.filter(entity => entity.type === 'route'),
+                                            affectedStops: affectedEntities.filter(entity => entity.type === 'stop')
+                                        };
+                                    })()
+                                }}
+                                onCancelled={() => {
+                                    console.log('🔧 CreateIncident - onCancelled callback called');
+                                    this.props.openDiversionManager(false);
+                                }}
+                                onDiversionCreated={() => {
+                                    console.log('🔧 CreateIncident - onDiversionCreated callback called');
+                                    this.props.setRequireToUpdateIncidentForEditState(true);
+                                }}
+                                editMode={this.props.diversionMode || "CREATE"}
+                                isOpen={this.props.isDiversionManagerOpen}
+                            />
+                        );
+                    })()
+                )}
+                {/* Debug: Log the incident data */}
+                {console.log('🔧 CreateIncident - disruptionToEdit:', this.props.disruptionToEdit)}
+                {console.log('🔧 CreateIncident - disruptionToEdit keys:', Object.keys(this.props.disruptionToEdit || {}))}
+                {console.log('🔧 CreateIncident - affectedRoutes:', this.props.disruptionToEdit?.affectedRoutes)}
+                {console.log('🔧 CreateIncident - affectedStops:', this.props.disruptionToEdit?.affectedStops)}
+                {console.log('🔧 CreateIncident - disruptions:', this.props.disruptionToEdit?.disruptions)}
+                {console.log('🔧 CreateIncident - routes:', this.props.disruptionToEdit?.routes)}
+                {console.log('🔧 CreateIncident - stops:', this.props.disruptionToEdit?.stops)}
+                {console.log('🔧 CreateIncident - full object:', JSON.stringify(this.props.disruptionToEdit, null, 2))}
                 <Map
                     shouldOffsetForSidePanel
                     boundsToFit={ this.props.boundsToFit }
@@ -669,7 +760,16 @@ export class CreateIncident extends React.Component {
                 </Map>
                 <Button
                     className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
-                    onClick={ () => this.toggleModal('Cancellation', true) }>
+                    onClick={ () => {
+                        console.log('🔧 CreateIncident - Close button clicked');
+                        // Close all modals and hide map elements
+                        this.toggleModal('Cancellation', false);
+                        this.toggleModal('Confirmation', false);
+                        // Also close DiversionManager if it's open
+                        if (this.props.isDiversionManagerOpen) {
+                            this.props.openDiversionManager(false);
+                        }
+                    } }>
                     Close
                     <AiOutlineClose className="disruption-creation-close" size={ 20 } />
                 </Button>
@@ -723,6 +823,12 @@ CreateIncident.propTypes = {
     toggleWorkaroundPanel: PropTypes.func.isRequired,
     updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
     updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
+    isDiversionManagerOpen: PropTypes.bool,
+    openDiversionManager: PropTypes.func.isRequired,
+    updateDiversionMode: PropTypes.func.isRequired,
+    updateDiversionToEdit: PropTypes.func.isRequired,
+    diversionMode: PropTypes.string,
+    disruptionToEdit: PropTypes.object,
 };
 
 CreateIncident.defaultProps = {
@@ -739,6 +845,9 @@ CreateIncident.defaultProps = {
     isEditEffectPanelOpen: false,
     isRequiresToUpdateNotes: false,
     disruptionIncidentNoToEdit: '',
+    isDiversionManagerOpen: false,
+    diversionMode: 'CREATE',
+    disruptionToEdit: {},
 };
 
 export default connect(state => ({
@@ -762,6 +871,9 @@ export default connect(state => ({
     isEditEffectPanelOpen: isEditEffectPanelOpen(state),
     isRequiresToUpdateNotes: isRequiresToUpdateNotes(state),
     disruptionIncidentNoToEdit: getIncidentToEdit(state)?.incidentNo,
+    isDiversionManagerOpen: getIsDiversionManagerOpen(state),
+    diversionMode: state.control?.diversions?.mode || 'CREATE',
+    disruptionToEdit: getIncidentToEdit(state),
 }), {
     createNewIncident,
     openCreateIncident,
@@ -779,4 +891,7 @@ export default connect(state => ({
     toggleWorkaroundPanel,
     updateDisruptionKeyToEditEffect,
     updateDisruptionKeyToWorkaroundEdit,
+    openDiversionManager,
+    updateDiversionMode,
+    updateDiversionToEdit,
 })(CreateIncident);

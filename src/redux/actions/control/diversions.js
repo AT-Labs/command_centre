@@ -2,12 +2,15 @@ import ACTION_TYPE from '../../action-types';
 import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
 
 export const openDiversionManager = isDiversionManagerOpen => (dispatch) => {
+    console.log('🔧 openDiversionManager action called with:', isDiversionManagerOpen);
+    console.log('🔧 openDiversionManager action type:', ACTION_TYPE.OPEN_DIVERSION_MANAGER);
     dispatch({
         type: ACTION_TYPE.OPEN_DIVERSION_MANAGER,
         payload: {
             isDiversionManagerOpen,
         },
     });
+    console.log('🔧 openDiversionManager action dispatched');
 };
 
 export const updateDiversionMode = editMode => ({

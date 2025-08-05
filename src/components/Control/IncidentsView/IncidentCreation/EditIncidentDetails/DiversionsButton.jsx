@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { openDiversionManager, updateDiversionMode, updateDiversionToEdit } from '../../../../../redux/actions/control/diversions';
 import { useDiversion as diversionSelector } from '../../../../../redux/selectors/appSettings';
+import { getIsDiversionManagerOpen } from '../../../../../redux/selectors/control/diversions';
 import EDIT_TYPE from '../../../../../types/edit-types';
 import './DiversionsButton.scss';
 
@@ -14,6 +15,8 @@ const DiversionsButton = ({
     updateDiversionToEditAction,
     useDiversionFlag,
     onViewDiversions,
+    isDiversionManagerOpen,
+    toggleEditEffectPanel,
 }) => {
     const [anchorEl, setAnchorEl] = useState(null);
 
@@ -30,6 +33,13 @@ const DiversionsButton = ({
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [anchorEl]);
+
+    // Close dropdown when DiversionManager opens
+    useEffect(() => {
+        if (isDiversionManagerOpen && anchorEl) {
+            setAnchorEl(null);
+        }
+    }, [isDiversionManagerOpen, anchorEl]);
 
     // Helper function to get affected entities
     const getAffectedEntities = () => {
@@ -51,6 +61,10 @@ const DiversionsButton = ({
     const affectedEntities = getAffectedEntities();
     const diversions = disruption?.diversions || [];
     const diversionCount = diversions.length || 0;
+    
+    console.log('🔧 DiversionsButton - disruption:', disruption);
+    console.log('🔧 DiversionsButton - diversions:', diversions);
+    console.log('🔧 DiversionsButton - diversionCount:', diversionCount);
 
     // Check if Add Diversion should be enabled (same logic as AffectedEntities)
     const isAddDiversionEnabled = () => {
@@ -77,34 +91,34 @@ const DiversionsButton = ({
 
     // Original logic from DisruptionDetail.jsx - addDiversion function
     const handleAddDiversion = () => {
-        console.log('🔧 ===== ADD DIVERSION CLICKED =====');
-        console.log('🔧 disruption:', disruption);
-        console.log('🔧 isAddDiversionEnabled:', isAddDiversionEnabled);
-        
+        console.log('🔧 DiversionsButton - handleAddDiversion called');
+        console.log('🔧 DiversionsButton - calling updateDiversionModeAction(EDIT_TYPE.CREATE)');
         updateDiversionModeAction(EDIT_TYPE.CREATE);
+        console.log('🔧 DiversionsButton - calling openDiversionManagerAction(true)');
         openDiversionManagerAction(true);
-        
-        console.log('🔧 Called updateDiversionModeAction and openDiversionManagerAction');
-        console.log('🔧 ===== END ADD DIVERSION CLICK =====');
+        console.log('🔧 DiversionsButton - openDiversionManagerAction(true) called');
+        console.log('🔧 DiversionsButton - Redux actions dispatched');
+        // Close the EditEffectPanel modal when opening DiversionManager
+        if (toggleEditEffectPanel) {
+            console.log('🔧 DiversionsButton - calling toggleEditEffectPanel(false)');
+            // Delay closing the modal to allow Redux state to update
+            setTimeout(() => {
+                toggleEditEffectPanel(false);
+                console.log('🔧 DiversionsButton - toggleEditEffectPanel(false) called after delay');
+            }, 100);
+        }
     };
 
     // Original logic from DisruptionDetail.jsx - viewDiversionsAction
     const handleViewDiversions = () => {
-        console.log('🔧 ===== VIEW DIVERSIONS CLICKED =====');
-        console.log('🔧 disruption:', disruption);
-        console.log('🔧 onViewDiversions function:', typeof onViewDiversions);
-        
         if (onViewDiversions) {
             onViewDiversions();
-            console.log('🔧 Called onViewDiversions');
-        } else {
-            console.log('🔧 onViewDiversions is not defined');
         }
-        
-        console.log('🔧 ===== END VIEW DIVERSIONS CLICK =====');
     };
 
     const handleMenuClick = (event) => {
+        console.log('🔧 DiversionsButton - handleMenuClick called');
+        console.log('🔧 DiversionsButton - event:', event);
         setAnchorEl(event.currentTarget);
     };
 
@@ -113,17 +127,46 @@ const DiversionsButton = ({
             <Button
                 variant="contained"
                 className="diversions-button"
-                onClick={handleMenuClick}
+                onClick={(e) => {
+                    console.log('🔧 DiversionsButton - main button clicked!');
+                    console.log('🔧 DiversionsButton - event:', e);
+                    handleMenuClick(e);
+                }}
                 disabled={!isAddDiversionEnabled()}
             >
                 Diversions({diversionCount})
             </Button>
             
+            {console.log('🔧 DiversionsButton - anchorEl:', anchorEl)}
+            {console.log('🔧 DiversionsButton - should render dropdown:', anchorEl ? 'YES' : 'NO')}
             {anchorEl && (
-                <div className="diversions-menu-dropdown">
+                <div className="diversions-menu-dropdown" onClick={(e) => {
+                    console.log('🔧 DiversionsButton - dropdown container clicked');
+                    e.stopPropagation();
+                }}>
+                    {console.log('🔧 DiversionsButton - rendering Add Diversion menu item')}
                     <div 
                         className="diversions-menu-item"
-                        onClick={handleAddDiversion}
+                        onMouseDown={(e) => {
+                            console.log('🔧 DiversionsButton - Add Diversion mousedown!');
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }}
+                        onClick={(e) => {
+                            console.log('🔧 DiversionsButton - Add Diversion clicked!');
+                            console.log('🔧 DiversionsButton - event:', e);
+                            console.log('🔧 DiversionsButton - calling handleAddDiversion');
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleAddDiversion();
+                            console.log('🔧 DiversionsButton - handleAddDiversion completed');
+                        }}
+                        onTouchEnd={(e) => {
+                            console.log('🔧 DiversionsButton - Add Diversion touched!');
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleAddDiversion();
+                        }}
                         style={{ 
                             cursor: isAddDiversionEnabled() ? 'pointer' : 'not-allowed',
                             opacity: isAddDiversionEnabled() ? 1 : 0.5
@@ -151,15 +194,20 @@ DiversionsButton.propTypes = {
     updateDiversionToEditAction: PropTypes.func.isRequired,
     useDiversionFlag: PropTypes.bool.isRequired,
     onViewDiversions: PropTypes.func,
+    isDiversionManagerOpen: PropTypes.bool,
+    toggleEditEffectPanel: PropTypes.func,
 };
 
 DiversionsButton.defaultProps = {
     disruption: null,
     onViewDiversions: null,
+    isDiversionManagerOpen: false,
+    toggleEditEffectPanel: null,
 };
 
 const mapStateToProps = (state) => ({
     useDiversionFlag: diversionSelector(state),
+    isDiversionManagerOpen: getIsDiversionManagerOpen(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

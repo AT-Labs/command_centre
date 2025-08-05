@@ -86,6 +86,7 @@ import EDIT_TYPE from '../../../../../types/edit-types';
 import './EditEffectPanel.scss';
 import { useDiversion } from '../../../../../redux/selectors/appSettings';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
+import { getDiversion } from '../../../../../utils/transmitters/disruption-mgt-api';
 
 const INIT_EFFECT_STATE = {
     key: '',
@@ -124,8 +125,13 @@ export const EditEffectPanel = (props) => {
     const safeDisruption = {
         ...INIT_EFFECT_STATE,
         ...(disruption || {}),
-        affectedEntities: (disruption && disruption.affectedEntities) || { affectedRoutes: [], affectedStops: [] }
+        affectedEntities: (disruption && disruption.affectedEntities) || { affectedRoutes: [], affectedStops: [] },
+        diversions: diversions || []
     };
+    
+    console.log('🔧 EditEffectPanel - safeDisruption diversions:', safeDisruption.diversions);
+    console.log('🔧 EditEffectPanel - diversions state:', diversions);
+    console.log('🔧 EditEffectPanel - disruption:', disruption);
     const [now] = useState(moment().second(0).millisecond(0));
     const [activePeriods, setActivePeriods] = useState([]);
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
@@ -148,6 +154,26 @@ export const EditEffectPanel = (props) => {
     // Add useEffect to track isViewDiversionsModalOpen changes
     useEffect(() => {
     }, [isViewDiversionsModalOpen]);
+
+    // Fetch diversions when disruption changes
+    useEffect(() => {
+        const fetchDiversions = async () => {
+            if (disruption?.disruptionId) {
+                try {
+                    console.log('🔧 EditEffectPanel - fetching diversions for disruptionId:', disruption.disruptionId);
+                    const diversionsData = await getDiversion(disruption.disruptionId);
+                    console.log('🔧 EditEffectPanel - fetched diversions:', diversionsData);
+                    setDiversions(diversionsData || []);
+                } catch (error) {
+                    console.log('🔧 EditEffectPanel - error fetching diversions:', error);
+                    setDiversions([]);
+                }
+            } else {
+                console.log('🔧 EditEffectPanel - no disruptionId, skipping diversion fetch');
+            }
+        };
+        fetchDiversions();
+    }, [disruption?.disruptionId, shouldRefetchDiversions]);
 
     const startTimeValid = () => isStartTimeValid(
         safeDisruption.startDate,
@@ -366,6 +392,10 @@ export const EditEffectPanel = (props) => {
         const disruptionEntity = setDisruptionEntity();
         const result = await props.updateDisruptionAction(disruptionEntity);
         shareToEmail(result || disruptionEntity);
+        // Reset diversion manager state
+        props.openDiversionManager(false);
+        props.updateDiversionMode(EDIT_TYPE.CREATE);
+        props.updateDiversionToEdit(null);
         props.toggleEditEffectPanel(false);
         props.updateDisruptionKeyToEditEffect('');
         updateDisruption({ note: '' });
@@ -446,6 +476,10 @@ export const EditEffectPanel = (props) => {
     const onSubmit = () => {
         props.updateDisruptionAction(setDisruptionEntity());
 
+        // Reset diversion manager state
+        props.openDiversionManager(false);
+        props.updateDiversionMode(EDIT_TYPE.CREATE);
+        props.updateDiversionToEdit(null);
         props.toggleEditEffectPanel(false);
         props.updateDisruptionKeyToEditEffect('');
         updateDisruption({ note: '' });
@@ -454,6 +488,17 @@ export const EditEffectPanel = (props) => {
 
     useEffect(() => {
         if (!props.isEditEffectPanelOpen) {
+            console.log('🔧 EditEffectPanel - panel closed, checking if DiversionManager should stay open');
+            // Only reset diversion manager state if DiversionManager is not open
+            if (!props.isDiversionManagerOpen) {
+                console.log('🔧 EditEffectPanel - DiversionManager not open, resetting diversion manager state');
+                props.openDiversionManager(false);
+                props.updateDiversionMode(EDIT_TYPE.CREATE);
+                props.updateDiversionToEdit(null);
+            } else {
+                console.log('🔧 EditEffectPanel - DiversionManager is open, keeping diversion manager state');
+            }
+            
             removeNotFoundFromStopGroupsForAllDisruptions();
             if (disruptions && Array.isArray(disruptions)) {
                 const routes = disruptions.map(d => d.affectedEntities?.affectedRoutes || []).flat();
@@ -469,7 +514,7 @@ export const EditEffectPanel = (props) => {
         } else {
             setRequireMapUpdate(true);
         }
-    }, [props.isEditEffectPanelOpen, props.disruptionIncidentNoToEdit]);
+    }, [props.isEditEffectPanelOpen, props.disruptionIncidentNoToEdit, props.isDiversionManagerOpen]);
 
     const removeNotFoundFromStopGroupsForAllDisruptions = () => {
         if (!disruptions || !Array.isArray(disruptions)) {
@@ -558,15 +603,20 @@ export const EditEffectPanel = (props) => {
     const isResolved = () => safeDisruption.status === STATUSES.RESOLVED;
 
     const discardEffectChanges = () => {
+        console.log('🔧 EditEffectPanel - discardEffectChanges called');
         setDisruption(originalDisruption);
+        // Reset diversion manager state
+        props.openDiversionManager(false);
+        props.updateDiversionMode(EDIT_TYPE.CREATE);
+        props.updateDiversionToEdit(null);
         props.toggleIncidentModals('cancellationEffect', false);
     };
 
     // Functions for diversions
     const editDiversion = (diversion) => {
-        props.updateDiversionModeAction(EDIT_TYPE.EDIT);
-        props.updateDiversionToEditAction(diversion);
-        props.openDiversionManagerAction(true);
+        props.updateDiversionMode(EDIT_TYPE.EDIT);
+        props.updateDiversionToEdit(diversion);
+        props.openDiversionManager(true);
     };
 
     const handleViewDiversions = () => {
@@ -612,7 +662,6 @@ export const EditEffectPanel = (props) => {
                                     <strong>{safeDisruption.incidentNo || ''}</strong>
                                 </button>
                             </h2>
-                            {' '}
                             <div className="diversions-button-container">
                                 <DiversionsButton 
                                     disruption={safeDisruption}
@@ -621,6 +670,8 @@ export const EditEffectPanel = (props) => {
                                     openDiversionManagerAction={props.openDiversionManager}
                                     updateDiversionModeAction={props.updateDiversionMode}
                                     updateDiversionToEditAction={props.updateDiversionToEdit}
+                                    isDiversionManagerOpen={props.isDiversionManagerOpen}
+                                    toggleEditEffectPanel={props.toggleEditEffectPanel}
                                 />
                             </div>
                             { !props.isWorkaroundPanelOpen
@@ -969,14 +1020,7 @@ export const EditEffectPanel = (props) => {
                 isModalOpen={ props.isCancellationEffectOpen }>
                 <CancellationEffect discardChanges={ () => discardEffectChanges() } />
             </CustomModal>
-            {props.isDiversionManagerOpen && (
-                <DiversionManager 
-                    disruption={safeDisruption}
-                    onCancelled={() => props.openDiversionManager(false)}
-                    editMode={props.diversionMode || "CREATE"}
-                    isOpen={props.isDiversionManagerOpen}
-                />
-            )}
+            {/* DiversionManager moved to parent component to avoid modal-within-modal issue */}
             <ViewDiversionDetailModal
                 disruption={safeDisruption}
                 onClose={() => {
@@ -987,6 +1031,7 @@ export const EditEffectPanel = (props) => {
                 setShouldRefetchDiversions={setShouldRefetchDiversions}
                 diversions={diversions}
             />
+            {/* DiversionManager moved to parent component to avoid modal conflicts */}
         </div>
     );
 };

@@ -15,10 +15,16 @@ export const INIT_STATE = {
 };
 
 export default handleActions({
-    [ACTION_TYPE.OPEN_DIVERSION_MANAGER]: (state, { payload: { isDiversionManagerOpen } }) => ({
-        ...state,
-        isDiversionManagerOpen,
-    }),
+    [ACTION_TYPE.OPEN_DIVERSION_MANAGER]: (state, { payload: { isDiversionManagerOpen } }) => {
+        console.log('🔧 diversions reducer - OPEN_DIVERSION_MANAGER called with:', isDiversionManagerOpen);
+        console.log('🔧 diversions reducer - previous state:', state);
+        const newState = {
+            ...state,
+            isDiversionManagerOpen,
+        };
+        console.log('🔧 diversions reducer - new state:', newState);
+        return newState;
+    },
 
     [ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE]: (state, { payload: { diversionEditMode } }) => ({
         ...state,
