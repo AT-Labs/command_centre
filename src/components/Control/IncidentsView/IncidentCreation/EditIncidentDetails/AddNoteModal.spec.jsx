@@ -2,24 +2,17 @@ import React from 'react';
 import { mount } from 'enzyme';
 import { act } from 'react-dom/test-utils';
 import AddNoteModal from './AddNoteModal';
-import { DESCRIPTION_NOTE_MAX_LENGTH } from '../../../../../constants/disruptions';
 
-jest.mock('../../../../Common/CustomModal/CustomModal', () => {
-    const PropTypes = require('prop-types');
-    const MockCustomModal = ({ children, customHeader, customFooter }) => (
+jest.mock('../../../../Common/CustomModal/CustomModal', () => ({
+    __esModule: true,
+    default: ({ children, customFooter, customHeader }) => (
         <div>
             {customHeader}
             {children}
             {customFooter}
         </div>
-    );
-    MockCustomModal.propTypes = {
-        children: PropTypes.node,
-        customHeader: PropTypes.node,
-        customFooter: PropTypes.node,
-    };
-    return { __esModule: true, default: MockCustomModal };
-});
+    ),
+}));
 
 jest.mock('@mui/icons-material/OpenInNewOutlined', () => ({
     __esModule: true,
