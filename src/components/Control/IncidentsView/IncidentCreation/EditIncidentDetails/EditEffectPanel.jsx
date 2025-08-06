@@ -126,7 +126,7 @@ export const EditEffectPanel = (props) => {
     const [isDurationDirty, setIsDurationDirty] = useState(false);
     const [isRecurrencePatternDirty, setIsRecurrencePatternDirty] = useState(false);
     const [historyNotesModalOpen, setHistoryNotesModalOpen] = useState(false);
-    const [notesModalOpen, setnotesModalOpen] = useState(false);
+    const [noteModalOpen, setNoteModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
     const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
 
@@ -402,7 +402,7 @@ export const EditEffectPanel = (props) => {
 
     const impacts = useAlertEffects();
 
-    const onAddNote = () => {
+    const onAddNote = (note) => {
         const startDate = originalDisruption.startDate ? originalDisruption.startDate : moment(originalDisruption.startTime).format(DATE_FORMAT);
         const startTimeMoment = momentFromDateTime(startDate, originalDisruption.startTime);
 
@@ -412,7 +412,7 @@ export const EditEffectPanel = (props) => {
         }
         const updatedDisruption = {
             ...originalDisruption,
-            notes: [...originalDisruption.notes, { description: disruption.note }],
+            notes: [...originalDisruption.notes, { description: note }],
             affectedEntities: [...originalDisruption.affectedEntities.affectedRoutes, ...originalDisruption.affectedEntities.affectedStops],
             endTime: endTimeMoment,
             startTime: startTimeMoment,
@@ -428,6 +428,11 @@ export const EditEffectPanel = (props) => {
         props.updateDisruptionKeyToEditEffect('');
         updateDisruption({ note: '' });
         props.setDisruptionForWorkaroundEdit({});
+    };
+
+    const handleAddNoteModalClose = (note) => {
+        updateDisruption({ note });
+        setNoteModalOpen(false);
     };
 
     const removeNotFoundFromStopGroupsForAllDisruptions = () => {
@@ -808,13 +813,13 @@ export const EditEffectPanel = (props) => {
                                     {props.useDisruptionNotePopup && (
                                         <OpenInNewOutlinedIcon
                                             className="disruption-detail-expand-note-icon"
-                                            onClick={ () => setnotesModalOpen(true) }
+                                            onClick={ () => setNoteModalOpen(true) }
                                         />
                                     )}
                                     <div className="flex-justify-content-end">
                                         <Button
                                             className="add-note-button cc-btn-secondary"
-                                            onClick={ () => onAddNote() }>
+                                            onClick={ () => onAddNote(disruption.note) }>
                                             Add note
                                         </Button>
                                     </div>
@@ -900,10 +905,9 @@ export const EditEffectPanel = (props) => {
                 onClose={ () => setHistoryNotesModalOpen(false) } />
             <AddNoteModal
                 disruption={ disruption }
-                isModalOpen={ notesModalOpen }
-                onClose={ () => setnotesModalOpen(false) }
-                onNoteChange={ event => updateDisruption({ note: event.target.value }) }
-                onSubmit={ () => onAddNote() }
+                isModalOpen={ noteModalOpen }
+                onClose={ note => handleAddNoteModalClose(note) }
+                onSubmit={ note => onAddNote(note) }
             />
             <CustomMuiDialog
                 title="Disruption Active Periods"

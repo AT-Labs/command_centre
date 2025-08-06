@@ -119,10 +119,19 @@ export const MinimizeDisruptionDetail = (props) => {
         notes: [...notes, { description: descriptionNote }],
     });
 
-    const handleAddNote = () => ({
-        ...disruption,
-        notes: [...notes, { description: descriptionNote }],
-    });
+    const handleAddNoteModalSubmit = (note) => {
+        props.updateDisruption({
+            ...disruption,
+            notes: [...notes, { description: note }],
+        });
+        setDescriptionNote('');
+        setNoteModalOpen(false);
+    };
+
+    const handleAddNoteModalClose = (note) => {
+        setDescriptionNote(note);
+        setNoteModalOpen(false);
+    };
 
     useEffect(() => {
         setDescriptionNote('');
@@ -133,8 +142,6 @@ export const MinimizeDisruptionDetail = (props) => {
     }, [lastUpdatedTime, lastNote]);
 
     const handleUpdateDisruption = () => props.updateDisruption(setDisruption());
-
-    const handleUpdateDisruptionNote = () => props.updateDisruption(handleAddNote());
 
     const handleCopyDisruption = () => {
         props.openCopyDisruption(true, incidentNo);
@@ -302,9 +309,8 @@ export const MinimizeDisruptionDetail = (props) => {
             <AddNoteModal
                 disruption={ { ...disruption, note: descriptionNote } }
                 isModalOpen={ noteModalOpen }
-                onClose={ () => setNoteModalOpen(false) }
-                onNoteChange={ event => setDescriptionNote(event.target.value) }
-                onSubmit={ () => handleUpdateDisruptionNote() }
+                onClose={ note => handleAddNoteModalClose(note) }
+                onSubmit={ note => handleAddNoteModalSubmit(note) }
             />
             <ConfirmationModal
                 title={ activeConfirmationModalProps.title }

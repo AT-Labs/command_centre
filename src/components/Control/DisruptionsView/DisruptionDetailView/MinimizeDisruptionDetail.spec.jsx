@@ -271,6 +271,8 @@ describe('MinimizeDisruptionDetail', () => {
         fireEvent.click(submitButton);
 
         expect(updateDisruption).toHaveBeenCalled();
+        const disruptionArg = updateDisruption.mock.calls[0][0];
+        expect(disruptionArg.notes.some(note => note.description === 'Note from modal')).toBe(true);
     });
 
     it('allows entering a note in AddNoteModal input only', async () => {

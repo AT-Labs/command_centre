@@ -15,20 +15,9 @@ const AddNoteModal = (props) => {
         }
     }, [props.isModalOpen, props.disruption.note]);
 
-    const handleAddNote = () => {
-        props.onNoteChange({ target: { value: note } });
-        props.onSubmit();
-        props.onClose();
-    };
-
-    const handleClose = () => {
-        props.onNoteChange({ target: { value: note } });
-        props.onClose();
-    };
-
     const generateFooter = () => (
         <div className="add-note-modal-footer">
-            <Button onClick={ handleAddNote } className="cc-btn-primary">Add note</Button>
+            <Button onClick={ () => props.onSubmit(note) } className="cc-btn-primary">Add note</Button>
         </div>
     );
 
@@ -37,7 +26,7 @@ const AddNoteModal = (props) => {
             <div className="add-note-modal-header-close-container">
                 <OpenInNewOutlinedIcon
                     className="add-note-modal-header-close-icon"
-                    onClick={ handleClose }
+                    onClick={ () => props.onClose(note) }
                 />
             </div>
             <div className="add-note-modal-title-container">
@@ -71,7 +60,6 @@ AddNoteModal.propTypes = {
     isModalOpen: PropTypes.bool.isRequired,
     disruption: PropTypes.object.isRequired,
     onClose: PropTypes.func.isRequired,
-    onNoteChange: PropTypes.func.isRequired,
     onSubmit: PropTypes.func.isRequired,
 };
 

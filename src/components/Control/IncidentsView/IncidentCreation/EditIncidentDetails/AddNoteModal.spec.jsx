@@ -21,12 +21,11 @@ jest.mock('@mui/icons-material/OpenInNewOutlined', () => ({
 
 describe('AddNoteModal additional tests', () => {
     const disruption = { note: 'Initial note', incidentNo: 123 };
-    let onClose; let onNoteChange; let onSubmit; let
+    let onClose; let onSubmit; let
         wrapper;
 
     beforeEach(() => {
         onClose = jest.fn();
-        onNoteChange = jest.fn();
         onSubmit = jest.fn();
     });
 
@@ -37,7 +36,6 @@ describe('AddNoteModal additional tests', () => {
                     isModalOpen
                     disruption={ disruption }
                     onClose={ onClose }
-                    onNoteChange={ onNoteChange }
                     onSubmit={ onSubmit }
                 />,
             );
@@ -53,7 +51,6 @@ describe('AddNoteModal additional tests', () => {
                     isModalOpen
                     disruption={ { ...disruption, note: '' } }
                     onClose={ onClose }
-                    onNoteChange={ onNoteChange }
                     onSubmit={ onSubmit }
                 />,
             );
@@ -65,9 +62,28 @@ describe('AddNoteModal additional tests', () => {
         });
         wrapper.update();
 
-        expect(onNoteChange).toHaveBeenLastCalledWith({ target: { value: '' } });
-        expect(onSubmit).toHaveBeenCalled();
-        expect(onClose).toHaveBeenCalled();
+        expect(onSubmit).toHaveBeenCalledWith('');
+    });
+
+    it('should call onClose with current note when close icon is clicked', async () => {
+        await act(async () => {
+            wrapper = mount(
+                <AddNoteModal
+                    isModalOpen
+                    disruption={ disruption }
+                    onClose={ onClose }
+                    onSubmit={ onSubmit }
+                />,
+            );
+        });
+        wrapper.update();
+
+        await act(async () => {
+            wrapper.find('[data-testid="mock-icon"]').at(0).simulate('click');
+        });
+        wrapper.update();
+
+        expect(onClose).toHaveBeenCalledWith('Initial note');
     });
 
     it('should reset note when modal is reopened', async () => {
@@ -80,7 +96,6 @@ describe('AddNoteModal additional tests', () => {
                     isModalOpen={ isModalOpen }
                     disruption={ disruptionProp }
                     onClose={ onClose }
-                    onNoteChange={ onNoteChange }
                     onSubmit={ onSubmit }
                 />,
             );
@@ -116,7 +131,6 @@ describe('AddNoteModal additional tests', () => {
                     isModalOpen
                     disruption={ disruption }
                     onClose={ onClose }
-                    onNoteChange={ onNoteChange }
                     onSubmit={ onSubmit }
                 />,
             );
