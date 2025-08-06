@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
 import { toString, omit, isEmpty, uniqBy, uniqWith } from 'lodash-es';
 import moment from 'moment';
+import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 import Message from '../../Common/Message/Message';
 import { SEVERITIES, STATUSES } from '../../../../types/disruptions-types';
 import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
-import { useDraftDisruptions, useParentChildIncident } from '../../../../redux/selectors/appSettings';
+import { useDisruptionNotePopup, useDraftDisruptions, useParentChildIncident } from '../../../../redux/selectors/appSettings';
 import {
     LABEL_CAUSE,
     LABEL_CREATED_BY,
@@ -56,6 +57,7 @@ import { fetchEndDateFromRecurrence } from '../../../../utils/recurrence';
 
 import '../DisruptionDetail/styles.scss';
 import '../../IncidentsView/style.scss';
+import AddNoteModal from '../../IncidentsView/IncidentCreation/EditIncidentDetails/AddNoteModal';
 
 export const MinimizeDisruptionDetail = (props) => {
     const { disruption, isRequesting, resultDisruptionId, resultStatus, resultMessage } = props;
@@ -76,6 +78,7 @@ export const MinimizeDisruptionDetail = (props) => {
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(NONE);
     const [descriptionNote, setDescriptionNote] = useState('');
     const [lastNote, setLastNote] = useState();
+    const [noteModalOpen, setNoteModalOpen] = useState(false);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqWith([...affectedRoutes, ...props.routes], (routeA, routeB) => routeA.routeId === routeB.routeId && routeA.stopCode === routeB.stopCode);
@@ -116,6 +119,11 @@ export const MinimizeDisruptionDetail = (props) => {
         notes: [...notes, { description: descriptionNote }],
     });
 
+    const handleAddNote = () => ({
+        ...disruption,
+        notes: [...notes, { description: descriptionNote }],
+    });
+
     useEffect(() => {
         setDescriptionNote('');
         const { notes: disruptionNotes } = disruption;
@@ -125,6 +133,8 @@ export const MinimizeDisruptionDetail = (props) => {
     }, [lastUpdatedTime, lastNote]);
 
     const handleUpdateDisruption = () => props.updateDisruption(setDisruption());
+
+    const handleUpdateDisruptionNote = () => props.updateDisruption(handleAddNote());
 
     const handleCopyDisruption = () => {
         props.openCopyDisruption(true, incidentNo);
@@ -231,7 +241,7 @@ export const MinimizeDisruptionDetail = (props) => {
                     </div>
                 </section>
                 <section className="col-6">
-                    <FormGroup>
+                    <FormGroup className="disruption-details__notes-group">
                         <Label for="disruption-detail__notes">
                             <span className="font-size-md font-weight-bold">
                                 {LABEL_DISRUPTION_NOTES}
@@ -246,6 +256,12 @@ export const MinimizeDisruptionDetail = (props) => {
                             onChange={ e => setDescriptionNote(e.currentTarget.value) }
                             maxLength={ DESCRIPTION_NOTE_MAX_LENGTH }
                             rows={ 5 } />
+                        {props.useDisruptionNotePopup && (
+                            <OpenInNewOutlinedIcon
+                                className="disruption-detail-expand-note-icon"
+                                onClick={ () => setNoteModalOpen(true) }
+                            />
+                        )}
                     </FormGroup>
                 </section>
             </div>
@@ -283,6 +299,13 @@ export const MinimizeDisruptionDetail = (props) => {
                     </FormGroup>
                 </div>
             </div>
+            <AddNoteModal
+                disruption={ { ...disruption, note: descriptionNote } }
+                isModalOpen={ noteModalOpen }
+                onClose={ () => setNoteModalOpen(false) }
+                onNoteChange={ event => setDescriptionNote(event.target.value) }
+                onSubmit={ () => handleUpdateDisruptionNote() }
+            />
             <ConfirmationModal
                 title={ activeConfirmationModalProps.title }
                 message={ activeConfirmationModalProps.message }
@@ -321,6 +344,7 @@ MinimizeDisruptionDetail.propTypes = {
     clearDisruptionActionResult: PropTypes.func.isRequired,
     useDraftDisruptions: PropTypes.bool,
     useParentChildIncident: PropTypes.bool,
+    useDisruptionNotePopup: PropTypes.bool,
 };
 
 MinimizeDisruptionDetail.defaultProps = {
@@ -335,6 +359,7 @@ MinimizeDisruptionDetail.defaultProps = {
     resultStatus: '',
     useDraftDisruptions: false,
     useParentChildIncident: false,
+    useDisruptionNotePopup: false,
 };
 
 export default connect(state => ({
@@ -347,6 +372,7 @@ export default connect(state => ({
     boundsToFit: getBoundsToFit(state),
     useDraftDisruptions: useDraftDisruptions(state),
     useParentChildIncident: useParentChildIncident(state),
+    useDisruptionNotePopup: useDisruptionNotePopup(state),
 }), {
     getRoutesByShortName,
     openCreateDisruption,

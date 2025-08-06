@@ -82,6 +82,7 @@ import CancellationEffect from './CancellationEffect';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import './EditEffectPanel.scss';
 import AddNoteModal from './AddNoteModal';
+import { useDisruptionNotePopup } from '../../../../../redux/selectors/appSettings';
 
 const INIT_EFFECT_STATE = {
     key: '',
@@ -125,7 +126,7 @@ export const EditEffectPanel = (props) => {
     const [isDurationDirty, setIsDurationDirty] = useState(false);
     const [isRecurrencePatternDirty, setIsRecurrencePatternDirty] = useState(false);
     const [historyNotesModalOpen, setHistoryNotesModalOpen] = useState(false);
-    const [notesModalOpen, setNotesModalOpen] = useState(false);
+    const [notesModalOpen, setnotesModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
     const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
 
@@ -804,10 +805,12 @@ export const EditEffectPanel = (props) => {
                                         onChange={ e => updateDisruption({ note: e.currentTarget.value }) }
                                         maxLength={ DESCRIPTION_NOTE_MAX_LENGTH }
                                         rows={ 5 } />
-                                    <OpenInNewOutlinedIcon
-                                        className="disruption-detail-expand-note-icon"
-                                        onClick={ () => setNotesModalOpen(true) }
-                                    />
+                                    {props.useDisruptionNotePopup && (
+                                        <OpenInNewOutlinedIcon
+                                            className="disruption-detail-expand-note-icon"
+                                            onClick={ () => setnotesModalOpen(true) }
+                                        />
+                                    )}
                                     <div className="flex-justify-content-end">
                                         <Button
                                             className="add-note-button cc-btn-secondary"
@@ -898,7 +901,7 @@ export const EditEffectPanel = (props) => {
             <AddNoteModal
                 disruption={ disruption }
                 isModalOpen={ notesModalOpen }
-                onClose={ () => setNotesModalOpen(false) }
+                onClose={ () => setnotesModalOpen(false) }
                 onNoteChange={ event => updateDisruption({ note: event.target.value }) }
                 onSubmit={ () => onAddNote() }
             />
@@ -950,6 +953,7 @@ EditEffectPanel.propTypes = {
     isCancellationEffectOpen: PropTypes.bool,
     toggleIncidentModals: PropTypes.func.isRequired,
     setRequestedDisruptionKeyToUpdateEditEffect: PropTypes.func.isRequired,
+    useDisruptionNotePopup: PropTypes.bool,
 };
 
 EditEffectPanel.defaultProps = {
@@ -958,6 +962,7 @@ EditEffectPanel.defaultProps = {
     isWorkaroundPanelOpen: false,
     workaroundsToSync: [],
     isCancellationEffectOpen: false,
+    useDisruptionNotePopup: false,
 };
 
 export default connect(state => ({
@@ -967,6 +972,7 @@ export default connect(state => ({
     isEditEffectUpdateRequested: isEditEffectUpdateRequested(state),
     newDisruptionKey: getRequestedDisruptionKeyToUpdateEditEffect(state),
     isCancellationEffectOpen: isCancellationEffectModalOpen(state),
+    useDisruptionNotePopup: useDisruptionNotePopup(state),
 }), {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
