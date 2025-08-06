@@ -125,19 +125,26 @@
     overflow-x: hidden;
     scrollbar-width: thin;
 }
-
 .disruption-details__notes-group {
-    .disruption-detail-expand-note-icon {
-        position: absolute;
-        top: 33px;
-        right: 16px;
-        z-index: 2;
-        cursor: pointer;
-        color: #399CDB;
-        height: 20px;
-        width: 20px;
-        &:hover {
-            color: #2176AE;
+
+    .disruption-detail__notes-input-container {
+        position: relative;
+        width: 100%;
+
+        .disruption-detail-expand-note-icon {
+            position: absolute;
+            top: 10%;
+            right: .2%;
+            transform: translateY(-50%);
+            z-index: 2;
+            cursor: pointer;
+            color: #399CDB;
+            height: 20px;
+            width: 20px;
+
+            &:hover {
+                color: #2176AE;
+            }
         }
     }
 }

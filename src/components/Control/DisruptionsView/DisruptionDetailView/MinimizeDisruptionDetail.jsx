@@ -124,7 +124,6 @@ export const MinimizeDisruptionDetail = (props) => {
             ...disruption,
             notes: [...notes, { description: note }],
         });
-        setDescriptionNote('');
         setNoteModalOpen(false);
     };
 
@@ -256,19 +255,23 @@ export const MinimizeDisruptionDetail = (props) => {
                                 <span className="text-muted font-size-sm font-weight-light">Optional. To view all notes, select `Show Summary`</span>
                             </span>
                         </Label>
-                        <Input id="disruption-detail__notes"
-                            className="textarea-no-resize border border-dark"
-                            type="textarea"
-                            value={ descriptionNote }
-                            onChange={ e => setDescriptionNote(e.currentTarget.value) }
-                            maxLength={ DESCRIPTION_NOTE_MAX_LENGTH }
-                            rows={ 5 } />
-                        {props.useDisruptionNotePopup && (
-                            <OpenInNewOutlinedIcon
-                                className="disruption-detail-expand-note-icon"
-                                onClick={ () => setNoteModalOpen(true) }
+                        <div className="disruption-detail__notes-input-container">
+                            <Input
+                                id="disruption-detail__notes"
+                                className="textarea-no-resize border border-dark"
+                                type="textarea"
+                                value={ descriptionNote }
+                                onChange={ e => setDescriptionNote(e.currentTarget.value) }
+                                maxLength={ DESCRIPTION_NOTE_MAX_LENGTH }
+                                rows={ 5 }
                             />
-                        )}
+                            {props.useDisruptionNotePopup && (
+                                <OpenInNewOutlinedIcon
+                                    className="disruption-detail-expand-note-icon"
+                                    onClick={ () => setNoteModalOpen(true) }
+                                />
+                            )}
+                        </div>
                     </FormGroup>
                 </section>
             </div>
