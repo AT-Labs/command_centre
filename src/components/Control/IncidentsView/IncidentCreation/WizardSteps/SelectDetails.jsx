@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { isEmpty, some } from 'lodash-es';
@@ -10,28 +10,12 @@ import { BsArrowRepeat } from 'react-icons/bs';
 import { FaExclamationTriangle, FaRegCalendarAlt } from 'react-icons/fa';
 import { IconContext } from 'react-icons';
 import { isUrlValid } from '../../../../../utils/helpers';
-import { isDurationValid,
-    isEndDateValid,
-    isEndTimeValid,
-    isStartDateValid,
-    isStartTimeValid,
-    recurrenceRadioOptions,
-    getStatusOptions } from '../../../../../utils/control/disruptions';
-import {
-    toggleIncidentModals,
-    updateCurrentStep,
-    toggleEditEffectPanel,
-    updateDisruptionKeyToEditEffect,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
-    setDisruptionForWorkaroundEdit,
-    setRequestToUpdateEditEffectState,
-    setRequestedDisruptionKeyToUpdateEditEffect } from '../../../../../redux/actions/control/incidents';
+import { isDurationValid, isEndDateValid, isEndTimeValid, isStartDateValid, isStartTimeValid, recurrenceRadioOptions } from '../../../../../utils/control/disruptions';
+import { toggleIncidentModals, updateCurrentStep } from '../../../../../redux/actions/control/incidents';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
-import { SEVERITIES, STATUSES } from '../../../../../types/disruptions-types';
+import { SEVERITIES } from '../../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
-    TIME_FORMAT,
     HEADER_MAX_LENGTH,
     LABEL_CAUSE,
     LABEL_DURATION_HOURS,
@@ -43,25 +27,22 @@ import {
     LABEL_START_TIME,
     LABEL_URL,
     URL_MAX_LENGTH,
-    LABEL_STATUS,
 } from '../../../../../constants/disruptions';
 import Footer from './Footer';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
 import CustomMuiDialog from '../../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../../Common/ActivePeriods/ActivePeriods';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
-import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText, isActivePeriodsValid, parseRecurrencePattern } from '../../../../../utils/recurrence';
+import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText, isActivePeriodsValid } from '../../../../../utils/recurrence';
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
-import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
+import { useAlertCauses } from '../../../../../utils/control/alert-cause-effect';
 import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
-import EDIT_TYPE from '../../../../../types/edit-types';
-import { getEditMode, getDisruptionKeyToEditEffect, isEditEffectPanelOpen } from '../../../../../redux/selectors/control/incidents';
 
 export const SelectDetails = (props) => {
     const iconContextValue = useMemo(() => ({ className: 'text-warning w-100 m-2' }), []);
-    const { startDate, startTime, endDate, endTime, cause, header, url, severity, modalOpenedTime, mode, status, disruptions, recurrent, duration, recurrencePattern } = props.data;
-    const [now] = useState(moment().second(0).millisecond(0));
+    const { startDate, startTime, endDate, endTime, cause, header, url, severity, modalOpenedTime } = props.data;
+    const { recurrent, duration, recurrencePattern } = props.data;
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [activePeriods, setActivePeriods] = useState([]);
     const [alertDialogMessage, setAlertDialogMessage] = useState(null);
@@ -74,9 +55,6 @@ export const SelectDetails = (props) => {
     const [isStartTimeDirty, setIsStartTimeDirty] = useState(false);
     const [isStartDateDirty, setIsStartDateDirty] = useState(false);
     const [isEndDateDirty, setIsEndDateDirty] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-    const [filteredDisruptions, setFilteredDisruptions] = useState(disruptions || []);
     const maxActivePeriodsCount = 100;
 
     const startTimeValid = () => isStartTimeValid(startDate, startTime, modalOpenedTime, recurrent);
@@ -192,7 +170,7 @@ export const SelectDetails = (props) => {
         </>
     );
 
-    const datePickerOptions = recurrent && props.editMode !== EDIT_TYPE.EDIT ? getDatePickerOptions('today') : getDatePickerOptions();
+    const datePickerOptions = recurrent ? getDatePickerOptions('today') : getDatePickerOptions();
 
     const endDateDatePickerOptions = getDatePickerOptions(startDate);
 
@@ -231,10 +209,6 @@ export const SelectDetails = (props) => {
         }
     };
 
-    const onSave = () => {
-        props.onSubmitUpdate();
-    };
-
     const onSaveDraft = () => {
         props.onStepUpdate(3);
         props.onSubmitDraft();
@@ -247,153 +221,28 @@ export const SelectDetails = (props) => {
 
     const causes = useAlertCauses();
 
-    const setDisruptionStatus = (selectedStatus) => {
-        if (status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.RESOLVED) {
-            props.onDataUpdate('startDate', moment().format(DATE_FORMAT));
-            props.onDataUpdate('startTime', moment().format(TIME_FORMAT));
-            props.onDataUpdate('endDate', moment().format(DATE_FORMAT));
-            props.onDataUpdate('endTime', moment().format(TIME_FORMAT));
-        } else if (status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.IN_PROGRESS) {
-            props.onDataUpdate('startDate', moment().format(DATE_FORMAT));
-            props.onDataUpdate('startTime', moment().format(TIME_FORMAT));
-        } else if (status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.NOT_STARTED) {
-            props.onDataUpdate('startDate', moment(startTime).format(DATE_FORMAT));
-            props.onDataUpdate('startTime', moment(startTime).format(TIME_FORMAT));
-            props.onDataUpdate('endDate', '');
-            props.onDataUpdate('endTime', '');
-        } else if (status === STATUSES.IN_PROGRESS && selectedStatus === STATUSES.RESOLVED) {
-            props.onDataUpdate('endDate', moment().format(DATE_FORMAT));
-            props.onDataUpdate('endTime', moment().format(TIME_FORMAT));
-        }
-        setTimeout(() => {
-            props.onDataUpdate('status', selectedStatus);
-        }, 0);
-    };
-
-    const openEditEffectPanel = (disruption) => {
-        // Открываем EditEffectPanel (как красная кнопка)
-        if (props.updateDisruptionKeyToEditEffect) {
-            props.updateDisruptionKeyToEditEffect(disruption.incidentNo);
-        }
-        
-        if (props.toggleEditEffectPanel) {
-            props.toggleEditEffectPanel(true);
-        }
-        
-        // Предотвращаем всплытие события
-        return false;
-    };
-
-    const impacts = useAlertEffects();
-
-    const getImpactLabel = (value) => {
-        const impact = impacts.find(i => i.value === value);
-        return impact ? impact.label : value;
-    };
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearchTerm(searchTerm);
-        }, 1000);
-
-        return () => clearTimeout(timer);
-    }, [searchTerm]);
-
-    useEffect(() => {
-        const term = debouncedSearchTerm.toLowerCase();
-        const filtered = disruptions.filter(d => d.impact?.toLowerCase().includes(term)
-            || d.affectedEntities?.affectedRoutes.some(entity => entity.routeShortName.toLowerCase().includes(term))
-            || d.affectedEntities?.affectedStops.some(entity => entity.text.toLowerCase().includes(term)));
-        setFilteredDisruptions(filtered);
-    }, [debouncedSearchTerm]);
-
-    useEffect(() => {
-        if (disruptions && disruptions.length !== filteredDisruptions.length) {
-            setFilteredDisruptions(disruptions);
-        }
-    }, [disruptions]);
-    const statusOptions = getStatusOptions(startDate, startTime, now, status);
-    const isResolved = () => status === STATUSES.RESOLVED;
-
     return (
         <div className="disruption-creation__wizard-select-details">
             <Form className="row my-3 p-4">
                 <div className="col-12">
                     <RadioButtons
                         { ...recurrenceRadioOptions(recurrent) }
-                        disabled={ props.editMode === EDIT_TYPE.EDIT }
+                        disabled={ false }
                         onChange={ checkedButtonKey => onChangeRecurrent(checkedButtonKey) }
                     />
                 </div>
-                { props.editMode === EDIT_TYPE.EDIT && (
-                    <div className="col-12">
-                        <span className="font-size-md font-weight-bold">Mode:</span>
-                        <span className="pl-2">{mode}</span>
-                    </div>
-                )}
-                { props.editMode === EDIT_TYPE.EDIT && (
-                    <div className="col-12">
-                        <FormGroup>
-                            <Label for="disruption-creation__wizard-select-details__header">
-                                <span className="font-size-md font-weight-bold">{LABEL_HEADER}</span>
-                            </Label>
-                            <Input
-                                id="disruption-creation__wizard-select-details__header"
-                                className="w-100 border border-dark"
-                                placeholder="Title of the message"
-                                maxLength={ HEADER_MAX_LENGTH }
-                                onChange={ event => props.onDataUpdate('header', event.target.value) }
-                                onBlur={ onBlurTitle }
-                                value={ header }
-                                invalid={ isTitleDirty && !titleValid() }
-                                disabled={ isResolved() }
-                            />
-                            <FormFeedback>Please enter disruption title</FormFeedback>
-                        </FormGroup>
-                    </div>
-                )}
-                { props.editMode === EDIT_TYPE.EDIT && (
-                    <div className="col-6">
-                        <DisruptionDetailSelect
-                            id="disruption-creation__wizard-select-details__cause"
-                            className=""
-                            value={ cause }
-                            options={ causes }
-                            label={ LABEL_CAUSE }
-                            invalid={ isCauseDirty && !causeValid() }
-                            feedback="Please select cause"
-                            onBlur={ selectedItem => onChangeCause(selectedItem) }
-                            onChange={ selectedItem => onChangeCause(selectedItem) }
-                            disabled={ isResolved() }
-                            disabledClassName="background-color-for-disabled-fields" />
-                    </div>
-                )}
-                { props.editMode === EDIT_TYPE.EDIT && (
-                    <div className="col-6">
-                        <DisruptionDetailSelect
-                            id="disruption-detail__status"
-                            className=""
-                            value={ status }
-                            options={ statusOptions }
-                            label={ LABEL_STATUS }
-                            onChange={ setDisruptionStatus } />
-                    </div>
-                )}
                 <div className="col-6">
                     <FormGroup className="position-relative">
                         <Label for="disruption-creation__wizard-select-details__start-date">
                             <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
                         </Label>
-                        <div className={ `${isResolved() ? 'background-color-for-disabled-fields' : ''}` }>
-                            <Flatpickr
-                                id="disruption-creation__wizard-select-details__start-date"
-                                className={ `font-weight-normal cc-form-control form-control ${isStartDateDirty ? 'is-invalid' : ''}` }
-                                value={ startDate }
-                                options={ datePickerOptions }
-                                placeholder="Select date"
-                                onChange={ date => onChangeStartDate(date) }
-                                disabled={ isResolved() } />
-                        </div>
+                        <Flatpickr
+                            id="disruption-creation__wizard-select-details__start-date"
+                            className={ `font-weight-normal cc-form-control form-control ${isStartDateDirty ? 'is-invalid' : ''}` }
+                            value={ startDate }
+                            options={ datePickerOptions }
+                            placeholder="Select date"
+                            onChange={ date => onChangeStartDate(date) } />
                         {!isStartDateDirty && (
                             <FaRegCalendarAlt
                                 className="disruption-creation__wizard-select-details__icon position-absolute"
@@ -409,18 +258,27 @@ export const SelectDetails = (props) => {
                                 {!recurrent ? getOptionalLabel(LABEL_END_DATE) : LABEL_END_DATE}
                             </span>
                         </Label>
-                        <div className={ `${isResolved() ? 'background-color-for-disabled-fields' : ''}` }>
+                        { !recurrent && (
                             <Flatpickr
                                 id="disruption-creation__wizard-select-details__end-date"
                                 className={ `font-weight-normal cc-form-control form-control ${isEndDateDirty ? 'is-invalid' : ''}` }
                                 value={ endDate }
                                 options={ endDateDatePickerOptions }
-                                onChange={ date => onChangeEndDate(date, recurrent) }
-                                onOpen={ date => onBlurEndDate(date, recurrent) }
-                                disabled={ isResolved() }
+                                onChange={ date => onChangeEndDate(date, false) }
+                                onOpen={ date => onBlurEndDate(date, false) }
 
                             />
-                        </div>
+                        )}
+                        { recurrent && (
+                            <Flatpickr
+                                id="disruption-creation__wizard-select-details__end-date"
+                                className={ `font-weight-normal cc-form-control form-control ${isEndDateDirty ? 'is-invalid' : ''}` }
+                                value={ endDate }
+                                options={ endDateDatePickerOptions }
+                                onChange={ date => onChangeEndDate(date, true) }
+                                onOpen={ date => onBlurEndDate(date, true) }
+                            />
+                        )}
                         {!isEndDateDirty && (
                             <FaRegCalendarAlt
                                 className="disruption-creation__wizard-select-details__icon position-absolute"
@@ -442,7 +300,6 @@ export const SelectDetails = (props) => {
                             value={ startTime }
                             onChange={ event => onChangeStartTime(event.target.value) }
                             invalid={ (props.useDraftDisruptions ? (isStartTimeDirty && !startTimeValid()) : !startTimeValid()) }
-                            disabled={ isResolved() }
                         />
                         <FormFeedback>Not valid values</FormFeedback>
                     </FormGroup>
@@ -457,7 +314,6 @@ export const SelectDetails = (props) => {
                                 value={ endTime }
                                 onChange={ event => props.onDataUpdate('endTime', event.target.value) }
                                 invalid={ !endTimeValid() }
-                                disabled={ isResolved() }
                             />
                             <FormFeedback>Not valid values</FormFeedback>
                         </FormGroup>
@@ -477,7 +333,6 @@ export const SelectDetails = (props) => {
                                 type="number"
                                 min="1"
                                 max="24"
-                                disabled={ isResolved() }
                             />
                             <FormFeedback>Not valid duration</FormFeedback>
                         </FormGroup>
@@ -489,7 +344,6 @@ export const SelectDetails = (props) => {
                             <WeekdayPicker
                                 selectedWeekdays={ recurrencePattern.byweekday || [] }
                                 onUpdate={ byweekday => onUpdateRecurrencePattern(byweekday) }
-                                disabled={ isResolved() }
                             />
                         </div>
                         <div className="col-6 pb-3 text-center">
@@ -502,7 +356,7 @@ export const SelectDetails = (props) => {
                             : !isEmpty(recurrencePattern.byweekday)) && (
                             <div className="col-12 mb-3">
                                 <BsArrowRepeat size={ 22 } />
-                                <span className="pl-1">{ getRecurrenceText(parseRecurrencePattern(recurrencePattern)) }</span>
+                                <span className="pl-1">{ getRecurrenceText(recurrencePattern) }</span>
                             </div>
                         )}
                         { (props.useDraftDisruptions
@@ -514,21 +368,19 @@ export const SelectDetails = (props) => {
                         )}
                     </>
                 )}
-                { props.editMode !== EDIT_TYPE.EDIT && (
-                    <div className="col-12">
-                        <DisruptionDetailSelect
-                            id="disruption-creation__wizard-select-details__cause"
-                            className=""
-                            value={ cause }
-                            options={ causes }
-                            label={ LABEL_CAUSE }
-                            invalid={ isCauseDirty && !causeValid() }
-                            feedback="Please select cause"
-                            onBlur={ selectedItem => onChangeCause(selectedItem) }
-                            onChange={ selectedItem => onChangeCause(selectedItem) } />
-                    </div>
-                )}
-                <div className={ props.editMode !== EDIT_TYPE.EDIT ? 'col-12' : 'col-6' }>
+                <div className="col-12">
+                    <DisruptionDetailSelect
+                        id="disruption-creation__wizard-select-details__cause"
+                        className=""
+                        value={ cause }
+                        options={ causes }
+                        label={ LABEL_CAUSE }
+                        invalid={ isCauseDirty && !causeValid() }
+                        feedback="Please select cause"
+                        onBlur={ selectedItem => onChangeCause(selectedItem) }
+                        onChange={ selectedItem => onChangeCause(selectedItem) } />
+                </div>
+                <div className="col-12">
                     <FormGroup>
                         <DisruptionDetailSelect
                             id="disruption-creation__wizard-select-details__severity"
@@ -540,31 +392,28 @@ export const SelectDetails = (props) => {
                             feedback="Please select severity"
                             onBlur={ selectedItem => onChangeSeverity(selectedItem) }
                             onChange={ selectedItem => onChangeSeverity(selectedItem) }
-                            disabled={ isResolved() }
-                            disabledClassName="background-color-for-disabled-fields"
                         />
                     </FormGroup>
                 </div>
-                { props.editMode !== EDIT_TYPE.EDIT && (
-                    <div className="col-12">
-                        <FormGroup>
-                            <Label for="disruption-creation__wizard-select-details__header">
-                                <span className="font-size-md font-weight-bold">{LABEL_HEADER}</span>
-                            </Label>
-                            <Input
-                                id="disruption-creation__wizard-select-details__header"
-                                className="w-100 border border-dark"
-                                placeholder="Title of the message"
-                                maxLength={ HEADER_MAX_LENGTH }
-                                onChange={ event => props.onDataUpdate('header', event.target.value) }
-                                onBlur={ onBlurTitle }
-                                value={ header }
-                            />
-                            <FormFeedback>Please enter disruption title</FormFeedback>
-                        </FormGroup>
-                    </div>
-                )}
-                <div className="col-12 d-none">
+                <div className="col-12">
+                    <FormGroup>
+                        <Label for="disruption-creation__wizard-select-details__header">
+                            <span className="font-size-md font-weight-bold">{LABEL_HEADER}</span>
+                        </Label>
+                        <Input
+                            id="disruption-creation__wizard-select-details__header"
+                            className="w-100 border border-dark"
+                            placeholder="Title of the message"
+                            maxLength={ HEADER_MAX_LENGTH }
+                            onChange={ event => props.onDataUpdate('header', event.target.value) }
+                            onBlur={ onBlurTitle }
+                            value={ header }
+                            invalid={ isTitleDirty && !titleValid() }
+                        />
+                        <FormFeedback>Please enter disruption title</FormFeedback>
+                    </FormGroup>
+                </div>
+                <div className="col-12">
                     <FormGroup>
                         <Label for="disruption-creation__wizard-select-details__url">
                             <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
@@ -578,91 +427,21 @@ export const SelectDetails = (props) => {
                             placeholder="e.g. https://at.govt.nz"
                             onChange={ event => props.onDataUpdate('url', event.target.value) }
                             invalid={ !isUrlValid(url) }
-                            disabled={ isResolved() }
                         />
                         <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
                     </FormGroup>
                 </div>
             </Form>
-            { props.editMode === EDIT_TYPE.EDIT && (
-                <div className="ml-4 mr-4 ">
-                    <ul className="pl-0 disruption-workarounds-effects" id="effects-list">
-                        <div>
-                            <Label for="disruption-creation__wizard-select-details__header" className="p-lr12-tb6">
-                                <span className="font-size-md font-weight-bold">Effects</span>
-                            </Label>
-                            <Input
-                                id="disruption-creation__wizard-select-details__header"
-                                className="w-100 workaround-search-input p-lr12-tb6"
-                                placeholder="Effects, affected routes and stops"
-                                maxLength={ 20 }
-                                onChange={ event => setSearchTerm(event.target.value) }
-                                value={ searchTerm }
-                            />
-                        </div>
-                        {filteredDisruptions.map(disruption => (
-                            <li key={ disruption.key } className={ `disruption-effect-item ${props.disruptionIncidentNoToEdit === disruption.incidentNo ? 'active' : ''}` }>
-                                <div>
-                                    <Button
-                                        className="btn cc-btn-link p-lr12-tb6 m-0 js-hide-on-cancel"
-                                        onClick={ (e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            openEditEffectPanel(disruption);
-                                        } }>
-                                        <strong>{disruption.incidentNo}</strong>
-                                    </Button>
-                                    <p className="p-lr12-tb6 m-0">
-                                        {getImpactLabel(disruption.impact)}
-                                    </p>
-                                </div>
-                                {disruption.affectedEntities.affectedRoutes && disruption.affectedEntities.affectedRoutes.length > 0 && (
-                                    disruption.affectedEntities.affectedRoutes.filter((item, index, self) => index
-                                    === self.findIndex(i => i.routeShortName === item.routeShortName))
-                                        .map(route => (
-                                            <p className="p-lr12-tb6 m-0 disruption-effect-item-route" key={ `${disruption.key}_${route.routeId}` }>
-                                                Route -
-                                                {' '}
-                                                {route.routeShortName}
-                                            </p>
-                                        ))
-                                )}
-                                {disruption.affectedEntities.affectedStops && disruption.affectedEntities.affectedStops.length > 0 && (
-                                    disruption.affectedEntities.affectedStops.filter((item, index, self) => index === self.findIndex(i => i.stopId === item.stopId))
-                                        .map(stop => (
-                                            <p className="p-lr12-tb6 m-0 disruption-effect-item-stop" key={ `${disruption.key}_${stop.stopId}` }>
-                                                Stop -
-                                                {' '}
-                                                {stop.text}
-                                            </p>
-                                        ))
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-            { props.editMode !== EDIT_TYPE.EDIT && (
-                <Footer
-                    updateCurrentStep={ props.updateCurrentStep }
-                    onStepUpdate={ props.onStepUpdate }
-                    toggleIncidentModals={ props.toggleIncidentModals }
-                    isSubmitDisabled={ props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
-                    isDraftSubmitDisabled={ isDraftSubmitDisabled }
-                    nextButtonValue="Continue"
-                    onContinue={ () => onContinue() }
-                    onSubmitDraft={ () => onSaveDraft() }
-                />
-            )}
-            { props.editMode === EDIT_TYPE.EDIT && (
-                <Footer
-                    isDraftOrCreateMode={ false }
-                    toggleIncidentModals={ props.toggleIncidentModals }
-                    isSubmitDisabled={ isSubmitDisabled || props.isEditEffectPanelOpen }
-                    nextButtonValue="Save"
-                    onContinue={ () => onSave() }
-                />
-            )}
+            <Footer
+                updateCurrentStep={ props.updateCurrentStep }
+                onStepUpdate={ props.onStepUpdate }
+                toggleIncidentModals={ props.toggleIncidentModals }
+                isSubmitDisabled={ props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
+                isDraftSubmitDisabled={ isDraftSubmitDisabled }
+                nextButtonValue="Continue"
+                onContinue={ () => onContinue() }
+                onSubmitDraft={ () => onSaveDraft() }
+            />
             <CustomMuiDialog
                 title="Disruption Active Periods"
                 onClose={ () => setActivePeriodsModalOpen(false) }
@@ -697,16 +476,6 @@ SelectDetails.propTypes = {
     updateCurrentStep: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
     onUpdateDetailsValidation: PropTypes.func,
-    editMode: PropTypes.string,
-    toggleEditEffectPanel: PropTypes.func.isRequired,
-    updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
-    disruptionIncidentNoToEdit: PropTypes.string,
-    toggleWorkaroundPanel: PropTypes.func.isRequired,
-    updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
-    isEditEffectPanelOpen: PropTypes.bool,
-    setDisruptionForWorkaroundEdit: PropTypes.func.isRequired,
-    setRequestToUpdateEditEffectState: PropTypes.func.isRequired,
-    setRequestedDisruptionKeyToUpdateEditEffect: PropTypes.func.isRequired,
 };
 
 SelectDetails.defaultProps = {
@@ -718,23 +487,6 @@ SelectDetails.defaultProps = {
     onSubmitDraft: () => { },
     onUpdateDetailsValidation: () => { },
     useDraftDisruptions: false,
-    editMode: EDIT_TYPE.CREATE,
-    disruptionIncidentNoToEdit: '',
-    isEditEffectPanelOpen: false,
 };
 
-export default connect(state => ({
-    useDraftDisruptions: useDraftDisruptions(state),
-    editMode: getEditMode(state),
-    disruptionIncidentNoToEdit: getDisruptionKeyToEditEffect(state),
-    isEditEffectPanelOpen: isEditEffectPanelOpen(state),
-}), { toggleIncidentModals,
-    updateCurrentStep,
-    toggleEditEffectPanel,
-    updateDisruptionKeyToEditEffect,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
-    setDisruptionForWorkaroundEdit,
-    setRequestToUpdateEditEffectState,
-    setRequestedDisruptionKeyToUpdateEditEffect,
-})(SelectDetails);
+export default connect(state => ({ useDraftDisruptions: useDraftDisruptions(state) }), { toggleIncidentModals, updateCurrentStep })(SelectDetails);

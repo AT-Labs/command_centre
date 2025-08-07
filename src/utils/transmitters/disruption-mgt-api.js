@@ -174,9 +174,3 @@ export const updateIncident = (incident) => {
         },
     ).then(response => jsonResponseHandling(response));
 };
-
-export const getIncident = (incidentId) => {
-    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/incidents/${incidentId}`;
-    return fetchWithAuthHeader(url, { method: GET })
-        .then(response => jsonResponseHandling(response));
-};

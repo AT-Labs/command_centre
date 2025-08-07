@@ -50,9 +50,9 @@ export const ACTION_RESULT = {
         resultCreateNotification: createNotification,
         resultDisruptionVersion: version,
     }),
-    PUBLISH_DRAFT_ERROR: () => ({
+    PUBLISH_DRAFT_ERROR: message => ({
         resultStatus: ACTION_RESULT_TYPES.ERROR,
-        resultMessage: ERROR_TYPE.draftDisruptionPublish,
+        resultMessage: message || ERROR_TYPE.draftDisruptionPublish,
     }),
 };
 
