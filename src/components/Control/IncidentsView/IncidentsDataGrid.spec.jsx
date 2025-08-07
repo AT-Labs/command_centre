@@ -8,6 +8,7 @@ import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { IncidentDataGrid } from './IncidentsDataGrid';
+import EDIT_TYPE from '../../../types/edit-types';
 
 const mockStore = configureStore([]);
 
@@ -29,6 +30,8 @@ describe('IncidentDataGrid Component', () => {
         updateActiveIncident: jest.fn(),
         updateIncidentsSortingParams: jest.fn(),
         useViewDisruptionDetailsPage: true,
+        setIncidentToUpdate: jest.fn(),
+        updateEditMode: jest.fn(),
     };
 
     beforeEach(() => {
@@ -131,9 +134,13 @@ describe('IncidentDataGrid Component', () => {
     });
 
     it('opens the correct URL when "Open & Edit Incident" button is clicked', async () => {
+        const setIncidentToUpdate = jest.fn();
+        const updateEditMode = jest.fn();
         const propsWithEdit = {
             ...defaultProps,
             useViewDisruptionDetailsPage: true,
+            updateEditMode,
+            setIncidentToUpdate,
         };
         const storeDetailsPage = mockStore({
             control:
@@ -165,7 +172,8 @@ describe('IncidentDataGrid Component', () => {
         const firstButton = buttons[0];
 
         fireEvent.click(firstButton);
-        expect(global.open).toHaveBeenCalledWith('/control-main-view/control-incidents/1', '_blank');
+        expect(setIncidentToUpdate).toHaveBeenCalledWith(1);
+        expect(updateEditMode).toHaveBeenCalledWith(EDIT_TYPE.EDIT);
     });
 
     it('renders "ACTIONS" column when useViewDisruptionDetailsPage is true', () => {

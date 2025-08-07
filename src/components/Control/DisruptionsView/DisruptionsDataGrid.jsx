@@ -89,6 +89,10 @@ const getViewDisruptionDetailsButton = row => (
         <Tooltip title="Open & Edit Disruption" placement="top-end" key={ uniqueId(row.disruptionId) }>
             <IconButton aria-label="open-edit-disruption"
                 onClick={ () => {
+                    console.log('🔧 PENCIL BUTTON CLICKED!');
+                    console.log('�� Row data:', row);
+                    console.log('🔧 Opening in new window:', `/control-main-view/control-disruptions/${row.disruptionId.toString()}`);
+                    
                     window.open(`/control-main-view/control-disruptions/${row.disruptionId.toString()}`, '_blank');
                 } }>
                 <BsPencilSquare />
@@ -98,6 +102,9 @@ const getViewDisruptionDetailsButton = row => (
 );
 
 export const DisruptionsDataGrid = (props) => {
+    console.log('🔧 DisruptionsDataGrid render');
+    console.log('🔧 Props:', props);
+    
     const causes = useAlertCauses();
     const impacts = useAlertEffects();
 

@@ -576,7 +576,7 @@ const DisruptionDetailView = (props) => {
             ...setDisruption(),
             status: STATUSES.NOT_STARTED,
         };
-        await props.actions.publishDraftDisruption(updatedDisruption, diversions);
+        await props.actions.publishDraftDisruption(updatedDisruption);
     };
 
     return (

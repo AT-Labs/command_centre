@@ -1,0 +1,224 @@
+@import '../../../../../assets/styles/variables.scss';
+
+.edit-effect-panel {
+    left: $side-panel-width-large;
+    position: fixed;
+    z-index: 401;
+    display: flex;
+    height: calc(100vh - #{$header-height});
+    width: calc(#{$side-panel-width-large} + 1px);
+    max-width: 1000px;
+    border-left: 1px solid #D0D3D7;
+
+    &.hidden {
+        display: none;
+    }
+
+    .edit-effect-panel-body {
+        overflow-x: hidden;
+        flex: 1;
+        overflow-y: auto;
+        margin-bottom: 90px;
+
+        .last-note-grid {
+            display: grid;
+            grid-template-columns: 30% 70%;
+            grid-template-rows: auto auto;
+            width: 100%;
+
+            .last-note-label {
+                grid-column: 1;
+                grid-row: 1;
+            }
+
+            .last-note-info {
+                grid-column: 2;
+                grid-row: 1;
+                text-align: right;
+            }
+
+            .last-note-description {
+                grid-column: 2;
+                grid-row: 2;
+                text-align: right;
+            }
+        }
+    }
+
+    & .handler-wrap {
+        display: flex;
+        align-items: center;
+        margin-left: -70px;
+        & .button-container {
+            display: flex;
+            align-items: center;
+        }
+        & .handler {
+            transform: rotate(90deg);
+            text-transform: none;
+            top: 45%;
+            border-radius: 4px 4px 0 0;
+            background-color: $at-magenta;
+            white-space: nowrap;
+        }
+        & :disabled {
+            color: $at-ocean !important;
+            background-color: $at-light-gray !important;
+        }
+        & .spinner-wrapper {
+            margin-left: 115px;
+        }
+    }
+
+    .select_disruption {
+        position: relative;
+    }
+
+    & .mui-paper {
+        display: flex;
+        flex-direction: column;
+        background-color: #FAFAFA;
+        border-radius: 0 4px 4px 0;
+        width: 100%;
+    }
+
+    .btn-block.save-workaround {
+        margin-top: 2px;
+        margin-bottom: 2px;
+        color: white !important;
+    }
+
+    .btn-block.close-workaround {
+        padding: .375rem .75rem;
+    }
+
+    .label-with-icon {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        
+        h2 {
+            flex: 1;
+            margin: 0;
+        }
+        
+        .diversions-button-container {
+            flex-shrink: 0;
+        }
+    }
+
+    .diversions-button-container {
+        display: inline-block;
+        margin-left: auto;
+        overflow: visible;
+    }
+
+    .flex-justify-content-end {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .add-note-button {
+        padding: 4px;
+        margin-top: 4px;
+        font-size: .9rem;
+    }
+
+    .justify-content-end {
+        justify-content: flex-end;
+    }
+
+    // Стили для DiversionManager - ПОЛНОЭКРАННЫЙ ОВЕРЛЕЙ
+    .side-panel-control-component-view {
+        // ДЕЛАЕМ ПОЛНОЭКРАННЫЙ ОВЕРЛЕЙ
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 999999 !important;
+        background: white !important;
+        display: flex;
+
+        // Стили для левой панели
+        .side-panel {
+            width: 660px; // Увеличиваем ширину панели на 30%
+            flex-shrink: 0; // Запрещаем сжиматься
+            border-right: 1px solid #ddd;
+            height: 100vh; // Полная высота экрана
+        }
+
+        // Стили для карты
+        .map {
+            flex-grow: 1; // Разрешаем карте занять всё оставшееся место
+            position: relative; // Важно для библиотек карт
+            height: 100vh; // Используем всю высоту экрана
+            width: calc(100vw - 660px); // Ширина минус новая ширина панели
+        }
+    }
+
+    // Скрываем EditEffectPanel когда DiversionManager открыт
+    &.diversion-manager-open {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        z-index: -1 !important;
+        
+        // Скрываем все модальные окна внутри EditEffectPanel
+        .CustomModal,
+        .CustomMuiDialog,
+        .disruption-creation__modal,
+        .diversion-result-modal,
+        .change-selected-route-variant-modal {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            z-index: -1 !important;
+        }
+    }
+}
+
+// Глобальные стили для скрытия модальных окон когда DiversionManager открыт
+.side-panel-control-component-view {
+    // Скрываем все модальные окна из других компонентов
+    ~ .edit-effect-panel,
+    ~ .CustomModal,
+    ~ .CustomMuiDialog,
+    ~ .disruption-creation__modal,
+    ~ .diversion-result-modal,
+    ~ .change-selected-route-variant-modal {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        z-index: -1 !important;
+    }
+}
+
+// Дополнительные стили для скрытия всех модальных окон
+body.diversion-manager-active {
+    .edit-effect-panel,
+    .CustomModal,
+    .CustomMuiDialog,
+    .disruption-creation__modal,
+    .diversion-result-modal,
+    .change-selected-route-variant-modal,
+    .modal,
+    .modal-dialog,
+    .modal-content,
+    // Скрываем кнопку DISR[ID] и другие элементы с высоким z-index
+    button[style*="z-index"],
+    [style*="z-index: 999999"],
+    [style*="z-index: 99999"],
+    [style*="z-index: 9999"],
+    [style*="z-index: 999"],
+    .btn.cc-btn-link,
+    .diversions-button-container,
+    .diversions-button {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        z-index: -1 !important;
+        pointer-events: none !important;
+    }
+}

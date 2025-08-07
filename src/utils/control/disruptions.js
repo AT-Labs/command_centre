@@ -95,7 +95,7 @@ export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
 const getMode = disruption => [...disruption.affectedEntities.affectedRoutes.map(route => VEHICLE_TYPES[route.routeType].type),
     ...disruption.affectedEntities.affectedStops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType].type)];
 
-export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, incidentUrl) => {
+export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, incidentUrl, isEditMode, incidentEndTimeMoment) => {
     const startDate = disruption.startDate ? disruption.startDate : moment(disruption.startTime).format(DATE_FORMAT);
     const startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
     let endTimeMoment;
@@ -121,20 +121,23 @@ export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentSt
         }),
     }));
     const stopsToRequest = disruption.affectedEntities.affectedStops.map(entity => omit(entity, ['shapeWkt']));
+
+    const isStatusBecomeResolved = incidentStatus === STATUSES.RESOLVED && disruption.status !== STATUSES.RESOLVED;
     return {
         ...disruption,
-        header: incidentHeader,
-        status: incidentStatus,
-        cause: incidentCause,
+        ...(isEditMode ? { } : { header: incidentHeader }),
+        ...(isEditMode ? { } : { status: incidentStatus }),
+        ...(isEditMode ? { } : { cause: incidentCause }),
         url: incidentUrl,
         endTime: endTimeMoment,
         startTime: startTimeMoment,
         mode: uniq(modes).join(', '),
         affectedEntities: [...routesToRequest, ...stopsToRequest],
+        ...(isStatusBecomeResolved && incidentEndTimeMoment ? { status: STATUSES.RESOLVED, endTime: incidentEndTimeMoment } : { }),
     };
 };
 
-export const buildIncidentSubmitBody = (incident) => {
+export const buildIncidentSubmitBody = (incident, isEditMode) => {
     const modes = incident.disruptions.flatMap(disruption => getMode(disruption));
     return {
         ...incident,
@@ -145,6 +148,8 @@ export const buildIncidentSubmitBody = (incident) => {
             incident.status,
             incident.cause,
             incident.url,
+            isEditMode,
+            incident.endTime,
         )),
     };
 };
@@ -225,9 +230,15 @@ export const groupStopsByRouteElementByParentStation = (list) => {
     return result;
 };
 
-export const getDeduplcatedAffectedRoutes = affectedEntities => [...new Set(affectedEntities.filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))];
+export const getDeduplcatedAffectedRoutes = (affectedEntities) => {
+    if (!Array.isArray(affectedEntities)) return [];
+    return [...new Set(affectedEntities.filter((entity) => entity.routeId).map(({ routeShortName }) => routeShortName))];
+};
 
-export const getDeduplcatedAffectedStops = affectedEntities => [...new Set(affectedEntities.filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))];
+export const getDeduplcatedAffectedStops = (affectedEntities) => {
+    if (!Array.isArray(affectedEntities)) return [];
+    return [...new Set(affectedEntities.filter((entity) => entity.stopCode).map(({ stopCode }) => stopCode))];
+};
 
 export const filterOnlyRouteParams = route => pick(route, ['routeId', 'routeShortName', 'routeType', 'routeColor', 'shapeWkt', 'agencyId', 'agencyName',
     'text', 'category', 'icon', 'valueKey', 'labelKey', 'type']);

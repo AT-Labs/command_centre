@@ -3,14 +3,27 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 
-import { toggleIncidentModals, openCreateIncident, deleteAffectedEntities } from '../../../../../redux/actions/control/incidents';
+import { toggleIncidentModals,
+    openCreateIncident,
+    deleteAffectedEntities,
+    toggleEditEffectPanel,
+    updateDisruptionKeyToEditEffect,
+    toggleWorkaroundPanel,
+    updateDisruptionKeyToWorkaroundEdit,
+    setDisruptionForWorkaroundEdit,
+} from '../../../../../redux/actions/control/incidents';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
 
 const Cancellation = (props) => {
-    const closeCreateDisruption = () => {
+    const closeCreateIncident = () => {
         props.openCreateIncident(false);
         props.deleteAffectedEntities();
         props.toggleIncidentModals('isCancellationOpen', false);
+        props.toggleWorkaroundPanel(false);
+        props.updateDisruptionKeyToWorkaroundEdit('');
+        props.toggleEditEffectPanel(false);
+        props.updateDisruptionKeyToEditEffect('');
+        props.setDisruptionForWorkaroundEdit({});
     };
     return (
 
@@ -34,7 +47,7 @@ const Cancellation = (props) => {
                 <div className="col-5">
                     <Button
                         className="btn cc-btn-primary btn-block"
-                        onClick={ () => { closeCreateDisruption(); } }>
+                        onClick={ () => { closeCreateIncident(); } }>
                         Discard changes
                     </Button>
                 </div>
@@ -47,8 +60,21 @@ Cancellation.propTypes = {
     toggleIncidentModals: PropTypes.func.isRequired,
     openCreateIncident: PropTypes.func.isRequired,
     deleteAffectedEntities: PropTypes.func.isRequired,
+    toggleEditEffectPanel: PropTypes.func.isRequired,
+    toggleWorkaroundPanel: PropTypes.func.isRequired,
+    updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
+    updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
+    setDisruptionForWorkaroundEdit: PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
     isModalOpen: isModalOpen(state),
-}), { toggleIncidentModals, openCreateIncident, deleteAffectedEntities })(Cancellation);
+}), { toggleIncidentModals,
+    openCreateIncident,
+    deleteAffectedEntities,
+    toggleEditEffectPanel,
+    updateDisruptionKeyToEditEffect,
+    toggleWorkaroundPanel,
+    updateDisruptionKeyToWorkaroundEdit,
+    setDisruptionForWorkaroundEdit,
+})(Cancellation);
