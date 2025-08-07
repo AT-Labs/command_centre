@@ -9,11 +9,11 @@ import {
     updateActiveIncident,
     openCreateIncident,
     deleteAffectedEntities,
-    updateDisruptionsDatagridConfig,
+    updateIncidentsDatagridConfig,
     updateIncidentsSortingParams,
     clearActiveIncident } from '../../../../../redux/actions/control/incidents';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
-import { getDisruptionsDatagridConfig } from '../../../../../redux/selectors/control/incidents';
+import { getIncidentsDatagridConfig } from '../../../../../redux/selectors/control/incidents';
 import { goToNotificationsView } from '../../../../../redux/actions/control/link';
 import { useDisruptionsNotificationsDirectLink } from '../../../../../redux/selectors/appSettings';
 
@@ -133,7 +133,7 @@ Confirmation.defaultProps = {
 export default connect(
     state => ({
         isModalOpen: isModalOpen(state),
-        datagridConfig: getDisruptionsDatagridConfig(state),
+        datagridConfig: getIncidentsDatagridConfig(state),
         useDisruptionsNotificationsDirectLink: useDisruptionsNotificationsDirectLink(state),
     }),
     {
@@ -141,7 +141,7 @@ export default connect(
         updateActiveIncident,
         openCreateIncident,
         deleteAffectedEntities,
-        updateDisruptionsDatagridConfig,
+        updateIncidentsDatagridConfig,
         goToNotificationsView,
         updateIncidentsSortingParams,
         clearActiveIncident,

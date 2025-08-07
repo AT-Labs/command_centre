@@ -445,8 +445,6 @@ export const SelectDisruptionEntities = (props) => {
             <div className="selection-container h-100">
                 <ul className="p-0">
                     <StopsByRouteMultiSelect
-                        affectedRoutes={ props.affectedRoutes || [] }
-                        updateAffectedRoutes={ props.updateAffectedRoutesState }
                         removeAction={ route => removeAction(route, ROUTE) }
                         className="select-stops-route"
                     />

@@ -9,20 +9,8 @@ const AdditionalRouteVariantSelector = ({
     onSelectVariant,
     onVisibilityChange,
     onRouteVariantRemoved,
-    isRouteVariantDisabled,
-    isLoadingExistingDiversions,
-    existingDiversions,
-}) => {
-    // console.log('🔧 AdditionalRouteVariantSelector - render with props:', {
-    //     routeVariantsListLength: routeVariantsList.length,
-    //     selectedRouteVariantsLength: selectedRouteVariants.length,
-    //     isRouteVariantDisabled: !!isRouteVariantDisabled,
-    //     isLoadingExistingDiversions,
-    //     existingDiversionsLength: existingDiversions.length
-    // });
-    
-    return (
-        <div>
+}) => (
+    <div>
         <p>
             <b>Select the other route variant(s) to apply the defined diversion</b>
         </p>
@@ -32,9 +20,6 @@ const AdditionalRouteVariantSelector = ({
                 className="route-variant-select"
                 routeVariants={ routeVariantsList }
                 onSelectVariant={ onSelectVariant }
-                isRouteVariantDisabled={ isRouteVariantDisabled }
-                isLoadingExistingDiversions={ isLoadingExistingDiversions }
-                existingDiversions={ existingDiversions }
             />
         </div>
         {selectedRouteVariants.map(routeVariant => (
@@ -65,8 +50,7 @@ const AdditionalRouteVariantSelector = ({
             </div>
         ))}
     </div>
-    );
-};
+);
 
 AdditionalRouteVariantSelector.propTypes = {
     routeVariantsList: PropTypes.array.isRequired,
@@ -74,9 +58,6 @@ AdditionalRouteVariantSelector.propTypes = {
     onSelectVariant: PropTypes.func.isRequired,
     onVisibilityChange: PropTypes.func.isRequired,
     onRouteVariantRemoved: PropTypes.func.isRequired,
-    isRouteVariantDisabled: PropTypes.func,
-    isLoadingExistingDiversions: PropTypes.bool,
-    existingDiversions: PropTypes.array,
 };
 
 export default AdditionalRouteVariantSelector;

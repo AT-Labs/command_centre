@@ -1,5 +1,5 @@
 import ACTION_TYPE from '../../action-types';
-import { getDiversion, addDiversion, updateDiversion as updateDiversionAPI } from '../../../utils/transmitters/disruption-mgt-api';
+import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
 
 export const openDiversionManager = isDiversionManagerOpen => (dispatch) => {
     dispatch({
@@ -40,7 +40,7 @@ export const createDiversion = diversion => async (dispatch) => {
     );
 
     try {
-        response = await addDiversion(diversion);
+        response = await disruptionsMgtApi.addDiversion(diversion);
         dispatch(
             updateDiversionResultState(false, response.diversionId, null),
         );
@@ -55,7 +55,7 @@ export const updateDiversion = diversion => async (dispatch) => {
     );
 
     try {
-        await updateDiversionAPI(diversion);
+        await disruptionsMgtApi.updateDiversion(diversion);
         dispatch(
             updateDiversionResultState(false, diversion.diversionId, null),
         );
@@ -68,63 +68,4 @@ export const resetDiversionResult = () => (dispatch) => {
     dispatch(
         updateDiversionResultState(false, null, null),
     );
-};
-
-export const setSelectedRouteVariant = routeVariant => ({
-    type: ACTION_TYPE.SET_SELECTED_ROUTE_VARIANT,
-    payload: {
-        selectedRouteVariant: routeVariant,
-    },
-});
-
-// Centralized diversions data actions
-export const fetchDiversionsStart = disruptionId => ({
-    type: ACTION_TYPE.FETCH_DIVERSIONS_START,
-    payload: { disruptionId },
-});
-
-export const fetchDiversionsSuccess = (disruptionId, diversions) => ({
-    type: ACTION_TYPE.FETCH_DIVERSIONS_SUCCESS,
-    payload: { disruptionId, diversions },
-});
-
-export const fetchDiversionsError = (disruptionId, error) => ({
-    type: ACTION_TYPE.FETCH_DIVERSIONS_ERROR,
-    payload: { disruptionId, error },
-});
-
-export const clearDiversionsCache = (disruptionId = null) => ({
-    type: ACTION_TYPE.CLEAR_DIVERSIONS_CACHE,
-    payload: { disruptionId },
-});
-
-// Thunk action for fetching diversions with centralized management
-export const fetchDiversions = disruptionId => async (dispatch, getState) => {
-    if (!disruptionId) {
-        return undefined;
-    }
-
-    const state = getState();
-    const diversionsState = state.control.diversions;
-    
-    // Check if already loading
-    if (diversionsState.diversionsLoading[disruptionId]) {
-        return undefined;
-    }
-
-    // Check if we have cached data
-    if (diversionsState.diversionsData[disruptionId]) {
-        return diversionsState.diversionsData[disruptionId];
-    }
-
-    dispatch(fetchDiversionsStart(disruptionId));
-
-    try {
-        const diversions = await getDiversion(disruptionId);
-        dispatch(fetchDiversionsSuccess(disruptionId, diversions || []));
-        return diversions || [];
-    } catch (error) {
-        dispatch(fetchDiversionsError(disruptionId, error.message));
-        return [];
-    }
 };

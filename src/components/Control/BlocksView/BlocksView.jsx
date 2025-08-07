@@ -200,7 +200,7 @@ export class BlocksView extends React.Component {
 
     renderRowBody = activeBlock => <BlockTrips activeBlock={ activeBlock } />;
 
-    getRowId = block => String(block.operationalBlockId);
+    getRowId = block => block.operationalBlockId;
 
     handleBlockSearchOnSelect = ({ data: block }) => {
         this.props.updateActiveBlock(block);
