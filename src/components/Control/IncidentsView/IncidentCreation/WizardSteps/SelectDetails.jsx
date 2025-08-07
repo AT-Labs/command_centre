@@ -271,8 +271,17 @@ export const SelectDetails = (props) => {
     };
 
     const openEditEffectPanel = (disruption) => {
-        props.setRequestedDisruptionKeyToUpdateEditEffect(disruption.incidentNo);
-        props.setRequestToUpdateEditEffectState(true);
+        // Открываем EditEffectPanel (как красная кнопка)
+        if (props.updateDisruptionKeyToEditEffect) {
+            props.updateDisruptionKeyToEditEffect(disruption.incidentNo);
+        }
+        
+        if (props.toggleEditEffectPanel) {
+            props.toggleEditEffectPanel(true);
+        }
+        
+        // Предотвращаем всплытие события
+        return false;
     };
 
     const impacts = useAlertEffects();
@@ -577,7 +586,7 @@ export const SelectDetails = (props) => {
             </Form>
             { props.editMode === EDIT_TYPE.EDIT && (
                 <div className="ml-4 mr-4 ">
-                    <ul className="pl-0 disruption-workarounds-effects">
+                    <ul className="pl-0 disruption-workarounds-effects" id="effects-list">
                         <div>
                             <Label for="disruption-creation__wizard-select-details__header" className="p-lr12-tb6">
                                 <span className="font-size-md font-weight-bold">Effects</span>
@@ -595,8 +604,12 @@ export const SelectDetails = (props) => {
                             <li key={ disruption.key } className={ `disruption-effect-item ${props.disruptionIncidentNoToEdit === disruption.incidentNo ? 'active' : ''}` }>
                                 <div>
                                     <Button
-                                        className="btn cc-btn-link p-lr12-tb6 m-0"
-                                        onClick={ () => openEditEffectPanel(disruption) }>
+                                        className="btn cc-btn-link p-lr12-tb6 m-0 js-hide-on-cancel"
+                                        onClick={ (e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            openEditEffectPanel(disruption);
+                                        } }>
                                         <strong>{disruption.incidentNo}</strong>
                                     </Button>
                                     <p className="p-lr12-tb6 m-0">

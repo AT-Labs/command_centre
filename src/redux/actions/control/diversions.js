@@ -69,3 +69,10 @@ export const resetDiversionResult = () => (dispatch) => {
         updateDiversionResultState(false, null, null),
     );
 };
+
+export const setSelectedRouteVariant = routeVariant => ({
+    type: ACTION_TYPE.SET_SELECTED_ROUTE_VARIANT,
+    payload: {
+        selectedRouteVariant: routeVariant,
+    },
+});

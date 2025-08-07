@@ -34,7 +34,6 @@ export default {
     userPreferences: 'Error while getting user preferences',
     fetchFleetEnabled: true,
     fetchDisruptions: 'Unable to load disruptions, please try again',
-    fetchIncidents: 'Unable to load incidents, please try again',
     fetchNotifications: 'Unable to load notifications, please try again',
     disruptionUpdate: incidentNo => `Failed to update disruption ${incidentNo}.`,
     disruptionCreate: 'Failed to create disruption',
