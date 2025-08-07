@@ -42,5 +42,4 @@
     "useStopBasedDisruptionsSearch": "false",
     "useTripCancellationCause": "false",
     "useParentChildIncident": "false"
-    "useDisruptionNotePopup": "false"
 }

@@ -812,7 +812,7 @@ export const updateDisruption = disruption => async (dispatch) => {
     } catch (error) {
         dispatch(updateRequestingIncidentResult(incidentId, ACTION_RESULT.UPDATE_ERROR(incidentNo, error.code)));
     } finally {
-        dispatch(setIncidentToUpdate(incidentId, true));
+        dispatch(setIncidentToUpdate(incidentId, undefined, true));
         dispatch(updateRequestingIncidentState(false, incidentId));
     }
     await dispatch(getDisruptionsAndIncidents());
