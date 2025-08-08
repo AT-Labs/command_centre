@@ -22,6 +22,42 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>Command Centre</title>
+    <script>
+      // Polyfill for process object
+      if (typeof window !== 'undefined' && typeof window.process === 'undefined') {
+        window.process = { env: {} };
+      }
+      if (typeof global !== 'undefined' && typeof global.process === 'undefined') {
+        global.process = { env: {} };
+      }
+      if (typeof globalThis !== 'undefined' && typeof globalThis.process === 'undefined') {
+        globalThis.process = { env: {} };
+      }
+      
+      // Also set process on the global scope for any remaining references
+      if (typeof window !== 'undefined') {
+        window.process = { env: {} };
+      }
+      if (typeof global !== 'undefined') {
+        global.process = { env: {} };
+      }
+      if (typeof globalThis !== 'undefined') {
+        globalThis.process = { env: {} };
+      }
+      
+      // Ensure process is available globally
+      if (typeof process === 'undefined') {
+        if (typeof window !== 'undefined') {
+          window.process = { env: {} };
+        }
+        if (typeof global !== 'undefined') {
+          global.process = { env: {} };
+        }
+        if (typeof globalThis !== 'undefined') {
+          globalThis.process = { env: {} };
+        }
+      }
+    </script>
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->

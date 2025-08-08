@@ -3,36 +3,29 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { FaPaperclip } from 'react-icons/fa';
 import { RiMailCheckLine, RiDraftLine } from 'react-icons/ri';
-import { BsArrowRepeat, BsAlarm, BsFillChatTextFill, BsPencilSquare } from 'react-icons/bs';
+import { BsArrowRepeat, BsAlarm, BsFillChatTextFill } from 'react-icons/bs';
 import moment from 'moment';
 import { GoAlert } from 'react-icons/go';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
 import { uniqueId } from 'lodash-es';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
-import DisruptionDetail from './DisruptionDetail';
-import MinimizeDisruptionDetail from './DisruptionDetailView/MinimizeDisruptionDetail';
-import {
-    LABEL_AFFECTED_ROUTES, LABEL_AFFECTED_STOPS,
-    LABEL_CAUSE, LABEL_CREATED_AT, LABEL_CREATED_BY, LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_DISRUPTION, LABEL_END_TIME,
-    LABEL_HEADER,
-    LABEL_LAST_UPDATED_AT,
-    LABEL_MODE, LABEL_START_TIME, LABEL_STATUS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES, LABEL_SEVERITY, LABEL_PASSENGER_IMPACT,
+import MinimizeDisruptionDetail from '../DisruptionsView/DisruptionDetailView/MinimizeDisruptionDetail';
+import { LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_END_TIME, LABEL_START_TIME, LABEL_STATUS, LABEL_DISRUPTION_NOTES,
 } from '../../../constants/disruptions';
 import { dateTimeFormat } from '../../../utils/dateUtils';
-import { SEVERITIES, DEFAULT_SEVERITY, STATUSES, PASSENGER_IMPACT_RANGE } from '../../../types/disruptions-types';
-import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../types/disruption-cause-and-effect';
-import { getActiveDisruptionId, getDisruptionsDatagridConfig } from '../../../redux/selectors/control/disruptions';
-import { updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState } from '../../../redux/actions/control/disruptions';
+import { STATUSES } from '../../../types/disruptions-types';
+import { DEFAULT_IMPACT } from '../../../types/disruption-cause-and-effect';
+import { getActiveDisruptionId, getDisruptionsDatagridConfig } from '../../../redux/selectors/control/incidents';
+import { updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState } from '../../../redux/actions/control/incidents';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
 
-import './DisruptionsDataGrid.scss';
+import './IncidentsDisruptions.scss';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
-import { getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops, getPassengerCountRange } from '../../../utils/control/disruptions';
-import { getWorkaroundsAsText } from '../../../utils/control/disruption-workarounds';
-import { usePassengerImpact, useDisruptionsNotificationsDirectLink, useViewDisruptionDetailsPage } from '../../../redux/selectors/appSettings';
+import { getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from '../../../utils/control/disruptions';
+import { useViewDisruptionDetailsPage } from '../../../redux/selectors/appSettings';
 import { goToNotificationsView } from '../../../redux/actions/control/link';
-import { useAlertCauses, useAlertEffects } from '../../../utils/control/alert-cause-effect';
+import { useAlertEffects } from '../../../utils/control/alert-cause-effect';
 
 const getDisruptionLabel = (disruption) => {
     const { uploadedFiles, incidentNo, createNotification, recurrent } = disruption;
@@ -84,55 +77,27 @@ const getViewNotificationButtons = (row, source, callback = () => {}) => {
     );
 };
 
-const getViewDisruptionDetailsButton = row => (
-    [
-        <Tooltip title="Open & Edit Disruption" placement="top-end" key={ uniqueId(row.disruptionId) }>
-            <IconButton aria-label="open-edit-disruption"
-                onClick={ () => {
-                    console.log('🔧 PENCIL BUTTON CLICKED!');
-                    console.log('�� Row data:', row);
-                    console.log('🔧 Opening in new window:', `/control-main-view/control-disruptions/${row.disruptionId.toString()}`);
-                    
-                    window.open(`/control-main-view/control-disruptions/${row.disruptionId.toString()}`, '_blank');
-                } }>
-                <BsPencilSquare />
-            </IconButton>
-        </Tooltip>,
-    ]
-);
-
-export const DisruptionsDataGrid = (props) => {
-    console.log('🔧 DisruptionsDataGrid render');
-    console.log('🔧 Props:', props);
-    
-    const causes = useAlertCauses();
+export const IncidentsDisruptions = (props) => {
     const impacts = useAlertEffects();
 
     const GRID_COLUMNS = [
         {
             field: 'incidentNo',
-            headerName: LABEL_DISRUPTION,
-            width: 200,
+            headerName: '#EFFECT',
+            width: 150,
             renderCell: params => getDisruptionLabel(params.row),
             filterOperators: sourceIdDataGridOperator,
         },
         {
-            field: 'mode',
-            headerName: LABEL_MODE,
-            width: 200,
-            type: 'string',
-            hide: true,
-        },
-        {
             field: 'header',
-            headerName: LABEL_HEADER,
+            headerName: 'Title',
             width: 250,
             type: 'string',
             renderCell: RenderCellExpand,
         },
         {
             field: 'affectedRoutes',
-            headerName: LABEL_AFFECTED_ROUTES,
+            headerName: 'ROUTES',
             width: 150,
             valueGetter: params => getDeduplcatedAffectedRoutes(params.row.affectedEntities).join(', '),
             renderCell: RenderCellExpand,
@@ -140,7 +105,7 @@ export const DisruptionsDataGrid = (props) => {
         },
         {
             field: 'affectedStops',
-            headerName: LABEL_AFFECTED_STOPS,
+            headerName: 'STOPS',
             width: 200,
             valueGetter: params => getDeduplcatedAffectedStops(params.row.affectedEntities).join(', '),
             renderCell: RenderCellExpand,
@@ -151,32 +116,8 @@ export const DisruptionsDataGrid = (props) => {
             headerName: LABEL_CUSTOMER_IMPACT,
             width: 200,
             type: 'singleSelect',
-            valueGetter: params => (impacts.find(impact => impact.value === params.value) || DEFAULT_IMPACT).label,
+            valueGetter: params => (impacts.find(impact => impact.value === params.row.impact) || DEFAULT_IMPACT).label,
             valueOptions: impacts.slice(1, impacts.length).map(impact => impact.label),
-        },
-        {
-            field: 'cause',
-            headerName: LABEL_CAUSE,
-            width: 200,
-            type: 'singleSelect',
-            valueGetter: params => (causes.find(cause => cause.value === params.value) || DEFAULT_CAUSE).label,
-            valueOptions: causes.slice(1, causes.length).map(cause => cause.label),
-        },
-        {
-            field: 'severity',
-            headerName: LABEL_SEVERITY,
-            width: 200,
-            type: 'singleSelect',
-            valueGetter: params => (SEVERITIES.find(severity => severity.value === params.value) || DEFAULT_SEVERITY).label,
-            valueOptions: SEVERITIES.slice(1, SEVERITIES.length).map(severity => severity.label),
-        },
-        {
-            field: 'workarounds',
-            headerName: LABEL_WORKAROUNDS,
-            width: 150,
-            valueGetter: params => getWorkaroundsAsText(params.value),
-            type: 'string',
-            renderCell: RenderCellExpand,
         },
         {
             field: 'startTime',
@@ -206,29 +147,6 @@ export const DisruptionsDataGrid = (props) => {
             valueOptions: Object.values(STATUSES),
         },
         {
-            field: 'createdTime',
-            headerName: LABEL_CREATED_AT,
-            width: 150,
-            type: 'dateTime',
-            valueFormatter: params => (params.value ? moment(params.value).format(dateTimeFormat) : ''),
-            hide: true,
-        },
-        {
-            field: 'lastUpdatedTime',
-            headerName: LABEL_LAST_UPDATED_AT,
-            width: 150,
-            type: 'dateTime',
-            valueFormatter: params => (params.value ? moment(params.value).format(dateTimeFormat) : ''),
-            hide: true,
-        },
-        {
-            field: 'createdBy',
-            headerName: LABEL_CREATED_BY,
-            width: 250,
-            type: 'string',
-            hide: true,
-        },
-        {
             field: 'description',
             headerName: LABEL_DESCRIPTION,
             width: 200,
@@ -244,53 +162,20 @@ export const DisruptionsDataGrid = (props) => {
             valueGetter: params => (params.value ? [...params.value].reverse().map(note => note.description).join('; \n') : ''),
             renderCell: RenderCellExpand,
         },
+        {
+            field: '__go_to_notification__',
+            type: 'actions',
+            headerName: 'OPEN NOTIFICATION ACTION',
+            width: 55,
+            renderHeader: () => (<span />),
+            renderCell: params => getViewNotificationButtons(params.row, 'DISR', props.goToNotificationsView),
+        },
     ];
-
-    if (props.useDisruptionsNotificationsDirectLink) {
-        GRID_COLUMNS.push(
-            {
-                field: '__go_to_notification__',
-                type: 'actions',
-                headerName: 'OPEN NOTIFICATION ACTION',
-                width: 55,
-                renderHeader: () => (<span />),
-                renderCell: params => getViewNotificationButtons(params.row, 'DISR', props.goToNotificationsView),
-            },
-        );
-    }
-
-    if (props.usePassengerImpact) {
-        GRID_COLUMNS.push(
-            {
-                field: 'passengerCount',
-                headerName: LABEL_PASSENGER_IMPACT,
-                width: 200,
-                hide: false,
-                valueGetter: params => (params.value ? getPassengerCountRange(params.value) : 'No records found'),
-                renderCell: RenderCellExpand,
-                type: 'singleSelect',
-                valueOptions: Object.values(PASSENGER_IMPACT_RANGE),
-            },
-        );
-    }
-
-    if (props.useViewDisruptionDetailsPage) {
-        GRID_COLUMNS.push(
-            {
-                field: '__go_to_disruption_details__',
-                headerName: 'OPEN DISRUPTION DETAILS',
-                type: 'actions',
-                width: 55,
-                renderHeader: () => (<span />),
-                getActions: params => getViewDisruptionDetailsButton(params.row),
-            },
-        );
-    }
 
     const getDetailPanelContent = React.useCallback(
         ({ row }) => (
-            <Box sx={ { padding: '16px 16px 10px 16px' } }>
-                { props.useViewDisruptionDetailsPage ? <MinimizeDisruptionDetail disruption={ row } /> : <DisruptionDetail disruption={ row } /> }
+            <Box sx={ { padding: '10px 10px 10px 10px' } }>
+                <MinimizeDisruptionDetail disruption={ row } />
             </Box>
         ),
         [],
@@ -316,6 +201,7 @@ export const DisruptionsDataGrid = (props) => {
                 updateDatagridConfig={ config => props.updateDisruptionsDatagridConfig(config) }
                 getDetailPanelContent={ getDetailPanelContent }
                 getRowId={ row => row.disruptionId }
+                gridClassNames="vh-50"
                 calculateDetailPanelHeight={ props.useViewDisruptionDetailsPage ? () => 400 : calculateDetailPanelHeight }
                 expandedDetailPanels={ props.activeDisruptionId ? [props.activeDisruptionId] : null }
                 onRowExpanded={ ids => updateActiveDisruption(ids) }
@@ -324,20 +210,18 @@ export const DisruptionsDataGrid = (props) => {
     );
 };
 
-DisruptionsDataGrid.propTypes = {
+IncidentsDisruptions.propTypes = {
     datagridConfig: PropTypes.object.isRequired,
     disruptions: PropTypes.array,
     updateDisruptionsDatagridConfig: PropTypes.func.isRequired,
     activeDisruptionId: PropTypes.number,
     updateActiveDisruptionId: PropTypes.func.isRequired,
     updateCopyDisruptionState: PropTypes.func.isRequired,
-    usePassengerImpact: PropTypes.bool.isRequired,
     goToNotificationsView: PropTypes.func.isRequired,
-    useDisruptionsNotificationsDirectLink: PropTypes.bool.isRequired,
     useViewDisruptionDetailsPage: PropTypes.bool.isRequired,
 };
 
-DisruptionsDataGrid.defaultProps = {
+IncidentsDisruptions.defaultProps = {
     disruptions: [],
     activeDisruptionId: null,
 };
@@ -346,11 +230,9 @@ export default connect(
     state => ({
         datagridConfig: getDisruptionsDatagridConfig(state),
         activeDisruptionId: getActiveDisruptionId(state),
-        usePassengerImpact: usePassengerImpact(state),
-        useDisruptionsNotificationsDirectLink: useDisruptionsNotificationsDirectLink(state),
         useViewDisruptionDetailsPage: useViewDisruptionDetailsPage(state),
     }),
     {
         updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState, goToNotificationsView,
     },
-)(DisruptionsDataGrid);
+)(IncidentsDisruptions);

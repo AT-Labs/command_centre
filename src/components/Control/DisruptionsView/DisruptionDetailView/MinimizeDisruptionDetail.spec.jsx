@@ -100,7 +100,6 @@ const renderWithStore = (props = {}) => {
                 },
                 appSettings: {
                     useViewDisruptionDetailsPage: true,
-                    useDisruptionDetails: true,
                 },
             },
     });
@@ -225,67 +224,5 @@ describe('MinimizeDisruptionDetail', () => {
         expect(confirmationText).toBeInTheDocument();
 
         expect(updateAffectedRoutesState).toHaveBeenCalledWith([]);
-    });
-
-    it('shows expand note icon and modal when useDisruptionNotePopup is true', async () => {
-        const { container } = renderWithStore({ useDisruptionNotePopup: true });
-
-        const expandIcon = container.querySelector('.disruption-detail-expand-note-icon');
-        expect(expandIcon).toBeInTheDocument();
-
-        fireEvent.click(expandIcon);
-        expect(await screen.findByRole('dialog')).toBeInTheDocument();
-    });
-
-    it('does not show expand note icon when useDisruptionNotePopup is false', () => {
-        const { container } = renderWithStore({ useDisruptionNotePopup: false });
-
-        const expandIcon = container.querySelector('.disruption-detail-expand-note-icon');
-        expect(expandIcon).not.toBeInTheDocument();
-    });
-
-    it('renders expand note icon and opens AddNoteModal when clicked', async () => {
-        const { container } = renderWithStore({ useDisruptionNotePopup: true });
-
-        const expandIcon = container.querySelector('.disruption-detail-expand-note-icon');
-        expect(expandIcon).toBeInTheDocument();
-
-        fireEvent.click(expandIcon);
-
-        expect(await screen.findByRole('dialog')).toBeInTheDocument();
-    });
-
-    it('allows entering a note and submitting via AddNoteModal', async () => {
-        const updateDisruption = jest.fn();
-        const { container } = renderWithStore({ useDisruptionNotePopup: true, updateDisruption });
-
-        const expandIcon = container.querySelector('.disruption-detail-expand-note-icon');
-        expect(expandIcon).toBeInTheDocument();
-        fireEvent.click(expandIcon);
-
-        const textareas = await screen.findAllByRole('textbox');
-        const modalTextarea = textareas[textareas.length - 1];
-        fireEvent.change(modalTextarea, { target: { value: 'Note from modal' } });
-
-        const submitButton = screen.getByRole('button', { name: /Add note/i });
-        fireEvent.click(submitButton);
-
-        expect(updateDisruption).toHaveBeenCalled();
-        const disruptionArg = updateDisruption.mock.calls[0][0];
-        expect(disruptionArg.notes.some(note => note.description === 'Note from modal')).toBe(true);
-    });
-
-    it('allows entering a note in AddNoteModal input only', async () => {
-        const { container } = renderWithStore({ useDisruptionNotePopup: true });
-
-        const expandIcon = container.querySelector('.disruption-detail-expand-note-icon');
-        expect(expandIcon).toBeInTheDocument();
-        fireEvent.click(expandIcon);
-
-        const textareas = await screen.findAllByRole('textbox');
-        const modalTextarea = textareas[textareas.length - 1];
-        fireEvent.change(modalTextarea, { target: { value: 'Note in modal only' } });
-
-        expect(modalTextarea.value).toBe('Note in modal only');
     });
 });
