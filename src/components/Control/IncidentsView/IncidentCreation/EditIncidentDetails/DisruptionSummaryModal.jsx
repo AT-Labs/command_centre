@@ -70,10 +70,9 @@ const DisruptionSummaryModal = (props) => {
         if (!isEmpty(props.disruption.endDate) && !isEmpty(props.disruption.endTime)) {
             endTimeMoment = momentFromDateTime(props.disruption.endDate, props.disruption.endTime);
         }
-        const affectedEntities = props.disruption.affectedEntities || {};
         const mergedEntities = [
-            ...(affectedEntities.affectedStops || []),
-            ...(affectedEntities.affectedRoutes || []),
+            ...(props.disruption.affectedEntities.affectedStops || []),
+            ...(props.disruption.affectedEntities.affectedRoutes || []),
         ];
         const disruptionToShare = {
             ...props.disruption,
@@ -115,8 +114,8 @@ const DisruptionSummaryModal = (props) => {
                     {createLine(LABEL_SEVERITY, find(SEVERITIES, { value: props.disruption.severity }).label)}
                     {createLine(LABEL_STATUS, props.disruption.status)}
                     {createLine(LABEL_MODE, props.disruption.mode)}
-                    {createLine(LABEL_AFFECTED_ROUTES, [...new Set((props.disruption.affectedEntities?.affectedRoutes || []).map(({ routeShortName }) => routeShortName))].join(', '))}
-                    {createLine(LABEL_AFFECTED_STOPS, [...new Set((props.disruption.affectedEntities?.affectedStops || []).map(({ stopCode }) => stopCode))].join(', '))}
+                    {createLine(LABEL_AFFECTED_ROUTES, [...new Set(props.disruption.affectedEntities.affectedRoutes.map(({ routeShortName }) => routeShortName))].join(', '))}
+                    {createLine(LABEL_AFFECTED_STOPS, [...new Set(props.disruption.affectedEntities.affectedStops.map(({ stopCode }) => stopCode))].join(', '))}
                     {createLine(LABEL_CUSTOMER_IMPACT, ((find(impacts, { value: props.disruption.impact })) || DEFAULT_IMPACT).label)}
                     {createLine(LABEL_CAUSE, ((find(causes, { value: props.disruption.cause })) || DEFAULT_CAUSE).label)}
                     {props.disruption.description ? createLine(LABEL_DESCRIPTION, props.disruption.description) : null}

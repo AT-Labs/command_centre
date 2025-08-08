@@ -45,27 +45,15 @@ const generateEntitySentence = (entitiesInSameGroup, entityType, entityNamePrope
 };
 
 const groupWorkaroundsOrAffectedEntities = (objects, disruptionType, workaroundType) => {
-    if (!objects || !Array.isArray(objects)) {
-        return {};
-    }
-    const groupByProperty = groupByProperties[disruptionType]?.[workaroundType];
-    if (!groupByProperty) {
-        return {};
-    }
-    return groupBy(objects.filter(object => object && object[groupByProperty]), groupByProperty);
+    const groupByProperty = groupByProperties[disruptionType][workaroundType];
+    return groupBy(objects?.filter(object => object[groupByProperty]), groupByProperty);
 };
 
 export const getFirstWorkaroundTextInTheSameGroup = workaroundsInOneGroup => workaroundsInOneGroup?.[0]?.workaround || '';
 
 export const isWorkaroundTypeDisable = (affectedEntities, disruptionType, workaroundType) => {
-    if (!affectedEntities || !Array.isArray(affectedEntities)) {
-        return true;
-    }
-    const groupByProperty = groupByProperties[disruptionType]?.[workaroundType];
-    if (!groupByProperty) {
-        return true;
-    }
-    return !affectedEntities.filter(object => object && object[groupByProperty]).length;
+    const groupByProperty = groupByProperties[disruptionType][workaroundType];
+    return !affectedEntities?.filter(object => object[groupByProperty]).length;
 };
 
 export const mergeWorkarounds = (existingWorkarounds, newWorkarounds, disruptionType, workaroundType) => {
@@ -99,15 +87,7 @@ export const updateWorkaroundsByAffectedEntities = (affectedEntities, existingWo
 
 export const generateWorkaroundsUIOptions = (affectedEntities, existingWorkarounds, disruptionType, workaroundType) => {
     const workaroundItems = [];
-    
-    // Проверяем, что helperTextProperties[disruptionType] существует
-    const helperTextConfig = helperTextProperties[disruptionType];
-    if (!helperTextConfig) {
-        console.warn('🔧 generateWorkaroundsUIOptions: Unknown disruptionType:', disruptionType);
-        return workaroundItems;
-    }
-    
-    const { preposition, childEntityType, parentEntityType, childEntityNameProperty, parentEntityNameProperty } = helperTextConfig;
+    const { preposition, childEntityType, parentEntityType, childEntityNameProperty, parentEntityNameProperty } = helperTextProperties[disruptionType];
     const labelGenerator = labelGenerators[workaroundType];
     let childEntitySentence;
     let parentEntitySentence;

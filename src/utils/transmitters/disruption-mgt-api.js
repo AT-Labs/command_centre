@@ -17,25 +17,17 @@ export const getDisruption = (disruptionId, signal) => fetchWithAuthHeader(`${RE
     .then(response => jsonResponseHandling(response));
 
 export const getDiversion = (disruptionId) => {
-    if (!disruptionId) {
-        return Promise.resolve([]);
-    }
-
+    const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/diversions/?disruptionId=${disruptionId}`;
     return fetchWithAuthHeader(
-        `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/diversions/?disruptionId=${disruptionId}`,
+        url,
         {
             method: GET,
             headers: {
+                Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
         },
-    )
-        .then(response => jsonResponseHandling(response))
-        .catch((error) => {
-            // eslint-disable-next-line no-console
-            console.error('Error fetching diversion:', error);
-            return [];
-        });
+    ).then(response => jsonResponseHandling(response));
 };
 
 export const deleteDiversion = (id) => {
@@ -151,6 +143,9 @@ export const getDisruptionsByFilters = (filters) => {
     return fetchWithAuthHeader(url, { method: GET })
         .then(response => jsonResponseHandling(response));
 };
+
+export const getIncidents = (includeDrafts = false) => fetchWithAuthHeader(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/incidents?includeDraft=${includeDrafts}`, { method: GET })
+    .then(response => jsonResponseHandling(response));
 
 export const createIncident = (incident) => {
     const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/incidents/`;

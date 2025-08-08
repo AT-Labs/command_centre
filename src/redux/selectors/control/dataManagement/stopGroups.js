@@ -9,17 +9,7 @@ export const SYSTEM_STOP_GROUP_STOP_END = 8999;
 export const getDataManagementState = state => result(state, 'control.dataManagement');
 export const getAllStopGroups = createSelector(getDataManagementState, stopGroupsState => result(stopGroupsState, 'stopGroups'));
 export const getStopGroupsLoadingState = createSelector(getDataManagementState, stopGroupsState => result(stopGroupsState, 'isStopGroupsLoading'));
-export const getStopGroupsIncludingDeleted = createSelector(getDataManagementState, stopGroupsState => {
-    const stopGroupsArray = result(stopGroupsState, 'stopGroupsIncludingDeleted');
-    if (Array.isArray(stopGroupsArray)) {
-        // Convert array to object with id as key
-        return stopGroupsArray.reduce((acc, stopGroup) => {
-            acc[stopGroup.id] = stopGroup;
-            return acc;
-        }, {});
-    }
-    return stopGroupsArray || {};
-});
+export const getStopGroupsIncludingDeleted = createSelector(getDataManagementState, stopGroupsState => result(stopGroupsState, 'stopGroupsIncludingDeleted'));
 
 export const allSystemStopGroups = [
     { value: 0, label: '__ All Stops __', stopGroup: { id: 0, title: '__ All Stops __' } },
