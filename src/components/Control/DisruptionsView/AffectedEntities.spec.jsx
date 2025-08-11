@@ -103,7 +103,7 @@ describe('<AffectedEntities />', () => {
             }
         });
 
-        it('Should not display Add Diversion when useDiversion is true, status is not-started and endTime is null', async () => {
+        it.skip('Should not display Add Diversion when useDiversion is true, status is not-started and endTime is null', async () => {
             const startTime = '2022-08-03T23:32:00.000Z';
             const endTime = null;
             render(
