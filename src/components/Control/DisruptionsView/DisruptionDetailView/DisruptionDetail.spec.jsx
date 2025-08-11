@@ -41,7 +41,6 @@ const componentPropsMock = {
 };
 
 const stop = { stopId: '105-474861ff', stopCode: '105' };
-
 const baseDisruption = {
     startTime: '2022-03-09T06:00:00.000Z',
     endTime: '2022-04-20T03:00:00.000Z',
@@ -341,26 +340,27 @@ describe('<DisruptionDetailView />', () => {
         });
     });
 
-    // TODO: We need to check if removing button is correct
-    // describe('ViewDiversionModal', () => {
-    //     it.only('should call open and then close on the diversion modal', () => {
-    //         useDiversion.mockReturnValue(true);
-    //         wrapper = setup(
-    //             {
-    //                 disruption: {
-    //                     ...baseDisruption,
-    //                 },
-    //             },
-    //         );
+    describe('ViewDiversionModal', () => {
+        it('should call open and then close on the diversion modal', () => {
+            useDiversion.mockReturnValue(true);
+            const newBaseDisruption = { ...baseDisruption };
+            newBaseDisruption.affectedEntities.push({ routeType: 3 });
+            wrapper = setup(
+                {
+                    disruption: {
+                        ...newBaseDisruption,
+                    },
+                },
+            );
 
-    //         const viewEditDiversionButton = findElement(wrapper, 'button', 'View & edit diversions (0)');
-    //         viewEditDiversionButton.simulate('click');
+            const viewEditDiversionButton = findElement(wrapper, 'button', 'View & edit diversions (0)');
+            viewEditDiversionButton.simulate('click');
 
-    //         const closeDiversions = findElement(wrapper, 'button', 'Close');
-    //         closeDiversions.simulate('click');
+            const closeDiversions = findElement(wrapper, 'button', 'Close');
+            closeDiversions.simulate('click');
 
-    //         expect(wrapper.find(ViewDiversionDetailModal).exists()).to.be.true; // eslint-disable-line
-    //         expect(wrapper.find('button').at(2).text()).to.equal("View & edit diversions (0)"); // eslint-disable-line
-    //     });
-    // });
+            expect(wrapper.find(ViewDiversionDetailModal).exists()).to.be.true; // eslint-disable-line
+            expect(wrapper.find('button').at(3).text()).to.equal("View & edit diversions (0)"); // eslint-disable-line
+        });
+    });
 });
