@@ -3,8 +3,9 @@ import { render, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { Map } from 'react-leaflet';
-import RouteAlertsLayer from './RouteAlertsLayer';
+import RouteAlertsLayer, { getColor } from './RouteAlertsLayer';
 import * as routeMonitoringApi from '../../../../utils/transmitters/route-monitoring-api';
+import { CONGESTION_COLORS } from '../../../../constants/traffic';
 
 const mockStore = configureStore([]);
 jest.mock('../../../../utils/transmitters/route-monitoring-api');
@@ -92,5 +93,27 @@ describe('RouteAlertsLayer', () => {
         });
         expect(routeMonitoringApi.fetchAllRouteAlertDetails).not.toHaveBeenCalled();
         expect(routeMonitoringApi.fetchRouteAlertDetailsByIds).not.toHaveBeenCalled();
+    });
+
+    describe('getColor function logic', () => {
+        it('should return GREEN for high speed', () => {
+            expect(getColor(0.9)).toBe(CONGESTION_COLORS.GREEN);
+        });
+
+        it('should return YELLOW for good speed', () => {
+            expect(getColor(0.7)).toBe(CONGESTION_COLORS.YELLOW);
+        });
+
+        it('should return ORANGE for medium speed', () => {
+            expect(getColor(0.5)).toBe(CONGESTION_COLORS.ORANGE);
+        });
+
+        it('should return RED for low speed', () => {
+            expect(getColor(0.4)).toBe(CONGESTION_COLORS.RED);
+        });
+
+        it('should return MAROON for very low speed', () => {
+            expect(getColor(0.39)).toBe(CONGESTION_COLORS.MAROON);
+        });
     });
 });

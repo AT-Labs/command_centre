@@ -576,7 +576,7 @@ const DisruptionDetailView = (props) => {
             ...setDisruption(),
             status: STATUSES.NOT_STARTED,
         };
-        await props.actions.publishDraftDisruption(updatedDisruption, diversions);
+        await props.actions.publishDraftDisruption(updatedDisruption);
     };
 
     return (
@@ -589,6 +589,8 @@ const DisruptionDetailView = (props) => {
                         addDiversionAction={ addDiversion }
                         isEditDisabled={ isRequesting || isLoading || isResolved() || isReadOnlyMode }
                         affectedEntities={ disruption.affectedEntities }
+                        startTime={ disruption.startTime }
+                        endTime={ disruption.endTime }
                         showViewWorkaroundsButton
                         viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                         showViewPassengerImpactButton={ props.usePassengerImpact }
