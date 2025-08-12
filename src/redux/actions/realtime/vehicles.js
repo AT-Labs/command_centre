@@ -32,7 +32,6 @@ const decorateWithRouteType = (vehicle, routes) => {
 };
 
 const throttledRealTimeUpdates = throttle((dispatch) => {
-    console.log('Throttled real-time updates:', vehiclesTrackingCache?.['31550']);
     dispatch({
         type: ACTION_TYPE.FETCH_VEHICLES_REALTIME,
         payload: {
@@ -74,17 +73,11 @@ const queryRealTimeSnapshot = () => (dispatch, getState) => {
 
     return gtfsRealTime.getRealTimeSnapshot()
         .then((data) => {
-            // console.log(data);
-
             let state = getState();
             const routes = getAllRoutes(state);
             const allFleet = getFleetState(state);
             const vehicles = data.filter(vehicle => isValidVehicleUpdate(vehicle, allFleet))
                 .map(vehicle => decorateWithRouteType(vehicle, routes));
-
-            console.log('From snapshot:', vehicles.filter(v => v.vehicle?.vehicle?.id === '31550'));
-            // eslint-disable-next-line no-debugger
-            // debugger;
             dispatch({
                 type: ACTION_TYPE.FETCH_VEHICLES_REALTIME,
                 payload: { vehicles, isSnapshotUpdate: true },
@@ -104,7 +97,7 @@ const updateVehiclePosition = (data, dispatch, state) => {
     const routes = getAllRoutes(state);
     const cachedVehicle = vehiclesTrackingCache[getVehicleId(vehicle)];
     if (!cachedVehicle || getVehicleTimestamp(cachedVehicle) < getVehicleTimestamp(vehicle)) {
-        // vehiclesTrackingCache[getVehicleId(vehicle)] = decorateWithRouteType(vehicle, routes);
+        vehiclesTrackingCache[getVehicleId(vehicle)] = decorateWithRouteType(vehicle, routes);
         return true;
     }
     return false;
