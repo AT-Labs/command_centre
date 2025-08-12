@@ -37,6 +37,9 @@ const isValidVehicleUpdate = (existingVehicle, vehicleUpdate) => result(existing
 
 export const handleVehiclesUpdate = (state, action) => {
     const { payload: { isSnapshotUpdate, vehicles } } = action;
+    // console.log('handleVehiclesUpdate', isSnapshotUpdate, vehicles);
+    // // eslint-disable-next-line no-debugger
+    // debugger;
     let allVehicles = [];
     if (isSnapshotUpdate) {
         allVehicles = keyBy(
@@ -50,6 +53,9 @@ export const handleVehiclesUpdate = (state, action) => {
                         UNSCHEDULED_TAG,
                     ];
                     vehicleToUpdate.vehicle.route = existingVehicle.vehicle.route;
+                }
+                if (vehicle?.vehicle?.trip?.['.replacementTripId']) {
+                    vehicleToUpdate.vehicle.trip.replacementTripId = vehicle.vehicle.trip['.replacementTripId'];
                 }
 
                 return isValidVehicleUpdate(existingVehicle, vehicleToUpdate) ? vehicleToUpdate : existingVehicle;

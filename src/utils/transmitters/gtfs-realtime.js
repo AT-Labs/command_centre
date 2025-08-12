@@ -58,6 +58,11 @@ export const getRealTimeSnapshot = () => {
                 return response;
             }
             const res = await response.json();
+
+            // // eslint-disable-next-line no-console
+            // console.log("Response res", res);
+            // // eslint-disable-next-line no-debugger
+            // debugger;
             controller.abort();
             return res;
         }

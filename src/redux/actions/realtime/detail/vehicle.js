@@ -13,6 +13,8 @@ import { getVehicleAllocationByVehicleId, getAllocations } from '../../../select
 import { useNewMonitoring } from '../../../selectors/appSettings';
 
 export const updateSelectedVehicle = vehicle => (dispatch) => {
+    console.log('------------updateSelectedVehicle', vehicle);
+
     dispatch({
         type: ACTION_TYPE.UPDATE_SELECTED_VEHICLE,
         payload: {
@@ -78,6 +80,7 @@ const getTrackingVehicle = (selectedVehicleId, state) => {
 };
 
 export const vehicleSelected = selectedVehicle => (dispatch, getState) => {
+    console.log('vehicleSelected', selectedVehicle);
     const selectedVehicleId = selectedVehicle.id;
     const trackingVehicle = getTrackingVehicle(selectedVehicleId, getState());
     dispatch(clearDetail(true));
@@ -102,11 +105,18 @@ export const vehicleSelected = selectedVehicle => (dispatch, getState) => {
                 },
             },
         ));
+
+        console.log('-----Tracking vehicle', trackingVehicle);
+        console.log('--------Selected vehicle', selectedVehicle);
+        // eslint-disable-next-line no-debugger
+        debugger;
+
         const selectedTripId = result(trackingVehicle, 'vehicle.trip.tripId');
         if (selectedTripId) {
             dispatch(getVehicleTripInfo(selectedTripId, selectedVehicle.key));
         }
     } else {
+        console.log('--------', selectedVehicle);
         dispatch(updateSelectedVehicle(selectedVehicle));
     }
 };

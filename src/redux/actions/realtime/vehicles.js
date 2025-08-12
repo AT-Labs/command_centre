@@ -73,11 +73,17 @@ const queryRealTimeSnapshot = () => (dispatch, getState) => {
 
     return gtfsRealTime.getRealTimeSnapshot()
         .then((data) => {
+            // console.log(data);
+
             let state = getState();
             const routes = getAllRoutes(state);
             const allFleet = getFleetState(state);
             const vehicles = data.filter(vehicle => isValidVehicleUpdate(vehicle, allFleet))
                 .map(vehicle => decorateWithRouteType(vehicle, routes));
+
+            // console.log(vehicles.filter(v => v.id === '31551'));
+            // eslint-disable-next-line no-debugger
+            // debugger;
             dispatch({
                 type: ACTION_TYPE.FETCH_VEHICLES_REALTIME,
                 payload: { vehicles, isSnapshotUpdate: true },
