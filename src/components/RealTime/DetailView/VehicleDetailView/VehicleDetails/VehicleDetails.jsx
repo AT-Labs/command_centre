@@ -122,10 +122,11 @@ VehicleDetails.defaultProps = {
 export { VehicleDetails };
 
 export default connect(
+    // eslint-disable-next-line arrow-body-style
     state => {
-        console.log('VehicleDetails state', state);
+        // console.log('VehicleDetails state', state.realtime.vehicles.all['31559']);
         // eslint-disable-next-line no-debugger
-        debugger;
+        // debugger;
         return {
             vehicleDetail: getVehicleDetail(state),
             vehicleFleetInfo: getVehicleFleetInfo(state),

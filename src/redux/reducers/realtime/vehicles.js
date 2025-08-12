@@ -62,6 +62,7 @@ export const handleVehiclesUpdate = (state, action) => {
             }),
             vehicleKeyedById,
         );
+        console.log('All Vehicles snapshot to:', allVehicles['31559']?.vehicle?.trip?.replacementTripId);
     } else {
         let updatedVehicles = keyBy(filter(vehicles, (vehicleUpdate) => {
             const existingVehicle = state.all[vehicleUpdate.id];
@@ -70,6 +71,8 @@ export const handleVehiclesUpdate = (state, action) => {
         }), vehicleKeyedById);
         allVehicles = { ...state.all, ...updatedVehicles };
         updatedVehicles = null;
+        // console.log('All Vehicles reset to:', allVehicles['31559']);
+        console.log('All Vehicles snapshot to:', allVehicles['31559']?.vehicle?.trip?.replacementTripId);
     }
 
     return {

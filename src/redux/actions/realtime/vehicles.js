@@ -81,7 +81,7 @@ const queryRealTimeSnapshot = () => (dispatch, getState) => {
             const vehicles = data.filter(vehicle => isValidVehicleUpdate(vehicle, allFleet))
                 .map(vehicle => decorateWithRouteType(vehicle, routes));
 
-            // console.log(vehicles.filter(v => v.id === '31551'));
+            console.log('From snapshot:', vehicles.filter(v => v.vehicle?.vehicle?.id === '31559'), vehicles);
             // eslint-disable-next-line no-debugger
             // debugger;
             dispatch({
