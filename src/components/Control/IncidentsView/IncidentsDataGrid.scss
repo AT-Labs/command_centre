@@ -29,3 +29,25 @@ form.magnify {
 .icon-not-started {
     color: #DC831A;
 }
+
+.incidents-custom-data-grid-fit-content {
+    height: fit-content;
+
+    .MuiDataGrid-root {
+        div:nth-of-type(2) {
+            height: fit-content !important;
+            padding: 0 !important;
+        }
+    }
+}
+
+.incidents-custom-data-grid-child-row {
+    background-color: #FFFFFF;
+}
+
+.incidents-custom-data-grid-parent-row {
+    background-color: #F3F4F5;
+    div[data-field="__detail_panel_toggle__"] svg {
+        visibility: hidden;
+    }
+}

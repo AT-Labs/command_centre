@@ -1,181 +1,330 @@
 import React from 'react';
-import { IconButton, Tooltip } from '@mui/material';
-import { BsPencilSquare } from 'react-icons/bs';
+import { FaPaperclip } from 'react-icons/fa';
+import { RiMailCheckLine, RiDraftLine } from 'react-icons/ri';
+import { BsArrowRepeat, BsPencilSquare, BsAlarm, BsFillChatTextFill } from 'react-icons/bs';
+import { GoAlert } from 'react-icons/go';
+import { HiOutlineCheckCircle } from 'react-icons/hi';
+import { Box, IconButton, Tooltip } from '@mui/material';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { slice, uniqueId } from 'lodash-es';
+import { uniqueId } from 'lodash-es';
+import moment from 'moment';
 import './IncidentsDataGrid.scss';
-import { IncidentType, PAGE_SIZE } from './types';
-import ControlTable from '../Common/ControlTable/ControlTable';
+import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
+import MinimizeDisruptionDetail from '../DisruptionsView/DisruptionDetailView/MinimizeDisruptionDetail';
 import { clearActiveIncident,
     updateActiveIncident,
-    updateIncidentsSortingParams,
     updateEditMode,
     setIncidentToUpdate,
-} from '../../../redux/actions/control/incidents';
-import { getActiveIncident, getIncidentsLoadingState, getIncidentsSortingParams, getSortedIncidents } from '../../../redux/selectors/control/incidents';
-import IncidentsDisruptions from './IncidentsDisruptions';
+    setIncidentLoaderState,
+    updateIncidentsDatagridConfig,
+    updateActiveDisruptionId,
+    updateCopyDisruptionState } from '../../../redux/actions/control/incidents';
+import {
+    getActiveIncident,
+    getIncidentsLoadingState,
+    getIncidentsWithDisruptions,
+    getIncidentsDatagridConfig,
+    getActiveDisruptionId,
+} from '../../../redux/selectors/control/incidents';
+import { goToNotificationsView } from '../../../redux/actions/control/link';
 import { useViewDisruptionDetailsPage } from '../../../redux/selectors/appSettings';
-import SortButton from '../Common/SortButton/SortButton';
+import { STATUSES } from '../../../types/disruptions-types';
+import { dateTimeFormat } from '../../../utils/dateUtils';
+import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
 import { useAlertEffects } from '../../../utils/control/alert-cause-effect';
 import EDIT_TYPE from '../../../types/edit-types';
+import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
 
-export const IncidentDataGrid = (props) => {
+export const IncidentsDataGrid = (props) => {
     const impacts = useAlertEffects();
-    const filteredIncidents = slice(props.incidents, (props.page - 1) * PAGE_SIZE, props.page * PAGE_SIZE);
 
-    const renderRowBody = activeIncident => (
-        <div className="incident-row-body">
-            <IncidentsDisruptions disruptions={ props.disruptions.filter(disruption => disruption.incidentId === activeIncident.incidentId) } />
-        </div>
-    );
-
-    const isRowActive = incident => !!(props.activeIncident && (props.activeIncident.incidentId === incident.incidentId));
-
-    const handleIncidentClick = (incident) => {
-        if (isRowActive(incident)) {
-            props.clearActiveIncident();
-        } else {
-            props.clearActiveIncident();
-            props.updateActiveIncident(incident.incidentId);
+    const getStatusIcon = (value) => {
+        if (!value) {
+            return '';
         }
+        if (value === STATUSES.IN_PROGRESS) {
+            return <GoAlert className="icon-in-progress mr-1" />;
+        }
+        if (value === STATUSES.NOT_STARTED) {
+            return <BsAlarm className="icon-not-started mr-1" />;
+        }
+        if (value === STATUSES.DRAFT) {
+            return <RiDraftLine className="icon-draft mr-1" />;
+        }
+        return <HiOutlineCheckCircle className="mr-1" />;
     };
 
-    const getDeduplcatedAffectedRoutes = affectedEntities => [...new Set(affectedEntities.filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))].join(', ');
+    const getDisruptionLabel = (disruption) => {
+        if (!disruption.incidentNo) {
+            return '';
+        }
+        const { uploadedFiles, incidentNo, createNotification, recurrent } = disruption;
+        return (
+            <span>
+                { incidentNo }
+                { uploadedFiles && uploadedFiles.length > 0 && <FaPaperclip size={ 12 } className="ml-1" />}
+                {' '}
+                { createNotification && <RiMailCheckLine size={ 14 } className="ml-1" /> }
+                {' '}
+                { recurrent && <BsArrowRepeat size={ 14 } className="ml-1" /> }
+                {' '}
+            </span>
+        );
+    };
 
-    const getDeduplcatedAffectedStops = affectedEntities => [...new Set(affectedEntities.filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))].join(', ');
+    const getDeduplcatedAffectedRoutes = (affectedEntities) => {
+        if (affectedEntities?.length > 0) {
+            return [...new Set(affectedEntities.filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))].join(', ');
+        }
+        return '';
+    };
+
+    const getDeduplcatedAffectedStops = (affectedEntities) => {
+        if (affectedEntities?.length > 0) {
+            return [...new Set(affectedEntities.filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))].join(', ');
+        }
+        return '';
+    };
 
     const getReadableImpact = (impact) => {
+        if (!impact || impact.length === 0) {
+            return '';
+        }
         const arrImpacts = impact.slice(',');
         const readableImpacts = impacts.filter(imp => arrImpacts.includes(imp.value)).map(imp => imp.label)
             .filter(str => str !== '' && str !== null && str !== undefined);
         return readableImpacts.join(', ');
     };
 
-    const getIncidentsButton = incident => (
-        <Tooltip title="Open & Edit Incident" placement="top-end" key={ uniqueId(incident.incidentId) }>
-            <IconButton aria-label="open-edit-incident"
-                onClick={ () => {
-                    props.setIncidentToUpdate(incident.incidentId);
-                    props.updateEditMode(EDIT_TYPE.EDIT);
-                } }>
-                <BsPencilSquare />
-            </IconButton>
-        </Tooltip>
-    );
+    const getViewNotificationButtons = (row, source, callback = () => {}) => {
+        const { disruptionId, version, status } = row;
+        return disruptionId
+            ? (
+                <Tooltip title="View notification" placement="top-end" key={ uniqueId(disruptionId) }>
+                    <span>
+                        <IconButton
+                            aria-label="view-notification"
+                            onClick={ () => { callback({ disruptionId, version, source }); } }
+                            disabled={ status === STATUSES.DRAFT }
+                        >
+                            <BsFillChatTextFill />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            )
+            : [];
+    };
 
-    const getSortButton = (sortBy, title) => (
+    const getIncidentsButton = incident => (
         [
-            <div className="d-flex align-content-center" key={ sortBy + title }>
-                <SortButton
-                    className="mr-1"
-                    active={
-                        props.incidentsSortingParams && props.incidentsSortingParams.sortBy === sortBy
-                            ? props.incidentsSortingParams.order
-                            : null
-                    }
-                    onClick={ order => props.updateIncidentsSortingParams({
-                        sortBy,
-                        order,
-                    }) } />
-                <div>{title}</div>
-            </div>,
+            <Tooltip title="Open & Edit Incident" placement="top-end" key={ uniqueId(incident.incidentId) }>
+                <IconButton aria-label="open-edit-incident"
+                    onClick={ () => {
+                        props.setIncidentToUpdate(incident.incidentId, incident.incidentNo);
+                        props.updateEditMode(EDIT_TYPE.EDIT);
+                    } }>
+                    <BsPencilSquare />
+                </IconButton>
+            </Tooltip>,
         ]
     );
 
     const INCIDENT_COLUMNS = [
         {
-            label: () => getSortButton('incidentDisruptionNo', 'DISRUPTION'),
-            key: 'incidentDisruptionNo',
-            cols: 'col-1',
+            field: 'incidentDisruptionNo',
+            headerName: '#DISRUPTION',
+            width: 130,
+            type: 'string',
+            renderCell: RenderCellExpand,
         },
         {
-            label: () => getSortButton('incidentTitle', 'DISRUPTION TITLE'),
-            key: 'incidentTitle',
-            cols: 'col-2',
+            field: 'header',
+            headerName: 'DISRUPTION TITLE',
+            width: 250,
+            type: 'string',
+            renderCell: RenderCellExpand,
         },
         {
-            label: 'AFFECTED ROUTES',
-            key: 'affectedEntities',
-            cols: 'col-3',
-            getContent: (incident, key) => getDeduplcatedAffectedRoutes(incident[key]),
+            field: 'incidentNo',
+            headerName: '#EFFECT',
+            width: 150,
+            renderCell: params => getDisruptionLabel(params.row),
+            filterOperators: sourceIdDataGridOperator,
         },
         {
-            label: 'AFFECTED STOPS',
-            key: 'affectedEntities',
-            cols: 'col-3',
-            getContent: (incident, key) => getDeduplcatedAffectedStops(incident[key]),
+            field: 'affectedRoutes',
+            headerName: 'ROUTES',
+            width: 200,
+            valueGetter: params => getDeduplcatedAffectedRoutes(params.row.affectedEntities),
+            renderCell: RenderCellExpand,
+            filterable: false,
         },
         {
-            label: 'EFFECTS',
-            key: 'impact',
-            cols: 'col-2',
-            getContent: (incident, key) => getReadableImpact(incident[key]),
+            field: 'affectedStops',
+            headerName: 'STOPS',
+            width: 200,
+            valueGetter: params => getDeduplcatedAffectedStops(params.row.affectedEntities),
+            renderCell: RenderCellExpand,
+            filterable: false,
+        },
+        {
+            field: 'impact',
+            headerName: 'EFFECTS',
+            width: 200,
+            type: 'singleSelect',
+            valueGetter: params => getReadableImpact(params.row.impact),
+            valueOptions: impacts.slice(1, impacts.length).map(impact => impact.label),
+        },
+        {
+            field: 'startTime',
+            headerName: 'START TIME',
+            width: 150,
+            valueFormatter: params => (params.value ? moment(params.value).format(dateTimeFormat) : ''),
+            type: 'dateTime',
+        },
+        {
+            field: 'endTime',
+            headerName: 'END TIME',
+            width: 150,
+            valueFormatter: params => (params.value ? moment(params.value).format(dateTimeFormat) : ''),
+            type: 'dateTime',
+        },
+        {
+            field: 'status',
+            headerName: 'STATUS',
+            width: 150,
+            renderCell: params => (
+                <>
+                    {getStatusIcon(params.value)}
+                    {params.value}
+                </>
+            ),
+            type: 'singleSelect',
+            valueOptions: Object.values(STATUSES),
+        },
+        {
+            field: '__go_to_disruption_details__',
+            type: 'actions',
+            headerName: 'OPEN DISRUPTION',
+            width: 55,
+            renderHeader: () => (<span />),
+            getActions: params => getIncidentsButton(params.row),
+        },
+        {
+            field: '__go_to_notification__',
+            type: 'actions',
+            headerName: 'OPEN NOTIFICATION ACTION',
+            width: 55,
+            renderHeader: () => (<span />),
+            renderCell: params => getViewNotificationButtons(params.row, 'DISR', props.goToNotificationsView),
         },
     ];
 
-    if (props.useViewDisruptionDetailsPage) {
-        INCIDENT_COLUMNS.push(
-            {
-                label: 'ACTIONS',
-                key: 'incidentId',
-                cols: 'col-1',
-                getContent: incident => getIncidentsButton(incident),
-            },
-        );
-    }
+    const getDetailPanelContent = React.useCallback(
+        ({ row }) => (
+            row.disruptionId
+                && (
+                    <Box sx={ { padding: '10px 10px 10px 10px' } }>
+                        <MinimizeDisruptionDetail disruption={ row } />
+                    </Box>
+                )
+        ),
+        [],
+    );
 
-    const getRowId = incident => incident.incidentId;
+    const updateActiveDisruption = (ids) => {
+        if (ids?.length > 0) {
+            props.updateActiveDisruptionId(ids[0]);
+        } else {
+            props.updateActiveDisruptionId(null);
+        }
+        props.updateCopyDisruptionState(false);
+    };
+
+    const calculateDetailPanelHeight = row => (row.recurrent ? 1080 : 1000);
+
+    const getRowId = incident => (incident.disruptionId ? `${incident.incidentId}${incident.disruptionId}` : incident.incidentId);
+
+    const groupingColDef = {
+        headerName: '',
+        hideDescendantCount: true,
+        valueFormatter: () => '',
+        width: 30,
+    };
+
+    const addPath = (incidents) => {
+        incidents.sort((a, b) => b.incidentId - a.incidentId);
+        const res = incidents.map((incident) => {
+            if (incident.disruptionId !== null && incident.disruptionId !== undefined) {
+                return { ...incident, path: [incident.incidentDisruptionNo ? incident.incidentDisruptionNo : 'No Parent Incident', incident.incidentNo] };
+            }
+            return { ...incident, path: [incident.incidentDisruptionNo || incident.incidentId] };
+        });
+        return res;
+    };
+
+    const incidentWithPath = addPath(props.mergedIncidentsAndDisruptions);
 
     return (
-        <ControlTable
-            columns={ INCIDENT_COLUMNS }
-            data={ filteredIncidents }
-            getRowId={ getRowId }
-            isLoading={ props.isLoading }
-            rowOnClick={ handleIncidentClick }
-            rowActive={ isRowActive }
-            rowBody={ renderRowBody } />
+        <div>
+            <CustomDataGrid
+                columns={ INCIDENT_COLUMNS }
+                datagridConfig={ props.datagridConfig }
+                dataSource={ incidentWithPath }
+                getDetailPanelContent={ getDetailPanelContent }
+                getRowId={ getRowId }
+                updateDatagridConfig={ config => props.updateIncidentsDatagridConfig(config) }
+                treeData
+                getTreeDataPath={ row => row.path }
+                groupingColDef={ groupingColDef }
+                loading={ props.isLoading }
+                getRowClassName={ params => (params.row.disruptionId ? 'incidents-custom-data-grid-child-row' : 'incidents-custom-data-grid-parent-row') }
+                calculateDetailPanelHeight={ props.useViewDisruptionDetailsPage ? () => 400 : calculateDetailPanelHeight }
+                expandedDetailPanels={ props.activeDisruptionId ? [props.activeDisruptionId] : null }
+                onRowExpanded={ ids => updateActiveDisruption(ids) }
+            />
+        </div>
     );
 };
 
-IncidentDataGrid.propTypes = {
-    page: PropTypes.number,
-    disruptions: PropTypes.array,
-    incidents: PropTypes.array,
-    activeIncident: IncidentType,
+IncidentsDataGrid.propTypes = {
+    datagridConfig: PropTypes.object.isRequired,
+    mergedIncidentsAndDisruptions: PropTypes.array,
+    activeDisruptionId: PropTypes.number,
+    updateActiveDisruptionId: PropTypes.func.isRequired,
+    updateCopyDisruptionState: PropTypes.func.isRequired,
     isLoading: PropTypes.bool.isRequired,
-    clearActiveIncident: PropTypes.func.isRequired,
-    updateActiveIncident: PropTypes.func.isRequired,
-    useViewDisruptionDetailsPage: PropTypes.bool.isRequired,
-    // eslint-disable-next-line react/no-unused-prop-types
-    incidentsSortingParams: PropTypes.object.isRequired,
-    // eslint-disable-next-line react/no-unused-prop-types
-    updateIncidentsSortingParams: PropTypes.func.isRequired,
     updateEditMode: PropTypes.func.isRequired,
     setIncidentToUpdate: PropTypes.func.isRequired,
+    updateIncidentsDatagridConfig: PropTypes.func.isRequired,
+    goToNotificationsView: PropTypes.func.isRequired,
+    useViewDisruptionDetailsPage: PropTypes.bool.isRequired,
 };
 
-IncidentDataGrid.defaultProps = {
-    page: 1,
-    disruptions: [],
-    incidents: [],
-    activeIncident: null,
+IncidentsDataGrid.defaultProps = {
+    mergedIncidentsAndDisruptions: [],
+    activeDisruptionId: null,
 };
 
 export default connect(
     state => ({
-        incidents: getSortedIncidents(state),
+        datagridConfig: getIncidentsDatagridConfig(state),
         activeIncident: getActiveIncident(state),
-        incidentsSortingParams: getIncidentsSortingParams(state),
+        activeDisruptionId: getActiveDisruptionId(state),
         isLoading: getIncidentsLoadingState(state),
         useViewDisruptionDetailsPage: useViewDisruptionDetailsPage(state),
+        mergedIncidentsAndDisruptions: getIncidentsWithDisruptions(state),
     }),
     {
+        updateActiveDisruptionId,
+        updateIncidentsDatagridConfig,
+        updateCopyDisruptionState,
         clearActiveIncident,
         updateActiveIncident,
-        updateIncidentsSortingParams,
         updateEditMode,
         setIncidentToUpdate,
+        setIncidentLoaderState,
+        goToNotificationsView,
     },
-)(IncidentDataGrid);
+)(IncidentsDataGrid);
