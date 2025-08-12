@@ -62,7 +62,7 @@ export const handleVehiclesUpdate = (state, action) => {
             }),
             vehicleKeyedById,
         );
-        console.log('All Vehicles snapshot to:', allVehicles['31559']?.vehicle?.trip?.replacementTripId);
+        console.log('All Vehicles snapshot to:', allVehicles['31550']?.vehicle?.trip?.replacementTripId);
     } else {
         let updatedVehicles = keyBy(filter(vehicles, (vehicleUpdate) => {
             const existingVehicle = state.all[vehicleUpdate.id];
@@ -72,7 +72,13 @@ export const handleVehiclesUpdate = (state, action) => {
         allVehicles = { ...state.all, ...updatedVehicles };
         updatedVehicles = null;
         // console.log('All Vehicles reset to:', allVehicles['31559']);
-        console.log('All Vehicles snapshot to:', allVehicles['31559']?.vehicle?.trip?.replacementTripId);
+        const replacementTripId = allVehicles['31550']?.vehicle?.trip?.replacementTripId;
+        console.log('All Vehicles reset snapshot to:', replacementTripId);
+        if (!replacementTripId) {
+            console.log('No replacement trip id found');
+            // eslint-disable-next-line no-debugger
+            debugger;
+        }
     }
 
     return {
