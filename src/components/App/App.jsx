@@ -70,7 +70,9 @@ export function App(props) {
             props.fetchBlocksViewPermission();
             props.fetchRoutesViewPermission();
             props.fetchStopMessagingViewPermission();
-            props.startTrackingVehicleAllocations();
+            if (props.startTrackingVehicleAllocations) {
+                props.startTrackingVehicleAllocations();
+            }
             props.fetchNotificationsViewPermission();
             props.fetchBusPriorityViewPermission();
             if (IS_DISRUPTIONS_ENABLED) {
@@ -113,7 +115,7 @@ App.propTypes = {
     getTrains: PropTypes.func.isRequired,
     getFerries: PropTypes.func.isRequired,
     getBuses: PropTypes.func.isRequired,
-    startTrackingVehicleAllocations: PropTypes.func.isRequired,
+    startTrackingVehicleAllocations: PropTypes.func,
     activeMainView: PropTypes.string.isRequired,
     updateUserProfile: PropTypes.func.isRequired,
     fetchRoutesViewPermission: PropTypes.func.isRequired,
@@ -150,10 +152,10 @@ export default connect(state => ({
     fetchFleetsViewPermission,
     startPollingAlerts,
     getFleets,
-    startTrackingVehicleAllocations,
     fetchTripReplaysViewPermission,
     fetchNotificationsViewPermission,
     fetchBusPriorityViewPermission,
     getApplicationSettings,
     getStops,
+    startTrackingVehicleAllocations,
 })(App);
