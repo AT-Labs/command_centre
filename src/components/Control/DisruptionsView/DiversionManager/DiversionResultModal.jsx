@@ -9,10 +9,7 @@ export const ACTION_TYPE = {
 };
 
 const DiversionResultModal = props => {
-    console.log('🔧 DiversionResultModal - render');
-    console.log('🔧 DiversionResultModal - props.result:', props.result);
-    console.log('🔧 DiversionResultModal - props.error:', props.error);
-    console.log('🔧 DiversionResultModal - props.showNewDiversionButton:', props.showNewDiversionButton);
+
     
     return (
     <div className="diversion__confirmation-modal">
@@ -47,7 +44,7 @@ const DiversionResultModal = props => {
                             className="btn btn-block cc-btn-secondary btn-block"
                             aria-label="Go back to disruption page"
                             onClick={ () => {
-                                console.log('🔧 DiversionResultModal - "Go back to disruption page" clicked');
+                        
                                 props.onAction(ACTION_TYPE.RETURN_TO_DISRUPTION);
                             } }>
                             Go back to disruption page

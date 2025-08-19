@@ -50,7 +50,7 @@ const createLine = (label, value) => {
                 {label === LABEL_WORKAROUNDS && value.length === 0 ? DISRUPTIONS_MESSAGE_TYPE.noWorkaroundsMessage : null}
                 {label === LABEL_WORKAROUNDS ? (
                     <CustomCollapse height="tiny" className="bg-white">
-                        {getWorkaroundsAsText(value, '; \n')}
+                        <span>{getWorkaroundsAsText(value, '; \n')}</span>
                     </CustomCollapse>
                 ) : null}
                 {label === LABEL_DISRUPTION_NOTES ? generateDisruptionNotes(value) : null}

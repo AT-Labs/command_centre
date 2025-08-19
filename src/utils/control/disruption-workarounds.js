@@ -100,7 +100,7 @@ export const updateWorkaroundsByAffectedEntities = (affectedEntities, existingWo
 export const generateWorkaroundsUIOptions = (affectedEntities, existingWorkarounds, disruptionType, workaroundType) => {
     const workaroundItems = [];
     
-    // Проверяем, что helperTextProperties[disruptionType] существует
+
     const helperTextConfig = helperTextProperties[disruptionType];
     if (!helperTextConfig) {
         console.warn('🔧 generateWorkaroundsUIOptions: Unknown disruptionType:', disruptionType);

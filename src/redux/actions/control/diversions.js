@@ -33,50 +33,6 @@ export const updateDiversionResultState = (isLoading, diversionId, error) => ({
     },
 });
 
-export const createDiversion = diversion => async (dispatch) => {
-    let response;
-    dispatch(
-        updateDiversionResultState(true, null, null),
-    );
-
-    try {
-        response = await addDiversion(diversion);
-        dispatch(
-            updateDiversionResultState(false, response.diversionId, null),
-        );
-    } catch (error) {
-        dispatch(updateDiversionResultState(false, null, error));
-    }
-};
-
-export const updateDiversion = diversion => async (dispatch) => {
-    dispatch(
-        updateDiversionResultState(true, null, null),
-    );
-
-    try {
-        await updateDiversionAPI(diversion);
-        dispatch(
-            updateDiversionResultState(false, diversion.diversionId, null),
-        );
-    } catch (error) {
-        dispatch(updateDiversionResultState(false, null, error));
-    }
-};
-
-export const resetDiversionResult = () => (dispatch) => {
-    dispatch(
-        updateDiversionResultState(false, null, null),
-    );
-};
-
-export const setSelectedRouteVariant = routeVariant => ({
-    type: ACTION_TYPE.SET_SELECTED_ROUTE_VARIANT,
-    payload: {
-        selectedRouteVariant: routeVariant,
-    },
-});
-
 // Centralized diversions data actions
 export const fetchDiversionsStart = disruptionId => ({
     type: ACTION_TYPE.FETCH_DIVERSIONS_START,
@@ -99,7 +55,7 @@ export const clearDiversionsCache = (disruptionId = null) => ({
 });
 
 // Thunk action for fetching diversions with centralized management
-export const fetchDiversions = disruptionId => async (dispatch, getState) => {
+export const fetchDiversions = (disruptionId, forceRefresh = false) => async (dispatch, getState) => {
     if (!disruptionId) {
         return undefined;
     }
@@ -112,8 +68,8 @@ export const fetchDiversions = disruptionId => async (dispatch, getState) => {
         return undefined;
     }
 
-    // Check if we have cached data
-    if (diversionsState.diversionsData[disruptionId]) {
+    // Check if we have cached data (skip if force refresh)
+    if (!forceRefresh && diversionsState.diversionsData[disruptionId]) {
         return diversionsState.diversionsData[disruptionId];
     }
 
@@ -128,3 +84,61 @@ export const fetchDiversions = disruptionId => async (dispatch, getState) => {
         return [];
     }
 };
+
+export const createDiversion = diversion => async (dispatch) => {
+    let response;
+    dispatch(
+        updateDiversionResultState(true, null, null),
+    );
+
+    try {
+        response = await addDiversion(diversion);
+        dispatch(
+            updateDiversionResultState(false, response.diversionId, null),
+        );
+        
+        // Refresh diversions data after successful creation
+        if (diversion.disruptionId) {
+            // Clear cache first, then fetch fresh data
+            dispatch(clearDiversionsCache(diversion.disruptionId));
+            dispatch(fetchDiversions(diversion.disruptionId, true));
+        }
+    } catch (error) {
+        dispatch(updateDiversionResultState(false, null, error));
+    }
+};
+
+export const updateDiversion = diversion => async (dispatch) => {
+    dispatch(
+        updateDiversionResultState(true, null, null),
+    );
+
+    try {
+        await updateDiversionAPI(diversion);
+        dispatch(
+            updateDiversionResultState(false, diversion.diversionId, null),
+        );
+        
+        // Refresh diversions data after successful update
+        if (diversion.disruptionId) {
+            // Clear cache first, then fetch fresh data
+            dispatch(clearDiversionsCache(diversion.disruptionId));
+            dispatch(fetchDiversions(diversion.disruptionId, true));
+        }
+    } catch (error) {
+        dispatch(updateDiversionResultState(false, null, error));
+    }
+};
+
+export const resetDiversionResult = () => (dispatch) => {
+    dispatch(
+        updateDiversionResultState(false, null, null),
+    );
+};
+
+export const setSelectedRouteVariant = routeVariant => ({
+    type: ACTION_TYPE.SET_SELECTED_ROUTE_VARIANT,
+    payload: {
+        selectedRouteVariant: routeVariant,
+    },
+});

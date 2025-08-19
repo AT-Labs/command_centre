@@ -1,4 +1,5 @@
 @import '../../../../../assets/styles/variables.scss';
+@import './HeaderButtons.scss';
 
 .edit-effect-panel {
     left: $side-panel-width-large;
@@ -114,12 +115,12 @@
         .diversions-button-container {
             flex-shrink: 0;
         }
-    }
-
-    .workaround-button-container {
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
+        
+        .workaround-button-container {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
     }
 
     .flex-justify-content-end {

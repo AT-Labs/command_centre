@@ -57,21 +57,15 @@ export const IncidentDataGrid = (props) => {
         <Tooltip title="Open & Edit Incident" placement="top-end" key={ uniqueId(incident.incidentId) }>
             <IconButton aria-label="open-edit-incident"
                 onClick={ () => {
-                    console.log('🔧 INCIDENT PENCIL BUTTON CLICKED!');
-                    console.log('🔧 Incident data:', incident);
-                    console.log('🔧 Incident disruptionId:', incident.disruptionId);
+                    
                     
                     // Set the disruption key to edit effect
                     const incidentNo = `DISR${incident.disruptionId}`;
-                    console.log('🔧 Setting disruptionIncidentNoToEdit:', incidentNo);
+            
                     props.updateDisruptionKeyToEditEffect(incidentNo);
                     
-                    console.log('🔧 Calling setIncidentToUpdate with:', incident.incidentId);
                     props.setIncidentToUpdate(incident.incidentId);
-                    console.log('🔧 Calling updateEditMode with:', EDIT_TYPE.EDIT);
                     props.updateEditMode(EDIT_TYPE.EDIT);
-                    
-                    console.log('🔧 Pencil button click completed');
                 } }>
                 <BsPencilSquare />
             </IconButton>

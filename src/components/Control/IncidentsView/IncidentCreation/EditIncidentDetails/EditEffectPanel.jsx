@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useState, useCallback } from 'react';
 import { Paper, Stack } from '@mui/material';
+import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import { isEmpty, sortBy, some, isEqual } from 'lodash-es';
 import { Form, FormFeedback, FormGroup, Input, Label, Button } from 'reactstrap';
 import { connect } from 'react-redux';
@@ -80,12 +81,11 @@ import CancellationEffect from './CancellationEffect';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import DiversionManager from '../../../DisruptionsView/DiversionManager';
 import { getIsDiversionManagerOpen, getDiversionsForDisruption, getDiversionsLoadingForDisruption } from '../../../../../redux/selectors/control/diversions';
-import DiversionsButton from './DiversionsButton';
+import HeaderButtons from './HeaderButtons';
 import { ViewDiversionDetailModal } from './ViewDiversionDetailModal';
 import EDIT_TYPE from '../../../../../types/edit-types';
 import './EditEffectPanel.scss';
 import { useDiversion } from '../../../../../redux/selectors/appSettings';
-import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 
 
 const INIT_EFFECT_STATE = {
@@ -661,31 +661,32 @@ export const EditEffectPanel = (props) => {
                         <div className="label-with-icon">
                             <h2 className="pl-4 pr-4 pt-4">
                                 Edit details of Effect{' '}
-
-
-
-
                             </h2>
                             <div className="buttons-container">
                                 <div className="diversions-button-container">
-                                    <DiversionsButton 
-                                        disruption={safeDisruption}
-                                        onViewDiversions={handleViewDiversions}
-                                        useDiversionFlag={props.useDiversion}
-                                        openDiversionManagerAction={props.openDiversionManager}
-                                        updateDiversionModeAction={props.updateDiversionMode}
-                                        updateDiversionToEditAction={props.updateDiversionToEdit}
-                                        isDiversionManagerOpen={props.isDiversionManagerOpen}
-                                        toggleEditEffectPanel={props.toggleEditEffectPanel}
-                                    />
+                                                                <HeaderButtons
+                                disruption={safeDisruption}
+                                useDiversionFlag={props.useDiversion}
+                                isDiversionManagerOpen={props.isDiversionManagerOpen}
+                                isWorkaroundPanelOpen={props.isWorkaroundPanelOpen}
+                                onViewDiversions={handleViewDiversions}
+                                onOpenWorkaroundPanel={openWorkaroundPanel}
+                                openDiversionManagerAction={props.openDiversionManager}
+                                updateDiversionModeAction={props.updateDiversionMode}
+                                updateDiversionToEditAction={props.updateDiversionToEdit}
+                                toggleEditEffectPanel={props.toggleEditEffectPanel}
+                                fetchDiversionsAction={props.fetchDiversions}
+                                clearDiversionsCacheAction={props.clearDiversionsCache}
+                            />
                                 </div>
                                 <div className="workaround-button-container">
-                                    { !props.isWorkaroundPanelOpen
-                                        && (
-                                            <KeyboardDoubleArrowRightIcon onClick={ openWorkaroundPanel }
-                                                className="collapse-icon"
-                                                style={ { color: '#399CDB', fontSize: '48px' } } />
-                                        )}
+                                    {!props.isWorkaroundPanelOpen && (
+                                        <KeyboardDoubleArrowRightIcon 
+                                            onClick={openWorkaroundPanel}
+                                            className="collapse-icon"
+                                            style={{ color: '#399CDB', fontSize: '48px' }} 
+                                        />
+                                    )}
                                 </div>
                             </div>
                         </div>

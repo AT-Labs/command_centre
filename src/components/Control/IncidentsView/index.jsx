@@ -75,50 +75,13 @@ export class IncidentsView extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        console.log('🔧 IncidentsView componentDidUpdate');
-        console.log('🔧 useEditEffectPanel:', this.props.useEditEffectPanel);
-        console.log('🔧 isEditEffectPanelOpen:', this.props.isEditEffectPanelOpen);
-        console.log('🔧 disruptionIncidentNoToEdit:', this.props.disruptionIncidentNoToEdit);
-        console.log('🔧 prevProps.disruptionIncidentNoToEdit:', prevProps.disruptionIncidentNoToEdit);
-        console.log('🔧 filteredDisruptions length:', this.props.filteredDisruptions?.length);
-        console.log('🔧 activeControlEntityId:', this.props.activeControlEntityId);
+
         
-        // Auto-open Edit Effect Panel when we have a disruption to edit - DISABLED
+
         // if (this.props.useEditEffectPanel && 
         //     !this.props.isEditEffectPanelOpen && 
         //     this.props.disruptionIncidentNoToEdit && 
-        //     this.props.filteredDisruptions && 
-        //     this.props.filteredDisruptions.length > 0) {
-            
-        //     console.log('🔧 IncidentsView: Conditions met for opening EditEffectPanel');
-            
-        //     // Find the disruption to edit
-        //     const disruptionToEdit = this.props.filteredDisruptions.find(
-        //         d => d.disruptionId === parseInt(this.props.disruptionIncidentNoToEdit) || 
-        //              d.incidentNo === this.props.disruptionIncidentNoToEdit
-        //     );
-            
-        //     console.log('🔧 IncidentsView: Looking for disruption with ID:', this.props.disruptionIncidentNoToEdit);
-        //     console.log('🔧 IncidentsView: First few disruptions:', this.props.filteredDisruptions.slice(0, 3).map(d => ({ disruptionId: d.disruptionId, incidentNo: d.incidentNo })));
-        //     console.log('🔧 IncidentsView: Found disruption to edit:', disruptionToEdit);
-            
-        //     if (disruptionToEdit) {
-        //         console.log('🔧 IncidentsView: Opening EditEffectPanel');
-        //         this.props.updateDisruptionKeyToEditEffect(this.props.disruptionIncidentNoToEdit);
-        //         this.props.toggleEditEffectPanel(true);
-        //         console.log('🔧 IncidentsView: EditEffectPanel opened');
-        //     } else {
-        //         console.log('🔧 IncidentsView: Disruption not found in filteredDisruptions');
-        //     }
-        // } else {
-        //     console.log('🔧 IncidentsView: Conditions not met for opening EditEffectPanel');
-        //     console.log('🔧 IncidentsView: useEditEffectPanel:', this.props.useEditEffectPanel);
-        //     console.log('🔧 IncidentsView: isEditEffectPanelOpen:', this.props.isEditEffectPanelOpen);
-        //     console.log('🔧 IncidentsView: disruptionIncidentNoToEdit:', this.props.disruptionIncidentNoToEdit);
-        //     console.log('🔧 IncidentsView: filteredDisruptions length:', this.props.filteredDisruptions?.length);
-        // }
-        
-        console.log('🔧 IncidentsView: Auto-opening EditEffectPanel DISABLED');
+
     }
 
     shouldComponentUpdate(nextProps, nextState) {

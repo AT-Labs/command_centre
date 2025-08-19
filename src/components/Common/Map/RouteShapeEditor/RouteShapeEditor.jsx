@@ -31,6 +31,7 @@ const RouteShapeEditor = (props) => {
     const [featureGroupKey, setFeatureGroupKey] = useState(0); // Key to force remount FeatureGroup Editor
     const [editingAction, setEditingAction] = useState(null); // Last editing action
     const [undoStack, setUndoStack] = useState([]);
+    const [mapKey, setMapKey] = useState(0); // Key to force remount map when routeVariant changes
 
     // Editor
     const [isEditing, setIsEditing] = useState(false);
@@ -129,6 +130,9 @@ const RouteShapeEditor = (props) => {
             setEditablePolyline(initialCoords);
             setUpdatedCoords(parseWKT(props.initialShape));
             setUndoStack([{ name: 'Initial', polyline: initialCoords }]);
+            
+            // Force map update when initialShape changes
+            setMapKey(prev => prev + 1);
         } else {
             setEditablePolyline(originalCoords);
             setUndoStack([{ name: 'Initial', polyline: originalCoords }]);
@@ -141,10 +145,19 @@ const RouteShapeEditor = (props) => {
             const coords = parseWKT(props.routeVariant?.shapeWkt);
             setOriginalCoords(coords);
             setUpdatedCoords([]);
+            setEditablePolyline(coords);
             if (coords.length > 0) {
                 setCenter(coords[0]);
             }
+        } else {
+            // Reset state when no valid shape
+            setOriginalCoords([]);
+            setUpdatedCoords([]);
+            setEditablePolyline([]);
         }
+
+        // Force map remount when routeVariant changes
+        setMapKey(prev => prev + 1);
 
         // This is to fix the leaflet issue where the state of editor preserves previous layer.
         // This triggers a force reload
@@ -153,7 +166,18 @@ const RouteShapeEditor = (props) => {
             setIsEditablePolylineVisible(true);
         }, 100);
         return () => clearTimeout(timer);
-    }, [props.routeVariant]);
+    }, [props.routeVariant, props.initialShape]);
+
+    // Additional effect to force map update when routeVariant changes
+    useEffect(() => {
+        if (props.routeVariant) {
+            // Force map update with a small delay
+            const timer = setTimeout(() => {
+                setMapKey(prev => prev + 1);
+            }, 50);
+            return () => clearTimeout(timer);
+        }
+    }, [props.routeVariant?.routeVariantId]);
 
     useEffect(() => {
         if (updatedCoords.length > 0) {
@@ -181,7 +205,7 @@ const RouteShapeEditor = (props) => {
             )}
             {/* Placeholder when no route variant is selected */}
             {(!props.routeVariant || Object.keys(props.routeVariant).length === 0) && (
-                <div style={{
+                <div style={ {
                     height: '100%',
                     width: '100%',
                     backgroundColor: '#f8f9fa',
@@ -194,17 +218,17 @@ const RouteShapeEditor = (props) => {
                     color: '#6c757d',
                     fontSize: '16px',
                     textAlign: 'center',
-                    padding: '20px'
-                }}>
-                    <div style={{ marginBottom: '10px' }}>
+                    padding: '20px',
+                } }>
+                    <div style={ { marginBottom: '10px' } }>
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.447 2.224A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3"/>
+                            <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.447 2.224A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3" />
                         </svg>
                     </div>
-                    <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                    <div style={ { fontWeight: 'bold', marginBottom: '5px' } }>
                         Select a Route Variant
                     </div>
-                    <div style={{ fontSize: '14px' }}>
+                    <div style={ { fontSize: '14px' } }>
                         Please select a route variant from the dropdown to display the map
                     </div>
                 </div>
@@ -212,7 +236,7 @@ const RouteShapeEditor = (props) => {
             {/* Map when route variant is selected */}
             {props.routeVariant && Object.keys(props.routeVariant).length > 0 && (
                 <LeafletMap
-                    key={ props.routeVariant?.routeVariantId }
+                    key={ `${props.routeVariant?.routeVariantId}-${mapKey}` }
                     center={ center }
                     zoom={ 16 }
                     maxZoom={ 19 }
@@ -249,7 +273,7 @@ const RouteShapeEditor = (props) => {
                         </FeatureGroup>
                     )}
                     {isEditablePolylineVisible && (
-                        <FeatureGroup key={ `base-${featureGroupKey}` }>
+                        <FeatureGroup key={ `base-${props.routeVariant?.routeVariantId}-${mapKey}-${featureGroupKey}` }>
                             <Polyline
                                 positions={ editablePolyline }
                                 color={ ROUTE_SHAPE_COLOR }
@@ -298,7 +322,7 @@ const RouteShapeEditor = (props) => {
                         </FeatureGroup>
                     )}
                     {diversionPolyline.length > 0 && (
-                        <FeatureGroup key={ `diversion-${featureGroupKey}` }>
+                        <FeatureGroup key={ `diversion-${props.routeVariant?.routeVariantId}-${mapKey}-${featureGroupKey}` }>
                             <Polyline
                                 positions={ diversionPolyline }
                                 color={ DIVERSION_SHAPE_COLOR }

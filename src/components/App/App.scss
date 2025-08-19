@@ -10,7 +10,7 @@
     }
 }
 
-// Глобальные стили для скрытия модальных окон когда DiversionManager активен
+
 body.diversion-manager-active {
     .edit-effect-panel,
     .CustomModal:not(.diversion-result-modal),
@@ -25,7 +25,7 @@ body.diversion-manager-active {
     [class*="modal"]:not(.diversion-result-modal),
     [class*="Modal"]:not(.diversion-result-modal),
     [class*="Dialog"]:not(.diversion-result-modal),
-    // Скрываем кнопку DISR[ID] и другие элементы с высоким z-index
+
     button[style*="z-index"]:not(.diversion-result-modal button),
     [style*="z-index: 999999"]:not(.diversion-result-modal *),
     [style*="z-index: 99999"]:not(.diversion-result-modal *),
@@ -44,16 +44,16 @@ body.diversion-manager-active {
     }
 }
 
-// Стили для кнопки Close в модальных окнах
+
 .custom-close-button {
     width: auto !important;
-    min-width: 259px !important; // Увеличили на 3% (251px + 8px)
-    max-width: 431px !important; // Увеличили на 3% (418px + 13px)
+    min-width: 259px !important;
+    max-width: 431px !important;
     margin: 0 auto !important;
     display: inline-block !important;
 }
 
-// Стили для модального окна результата диверсии
+
 .diversion-result-modal {
     z-index: 99999999 !important;
     display: flex !important;
@@ -80,7 +80,7 @@ body.diversion-manager-active {
     }
 }
 
-// Скрываем футер DiversionManager когда модальное окно результата активно
+
 .diversion-result-modal ~ .panel-footer,
 .diversion-result-modal ~ * .panel-footer {
     display: none !important;
@@ -88,7 +88,7 @@ body.diversion-manager-active {
     opacity: 0 !important;
 }
 
-// Скрываем футер DiversionManager когда активен класс diversion-result-active
+
 body.diversion-result-active .panel-footer {
     display: none !important;
     visibility: hidden !important;

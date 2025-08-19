@@ -500,7 +500,7 @@ export class CreateIncident extends React.Component {
     };
 
     closeEffectEditPanel = () => {
-        // Закрываем обе панели при нажатии на стрелку в основном окне
+        
         // Reset diversion manager state
         this.props.openDiversionManager(false);
         this.props.updateDiversionMode(EDIT_TYPE.CREATE);

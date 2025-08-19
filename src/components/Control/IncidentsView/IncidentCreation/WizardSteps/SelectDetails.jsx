@@ -271,7 +271,7 @@ export const SelectDetails = (props) => {
     };
 
     const openEditEffectPanel = (disruption) => {
-        // Открываем EditEffectPanel (как красная кнопка)
+        
         if (props.updateDisruptionKeyToEditEffect) {
             props.updateDisruptionKeyToEditEffect(disruption.incidentNo);
         }
@@ -280,7 +280,7 @@ export const SelectDetails = (props) => {
             props.toggleEditEffectPanel(true);
         }
         
-        // Предотвращаем всплытие события
+        
         return false;
     };
 
