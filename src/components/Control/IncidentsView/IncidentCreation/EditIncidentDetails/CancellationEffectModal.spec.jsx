@@ -8,7 +8,7 @@ import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import CancellationEffect from './CancellationEffect';
+import CancellationEffectModal from './CancellationEffectModal';
 import {
     toggleIncidentModals,
     setRequestToUpdateEditEffectState,
@@ -71,7 +71,7 @@ describe('ConfirmationEffect Component', () => {
     it('Renders without crashing and displays modal cancel window', () => {
         render(
             <Provider store={ store }>
-                <CancellationEffect { ...defaultProps } />
+                <CancellationEffectModal { ...defaultProps } />
             </Provider>,
         );
 
@@ -82,7 +82,7 @@ describe('ConfirmationEffect Component', () => {
     it('Close modal on click on Keep editing', () => {
         render(
             <Provider store={ store }>
-                <CancellationEffect { ...defaultProps } />
+                <CancellationEffectModal { ...defaultProps } />
             </Provider>,
         );
         const button = screen.getByRole('button', { name: /keep editing/i });
@@ -96,7 +96,7 @@ describe('ConfirmationEffect Component', () => {
     it('Close modal on click on Discard changes button and trigger discard changes props', () => {
         render(
             <Provider store={ store }>
-                <CancellationEffect { ...defaultProps } />
+                <CancellationEffectModal { ...defaultProps } />
             </Provider>,
         );
         const button = screen.getByRole('button', { name: /discard changes/i });

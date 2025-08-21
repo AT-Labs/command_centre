@@ -20,8 +20,8 @@ export const RoutesByStopMultiSelect = (props) => {
         props.getRoutesByStop(loadedRoutesByStop);
     }, [loadedRoutesByStop]);
 
-    const affectedSingleStops = (affectedStops || []).filter(entity => !entity.groupId);
-    const stopGroupStops = (affectedStops || []).filter(entity => !!entity.groupId);
+    const affectedSingleStops = affectedStops.filter(entity => !entity.groupId);
+    const stopGroupStops = affectedStops.filter(entity => !!entity.groupId);
     const affectedStopGroups = groupBy(stopGroupStops, 'groupId');
 
     const isStopActive = stop => !!expandedStops[stop.stopCode];
@@ -80,7 +80,7 @@ export const RoutesByStopMultiSelect = (props) => {
     };
 
     const toggleAllRoutesByStop = (stop, routesByStop, isChecked) => {
-        let updatedStops = affectedStops || [];
+        let updatedStops = affectedStops;
         const stopList = updatedStops.filter(updatedStop => updatedStop.stopCode === stop.stopCode);
         const stopWithoutRoute = filterOnlyStopParams(stop);
 

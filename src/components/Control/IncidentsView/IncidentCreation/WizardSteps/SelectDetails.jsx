@@ -16,7 +16,9 @@ import { isDurationValid,
     isStartDateValid,
     isStartTimeValid,
     recurrenceRadioOptions,
-    getStatusOptions } from '../../../../../utils/control/disruptions';
+    getStatusOptions,
+    momentFromDateTime,
+} from '../../../../../utils/control/disruptions';
 import {
     toggleIncidentModals,
     updateCurrentStep,
@@ -198,7 +200,23 @@ export const SelectDetails = (props) => {
 
     const isDateTimeValid = () => startTimeValid() && startDateValid() && endDateValid() && durationValid();
     const isViewAllDisabled = !isDateTimeValid() || isEmpty(recurrencePattern?.byweekday);
-    const isSubmitDisabled = isRequiredPropsEmpty() || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid() || !durationValid();
+    const isSubmitDisabled = isRequiredPropsEmpty()
+        || !isUrlValid(url)
+        || !startTimeValid()
+        || !startDateValid()
+        || !endTimeValid()
+        || !endDateValid()
+        || !durationValid();
+
+    const isSubmitDisabledForEdit = isRequiredPropsEmpty()
+        || !isUrlValid(url)
+        || !startTimeValid()
+        || !startDateValid()
+        || !endTimeValid()
+        || !endDateValid()
+        || !durationValid()
+        || (!props.isEffectValid && props.isEditEffectPanelOpen);
+
     const isDraftSubmitDisabled = isRequiredDraftPropsEmpty();
 
     const activePeriodsValid = () => {
@@ -271,17 +289,8 @@ export const SelectDetails = (props) => {
     };
 
     const openEditEffectPanel = (disruption) => {
-        
-        if (props.updateDisruptionKeyToEditEffect) {
-            props.updateDisruptionKeyToEditEffect(disruption.incidentNo);
-        }
-        
-        if (props.toggleEditEffectPanel) {
-            props.toggleEditEffectPanel(true);
-        }
-        
-        
-        return false;
+        props.setRequestedDisruptionKeyToUpdateEditEffect(disruption.incidentNo);
+        props.setRequestToUpdateEditEffectState(true);
     };
 
     const impacts = useAlertEffects();
@@ -299,12 +308,16 @@ export const SelectDetails = (props) => {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    useEffect(() => {
+    const updateFilteredDisruptions = () => {
         const term = debouncedSearchTerm.toLowerCase();
         const filtered = disruptions.filter(d => d.impact?.toLowerCase().includes(term)
             || d.affectedEntities?.affectedRoutes.some(entity => entity.routeShortName.toLowerCase().includes(term))
             || d.affectedEntities?.affectedStops.some(entity => entity.text.toLowerCase().includes(term)));
         setFilteredDisruptions(filtered);
+    };
+
+    useEffect(() => {
+        updateFilteredDisruptions();
     }, [debouncedSearchTerm]);
 
     useEffect(() => {
@@ -312,9 +325,29 @@ export const SelectDetails = (props) => {
             setFilteredDisruptions(disruptions);
         }
     }, [disruptions]);
+
+    useEffect(() => {
+        if (props.isEffectsRequiresToUpdate) {
+            updateFilteredDisruptions();
+            props.updateIsEffectsRequiresToUpdateState();
+        }
+    }, [props.isEffectsRequiresToUpdate]);
+
+    useEffect(() => {
+        if (props.editMode === EDIT_TYPE.EDIT) {
+            const startDateTime = momentFromDateTime(startDate, startTime, now);
+            if (startDateTime?.isValid() && status !== STATUSES.RESOLVED) {
+                if (startDateTime.isAfter(now) && status === STATUSES.IN_PROGRESS) {
+                    props.onDataUpdate('status', STATUSES.NOT_STARTED);
+                } else if (startDateTime.isSameOrBefore(now) && status === STATUSES.NOT_STARTED) {
+                    props.onDataUpdate('status', STATUSES.IN_PROGRESS);
+                }
+            }
+        }
+    }, [startDate, startTime, endDate]);
+
     const statusOptions = getStatusOptions(startDate, startTime, now, status);
     const isResolved = () => status === STATUSES.RESOLVED;
-
     return (
         <div className="disruption-creation__wizard-select-details">
             <Form className="row my-3 p-4">
@@ -586,7 +619,7 @@ export const SelectDetails = (props) => {
             </Form>
             { props.editMode === EDIT_TYPE.EDIT && (
                 <div className="ml-4 mr-4 ">
-                    <ul className="pl-0 disruption-workarounds-effects" id="effects-list">
+                    <ul className="pl-0 disruption-workarounds-effects">
                         <div>
                             <Label for="disruption-creation__wizard-select-details__header" className="p-lr12-tb6">
                                 <span className="font-size-md font-weight-bold">Effects</span>
@@ -604,12 +637,8 @@ export const SelectDetails = (props) => {
                             <li key={ disruption.key } className={ `disruption-effect-item ${props.disruptionIncidentNoToEdit === disruption.incidentNo ? 'active' : ''}` }>
                                 <div>
                                     <Button
-                                        className="btn cc-btn-link p-lr12-tb6 m-0 js-hide-on-cancel"
-                                        onClick={ (e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            openEditEffectPanel(disruption);
-                                        } }>
+                                        className="btn cc-btn-link p-lr12-tb6 m-0"
+                                        onClick={ () => openEditEffectPanel(disruption) }>
                                         <strong>{disruption.incidentNo}</strong>
                                     </Button>
                                     <p className="p-lr12-tb6 m-0">
@@ -658,7 +687,7 @@ export const SelectDetails = (props) => {
                 <Footer
                     isDraftOrCreateMode={ false }
                     toggleIncidentModals={ props.toggleIncidentModals }
-                    isSubmitDisabled={ isSubmitDisabled || props.isEditEffectPanelOpen }
+                    isSubmitDisabled={ isSubmitDisabledForEdit }
                     nextButtonValue="Save"
                     onContinue={ () => onSave() }
                 />
@@ -707,6 +736,9 @@ SelectDetails.propTypes = {
     setDisruptionForWorkaroundEdit: PropTypes.func.isRequired,
     setRequestToUpdateEditEffectState: PropTypes.func.isRequired,
     setRequestedDisruptionKeyToUpdateEditEffect: PropTypes.func.isRequired,
+    isEffectsRequiresToUpdate: PropTypes.bool,
+    updateIsEffectsRequiresToUpdateState: PropTypes.func,
+    isEffectValid: PropTypes.bool,
 };
 
 SelectDetails.defaultProps = {
@@ -721,6 +753,9 @@ SelectDetails.defaultProps = {
     editMode: EDIT_TYPE.CREATE,
     disruptionIncidentNoToEdit: '',
     isEditEffectPanelOpen: false,
+    isEffectsRequiresToUpdate: false,
+    updateIsEffectsRequiresToUpdateState: () => { },
+    isEffectValid: true,
 };
 
 export default connect(state => ({

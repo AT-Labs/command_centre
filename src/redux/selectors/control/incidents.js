@@ -199,3 +199,4 @@ export const getDisruptionForWorkaroundEdit = createSelector(getIncidentsState, 
 export const isEditEffectUpdateRequested = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'requestToUpdateEditEffect'));
 export const getRequestedDisruptionKeyToUpdateEditEffect = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'requestedDisruptionKeyToUpdateEditEffect'));
 export const isCancellationEffectModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isCancellationEffectOpen'));
+export const isApplyChangesModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isApplyChangesOpen'));
