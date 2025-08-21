@@ -10,7 +10,6 @@
     }
 }
 
-
 body.diversion-manager-active {
     .edit-effect-panel,
     .CustomModal:not(.diversion-result-modal),
@@ -25,7 +24,6 @@ body.diversion-manager-active {
     [class*="modal"]:not(.diversion-result-modal),
     [class*="Modal"]:not(.diversion-result-modal),
     [class*="Dialog"]:not(.diversion-result-modal),
-
     button[style*="z-index"]:not(.diversion-result-modal button),
     [style*="z-index: 999999"]:not(.diversion-result-modal *),
     [style*="z-index: 99999"]:not(.diversion-result-modal *),
@@ -44,7 +42,6 @@ body.diversion-manager-active {
     }
 }
 
-
 .custom-close-button {
     width: auto !important;
     min-width: 259px !important;
@@ -53,25 +50,24 @@ body.diversion-manager-active {
     display: inline-block !important;
 }
 
-
 .diversion-result-modal {
     z-index: 99999999 !important;
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
     pointer-events: auto !important;
-    
+
     .modal-content {
         z-index: 99999999 !important;
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
     }
-    
+
     .modal-dialog {
         z-index: 99999999 !important;
     }
-    
+
     .modal-backdrop {
         z-index: 99999998 !important;
         display: flex !important;
@@ -80,7 +76,6 @@ body.diversion-manager-active {
     }
 }
 
-
 .diversion-result-modal ~ .panel-footer,
 .diversion-result-modal ~ * .panel-footer {
     display: none !important;
@@ -88,13 +83,8 @@ body.diversion-manager-active {
     opacity: 0 !important;
 }
 
-
 body.diversion-result-active .panel-footer {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
 }
-
-
-
-

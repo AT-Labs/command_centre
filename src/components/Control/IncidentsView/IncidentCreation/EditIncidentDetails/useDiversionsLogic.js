@@ -105,7 +105,7 @@ export const useDiversionValidation = (disruption, affectedEntities, diversions 
 
         // Must have at least one bus route
         if (busRoutes.length === 0) return false;
-        
+
         // Cannot have only train routes (must have at least one bus route)
         if (trainRoutes.length > 0 && busRoutes.length === 0) return false;
 
@@ -125,4 +125,4 @@ export const useDiversionValidation = (disruption, affectedEntities, diversions 
     };
 
     return isAddDiversionEnabled();
-}; 
+};

@@ -99,14 +99,12 @@ export const updateWorkaroundsByAffectedEntities = (affectedEntities, existingWo
 
 export const generateWorkaroundsUIOptions = (affectedEntities, existingWorkarounds, disruptionType, workaroundType) => {
     const workaroundItems = [];
-    
 
     const helperTextConfig = helperTextProperties[disruptionType];
     if (!helperTextConfig) {
-        console.warn('🔧 generateWorkaroundsUIOptions: Unknown disruptionType:', disruptionType);
         return workaroundItems;
     }
-    
+
     const { preposition, childEntityType, parentEntityType, childEntityNameProperty, parentEntityNameProperty } = helperTextConfig;
     const labelGenerator = labelGenerators[workaroundType];
     let childEntitySentence;

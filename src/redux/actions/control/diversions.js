@@ -62,7 +62,7 @@ export const fetchDiversions = (disruptionId, forceRefresh = false) => async (di
 
     const state = getState();
     const diversionsState = state.control.diversions;
-    
+
     // Check if already loading
     if (diversionsState.diversionsLoading[disruptionId]) {
         return undefined;
@@ -96,7 +96,7 @@ export const createDiversion = diversion => async (dispatch) => {
         dispatch(
             updateDiversionResultState(false, response.diversionId, null),
         );
-        
+
         // Refresh diversions data after successful creation
         if (diversion.disruptionId) {
             // Clear cache first, then fetch fresh data
@@ -118,7 +118,7 @@ export const updateDiversion = diversion => async (dispatch) => {
         dispatch(
             updateDiversionResultState(false, diversion.diversionId, null),
         );
-        
+
         // Refresh diversions data after successful update
         if (diversion.disruptionId) {
             // Clear cache first, then fetch fresh data

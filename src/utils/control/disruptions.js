@@ -232,12 +232,12 @@ export const groupStopsByRouteElementByParentStation = (list) => {
 
 export const getDeduplcatedAffectedRoutes = (affectedEntities) => {
     if (!Array.isArray(affectedEntities)) return [];
-    return [...new Set(affectedEntities.filter((entity) => entity.routeId).map(({ routeShortName }) => routeShortName))];
+    return [...new Set(affectedEntities.filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))];
 };
 
 export const getDeduplcatedAffectedStops = (affectedEntities) => {
     if (!Array.isArray(affectedEntities)) return [];
-    return [...new Set(affectedEntities.filter((entity) => entity.stopCode).map(({ stopCode }) => stopCode))];
+    return [...new Set(affectedEntities.filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))];
 };
 
 export const filterOnlyRouteParams = route => pick(route, ['routeId', 'routeShortName', 'routeType', 'routeColor', 'shapeWkt', 'agencyId', 'agencyName',
