@@ -128,93 +128,6 @@ export class CreateIncident extends React.Component {
         };
     }
 
-    setupDraftDataCopy = () => {
-        const now = moment();
-        const copiedData = this.props.incidentToEdit;
-        if (!moment.isMoment(copiedData.startTime)) {
-            const startDate = copiedData.startDate || '';
-            if (startDate && copiedData.startTime) {
-                copiedData.startTime = momentFromDateTime(startDate, copiedData.startTime);
-            } else {
-                copiedData.startTime = '';
-            }
-        }
-
-        if (moment.isMoment(copiedData.endTime)) {
-            copiedData.endDate = moment.isMoment(copiedData.endTime) ? copiedData.endTime.format(DATE_FORMAT) : '';
-            copiedData.endTime = moment.isMoment(copiedData.endTime) ? copiedData.endTime.format(TIME_FORMAT) : '';
-        }
-
-        const recurrenceDates = getRecurrenceDates(copiedData.startDate, copiedData.startTime, copiedData.endDate);
-        const recurrencePattern = this.props.incidentToEdit.recurrent ? parseRecurrencePattern(this.props.incidentToEdit.recurrencePattern) : { freq: RRule.WEEKLY };
-
-        if (moment.isMoment(copiedData.startTime)) {
-            copiedData.startDate = now.isSameOrAfter(copiedData.startTime) ? now.format(DATE_FORMAT) : copiedData.startTime.format(DATE_FORMAT);
-            copiedData.startTime = now.isSameOrAfter(copiedData.startTime) ? now.format(TIME_FORMAT) : copiedData.startTime.format(TIME_FORMAT);
-        }
-
-        const disruptionType = isEmpty(this.props.routes) && !isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
-
-        this.setState({
-            incidentData: {
-                ...copiedData,
-                disruptionId: null,
-                ...(recurrenceDates && {
-                    recurrencePattern: {
-                        ...recurrencePattern,
-                        ...recurrenceDates,
-                    },
-                }),
-                status: STATUSES.NOT_STARTED,
-                disruptionType,
-            },
-        });
-    };
-
-    setupDataCopy = () => {
-        if (this.props.incidentToEdit.status === STATUSES.DRAFT) {
-            this.setupDraftDataCopy();
-            return;
-        }
-        const now = moment();
-
-        const copiedData = this.props.incidentToEdit;
-
-        if (!moment.isMoment(copiedData.startTime)) {
-            const startDate = copiedData.startDate ? copiedData.startDate : moment(copiedData.startTime).format(DATE_FORMAT);
-            copiedData.startTime = momentFromDateTime(startDate, copiedData.startTime);
-        }
-
-        if (moment.isMoment(copiedData.endTime)) {
-            copiedData.endDate = now.isAfter(copiedData.endTime) ? '' : copiedData.endTime.format(DATE_FORMAT);
-            copiedData.endTime = now.isAfter(copiedData.endTime) ? '' : copiedData.endTime.format(TIME_FORMAT);
-        }
-
-        const recurrenceDates = getRecurrenceDates(copiedData.startDate, copiedData.startTime, copiedData.endDate);
-        const recurrencePattern = this.props.incidentToEdit.recurrent ? parseRecurrencePattern(this.props.incidentToEdit.recurrencePattern) : { freq: RRule.WEEKLY };
-
-        copiedData.startDate = now.isSameOrAfter(copiedData.startTime) ? now.format(DATE_FORMAT) : copiedData.startTime.format(DATE_FORMAT);
-        copiedData.startTime = now.isSameOrAfter(copiedData.startTime) ? now.format(TIME_FORMAT) : copiedData.startTime.format(TIME_FORMAT);
-
-        const disruptionType = isEmpty(this.props.routes) && !isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
-
-        this.setState({
-            incidentData: {
-                ...copiedData,
-                disruptionId: null,
-                ...(recurrenceDates && {
-                    recurrencePattern: {
-                        ...recurrencePattern,
-                        ...recurrenceDates,
-                    },
-                }),
-                status: STATUSES.NOT_STARTED,
-                disruptionType,
-                modalOpenedTime: moment().second(0).millisecond(0),
-            },
-        });
-    };
-
     isFinishButtonDisabled = () => !this.state.isSelectEntitiesValid || !this.state.isSetDetailsValid;
 
     onUpdateDetailsValidation = isValid => this.setState({ isSetDetailsValid: isValid });
@@ -273,9 +186,9 @@ export class CreateIncident extends React.Component {
             const routesToDraw = updatedDisruptions.map(disruption => disruption.affectedEntities.affectedRoutes).flat();
             const stopsToDraw = updatedDisruptions.map(disruption => disruption.affectedEntities.affectedStops).flat();
             this.props.updateAffectedStopsState(sortBy(stopsToDraw, sortedStop => sortedStop.stopCode));
+            this.props.updateAffectedRoutesState(routesToDraw);
 
             if (routesToDraw.length > 0) {
-                this.props.updateAffectedRoutesState(routesToDraw);
                 this.props.getRoutesByShortName(routesToDraw);
             }
         }
@@ -296,10 +209,7 @@ export class CreateIncident extends React.Component {
     };
 
     componentDidMount() {
-        if (this.props.editMode === EDIT_TYPE.COPY) {
-            this.props.updateCurrentStep(1);
-            this.setupDataCopy();
-        } else if (this.props.editMode === EDIT_TYPE.EDIT) {
+        if (this.props.editMode === EDIT_TYPE.EDIT) {
             this.props.updateCurrentStep(1);
             this.setupDataEdit(false);
         } else {
