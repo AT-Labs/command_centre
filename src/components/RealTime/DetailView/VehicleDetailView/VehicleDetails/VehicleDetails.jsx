@@ -20,6 +20,8 @@ import { UNSCHEDULED_TAG } from '../../../../../types/vehicle-types';
 
 const VehicleDetails = (props) => {
     const { vehicleDetail, vehicleFleetInfo, vehicleAllocations } = props;
+    console.log('-----Display part for trip id, vehicleDetail', vehicleDetail);
+
     const { ROUTE } = SEARCH_RESULT_TYPE;
     const createDetailRow = (name, value) => (
         <Fragment key={ name }>
@@ -53,6 +55,9 @@ const VehicleDetails = (props) => {
 
     const vehicleLabel = getJoinedVehicleLabel(vehicleDetail, vehicleAllocations) || getFleetVehicleLabel(vehicleFleetInfo);
     const tripId = get(vehicleDetail, 'trip.tripId');
+    const replacementTripId = vehicleDetail?.trip?.['.replacementTripId'];
+    const displayTripId = replacementTripId || tripId;
+
     const tripHeadsign = get(vehicleDetail, 'trip.trip_headsign');
     const startTime = get(vehicleDetail, 'trip.startTime');
     const route = get(vehicleDetail, 'route');
@@ -85,7 +90,7 @@ const VehicleDetails = (props) => {
                         ...(vehicleTag ? [['Tags:', vehicleTag]] : []),
                         ['Trip Start Time:', startTime],
                         ['Route ID:', routeId],
-                        ['Trip ID:', tripId],
+                        ['Trip ID:', displayTripId],
 
                     ]) || [
                         ['Description:', nonTripDescription()],
@@ -117,10 +122,16 @@ VehicleDetails.defaultProps = {
 export { VehicleDetails };
 
 export default connect(
-    state => ({
-        vehicleDetail: getVehicleDetail(state),
-        vehicleFleetInfo: getVehicleFleetInfo(state),
-        vehicleAllocations: getAllocations(state),
-    }),
+    // eslint-disable-next-line arrow-body-style
+    state => {
+        // console.log('VehicleDetails state', state.realtime.vehicles.all['31559']);
+        // eslint-disable-next-line no-debugger
+        // debugger;
+        return {
+            vehicleDetail: getVehicleDetail(state),
+            vehicleFleetInfo: getVehicleFleetInfo(state),
+            vehicleAllocations: getAllocations(state),
+        }
+    },
     { routeSelected, routeChecked, clearDetail, updateRealTimeDetailView, addSelectedSearchResult },
 )(VehicleDetails);
