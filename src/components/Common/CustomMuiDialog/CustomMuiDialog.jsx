@@ -13,7 +13,7 @@ const CustomMuiDialog = props => (
         </DialogContent>
         <div className="modal-footer justify-content-center">
             {!props.footerContent && (
-                <button type="button" onClick={ props.onClose } className="cc-btn-primary w-100 btn btn-secondary">Close</button>
+                <button type="button" onClick={ props.onClose } className="cc-btn-primary btn btn-secondary custom-close-button">Close</button>
             )}
             {props.footerContent}
         </div>
