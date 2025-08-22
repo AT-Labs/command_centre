@@ -63,6 +63,7 @@ export const WorkaroundPanel = (props) => {
                                 ref={ formRef }
                                 disruption={ disruption }
                                 onWorkaroundUpdate={ props.onWorkaroundUpdate }
+                                onWorkaroundChange={ props.onWorkaroundChange }
                                 readOnly={ disruption.status === STATUSES.RESOLVED } />
                         )
                         : (
@@ -84,7 +85,7 @@ export const WorkaroundPanel = (props) => {
                             <Button
                                 className="btn cc-btn-primary btn-block save-workaround"
                                 onClick={ () => onSubmit() }>
-                                Save
+                                { (props.editMode !== EDIT_TYPE.EDIT) ? 'Save' : 'Apply'}
                             </Button>
                         </div>
                     </footer>
@@ -106,6 +107,7 @@ WorkaroundPanel.propTypes = {
     setRequireToUpdateWorkaroundsState: PropTypes.func.isRequired,
     disruptionForWorkaroundEdit: PropTypes.object,
     setDisruptionForWorkaroundEdit: PropTypes.func.isRequired,
+    onWorkaroundChange: PropTypes.func.isRequired,
 };
 
 WorkaroundPanel.defaultProps = {

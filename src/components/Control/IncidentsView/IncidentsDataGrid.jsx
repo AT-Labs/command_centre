@@ -12,7 +12,6 @@ import { clearActiveIncident,
     updateIncidentsSortingParams,
     updateEditMode,
     setIncidentToUpdate,
-    updateDisruptionKeyToEditEffect,
 } from '../../../redux/actions/control/incidents';
 import { getActiveIncident, getIncidentsLoadingState, getIncidentsSortingParams, getSortedIncidents } from '../../../redux/selectors/control/incidents';
 import IncidentsDisruptions from './IncidentsDisruptions';
@@ -57,13 +56,6 @@ export const IncidentDataGrid = (props) => {
         <Tooltip title="Open & Edit Incident" placement="top-end" key={ uniqueId(incident.incidentId) }>
             <IconButton aria-label="open-edit-incident"
                 onClick={ () => {
-                    
-                    
-                    // Set the disruption key to edit effect
-                    const incidentNo = `DISR${incident.disruptionId}`;
-                    
-                    props.updateDisruptionKeyToEditEffect(incidentNo);
-                    
                     props.setIncidentToUpdate(incident.incidentId);
                     props.updateEditMode(EDIT_TYPE.EDIT);
                 } }>
@@ -133,7 +125,7 @@ export const IncidentDataGrid = (props) => {
         );
     }
 
-    const getRowId = incident => String(incident.incidentId);
+    const getRowId = incident => incident.incidentId;
 
     return (
         <ControlTable
@@ -185,6 +177,5 @@ export default connect(
         updateIncidentsSortingParams,
         updateEditMode,
         setIncidentToUpdate,
-        updateDisruptionKeyToEditEffect,
     },
 )(IncidentDataGrid);
