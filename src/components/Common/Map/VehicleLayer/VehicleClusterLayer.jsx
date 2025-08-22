@@ -146,6 +146,7 @@ class VehicleClusterLayer extends React.Component {
 
         const { highlightedVehicle } = this.props;
         const { options: { vehicle } } = layer;
+        console.log('-------handleClick1', vehicle);
         if (!highlightedVehicle || highlightedVehicle.id !== vehicle.id) {
             const vehicleRouteType = getVehicleRouteType(vehicle);
             const vehicleType = vehicleRouteType ? lowerCase(VEHICLE_TYPES[vehicleRouteType].type) : '';

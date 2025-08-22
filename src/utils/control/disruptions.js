@@ -95,20 +95,7 @@ export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
 const getMode = disruption => [...disruption.affectedEntities.affectedRoutes.map(route => VEHICLE_TYPES[route.routeType].type),
     ...disruption.affectedEntities.affectedStops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType].type)];
 
-const filterWorkaroundsByAffectedEntity = (workarounds, affectedRoutes, affectedStops) => workarounds.filter((workaround) => {
-    if (workaround.type === 'stop') {
-        return affectedStops.some(affectedStop => workaround.stopCode === affectedStop.stopCode);
-    }
-    if (workaround.type === 'route') {
-        return affectedRoutes.some(affectedRoute => workaround.routeShortName === affectedRoute.routeShortName);
-    }
-    if (workaround.type === 'all') {
-        return workarounds.length === 1;
-    }
-    return false;
-});
-
-export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, incidentUrl, isEditMode, incidentEndTimeMoment) => {
+export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, incidentUrl) => {
     const startDate = disruption.startDate ? disruption.startDate : moment(disruption.startTime).format(DATE_FORMAT);
     const startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
     let endTimeMoment;
@@ -134,47 +121,31 @@ export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentSt
         }),
     }));
     const stopsToRequest = disruption.affectedEntities.affectedStops.map(entity => omit(entity, ['shapeWkt']));
-
-    const workarounds = disruption.workarounds?.length > 0 ? filterWorkaroundsByAffectedEntity(disruption.workarounds, routesToRequest, stopsToRequest) : disruption.workarounds;
-    const isStatusBecomeResolved = incidentStatus === STATUSES.RESOLVED && disruption.status !== STATUSES.RESOLVED;
     return {
         ...disruption,
-        ...(isEditMode ? { } : { header: incidentHeader }),
-        ...(isEditMode ? { } : { status: incidentStatus }),
-        ...(isEditMode ? { } : { cause: incidentCause }),
+        header: incidentHeader,
+        status: incidentStatus,
+        cause: incidentCause,
         url: incidentUrl,
         endTime: endTimeMoment,
         startTime: startTimeMoment,
         mode: uniq(modes).join(', '),
         affectedEntities: [...routesToRequest, ...stopsToRequest],
-        ...(isStatusBecomeResolved && incidentEndTimeMoment ? { status: STATUSES.RESOLVED, endTime: incidentEndTimeMoment } : { }),
-        workarounds,
     };
 };
 
-export const buildIncidentSubmitBody = (incident, isEditMode) => {
+export const buildIncidentSubmitBody = (incident) => {
     const modes = incident.disruptions.flatMap(disruption => getMode(disruption));
-    const disruptions = incident.disruptions.flatMap(disruption => buildDisruptionSubmitBody(
-        disruption,
-        incident.header,
-        incident.status,
-        incident.cause,
-        incident.url,
-        isEditMode,
-        incident.endTime,
-    ));
-    const earliestStartTime = moment.min(disruptions.map(disruption => disruption.startTime));
-    const endTimes = disruptions.map(disruption => disruption.endTime).filter(endTime => endTime != null);
-    const latestEndTime = endTimes.length > 0 ? moment.max(endTimes) : null;
-    const allResolved = disruptions.every(disruption => disruption.status === STATUSES.RESOLVED);
-
     return {
         ...incident,
         mode: uniq(modes).join(', '),
-        disruptions,
-        ...(allResolved && { status: STATUSES.RESOLVED }),
-        ...(earliestStartTime.isBefore(incident.startTime) && { startTime: earliestStartTime }),
-        ...(latestEndTime && incident.endTime && (latestEndTime.isAfter(incident.endTime) || (incident.status !== STATUSES.RESOLVED && allResolved)) && { endTime: latestEndTime }),
+        disruptions: incident.disruptions.flatMap(disruption => buildDisruptionSubmitBody(
+            disruption,
+            incident.header,
+            incident.status,
+            incident.cause,
+            incident.url,
+        )),
     };
 };
 
