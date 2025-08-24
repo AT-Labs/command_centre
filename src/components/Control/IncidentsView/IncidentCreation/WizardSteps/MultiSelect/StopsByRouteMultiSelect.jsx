@@ -130,7 +130,6 @@ export const StopsByRouteMultiSelect = (props) => {
                                 onChange={ e => toggleStopsByRoute(route, childStop, e.target.checked) }
                                 label={ `${childStop.stopCode} - ${childStop.stopName}` }
                                 size="small"
-                                disabled={ props.isDisabled }
                             />
                         </li>,
                     );
@@ -146,7 +145,6 @@ export const StopsByRouteMultiSelect = (props) => {
                             onChange={ e => toggleStopsByRoute(route, parent, e.target.checked) }
                             label={ `${parent.stopCode} - ${parent.stopName}` }
                             size="small"
-                            disabled={ props.isDisabled }
                         />
                         <ul className="p-0">
                             { childList.map(childStop => (
@@ -157,7 +155,6 @@ export const StopsByRouteMultiSelect = (props) => {
                                         onChange={ e => toggleStopsByRoute(route, childStop, e.target.checked) }
                                         label={ `${childStop.stopCode} - ${childStop.stopName}` }
                                         size="small"
-                                        disabled={ props.isDisabled }
                                     />
                                 </li>
                             ))}
@@ -177,7 +174,6 @@ export const StopsByRouteMultiSelect = (props) => {
                             onChange={ e => toggleAllStopsByRouteDirection(route, direction, [...stopsByRouteDirection, ...parents], e.target.checked) }
                             label="Select All"
                             size="small"
-                            disabled={ props.isDisabled }
                         />
                     </li>
                 ),
@@ -199,7 +195,6 @@ export const StopsByRouteMultiSelect = (props) => {
                 onToggle={ () => toggleExpandedRouteDirection(route, direction) }
                 className="select-stops-route-direction"
                 label={ `Direction: ${directionText}` }
-                disabled={ props.isDisabled }
             >
                 { renderStopsCheckboxByRouteDirection(route, direction) }
             </ExpandableList>
@@ -232,7 +227,6 @@ export const StopsByRouteMultiSelect = (props) => {
                     removeAction={ () => removeAction(route) }
                     className={ className }
                     label={ `Route ${route.routeShortName}` }
-                    disabled={ props.isDisabled }
                 >
                     { renderStopsByRoute(route) }
                 </ExpandableList>
@@ -248,13 +242,11 @@ StopsByRouteMultiSelect.propTypes = {
     findStopsByRoute: PropTypes.object.isRequired,
     affectedRoutes: PropTypes.array.isRequired,
     updateAffectedRoutes: PropTypes.func.isRequired,
-    isDisabled: PropTypes.bool,
 };
 
 StopsByRouteMultiSelect.defaultProps = {
     className: '',
     removeAction: null,
-    isDisabled: false,
 };
 
 export default connect(state => ({
