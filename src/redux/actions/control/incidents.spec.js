@@ -940,7 +940,7 @@ describe('Incidents Actions', () => {
     });
 
     it('dispatches correct actions on setIncidentToUpdate error', async () => {
-        disruptionsMgtApi.getIncident.mockResolvedValue({ code: 404, data: 'Not Found' });
+        disruptionsMgtApi.getIncident.mockRejectedValue((new Error('Not found')));
         await store.dispatch(actions.setIncidentToUpdate(139273, false));
         const dispatched = store.getActions();
 
@@ -951,12 +951,12 @@ describe('Incidents Actions', () => {
                     isIncidentForEditLoading: true,
                 },
             },
-            /* { // TODO
+            {
                 type: 'set-modal-error',
                 payload: {
-                    error: 'Unable to load disruptions, please try again',
+                    error: 'Failed to load incident data',
                 },
-            }, */
+            },
             {
                 type: 'update-control-incident-for-edit-loading',
                 payload: {

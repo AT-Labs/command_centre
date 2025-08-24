@@ -753,7 +753,7 @@ export const setIncidentToUpdate = (incidentId, requireToUpdateForm = false) => 
             dispatch(updateIncidentToEdit(incidentData));
         })
         .catch(() => {
-            const errorMessage = ERROR_TYPE.fetchIncident; // TODO
+            const errorMessage = ERROR_TYPE.fetchIncident;
             dispatch(setBannerError(errorMessage));
         })
         .finally(() => {
