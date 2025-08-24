@@ -1,14 +1,20 @@
-import configureMockStore from 'redux-mock-store';
-import thunk from 'redux-thunk';
-import sinon from 'sinon';
-import chai, { expect } from 'chai';
-import sinonChai from 'sinon-chai';
-import MockDate from 'mockdate';
+import configureMockStore from "redux-mock-store";
+import thunk from "redux-thunk";
+import sinon from "sinon";
+import chai, { expect } from "chai";
+import sinonChai from "sinon-chai";
+import MockDate from "mockdate";
 
-import {goToRoutesView, goToBlocksView, goToDisruptionsView, goToDisruptionEditPage} from './link';
-import * as tripMgtApi from '../../../utils/transmitters/trip-mgt-api';
-import ACTION_TYPE from '../../action-types';
-import VIEW_TYPE from '../../../types/view-types';
+import {
+    goToRoutesView,
+    goToBlocksView,
+    goToDisruptionsView,
+    goToDisruptionEditPage,
+    goToIncidentsView,
+} from "./link";
+import * as tripMgtApi from "../../../utils/transmitters/trip-mgt-api";
+import ACTION_TYPE from "../../action-types";
+import VIEW_TYPE from "../../../types/view-types";
 
 chai.use(sinonChai);
 
@@ -35,74 +41,77 @@ let sandbox;
 
 const mockTrips = {
     totalCount: 2,
-    tripInstances: [{
-        tripId: '1',
-        serviceDate: '20190608',
-        startTime: '10:00:00',
-        routeShortName: '10',
-        routeType: 3,
-        status: 'COMPLETED',
-    }, {
-        tripId: '2',
-        serviceDate: '20190608',
-        startTime: '10:00:00',
-        routeShortName: '20',
-        routeType: 3,
-        status: 'NOT_STARTED',
-    }],
+    tripInstances: [
+        {
+            tripId: "1",
+            serviceDate: "20190608",
+            startTime: "10:00:00",
+            routeShortName: "10",
+            routeType: 3,
+            status: "COMPLETED",
+        },
+        {
+            tripId: "2",
+            serviceDate: "20190608",
+            startTime: "10:00:00",
+            routeShortName: "20",
+            routeType: 3,
+            status: "NOT_STARTED",
+        },
+    ],
     _links: {
         permissions: [
             {
-                _rel: "cancel"
+                _rel: "cancel",
             },
             {
-                _rel: "copy"
+                _rel: "copy",
             },
             {
-                _rel: "delay"
+                _rel: "delay",
             },
             {
-                _rel: "view"
+                _rel: "view",
             },
             {
-                _rel: "advancer"
+                _rel: "advancer",
             },
             {
-                _rel: "recurrent_cancel"
+                _rel: "recurrent_cancel",
             },
             {
-                _rel: "new"
-            }
-        ]
-    }
+                _rel: "new",
+            },
+        ],
+    },
 };
 const mockTrip = {
-    agencyId: '',
-    routeVariantId: '11111',
+    agencyId: "",
+    routeVariantId: "11111",
     routeType: 2,
-    routeShortName: 'EAST',
-    startTime: '06:00:00',
+    routeShortName: "EAST",
+    startTime: "06:00:00",
 };
 const mockStoreTrips = {
-    '1-20190608-10:00:00': {
-        tripId: '1',
-        serviceDate: '20190608',
-        startTime: '10:00:00',
-        routeShortName: '10',
+    "1-20190608-10:00:00": {
+        tripId: "1",
+        serviceDate: "20190608",
+        startTime: "10:00:00",
+        routeShortName: "10",
         routeType: 3,
-        status: 'COMPLETED',
+        status: "COMPLETED",
     },
-    '2-20190608-10:00:00': {
-        tripId: '2',
-        serviceDate: '20190608',
-        startTime: '10:00:00',
-        routeShortName: '20',
+    "2-20190608-10:00:00": {
+        tripId: "2",
+        serviceDate: "20190608",
+        startTime: "10:00:00",
+        routeShortName: "20",
         routeType: 3,
-        status: 'NOT_STARTED',
+        status: "NOT_STARTED",
     },
 };
 
-describe('Link actions', () => {
+describe("Link actions", () => {
     before(() => {
         MockDate.set(new Date(Date.UTC(2023, 2, 1, 0, 0, 0)));
     });
@@ -120,9 +129,9 @@ describe('Link actions', () => {
         MockDate.reset();
     });
 
-    it('when going from Blocks to R&T, updates the link and sets the route filters', async () => {
+    it("when going from Blocks to R&T, updates the link and sets the route filters", async () => {
         const fakeGetTrips = sandbox.fake.resolves(mockTrips);
-        sandbox.stub(tripMgtApi, 'getTrips').callsFake(fakeGetTrips);
+        sandbox.stub(tripMgtApi, "getTrips").callsFake(fakeGetTrips);
 
         const expectedActions = [
             {
@@ -259,23 +268,24 @@ describe('Link actions', () => {
             },
         ];
 
-        await store.dispatch(goToRoutesView(mockTrip,
-            {
+        await store.dispatch(
+            goToRoutesView(mockTrip, {
                 agencyId: mockTrip.agencyId,
                 routeType: mockTrip.routeType,
                 isGroupedByRoute: true,
                 isGroupedByRouteVariant: true,
-                startTimeFrom: '',
-                startTimeTo: '',
-                tripStatus: '',
-                routeShortName: '',
-                routeVariantId: '',
-            }));
+                startTimeFrom: "",
+                startTimeTo: "",
+                tripStatus: "",
+                routeShortName: "",
+                routeVariantId: "",
+            })
+        );
         const actions = store.getActions();
         expect(actions).to.eql(expectedActions);
     });
 
-    it('when going from R&T to Blocks, updates the link', async () => {
+    it("when going from R&T to Blocks, updates the link", async () => {
         const expectedActions = [
             {
                 type: ACTION_TYPE.UPDATE_TRIP_CROSS_LINK,
@@ -295,7 +305,7 @@ describe('Link actions', () => {
         expect(store.getActions()).to.eql(expectedActions);
     });
 
-    it('when going from Messaging to Disruptions, updates the link', async () => {
+    it("when going from Messaging to Disruptions, updates the link", async () => {
         const message = {
             incidentId: "DISR00644",
         };
@@ -310,16 +320,19 @@ describe('Link actions', () => {
             {
                 type: ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW,
                 payload: {
-                    activeControlDetailView: VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
+                    activeControlDetailView:
+                        VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
                 },
             },
         ];
 
-        await store.dispatch(goToDisruptionsView(message, { setActiveDisruption: false }));
+        await store.dispatch(
+            goToDisruptionsView(message, { setActiveDisruption: false })
+        );
         expect(store.getActions()).to.eql(expectedActions);
     });
 
-    it('when going from Messaging to Disruptions(with an active disruption), updates the link', async () => {
+    it("when going from Messaging to Disruptions(with an active disruption), updates the link", async () => {
         const message = {
             incidentId: "DISR00643",
         };
@@ -334,7 +347,8 @@ describe('Link actions', () => {
             {
                 type: ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW,
                 payload: {
-                    activeControlDetailView: VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
+                    activeControlDetailView:
+                        VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
                 },
             },
             {
@@ -354,7 +368,9 @@ describe('Link actions', () => {
             },
         ];
 
-        await store.dispatch(goToDisruptionsView(message, { setActiveDisruption: true }));
+        await store.dispatch(
+            goToDisruptionsView(message, { setActiveDisruption: true })
+        );
         expect(store.getActions()).to.eql(expectedActions);
     });
 
@@ -363,43 +379,49 @@ describe('Link actions', () => {
         const message = {
             disruptionId: disruptionId,
         };
-       const expectedActions = [
-           {
-               type: ACTION_TYPE.UPDATE_MAIN_VIEW,
-               payload: {
-                   activeMainView: VIEW_TYPE.MAIN.CONTROL,
-               },
-           },
-           {
-               type: ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW,
-               payload: {
-                   activeControlDetailView: VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
-               },
-           },
-           {
-               type: ACTION_TYPE.UPDATE_ACTIVE_CONTROL_ENTITY_ID,
-               payload: {
-                   activeControlEntityId: message.disruptionId,
-               },
-           },
-           {
-               type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_DISRUPTION_ID,
-               payload: {
-                     activeDisruptionId: disruptionId,
-               }
-           },
-           {
-               type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
-               payload: {
-                   disruptionId: null,
-                   resultStatus: null,
-                   resultMessage: null,
-                   resultDisruptionVersion: null,
-               },
-           },
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_MAIN_VIEW,
+                payload: {
+                    activeMainView: VIEW_TYPE.MAIN.CONTROL,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW,
+                payload: {
+                    activeControlDetailView:
+                        VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_ACTIVE_CONTROL_ENTITY_ID,
+                payload: {
+                    activeControlEntityId: message.disruptionId,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_DISRUPTION_ID,
+                payload: {
+                    activeDisruptionId: disruptionId,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
+                payload: {
+                    disruptionId: null,
+                    resultStatus: null,
+                    resultMessage: null,
+                    resultDisruptionVersion: null,
+                },
+            },
         ];
 
-        store.dispatch(goToDisruptionEditPage({ disruptionId: disruptionId }, { setActiveDisruption: true }));
+        store.dispatch(
+            goToDisruptionEditPage(
+                { disruptionId: disruptionId },
+                { setActiveDisruption: true }
+            )
+        );
         expect(store.getActions()).to.eql(expectedActions);
     });
 
@@ -418,7 +440,8 @@ describe('Link actions', () => {
             {
                 type: ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW,
                 payload: {
-                    activeControlDetailView: VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
+                    activeControlDetailView:
+                        VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS,
                 },
             },
             {
@@ -429,7 +452,75 @@ describe('Link actions', () => {
             },
         ];
 
-        store.dispatch(goToDisruptionEditPage({ disruptionId: disruptionId }, { setActiveDisruption: false }));
+        store.dispatch(
+            goToDisruptionEditPage(
+                { disruptionId: disruptionId },
+                { setActiveDisruption: false }
+            )
+        );
+        expect(store.getActions()).to.eql(expectedActions);
+    });
+
+    it("goToIncidentsView", () => {
+        const incidentDisruptionNo = "DISR00644";
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_MAIN_VIEW,
+                payload: {
+                    activeMainView: VIEW_TYPE.MAIN.CONTROL,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW,
+                payload: {
+                    activeControlDetailView: VIEW_TYPE.CONTROL_DETAIL.INCIDENTS,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_INCIDENT,
+                payload: {
+                    activeIncidentId: null,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_INCIDENT,
+                payload: {
+                    activeIncidentId: incidentDisruptionNo,
+                },
+            },
+        ];
+        store.dispatch(
+            goToIncidentsView(
+                { incidentDisruptionNo },
+                { setActiveIncident: true }
+            )
+        );
+        expect(store.getActions()).to.eql(expectedActions);
+    });
+
+    it("goToIncidentsView with setActiveIncident false", () => {
+        const incidentDisruptionNo = "DISR00644";
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_MAIN_VIEW,
+                payload: {
+                    activeMainView: VIEW_TYPE.MAIN.CONTROL,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW,
+                payload: {
+                    activeControlDetailView: VIEW_TYPE.CONTROL_DETAIL.INCIDENTS,
+                },
+            },
+        ];
+
+        store.dispatch(
+            goToIncidentsView(
+                { incidentDisruptionNo },
+                { setActiveIncident: false }
+            )
+        );
         expect(store.getActions()).to.eql(expectedActions);
     });
 });
