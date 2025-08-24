@@ -37,9 +37,6 @@ const isValidVehicleUpdate = (existingVehicle, vehicleUpdate) => result(existing
 
 export const handleVehiclesUpdate = (state, action) => {
     const { payload: { isSnapshotUpdate, vehicles } } = action;
-    // console.log('handleVehiclesUpdate', isSnapshotUpdate, vehicles);
-    // // eslint-disable-next-line no-debugger
-    // debugger;
     let allVehicles = [];
     if (isSnapshotUpdate) {
         allVehicles = keyBy(
@@ -54,15 +51,11 @@ export const handleVehiclesUpdate = (state, action) => {
                     ];
                     vehicleToUpdate.vehicle.route = existingVehicle.vehicle.route;
                 }
-                if (vehicle?.vehicle?.trip?.['.replacementTripId']) {
-                    vehicleToUpdate.vehicle.trip.replacementTripId = vehicle.vehicle.trip['.replacementTripId'];
-                }
 
                 return isValidVehicleUpdate(existingVehicle, vehicleToUpdate) ? vehicleToUpdate : existingVehicle;
             }),
             vehicleKeyedById,
         );
-        console.log('All Vehicles snapshot to:', allVehicles['31550']?.vehicle?.trip?.replacementTripId);
     } else {
         let updatedVehicles = keyBy(filter(vehicles, (vehicleUpdate) => {
             const existingVehicle = state.all[vehicleUpdate.id];
@@ -71,14 +64,6 @@ export const handleVehiclesUpdate = (state, action) => {
         }), vehicleKeyedById);
         allVehicles = { ...state.all, ...updatedVehicles };
         updatedVehicles = null;
-        // console.log('All Vehicles reset to:', allVehicles['31559']);
-        const replacementTripId = allVehicles['31550']?.vehicle?.trip?.replacementTripId;
-        console.log('All Vehicles reset snapshot to:', replacementTripId);
-        if (!replacementTripId) {
-            console.log('No replacement trip id found');
-            // eslint-disable-next-line no-debugger
-            // debugger;
-        }
     }
 
     return {
