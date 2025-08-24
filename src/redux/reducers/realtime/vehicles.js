@@ -51,9 +51,6 @@ export const handleVehiclesUpdate = (state, action) => {
                     ];
                     vehicleToUpdate.vehicle.route = existingVehicle.vehicle.route;
                 }
-                if (vehicle?.vehicle?.trip?.['.replacementTripId']) {
-                    vehicleToUpdate.vehicle.trip.replacementTripId = vehicle.vehicle.trip['.replacementTripId'];
-                }
 
                 return isValidVehicleUpdate(existingVehicle, vehicleToUpdate) ? vehicleToUpdate : existingVehicle;
             }),

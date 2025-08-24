@@ -9,7 +9,7 @@ import { updateRealTimeDetailView } from '../../../../../redux/actions/navigatio
 import { formatRouteSearchResults } from '../../../../../redux/actions/search';
 import { getVehicleDetail, getVehicleFleetInfo } from '../../../../../redux/selectors/realtime/detail';
 import { getJoinedVehicleLabel } from '../../../../../redux/selectors/realtime/vehicles';
-import { getFleetVehicleAgencyName, getFleetVehicleType, getFleetVehicleLabel, getFleetVehicleTag, getFleetVehicleDepotName } from '../../../../../redux/selectors/static/fleet';
+import { getFleetVehicleAgencyName, getFleetVehicleType, getFleetVehicleLabel, getFleetVehicleTag } from '../../../../../redux/selectors/static/fleet';
 import { getAllocations } from '../../../../../redux/selectors/control/blocks';
 import { formatRealtimeDetailListItemKey } from '../../../../../utils/helpers';
 import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
@@ -53,9 +53,6 @@ const VehicleDetails = (props) => {
 
     const vehicleLabel = getJoinedVehicleLabel(vehicleDetail, vehicleAllocations) || getFleetVehicleLabel(vehicleFleetInfo);
     const tripId = get(vehicleDetail, 'trip.tripId');
-    const replacementTripId = vehicleDetail?.trip?.['.replacementTripId'];
-    const displayTripId = replacementTripId || tripId;
-
     const tripHeadsign = get(vehicleDetail, 'trip.trip_headsign');
     const startTime = get(vehicleDetail, 'trip.startTime');
     const route = get(vehicleDetail, 'route');
@@ -63,7 +60,6 @@ const VehicleDetails = (props) => {
     const routeType = getFleetVehicleType(vehicleFleetInfo) || get(route, 'route_type');
     const routeName = get(route, 'route_short_name');
     const agencyName = getFleetVehicleAgencyName(vehicleFleetInfo) || get(route, 'agency_name');
-    const depotName = getFleetVehicleDepotName(vehicleFleetInfo);
     const vehicleTag = getFleetVehicleTag(vehicleFleetInfo);
     return (
         <section className="vehicle-detail-view__vehicle-details">
@@ -84,16 +80,14 @@ const VehicleDetails = (props) => {
                         )],
                         ['Description:', tripHeadsign || ' '],
                         ['Operator:', agencyName],
-                        ['Depot:', depotName || ' '],
                         ...(vehicleTag ? [['Tags:', vehicleTag]] : []),
                         ['Trip Start Time:', startTime],
                         ['Route ID:', routeId],
-                        ['Trip ID:', displayTripId],
+                        ['Trip ID:', tripId],
 
                     ]) || [
                         ['Description:', nonTripDescription()],
                         ['Operator:', agencyName],
-                        ['Depot:', depotName || ' '],
                         ...(vehicleTag ? [['Tags:', vehicleTag]] : []),
                     ]).map(r => createDetailRow(...r))
                 }
@@ -116,8 +110,6 @@ VehicleDetails.propTypes = {
 VehicleDetails.defaultProps = {
     vehicleFleetInfo: {},
 };
-
-export { VehicleDetails };
 
 export default connect(
     state => ({
