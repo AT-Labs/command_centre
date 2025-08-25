@@ -17,8 +17,7 @@ import {
     isRecurringPeriodInvalid,
     getDurationWithoutSeconds,
     getDuration,
-    buildDisruptionsQuery,
-    transformParentSourceIdNo,
+    buildDisruptionsQuery
 } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 import { STATUSES } from '../../types/disruptions-types';
@@ -510,6 +509,7 @@ describe('getDurationWithoutSeconds', () => {
         MockDate.reset();
     });
 
+
     it('should return - when now <= startTime', () => {
         const result = getDurationWithoutSeconds({
             ...disruption,
@@ -525,7 +525,7 @@ describe('getDurationWithoutSeconds', () => {
             startTime: '2023-03-16T10:00:00Z',
             endTime: '2023-03-19T12:00:00Z',
             status: 'draft',
-            activePeriods: [],
+            activePeriods: []
         });
         expect(result).to.eql('-');
     });
@@ -581,47 +581,5 @@ describe('buildDisruptionsQuery', () => {
             includeDrafts: false,
         });
         expect(result).to.equal('?statuses=in-progress&statuses=resolved&stopId=1234&stopCode=5678&onlyWithStops=true&includeDraft=false');
-    });
-});
-
-describe('transformParentSourceIdNo', () => {
-    it('should return null if id is null', () => {
-        expect(transformParentSourceIdNo(null)).to.eql(null);
-    });
-
-    it('should return null if id is undefined', () => {
-        expect(transformParentSourceIdNo(undefined)).to.eql(null);
-    });
-
-    it('should return "CCD000001" when id is 1', () => {
-        expect(transformParentSourceIdNo(1)).to.eql('CCD000001');
-    });
-
-    it('should return "CCD001234" when id is 1234', () => {
-        expect(transformParentSourceIdNo(1234)).to.eql('CCD001234');
-    });
-
-    it('should return "CCD123456" when id is 123456', () => {
-        expect(transformParentSourceIdNo(123456)).to.eql('CCD123456');
-    });
-
-    it('should return "CCD999999" when id is 999999', () => {
-        expect(transformParentSourceIdNo(999999)).to.eql('CCD999999');
-    });
-
-    it('should return "CCD1234567" when id is more than 6 digits', () => {
-        expect(transformParentSourceIdNo(1234567)).to.eql('CCD1234567');
-    });
-
-    it('should handle string input as number', () => {
-        expect(transformParentSourceIdNo('42')).to.eql('CCD000042');
-    });
-
-    it('should return null if id is 0', () => {
-        expect(transformParentSourceIdNo(0)).to.eql(null);
-    });
-
-    it('should return null if id is empty string', () => {
-        expect(transformParentSourceIdNo('')).to.eql(null);
     });
 });

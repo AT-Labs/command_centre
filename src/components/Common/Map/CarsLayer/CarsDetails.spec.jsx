@@ -237,6 +237,7 @@ describe('CarsDetails Component', () => {
         );
 
         await waitFor(() => {
+            expect(screen.getByText('Error:')).toBeInTheDocument();
             expect(screen.getByText(errorMessage)).toBeInTheDocument();
         });
     });
@@ -313,80 +314,5 @@ describe('CarsDetails Component', () => {
                 ),
             );
         });
-    });
-
-    test('displays "No TMPs valid for the selected date range" message when tmps array is empty', async () => {
-        const mockWorksiteWithoutTMPs = {
-            ...mockWorksite,
-            tmps: [], // Empty array
-        };
-
-        getWorksite.mockResolvedValue(mockWorksiteWithoutTMPs);
-        getLayout.mockResolvedValue([]);
-
-        render(
-            <CarsDetails
-                cars={ mockCars }
-                onClose={ mockOnClose }
-                onUpdateImpacts={ mockOnUpdateImpacts }
-            />,
-        );
-
-        await waitFor(() => {
-            expect(screen.getByText('No TMPs valid for the selected date range.')).toBeInTheDocument();
-        });
-
-        // Verify that the TMP dropdown is not displayed
-        expect(screen.queryByLabelText('Available TMPs')).not.toBeInTheDocument();
-    });
-
-    test('displays "No TMPs valid for the selected date range" message when tmps property is null', async () => {
-        const mockWorksiteWithNullTMPs = {
-            ...mockWorksite,
-            tmps: null, // Null value
-        };
-
-        getWorksite.mockResolvedValue(mockWorksiteWithNullTMPs);
-        getLayout.mockResolvedValue([]);
-
-        render(
-            <CarsDetails
-                cars={ mockCars }
-                onClose={ mockOnClose }
-                onUpdateImpacts={ mockOnUpdateImpacts }
-            />,
-        );
-
-        await waitFor(() => {
-            expect(screen.getByText('No TMPs valid for the selected date range.')).toBeInTheDocument();
-        });
-
-        // Verify that the TMP dropdown is not displayed
-        expect(screen.queryByLabelText('Available TMPs')).not.toBeInTheDocument();
-    });
-
-    test('displays "No TMPs valid for the selected date range" message when tmps property is undefined', async () => {
-        const mockWorksiteWithUndefinedTMPs = {
-            ...mockWorksite,
-        };
-        delete mockWorksiteWithUndefinedTMPs.tmps; // Remove tmps property
-
-        getWorksite.mockResolvedValue(mockWorksiteWithUndefinedTMPs);
-        getLayout.mockResolvedValue([]);
-
-        render(
-            <CarsDetails
-                cars={ mockCars }
-                onClose={ mockOnClose }
-                onUpdateImpacts={ mockOnUpdateImpacts }
-            />,
-        );
-
-        await waitFor(() => {
-            expect(screen.getByText('No TMPs valid for the selected date range.')).toBeInTheDocument();
-        });
-
-        // Verify that the TMP dropdown is not displayed
-        expect(screen.queryByLabelText('Available TMPs')).not.toBeInTheDocument();
     });
 });

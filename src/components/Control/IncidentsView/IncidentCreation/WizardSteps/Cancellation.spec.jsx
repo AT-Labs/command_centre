@@ -12,7 +12,13 @@ import Cancellation from './Cancellation';
 import {
     toggleIncidentModals,
     openCreateIncident,
-    deleteAffectedEntities } from '../../../../../redux/actions/control/incidents';
+    deleteAffectedEntities,
+    toggleEditEffectPanel,
+    toggleWorkaroundPanel,
+    updateDisruptionKeyToEditEffect,
+    updateDisruptionKeyToWorkaroundEdit,
+    setDisruptionForWorkaroundEdit,
+} from '../../../../../redux/actions/control/incidents';
 
 const mockStore = configureStore([thunk]);
 
@@ -22,6 +28,11 @@ jest.mock('../../../../../redux/actions/control/incidents', () => ({
     toggleIncidentModals: jest.fn(),
     openCreateIncident: jest.fn(),
     deleteAffectedEntities: jest.fn(),
+    toggleEditEffectPanel: jest.fn(),
+    toggleWorkaroundPanel: jest.fn(),
+    updateDisruptionKeyToEditEffect: jest.fn(),
+    updateDisruptionKeyToWorkaroundEdit: jest.fn(),
+    setDisruptionForWorkaroundEdit: jest.fn(),
 }));
 
 jest.mock('../../../../../redux/actions/control/link', () => ({
@@ -35,6 +46,11 @@ describe('Confirmation Component', () => {
         toggleIncidentModals: jest.fn(),
         openCreateIncident: jest.fn(),
         deleteAffectedEntities: jest.fn(),
+        toggleEditEffectPanel: jest.fn(),
+        toggleWorkaroundPanel: jest.fn(),
+        updateDisruptionKeyToEditEffect: jest.fn(),
+        updateDisruptionKeyToWorkaroundEdit: jest.fn(),
+        setDisruptionForWorkaroundEdit: jest.fn(),
     };
 
     beforeEach(() => {
@@ -56,6 +72,21 @@ describe('Confirmation Component', () => {
         });
         toggleIncidentModals.mockImplementation((type, isOpen) => (dispatch) => {
             dispatch({ type: 'MOCK_TOGGLE_INCIDENT_MODALS', payload: { type, isOpen } });
+        });
+        toggleWorkaroundPanel.mockImplementation(isWorkaroundOpen => (dispatch) => {
+            dispatch({ type: 'MOCK_TOGGLE_WORKAROUND_PANEL', payload: isWorkaroundOpen });
+        });
+        updateDisruptionKeyToWorkaroundEdit.mockImplementation(disruptionKeyToWorkaroundEdit => (dispatch) => {
+            dispatch({ type: 'MOCK_DISRUPTION_KEY_TO_WORKAROUND_EDIT', payload: disruptionKeyToWorkaroundEdit });
+        });
+        toggleEditEffectPanel.mockImplementation(isEditEffectPanelOpen => (dispatch) => {
+            dispatch({ type: 'MOCK_TOGGLE_EDIT_EFFECT_PANEL', payload: isEditEffectPanelOpen });
+        });
+        updateDisruptionKeyToEditEffect.mockImplementation(disruptionKeyToEditEffect => (dispatch) => {
+            dispatch({ type: 'MOCK_UPDATE_DISRUPTION_KEY_TO_EDIT_EFFECT', payload: disruptionKeyToEditEffect });
+        });
+        setDisruptionForWorkaroundEdit.mockImplementation(disruptionForWorkaroundEdit => (dispatch) => {
+            dispatch({ type: 'MOCK_DISRUPTION_FOR_WORKAROUND_EDIT', payload: disruptionForWorkaroundEdit });
         });
         store = mockStore({
             control:
@@ -116,5 +147,10 @@ describe('Confirmation Component', () => {
         expect(openCreateIncident).toHaveBeenCalledWith(false);
         expect(deleteAffectedEntities).toHaveBeenCalled();
         expect(toggleIncidentModals).toHaveBeenCalledWith('isCancellationOpen', false);
+        expect(toggleWorkaroundPanel).toHaveBeenCalledWith(false);
+        expect(updateDisruptionKeyToWorkaroundEdit).toHaveBeenCalledWith('');
+        expect(toggleEditEffectPanel).toHaveBeenCalledWith(false);
+        expect(updateDisruptionKeyToEditEffect).toHaveBeenCalledWith('');
+        expect(setDisruptionForWorkaroundEdit).toHaveBeenCalledWith({});
     });
 });

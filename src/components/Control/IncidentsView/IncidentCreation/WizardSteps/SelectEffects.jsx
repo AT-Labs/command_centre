@@ -99,7 +99,7 @@ export const SelectEffects = (props) => {
         cause: incidentCause,
         header: incidentHeader,
         modalOpenedTime,
-    } = props.data;
+    } = props.data || {};
 
     const setupDisruption = () => {
         const now = moment();
@@ -119,6 +119,7 @@ export const SelectEffects = (props) => {
             cause: incidentCause || DEFAULT_CAUSE.value,
             header: incidentHeader || '',
             key: uniqueId('DISR'),
+            recurrent: incidentRecurrent,
             ...(recurrenceDates && {
                 recurrencePattern: {
                     ...recurrencePattern,
@@ -132,6 +133,19 @@ export const SelectEffects = (props) => {
     const [activePeriods, setActivePeriods] = useState([]);
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
+    
+    useEffect(() => {
+        if (props.data.disruptions && props.data.disruptions.length > 0) {
+            setDisruptions(props.data.disruptions);
+        }
+    }, [props.data.disruptions]);
+    
+    useEffect(() => {
+        if (disruptions.length > 0) {
+            updateDisruptionsState();
+        }
+    }, [disruptions]);
+    
     const impactValid = key => !isEmpty(disruptions.find(d => d.key === key).impact);
 
     const getDisruptionByKey = key => disruptions.find(d => d.key === key);
@@ -271,9 +285,8 @@ export const SelectEffects = (props) => {
             const routes = disruptions.map(disruption => disruption.affectedEntities.affectedRoutes).flat();
             const stops = disruptions.map(disruption => disruption.affectedEntities.affectedStops).flat();
             props.updateAffectedStopsState(sortBy(stops, sortedStop => sortedStop.stopCode));
-
+            props.updateAffectedRoutesState(routes);
             if (routes.length > 0) {
-                props.updateAffectedRoutesState(routes);
                 props.getRoutesByShortName(routes);
             }
             setRequireMapUpdate(false);
@@ -290,7 +303,7 @@ export const SelectEffects = (props) => {
             } else {
                 props.onSubmitUpdate();
             }
-        }, 0); // to run it on next event loop
+        }, 0);
     };
 
     const onContinue = () => {
@@ -643,6 +656,21 @@ export const SelectEffects = (props) => {
                 isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || !props.isEditMode }
                 onSubmitDraft={ () => onSaveDraft() }
                 onBack={ !props.isEditMode ? onBack : undefined }
+                showFinishButton={ true }
+                isFinishDisabled={ props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
+                onFinish={ () => {
+                    try {
+                        const result = props.onSubmit();
+                        if (result && result.then) {
+                            result.then(() => {
+                            }).catch(error => {
+                                console.error('🔧 SelectEffects - props.onSubmit() Promise rejected:', error);
+                            });
+                        }
+                    } catch (error) {
+                        console.error('🔧 SelectEffects - Error calling props.onSubmit():', error);
+                    }
+                } }
             />
             <CustomMuiDialog
                 title="Disruption Active Periods"
@@ -668,6 +696,7 @@ SelectEffects.propTypes = {
     data: PropTypes.object,
     onUpdateEntitiesValidation: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
+    onSubmit: PropTypes.func,
 };
 
 SelectEffects.defaultProps = {
@@ -677,6 +706,7 @@ SelectEffects.defaultProps = {
     isEditMode: false,
     useDraftDisruptions: false,
     data: {},
+    onSubmit: () => { },
 };
 
 export default connect(state => ({

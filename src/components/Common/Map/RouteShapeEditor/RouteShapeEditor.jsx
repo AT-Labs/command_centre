@@ -1,19 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Map as LeafletMap, TileLayer, Polyline, FeatureGroup, Tooltip } from 'react-leaflet';
-import { FormGroup, Input, Label } from 'reactstrap';
 import { EditControl } from 'react-leaflet-draw';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import './RouteShapeEditor.scss';
 import L from 'leaflet';
+
 import PropTypes from 'prop-types';
-import { findDifferences, mergeCoordinates, parseWKT, toCoordinates, toWKT } from './ShapeHelper';
+import { findDifferences, parseWKT, toCoordinates, toWKT } from './ShapeHelper';
 import IconMarker from '../../IconMarker/IconMarker';
 import { generateUniqueID } from '../../../../utils/helpers';
 import { DEFAULT_AUCKLAND_COORDINATES, DIVERSION_SHAPE_COLOR, DIVERSION_SHAPE_OPACITY,
     DIVERSION_SHAPE_WEIGHT, ROUTE_SHAPE_COLOR, ROUTE_SHAPE_OPACITY, ROUTE_SHAPE_WEIGHT } from './constants';
-import { calculateRoute } from '../../../../utils/transmitters/traffic-api';
-import InstructionPanel from './InstructionPanel';
 
 L.drawLocal.edit.handlers.edit.tooltip.text = 'Drag the red dots to update the shape for the selected route variant.';
 
@@ -27,24 +25,19 @@ const RouteShapeEditor = (props) => {
     const [editablePolyline, setEditablePolyline] = useState(props.initialShape ? parseWKT(props.initialShape) : []);
     const [isEditablePolylineVisible, setIsEditablePolylineVisible] = useState(true);
     const [diversionPolyline, setDiversionPolyline] = useState([]);
-    const [editedCoords, setEditedCoords] = useState([]); // From editing
-    const [updatedCoords, setUpdatedCoords] = useState([]); // From TomTom or editing
+    const [updatedCoords, setUpdatedCoords] = useState([]);
 
     // Undo stack for editable polyline
     const [featureGroupKey, setFeatureGroupKey] = useState(0); // Key to force remount FeatureGroup Editor
     const [editingAction, setEditingAction] = useState(null); // Last editing action
     const [undoStack, setUndoStack] = useState([]);
+    const [mapKey, setMapKey] = useState(0); // Key to force remount map when routeVariant changes
 
     // Editor
     const [isEditing, setIsEditing] = useState(false);
     const isProcessingEdit = useRef(false);
     // Only allow user to modify the shape when there is no other additional route variants.
     const editable = props.additionalRouteVariants.length === 0 && editablePolyline?.length > 0;
-
-    // TomTom
-    const [useTomTom, setUseTomTom] = useState(false);
-    const [tomtomPolyline, setTomtomPolyline] = useState([]);
-    const [tomtomInstructions, setTomtomInstructions] = useState([]);
 
     const onEdited = (e) => {
         // Leaflet Draw's internal event listeners can get duplicated.
@@ -63,7 +56,13 @@ const RouteShapeEditor = (props) => {
                 const latlngs = layer.getLatLngs();
                 if (latlngs.length > 0) {
                     const coordinates = toCoordinates(latlngs);
-                    setEditedCoords(coordinates);
+                    // Record snapshot for undo
+                    const newSnapshotAction = {
+                        name: `Edit ${generateUniqueID()}`,
+                        polyline: coordinates,
+                    };
+                    setEditingAction(newSnapshotAction);
+                    setUpdatedCoords(coordinates);
                 }
             }
         });
@@ -78,12 +77,8 @@ const RouteShapeEditor = (props) => {
         setEditablePolyline(previousEntry.polyline);
         if (previousEntry.polyline === originalCoords) {
             setUpdatedCoords([]); // This means there is no updated shape
-            setTomtomPolyline([]); // Reset TomTom polyline
-            setTomtomInstructions([]); // Reset TomTom instructions
         } else {
             setUpdatedCoords(previousEntry.polyline);
-            setTomtomPolyline(previousEntry.tomtomPolyline || []);
-            setTomtomInstructions(previousEntry.tomtomInstructions || []);
         }
         setFeatureGroupKey(k => k + 1);
     };
@@ -91,24 +86,9 @@ const RouteShapeEditor = (props) => {
     // Reset handler
     const handleReset = () => {
         setEditablePolyline(originalCoords);
-        setTomtomPolyline([]);
-        setTomtomInstructions([]);
         setUpdatedCoords([]);
         setUndoStack([{ name: 'Initial', polyline: originalCoords }]);
         setFeatureGroupKey(k => k + 1);
-    };
-
-    const onUseTomTomChanged = () => {
-        setUseTomTom(!useTomTom);
-    };
-
-    const mergeTomTom = () => {
-        if (tomtomPolyline.length > 0) {
-            const mergedCoords = mergeCoordinates(originalCoords, tomtomPolyline);
-            setUpdatedCoords(mergedCoords);
-            setEditablePolyline(mergedCoords);
-            setTomtomPolyline([]);
-        }
     };
 
     // Collect all unique stops from main route and additional variants
@@ -136,28 +116,6 @@ const RouteShapeEditor = (props) => {
         return Array.from(stopMap.values());
     };
 
-    const fetchTomTomShape = async (diversion) => {
-        const points = diversion.map(latlng => `${latlng[0]},${latlng[1]}`);
-        const routePoints = [];
-        let maneuvers = [];
-        try {
-            // Fetch the route shape from TomTom API
-            const tomtomShape = await calculateRoute(points);
-            if (tomtomShape?.routes?.length > 0) {
-                const route = tomtomShape?.routes[0];
-                route.legs.forEach((leg) => {
-                    leg.points.forEach((point) => {
-                        routePoints.push([point.latitude, point.longitude]);
-                    });
-                });
-                maneuvers = route.guidance.instructions;
-            }
-        } catch (error) {
-            console.error('Error fetching TomTom route shape:', error);
-        }
-        return { routePoints, maneuvers };
-    };
-
     // Record the last editing action to the undo stack
     useEffect(() => {
         if (editingAction) {
@@ -172,6 +130,9 @@ const RouteShapeEditor = (props) => {
             setEditablePolyline(initialCoords);
             setUpdatedCoords(parseWKT(props.initialShape));
             setUndoStack([{ name: 'Initial', polyline: initialCoords }]);
+            
+            // Force map update when initialShape changes
+            setMapKey(prev => prev + 1);
         } else {
             setEditablePolyline(originalCoords);
             setUndoStack([{ name: 'Initial', polyline: originalCoords }]);
@@ -184,10 +145,19 @@ const RouteShapeEditor = (props) => {
             const coords = parseWKT(props.routeVariant?.shapeWkt);
             setOriginalCoords(coords);
             setUpdatedCoords([]);
-            if (coords.length > 0 && mapRef.current) {
+            setEditablePolyline(coords);
+            if (coords.length > 0) {
                 setCenter(coords[0]);
             }
+        } else {
+            // Reset state when no valid shape
+            setOriginalCoords([]);
+            setUpdatedCoords([]);
+            setEditablePolyline([]);
         }
+
+        // Force map remount when routeVariant changes
+        setMapKey(prev => prev + 1);
 
         // This is to fix the leaflet issue where the state of editor preserves previous layer.
         // This triggers a force reload
@@ -196,48 +166,29 @@ const RouteShapeEditor = (props) => {
             setIsEditablePolylineVisible(true);
         }, 100);
         return () => clearTimeout(timer);
-    }, [props.routeVariant]);
+    }, [props.routeVariant, props.initialShape]);
 
-    useEffect(async () => {
-        if (editedCoords.length > 0) {
-            // Calculate diversion
-            const difference = findDifferences(originalCoords, editedCoords);
-            if (difference.length > 1) {
-                if (useTomTom && difference.length < 15) {
-                    // TomTom requires at least 2 points to calculate a route
-                    const { routePoints, maneuvers } = await fetchTomTomShape(difference);
-                    if (routePoints.length > 0) {
-                        // When we get the route points from TomTom
-                        setTomtomPolyline(routePoints);
-                        setTomtomInstructions(maneuvers);
-                    } else {
-                        // When we don't get any route points from TomTom
-                        setTomtomPolyline([]);
-                        setTomtomInstructions([]);
-                    }
-                }
-                setUpdatedCoords(editedCoords);
-            } else {
-                setTomtomInstructions([]);
-            }
+    // Additional effect to force map update when routeVariant changes
+    useEffect(() => {
+        if (props.routeVariant) {
+            // Force map update with a small delay
+            const timer = setTimeout(() => {
+                setMapKey(prev => prev + 1);
+            }, 50);
+            return () => clearTimeout(timer);
         }
-    }, [editedCoords]);
+    }, [props.routeVariant?.routeVariantId]);
 
     useEffect(() => {
         if (updatedCoords.length > 0) {
-            // Calculate the diversion shape
+            // Calculate diversion
             const difference = findDifferences(originalCoords, updatedCoords);
+            const updatedDiversionShape = toWKT(difference);
             if (difference.length > 0) {
                 setDiversionPolyline(parseWKT(toWKT(difference)));
             }
-            const newSnapshotAction = {
-                name: `Edit ${generateUniqueID()}`,
-                polyline: updatedCoords,
-                tomtomPolyline,
-                tomtomInstructions,
-            };
-            setEditingAction(newSnapshotAction);
-            props.onShapeUpdated(toWKT(diversionPolyline), toWKT(updatedCoords));
+
+            props.onShapeUpdated(updatedDiversionShape, toWKT(updatedCoords));
         } else {
             setDiversionPolyline([]);
             props.onShapeUpdated(null, null);
@@ -245,152 +196,147 @@ const RouteShapeEditor = (props) => {
     }, [updatedCoords, props.stopCheckRadius]);
 
     return (
-        <div className="map route-shape-editor-container">
+        <div className="map route-shape-editor-container" style={ { height: '100%', width: '100%' } }>
             { !isEditing && editable && (
                 <div className="route-shape-editor-buttons">
                     <button type="button" onClick={ handleReset }>Reset</button>
                     <button type="button" onClick={ handleUndo } disabled={ undoStack.length < 2 }>Undo</button>
                 </div>
             )}
-
-            <div className="route-shape-editor-top-right-panel">
-                <div className="route-shape-editor-tomtom-instructions">
-                    <FormGroup check>
-                        <Label check>
-                            <Input
-                                id="use-tomtom"
-                                type="checkbox"
-                                className="mr-2"
-                                onChange={ onUseTomTomChanged }
-                                size={ 20 }
-                                checked={ useTomTom }
-                            />
-                            <span>Use TomTom Route Directions</span>
-                        </Label>
-                    </FormGroup>
-                    { useTomTom && tomtomPolyline.length > 0 && (
-                        <p style={ { marginTop: '10px' } }>
-                            <button onClick={ mergeTomTom } type="button" disabled={ tomtomPolyline.length < 2 }>Merge</button>
-                        </p>
-                    )}
+            {/* Placeholder when no route variant is selected */}
+            {(!props.routeVariant || Object.keys(props.routeVariant).length === 0) && (
+                <div style={ {
+                    height: '100%',
+                    width: '100%',
+                    backgroundColor: '#f8f9fa',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '2px dashed #dee2e6',
+                    borderRadius: '8px',
+                    color: '#6c757d',
+                    fontSize: '16px',
+                    textAlign: 'center',
+                    padding: '20px',
+                } }>
+                    <div style={ { marginBottom: '10px' } }>
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.447 2.224A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3" />
+                        </svg>
+                    </div>
+                    <div style={ { fontWeight: 'bold', marginBottom: '5px' } }>
+                        Select a Route Variant
+                    </div>
+                    <div style={ { fontSize: '14px' } }>
+                        Please select a route variant from the dropdown to display the map
+                    </div>
                 </div>
-                { useTomTom && tomtomInstructions.length > 0 && (<InstructionPanel className="route-shape-editor-instructions-content" instructions={ tomtomInstructions } />)}
-            </div>
-            <LeafletMap
-                key={ props.routeVariant?.routeVariantId }
-                center={ center }
-                zoom={ 16 }
-                maxZoom={ 19 }
-                style={ { height: '100%', width: '100%' } }
-                ref={ mapRef }
-                whenReady={ (mapInstance) => {
-                    // Create a custom pane for the diversion polyline
-                    const diversionPane = mapInstance.target.createPane('diversionPane');
-                    diversionPane.style.zIndex = 650; // Set a higher zIndex to ensure it's on top
-                } }
-            >
-                <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                {!isEditing && props.routeVariant?.stops?.length > 0 && (
-                    <FeatureGroup>
-                        {getAllUniqueStops().map((stop) => {
-                            const isHighlighted = props.highlightedStops.includes(stop.stopId);
-                            const marker = stop.stopLat ? (
-                                <IconMarker
-                                    key={ stop.stopId }
-                                    location={ [stop.stopLat, stop.stopLon] }
-                                    imageName={ isHighlighted ? 'bus-stop-red' : 'bus-stop' }
-                                    size={ 24 }
-                                >
-                                    <Tooltip>
-                                        {`${stop.stopCode} - ${stop.stopName}`}
-                                    </Tooltip>
-                                </IconMarker>
-                            ) : null;
-                            return marker;
-                        })}
-                    </FeatureGroup>
-                )}
-                {isEditablePolylineVisible && (
-                    <FeatureGroup key={ `base-${featureGroupKey}` }>
-                        <Polyline
-                            positions={ editablePolyline }
-                            color={ ROUTE_SHAPE_COLOR }
-                            weight={ ROUTE_SHAPE_WEIGHT }
-                            opacity={ props.visible ? ROUTE_SHAPE_OPACITY : 0 }
-                        >
-                            <Tooltip sticky="true">
-                                { `${props.routeVariant?.routeVariantId} - ${props.routeVariant?.routeLongName}` }
-                            </Tooltip>
-                        </Polyline>
-                        {editable && (
-                            <EditControl
-                                position="topleft"
-                                onEditStart={ () => setIsEditing(true) }
-                                onEdited={ onEdited }
-                                onEditStop={ () => setIsEditing(false) }
-                                draw={ {
-                                    rectangle: false,
-                                    circle: false,
-                                    circlemarker: false,
-                                    marker: false,
-                                    polygon: false,
-                                    polyline: false,
-                                } }
-                                edit={ { edit: true, remove: false } }
-                            />
-                        )}
+            )}
+            {/* Map when route variant is selected */}
+            {props.routeVariant && Object.keys(props.routeVariant).length > 0 && (
+                <LeafletMap
+                    key={ `${props.routeVariant?.routeVariantId}-${mapKey}` }
+                    center={ center }
+                    zoom={ 16 }
+                    maxZoom={ 19 }
+                    style={ { height: '100%', width: '100%' } }
+                    ref={ mapRef }
+                    whenReady={ (mapInstance) => {
+                        // Create a custom pane for the diversion polyline
+                        const diversionPane = mapInstance.target.createPane('diversionPane');
+                        diversionPane.style.zIndex = 650; // Set a higher zIndex to ensure it's on top
+                    } }
+                >
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    {!isEditing && props.routeVariant?.stops?.length > 0 && (
+                        <FeatureGroup>
+                            {getAllUniqueStops().map((stop) => {
+                                const isHighlighted = props.highlightedStops.includes(stop.stopId);
+                                const marker = stop.stopLat ? (
+                                    <IconMarker
+                                        key={ stop.stopId }
+                                        location={ [stop.stopLat, stop.stopLon] }
+                                        imageName={ isHighlighted ? 'bus-stop-red' : 'bus-stop' }
+                                        size={ 24 }
+                                    >
+                                        <Tooltip>
+                                            {`${stop.stopCode} - ${stop.stopName}`}
+                                        </Tooltip>
+                                    </IconMarker>
+                                ) : null;
+                                return marker;
+                            })}
+                        </FeatureGroup>
+                    )}
+                    {isEditablePolylineVisible && (
+                        <FeatureGroup key={ `base-${props.routeVariant?.routeVariantId}-${mapKey}-${featureGroupKey}` }>
+                            <Polyline
+                                positions={ editablePolyline }
+                                color={ ROUTE_SHAPE_COLOR }
+                                weight={ ROUTE_SHAPE_WEIGHT }
+                                opacity={ props.visible ? ROUTE_SHAPE_OPACITY : 0 }
+                            >
+                                <Tooltip sticky="true">
+                                    { `${props.routeVariant?.routeVariantId} - ${props.routeVariant?.routeLongName}` }
+                                </Tooltip>
+                            </Polyline>
+                            {editable && (
+                                <EditControl
+                                    position="topleft"
+                                    onEditStart={ () => setIsEditing(true) }
+                                    onEdited={ onEdited }
+                                    onEditStop={ () => setIsEditing(false) }
+                                    draw={ {
+                                        rectangle: false,
+                                        circle: false,
+                                        circlemarker: false,
+                                        marker: false,
+                                        polygon: false,
+                                        polyline: false,
+                                    } }
+                                    edit={ { edit: true, remove: false } }
+                                />
+                            )}
 
-                    </FeatureGroup>
-                )}
-                {!isEditing && (
-                    <FeatureGroup>
-                        { props.additionalRouteVariants
-                            .filter(rv => rv.visible)
-                            .map(rv => (
-                                <Polyline key={ rv.routeVariantId }
-                                    positions={ parseWKT(rv.shapeWkt) }
-                                    color={ rv.color }
-                                    weight={ ROUTE_SHAPE_WEIGHT }
-                                    opacity={ ROUTE_SHAPE_OPACITY }>
-                                    <Tooltip sticky="true">
-                                        { `${rv.routeVariantId} - ${rv.routeLongName}` }
-                                    </Tooltip>
-                                </Polyline>
-                            ))}
-                    </FeatureGroup>
-                )}
-                {diversionPolyline.length > 0 && (
-                    <FeatureGroup key={ `diversion-${featureGroupKey}` }>
-                        <Polyline
-                            positions={ diversionPolyline }
-                            color={ DIVERSION_SHAPE_COLOR }
-                            weight={ DIVERSION_SHAPE_WEIGHT }
-                            opacity={ DIVERSION_SHAPE_OPACITY }
-                        >
-                            <Tooltip sticky="true">
-                                <span>Diversion Shape</span>
-                            </Tooltip>
-                        </Polyline>
-                    </FeatureGroup>
-                )}
-                {useTomTom && tomtomPolyline.length > 0 && (
-                    <FeatureGroup>
-                        <Polyline
-                            positions={ tomtomPolyline }
-                            color="Black"
-                            weight={ 4 }
-                            opacity={ 0.7 }
-                        >
-                            <Tooltip sticky="true">
-                                <span>TomTom generated diversion</span>
-                            </Tooltip>
-                        </Polyline>
-                    </FeatureGroup>
-                )}
-            </LeafletMap>
+                        </FeatureGroup>
+                    )}
+                    {!isEditing && (
+                        <FeatureGroup>
+                            { props.additionalRouteVariants
+                                .filter(rv => rv.visible)
+                                .map(rv => (
+                                    <Polyline key={ rv.routeVariantId }
+                                        positions={ parseWKT(rv.shapeWkt) }
+                                        color={ rv.color }
+                                        weight={ ROUTE_SHAPE_WEIGHT }
+                                        opacity={ ROUTE_SHAPE_OPACITY }>
+                                        <Tooltip sticky="true">
+                                            { `${rv.routeVariantId} - ${rv.routeLongName}` }
+                                        </Tooltip>
+                                    </Polyline>
+                                ))}
+                        </FeatureGroup>
+                    )}
+                    {diversionPolyline.length > 0 && (
+                        <FeatureGroup key={ `diversion-${props.routeVariant?.routeVariantId}-${mapKey}-${featureGroupKey}` }>
+                            <Polyline
+                                positions={ diversionPolyline }
+                                color={ DIVERSION_SHAPE_COLOR }
+                                weight={ DIVERSION_SHAPE_WEIGHT }
+                                opacity={ DIVERSION_SHAPE_OPACITY }
+                            >
+                                <Tooltip sticky="true">
+                                    <span>Diversion Shape</span>
+                                </Tooltip>
+                            </Polyline>
+                        </FeatureGroup>
+                    )}
+                </LeafletMap>
+            )}
         </div>
     );
 };
