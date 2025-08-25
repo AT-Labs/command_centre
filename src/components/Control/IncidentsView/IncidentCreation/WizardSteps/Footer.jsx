@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 
 export const Footer = props => (
-    <footer className="row m-0 justify-content-between p-4 position-fixed incident-footer-min-height">
+    <footer className="row m-0 justify-content-between p-4 position-fixed">
         <div className={ (props.useDraftDisruptions && props.isDraftOrCreateMode) ? 'col-3' : 'col-4' }>
             { props.onBack && (
                 <Button
@@ -35,29 +35,12 @@ export const Footer = props => (
             </div>
         )}
         <div className={ (props.useDraftDisruptions && props.isDraftOrCreateMode) ? 'col-3 pl-0' : 'col-4' }>
-            { props.showFinishButton ? (
-                <div className="d-flex">
-                    <Button
-                        disabled={ props.isSubmitDisabled }
-                        className="btn cc-btn-primary mr-4 flex-fill"
-                        onClick={ props.onContinue }>
-                        { props.nextButtonValue }
-                    </Button>
-                    <Button
-                        disabled={ props.isFinishDisabled }
-                        className="btn cc-btn-primary text-white flex-fill"
-                        onClick={ props.onFinish }>
-                        Finish
-                    </Button>
-                </div>
-            ) : (
-                <Button
-                    disabled={ props.isSubmitDisabled }
-                    className="btn cc-btn-primary btn-block continue"
-                    onClick={ props.onContinue }>
-                    { props.nextButtonValue }
-                </Button>
-            )}
+            <Button
+                disabled={ props.isSubmitDisabled }
+                className="btn cc-btn-primary btn-block continue"
+                onClick={ props.onContinue }>
+                { props.nextButtonValue }
+            </Button>
         </div>
     </footer>
 );
@@ -72,9 +55,6 @@ Footer.propTypes = {
     isDraftSubmitDisabled: PropTypes.bool,
     nextButtonValue: PropTypes.string.isRequired,
     useDraftDisruptions: PropTypes.bool,
-    showFinishButton: PropTypes.bool,
-    isFinishDisabled: PropTypes.bool,
-    onFinish: PropTypes.func,
 };
 
 Footer.defaultProps = {
@@ -84,9 +64,6 @@ Footer.defaultProps = {
     isDraftOrCreateMode: true,
     onBack: null,
     onSubmitDraft: () => {},
-    showFinishButton: false,
-    isFinishDisabled: false,
-    onFinish: () => {},
 };
 
 export default connect(

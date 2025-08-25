@@ -36,22 +36,7 @@ export const isStartTimeValid = (startDate, startTime, openingTime, recurrent = 
     && moment(startTime, TIME_FORMAT, true).isValid()
     && (!recurrent || moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`).isSameOrAfter(openingTime, 'minute'));
 
-export const isEffectStartTimeValid = (startDate, startTime, openingTime, recurrent = false) => startTime !== '24:00'
-    && moment(startTime, TIME_FORMAT, true).isValid()
-    && (!recurrent || moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`).isSameOrAfter(openingTime, 'minute'));
-
 export const isEndTimeValid = (endDate, endTime, startDate, startTime) => {
-    if (isEmpty(endTime)) {
-        return true;
-    }
-
-    const endTimeMoment = moment(`${endDate}T${endTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`);
-
-    return moment(endTime, TIME_FORMAT, true).isValid()
-        && moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`).isSameOrBefore(endTimeMoment, 'minute');
-};
-
-export const isEffectEndTimeValid = (endDate, endTime, startDate, startTime) => {
     if (isEmpty(endTime)) {
         return true;
     }
@@ -80,45 +65,6 @@ export const isStartDateValid = (startDate, openingTime, recurrent = false) => m
     && (!recurrent || moment(startDate, DATE_FORMAT).isSameOrAfter(openingTime, 'day'));
 
 export const isDurationValid = (duration, recurrent) => !recurrent || (!isEmpty(duration) && (Number.isInteger(+duration) && +duration > 0 && +duration < 25));
-
-export const updateParentDisruptionTimeRange = (parentDisruption, effects) => {
-    if (!effects || effects.length === 0) {
-        return parentDisruption;
-    }
-
-    let earliestStartTime = null;
-    let latestEndTime = null;
-
-    effects.forEach(effect => {
-        if (effect.startTime && effect.startDate) {
-            const effectStartMoment = moment(`${effect.startDate}T${effect.startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`);
-            if (!earliestStartTime || effectStartMoment.isBefore(earliestStartTime)) {
-                earliestStartTime = effectStartMoment;
-            }
-        }
-
-        if (effect.endTime && effect.endDate) {
-            const effectEndMoment = moment(`${effect.endDate}T${effect.endTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`);
-            if (!latestEndTime || effectEndMoment.isAfter(latestEndTime)) {
-                latestEndTime = effectEndMoment;
-            }
-        }
-    });
-
-    const updatedDisruption = { ...parentDisruption };
-
-    if (earliestStartTime) {
-        updatedDisruption.startDate = earliestStartTime.format(DATE_FORMAT);
-        updatedDisruption.startTime = earliestStartTime.format(TIME_FORMAT);
-    }
-
-    if (latestEndTime) {
-        updatedDisruption.endDate = latestEndTime.format(DATE_FORMAT);
-        updatedDisruption.endTime = latestEndTime.format(TIME_FORMAT);
-    }
-
-    return updatedDisruption;
-};
 
 export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
     const modes = [...routes.map(route => VEHICLE_TYPES[route.routeType].type),
@@ -149,7 +95,7 @@ export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
 const getMode = disruption => [...disruption.affectedEntities.affectedRoutes.map(route => VEHICLE_TYPES[route.routeType].type),
     ...disruption.affectedEntities.affectedStops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType].type)];
 
-export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, incidentUrl, isEditMode, incidentEndTimeMoment) => {
+export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, incidentUrl) => {
     const startDate = disruption.startDate ? disruption.startDate : moment(disruption.startTime).format(DATE_FORMAT);
     const startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
     let endTimeMoment;
@@ -175,23 +121,20 @@ export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentSt
         }),
     }));
     const stopsToRequest = disruption.affectedEntities.affectedStops.map(entity => omit(entity, ['shapeWkt']));
-
-    const isStatusBecomeResolved = incidentStatus === STATUSES.RESOLVED && disruption.status !== STATUSES.RESOLVED;
     return {
         ...disruption,
-        ...(isEditMode ? { } : { header: incidentHeader }),
-        ...(isEditMode ? { } : { status: incidentStatus }),
-        ...(isEditMode ? { } : { cause: incidentCause }),
+        header: incidentHeader,
+        status: incidentStatus,
+        cause: incidentCause,
         url: incidentUrl,
         endTime: endTimeMoment,
         startTime: startTimeMoment,
         mode: uniq(modes).join(', '),
         affectedEntities: [...routesToRequest, ...stopsToRequest],
-        ...(isStatusBecomeResolved && incidentEndTimeMoment ? { status: STATUSES.RESOLVED, endTime: incidentEndTimeMoment } : { }),
     };
 };
 
-export const buildIncidentSubmitBody = (incident, isEditMode) => {
+export const buildIncidentSubmitBody = (incident) => {
     const modes = incident.disruptions.flatMap(disruption => getMode(disruption));
     return {
         ...incident,
@@ -202,8 +145,6 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
             incident.status,
             incident.cause,
             incident.url,
-            isEditMode,
-            incident.endTime,
         )),
     };
 };
@@ -219,6 +160,12 @@ export const transformIncidentNo = (disruptionId) => {
     if (!disruptionId) return null;
 
     return `DISR${disruptionId.toString().padStart(6, '0')}`;
+};
+
+export const transformParentSourceIdNo = (id) => {
+    if (!id) return null;
+
+    return `CCD${id.toString().padStart(6, '0')}`;
 };
 
 export const getRecurrenceDates = (startDate, startTime, endDate) => {
@@ -284,15 +231,9 @@ export const groupStopsByRouteElementByParentStation = (list) => {
     return result;
 };
 
-export const getDeduplcatedAffectedRoutes = (affectedEntities) => {
-    if (!Array.isArray(affectedEntities)) return [];
-    return [...new Set(affectedEntities.filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))];
-};
+export const getDeduplcatedAffectedRoutes = affectedEntities => [...new Set(affectedEntities.filter(entity => entity.routeId).map(({ routeShortName }) => routeShortName))];
 
-export const getDeduplcatedAffectedStops = (affectedEntities) => {
-    if (!Array.isArray(affectedEntities)) return [];
-    return [...new Set(affectedEntities.filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))];
-};
+export const getDeduplcatedAffectedStops = affectedEntities => [...new Set(affectedEntities.filter(entity => entity.stopCode).map(({ stopCode }) => stopCode))];
 
 export const filterOnlyRouteParams = route => pick(route, ['routeId', 'routeShortName', 'routeType', 'routeColor', 'shapeWkt', 'agencyId', 'agencyName',
     'text', 'category', 'icon', 'valueKey', 'labelKey', 'type']);

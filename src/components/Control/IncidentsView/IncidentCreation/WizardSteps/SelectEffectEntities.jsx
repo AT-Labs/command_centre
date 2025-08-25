@@ -80,11 +80,11 @@ export const SelectEffectEntities = (props) => {
             type: STOP.type,
         }));
         const stopGroupsModified = [];
-        if (stopGroups && props.stopGroups) {
+        if (stopGroups) {
             forOwn(stopGroups, (stopGroupStops, groupId) => {
                 stopGroupsModified.push({
                     groupId: +groupId,
-                    groupName: getStopGroupName(props.stopGroups || {}, groupId),
+                    groupName: getStopGroupName(props.stopGroups, groupId),
                     category: {
                         icon: '',
                         label: 'Stop groups',
@@ -126,26 +126,23 @@ export const SelectEffectEntities = (props) => {
     };
 
     useEffect(() => {
-        const affectedStops = affectedEntities?.affectedStops || [];
-        const affectedRoutes = affectedEntities?.affectedRoutes || [];
-        
-        const singleStops = affectedStops.filter(entity => !entity.groupId);
-        const stopGroupStops = affectedStops.filter(entity => !!entity.groupId);
+        const singleStops = affectedEntities.affectedStops.filter(entity => !entity.groupId);
+        const stopGroupStops = affectedEntities.affectedStops.filter(entity => !!entity.groupId);
         const stopGroups = groupBy(stopGroupStops, 'groupId');
 
         setAffectedSingleStops(singleStops);
         setAffectedStopGroups(stopGroups);
 
-        const allSingleEntities = addKeys(affectedRoutes, singleStops);
+        const allSingleEntities = addKeys(affectedEntities.affectedRoutes, singleStops);
         const stopGroupEntities = addKeys([], [], stopGroups);
 
         setTotalEntities(allSingleEntities.length + stopGroupStops.length);
         updateSelectedEntities([...allSingleEntities, ...stopGroupEntities]);
-    }, [affectedEntities?.affectedRoutes, affectedEntities?.affectedStops]);
+    }, [affectedEntities.affectedRoutes, affectedEntities.affectedStops]);
 
     // componentDidMount
     useEffect(() => {
-        if (props.isEditMode && affectedEntities?.affectedRoutes?.length > 0) {
+        if (props.isEditMode && affectedEntities.affectedRoutes.length > 0) {
             setEditedRoutes(addKeys(affectedEntities.affectedRoutes, []));
         }
     }, []);
@@ -261,11 +258,11 @@ export const SelectEffectEntities = (props) => {
     const itemsSelectedText = () => {
         let selectedText = '';
 
-        if (affectedEntities?.affectedRoutes?.length > 0) {
+        if (affectedEntities.affectedRoutes.length > 0) {
             selectedText = 'routes';
         }
 
-        if (affectedEntities?.affectedStops?.length > 0) {
+        if (affectedEntities.affectedStops.length > 0) {
             if (selectedText.length > 0) {
                 selectedText += ' and stops';
             } else {
@@ -355,6 +352,7 @@ export const SelectEffectEntities = (props) => {
     };
 
     const activeConfirmationModalProps = confirmationModalProps[confirmationModalType];
+
     return (
         <div className="select_disruption">
             <RadioButtons
@@ -362,7 +360,7 @@ export const SelectEffectEntities = (props) => {
                 formGroupClass="disruption-creation__disruption-type"
                 checkedKey={ disruptionType === DISRUPTION_TYPE.ROUTES ? '0' : '1' }
                 itemOptions={ [{ key: '0', value: DISRUPTION_TYPE.ROUTES }, { key: '1', value: DISRUPTION_TYPE.STOPS }] }
-                disabled={ props.isEditDisabled }
+                disabled={ false }
                 onChange={ () => {
                     if (selectedEntities.length > 0) {
                         setConfirmationModalType(CHANGE_DISRUPTION_TYPE);
@@ -375,8 +373,8 @@ export const SelectEffectEntities = (props) => {
                 isVerticalLayout
                 displayResults={ false }
                 height={ 100 }
-                leftPaneLabel={ (disruptionTypeParams[disruptionType] || disruptionTypeParams.Routes).label }
-                leftPanePlaceholder={ (disruptionTypeParams[disruptionType] || disruptionTypeParams.Routes).placeholder }
+                leftPaneLabel={ disruptionTypeParams[disruptionType].label }
+                leftPanePlaceholder={ disruptionTypeParams[disruptionType].placeholder }
                 onChange={ selectedItem => onChange(selectedItem) }
                 rightPanelShowSearch={ false }
                 rightPaneLabel="Selected routes and stops:"
@@ -388,20 +386,18 @@ export const SelectEffectEntities = (props) => {
                 deselectRoutes={ !areEntitiesSelected }
                 selectedValues={ selectedEntities }
                 isLoading={ props.isLoadingStopsByRoute || props.isLoadingRoutesByStop }
-                searchInCategory={ (disruptionTypeParams[disruptionType] || disruptionTypeParams.Routes).searchCategory }
+                searchInCategory={ disruptionTypeParams[disruptionType].searchCategory }
                 entityToItemTransformers={ entityToItemTransformers }
                 itemToEntityTransformers={ itemToEntityTransformers }
-                isDisabled={ props.isEditDisabled }
             />
             <div className="selection-container h-100">
                 <ul className="p-0">
                     <StopsByRouteMultiSelect
                         key={ `${disruptionKey}_stops_by_route_multi_select` }
-                        affectedRoutes={ affectedEntities?.affectedRoutes || [] }
+                        affectedRoutes={ affectedEntities.affectedRoutes }
                         updateAffectedRoutes={ updateAffectedRoutes }
                         removeAction={ route => removeAction(route, ROUTE) }
                         className="select-stops-route"
-                        isDisabled={ props.isEditDisabled }
                     />
                     <RoutesByStopMultiSelect
                         key={ `${disruptionKey}_routes_by_stop_multi_select` }
@@ -409,14 +405,12 @@ export const SelectEffectEntities = (props) => {
                         updateAffectedStops={ updateAffectedStops }
                         removeAction={ stop => removeAction(stop, STOP) }
                         className="select-routes-stop"
-                        isDisabled={ props.isEditDisabled }
                     />
                     <StopGroupsMultiSelect
                         key={ `${disruptionKey}_stop_groups_multi_select` }
                         affectedStops={ affectedEntities.affectedStops }
                         removeAction={ stopGroupStops => removeAction(stopGroupStops[0].groupId, STOP_GROUP) }
                         className="select-stop-groups"
-                        isDisabled={ props.isEditDisabled }
                     />
                 </ul>
             </div>
@@ -461,7 +455,6 @@ SelectEffectEntities.propTypes = {
     disruptionKey: PropTypes.string.isRequired,
     resetAffectedEntities: PropTypes.func.isRequired,
     onDisruptionTypeUpdate: PropTypes.func.isRequired,
-    isEditDisabled: PropTypes.bool,
 };
 
 SelectEffectEntities.defaultProps = {
@@ -469,7 +462,6 @@ SelectEffectEntities.defaultProps = {
     isLoadingRoutesByStop: false,
     isEditMode: false,
     data: {},
-    isEditDisabled: false,
 };
 
 export default connect(state => ({

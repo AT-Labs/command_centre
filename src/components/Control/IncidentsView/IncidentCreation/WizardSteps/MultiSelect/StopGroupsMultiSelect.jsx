@@ -12,7 +12,7 @@ export const StopGroupsMultiSelect = (props) => {
 
     const [expandedGroups, setExpandedGroups] = useState({});
 
-    const allStopGroupStops = (props.affectedStops || []).filter(entity => !!entity.groupId);
+    const allStopGroupStops = props.affectedStops.filter(entity => !!entity.groupId);
     const affectedStopGroups = groupBy(allStopGroupStops, 'groupId');
 
     const isGroupActive = group => !!expandedGroups[group.groupId];
@@ -51,7 +51,6 @@ export const StopGroupsMultiSelect = (props) => {
                     removeAction={ () => removeAction(stopGroupStops) }
                     className={ className }
                     label={ `Stop Group - ${getStopGroupName(props.stopGroups, stopGroupStops[0].groupId)} (${stopGroupStops.length})` }
-                    disabled={ props.isDisabled }
                 >
                     { renderStopGroupStops(stopGroupStops) }
                 </ExpandableList>
@@ -62,17 +61,14 @@ export const StopGroupsMultiSelect = (props) => {
 
 StopGroupsMultiSelect.propTypes = {
     stopGroups: PropTypes.object.isRequired,
-    affectedStops: PropTypes.array,
+    affectedStops: PropTypes.array.isRequired,
     className: PropTypes.string,
     removeAction: PropTypes.func,
-    isDisabled: PropTypes.bool,
 };
 
 StopGroupsMultiSelect.defaultProps = {
     className: '',
     removeAction: null,
-    isDisabled: false,
-    affectedStops: [],
 };
 
 export default connect(state => ({
