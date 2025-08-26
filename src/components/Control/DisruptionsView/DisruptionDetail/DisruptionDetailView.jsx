@@ -81,13 +81,17 @@ import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import { ShapeLayer } from '../../../Common/Map/ShapeLayer/ShapeLayer';
 import { SelectedStopsMarker } from '../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import { DisruptionPassengerImpactGridModal } from './DisruptionPassengerImpactGridModal';
+import { ViewDiversionDetailModal } from './ViewDiversionDetailModal';
 import { usePassengerImpact } from '../../../../redux/selectors/appSettings';
+import { useDiversion, getDiversionsForDisruption } from '../../../../redux/selectors/control/diversions';
 
 const { STOP } = SEARCH_RESULT_TYPE;
 
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
     const { NONE, EDIT, COPY } = confirmationModalTypes;
+    
+    const diversions = getDiversionsForDisruption(disruption?.disruptionId)(props.state) || [];
 
     const causes = useAlertCauses();
     const impacts = useAlertEffects();
@@ -123,6 +127,7 @@ const DisruptionDetailView = (props) => {
     const [descriptionNote, setDescriptionNote] = useState('');
     const [lastNote, setLastNote] = useState();
     const [isViewPassengerImpactModalOpen, setIsViewPassengerImpactModalOpen] = useState(false);
+    const [isViewDiversionsModalOpen, setIsViewDiversionsModalOpen] = useState(false);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqWith([...affectedRoutes, ...props.routes], (routeA, routeB) => routeA.routeId === routeB.routeId && routeA.stopCode === routeB.stopCode);
@@ -403,6 +408,18 @@ const DisruptionDetailView = (props) => {
                     viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                     showViewPassengerImpactButton={ props.usePassengerImpact }
                     viewPassengerImpactAction={ () => setIsViewPassengerImpactModalOpen(true) }
+                    addDiversionAction={ () => {
+                        props.openCreateDisruption(true);
+                        props.updateEditMode(EDIT_TYPE.CREATE);
+                        props.updateAffectedRoutesState([]);
+                        props.updateAffectedStopsState([]);
+                    } }
+                    viewDiversionsAction={ () => setIsViewDiversionsModalOpen(true) }
+                    diversions={ diversions }   
+                    startTime={ disruption.startTime }
+                    endTime={ disruption.endTime }
+                    disruptionStatus={ disruption.status }
+                    useDiversion={ props.useDiversion }
                 />
                 <section className="position-relative w-50 d-flex disruption-detail__map">
                     <Map
@@ -761,6 +778,11 @@ const DisruptionDetailView = (props) => {
                     isOpen={ isViewPassengerImpactModalOpen }
                 />
             ) }
+            <ViewDiversionDetailModal
+                disruption={ disruption }
+                onClose={ () => setIsViewDiversionsModalOpen(false) }
+                isOpen={ isViewDiversionsModalOpen }
+            />
         </Form>
     );
 };
@@ -787,6 +809,7 @@ DisruptionDetailView.propTypes = {
     className: PropTypes.string,
     boundsToFit: PropTypes.array.isRequired,
     usePassengerImpact: PropTypes.bool.isRequired,
+    useDiversion: PropTypes.bool.isRequired,
 };
 
 DisruptionDetailView.defaultProps = {
@@ -805,6 +828,8 @@ export default connect(state => ({
     stops: getAffectedStops(state),
     boundsToFit: getBoundsToFit(state),
     usePassengerImpact: usePassengerImpact(state),
+    useDiversion: useDiversion(state),
+    state, // Pass entire state for selectors
 }), {
     getRoutesByShortName,
     openCreateDisruption,

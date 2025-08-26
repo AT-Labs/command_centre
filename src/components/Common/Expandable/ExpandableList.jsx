@@ -8,7 +8,7 @@ import ExpandableSummary from './ExpandableSummary';
 
 export const ExpandableList = (props) => {
     const {
-        id, isActive, onToggle, className, label, removeAction, children,
+        id, isActive, onToggle, className, label, removeAction, children, disabled,
     } = props;
 
     return (
@@ -31,7 +31,8 @@ export const ExpandableList = (props) => {
                     { removeAction && (
                         <Button
                             className="cc-btn-link selection-item__button float-right p-0"
-                            onClick={ removeAction }>
+                            onClick={ removeAction }
+                            disabled={ disabled }>
                             Remove
                             <span className="pl-3">X</span>
                         </Button>
@@ -64,12 +65,14 @@ ExpandableList.propTypes = {
         PropTypes.array,
         PropTypes.element,
     ]),
+    disabled: PropTypes.bool,
 };
 
 ExpandableList.defaultProps = {
     className: '',
     removeAction: null,
     children: [],
+    disabled: false,
 };
 
 export default ExpandableList;
