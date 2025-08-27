@@ -26,7 +26,7 @@ export const WorkaroundPanel = (props) => {
     const formRef = useRef();
 
     useEffect(() => {
-        if (props.disruptionForWorkaroundEdit && Object.keys(props.disruptionForWorkaroundEdit).length > 0) { // get disruption from redux for edit flow
+        if (props.disruptionForWorkaroundEdit && Object.keys(props.disruptionForWorkaroundEdit).length > 0) {
             setDisruption(props.disruptionForWorkaroundEdit);
         } else {
             setDisruption(disruptions.find(d => d.key === disruptionKeyToEdit));

@@ -319,7 +319,7 @@ export class CreateIncident extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (!prevProps.isRequiresToUpdateNotes && this.props.isRequiresToUpdateNotes) {
-            this.setupDataEdit(true); // for updating form on add note
+            this.setupDataEdit(true);
         }
     }
 
@@ -495,7 +495,7 @@ export class CreateIncident extends React.Component {
 
     closeEffectEditPanel = () => {
         
-        // Reset diversion manager state
+
         this.props.openDiversionManager(false);
         this.props.updateDiversionMode(EDIT_TYPE.CREATE);
         this.props.updateDiversionToEdit(null);

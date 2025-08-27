@@ -40,7 +40,7 @@ describe('DiversionsButton Unit Tests (No Redux)', () => {
             affectedEntities: [
                 {
                     routeId: 'ROUTE1',
-                    routeType: 3, // Bus route
+                    routeType: 3,
                     routeName: 'Test Route 1',
                 },
             ],

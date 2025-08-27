@@ -41,14 +41,13 @@ import { toggleEditEffectPanel } from '../../redux/actions/control/incidents';
 const ControlViewComponent = (props) => {
     const location = useLocation();
 
-    // Handle URL parameters for routing
     useEffect(() => {
 
         
         const pathParts = location.pathname.split('/');
 
         
-        // Check if the URL matches the control-incidents pattern with entity ID
+
         if (pathParts.length === 4 && 
             pathParts[1] === 'control-main-view' && 
             pathParts[2] === 'control-incidents' && 
@@ -58,17 +57,14 @@ const ControlViewComponent = (props) => {
 
             
             if (entityId && entityId !== '') {
-                // Set the control detail view to INCIDENTS to trigger EditEffectPanel
                 props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.INCIDENTS);
-                // Set the active entity ID
                 props.updateActiveControlEntityId(entityId);
-                // Set the disruption key to edit effect - use incidentNo format
                 const incidentNo = `DISR${entityId}`;
                 props.updateDisruptionKeyToEditEffect(incidentNo);
             }
         }
         
-        // Check if the URL matches the control-disruptions pattern with entity ID
+
         if (pathParts.length >= 4 && 
             pathParts[1] === 'control-main-view' && 
             pathParts[2] === 'control-disruptions') {
@@ -76,16 +72,31 @@ const ControlViewComponent = (props) => {
             const entityId = pathParts[3];
             
             if (entityId && entityId !== '') {
-                // Set the control detail view to INCIDENTS to trigger EditEffectPanel
                 props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.INCIDENTS);
-                // Set the active entity ID
                 props.updateActiveControlEntityId(entityId);
-                // Set the disruption key to edit effect - use incidentNo format
                 const incidentNo = `DISR${entityId}`;
                 props.updateDisruptionKeyToEditEffect(incidentNo);
             }
         }
     }, [location.pathname, props]);
+
+    useEffect(() => {
+
+        
+        if (props.useEditEffectPanel && 
+            props.disruptionIncidentNoToEdit && 
+            props.disruptionIncidentNoToEdit !== '' &&
+            !props.isEditEffectPanelOpen) {
+            
+            const disruptionToEdit = props.filteredDisruptions?.find(
+                d => d.incidentNo === props.disruptionIncidentNoToEdit
+            );
+            
+            if (disruptionToEdit) {
+                props.toggleEditEffectPanel(true);
+            }
+        }
+    }, [props.disruptionIncidentNoToEdit, props.filteredDisruptions, props.useEditEffectPanel, props.isEditEffectPanelOpen]);
 
     const isBlocksView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.BLOCKS;
     const isRoutesView = props.activeControlDetailView === VIEW_TYPE.CONTROL_DETAIL.ROUTES;
