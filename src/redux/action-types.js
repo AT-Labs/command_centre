@@ -248,13 +248,8 @@ export default {
     UPDATE_DIVERSION_EDIT_MODE: 'update-diversion-edit-mode',
     UPDATE_DIVERSION_TO_EDIT: 'update-diversion-to-edit',
     OPEN_DIVERSION_MANAGER: 'open-diversion-manager',
-    SET_SELECTED_ROUTE_VARIANT: 'set-selected-route-variant',
     ADD_DIVERSION: 'add-diversion',
     UPDATE_DIVERSION_RESULT_STATE: 'update-diversion-result-state',
-    FETCH_DIVERSIONS_START: 'fetch-diversions-start',
-    FETCH_DIVERSIONS_SUCCESS: 'fetch-diversions-success',
-    FETCH_DIVERSIONS_ERROR: 'fetch-diversions-error',
-    CLEAR_DIVERSIONS_CACHE: 'clear-diversions-cache',
 
     // Incidents
     FETCH_CONTROL_INCIDENTS_DISRUPTIONS: 'fetch-control-incidents-disruptions',
