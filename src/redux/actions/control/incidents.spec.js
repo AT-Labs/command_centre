@@ -779,9 +779,15 @@ describe('Incidents Actions', () => {
                 },
             },
             {
-                type: 'update-control-effect-requires-to-update-notes',
+                type: 'update-disruption-key-to-edit-effect',
                 payload: {
-                    isRequiresToUpdateNotes: true,
+                    disruptionKeyToEditEffect: true,
+                },
+            },
+            {
+                type: 'set-edit-effect-panel-status',
+                payload: {
+                    isEditEffectPanelOpen: true,
                 },
             },
         ]));
