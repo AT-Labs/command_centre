@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes, { object } from 'prop-types';
-
-import { deleteDiversion as deleteDiversionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
-import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
-import { ActiveDiversionView } from './ActiveDiversionView';
-import { DISRUPTIONS_MESSAGE_TYPE } from '../../../../types/disruptions-types';
-import { DISRUPTION_STATUS } from '../types';
+import { deleteDiversion as deleteDiversionAPI } from '../../../../../utils/transmitters/disruption-mgt-api';
+import CustomMuiDialog from '../../../../Common/CustomMuiDialog/CustomMuiDialog';
+import { ActiveDiversionView } from '../../../DisruptionsView/DisruptionDetail/ActiveDiversionView';
+import { DISRUPTIONS_MESSAGE_TYPE } from '../../../../../types/disruptions-types';
+import { DISRUPTION_STATUS } from '../../../DisruptionsView/types';
 
 const editableStatuses = [
     DISRUPTION_STATUS.NOT_STARTED,
@@ -14,6 +13,7 @@ const editableStatuses = [
 ];
 
 const ViewDiversionDetailModal = (props) => {
+
     const [allExpanded, setAllExpanded] = useState(false);
     const [expandedRows, setExpandedRows] = useState({});
 
@@ -68,20 +68,6 @@ const ViewDiversionDetailModal = (props) => {
                 onClose={ props.onClose }
                 isOpen={ props.isOpen }
                 maxWidth="md"
-                footerContent={ (
-                    <div className="row w-100">
-                        <div className="col-md-4 offset-md-4">
-                            <button
-                                type="button"
-                                onClick={ props.onClose }
-                                className="btn cc-btn-primary btn-block"
-                                id="close-btn"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                ) }
             >
                 {props.diversions?.length ? (
                     <>
@@ -126,4 +112,4 @@ ViewDiversionDetailModal.defaultProps = {
     diversions: [],
 };
 
-export { ViewDiversionDetailModal };
+export { ViewDiversionDetailModal }; 

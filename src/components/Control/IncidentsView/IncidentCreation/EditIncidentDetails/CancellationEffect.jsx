@@ -4,12 +4,16 @@ import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 
 import { toggleIncidentModals,
+    setRequestedDisruptionKeyToUpdateEditEffect,
+    setRequestToUpdateEditEffectState,
 } from '../../../../../redux/actions/control/incidents';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
 
-const ApplyChangesModal = (props) => {
+const CancellationEffect = (props) => {
     const keepEditing = () => {
-        props.toggleIncidentModals('isApplyChangesOpen', false);
+        props.setRequestedDisruptionKeyToUpdateEditEffect('');
+        props.setRequestToUpdateEditEffectState(false);
+        props.toggleIncidentModals('isCancellationEffectOpen', false);
     };
 
     return (
@@ -17,9 +21,9 @@ const ApplyChangesModal = (props) => {
         <div className="disruption-creation__wizard-confirmation">
             <div className="row">
                 <div className="col 'd-flex justify-content-center'">
-                    <h2>Are you sure you want to apply and save the changes for effect?</h2>
+                    <h2>Are you sure you want to close?</h2>
                     <div>
-                        <span className="d-block mt-3 mb-2">Changes will only take place once applied.</span>
+                        <span className="d-block mt-3 mb-2">Any information entered will not be saved.</span>
                     </div>
                 </div>
             </div>
@@ -34,8 +38,8 @@ const ApplyChangesModal = (props) => {
                 <div className="col-5">
                     <Button
                         className="btn cc-btn-primary btn-block"
-                        onClick={ () => { props.applyChanges(); } }>
-                        Apply and save
+                        onClick={ () => { props.discardChanges(); } }>
+                        Discard changes
                     </Button>
                 </div>
             </footer>
@@ -43,12 +47,16 @@ const ApplyChangesModal = (props) => {
     );
 };
 
-ApplyChangesModal.propTypes = {
+CancellationEffect.propTypes = {
     toggleIncidentModals: PropTypes.func.isRequired,
-    applyChanges: PropTypes.func.isRequired,
+    setRequestToUpdateEditEffectState: PropTypes.func.isRequired,
+    setRequestedDisruptionKeyToUpdateEditEffect: PropTypes.func.isRequired,
+    discardChanges: PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
     isModalOpen: isModalOpen(state),
 }), { toggleIncidentModals,
-})(ApplyChangesModal);
+    setRequestToUpdateEditEffectState,
+    setRequestedDisruptionKeyToUpdateEditEffect,
+})(CancellationEffect);

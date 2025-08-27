@@ -10,6 +10,10 @@
     max-width: 1000px;
     border-left: 1px solid #D0D3D7;
 
+    &.hidden {
+        display: none;
+    }
+
     .edit-effect-panel-body {
         overflow-x: hidden;
         flex: 1;
@@ -92,6 +96,30 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        position: relative;
+        width: 100%;
+
+        h2 {
+            flex: 1;
+            margin: 0;
+        }
+
+        .buttons-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .diversions-button-container {
+            flex-shrink: 0;
+        }
+
+        .workaround-button-container {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
     }
 
     .flex-justify-content-end {
@@ -107,5 +135,88 @@
 
     .justify-content-end {
         justify-content: flex-end;
+    }
+
+    .side-panel-control-component-view {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 999999 !important;
+        background: white !important;
+        display: flex;
+
+        .side-panel {
+            width: 660px;
+            flex-shrink: 0;
+            border-right: 1px solid #DDD;
+            height: 100vh;
+        }
+
+        .map {
+            flex-grow: 1;
+            position: relative;
+            height: 100vh;
+            width: calc(100vw - 660px);
+        }
+    }
+
+    &.diversion-manager-open {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        z-index: -1 !important;
+
+        .CustomModal,
+        .CustomMuiDialog,
+        .disruption-creation__modal,
+        .diversion-result-modal,
+        .change-selected-route-variant-modal {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            z-index: -1 !important;
+        }
+    }
+}
+
+.side-panel-control-component-view {
+    ~ .edit-effect-panel,
+    ~ .CustomModal,
+    ~ .CustomMuiDialog,
+    ~ .disruption-creation__modal,
+    ~ .diversion-result-modal,
+    ~ .change-selected-route-variant-modal {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        z-index: -1 !important;
+    }
+}
+
+body.diversion-manager-active {
+    .edit-effect-panel,
+    .CustomModal,
+    .CustomMuiDialog,
+    .disruption-creation__modal,
+    .diversion-result-modal,
+    .change-selected-route-variant-modal,
+    .modal,
+    .modal-dialog,
+    .modal-content,
+    button[style*="z-index"],
+    [style*="z-index: 999999"],
+    [style*="z-index: 99999"],
+    [style*="z-index: 9999"],
+    [style*="z-index: 999"],
+    .btn.cc-btn-link,
+    .diversions-button-container,
+    .diversions-button {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        z-index: -1 !important;
+        pointer-events: none !important;
     }
 }

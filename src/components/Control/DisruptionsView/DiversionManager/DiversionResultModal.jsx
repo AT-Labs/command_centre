@@ -8,7 +8,10 @@ export const ACTION_TYPE = {
     NEW_DIVERSION: 'NEW_DIVERSION',
 };
 
-const DiversionResultModal = props => (
+const DiversionResultModal = props => {
+
+    
+    return (
     <div className="diversion__confirmation-modal">
         <div className="row">
             <div className="col text-center">
@@ -40,7 +43,10 @@ const DiversionResultModal = props => (
                         <Button
                             className="btn btn-block cc-btn-secondary btn-block"
                             aria-label="Go back to disruption page"
-                            onClick={ () => props.onAction(ACTION_TYPE.RETURN_TO_DISRUPTION) }>
+                            onClick={ () => {
+                        
+                                props.onAction(ACTION_TYPE.RETURN_TO_DISRUPTION);
+                            } }>
                             Go back to disruption page
                         </Button>
                     </div>
@@ -58,7 +64,8 @@ const DiversionResultModal = props => (
             ) }
         </footer>
     </div>
-);
+    );
+};
 
 DiversionResultModal.propTypes = {
     result: PropTypes.string,

@@ -26,7 +26,7 @@ export const WorkaroundPanel = (props) => {
     const formRef = useRef();
 
     useEffect(() => {
-        if (props.disruptionForWorkaroundEdit && Object.keys(props.disruptionForWorkaroundEdit).length > 0) { // get disruption from redux for edit flow
+        if (props.disruptionForWorkaroundEdit && Object.keys(props.disruptionForWorkaroundEdit).length > 0) {
             setDisruption(props.disruptionForWorkaroundEdit);
         } else {
             setDisruption(disruptions.find(d => d.key === disruptionKeyToEdit));
@@ -63,7 +63,6 @@ export const WorkaroundPanel = (props) => {
                                 ref={ formRef }
                                 disruption={ disruption }
                                 onWorkaroundUpdate={ props.onWorkaroundUpdate }
-                                onWorkaroundChange={ props.onWorkaroundChange }
                                 readOnly={ disruption.status === STATUSES.RESOLVED } />
                         )
                         : (
@@ -85,7 +84,7 @@ export const WorkaroundPanel = (props) => {
                             <Button
                                 className="btn cc-btn-primary btn-block save-workaround"
                                 onClick={ () => onSubmit() }>
-                                { (props.editMode !== EDIT_TYPE.EDIT) ? 'Save' : 'Apply'}
+                                Save
                             </Button>
                         </div>
                     </footer>
@@ -107,7 +106,6 @@ WorkaroundPanel.propTypes = {
     setRequireToUpdateWorkaroundsState: PropTypes.func.isRequired,
     disruptionForWorkaroundEdit: PropTypes.object,
     setDisruptionForWorkaroundEdit: PropTypes.func.isRequired,
-    onWorkaroundChange: PropTypes.func.isRequired,
 };
 
 WorkaroundPanel.defaultProps = {
