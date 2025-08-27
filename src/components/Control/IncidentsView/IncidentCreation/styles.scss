@@ -202,7 +202,7 @@
     }
 
     & &__select,
-    & &__select:focus {
+    &__select:focus {
         background: transparent;
     }
 
@@ -448,4 +448,10 @@ button.continue {
 
 .pointer-event-none {
     pointer-events: none;
+}
+
+.finish-modal-button {
+    width: 120px !important;
+    font-size: 0.9rem !important;
+    padding: 8px 16px !important;
 }

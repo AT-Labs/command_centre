@@ -4,14 +4,12 @@ import PropTypes from 'prop-types';
 
 const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVariant, onSelectVariant, isRouteVariantDisabled, isLoadingExistingDiversions, existingDiversions }) => {
     
-    // Force re-render when existingDiversions changes
     const [forceUpdate, setForceUpdate] = React.useState(0);
     
     React.useEffect(() => {
         setForceUpdate(prev => prev + 1);
     }, [existingDiversions]);
 
-    // Group variants by routeShortName
     const groupedByRoute = routeVariants.filter(v => v.hidden !== true).reduce((acc, variant) => {
         const { routeShortName } = variant;
         if (!acc[routeShortName]) {
@@ -21,7 +19,6 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
         return acc;
     }, {});
 
-    // Create a more unique key that changes when existingDiversions changes
     const selectKey = `route-variant-select-${forceUpdate}-${existingDiversions.length}-${routeVariants.length}-${selectedRouteVariant?.routeVariantId || 'none'}-${disabled ? 'disabled' : 'enabled'}-${isRouteVariantDisabled ? 'disabled' : 'enabled'}-${isLoadingExistingDiversions ? 'loading' : 'loaded'}-${label}-${Date.now()}`;
 
     return (
@@ -51,13 +48,11 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
                     }
                 } }
                 options={Object.entries(groupedByRoute).map(([routeShortName, variants]) => {
-                    // Group variants by directionId within each route
                     const inboundVariants = variants.filter(variant => variant.directionId === 0);
                     const outboundVariants = variants.filter(variant => variant.directionId === 1);
 
                     const options = [];
                     
-                    // Helper function to create option
                     const createOption = (variant) => {
                         const isDisabled = variant.hasTripModifications === true || (isRouteVariantDisabled && isRouteVariantDisabled(variant));
                         const option = {
@@ -68,7 +63,6 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
                         return option;
                     };
                     
-                    // Add inbound group
                     if (inboundVariants.length > 0) {
                         const inboundOptions = inboundVariants.map(createOption);
                         options.push({
@@ -77,7 +71,6 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
                         });
                     }
                     
-                    // Add outbound group
                     if (outboundVariants.length > 0) {
                         const outboundOptions = outboundVariants.map(createOption);
                         options.push({

@@ -1,6 +1,5 @@
 import { DEFAULT_IMPACT, DISRUPTION_TYPE, STATUSES } from '../../../../../types/disruptions-types';
 
-// Импортируем функцию из файла
 const createDisruptionFromAction = (incidentData, resultIncidentId) => {
     const firstDisruption = incidentData.disruptions[0] || {};
     

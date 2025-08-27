@@ -36,16 +36,16 @@ export const Footer = props => (
         )}
         <div className={ (props.useDraftDisruptions && props.isDraftOrCreateMode) ? 'col-3 pl-0' : 'col-4' }>
             { props.showFinishButton ? (
-                <div className="d-flex">
+                <div className="d-flex gap-2">
                     <Button
                         disabled={ props.isSubmitDisabled }
-                        className="btn cc-btn-primary mr-4 flex-fill"
+                        className="btn cc-btn-primary"
                         onClick={ props.onContinue }>
                         { props.nextButtonValue }
                     </Button>
                     <Button
                         disabled={ props.isFinishDisabled }
-                        className="btn cc-btn-primary text-white flex-fill"
+                        className="btn cc-btn-primary text-white"
                         onClick={ props.onFinish }>
                         Finish
                     </Button>

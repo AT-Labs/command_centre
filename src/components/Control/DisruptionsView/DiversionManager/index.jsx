@@ -731,7 +731,6 @@ const DiversionManager = (props) => {
                 />
             </CustomModal>
 
-            {/* Модальное окно результата диверсии */}
             {(() => {
                 if (typeof window !== 'undefined') {
                     

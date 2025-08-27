@@ -103,6 +103,61 @@ const useDisruptions = (disruptions) => {
     };
 };
 
+const FooterWithCustomButtons = ({ onBack, onCancel, onSaveDraft, onContinue, onFinish, isDraftSubmitDisabled, isSubmitDisabled, useDraftDisruptions, data, isEditMode }) => (
+    <footer className="row m-0 justify-content-between align-items-center p-4 position-fixed incident-footer-min-height">
+        { !isEditMode && (
+            <div className="col-auto">
+                <Button className="btn cc-btn-link" onClick={ onBack }>
+                    Go back
+                </Button>
+            </div>
+        )}
+
+        <div className="col-auto">
+            <div className="d-flex" style={{ gap: '2rem' }}>
+                <Button
+                    className="btn cc-btn-secondary finish-modal-button"
+                    onClick={ onCancel }>
+                    Cancel
+                </Button>
+                { (useDraftDisruptions && data?.status === STATUSES.DRAFT) && (
+                    <Button
+                        className="btn cc-btn-secondary finish-modal-button"
+                        disabled={ isDraftSubmitDisabled }
+                        onClick={ onSaveDraft }>
+                        Save draft
+                    </Button>
+                )}
+                <Button
+                    disabled={ useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
+                    className="btn cc-btn-primary finish-modal-button"
+                    onClick={ onContinue }>
+                    Continue
+                </Button>
+                <Button
+                    disabled={ useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
+                    className="btn cc-btn-primary text-white finish-modal-button"
+                    onClick={ onFinish }>
+                    Finish
+                </Button>
+            </div>
+        </div>
+    </footer>
+);
+
+FooterWithCustomButtons.propTypes = {
+    onBack: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired,
+    onSaveDraft: PropTypes.func.isRequired,
+    onContinue: PropTypes.func.isRequired,
+    onFinish: PropTypes.func.isRequired,
+    isDraftSubmitDisabled: PropTypes.bool.isRequired,
+    isSubmitDisabled: PropTypes.bool.isRequired,
+    useDraftDisruptions: PropTypes.bool.isRequired,
+    data: PropTypes.object.isRequired,
+    isEditMode: PropTypes.bool.isRequired,
+};
+
 export const SelectEffects = (props) => {
     const {
         recurrent: incidentRecurrent,
@@ -661,19 +716,12 @@ export const SelectEffects = (props) => {
                 <AiOutlinePlusCircle size={ 36 } color="grey" />
             </button>
 
-            <Footer
-                updateCurrentStep={ props.updateCurrentStep }
-                onStepUpdate={ props.onStepUpdate }
-                toggleIncidentModals={ props.toggleIncidentModals }
-                nextButtonValue="Continue"
-                onContinue={ () => onContinue() }
-                isSubmitDisabled={ props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
-                isDraftSubmitDisabled={ isDraftSubmitDisabled }
-                isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || !props.isEditMode }
-                onSubmitDraft={ () => onSaveDraft() }
-                onBack={ !props.isEditMode ? onBack : undefined }
-                showFinishButton
-                isFinishDisabled={ props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
+
+            <FooterWithCustomButtons
+                onBack={ onBack }
+                onCancel={ () => props.toggleIncidentModals('isCancellationOpen', true) }
+                onSaveDraft={ onSaveDraft }
+                onContinue={ onContinue }
                 onFinish={ () => {
                     const result = props.onSubmit();
                     if (result && result.then) {
@@ -682,6 +730,11 @@ export const SelectEffects = (props) => {
                         });
                     }
                 } }
+                isDraftSubmitDisabled={ isDraftSubmitDisabled }
+                isSubmitDisabled={ isSubmitDisabled }
+                useDraftDisruptions={ props.useDraftDisruptions }
+                data={ props.data }
+                isEditMode={ props.isEditMode }
             />
             <CustomMuiDialog
                 title="Disruption Active Periods"
