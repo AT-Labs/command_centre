@@ -236,28 +236,6 @@ export const getDisruptionsAndIncidents = () => (dispatch, getState) => {
         .finally(() => dispatch(updateLoadingIncidentsState(false)));
 };
 
-export const updateIncident = incident => async (dispatch) => {
-    const { incidentId, createNotification } = incident;
-    dispatch(updateRequestingIncidentState(true, incidentId));
-
-    let result;
-    try {
-        result = await disruptionsMgtApi.updateIncident(incident);
-        if (incident.status === STATUSES.DRAFT) {
-            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.SAVE_DRAFT_SUCCESS(incidentId, false)));
-        } else {
-            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_SUCCESS(incidentId, createNotification)));
-        }
-    } catch (error) {
-        dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
-    } finally {
-        dispatch(updateRequestingIncidentState(false, incidentId));
-    }
-    await dispatch(getDisruptionsAndIncidents());
-
-    return result;
-};
-
 export const clearIncidentActionResult = () => ({
     type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_RESULT,
     payload: {
@@ -307,7 +285,6 @@ export const createNewIncident = incident => async (dispatch, getState) => {
     dispatch(updateRequestingIncidentState(true));
     try {
         response = await disruptionsMgtApi.createIncident(incident);
-
         if (myEditMode === EDIT_TYPE.COPY) {
             dispatch(
                 updateRequestingIncidentResult(
@@ -671,7 +648,13 @@ export const updateDisruptionsDatagridConfig = dataGridConfig => ({
 });
 
 export const clearDisruptionActionResult = () => ({
-    type: ACTION_TYPE.CLEAR_CONTROL_DISRUPTION_ACTION_RESULT,
+    type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
+    payload: {
+        incidentId: null,
+        resultStatus: null,
+        resultMessage: null,
+        resultDisruptionVersion: null,
+    },
 });
 
 export const updateActiveDisruptionId = activeDisruptionId => (dispatch) => {
@@ -770,10 +753,8 @@ export const setIncidentToUpdate = (incidentId, requireToUpdateForm = false) => 
             dispatch(updateIncidentToEdit(incidentData));
         })
         .catch(() => {
-            if (ERROR_TYPE.fetchDisruptionsEnabled) {
-                const errorMessage = ERROR_TYPE.incidentToEdit;
-                dispatch(setBannerError(errorMessage));
-            }
+            const errorMessage = ERROR_TYPE.fetchIncident;
+            dispatch(setBannerError(errorMessage));
         })
         .finally(() => {
             dispatch(updateLoadingIncidentForEditState(false));
@@ -826,4 +807,32 @@ export const setDisruptionForWorkaroundEdit = disruptionForWorkaroundEdit => (di
             disruptionForWorkaroundEdit,
         },
     });
+};
+
+export const updateIncident = incident => async (dispatch) => {
+    const { incidentId, createNotification } = incident;
+    dispatch(updateRequestingIncidentState(true, incidentId));
+
+    let result;
+    try {
+        result = await disruptionsMgtApi.updateIncident(incident);
+        if (incident.status === STATUSES.DRAFT) {
+            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.SAVE_DRAFT_SUCCESS(incidentId, false)));
+        } else {
+            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_SUCCESS(incidentId, createNotification)));
+        }
+    } catch (error) {
+        dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
+    } finally {
+        dispatch(updateRequestingIncidentState(false, incidentId));
+        dispatch(deleteAffectedEntities());
+        dispatch(toggleWorkaroundPanel(false));
+        dispatch(updateDisruptionKeyToWorkaroundEdit(''));
+        dispatch(toggleEditEffectPanel(false));
+        dispatch(updateDisruptionKeyToEditEffect(''));
+        dispatch(setDisruptionForWorkaroundEdit({}));
+    }
+    await dispatch(getDisruptionsAndIncidents());
+
+    return result;
 };
