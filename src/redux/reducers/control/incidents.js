@@ -71,7 +71,6 @@ export const INIT_STATE = {
     requestToUpdateEditEffect: false,
     requestedDisruptionKeyToUpdateEditEffect: '',
     isCancellationEffectOpen: false,
-    isApplyChangesOpen: false,
 };
 
 const handleIncidentsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });

@@ -27,6 +27,10 @@ import './style.scss';
 import IncidentsDataGrid from './IncidentsDataGrid';
 import { PAGE_SIZE } from './types';
 import CreateIncident from './IncidentCreation/CreateIncident/index';
+import EditEffectPanel from './IncidentCreation/EditIncidentDetails/EditEffectPanel';
+import { useEditEffectPanel } from '../../../redux/selectors/appSettings';
+import { isEditEffectPanelOpen, getDisruptionKeyToEditEffect } from '../../../redux/selectors/control/incidents';
+import { toggleEditEffectPanel, updateDisruptionKeyToEditEffect } from '../../../redux/actions/control/incidents';
 import LoadingOverlay from '../../Common/Overlay/LoadingOverlay';
 
 export class IncidentsView extends React.Component {
@@ -43,7 +47,10 @@ export class IncidentsView extends React.Component {
         filteredDisruptions: [],
         filteredIncidents: [],
         isCreateOpen: false,
+        useEditEffectPanel: false,
         isIncidentLoading: false,
+        isEditEffectPanelOpen: false,
+        disruptionIncidentNoToEdit: '',
     };
 
     componentDidMount() {
@@ -65,6 +72,16 @@ export class IncidentsView extends React.Component {
 
     componentWillUnmount() {
         clearTimeout(this.state.timer);
+    }
+
+    componentDidUpdate(prevProps) {
+
+        
+
+        // if (this.props.useEditEffectPanel && 
+        //     !this.props.isEditEffectPanelOpen && 
+        //     this.props.disruptionIncidentNoToEdit && 
+
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -150,6 +167,7 @@ export class IncidentsView extends React.Component {
                         </div>
                     )}
                 {isCreateOpen && isCreateAllowed && <CreateIncident />}
+                {/* EditEffectPanel moved to CreateIncident to avoid duplication */}
             </div>
         );
     }
@@ -166,7 +184,12 @@ IncidentsView.propTypes = {
     updateAffectedRoutesState: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
     getStopGroups: PropTypes.func.isRequired,
+    useEditEffectPanel: PropTypes.bool,
     isIncidentLoading: PropTypes.bool,
+    isEditEffectPanelOpen: PropTypes.bool,
+    disruptionIncidentNoToEdit: PropTypes.string,
+    toggleEditEffectPanel: PropTypes.func.isRequired,
+    updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
@@ -174,5 +197,17 @@ export default connect(state => ({
     filteredIncidents: getFilteredIncidents(state),
     isCreateOpen: isIncidentCreationOpen(state),
     isCreateAllowed: isIncidentCreationAllowed(state),
+    useEditEffectPanel: useEditEffectPanel(state),
     isIncidentLoading: getIncidentForEditLoadingState(state),
-}), { getDisruptionsAndIncidents, openCreateIncident, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState, getStopGroups })(IncidentsView);
+    isEditEffectPanelOpen: isEditEffectPanelOpen(state),
+    disruptionIncidentNoToEdit: getDisruptionKeyToEditEffect(state),
+}), { 
+    getDisruptionsAndIncidents, 
+    openCreateIncident, 
+    updateEditMode, 
+    updateAffectedRoutesState, 
+    updateAffectedStopsState, 
+    getStopGroups,
+    toggleEditEffectPanel,
+    updateDisruptionKeyToEditEffect,
+})(IncidentsView);
