@@ -19,7 +19,7 @@ const ViewDiversionDetailModal = (props) => {
 
     const isEditingEnabled = editableStatuses.includes(props.disruption.status);
 
-
+    // Update allExpanded based on whether all rows are expanded
     useEffect(() => {
         if (props.diversions?.length) {
             const allRowsExpanded = props.diversions.every(
@@ -33,15 +33,15 @@ const ViewDiversionDetailModal = (props) => {
 
     const toggleExpandAll = () => {
         if (allExpanded) {
-            setExpandedRows({});
+            setExpandedRows({}); // Collapse all
         } else {
             const newExpandedRows = props.diversions.reduce((acc, diversion) => {
                 acc[diversion.diversionId] = true;
                 return acc;
             }, {});
-            setExpandedRows(newExpandedRows);
+            setExpandedRows(newExpandedRows); // Expand all
         }
-
+        // allExpanded will be updated by the useEffect
     };
 
     const toggleExpand = (diversionId) => {

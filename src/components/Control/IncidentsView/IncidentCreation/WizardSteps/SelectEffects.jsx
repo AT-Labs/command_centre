@@ -290,7 +290,7 @@ export const SelectEffects = (props) => {
             } else {
                 props.onSubmitUpdate();
             }
-        }, 0);
+        }, 0); // to run it on next event loop
     };
 
     const onContinue = () => {

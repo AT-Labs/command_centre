@@ -15,6 +15,7 @@ export const hasFleetLoaded = createSelector(
 
 export const getFleetVehicleAgencyName = fleetInfo => result(fleetInfo, 'agency.agencyName');
 export const getFleetVehicleAgencyId = fleetInfo => result(fleetInfo, 'agency.agencyId');
+export const getFleetVehicleDepotName = fleetInfo => result(fleetInfo, 'agency.depot.name');
 export const getFleetVehicleCapacity = fleetInfo => result(fleetInfo, 'capacity');
 export const getFleetVehicleType = fleetInfo => result(fleetInfo, 'type.type');
 export const getFleetVehicleLabel = fleetInfo => result(fleetInfo, 'label');

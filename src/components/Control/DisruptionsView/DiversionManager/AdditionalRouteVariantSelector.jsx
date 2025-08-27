@@ -6,15 +6,11 @@ import RouteVariantSelect from './RouteVariantSelect';
 const AdditionalRouteVariantSelector = ({
     routeVariantsList,
     selectedRouteVariants,
-    onSelectRouteVariant,
-    onRemoveRouteVariant,
+    onSelectVariant,
     onVisibilityChange,
-    isRouteVariantDisabled,
-    isLoadingExistingDiversions,
-    existingDiversions
-}) => {
-    return (
-        <div>
+    onRouteVariantRemoved,
+}) => (
+    <div>
         <p>
             <b>Select the other route variant(s) to apply the defined diversion</b>
         </p>
@@ -23,10 +19,7 @@ const AdditionalRouteVariantSelector = ({
                 label="Select another route variant"
                 className="route-variant-select"
                 routeVariants={ routeVariantsList }
-                onSelectVariant={ onSelectRouteVariant }
-                isRouteVariantDisabled={ isRouteVariantDisabled }
-                isLoadingExistingDiversions={ isLoadingExistingDiversions }
-                existingDiversions={ existingDiversions }
+                onSelectVariant={ onSelectVariant }
             />
         </div>
         {selectedRouteVariants.map(routeVariant => (
@@ -49,7 +42,7 @@ const AdditionalRouteVariantSelector = ({
                     <Button
                         color="link"
                         style={ { marginLeft: '20px', padding: 0 } }
-                        onClick={ () => onRemoveRouteVariant(routeVariant.routeVariantId) }
+                        onClick={ () => onRouteVariantRemoved(routeVariant.routeVariantId) }
                     >
                         Remove
                     </Button>
@@ -57,18 +50,14 @@ const AdditionalRouteVariantSelector = ({
             </div>
         ))}
     </div>
-    );
-};
+);
 
 AdditionalRouteVariantSelector.propTypes = {
     routeVariantsList: PropTypes.array.isRequired,
     selectedRouteVariants: PropTypes.array.isRequired,
-    onSelectRouteVariant: PropTypes.func.isRequired,
-    onRemoveRouteVariant: PropTypes.func.isRequired,
+    onSelectVariant: PropTypes.func.isRequired,
     onVisibilityChange: PropTypes.func.isRequired,
-    isRouteVariantDisabled: PropTypes.func,
-    isLoadingExistingDiversions: PropTypes.bool,
-    existingDiversions: PropTypes.array,
+    onRouteVariantRemoved: PropTypes.func.isRequired,
 };
 
 export default AdditionalRouteVariantSelector;
