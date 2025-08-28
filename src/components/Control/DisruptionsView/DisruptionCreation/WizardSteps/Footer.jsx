@@ -35,12 +35,29 @@ export const Footer = props => (
             </div>
         )}
         <div className={ (props.useDraftDisruptions && props.isDraftOrCreateMode) ? 'col-3 pl-0' : 'col-4' }>
-            <Button
-                disabled={ props.isSubmitDisabled }
-                className="btn cc-btn-primary btn-block continue"
-                onClick={ props.onContinue }>
-                { props.nextButtonValue }
-            </Button>
+            { props.showFinishButton ? (
+                <div className="d-flex gap-2">
+                    <Button
+                        disabled={ props.isSubmitDisabled }
+                        className="btn cc-btn-primary"
+                        onClick={ props.onContinue }>
+                        { props.nextButtonValue }
+                    </Button>
+                    <Button
+                        disabled={ props.isFinishDisabled }
+                        className="btn cc-btn-success"
+                        onClick={ props.onFinish }>
+                        Finish
+                    </Button>
+                </div>
+            ) : (
+                <Button
+                    disabled={ props.isSubmitDisabled }
+                    className="btn cc-btn-primary btn-block continue"
+                    onClick={ props.onContinue }>
+                    { props.nextButtonValue }
+                </Button>
+            )}
         </div>
     </footer>
 );
@@ -55,6 +72,9 @@ Footer.propTypes = {
     isDraftSubmitDisabled: PropTypes.bool,
     nextButtonValue: PropTypes.string.isRequired,
     useDraftDisruptions: PropTypes.bool,
+    showFinishButton: PropTypes.bool,
+    isFinishDisabled: PropTypes.bool,
+    onFinish: PropTypes.func,
 };
 
 Footer.defaultProps = {
@@ -64,6 +84,9 @@ Footer.defaultProps = {
     isDraftOrCreateMode: true,
     onBack: null,
     onSubmitDraft: () => {},
+    showFinishButton: false,
+    isFinishDisabled: false,
+    onFinish: () => {},
 };
 
 export default connect(

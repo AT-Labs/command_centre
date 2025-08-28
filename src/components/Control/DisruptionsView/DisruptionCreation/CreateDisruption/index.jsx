@@ -407,7 +407,8 @@ export class CreateDisruption extends React.Component {
                             {this.props.editMode !== EDIT_TYPE.EDIT && (<SelectDetails onUpdateDetailsValidation={ this.onUpdateDetailsValidation } />)}
                             <SelectDisruptionEntities
                                 onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
-                                onSubmitUpdate={ this.onSubmitUpdate } />
+                                onSubmitUpdate={ this.onSubmitUpdate }
+                                onSubmit={ this.onSubmit } />
                             <Workarounds
                                 isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
                                 onSubmitUpdate={ this.onSubmitUpdate } />

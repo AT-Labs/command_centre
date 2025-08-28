@@ -831,7 +831,7 @@ RealTimeView.propTypes = {
     updateShowAllRouteAlerts: PropTypes.func.isRequired,
     updateShowDisruptions: PropTypes.func.isRequired,
     agencies: PropTypes.array.isRequired,
-    selectedCars: PropTypes.object.isRequired,
+    selectedCars: PropTypes.object,
     updateSelectedCars: PropTypes.func.isRequired,
     updateSelectedTmpImpacts: PropTypes.func.isRequired,
     goToDisruptionEditPage: PropTypes.func.isRequired,
@@ -841,6 +841,7 @@ RealTimeView.defaultProps = {
     vehiclePosition: undefined,
     routeType: null,
     selectedAgencyIds: null,
+    selectedCars: {},
 };
 
 export default connect(
