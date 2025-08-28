@@ -43,47 +43,30 @@ const ControlViewComponent = (props) => {
 
     // Handle URL parameters for routing
     useEffect(() => {
-
-        
         const pathParts = location.pathname.split('/');
-
         
-        // Check if the URL matches the control-incidents pattern with entity ID
-        if (pathParts.length === 4 && 
-            pathParts[1] === 'control-main-view' && 
-            pathParts[2] === 'control-incidents' && 
-            pathParts[3] && pathParts[3] !== '') {
-            
-            const entityId = pathParts[3];
-
-            
+        // Helper function to handle entity ID processing
+        const handleEntityId = (entityId) => {
             if (entityId && entityId !== '') {
-                // Set the control detail view to INCIDENTS to trigger EditEffectPanel
                 props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.INCIDENTS);
-                // Set the active entity ID
                 props.updateActiveControlEntityId(entityId);
-                // Set the disruption key to edit effect - use incidentNo format
                 const incidentNo = `DISR${entityId}`;
                 props.updateDisruptionKeyToEditEffect(incidentNo);
             }
+        };
+
+        // Check if the URL matches the control-incidents pattern with entity ID
+        if (pathParts.length === 4 && 
+            pathParts[1] === 'control-main-view' && 
+            pathParts[2] === 'control-incidents') {
+            handleEntityId(pathParts[3]);
         }
         
         // Check if the URL matches the control-disruptions pattern with entity ID
         if (pathParts.length >= 4 && 
             pathParts[1] === 'control-main-view' && 
             pathParts[2] === 'control-disruptions') {
-            
-            const entityId = pathParts[3];
-            
-            if (entityId && entityId !== '') {
-                // Set the control detail view to INCIDENTS to trigger EditEffectPanel
-                props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.INCIDENTS);
-                // Set the active entity ID
-                props.updateActiveControlEntityId(entityId);
-                // Set the disruption key to edit effect - use incidentNo format
-                const incidentNo = `DISR${entityId}`;
-                props.updateDisruptionKeyToEditEffect(incidentNo);
-            }
+            handleEntityId(pathParts[3]);
         }
     }, [location.pathname, props]);
 

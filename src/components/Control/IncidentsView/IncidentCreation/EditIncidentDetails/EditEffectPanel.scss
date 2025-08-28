@@ -143,7 +143,7 @@
         left: 0 !important;
         width: 100vw !important;
         height: 100vh !important;
-        z-index: 999999 !important;
+        z-index: 99 !important;
         background: white !important;
         display: flex;
 
@@ -206,10 +206,9 @@ body.diversion-manager-active {
     .modal-dialog,
     .modal-content,
     button[style*="z-index"],
-    [style*="z-index: 999999"],
-    [style*="z-index: 99999"],
     [style*="z-index: 9999"],
     [style*="z-index: 999"],
+    [style*="z-index: 99"],
     .btn.cc-btn-link,
     .diversions-button-container,
     .diversions-button {

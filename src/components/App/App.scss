@@ -25,10 +25,9 @@ body.diversion-manager-active {
     [class*="Modal"]:not(.diversion-result-modal),
     [class*="Dialog"]:not(.diversion-result-modal),
     button[style*="z-index"]:not(.diversion-result-modal button),
-    [style*="z-index: 999999"]:not(.diversion-result-modal *),
-    [style*="z-index: 99999"]:not(.diversion-result-modal *),
     [style*="z-index: 9999"]:not(.diversion-result-modal *),
     [style*="z-index: 999"]:not(.diversion-result-modal *),
+    [style*="z-index: 99"]:not(.diversion-result-modal *),
     .btn.cc-btn-link,
     .diversions-button-container,
     .diversions-button,
@@ -51,25 +50,25 @@ body.diversion-manager-active {
 }
 
 .diversion-result-modal {
-    z-index: 99999999 !important;
+    z-index: 101 !important;
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
     pointer-events: auto !important;
 
     .modal-content {
-        z-index: 99999999 !important;
+        z-index: 101 !important;
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
     }
 
     .modal-dialog {
-        z-index: 99999999 !important;
+        z-index: 101 !important;
     }
 
     .modal-backdrop {
-        z-index: 99999998 !important;
+        z-index: 100 !important;
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;

@@ -3,18 +3,17 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import moment from 'moment-timezone';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
-import { debounce } from 'lodash-es';
+
 import '../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
 import './styles.scss';
 import SidePanel from '../../../Common/OffCanvasLayout/SidePanel/SidePanel';
 import RouteShapeEditor from '../../../Common/Map/RouteShapeEditor/RouteShapeEditor';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import ChangeSelectedRouteVariantModal from './ChangeSelectedRouteVariantModal';
-import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
+import { ACTION_TYPE } from './DiversionResultModal';
 import { createDiversion, updateDiversion, resetDiversionResult, fetchDiversions, clearDiversionsCache } from '../../../../redux/actions/control/diversions';
 import { getDiversionResultState, getDiversionForEditing, getDiversionEditMode, getDiversionsForDisruption, getDiversionsLoadingForDisruption } from '../../../../redux/selectors/control/diversions';
 
-import { getDiversion } from '../../../../utils/transmitters/disruption-mgt-api';
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
 import { isAffectedStop, createAffectedStop,
     getUniqueStops, createModifiedRouteVariant, canMerge, hasDiversionModified, getUniqueAffectedStopIds,
@@ -30,9 +29,7 @@ import AffectedStops from './AffectedStops';
 const DiversionManager = (props) => {
     const SERVICE_DATE_FORMAT = 'YYYYMMDD';
     const TIME_FORMAT_HHMM = 'HH:mm';
-    const debounceDelay = 300;
 
-    // Compute these values after props are available
     const isEditingMode = props.editMode === EDIT_TYPE.EDIT;
     const title = `${isEditingMode ? 'Edit' : 'Add'} Diversion`;
     const resultAction = isEditingMode ? 'updated' : 'added';
@@ -46,7 +43,6 @@ const DiversionManager = (props) => {
     const [isBaseRouteVariantVisible, setIsBaseRouteVariantVisible] = useState(true);
     const [tempSelectedBaseRouteVariant, setTempSelectedBaseRouteVariant] = useState(); // Save temporarily for confirmation modal
     const [isChangeVariantModalOpen, setIsChangeVariantModalOpen] = useState(false);
-    // Use centralized diversions data instead of local state
     const existingDiversions = getDiversionsForDisruption(props.disruption?.disruptionId || props.disruption?.incidentId)(props.state) || [];
     const isLoadingExistingDiversions = getDiversionsLoadingForDisruption(props.disruption?.disruptionId || props.disruption?.incidentId)(props.state) || false;
     const [recentlyCreatedDiversionRouteVariantId, setRecentlyCreatedDiversionRouteVariantId] = useState(null);
@@ -74,15 +70,12 @@ const DiversionManager = (props) => {
     // We only support adding diversion to bus route at the moment.
     const isBusRoute = route => route.routeType === BUS_TYPE_ID;
 
-    // Check if a route variant is disabled due to existing diversions
     const isRouteVariantDisabled = (routeVariant) => {
         if (!routeVariant) {
             return false;
         }
 
-        // If we have existing diversions data, use it regardless of loading state
         if (existingDiversions.length > 0) {
-            // Check if this route variant already has a diversion
             const isDisabled = existingDiversions.some((diversion) => {
                 const diversionRouteVariants = diversion.diversionRouteVariants || [];
                 return diversionRouteVariants.some(drv => drv.routeVariantId === routeVariant.routeVariantId);
@@ -91,7 +84,6 @@ const DiversionManager = (props) => {
             return isDisabled;
         }
 
-        // Also check if this route variant was recently used to create a diversion
         if (recentlyCreatedDiversionRouteVariantId === routeVariant.routeVariantId) {
             return true;
         }
@@ -99,7 +91,6 @@ const DiversionManager = (props) => {
         return false;
     };
 
-    // Handle both old array structure and new object structure
     const getAffectedEntities = () => {
         if (!props.disruption?.affectedEntities) return [];
 
@@ -123,10 +114,10 @@ const DiversionManager = (props) => {
 
     const [routeIds] = useState(() => {
         const affectedEntities = getAffectedEntities();
-        const routeIds = affectedEntities.length > 0
+        const routeIdsArray = affectedEntities.length > 0
             ? [...new Set(affectedEntities.filter(isBusRoute).map(entity => entity.routeId))]
             : [];
-        return routeIds;
+        return routeIdsArray;
     });
 
     const initEditingMode = (routeVariants) => {
@@ -178,15 +169,13 @@ const DiversionManager = (props) => {
             const idToUse = props.disruption.disruptionId || props.disruption.incidentId;
             await props.fetchDiversions(idToUse);
 
-            // Clear the recently created diversion route variant ID since we now have updated data
             setRecentlyCreatedDiversionRouteVariantId(null);
         } catch (error) {
-            console.error('🔧 DiversionManager - error fetching existing diversions:', error);
         }
     }, [props.disruption.disruptionId, props.disruption.incidentId, isLoadingExistingDiversions, props.fetchDiversions]);
 
     // Fetch available route variants to populate the dropdown lists
-    const fetchVariants = debounce(async () => {
+    const fetchVariants = async () => {
         const start = moment(props.disruption.startTime).tz(dateTypes.TIME_ZONE);
         const end = moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE);
         const startDate = start.format(SERVICE_DATE_FORMAT);
@@ -226,7 +215,7 @@ const DiversionManager = (props) => {
         } catch {
             setRouteVariantsList([]);
         }
-    }, debounceDelay);
+    };
 
     // Drop down lists
     const handleSelectMainVariant = (variant) => {
@@ -247,12 +236,9 @@ const DiversionManager = (props) => {
                 setModifiedBaseRouteVariant(null);
                 setInitialBaseRouteShape(null);
                 
-                // Use setTimeout to ensure the reset completes before setting new values
-                setTimeout(() => {
-                    setSelectedBaseRouteVariant({ ...variant });
-                    setModifiedBaseRouteVariant(createModifiedRouteVariant(variant, variant.shapeWkt));
-                    setInitialBaseRouteShape(variant.shapeWkt);
-                }, 10);
+                setSelectedBaseRouteVariant({ ...variant });
+                setModifiedBaseRouteVariant(createModifiedRouteVariant(variant, variant.shapeWkt));
+                setInitialBaseRouteShape(variant.shapeWkt);
             }
         } else {
             // reset
@@ -323,8 +309,6 @@ const DiversionManager = (props) => {
         }
     }, [routeIds]);
 
-
-
     // Handel the shape updated events triggered by the shape editor
     const onShapeUpdated = (updatedDiversionShape, updatedRouteVariantShape) => {
         setDiversionShapeWkt(updatedDiversionShape);
@@ -357,11 +341,8 @@ const DiversionManager = (props) => {
 
     // Buttons
     const onCancelClicked = () => {
-        // Clear the recently created diversion route variant ID when cancelling
         setRecentlyCreatedDiversionRouteVariantId(null);
 
-        // Force hide all modals and overlays before closing
-        // Find buttons to hide only within the effects-list container
         const effectsContainer = document.getElementById('effects-list');
         const buttonsToHide = effectsContainer ? effectsContainer.querySelectorAll('.js-hide-on-cancel') : [];
 
@@ -384,28 +365,23 @@ const DiversionManager = (props) => {
             [class*="overlay"],
             [class*="modal"],
             button[style*="z-index"],
-            [style*="z-index: 999999"],
-            [style*="z-index: 99999"],
-            [style*="z-index: 9999"],
-            [style*="z-index: 999"],
+            [style*="z-index: 99"],
+            [style*="z-index: 100"],
+            [style*="z-index: 101"],
             .diversions-button-container,
             .diversions-button,
             .diversions-menu-dropdown
         `);
 
-        // Hide specific buttons within effects-list only, but not in EditEffectPanel or disruption-edit__container
         buttonsToHide.forEach((button) => {
-            // Don't hide buttons that are in EditEffectPanel
             if (button.closest('.edit-effect-panel')) {
                 return;
             }
 
-            // Don't hide buttons that are in disruption-edit__container
             if (button.closest('.disruption-edit__container')) {
                 return;
             }
 
-            // Only hide buttons that are actually inside the effects-list container
             if (button.closest('#effects-list')) {
                 button.style.display = 'none';
                 button.style.visibility = 'hidden';
@@ -433,7 +409,6 @@ const DiversionManager = (props) => {
             }
         });
 
-        // Also remove any backdrop classes from body
         document.body.classList.remove('modal-open', 'diversion-manager-active');
 
         if (props.onCancelled) {
@@ -478,7 +453,6 @@ const DiversionManager = (props) => {
     const handleResultAction = (action) => {
 
 
-
         document.body.classList.remove('diversion-result-active');
 
         props.resetDiversionResult();
@@ -486,7 +460,6 @@ const DiversionManager = (props) => {
         if (action === ACTION_TYPE.NEW_DIVERSION) {
 
 
-            // Store the route variant ID that was just used to create a diversion
             const routeVariantId = selectedBaseRouteVariant?.routeVariantId;
             if (routeVariantId) {
                 setRecentlyCreatedDiversionRouteVariantId(routeVariantId);
@@ -494,10 +467,7 @@ const DiversionManager = (props) => {
 
             reset();
             props.clearDiversionsCache(props.disruption.disruptionId);
-                            // Add delay to ensure API has updated
-                setTimeout(() => {
-                    fetchExistingDiversions();
-                }, 1000);
+            fetchExistingDiversions();
         } else if (action === ACTION_TYPE.RETURN_TO_DISRUPTION) {
             if (props.onCancelled) {
                 props.onCancelled();
@@ -561,12 +531,10 @@ const DiversionManager = (props) => {
 
     const shouldShowDiversionManager = props.isOpen;
 
-    // Add listener for Close button clicks when DiversionManager is open
     React.useEffect(() => {
         if (props.isOpen) {
             const handleCloseButtonClick = () => {
         
-                // Hide all map elements when close button is clicked
                 const mapElements = document.querySelectorAll('.leaflet-control-container, .leaflet-control-zoom, .leaflet-control-draw, .leaflet-pane, .leaflet-overlay-pane, .leaflet-marker-pane, .leaflet-tooltip-pane, .leaflet-popup-pane');
                 mapElements.forEach((element) => {
                     if (element) {
@@ -576,7 +544,6 @@ const DiversionManager = (props) => {
                     }
                 });
 
-                // Also hide the entire map container
                 const mapContainer = document.querySelector('.leaflet-container');
                 if (mapContainer) {
                     mapContainer.style.display = 'none';
@@ -584,19 +551,16 @@ const DiversionManager = (props) => {
                     mapContainer.style.opacity = '0';
                 }
 
-                // Call the onCancelled callback to properly close the DiversionManager
                 if (props.onCancelled) {
-                                    props.onCancelled();
+                    props.onCancelled();
             } else {
                 }
             };
 
-            // Find the Close button and add event listener
             const closeButton = document.querySelector('.disruption-creation-close-disruptions');
             if (closeButton) {
                 closeButton.addEventListener('click', handleCloseButtonClick);
 
-                // Cleanup function
                 return () => {
                     closeButton.removeEventListener('click', handleCloseButtonClick);
                 };
@@ -604,7 +568,6 @@ const DiversionManager = (props) => {
         }
     }, [props.isOpen]);
 
-    // Add/remove body class when result modal is active
     React.useEffect(() => {
         if (!props.resultState.isLoading && (!!props.resultState?.diversionId || !!props.resultState?.error)) {
             document.body.classList.add('diversion-result-active');
@@ -613,23 +576,16 @@ const DiversionManager = (props) => {
         }
     }, [props.resultState.isLoading, props.resultState?.diversionId, props.resultState?.error]);
 
-    // Fetch existing diversions when DiversionManager opens
     React.useEffect(() => {
         const hasId = props.disruption?.incidentId || props.disruption?.disruptionId;
         let lastFetchTime = 0;
-        const MIN_FETCH_INTERVAL = 3000; // 3 seconds minimum between fetches
+        const MIN_FETCH_INTERVAL = 3000; 
 
-        // Only fetch if we're open, have an ID, and either not loading or no existing data
         if (props.isOpen && hasId && !isLoadingExistingDiversions && existingDiversions.length === 0) {
             const now = Date.now();
             if ((now - lastFetchTime) > MIN_FETCH_INTERVAL) {
                 lastFetchTime = now;
-                // Add debouncing to prevent excessive API calls
-                const timeoutId = setTimeout(() => {
-                    fetchExistingDiversions();
-                }, 500);
-
-                return () => clearTimeout(timeoutId);
+                fetchExistingDiversions();
             }
         }
     }, [props.isOpen, props.disruption?.incidentId, props.disruption?.disruptionId, isLoadingExistingDiversions, existingDiversions.length, fetchExistingDiversions]);
@@ -756,7 +712,7 @@ const DiversionManager = (props) => {
                             width: '100vw',
                             height: '100vh',
                             backgroundColor: 'rgba(0,0,0,0.5)',
-                            zIndex: 99999999,
+                            zIndex: 101,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -770,7 +726,7 @@ const DiversionManager = (props) => {
                                 borderRadius: '8px',
                                 maxWidth: '500px',
                                 width: '90%',
-                                zIndex: 99999999,
+                                zIndex: 101,
                                 boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                                 border: '1px solid #ddd',
                                 display: 'flex',
