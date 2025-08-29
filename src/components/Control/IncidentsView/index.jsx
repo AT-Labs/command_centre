@@ -15,23 +15,17 @@ import {
     isIncidentCreationAllowed,
     isIncidentCreationOpen,
     getFilteredDisruptions,
-    getFilteredIncidents,
+    getIncidentsWithDisruptions,
     getIncidentForEditLoadingState,
 } from '../../../redux/selectors/control/incidents';
 import { DISRUPTION_POLLING_INTERVAL } from '../../../constants/disruptions';
 import Filters from './Filters/Filters';
 import { getStopGroups } from '../../../redux/actions/control/dataManagement';
 import EDIT_TYPE from '../../../types/edit-types';
-import { PageInfo, Pagination } from '../../Common/Pagination/Pagination';
-import './style.scss';
 import IncidentsDataGrid from './IncidentsDataGrid';
-import { PAGE_SIZE } from './types';
 import CreateIncident from './IncidentCreation/CreateIncident/index';
-import EditEffectPanel from './IncidentCreation/EditIncidentDetails/EditEffectPanel';
-import { useEditEffectPanel } from '../../../redux/selectors/appSettings';
-import { isEditEffectPanelOpen, getDisruptionKeyToEditEffect } from '../../../redux/selectors/control/incidents';
-import { toggleEditEffectPanel, updateDisruptionKeyToEditEffect } from '../../../redux/actions/control/incidents';
 import LoadingOverlay from '../../Common/Overlay/LoadingOverlay';
+import './style.scss';
 
 export class IncidentsView extends React.Component {
     constructor(props) {
@@ -45,12 +39,8 @@ export class IncidentsView extends React.Component {
 
     static defaultProps = {
         filteredDisruptions: [],
-        filteredIncidents: [],
         isCreateOpen: false,
-        useEditEffectPanel: false,
         isIncidentLoading: false,
-        isEditEffectPanelOpen: false,
-        disruptionIncidentNoToEdit: '',
     };
 
     componentDidMount() {
@@ -74,16 +64,6 @@ export class IncidentsView extends React.Component {
         clearTimeout(this.state.timer);
     }
 
-    componentDidUpdate(prevProps) {
-
-        
-
-        // if (this.props.useEditEffectPanel && 
-        //     !this.props.isEditEffectPanelOpen && 
-        //     this.props.disruptionIncidentNoToEdit && 
-
-    }
-
     shouldComponentUpdate(nextProps, nextState) {
         if (this.props.isCreateOpen !== nextProps.isCreateOpen) {
             return true;
@@ -99,10 +79,6 @@ export class IncidentsView extends React.Component {
         }
         return !isEqual(this.props.filteredDisruptions, nextProps.filteredDisruptions);
     }
-
-    handlePageChange = (page) => {
-        this.setState({ currentPage: page });
-    };
 
     createIncidentButton = () => (
         <div className="incident-creation">
@@ -120,11 +96,7 @@ export class IncidentsView extends React.Component {
     );
 
     render() {
-        const { filteredDisruptions, filteredIncidents, isCreateAllowed, isCreateOpen, isIncidentLoading } = this.props;
-        const { currentPage } = this.state;
-        // Calculate paginated data
-        const startIndex = (currentPage - 1) * PAGE_SIZE;
-        const paginatedIncidents = filteredIncidents.slice(startIndex, startIndex + PAGE_SIZE);
+        const { mergedIncidentsAndDisruptions, isCreateAllowed, isCreateOpen, isIncidentLoading } = this.props;
         return (
             <div className="control-incidents-view">
                 { isIncidentLoading && (
@@ -150,24 +122,10 @@ export class IncidentsView extends React.Component {
                                 </div>
                             </div>
                             <IncidentsDataGrid
-                                page={ currentPage }
-                                disruptions={ filteredDisruptions }
-                                incidents={ paginatedIncidents } />
-                            <PageInfo
-                                currentPage={ currentPage }
-                                itemsPerPage={ PAGE_SIZE }
-                                itemsTotal={ filteredIncidents.length }
-                            />
-                            <Pagination
-                                currentPage={ currentPage }
-                                itemsTotal={ filteredIncidents.length }
-                                itemsPerPage={ PAGE_SIZE }
-                                onPageClick={ page => this.handlePageChange(page) }
-                            />
+                                mergedIncidentsAndDisruptions={ mergedIncidentsAndDisruptions } />
                         </div>
                     )}
                 {isCreateOpen && isCreateAllowed && <CreateIncident />}
-                {/* EditEffectPanel moved to CreateIncident to avoid duplication */}
             </div>
         );
     }
@@ -175,7 +133,7 @@ export class IncidentsView extends React.Component {
 
 IncidentsView.propTypes = {
     filteredDisruptions: PropTypes.array,
-    filteredIncidents: PropTypes.array,
+    mergedIncidentsAndDisruptions: PropTypes.array,
     getDisruptionsAndIncidents: PropTypes.func.isRequired,
     isCreateAllowed: PropTypes.bool.isRequired,
     isCreateOpen: PropTypes.bool,
@@ -184,30 +142,17 @@ IncidentsView.propTypes = {
     updateAffectedRoutesState: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
     getStopGroups: PropTypes.func.isRequired,
-    useEditEffectPanel: PropTypes.bool,
     isIncidentLoading: PropTypes.bool,
-    isEditEffectPanelOpen: PropTypes.bool,
-    disruptionIncidentNoToEdit: PropTypes.string,
-    toggleEditEffectPanel: PropTypes.func.isRequired,
-    updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
+};
+
+IncidentsView.defaultProps = {
+    mergedIncidentsAndDisruptions: [],
 };
 
 export default connect(state => ({
     filteredDisruptions: getFilteredDisruptions(state),
-    filteredIncidents: getFilteredIncidents(state),
+    mergedIncidentsAndDisruptions: getIncidentsWithDisruptions(state),
     isCreateOpen: isIncidentCreationOpen(state),
     isCreateAllowed: isIncidentCreationAllowed(state),
-    useEditEffectPanel: useEditEffectPanel(state),
     isIncidentLoading: getIncidentForEditLoadingState(state),
-    isEditEffectPanelOpen: isEditEffectPanelOpen(state),
-    disruptionIncidentNoToEdit: getDisruptionKeyToEditEffect(state),
-}), { 
-    getDisruptionsAndIncidents, 
-    openCreateIncident, 
-    updateEditMode, 
-    updateAffectedRoutesState, 
-    updateAffectedStopsState, 
-    getStopGroups,
-    toggleEditEffectPanel,
-    updateDisruptionKeyToEditEffect,
-})(IncidentsView);
+}), { getDisruptionsAndIncidents, openCreateIncident, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState, getStopGroups })(IncidentsView);
