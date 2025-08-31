@@ -10,7 +10,7 @@ const cssModuleModalHeader = {
 };
 
 const CustomModal = ({
-    children, className, isModalOpen, title, okButton, onClose, renderToggleButton, customFooter,
+    children, className, isModalOpen, title, okButton, onClose, renderToggleButton, customFooter, customHeader,
 }) => (
     <>
         {renderToggleButton && renderToggleButton()}
@@ -19,9 +19,13 @@ const CustomModal = ({
             backdrop="static"
             className={ className }
             contentClassName="rounded-0">
-            <ModalHeader toggle={ onClose } className="w-100" cssModule={ cssModuleModalHeader } tag="h3">
-                {title}
-            </ModalHeader>
+            {customHeader ? (
+                <ModalHeader>{customHeader}</ModalHeader>
+            ) : (
+                <ModalHeader toggle={ onClose } className="w-100" cssModule={ cssModuleModalHeader } tag="h3">
+                    {title}
+                </ModalHeader>
+            )}
             <ModalBody>
                 {children}
             </ModalBody>
@@ -58,6 +62,7 @@ CustomModal.propTypes = {
     children: PropTypes.oneOfType([PropTypes.element, PropTypes.array]).isRequired,
     isModalOpen: PropTypes.bool.isRequired,
     customFooter: PropTypes.oneOfType([PropTypes.element, PropTypes.array]),
+    customHeader: PropTypes.oneOfType([PropTypes.element, PropTypes.array]),
 };
 
 CustomModal.defaultProps = {
@@ -67,6 +72,7 @@ CustomModal.defaultProps = {
     okButton: null,
     className: '',
     customFooter: null,
+    customHeader: null,
 };
 
 export default CustomModal;
