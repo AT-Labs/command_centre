@@ -38,6 +38,16 @@
         position: absolute;
         top: 45%;
     }
+
+    .loading-spinner {
+        left: 46%;
+        position: absolute;
+        top: 45%;
+    }
+}
+
+.workaround-panel.edit-flow-workaround-panel {
+    left: calc(#{$side-panel-width-large} + 1px + #{$side-panel-width-large});
 }
 
 .workaround-panel.edit-flow-workaround-panel {
