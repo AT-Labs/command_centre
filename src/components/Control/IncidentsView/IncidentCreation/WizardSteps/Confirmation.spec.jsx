@@ -155,7 +155,7 @@ describe('Confirmation Component', () => {
         expect(updateActiveIncident).toHaveBeenCalledWith('123');
     });
 
-    it('Close modal on click on View all notifications button', () => {
+    it('Close modal on click on View notifications button', () => {
         render(
             <Provider store={ store }>
                 <Confirmation { ...defaultProps } />
