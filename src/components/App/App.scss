@@ -1,7 +1,5 @@
 @import "../../assets/styles/variables";
 
-
-
 .app {
     .activity-loader {
         bottom: 100px;
@@ -19,7 +17,7 @@
     opacity: 1 !important;
     pointer-events: auto !important;
     z-index: 1030 !important;
-    
+
     // Specific rules for modal content
     > div {
         display: flex !important;
@@ -39,7 +37,7 @@ body.diversion-result-active {
         height: 100vh !important;
         pointer-events: auto !important;
         z-index: 1030 !important;
-        background-color: rgba(0, 0, 0, 0.5) !important;
+        background-color: rgba(0, 0, 0, .5) !important;
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;

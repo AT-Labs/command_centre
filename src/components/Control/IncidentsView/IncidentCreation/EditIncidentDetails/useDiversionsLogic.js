@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 export const useDiversionsLogic = (disruption, fetchDiversionsAction, isDiversionManagerOpen, diversionResultState, clearDiversionsCacheAction) => {
     const [anchorEl, setAnchorEl] = useState(null);
 
-    // Close menu when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (anchorEl && !event.target.closest('.diversions-button-container')) {
@@ -17,21 +16,18 @@ export const useDiversionsLogic = (disruption, fetchDiversionsAction, isDiversio
         };
     }, [anchorEl]);
 
-    // Close dropdown when DiversionManager opens
     useEffect(() => {
         if (isDiversionManagerOpen && anchorEl) {
             setAnchorEl(null);
         }
     }, [isDiversionManagerOpen, anchorEl]);
 
-    // Fetch diversions when component mounts or disruption changes
     useEffect(() => {
         if (disruption?.disruptionId && fetchDiversionsAction) {
             fetchDiversionsAction(disruption.disruptionId);
         }
     }, [disruption?.disruptionId, fetchDiversionsAction]);
 
-    // Refresh diversions when DiversionManager closes
     useEffect(() => {
         if (!isDiversionManagerOpen && disruption?.disruptionId && fetchDiversionsAction) {
             setTimeout(() => {
@@ -40,10 +36,8 @@ export const useDiversionsLogic = (disruption, fetchDiversionsAction, isDiversio
         }
     }, [isDiversionManagerOpen, disruption?.disruptionId, fetchDiversionsAction]);
 
-    // Refresh diversions when a new diversion is created
     useEffect(() => {
         if (diversionResultState?.diversionId && disruption?.disruptionId && fetchDiversionsAction && clearDiversionsCacheAction) {
-            // Wait a bit for the backend to process the new diversion
             setTimeout(() => {
                 clearDiversionsCacheAction(disruption.disruptionId);
                 fetchDiversionsAction(disruption.disruptionId, true);
@@ -51,10 +45,8 @@ export const useDiversionsLogic = (disruption, fetchDiversionsAction, isDiversio
         }
     }, [diversionResultState?.diversionId, disruption?.disruptionId, fetchDiversionsAction, clearDiversionsCacheAction]);
 
-    // Refresh diversions when diversion result state changes (success/error)
     useEffect(() => {
         if (diversionResultState && !diversionResultState.isLoading && diversionResultState.diversionId && disruption?.disruptionId && fetchDiversionsAction) {
-            // Refresh data when diversion operation completes
             setTimeout(() => {
                 fetchDiversionsAction(disruption.disruptionId, true);
             }, 500);

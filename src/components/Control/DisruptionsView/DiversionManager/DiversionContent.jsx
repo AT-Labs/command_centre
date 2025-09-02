@@ -157,7 +157,7 @@ const DiversionContent = (props) => {
 
         const now = Date.now();
         if (fetchExistingDiversions.lastCall && (now - fetchExistingDiversions.lastCall) < 3000) {
-            // Fetch existing diversions called too frequently, skipping
+
             return;
         }
         fetchExistingDiversions.lastCall = now;

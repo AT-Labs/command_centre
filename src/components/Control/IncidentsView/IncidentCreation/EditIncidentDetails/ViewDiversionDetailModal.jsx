@@ -24,7 +24,7 @@ const ViewDiversionDetailModal = (props) => {
 
     const isEditingEnabled = editableStatuses.includes(props.disruption.status);
 
-    // Update allExpanded based on whether all rows are expanded
+
     useEffect(() => {
         if (props.diversions?.length) {
             const allRowsExpanded = props.diversions.every(
@@ -38,15 +38,15 @@ const ViewDiversionDetailModal = (props) => {
 
     const toggleExpandAll = () => {
         if (allExpanded) {
-            setExpandedRows({}); // Collapse all
+            setExpandedRows({});
         } else {
             const newExpandedRows = props.diversions.reduce((acc, diversion) => {
                 acc[diversion.diversionId] = true;
                 return acc;
             }, {});
-            setExpandedRows(newExpandedRows); // Expand all
+            setExpandedRows(newExpandedRows);
         }
-        // allExpanded will be updated by the useEffect
+
     };
 
     const toggleExpand = (diversionId) => {
@@ -57,7 +57,7 @@ const ViewDiversionDetailModal = (props) => {
     };
 
     const handleDeleteDiversion = async (diversionId) => {
-        // Prevent multiple deletion attempts
+
         if (isDeletingDiversion) {
             return;
         }
@@ -66,34 +66,34 @@ const ViewDiversionDetailModal = (props) => {
             setIsDeletingDiversion(true);
             setDeletingDiversionId(diversionId);
 
-            // Use Redux action instead of direct API call
+
             await props.deleteDiversion(diversionId, props.disruption.disruptionId);
 
-            // Show success notification
+
             setNotification({
                 id: `diversion-deleted-${diversionId}`,
                 body: `Diversion ${diversionId} has been successfully deleted`,
                 type: CONFIRMATION_MESSAGE_TYPE,
             });
 
-            // Auto-hide notification after 3 seconds
+
             setTimeout(() => {
                 setNotification(null);
             }, 3000);
         } catch (error) {
-            // Show error notification
+
             setNotification({
                 id: `diversion-delete-error-${diversionId}`,
                 body: `Failed to delete diversion ${diversionId}: ${error.message || 'Unknown error'}`,
                 type: 'error',
             });
 
-            // Auto-hide error notification after 5 seconds
+
             setTimeout(() => {
                 setNotification(null);
             }, 5000);
         } finally {
-            // Always reset loading state
+
             setIsDeletingDiversion(false);
             setDeletingDiversionId(null);
         }
@@ -108,10 +108,10 @@ const ViewDiversionDetailModal = (props) => {
         setNotification(null);
     };
 
-    // Auto-refresh diversions when shouldRefetchDiversions changes
+
     useEffect(() => {
         if (props.setShouldRefetchDiversions) {
-            // This will trigger a refresh in the parent component
+
         }
     }, [props.setShouldRefetchDiversions]);
 
