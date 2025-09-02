@@ -35,12 +35,12 @@
     "useDraftDisruptions": "false",
     "useDisruptionDraftEmailSharing": "false",
     "useDiversion": "true",
-    "useHideSkippedStop": "true",
-    "useHoldTrip": "true",
-    "useStopBasedDisruptionsLayer": "true",
-    "useTripOperationNotes": "true",
-    "useStopBasedDisruptionsSearch": "true",
-    "useTripCancellationCause": "true",
+    "useHideSkippedStop": "false",
+    "useHoldTrip": "false",
+    "useStopBasedDisruptionsLayer": "false",
+    "useTripOperationNotes": "false",
+    "useStopBasedDisruptionsSearch": "false",
+    "useTripCancellationCause": "false",
     "useParentChildIncident": "true",
     "useEditEffectPanel": "true"
 }

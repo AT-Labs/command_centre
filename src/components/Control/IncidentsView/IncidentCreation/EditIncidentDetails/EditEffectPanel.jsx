@@ -10,6 +10,7 @@ import Flatpickr from 'react-flatpickr';
 import { RRule } from 'rrule';
 import moment from 'moment';
 import { BsArrowRepeat } from 'react-icons/bs';
+import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 import HistoryIcon from '@mui/icons-material/History';
 import { isEditEffectPanelOpen,
     isWorkaroundPanelOpen,
@@ -79,6 +80,8 @@ import EDIT_TYPE from '../../../../../types/edit-types';
 import './EditEffectPanel.scss';
 import { getDiversionsForDisruption, getDiversionsLoadingForDisruption } from '../../../../../redux/selectors/control/diversions';
 import { fetchDiversions, clearDiversionsCache, deleteDiversion } from '../../../../../redux/actions/control/diversions';
+import AddNoteModal from './AddNoteModal';
+import { useDisruptionNotePopup } from '../../../../../redux/selectors/appSettings';
 
 const INIT_EFFECT_STATE = {
     key: '',
@@ -136,6 +139,7 @@ export const EditEffectPanel = (props) => {
     const [isDurationDirty, setIsDurationDirty] = useState(false);
     const [isRecurrencePatternDirty, setIsRecurrencePatternDirty] = useState(false);
     const [historyNotesModalOpen, setHistoryNotesModalOpen] = useState(false);
+    const [noteModalOpen, setNoteModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
     const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
     const [isViewDiversionsModalOpen, setIsViewDiversionsModalOpen] = useState(false);
@@ -487,7 +491,7 @@ export const EditEffectPanel = (props) => {
 
     const impacts = useAlertEffects();
 
-    const onAddNote = () => {
+    const onAddNote = (note) => {
         const startDate = originalDisruption.startDate ? originalDisruption.startDate : moment(originalDisruption.startTime).format(DATE_FORMAT);
         const startTimeMoment = momentFromDateTime(startDate, originalDisruption.startTime);
 
@@ -523,6 +527,16 @@ export const EditEffectPanel = (props) => {
         props.updateDisruptionKeyToEditEffect('');
         updateDisruption({ note: '' });
         props.setDisruptionForWorkaroundEdit({});
+    };
+
+    const handleAddNoteModalClose = (note) => {
+        updateDisruption({ note });
+        setNoteModalOpen(false);
+    };
+
+    const handleAddNoteModalSubmit = (note) => {
+        onAddNote(note);
+        setNoteModalOpen(false);
     };
 
     const removeNotFoundFromStopGroupsForAllDisruptions = () => {
@@ -880,39 +894,77 @@ export const EditEffectPanel = (props) => {
                                         </FormGroup>
                                     )}
                                 </div>
-                                { disruptionRecurrent && (
-                                    <>
-                                        <div className="col-6 text-center">
-                                            <WeekdayPicker
-                                                selectedWeekdays={ disruption.recurrencePattern.byweekday || [] }
-                                                onUpdate={ byweekday => onUpdateRecurrencePattern(byweekday) }
-                                                disabled={ isResolved() }
-                                            />
-                                        </div>
-                                        <div className="col-6 pb-3 text-center">
-                                            <Button disabled={ isViewAllDisabled() }
-                                                className="showActivePeriods btn btn-secondary lh-1"
-                                                onClick={ () => displayActivePeriods() }>
-                                                View All
-                                            </Button>
-                                        </div>
-                                        { (disruption.status === STATUSES.DRAFT
-                                            ? (!isEmpty(disruption.recurrencePattern.byweekday) && activePeriodsValidV2())
-                                            : !isEmpty(disruption.recurrencePattern.byweekday)) && (
-                                            <div className="col-12 mb-3">
-                                                <BsArrowRepeat size={ 22 } />
-                                                <span className="pl-1">{ getRecurrenceText(parseRecurrencePattern(disruption.recurrencePattern)) }</span>
-                                            </div>
-                                        )}
-                                        { (disruption.status === STATUSES.DRAFT
-                                            ? (disruption.isRecurrencePatternDirty && (isEmpty(disruption.recurrencePattern.byweekday) || !activePeriodsValidV2()))
-                                            : (isRecurrencePatternDirty && isEmpty(disruption.recurrencePattern.byweekday))) && (
-                                            <div className="col-12 mb-3">
-                                                <span className="disruption-recurrence-invalid">Please select recurrence</span>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
+                            <div className="col-6">
+                                <FormGroup>
+                                    <DisruptionDetailSelect
+                                        id="disruption-creation__wizard-select-details__severity"
+                                        className=""
+                                        value={ disruption.severity }
+                                        options={ SEVERITIES }
+                                        label={ LABEL_SEVERITY }
+                                        invalid={ isSeverityDirty && !severityValid() }
+                                        feedback="Please select severity"
+                                        disabled={ isResolved() }
+                                        disabledClassName="background-color-for-disabled-fields"
+                                        onBlur={ (selectedItem) => {
+                                            updateDisruption({ severity: selectedItem, isSeverityDirty: true });
+                                            setIsSeverityDirty(true);
+                                        } }
+                                        onChange={ (selectedItem) => {
+                                            updateDisruption({ severity: selectedItem, isSeverityDirty: true });
+                                            setIsSeverityDirty(true);
+                                        } }
+                                    />
+                                </FormGroup>
+                            </div>
+
+                            <div className="col-12">
+                                <FormGroup>
+                                    <div className="label-with-icon">
+                                        <Label for="disruption-detail__notes">
+                                            <span className="font-size-md font-weight-bold">
+                                                {LABEL_DISRUPTION_NOTES}
+                                                {' '}
+                                            </span>
+                                        </Label>
+                                        <HistoryIcon style={ { color: '#399CDB', cursor: 'pointer' } } onClick={ () => setHistoryNotesModalOpen(true) } />
+                                    </div>
+                                    <Input id="disruption-detail__notes"
+                                        className="textarea-no-resize border border-dark"
+                                        type="textarea"
+                                        value={ disruption.note }
+                                        onChange={ e => updateDisruption({ note: e.currentTarget.value }) }
+                                        maxLength={ DESCRIPTION_NOTE_MAX_LENGTH }
+                                        rows={ 5 } />
+                                    {props.useDisruptionNotePopup && (
+                                        <OpenInNewOutlinedIcon
+                                            className="disruption-detail-expand-note-icon"
+                                            onClick={ () => setNoteModalOpen(true) }
+                                        />
+                                    )}
+                                    <div className="flex-justify-content-end">
+                                        <Button
+                                            className="add-note-button cc-btn-secondary"
+                                            onClick={ () => onAddNote(disruption.note) }>
+                                            Add note
+                                        </Button>
+                                    </div>
+                                </FormGroup>
+                            </div>
+                            { disruption.notes.length > 0 && (
+                                <div className="col-12 last-note-grid">
+                                    <span className="font-size-md font-weight-bold last-note-label">Last note</span>
+                                    <span className="pl-2 last-note-info">
+                                        {disruption.notes[disruption.notes.length - 1].createdBy}
+                                        {', '}
+                                        {formatCreatedUpdatedTime(disruption.notes[disruption.notes.length - 1].createdTime)}
+                                    </span>
+                                    <span className="pl-2 last-note-description pt-2">
+                                        {disruption.notes[disruption.notes.length - 1].description}
+                                    </span>
+                                </div>
+                            )}
+
                                 <div className="col-6">
                                     <FormGroup>
                                         <DisruptionDetailSelect
@@ -1043,6 +1095,12 @@ export const EditEffectPanel = (props) => {
                 disruption={ disruption }
                 isModalOpen={ historyNotesModalOpen }
                 onClose={ () => setHistoryNotesModalOpen(false) } />
+            <AddNoteModal
+                disruption={ disruption }
+                isModalOpen={ noteModalOpen }
+                onClose={ note => handleAddNoteModalClose(note) }
+                onSubmit={ note => handleAddNoteModalSubmit(note) }
+            />
             <CustomMuiDialog
                 title="Disruption Active Periods"
                 onClose={ () => setActivePeriodsModalOpen(false) }
@@ -1109,6 +1167,12 @@ EditEffectPanel.propTypes = {
     deleteDiversion: PropTypes.func,
     useDiversion: PropTypes.bool,
     state: PropTypes.object,
+    setRequestedDisruptionKeyToUpdateEditEffect: PropTypes.func.isRequired,
+    updateEditableDisruption: PropTypes.func.isRequired,
+    applyDisruptionChanges: PropTypes.func.isRequired,
+    updateEffectValidationState: PropTypes.func.isRequired,
+    updateIsEffectUpdatedState: PropTypes.func.isRequired,
+    useDisruptionNotePopup: PropTypes.bool,
 };
 
 EditEffectPanel.defaultProps = {
@@ -1127,6 +1191,7 @@ EditEffectPanel.defaultProps = {
     deleteDiversion: () => {},
     useDiversion: false,
     state: {},
+    useDisruptionNotePopup: false,
 };
 
 export default connect(state => ({
@@ -1134,7 +1199,8 @@ export default connect(state => ({
     disruptionIncidentNoToEdit: getRequestedDisruptionKeyToUpdateEditEffect(state),
     isWorkaroundPanelOpen: isWorkaroundPanelOpen(state),
     isCancellationEffectOpen: isCancellationEffectModalOpen(state),
-    state, 
+    state,
+    useDisruptionNotePopup: useDisruptionNotePopup(state),
 }), {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
