@@ -113,7 +113,7 @@ const INIT_STATE = {
     status: STATUSES.NOT_STARTED,
     header: '',
     description: '',
-    url: '',
+
     createNotification: false,
     recurrent: false,
     duration: '',

@@ -74,11 +74,11 @@ import DisruptionSummaryModal from './DisruptionSummaryModal';
 import CancellationEffect from './CancellationEffect';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import HeaderButtons from './HeaderButtons';
-import { ViewDiversionDetailModal } from './ViewDiversionDetailModal';
+import ViewDiversionDetailModal from './ViewDiversionDetailModal';
 import EDIT_TYPE from '../../../../../types/edit-types';
 import './EditEffectPanel.scss';
 import { getDiversionsForDisruption, getDiversionsLoadingForDisruption } from '../../../../../redux/selectors/control/diversions';
-import { fetchDiversions, clearDiversionsCache } from '../../../../../redux/actions/control/diversions';
+import { fetchDiversions, clearDiversionsCache, deleteDiversion } from '../../../../../redux/actions/control/diversions';
 
 const INIT_EFFECT_STATE = {
     key: '',
@@ -1069,6 +1069,7 @@ export const EditEffectPanel = (props) => {
                 setShouldRefetchDiversions={ setShouldRefetchDiversions }
                 diversions={ diversions }
                 isLoadingDiversions={ isLoadingDiversions }
+                deleteDiversion={ props.deleteDiversion }
             />
         </>
     );
@@ -1105,6 +1106,7 @@ EditEffectPanel.propTypes = {
     updateDiversionToEdit: PropTypes.func,
     fetchDiversions: PropTypes.func,
     clearDiversionsCache: PropTypes.func,
+    deleteDiversion: PropTypes.func,
     useDiversion: PropTypes.bool,
     state: PropTypes.object,
 };
@@ -1122,6 +1124,7 @@ EditEffectPanel.defaultProps = {
     updateDiversionToEdit: () => {},
     fetchDiversions: () => {},
     clearDiversionsCache: () => {},
+    deleteDiversion: () => {},
     useDiversion: false,
     state: {},
 };
@@ -1131,7 +1134,7 @@ export default connect(state => ({
     disruptionIncidentNoToEdit: getRequestedDisruptionKeyToUpdateEditEffect(state),
     isWorkaroundPanelOpen: isWorkaroundPanelOpen(state),
     isCancellationEffectOpen: isCancellationEffectModalOpen(state),
-    state, // Pass entire state for selectors
+    state, 
 }), {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
@@ -1146,4 +1149,5 @@ export default connect(state => ({
     toggleIncidentModals,
     fetchDiversions,
     clearDiversionsCache,
+    deleteDiversion,
 })(EditEffectPanel);

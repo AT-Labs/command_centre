@@ -1,5 +1,5 @@
 import ACTION_TYPE from '../../action-types';
-import { getDiversion, addDiversion, updateDiversion as updateDiversionAPI } from '../../../utils/transmitters/disruption-mgt-api';
+import { getDiversion, addDiversion, updateDiversion as updateDiversionAPI, deleteDiversion as deleteDiversionAPI } from '../../../utils/transmitters/disruption-mgt-api';
 
 export const openDiversionManager = isDiversionManagerOpen => (dispatch) => {
     dispatch({
@@ -159,6 +159,18 @@ export const resetDiversionResult = () => (dispatch) => {
     dispatch(
         updateDiversionResultState(false, null, null),
     );
+};
+
+export const deleteDiversion = (diversionId, disruptionId) => async (dispatch) => {
+    await deleteDiversionAPI(diversionId);
+
+    // Clear cache and refresh diversions data after successful deletion
+    if (disruptionId) {
+        dispatch(clearDiversionsCache(disruptionId));
+        dispatch(fetchDiversions(disruptionId, true));
+    }
+
+    return true;
 };
 
 export const setSelectedRouteVariant = selectedRouteVariant => ({

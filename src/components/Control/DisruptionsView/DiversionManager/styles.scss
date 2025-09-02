@@ -9,7 +9,7 @@
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
-    z-index: 9999 !important;
+    z-index: 1000 !important;
     & .side-panel {
         overflow-x: hidden;
         width: 660px;
@@ -89,7 +89,6 @@
         height: calc(100vh - 109px);
         width: calc(100vw - 660px);
     }
-
 }
 .diversion-manager {
     position: fixed !important;
@@ -102,7 +101,7 @@
     visibility: visible !important;
     opacity: 1 !important;
     pointer-events: auto !important;
-    z-index: 9999 !important;
+    z-index: 1000 !important;
 }
 
 .diversion__confirmation-modal {
@@ -178,29 +177,31 @@
             line-height: 1.5 !important;
             
             &.cc-btn-secondary {
-                background-color: #6c757d !important;
-                border-color: #6c757d !important;
+                background-color: #6C757D !important;
+                border-color: #6C757D !important;
                 color: white !important;
-                
+
                 &:hover {
-                    background-color: #5a6268 !important;
-                    border-color: #545b62 !important;
+                    background-color: #5A6268 !important;
+                    border-color: #545B62 !important;
                 }
             }
-            
+
             &.cc-btn-primary {
-                background-color: #007bff !important;
-                border-color: #007bff !important;
+                background-color: #007BFF !important;
+                border-color: #007BFF !important;
                 color: white !important;
-                
+
                 &:hover {
-                    background-color: #0069d9 !important;
-                    border-color: #0062cc !important;
+                    background-color: #0069D9 !important;
+                    border-color: #0062CC !important;
                 }
             }
         }
     }
 }
+
+
 
 body #portal-container {
     position: fixed !important;
@@ -209,7 +210,7 @@ body #portal-container {
     width: 100vw !important;
     height: 100vh !important;
     pointer-events: none !important;
-    z-index: 99999999 !important;
+    z-index: 1030 !important;
 }
 
 body .diversion-result-modal {
@@ -219,7 +220,7 @@ body .diversion-result-modal {
     width: 100vw !important;
     height: 100vh !important;
     pointer-events: auto !important;
-    z-index: 99999999 !important;
+    z-index: 1030 !important;
     background-color: rgba(0, 0, 0, 0.5) !important;
 }
 
@@ -232,7 +233,7 @@ body .diversion-result-modal > div {
     background-color: white !important;
     border-radius: 8px !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
-    border: 1px solid #dee2e6 !important;
+    border: 1px solid #DEE2E6 !important;
     max-width: 500px !important;
     width: 500px !important;
 }

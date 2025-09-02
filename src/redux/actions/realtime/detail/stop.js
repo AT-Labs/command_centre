@@ -178,7 +178,7 @@ const mapPidInformation = (movements, allVehicles, isTrainStop) => movements.map
             onHold = tripInfo.tripInstances[0].onHold === true;
         }
     } catch (error) {
-        console.warn('Failed to get onHold status for trip:', trip_id, error);
+        // Failed to get onHold status for trip
     }
 
     return {

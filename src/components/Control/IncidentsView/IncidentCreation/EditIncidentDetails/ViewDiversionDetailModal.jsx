@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { deleteDiversion as deleteDiversionAPI } from '../../../../../utils/transmitters/disruption-mgt-api';
+import { connect } from 'react-redux';
 import CustomMuiDialog from '../../../../Common/CustomMuiDialog/CustomMuiDialog';
 import { ActiveDiversionView } from '../../../DisruptionsView/DisruptionDetail/ActiveDiversionView';
 import { DISRUPTIONS_MESSAGE_TYPE } from '../../../../../types/disruptions-types';
 import { DISRUPTION_STATUS } from '../../../DisruptionsView/types';
 import AlertMessage from '../../../../Common/AlertMessage/AlertMessage';
 import { CONFIRMATION_MESSAGE_TYPE } from '../../../../../types/message-types';
+import { deleteDiversion } from '../../../../../redux/actions/control/diversions';
 
 const editableStatuses = [
     DISRUPTION_STATUS.NOT_STARTED,
@@ -55,7 +56,7 @@ const ViewDiversionDetailModal = (props) => {
         }));
     };
 
-    const deleteDiversion = async (diversionId) => {
+    const handleDeleteDiversion = async (diversionId) => {
         // Prevent multiple deletion attempts
         if (isDeletingDiversion) {
             return;
@@ -65,7 +66,8 @@ const ViewDiversionDetailModal = (props) => {
             setIsDeletingDiversion(true);
             setDeletingDiversionId(diversionId);
 
-            await deleteDiversionAPI(diversionId);
+            // Use Redux action instead of direct API call
+            await props.deleteDiversion(diversionId, props.disruption.disruptionId);
 
             // Show success notification
             setNotification({
@@ -73,9 +75,6 @@ const ViewDiversionDetailModal = (props) => {
                 body: `Diversion ${diversionId} has been successfully deleted`,
                 type: CONFIRMATION_MESSAGE_TYPE,
             });
-
-            // Refresh diversions list
-            props.setShouldRefetchDiversions(prevRefetch => !prevRefetch);
 
             // Auto-hide notification after 3 seconds
             setTimeout(() => {
@@ -131,6 +130,20 @@ const ViewDiversionDetailModal = (props) => {
                 onClose={props.onClose}
                 isOpen={props.isOpen}
                 maxWidth="md"
+                footerContent={ (
+                    <div className="row w-100">
+                        <div className="col-md-4 offset-md-4">
+                            <button
+                                type="button"
+                                onClick={ props.onClose }
+                                className="btn cc-btn-primary btn-block"
+                                id="close-btn"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                ) }
             >
                 {props.isLoadingDiversions && (
                     <div className="text-center">
@@ -148,7 +161,7 @@ const ViewDiversionDetailModal = (props) => {
                             {allExpanded ? 'Collapse All' : 'Expand All'}
                         </button>
                         <ActiveDiversionView
-                            deleteDiversion={deleteDiversion}
+                            deleteDiversion={handleDeleteDiversion}
                             editDiversion={editDiversion}
                             isEditingEnabled={isEditingEnabled}
                             diversions={props.diversions}
@@ -178,11 +191,18 @@ ViewDiversionDetailModal.propTypes = {
     setShouldRefetchDiversions: PropTypes.func.isRequired,
     diversions: PropTypes.array,
     isLoadingDiversions: PropTypes.bool,
+    deleteDiversion: PropTypes.func.isRequired,
 };
 
 ViewDiversionDetailModal.defaultProps = {
     diversions: [],
     isLoadingDiversions: false,
+    deleteDiversion: () => {},
 };
 
+const mapDispatchToProps = dispatch => ({
+    deleteDiversion: (diversionId, disruptionId) => dispatch(deleteDiversion(diversionId, disruptionId)),
+});
+
+export default connect(null, mapDispatchToProps)(ViewDiversionDetailModal);
 export { ViewDiversionDetailModal };

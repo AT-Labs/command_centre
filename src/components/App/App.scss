@@ -1,5 +1,7 @@
 @import "../../assets/styles/variables";
 
+
+
 .app {
     .activity-loader {
         bottom: 100px;
@@ -16,7 +18,7 @@
     visibility: visible !important;
     opacity: 1 !important;
     pointer-events: auto !important;
-    z-index: 999999 !important;
+    z-index: 1030 !important;
     
     // Specific rules for modal content
     > div {
@@ -24,11 +26,33 @@
         visibility: visible !important;
         opacity: 1 !important;
         pointer-events: auto !important;
-        z-index: 1000000 !important;
+        z-index: 1030 !important;
     }
 }
 
-body.diversion-manager-active {
+body.diversion-result-active {
+    .diversion-result-modal {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        pointer-events: auto !important;
+        z-index: 1030 !important;
+        background-color: rgba(0, 0, 0, 0.5) !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+
+        // Specific rules for modal content
+        > div {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            z-index: 1030 !important;
+        }
+    }
     .edit-effect-panel,
     .CustomModal:not(.diversion-result-modal),
     .CustomMuiDialog:not(.diversion-result-modal),
@@ -56,7 +80,7 @@ body.diversion-manager-active {
 
 // Special rules for Bootstrap Modal with diversion-result-modal class
 .modal.diversion-result-modal {
-    z-index: 999999 !important;
+    z-index: 1030 !important;
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -68,7 +92,7 @@ body.diversion-manager-active {
     height: 100% !important;
 
     .modal-content {
-        z-index: 1000000 !important;
+        z-index: 1030 !important;
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
@@ -79,15 +103,16 @@ body.diversion-manager-active {
     }
 
     .modal-dialog {
-        z-index: 1000000 !important;
+        z-index: 1030 !important;
         position: relative !important;
+        margin: 0;
         margin: 0 auto !important;
         top: 50% !important;
         transform: translateY(-50%) !important;
     }
 
     .modal-backdrop {
-        z-index: 999999 !important;
+        z-index: 1030 !important;
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;

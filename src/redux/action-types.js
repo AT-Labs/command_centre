@@ -255,6 +255,7 @@ export default {
     FETCH_DIVERSIONS_SUCCESS: 'fetch-diversions-success',
     FETCH_DIVERSIONS_ERROR: 'fetch-diversions-error',
     CLEAR_DIVERSIONS_CACHE: 'clear-diversions-cache',
+    DELETE_DIVERSION: 'delete-diversion',
 
     // Incidents
     FETCH_CONTROL_INCIDENTS_DISRUPTIONS: 'fetch-control-incidents-disruptions',

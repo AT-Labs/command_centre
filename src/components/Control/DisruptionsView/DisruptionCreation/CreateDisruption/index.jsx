@@ -83,7 +83,7 @@ const INIT_STATE = {
     status: STATUSES.NOT_STARTED,
     header: '',
     description: '',
-    url: '',
+
     createNotification: false,
     exemptAffectedTrips: false,
     recurrent: false,

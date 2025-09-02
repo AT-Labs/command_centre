@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import moment from 'moment-timezone';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
+import { debounce } from 'lodash';
 
 import '../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
 import './styles.scss';
@@ -30,6 +31,7 @@ const DiversionManager = (props) => {
 
     const SERVICE_DATE_FORMAT = 'YYYYMMDD';
     const TIME_FORMAT_HHMM = 'HH:mm';
+    const debounceDelay = 300;
 
     const isEditingMode = props.editMode === EDIT_TYPE.EDIT;
     const [isUpdated, setIsUpdated] = useState(false);
@@ -171,7 +173,7 @@ const DiversionManager = (props) => {
         // Add additional protection against multiple calls
         const now = Date.now();
         if (fetchExistingDiversions.lastCall && (now - fetchExistingDiversions.lastCall) < 3000) {
-            console.warn('Fetch existing diversions called too frequently, skipping');
+            // Fetch existing diversions called too frequently, skipping
             return;
         }
         fetchExistingDiversions.lastCall = now;
@@ -190,7 +192,7 @@ const DiversionManager = (props) => {
     }, [props.disruption.disruptionId, props.disruption.incidentId, isLoadingExistingDiversions, props.fetchDiversions]);
 
     // Fetch available route variants to populate the dropdown lists
-    const fetchVariants = async () => {
+    const fetchVariants = debounce(async () => {
         if (!props.disruption?.startTime || !props.disruption?.endTime) {
             return;
         }
@@ -242,7 +244,7 @@ const DiversionManager = (props) => {
         } catch {
             setRouteVariantsList([]);
         }
-    };
+    }, debounceDelay);
 
     // Drop down lists
     const handleSelectMainVariant = (variant) => {
