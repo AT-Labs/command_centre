@@ -1,8 +1,10 @@
 /* eslint-disable camelcase */
 import { map, indexOf, result, orderBy } from 'lodash-es';
+import moment from 'moment';
 import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
+import * as tripMgtApi from '../../../../utils/transmitters/trip-mgt-api';
 import ACTION_TYPE from '../../../action-types';
 import { getAllVehicles } from '../../../selectors/realtime/vehicles';
 import { getAllRoutes } from '../../../selectors/static/routes';
@@ -165,6 +167,20 @@ const mapPidInformation = (movements, allVehicles, isTrainStop) => movements.map
     const currentVehicle = allVehicles && Object.values(allVehicles).find(v => (v.vehicle.trip ? v.vehicle.trip.tripId === trip_id : null));
     const occupancyStatus = currentVehicle ? currentVehicle.vehicle.occupancyStatus : null;
 
+    // Get onHold status from trip management API
+    let onHold = false;
+    try {
+        const tripInfo = await tripMgtApi.getTrips({
+            tripIds: [trip_id],
+            serviceDate: moment().format('YYYY-MM-DD'),
+        });
+        if (tripInfo.tripInstances && tripInfo.tripInstances.length > 0) {
+            onHold = tripInfo.tripInstances[0].onHold === true;
+        }
+    } catch (error) {
+        console.warn('Failed to get onHold status for trip:', trip_id, error);
+    }
+
     return {
         route: route_short_name,
         destinationDisplay,
@@ -175,6 +191,7 @@ const mapPidInformation = (movements, allVehicles, isTrainStop) => movements.map
         tripId: trip_id,
         numberOfCars: allocations ? getNumberOfCarsByAllocations(allocations.response) : null,
         occupancyStatus,
+        onHold,
     };
 });
 

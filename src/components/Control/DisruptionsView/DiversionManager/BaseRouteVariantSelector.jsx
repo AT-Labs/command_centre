@@ -12,8 +12,12 @@ const BaseRouteVariantSelector = ({
     visibility,
     onSelectVariant,
     onVisibilityChanged,
-}) => (
-    <div className="select-main-variant-container pl-4 pr-1">
+    isRouteVariantDisabled,
+    isLoadingExistingDiversions,
+    existingDiversions,
+}) => {
+    return (
+        <div className="select-main-variant-container pl-4 pr-1">
         <p>
             {editMode === EDIT_TYPE.EDIT
                 ? 'Edit the diversion shape or route variants'
@@ -26,6 +30,9 @@ const BaseRouteVariantSelector = ({
                     routeVariants={ routeVariantsList }
                     selectedRouteVariant={ selectedRouteVariant }
                     onSelectVariant={ onSelectVariant }
+                    isRouteVariantDisabled={ isRouteVariantDisabled }
+                    isLoadingExistingDiversions={ isLoadingExistingDiversions }
+                    existingDiversions={ existingDiversions }
                 />
             </div>
             <FormGroup check>
@@ -44,7 +51,8 @@ const BaseRouteVariantSelector = ({
             </FormGroup>
         </div>
     </div>
-);
+    );
+};
 
 BaseRouteVariantSelector.propTypes = {
     disabled: PropTypes.bool,
@@ -54,12 +62,18 @@ BaseRouteVariantSelector.propTypes = {
     onSelectVariant: PropTypes.func.isRequired,
     visibility: PropTypes.bool,
     onVisibilityChanged: PropTypes.func.isRequired,
+    isRouteVariantDisabled: PropTypes.func,
+    isLoadingExistingDiversions: PropTypes.bool,
+    existingDiversions: PropTypes.array,
 };
 
 BaseRouteVariantSelector.defaultProps = {
     disabled: true,
     selectedRouteVariant: null,
     visibility: true,
+    isRouteVariantDisabled: null,
+    isLoadingExistingDiversions: false,
+    existingDiversions: [],
 };
 
 export default BaseRouteVariantSelector;

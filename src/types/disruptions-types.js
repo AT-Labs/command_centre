@@ -93,8 +93,8 @@ export const DISRUPTIONS_MESSAGE_TYPE = {
 };
 
 export const DEFAULT_SEVERITY = {
-    label: '',
-    value: '',
+    label: 'Unknown',
+    value: 'UNKNOWN',
 };
 
 export const SEVERITIES = [
@@ -118,10 +118,6 @@ export const SEVERITIES = [
     {
         label: '1 (Minor)',
         value: 'MINOR',
-    },
-    {
-        label: 'Unknown',
-        value: 'UNKNOWN',
     },
 ];
 

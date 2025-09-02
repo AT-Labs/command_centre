@@ -485,3 +485,31 @@ export const buildDisruptionsQuery = (filters) => {
 
     return queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
 };
+
+export const isEffectStartTimeValid = (startTime, endTime) => {
+    if (!startTime || !endTime) return true;
+    return moment(startTime).isBefore(moment(endTime));
+};
+
+export const isEffectEndTimeValid = (startTime, endTime) => {
+    if (!startTime || !endTime) return true;
+    return moment(endTime).isAfter(moment(startTime));
+};
+
+export const updateParentDisruptionTimeRange = (parentDisruption, childDisruption) => {
+    if (!parentDisruption || !childDisruption) return parentDisruption;
+
+    const parentStart = moment(parentDisruption.startTime);
+    const parentEnd = moment(parentDisruption.endTime);
+    const childStart = moment(childDisruption.startTime);
+    const childEnd = moment(childDisruption.endTime);
+
+    const newStart = moment.min(parentStart, childStart);
+    const newEnd = moment.max(parentEnd, childEnd);
+
+    return {
+        ...parentDisruption,
+        startTime: newStart.format(),
+        endTime: newEnd.format(),
+    };
+};

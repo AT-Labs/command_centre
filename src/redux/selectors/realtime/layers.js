@@ -11,5 +11,5 @@ export const getShowRouteAlerts = createSelector(getLayersState, layersState => 
 export const getShowAllRouteAlerts = createSelector(getLayersState, layersState => result(layersState, 'showAllRouteAlerts'));
 export const getSelectedRouteAlerts = createSelector(getLayersState, layersState => result(layersState, 'selectedRouteAlerts'));
 export const getSelectedRoadworksFilters = createSelector(getLayersState, layersState => result(layersState, 'selectedRoadworksFilters'));
-export const getSelectedCars = createSelector(getLayersState, layersState => result(layersState, 'selectedCars'));
+export const getSelectedCars = createSelector(getLayersState, layersState => result(layersState, 'selectedCars') || {});
 export const getSelectedTmpImpacts = createSelector(getLayersState, layersState => result(layersState, 'selectedTmpImpacts'));

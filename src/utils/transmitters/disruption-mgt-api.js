@@ -17,17 +17,24 @@ export const getDisruption = (disruptionId, signal) => fetchWithAuthHeader(`${RE
     .then(response => jsonResponseHandling(response));
 
 export const getDiversion = (disruptionId) => {
+    if (!disruptionId) {
+        return Promise.resolve([]);
+    }
+
     const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/diversions/?disruptionId=${disruptionId}`;
+
     return fetchWithAuthHeader(
         url,
         {
             method: GET,
             headers: {
-                Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
         },
-    ).then(response => jsonResponseHandling(response));
+    )
+        .then(response => jsonResponseHandling(response))
+        .then(data => data)
+        .catch(() => []);
 };
 
 export const deleteDiversion = (id) => {
@@ -38,7 +45,11 @@ export const deleteDiversion = (id) => {
             Accept: 'application/json',
             'Content-Type': 'application/json',
         },
-    }).then(response => jsonResponseHandling(response));
+    })
+        .then(response => jsonResponseHandling(response))
+        .catch((error) => {
+            throw error;
+        });
 };
 
 export const updateDisruption = (disruption) => {
@@ -108,6 +119,7 @@ export const deleteDisruptionFile = (disruption, fileId) => {
 
 export const addDiversion = (diversion) => {
     const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/diversions`;
+
     return fetchWithAuthHeader(
         url,
         {
@@ -118,7 +130,12 @@ export const addDiversion = (diversion) => {
             },
             body: JSON.stringify(diversion),
         },
-    ).then(response => jsonResponseHandling(response));
+    )
+        .then(response => jsonResponseHandling(response))
+        .then(data => data)
+        .catch((error) => {
+            throw error;
+        });
 };
 
 export const updateDiversion = (diversion) => {

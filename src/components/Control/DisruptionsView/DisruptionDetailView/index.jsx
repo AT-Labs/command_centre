@@ -15,8 +15,9 @@ import { getActiveControlEntityId } from '../../../../redux/selectors/navigation
 import { getDisruption as getDisruptionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
 import { transformIncidentNo } from '../../../../utils/control/disruptions';
 import { DISRUPTION_POLLING_INTERVAL } from '../../../../constants/disruptions';
-import DiversionManager from '../DiversionManager';
-import { getIsDiversionManagerOpen } from '../../../../redux/selectors/control/diversions';
+import DiversionContent from '../DiversionManager/DiversionContent';
+import DiversionResultModalWrapper from '../DiversionManager/DiversionResultModalWrapper';
+import { getIsDiversionManagerOpen, getDiversionResultState, getDiversionEditMode } from '../../../../redux/selectors/control/diversions';
 import { openDiversionManager } from '../../../../redux/actions/control/diversions';
 
 const DisruptionDetailsPage = (props) => {
@@ -106,40 +107,52 @@ const DisruptionDetailsPage = (props) => {
     }
 
     return (
-        <div className="p-4">
-            {resultStatus && resultDisruptionId === disruption.disruptionId && (
-                <Message
-                    message={ {
-                        id: `${disruption.disruptionId}`,
-                        type: resultStatus,
-                        body: message,
-                    } }
-                    onClose={ () => props.clearDisruptionActionResult() }
+        <>
+            {props.isDiversionManagerOpen && (
+                <DiversionContent 
+                    disruption={disruption} 
+                    onCancelled={() => props.openDiversionManager(false)} 
                 />
             )}
-            {isCopied && (
-                <Message
-                    message={ {
-                        id: `${disruption.disruptionId}`,
-                        type: 'success',
-                        body: 'Disruption copied to clipboard',
-                    } }
-                    onClose={ () => props.clearDisruptionActionResult() }
-                />
-            )}
-            { props.isDiversionManagerOpen
-                ? <DiversionManager disruption={ disruption } onCancelled={ () => props.openDiversionManager(false) } />
-                : (
-                    <>
-                        <h2>
-                            Disruption
-                            {' '}
-                            {transformIncidentNo(disruption.disruptionId)}
-                        </h2>
-                        <DisruptionDetail { ...{ ...props, disruption } } isReadOnlyMode={ !isDisruptionUpdateAllowed(disruption) } />
-                    </>
+            
+            <DiversionResultModalWrapper
+                onNewDiversion={() => {
+                    props.openDiversionManager(true);
+                }}
+                onReturnToDisruption={() => {
+                    props.openDiversionManager(false);
+                }}
+            />
+            
+            <div className="p-4">
+                {resultStatus && resultDisruptionId === disruption.disruptionId && (
+                    <Message
+                        message={ {
+                            id: `${disruption.disruptionId}`,
+                            type: resultStatus,
+                            body: message,
+                        } }
+                        onClose={ () => props.clearDisruptionActionResult() }
+                    />
                 )}
-        </div>
+                {isCopied && (
+                    <Message
+                        message={ {
+                            id: `${disruption.disruptionId}`,
+                            type: 'success',
+                            body: 'Disruption copied to clipboard',
+                        } }
+                        onClose={ () => props.clearDisruptionActionResult() }
+                    />
+                )}
+                <h2>
+                    Disruption
+                    {' '}
+                    {transformIncidentNo(disruption.disruptionId)}
+                </h2>
+                <DisruptionDetail { ...{ ...props, disruption } } isReadOnlyMode={ !isDisruptionUpdateAllowed(disruption) } />
+            </div>
+        </>
     );
 };
 
@@ -170,6 +183,8 @@ export default connect(state => ({
     ...getDisruptionAction(state),
     activeControlEntityId: getActiveControlEntityId(state),
     isDiversionManagerOpen: getIsDiversionManagerOpen(state),
+    resultState: getDiversionResultState(state),
+    editMode: getDiversionEditMode(state),
 }), {
     clearDisruptionActionResult,
     updateActiveControlEntityId,

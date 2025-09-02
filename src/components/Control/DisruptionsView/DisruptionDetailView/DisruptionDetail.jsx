@@ -533,6 +533,8 @@ const DisruptionDetailView = (props) => {
         setEndDate(date.length ? moment(date[0]).format(DATE_FORMAT) : '');
         if (date.length === 0) {
             setEndTime('');
+        } else {
+            setEndTime('23:59');
         }
         setIsRecurrenceDirty(true);
     };

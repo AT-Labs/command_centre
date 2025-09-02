@@ -445,6 +445,8 @@ export const SelectDisruptionEntities = (props) => {
             <div className="selection-container h-100">
                 <ul className="p-0">
                     <StopsByRouteMultiSelect
+                        affectedRoutes={ props.affectedRoutes || [] }
+                        updateAffectedRoutes={ props.updateAffectedRoutesState }
                         removeAction={ route => removeAction(route, ROUTE) }
                         className="select-stops-route"
                     />
@@ -468,6 +470,9 @@ export const SelectDisruptionEntities = (props) => {
                 isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || !props.isEditMode }
                 onSubmitDraft={ () => onSaveDraft() }
                 onBack={ !props.isEditMode ? onBack : undefined }
+                showFinishButton
+                isFinishDisabled={ isButtonDisabled() }
+                onFinish={ () => props.onSubmit() }
             />
             <CustomModal
                 title="Log a Disruption"
@@ -499,6 +504,7 @@ SelectDisruptionEntities.propTypes = {
     onDataUpdate: PropTypes.func.isRequired,
     onSubmitDraft: PropTypes.func,
     onSubmitUpdate: PropTypes.func,
+    onSubmit: PropTypes.func,
     deleteAffectedEntities: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
@@ -522,6 +528,7 @@ SelectDisruptionEntities.propTypes = {
 SelectDisruptionEntities.defaultProps = {
     onSubmitDraft: () => { },
     onSubmitUpdate: () => { },
+    onSubmit: () => { },
     onUpdateEntitiesValidation: () => { },
     isLoadingStopsByRoute: false,
     isLoadingRoutesByStop: false,

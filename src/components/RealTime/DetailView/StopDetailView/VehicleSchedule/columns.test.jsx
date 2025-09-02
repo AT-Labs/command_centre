@@ -45,5 +45,15 @@ describe('Vehicle schedule columns', () => {
             const formattedDueValue = calculateDue('', '', '');
             expect(formattedDueValue).is.equal('');
         });
+
+        it('should display empty string if trip is on hold', () => {
+            const formattedDueValue = calculateDue('', moment().add(5, 'minutes'), true);
+            expect(formattedDueValue).is.equal('');
+        });
+
+        it('should display due value if trip is not on hold', () => {
+            const formattedDueValue = calculateDue('', moment().add(5, 'minutes'), false);
+            expect(formattedDueValue).is.equal(5);
+        });
     });
 });

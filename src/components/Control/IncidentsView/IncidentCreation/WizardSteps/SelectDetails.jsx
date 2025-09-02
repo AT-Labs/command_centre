@@ -58,7 +58,7 @@ import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
 import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 import EDIT_TYPE from '../../../../../types/edit-types';
-import { getEditMode, getDisruptionKeyToEditEffect, isEditEffectPanelOpen } from '../../../../../redux/selectors/control/incidents';
+import { getEditMode, isEditEffectPanelOpen, getRequestedDisruptionKeyToUpdateEditEffect } from '../../../../../redux/selectors/control/incidents';
 
 export const SelectDetails = (props) => {
     const iconContextValue = useMemo(() => ({ className: 'text-warning w-100 m-2' }), []);
@@ -145,10 +145,14 @@ export const SelectDetails = (props) => {
                 props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
                 setIsEndDateDirty(false);
             }
+        } else if (date.length === 0) {
+            props.onDataUpdate('endDate', '');
+            props.onDataUpdate('endTime', '');
         } else {
-            props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
-            setIsEndDateDirty(false);
+            props.onDataUpdate('endDate', moment(date[0]).format(DATE_FORMAT));
+            props.onDataUpdate('endTime', '23:59');
         }
+        setIsEndDateDirty(false);
     };
 
     const onBlurEndDate = (date, isRecurrent) => {
@@ -291,6 +295,7 @@ export const SelectDetails = (props) => {
     const openEditEffectPanel = (disruption) => {
         props.setRequestedDisruptionKeyToUpdateEditEffect(disruption.incidentNo);
         props.setRequestToUpdateEditEffectState(true);
+        props.toggleEditEffectPanel(true);
     };
 
     const impacts = useAlertEffects();
@@ -763,7 +768,7 @@ SelectDetails.defaultProps = {
 export default connect(state => ({
     useDraftDisruptions: useDraftDisruptions(state),
     editMode: getEditMode(state),
-    disruptionIncidentNoToEdit: getDisruptionKeyToEditEffect(state),
+    disruptionIncidentNoToEdit: getRequestedDisruptionKeyToUpdateEditEffect(state),
     isEditEffectPanelOpen: isEditEffectPanelOpen(state),
 }), { toggleIncidentModals,
     updateCurrentStep,
