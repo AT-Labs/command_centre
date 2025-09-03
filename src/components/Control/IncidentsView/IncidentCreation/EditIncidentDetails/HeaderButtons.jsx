@@ -15,23 +15,23 @@ const HeaderButtons = ({
     fetchDiversionsAction,
     clearDiversionsCacheAction,
 }) => (
-        <>
-            {useDiversionFlag && (
-                <DiversionsButton
-                    disruption={ disruption }
-                    onViewDiversions={ onViewDiversions }
-                    useDiversionFlag={ useDiversionFlag }
-                    openDiversionManagerAction={ openDiversionManagerAction }
-                    updateDiversionModeAction={ updateDiversionModeAction }
-                    updateDiversionToEditAction={ updateDiversionToEditAction }
-                    isDiversionManagerOpen={ isDiversionManagerOpen }
-                    toggleEditEffectPanel={ toggleEditEffectPanel }
-                    fetchDiversionsAction={ fetchDiversionsAction }
-                    clearDiversionsCacheAction={ clearDiversionsCacheAction }
-                />
-            )}
-        </>
-    );
+    <>
+        {useDiversionFlag && (
+            <DiversionsButton
+                disruption={ disruption }
+                onViewDiversions={ onViewDiversions }
+                useDiversionFlag={ useDiversionFlag }
+                openDiversionManagerAction={ openDiversionManagerAction }
+                updateDiversionModeAction={ updateDiversionModeAction }
+                updateDiversionToEditAction={ updateDiversionToEditAction }
+                isDiversionManagerOpen={ isDiversionManagerOpen }
+                toggleEditEffectPanel={ toggleEditEffectPanel }
+                fetchDiversionsAction={ fetchDiversionsAction }
+                clearDiversionsCacheAction={ clearDiversionsCacheAction }
+            />
+        )}
+    </>
+);
 
 HeaderButtons.propTypes = {
     disruption: PropTypes.object,

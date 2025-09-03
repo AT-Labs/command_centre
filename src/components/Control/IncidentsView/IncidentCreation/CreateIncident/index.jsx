@@ -532,8 +532,8 @@ export class CreateIncident extends React.Component {
             <>
                 <div className="sidepanel-control-component-view d-flex">
                     { (this.props.isLoading) && (<LoadingOverlay />) }
-                    
-                                            {/* BLOCK 1: Side panel (shown only when there is NO result) */}
+
+                    {/* BLOCK 1: Side panel (shown only when there is NO result) */}
                     {!this.props.resultState?.diversionId && !this.props.resultState?.error && (
                         <SidePanel
                             isOpen
@@ -628,7 +628,7 @@ export class CreateIncident extends React.Component {
                             )}
                         </SidePanel>
                     )}
-                    
+
                     <WorkaroundPanel
                         disruptions={ incidentData.disruptions }
                         onWorkaroundUpdate={ this.updateDisruptionWorkaround }
@@ -737,7 +737,7 @@ export class CreateIncident extends React.Component {
                         />
                     )}
                 </div>
-                
+
                 {/* BLOCK 2: DiversionContent (shown when diversion manager is open) */}
                 {this.props.isDiversionManagerOpen && (
                     <div style={ {
@@ -751,10 +751,10 @@ export class CreateIncident extends React.Component {
                         display: 'flex',
                         alignItems: 'flex-start',
                         justifyContent: 'center',
-                        paddingTop: '20px'
+                        paddingTop: '20px',
                     } }>
                         <DiversionContent
-                            key={`diversion-content-${this.props.resultState?.diversionId || 'new'}`}
+                            key={ `diversion-content-${this.props.resultState?.diversionId || 'new'}` }
                             disruption={ {
                                 ...this.props.incidentToEdit,
                                 disruptionId: this.props.incidentToEdit?.disruptions?.[0]?.disruptionId,
@@ -781,20 +781,20 @@ export class CreateIncident extends React.Component {
                         />
                     </div>
                 )}
-                
+
                 {/* BLOCK 3: Result modal (shown only when there IS a result) */}
                 {(this.props.resultState?.diversionId || this.props.resultState?.error) && (
                     <DiversionResultModalWrapper
-                        resultState={this.props.resultState}
-                        editMode={this.props.diversionMode || 'CREATE'}
-                        resetDiversionResult={this.props.resetDiversionResult}
-                        onNewDiversion={() => {
+                        resultState={ this.props.resultState }
+                        editMode={ this.props.diversionMode || 'CREATE' }
+                        resetDiversionResult={ this.props.resetDiversionResult }
+                        onNewDiversion={ () => {
                             this.forceUpdate();
-                        }}
-                        onReturnToDisruption={() => {
+                        } }
+                        onReturnToDisruption={ () => {
                             this.props.openDiversionManager(false);
                             this.props.toggleEditEffectPanel(true);
-                        }}
+                        } }
                     />
                 )}
             </>

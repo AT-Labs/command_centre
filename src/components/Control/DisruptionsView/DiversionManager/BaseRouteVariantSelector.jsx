@@ -15,9 +15,8 @@ const BaseRouteVariantSelector = ({
     isRouteVariantDisabled,
     isLoadingExistingDiversions,
     existingDiversions,
-}) => {
-    return (
-        <div className="select-main-variant-container pl-4 pr-1">
+}) => (
+    <div className="select-main-variant-container pl-4 pr-1">
         <p>
             {editMode === EDIT_TYPE.EDIT
                 ? 'Edit the diversion shape or route variants'
@@ -51,8 +50,7 @@ const BaseRouteVariantSelector = ({
             </FormGroup>
         </div>
     </div>
-    );
-};
+);
 
 BaseRouteVariantSelector.propTypes = {
     disabled: PropTypes.bool,

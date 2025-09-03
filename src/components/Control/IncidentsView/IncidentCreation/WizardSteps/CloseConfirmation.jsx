@@ -42,7 +42,7 @@ const CloseConfirmation = (props) => {
                         className="btn cc-btn-secondary btn-block"
                         onClick={ () => {
                             props.toggleIncidentModals('isCancellationOpen', false);
-                    
+
                             if (props.onClose) {
                                 props.onClose();
                             }

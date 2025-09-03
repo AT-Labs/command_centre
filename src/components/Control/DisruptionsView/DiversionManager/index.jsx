@@ -36,19 +36,19 @@ const DiversionManager = (props) => {
     const isEditingMode = props.editMode === EDIT_TYPE.EDIT;
     const [isUpdated, setIsUpdated] = useState(false);
     const [isDiversionValid, setIsDiversionValid] = useState(false);
-    
+
     // Force update when state changes
     const [forceUpdate, setForceUpdate] = useState(0);
-    
+
     // Update isDiversionValid when state changes
     const updateDiversionValid = useCallback(() => {
-        const isValid = modifiedBaseRouteVariant?.shapeWkt?.length > 0 && 
-                       diversionShapeWkt?.length > 0 && 
-                       diversionShapeWkt !== 'LINESTRING()';
-        
+        const isValid = modifiedBaseRouteVariant?.shapeWkt?.length > 0
+                       && diversionShapeWkt?.length > 0
+                       && diversionShapeWkt !== 'LINESTRING()';
+
         setIsDiversionValid(isValid);
     }, [modifiedBaseRouteVariant, diversionShapeWkt, forceUpdate]);
-    
+
     // Force update when dependencies change
     useEffect(() => {
         updateDiversionValid();
@@ -89,13 +89,12 @@ const DiversionManager = (props) => {
     const isBusRoute = route => route.routeType === BUS_TYPE_ID;
     const [routeIds] = useState(() => {
         const affectedEntities = props.disruption?.affectedEntities;
-        
-        const routeIdsArray = (() => {
 
+        const routeIdsArray = (() => {
             if (Array.isArray(affectedEntities) && affectedEntities.length > 0) {
                 return [...new Set(affectedEntities.filter(isBusRoute).map(entity => entity.routeId))];
             }
-            
+
             if (affectedEntities && typeof affectedEntities === 'object' && !Array.isArray(affectedEntities)) {
                 for (const key of Object.keys(affectedEntities)) {
                     const value = affectedEntities[key];
@@ -104,7 +103,7 @@ const DiversionManager = (props) => {
                     }
                 }
             }
-            
+
             return [];
         })();
         return routeIdsArray;
@@ -206,7 +205,7 @@ const DiversionManager = (props) => {
             const search = {
                 page: 1,
                 limit: 1000,
-                routeIds: routeIds,
+                routeIds,
                 ...(startDate !== null && { serviceDateFrom: startDate }),
                 ...(startTime !== null && { startTime }),
                 ...(endDate !== null && { serviceDateTo: endDate }),
@@ -220,7 +219,7 @@ const DiversionManager = (props) => {
                 routeVariants = routeVariants.map(rv => ({ ...rv, shapeWkt: removeDuplicatePoints(rv.shapeWkt) }));
             }
             setRouteVariantsList(routeVariants);
-            
+
             // Initialize secondaryRouteVariantsList for CREATE mode
             if (!isEditingMode && routeVariants?.length > 0) {
                 setSecondaryRouteVariantsList(routeVariants.map(rv => ({
@@ -228,7 +227,7 @@ const DiversionManager = (props) => {
                     hidden: false, // Show all variants initially
                 })));
             }
-            
+
             if (isEditingMode && routeVariants && props.diversion?.diversionRouteVariants?.length) {
                 props.diversion.diversionRouteVariants.forEach((rv) => {
                     const existingVariant = routeVariants.find(r => r.routeVariantId === rv.routeVariantId);
@@ -248,14 +247,13 @@ const DiversionManager = (props) => {
 
     // Drop down lists
     const handleSelectMainVariant = (variant) => {
-        
         if (variant) {
             // Check if diversionShapeWkt exists and is not empty
-            const hasValidDiversionShape = diversionShapeWkt && 
-                diversionShapeWkt.length > 0 && 
-                diversionShapeWkt !== 'LINESTRING()' && 
-                diversionShapeWkt !== 'null';
-                
+            const hasValidDiversionShape = diversionShapeWkt
+                && diversionShapeWkt.length > 0
+                && diversionShapeWkt !== 'LINESTRING()'
+                && diversionShapeWkt !== 'null';
+
             if (hasValidDiversionShape) {
                 // If there are changes already
                 setTempSelectedBaseRouteVariant(variant);
@@ -265,14 +263,14 @@ const DiversionManager = (props) => {
                 setSelectedBaseRouteVariant(null);
                 setModifiedBaseRouteVariant(null);
                 setInitialBaseRouteShape(null);
-                
+
                 setSelectedBaseRouteVariant({ ...variant });
-                
+
                 const newModifiedBaseRouteVariant = createModifiedRouteVariant(variant, variant.shapeWkt);
                 setModifiedBaseRouteVariant(newModifiedBaseRouteVariant);
-                
+
                 setInitialBaseRouteShape(variant.shapeWkt);
-                
+
                 // Force update after state changes
                 setTimeout(() => {
                     setForceUpdate(prev => prev + 1);
@@ -349,18 +347,17 @@ const DiversionManager = (props) => {
 
     // Handel the shape updated events triggered by the shape editor
     const onShapeUpdated = (updatedDiversionShape, updatedRouteVariantShape) => {
-        
         setDiversionShapeWkt(updatedDiversionShape);
-        
+
         if (selectedBaseRouteVariant?.routeVariantId && updatedRouteVariantShape && updatedDiversionShape) {
             const newModifiedBaseRouteVariant = createModifiedRouteVariant(selectedBaseRouteVariant, updatedRouteVariantShape);
             setModifiedBaseRouteVariant(newModifiedBaseRouteVariant);
-            
+
             // Force update after state changes
             setTimeout(() => {
                 setForceUpdate(prev => prev + 1);
             }, 0);
-            
+
             // Merge into other selected route variants
             const updatedOtherRouteVariants = selectedOtherRouteVariants.map((rv) => {
                 const originalRouteVariant = routeVariantsList.find(x => x.routeVariantId === rv.routeVariantId);
@@ -374,7 +371,6 @@ const DiversionManager = (props) => {
     };
 
     const reset = () => {
-
         setSelectedBaseRouteVariant(null);
         setTempSelectedBaseRouteVariant(null);
         setAffectedStops([]);
@@ -382,7 +378,6 @@ const DiversionManager = (props) => {
         setModifiedBaseRouteVariant(null);
         setSecondaryRouteVariantsList([]);
         setSelectedOtherRouteVariants([]);
-
     };
 
     // Buttons
@@ -463,8 +458,6 @@ const DiversionManager = (props) => {
     };
 
     const onSaveClicked = async () => {
-
-
         if (modifiedBaseRouteVariant && diversionShapeWkt) {
             let modifiedOtherRouteVariants = [];
             if (selectedOtherRouteVariants.length > 0) {
@@ -486,10 +479,7 @@ const DiversionManager = (props) => {
                 affectedStops,
             };
 
-
-
             if (isEditingMode) {
-
                 props.updateDiversion({
                     ...diversionPayload,
                     diversionId: props.diversion.diversionId,
@@ -559,7 +549,6 @@ const DiversionManager = (props) => {
     React.useEffect(() => {
         if (props.isOpen) {
             const handleCloseButtonClick = () => {
-        
                 const mapElements = document.querySelectorAll('.leaflet-control-container, .leaflet-control-zoom, .leaflet-control-draw, .leaflet-pane, .leaflet-overlay-pane, .leaflet-marker-pane, .leaflet-tooltip-pane, .leaflet-popup-pane');
                 mapElements.forEach((element) => {
                     if (element) {
@@ -578,7 +567,7 @@ const DiversionManager = (props) => {
 
                 if (props.onCancelled) {
                     props.onCancelled();
-            } else {
+                } else {
                 }
             };
 
@@ -620,16 +609,16 @@ const DiversionManager = (props) => {
                 <div className="diversion-creation-container">
                     <h2 className="pl-4 pr-4">{ title }</h2>
                     <BaseRouteVariantSelector
-                        disabled={!baseRouteVariantOnly || props.editMode === EDIT_TYPE.EDIT}
-                        editMode={props.editMode}
-                        routeVariantsList={routeVariantsList}
-                        selectedRouteVariant={selectedBaseRouteVariant}
-                        onSelectVariant={handleSelectMainVariant}
-                        visibility={isBaseRouteVariantVisible}
-                        onVisibilityChanged={handleMainVisibilityChange}
-                        isRouteVariantDisabled={isRouteVariantDisabled}
-                        isLoadingExistingDiversions={isLoadingExistingDiversions}
-                        existingDiversions={existingDiversions}
+                        disabled={ !baseRouteVariantOnly || props.editMode === EDIT_TYPE.EDIT }
+                        editMode={ props.editMode }
+                        routeVariantsList={ routeVariantsList }
+                        selectedRouteVariant={ selectedBaseRouteVariant }
+                        onSelectVariant={ handleSelectMainVariant }
+                        visibility={ isBaseRouteVariantVisible }
+                        onVisibilityChanged={ handleMainVisibilityChange }
+                        isRouteVariantDisabled={ isRouteVariantDisabled }
+                        isLoadingExistingDiversions={ isLoadingExistingDiversions }
+                        existingDiversions={ existingDiversions }
                     />
                     <div className="select-multiple-variants-container pl-4 pr-1">
                         <FormGroup check>
@@ -647,14 +636,14 @@ const DiversionManager = (props) => {
                         </FormGroup>
                         {!baseRouteVariantOnly && (
                             <AdditionalRouteVariantSelector
-                                routeVariantsList={secondaryRouteVariantsList}
-                                selectedRouteVariants={selectedOtherRouteVariants}
-                                onSelectVariant={handleSelectOtherVariant}
-                                onVisibilityChange={handleOtherVisibilityChange}
-                                onRouteVariantRemoved={handleRemoveRouteVariant}
-                                isRouteVariantDisabled={isRouteVariantDisabled}
-                                isLoadingExistingDiversions={isLoadingExistingDiversions}
-                                existingDiversions={existingDiversions}
+                                routeVariantsList={ secondaryRouteVariantsList }
+                                selectedRouteVariants={ selectedOtherRouteVariants }
+                                onSelectVariant={ handleSelectOtherVariant }
+                                onVisibilityChange={ handleOtherVisibilityChange }
+                                onRouteVariantRemoved={ handleRemoveRouteVariant }
+                                isRouteVariantDisabled={ isRouteVariantDisabled }
+                                isLoadingExistingDiversions={ isLoadingExistingDiversions }
+                                existingDiversions={ existingDiversions }
                             />
                         )}
                     </div>
@@ -733,7 +722,7 @@ DiversionManager.defaultProps = {
 export default connect(state => ({
     editMode: getDiversionEditMode(state),
     diversion: getDiversionForEditing(state),
-    state, 
+    state,
 }), {
     createDiversion,
     updateDiversion,

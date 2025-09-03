@@ -24,7 +24,6 @@ const ViewDiversionDetailModal = (props) => {
 
     const isEditingEnabled = editableStatuses.includes(props.disruption.status);
 
-
     useEffect(() => {
         if (props.diversions?.length) {
             const allRowsExpanded = props.diversions.every(
@@ -46,7 +45,6 @@ const ViewDiversionDetailModal = (props) => {
             }, {});
             setExpandedRows(newExpandedRows);
         }
-
     };
 
     const toggleExpand = (diversionId) => {
@@ -57,7 +55,6 @@ const ViewDiversionDetailModal = (props) => {
     };
 
     const handleDeleteDiversion = async (diversionId) => {
-
         if (isDeletingDiversion) {
             return;
         }
@@ -66,9 +63,7 @@ const ViewDiversionDetailModal = (props) => {
             setIsDeletingDiversion(true);
             setDeletingDiversionId(diversionId);
 
-
             await props.deleteDiversion(diversionId, props.disruption.disruptionId);
-
 
             setNotification({
                 id: `diversion-deleted-${diversionId}`,
@@ -76,24 +71,20 @@ const ViewDiversionDetailModal = (props) => {
                 type: CONFIRMATION_MESSAGE_TYPE,
             });
 
-
             setTimeout(() => {
                 setNotification(null);
             }, 3000);
         } catch (error) {
-
             setNotification({
                 id: `diversion-delete-error-${diversionId}`,
                 body: `Failed to delete diversion ${diversionId}: ${error.message || 'Unknown error'}`,
                 type: 'error',
             });
 
-
             setTimeout(() => {
                 setNotification(null);
             }, 5000);
         } finally {
-
             setIsDeletingDiversion(false);
             setDeletingDiversionId(null);
         }
@@ -107,7 +98,6 @@ const ViewDiversionDetailModal = (props) => {
     const closeNotification = () => {
         setNotification(null);
     };
-
 
     useEffect(() => {
         if (props.setShouldRefetchDiversions) {
@@ -126,9 +116,9 @@ const ViewDiversionDetailModal = (props) => {
                 />
             )}
             <CustomMuiDialog
-                title={`Diversions on Disruption ${props.disruption.incidentNo}`}
-                onClose={props.onClose}
-                isOpen={props.isOpen}
+                title={ `Diversions on Disruption ${props.disruption.incidentNo}` }
+                onClose={ props.onClose }
+                isOpen={ props.isOpen }
                 maxWidth="md"
                 footerContent={ (
                     <div className="row w-100">
@@ -156,20 +146,20 @@ const ViewDiversionDetailModal = (props) => {
                             className="expand-all-button-style"
                             data-testid="expand-all-button"
                             type="button"
-                            onClick={toggleExpandAll}
+                            onClick={ toggleExpandAll }
                         >
                             {allExpanded ? 'Collapse All' : 'Expand All'}
                         </button>
                         <ActiveDiversionView
-                            deleteDiversion={handleDeleteDiversion}
-                            editDiversion={editDiversion}
-                            isEditingEnabled={isEditingEnabled}
-                            diversions={props.diversions}
-                            expandedRows={expandedRows}
-                            toggleExpand={toggleExpand}
-                            incidentNo={props.disruption.incidentNo}
-                            isDeletingDiversion={isDeletingDiversion}
-                            deletingDiversionId={deletingDiversionId}
+                            deleteDiversion={ handleDeleteDiversion }
+                            editDiversion={ editDiversion }
+                            isEditingEnabled={ isEditingEnabled }
+                            diversions={ props.diversions }
+                            expandedRows={ expandedRows }
+                            toggleExpand={ toggleExpand }
+                            incidentNo={ props.disruption.incidentNo }
+                            isDeletingDiversion={ isDeletingDiversion }
+                            deletingDiversionId={ deletingDiversionId }
                         />
                     </>
                 )}

@@ -109,21 +109,21 @@ const DisruptionDetailsPage = (props) => {
     return (
         <>
             {props.isDiversionManagerOpen && (
-                <DiversionContent 
-                    disruption={disruption} 
-                    onCancelled={() => props.openDiversionManager(false)} 
+                <DiversionContent
+                    disruption={ disruption }
+                    onCancelled={ () => props.openDiversionManager(false) }
                 />
             )}
-            
+
             <DiversionResultModalWrapper
-                onNewDiversion={() => {
+                onNewDiversion={ () => {
                     props.openDiversionManager(true);
-                }}
-                onReturnToDisruption={() => {
+                } }
+                onReturnToDisruption={ () => {
                     props.openDiversionManager(false);
-                }}
+                } }
             />
-            
+
             <div className="p-4">
                 {resultStatus && resultDisruptionId === disruption.disruptionId && (
                     <Message

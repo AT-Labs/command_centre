@@ -35,17 +35,17 @@ const DiversionContent = (props) => {
     const isEditingMode = props.editMode === EDIT_TYPE.EDIT;
     const [isUpdated, setIsUpdated] = useState(false);
     const [isDiversionValid, setIsDiversionValid] = useState(false);
-    
+
     const [forceUpdate, setForceUpdate] = useState(0);
-    
+
     const updateDiversionValid = useCallback(() => {
-        const isValid = modifiedBaseRouteVariant?.shapeWkt?.length > 0 && 
-                       diversionShapeWkt?.length > 0 && 
-                       diversionShapeWkt !== 'LINESTRING()';
-        
+        const isValid = modifiedBaseRouteVariant?.shapeWkt?.length > 0
+                       && diversionShapeWkt?.length > 0
+                       && diversionShapeWkt !== 'LINESTRING()';
+
         setIsDiversionValid(isValid);
     }, [modifiedBaseRouteVariant, diversionShapeWkt, forceUpdate]);
-    
+
     useEffect(() => {
         updateDiversionValid();
     }, [updateDiversionValid]);
@@ -77,13 +77,12 @@ const DiversionContent = (props) => {
     const isBusRoute = route => route.routeType === BUS_TYPE_ID;
     const [routeIds] = useState(() => {
         const affectedEntities = props.disruption?.affectedEntities;
-        
-        const routeIdsArray = (() => {
 
+        const routeIdsArray = (() => {
             if (Array.isArray(affectedEntities) && affectedEntities.length > 0) {
                 return [...new Set(affectedEntities.filter(isBusRoute).map(entity => entity.routeId))];
             }
-            
+
             if (affectedEntities && typeof affectedEntities === 'object' && !Array.isArray(affectedEntities)) {
                 for (const key of Object.keys(affectedEntities)) {
                     const value = affectedEntities[key];
@@ -92,7 +91,7 @@ const DiversionContent = (props) => {
                     }
                 }
             }
-            
+
             return [];
         })();
         return routeIdsArray;
@@ -157,7 +156,6 @@ const DiversionContent = (props) => {
 
         const now = Date.now();
         if (fetchExistingDiversions.lastCall && (now - fetchExistingDiversions.lastCall) < 3000) {
-
             return;
         }
         fetchExistingDiversions.lastCall = now;
@@ -188,7 +186,7 @@ const DiversionContent = (props) => {
             const search = {
                 page: 1,
                 limit: 1000,
-                routeIds: routeIds,
+                routeIds,
                 ...(startDate !== null && { serviceDateFrom: startDate }),
                 ...(startTime !== null && { startTime }),
                 ...(endDate !== null && { serviceDateTo: endDate }),
@@ -201,14 +199,14 @@ const DiversionContent = (props) => {
                 routeVariants = routeVariants.map(rv => ({ ...rv, shapeWkt: removeDuplicatePoints(rv.shapeWkt) }));
             }
             setRouteVariantsList(routeVariants);
-            
+
             if (!isEditingMode && routeVariants?.length > 0) {
                 setSecondaryRouteVariantsList(routeVariants.map(rv => ({
                     ...rv,
                     hidden: false,
                 })));
             }
-            
+
             if (isEditingMode && routeVariants && props.diversion?.diversionRouteVariants?.length) {
                 props.diversion.diversionRouteVariants.forEach((rv) => {
                     const existingVariant = routeVariants.find(r => r.routeVariantId === rv.routeVariantId);
@@ -225,11 +223,11 @@ const DiversionContent = (props) => {
 
     const handleSelectMainVariant = (variant) => {
         if (variant) {
-            const hasValidDiversionShape = diversionShapeWkt && 
-                diversionShapeWkt.length > 0 && 
-                diversionShapeWkt !== 'LINESTRING()' && 
-                diversionShapeWkt !== 'null';
-                
+            const hasValidDiversionShape = diversionShapeWkt
+                && diversionShapeWkt.length > 0
+                && diversionShapeWkt !== 'LINESTRING()'
+                && diversionShapeWkt !== 'null';
+
             if (hasValidDiversionShape) {
                 setTempSelectedBaseRouteVariant(variant);
                 setIsChangeVariantModalOpen(true);
@@ -237,14 +235,14 @@ const DiversionContent = (props) => {
                 setSelectedBaseRouteVariant(null);
                 setModifiedBaseRouteVariant(null);
                 setInitialBaseRouteShape(null);
-                
+
                 setSelectedBaseRouteVariant({ ...variant });
-                
+
                 const newModifiedBaseRouteVariant = createModifiedRouteVariant(variant, variant.shapeWkt);
                 setModifiedBaseRouteVariant(newModifiedBaseRouteVariant);
-                
+
                 setInitialBaseRouteShape(variant.shapeWkt);
-                
+
                 setTimeout(() => {
                     setForceUpdate(prev => prev + 1);
                 }, 0);
@@ -314,15 +312,15 @@ const DiversionContent = (props) => {
 
     const onShapeUpdated = (updatedDiversionShape, updatedRouteVariantShape) => {
         setDiversionShapeWkt(updatedDiversionShape);
-        
+
         if (selectedBaseRouteVariant?.routeVariantId && updatedRouteVariantShape && updatedDiversionShape) {
             const newModifiedBaseRouteVariant = createModifiedRouteVariant(selectedBaseRouteVariant, updatedRouteVariantShape);
             setModifiedBaseRouteVariant(newModifiedBaseRouteVariant);
-            
+
             setTimeout(() => {
                 setForceUpdate(prev => prev + 1);
             }, 0);
-            
+
             const updatedOtherRouteVariants = selectedOtherRouteVariants.map((rv) => {
                 const originalRouteVariant = routeVariantsList.find(x => x.routeVariantId === rv.routeVariantId);
                 if (originalRouteVariant) {
@@ -502,8 +500,6 @@ const DiversionContent = (props) => {
         );
     };
 
-    const shouldShowDiversionManager = props.isOpen;
-
     useEffect(() => {
         if (props.isOpen) {
             const handleCloseButtonClick = () => {
@@ -555,30 +551,31 @@ const DiversionContent = (props) => {
 
     return (
         <div className="side-panel-control-component-view diversion-manager d-flex">
-            <div className="diversion-creation-container" style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '660px',
-                height: '100vh',
-                background: 'white',
-                borderRight: '1px solid #DDD',
-                overflowY: 'auto',
-                padding: '30px',
-                zIndex: 9999
-            }}>
+            <div className="diversion-creation-container"
+                style={ {
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '660px',
+                    height: '100vh',
+                    background: 'white',
+                    borderRight: '1px solid #DDD',
+                    overflowY: 'auto',
+                    padding: '30px',
+                    zIndex: 9999,
+                } }>
                 <h2 className="pl-4 pr-4">{ title }</h2>
                 <BaseRouteVariantSelector
-                    disabled={!baseRouteVariantOnly || props.editMode === EDIT_TYPE.EDIT}
-                    editMode={props.editMode}
-                    routeVariantsList={routeVariantsList}
-                    selectedRouteVariant={selectedBaseRouteVariant}
-                    onSelectVariant={handleSelectMainVariant}
-                    visibility={isBaseRouteVariantVisible}
-                    onVisibilityChanged={handleMainVisibilityChange}
-                    isRouteVariantDisabled={isRouteVariantDisabled}
-                    isLoadingExistingDiversions={isLoadingExistingDiversions}
-                    existingDiversions={existingDiversions}
+                    disabled={ !baseRouteVariantOnly || props.editMode === EDIT_TYPE.EDIT }
+                    editMode={ props.editMode }
+                    routeVariantsList={ routeVariantsList }
+                    selectedRouteVariant={ selectedBaseRouteVariant }
+                    onSelectVariant={ handleSelectMainVariant }
+                    visibility={ isBaseRouteVariantVisible }
+                    onVisibilityChanged={ handleMainVisibilityChange }
+                    isRouteVariantDisabled={ isRouteVariantDisabled }
+                    isLoadingExistingDiversions={ isLoadingExistingDiversions }
+                    existingDiversions={ existingDiversions }
                 />
                 <div className="select-multiple-variants-container pl-4 pr-1">
                     <FormGroup check>
@@ -596,28 +593,29 @@ const DiversionContent = (props) => {
                     </FormGroup>
                     {!baseRouteVariantOnly && (
                         <AdditionalRouteVariantSelector
-                            routeVariantsList={secondaryRouteVariantsList}
-                            selectedRouteVariants={selectedOtherRouteVariants}
-                            onSelectVariant={handleSelectOtherVariant}
-                            onVisibilityChange={handleOtherVisibilityChange}
-                            onRouteVariantRemoved={handleRemoveRouteVariant}
-                            isRouteVariantDisabled={isRouteVariantDisabled}
-                            isLoadingExistingDiversions={isLoadingExistingDiversions}
-                            existingDiversions={existingDiversions}
+                            routeVariantsList={ secondaryRouteVariantsList }
+                            selectedRouteVariants={ selectedOtherRouteVariants }
+                            onSelectVariant={ handleSelectOtherVariant }
+                            onVisibilityChange={ handleOtherVisibilityChange }
+                            onRouteVariantRemoved={ handleRemoveRouteVariant }
+                            isRouteVariantDisabled={ isRouteVariantDisabled }
+                            isLoadingExistingDiversions={ isLoadingExistingDiversions }
+                            existingDiversions={ existingDiversions }
                         />
                     )}
                 </div>
                 <AffectedStops affectedStops={ affectedStops } />
-                <div className="panel-footer" style={{
-                    position: 'fixed',
-                    bottom: 0,
-                    left: 0,
-                    width: '660px',
-                    backgroundColor: '#FFF',
-                    padding: '1rem',
-                    borderTop: '1px solid #DDD',
-                    zIndex: 1000
-                }}>
+                <div className="panel-footer"
+                    style={ {
+                        position: 'fixed',
+                        bottom: 0,
+                        left: 0,
+                        width: '660px',
+                        backgroundColor: '#FFF',
+                        padding: '1rem',
+                        borderTop: '1px solid #DDD',
+                        zIndex: 1000,
+                    } }>
                     <div className="d-flex justify-content-between align-items-center">
                         <Button
                             className="btn cc-btn-secondary"
@@ -686,10 +684,10 @@ DiversionContent.defaultProps = {
 export default connect(state => ({
     editMode: getDiversionEditMode(state),
     diversion: getDiversionForEditing(state),
-    state, 
+    state,
 }), {
     createDiversion,
     updateDiversion,
     fetchDiversions,
     clearDiversionsCache,
-})(DiversionContent); 
+})(DiversionContent);

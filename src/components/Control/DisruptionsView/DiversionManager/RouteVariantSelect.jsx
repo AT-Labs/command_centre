@@ -3,7 +3,6 @@ import Select from 'react-select';
 import PropTypes from 'prop-types';
 
 const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVariant, onSelectVariant, isRouteVariantDisabled, isLoadingExistingDiversions, existingDiversions }) => {
-    
     const [forceUpdate, setForceUpdate] = React.useState(0);
 
     React.useEffect(() => {
@@ -23,16 +22,16 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
 
     return (
         <div className="w-100 position-relative">
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+            <label style={ { display: 'block', marginBottom: '5px', fontWeight: 'bold' } }>
                 { label }
             </label>
             <Select
-                key={selectKey}
+                key={ selectKey }
                 data-testid="route-variant-select"
                 isDisabled={ disabled }
                 value={ selectedRouteVariant ? {
                     value: selectedRouteVariant.routeVariantId,
-                    label: `${selectedRouteVariant.routeVariantId} - ${selectedRouteVariant.routeLongName}`
+                    label: `${selectedRouteVariant.routeVariantId} - ${selectedRouteVariant.routeLongName}`,
                 } : null }
                 onChange={ (selectedOption) => {
                     if (selectedOption) {
@@ -47,7 +46,7 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
                         onSelectVariant(null);
                     }
                 } }
-                options={Object.entries(groupedByRoute).map(([routeShortName, variants]) => {
+                options={ Object.entries(groupedByRoute).map(([routeShortName, variants]) => {
                     const inboundVariants = variants.filter(variant => variant.directionId === 0);
                     const outboundVariants = variants.filter(variant => variant.directionId === 1);
 
@@ -58,7 +57,7 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
                         const option = {
                             value: variant.routeVariantId,
                             label: `${variant.routeVariantId} - ${variant.routeLongName}${isDisabled ? ' (Already has diversion)' : ''}`,
-                            isDisabled: isDisabled
+                            isDisabled,
                         };
                         return option;
                     };
@@ -67,7 +66,7 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
                         const inboundOptions = inboundVariants.map(createOption);
                         options.push({
                             label: `Route ${routeShortName} Inbound/Anticlockwise`,
-                            options: inboundOptions
+                            options: inboundOptions,
                         });
                     }
 
@@ -75,29 +74,29 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
                         const outboundOptions = outboundVariants.map(createOption);
                         options.push({
                             label: `Route ${routeShortName} Outbound/Clockwise`,
-                            options: outboundOptions
+                            options: outboundOptions,
                         });
                     }
 
                     return options;
-                }).flat()}
+                }).flat() }
                 placeholder="Select a route variant"
-                isOptionDisabled={(option) => {
+                isOptionDisabled={ (option) => {
                     const variant = routeVariants.find(v => v.routeVariantId === option.value);
                     if (!variant) {
                         return false;
                     }
 
-                    const isDisabled = variant.hasTripModifications === true || 
-                        (isRouteVariantDisabled && isRouteVariantDisabled(variant));
+                    const isDisabled = variant.hasTripModifications === true
+                        || (isRouteVariantDisabled && isRouteVariantDisabled(variant));
 
                     return isDisabled;
-                }}
-                styles={{
+                } }
+                styles={ {
                     option: (provided, state) => {
                         const variant = routeVariants.find(v => v.routeVariantId === state.data?.value);
-                        const isDisabled = variant && (variant.hasTripModifications === true || 
-                            (isRouteVariantDisabled && isRouteVariantDisabled(variant)));
+                        const isDisabled = variant && (variant.hasTripModifications === true
+                            || (isRouteVariantDisabled && isRouteVariantDisabled(variant)));
 
                         return {
                             ...provided,
@@ -110,19 +109,18 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
                     },
                     singleValue: (provided, state) => {
                         const variant = routeVariants.find(v => v.routeVariantId === state.data?.value);
-                        const isDisabled = variant && (variant.hasTripModifications === true || 
-                            (isRouteVariantDisabled && isRouteVariantDisabled(variant)));
+                        const isDisabled = variant && (variant.hasTripModifications === true
+                            || (isRouteVariantDisabled && isRouteVariantDisabled(variant)));
 
                         return {
                             ...provided,
                             color: isDisabled ? '#999' : '#333',
                         };
                     },
-                }}
+                } }
             />
         </div>
     );
-    
 };
 
 RouteVariantSelect.propTypes = {

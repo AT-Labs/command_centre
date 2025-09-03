@@ -12,9 +12,8 @@ const AdditionalRouteVariantSelector = ({
     isRouteVariantDisabled,
     isLoadingExistingDiversions,
     existingDiversions,
-}) => {
-    return (
-        <div>
+}) => (
+    <div>
         <p>
             <b>Select the other route variant(s) to apply the defined diversion</b>
         </p>
@@ -57,8 +56,7 @@ const AdditionalRouteVariantSelector = ({
             </div>
         ))}
     </div>
-    );
-};
+);
 
 AdditionalRouteVariantSelector.propTypes = {
     routeVariantsList: PropTypes.array.isRequired,

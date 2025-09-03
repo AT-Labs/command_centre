@@ -894,76 +894,76 @@ export const EditEffectPanel = (props) => {
                                         </FormGroup>
                                     )}
                                 </div>
-                            <div className="col-6">
-                                <FormGroup>
-                                    <DisruptionDetailSelect
-                                        id="disruption-creation__wizard-select-details__severity"
-                                        className=""
-                                        value={ disruption.severity }
-                                        options={ SEVERITIES }
-                                        label={ LABEL_SEVERITY }
-                                        invalid={ isSeverityDirty && !severityValid() }
-                                        feedback="Please select severity"
-                                        disabled={ isResolved() }
-                                        disabledClassName="background-color-for-disabled-fields"
-                                        onBlur={ (selectedItem) => {
-                                            updateDisruption({ severity: selectedItem, isSeverityDirty: true });
-                                            setIsSeverityDirty(true);
-                                        } }
-                                        onChange={ (selectedItem) => {
-                                            updateDisruption({ severity: selectedItem, isSeverityDirty: true });
-                                            setIsSeverityDirty(true);
-                                        } }
-                                    />
-                                </FormGroup>
-                            </div>
-
-                            <div className="col-12">
-                                <FormGroup>
-                                    <div className="label-with-icon">
-                                        <Label for="disruption-detail__notes">
-                                            <span className="font-size-md font-weight-bold">
-                                                {LABEL_DISRUPTION_NOTES}
-                                                {' '}
-                                            </span>
-                                        </Label>
-                                        <HistoryIcon style={ { color: '#399CDB', cursor: 'pointer' } } onClick={ () => setHistoryNotesModalOpen(true) } />
-                                    </div>
-                                    <Input id="disruption-detail__notes"
-                                        className="textarea-no-resize border border-dark"
-                                        type="textarea"
-                                        value={ disruption.note }
-                                        onChange={ e => updateDisruption({ note: e.currentTarget.value }) }
-                                        maxLength={ DESCRIPTION_NOTE_MAX_LENGTH }
-                                        rows={ 5 } />
-                                    {props.useDisruptionNotePopup && (
-                                        <OpenInNewOutlinedIcon
-                                            className="disruption-detail-expand-note-icon"
-                                            onClick={ () => setNoteModalOpen(true) }
+                                <div className="col-6">
+                                    <FormGroup>
+                                        <DisruptionDetailSelect
+                                            id="disruption-creation__wizard-select-details__severity"
+                                            className=""
+                                            value={ disruption.severity }
+                                            options={ SEVERITIES }
+                                            label={ LABEL_SEVERITY }
+                                            invalid={ isSeverityDirty && !severityValid() }
+                                            feedback="Please select severity"
+                                            disabled={ isResolved() }
+                                            disabledClassName="background-color-for-disabled-fields"
+                                            onBlur={ (selectedItem) => {
+                                                updateDisruption({ severity: selectedItem, isSeverityDirty: true });
+                                                setIsSeverityDirty(true);
+                                            } }
+                                            onChange={ (selectedItem) => {
+                                                updateDisruption({ severity: selectedItem, isSeverityDirty: true });
+                                                setIsSeverityDirty(true);
+                                            } }
                                         />
-                                    )}
-                                    <div className="flex-justify-content-end">
-                                        <Button
-                                            className="add-note-button cc-btn-secondary"
-                                            onClick={ () => onAddNote(disruption.note) }>
-                                            Add note
-                                        </Button>
-                                    </div>
-                                </FormGroup>
-                            </div>
-                            { disruption.notes.length > 0 && (
-                                <div className="col-12 last-note-grid">
-                                    <span className="font-size-md font-weight-bold last-note-label">Last note</span>
-                                    <span className="pl-2 last-note-info">
-                                        {disruption.notes[disruption.notes.length - 1].createdBy}
-                                        {', '}
-                                        {formatCreatedUpdatedTime(disruption.notes[disruption.notes.length - 1].createdTime)}
-                                    </span>
-                                    <span className="pl-2 last-note-description pt-2">
-                                        {disruption.notes[disruption.notes.length - 1].description}
-                                    </span>
+                                    </FormGroup>
                                 </div>
-                            )}
+
+                                <div className="col-12">
+                                    <FormGroup>
+                                        <div className="label-with-icon">
+                                            <Label for="disruption-detail__notes">
+                                                <span className="font-size-md font-weight-bold">
+                                                    {LABEL_DISRUPTION_NOTES}
+                                                    {' '}
+                                                </span>
+                                            </Label>
+                                            <HistoryIcon style={ { color: '#399CDB', cursor: 'pointer' } } onClick={ () => setHistoryNotesModalOpen(true) } />
+                                        </div>
+                                        <Input id="disruption-detail__notes"
+                                            className="textarea-no-resize border border-dark"
+                                            type="textarea"
+                                            value={ disruption.note }
+                                            onChange={ e => updateDisruption({ note: e.currentTarget.value }) }
+                                            maxLength={ DESCRIPTION_NOTE_MAX_LENGTH }
+                                            rows={ 5 } />
+                                        {props.useDisruptionNotePopup && (
+                                            <OpenInNewOutlinedIcon
+                                                className="disruption-detail-expand-note-icon"
+                                                onClick={ () => setNoteModalOpen(true) }
+                                            />
+                                        )}
+                                        <div className="flex-justify-content-end">
+                                            <Button
+                                                className="add-note-button cc-btn-secondary"
+                                                onClick={ () => onAddNote(disruption.note) }>
+                                                Add note
+                                            </Button>
+                                        </div>
+                                    </FormGroup>
+                                </div>
+                                { disruption.notes.length > 0 && (
+                                    <div className="col-12 last-note-grid">
+                                        <span className="font-size-md font-weight-bold last-note-label">Last note</span>
+                                        <span className="pl-2 last-note-info">
+                                            {disruption.notes[disruption.notes.length - 1].createdBy}
+                                            {', '}
+                                            {formatCreatedUpdatedTime(disruption.notes[disruption.notes.length - 1].createdTime)}
+                                        </span>
+                                        <span className="pl-2 last-note-description pt-2">
+                                            {disruption.notes[disruption.notes.length - 1].description}
+                                        </span>
+                                    </div>
+                                )}
 
                                 <div className="col-6">
                                     <FormGroup>

@@ -8,7 +8,7 @@ import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
 
 const PortalModal = ({ isOpen, children, className }) => {
     const [portalContainer, setPortalContainer] = useState(null);
-    
+
     useEffect(() => {
         let container = document.getElementById('portal-container');
         if (!container) {
@@ -26,35 +26,35 @@ const PortalModal = ({ isOpen, children, className }) => {
             document.body.appendChild(container);
         }
         setPortalContainer(container);
-        
+
         return () => {
             if (container && container.children.length === 0) {
                 container.remove();
             }
         };
     }, []);
-    
+
     if (!isOpen || !portalContainer) {
         return null;
     }
-    
+
     return createPortal(
-        <div className={className}>
+        <div className={ className }>
             {children}
         </div>,
-        portalContainer
+        portalContainer,
     );
 };
 
-const DiversionResultModalWrapper = ({ 
-    resultState, 
-    editMode, 
-    resetDiversionResult, 
-    onNewDiversion, 
-    onReturnToDisruption 
+const DiversionResultModalWrapper = ({
+    resultState,
+    editMode,
+    resetDiversionResult,
+    onNewDiversion,
+    onReturnToDisruption,
 }) => {
     const isEditingMode = editMode === 'EDIT';
-    
+
     let title;
     if (resultState?.error) {
         title = 'Creation Failed';
@@ -63,7 +63,7 @@ const DiversionResultModalWrapper = ({
     } else {
         title = `${isEditingMode ? 'Edit' : 'Add'} Diversion`;
     }
-    
+
     const handleResultAction = (action) => {
         document.body.classList.remove('diversion-result-active');
         resetDiversionResult();
@@ -89,10 +89,9 @@ const DiversionResultModalWrapper = ({
             style.id = styleId;
             document.head.appendChild(style);
         }
-        
+
         const handleBodyClick = (event) => {
             if (event.target.classList.contains('diversion-result-modal')) {
-
                 document.body.classList.remove('diversion-result-active');
                 resetDiversionResult();
                 if (onNewDiversion) {
@@ -100,9 +99,8 @@ const DiversionResultModalWrapper = ({
                 }
             }
         };
-        
+
         document.body.addEventListener('click', handleBodyClick);
-        
 
         style.textContent = `
             .diversion-result-modal {
@@ -150,7 +148,7 @@ const DiversionResultModalWrapper = ({
         } else {
             document.body.classList.remove('diversion-result-active');
         }
-        
+
         return () => {
             document.body.classList.remove('diversion-result-active');
             document.body.removeEventListener('click', handleBodyClick);
@@ -163,56 +161,55 @@ const DiversionResultModalWrapper = ({
 
     return (
         <PortalModal
-            isOpen={isModalOpen}
+            isOpen={ isModalOpen }
             className="diversion-result-modal"
-            onClick={() => {
-
+            onClick={ () => {
                 document.body.classList.remove('diversion-result-active');
                 resetDiversionResult();
                 if (onNewDiversion) {
                     onNewDiversion();
                 }
-            }}
+            } }
         >
-            <div 
-                onClick={() => {
-
+            <div
+                onClick={ () => {
                     document.body.classList.remove('diversion-result-active');
                     resetDiversionResult();
                     if (onNewDiversion) {
                         onNewDiversion();
                     }
-                }}
+                } }
             >
-                <div 
-                    onClick={(e) => e.stopPropagation()}
+                <div
+                    onClick={ e => e.stopPropagation() }
                 >
-                    <div className="modal-header" style={{ 
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        padding: '15px 20px',
-                        borderBottom: '1px solid #dee2e6',
-                        backgroundColor: '#f8f9fa',
-                        borderTopLeftRadius: '8px',
-                        borderTopRightRadius: '8px'
-                    }}>
-                        <h4 style={{ 
-                            margin: 0, 
-                            color: '#495057', 
-                            fontSize: '18px', 
-                            fontWeight: '600'
-                        }}>
+                    <div className="modal-header"
+                        style={ {
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            padding: '15px 20px',
+                            borderBottom: '1px solid #dee2e6',
+                            backgroundColor: '#f8f9fa',
+                            borderTopLeftRadius: '8px',
+                            borderTopRightRadius: '8px',
+                        } }>
+                        <h4 style={ {
+                            margin: 0,
+                            color: '#495057',
+                            fontSize: '18px',
+                            fontWeight: '600',
+                        } }>
                             {title}
                         </h4>
                     </div>
-                    
-                    <div style={{ padding: '20px' }}>
+
+                    <div style={ { padding: '20px' } }>
                         <DiversionResultModal
-                            showNewDiversionButton={!isEditingMode}
-                            result={resultState?.diversionId ? `Diversion #${resultState.diversionId} has been created successfully.` : null}
-                            error={resultState?.error?.message}
-                            onAction={handleResultAction}
+                            showNewDiversionButton={ !isEditingMode }
+                            result={ resultState?.diversionId ? `Diversion #${resultState.diversionId} has been created successfully.` : null }
+                            error={ resultState?.error?.message }
+                            onAction={ handleResultAction }
                         />
                     </div>
                 </div>
@@ -239,4 +236,4 @@ export default connect(state => ({
     editMode: getDiversionEditMode(state),
 }), {
     resetDiversionResult,
-})(DiversionResultModalWrapper); 
+})(DiversionResultModalWrapper);

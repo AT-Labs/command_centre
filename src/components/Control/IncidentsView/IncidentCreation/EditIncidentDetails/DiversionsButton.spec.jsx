@@ -4,280 +4,453 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
-
+import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
 import DiversionsButton from './DiversionsButton';
 
-jest.mock('./DiversionsButton.scss', () => ({}));
+const mockStore = configureStore([]);
 
-jest.mock('../../../../../assets/img/detour.svg', () => 'detour-icon.svg');
+describe('DiversionsButton - Our Implementation', () => {
+    let store;
+    const mockDisruption = {
+        disruptionId: 'DISR123',
+        status: 'in-progress',
+        affectedEntities: [
+            { routeId: 'ROUTE1', routeType: 3, stopCode: 'STOP1' },
+            { routeId: 'ROUTE2', routeType: 3, stopCode: 'STOP2' },
+        ],
+    };
 
-jest.mock('../../../../../redux/selectors/appSettings', () => ({
-    useDiversion: jest.fn(),
-}));
-
-jest.mock('../../../../../redux/selectors/control/diversions', () => ({
-    getIsDiversionManagerOpen: jest.fn(),
-    getDiversionsForDisruption: jest.fn(disruptionId => (state) => {
-        const diversionsData = state.diversionsData || {};
-        return diversionsData[disruptionId] || [];
-    }),
-}));
-
-jest.mock('../../../../../redux/actions/control/diversions', () => ({
-    openDiversionManager: jest.fn(),
-    updateDiversionMode: jest.fn(),
-    fetchDiversions: jest.fn(),
-}));
-
-describe('DiversionsButton Unit Tests (No Redux)', () => {
     const defaultProps = {
-        disruption: {
-            disruptionId: 'DISR123',
-            status: 'in-progress',
-            startTime: '2024-01-01T10:00:00Z',
-            endTime: '2024-01-01T18:00:00Z',
-            affectedEntities: [
-                {
-                    routeId: 'ROUTE1',
-                    routeType: 3, // Bus route
-                    routeName: 'Test Route 1',
-                },
-            ],
-        },
+        disruption: mockDisruption,
         openDiversionManagerAction: jest.fn(),
         updateDiversionModeAction: jest.fn(),
         useDiversionFlag: true,
         onViewDiversions: jest.fn(),
         isDiversionManagerOpen: false,
         toggleEditEffectPanel: jest.fn(),
-        fetchDiversionsAction: jest.fn(),
         state: {
-            useDiversionFlag: true,
-            isDiversionManagerOpen: false,
-            diversionsData: {
-                DISR123: [],
+            control: {
+                diversions: {
+                    diversionsForDisruption: {
+                        DISR123: [],
+                    },
+                    diversionResultState: null,
+                },
             },
         },
+        fetchDiversionsAction: jest.fn(),
+        clearDiversionsCacheAction: jest.fn(),
     };
 
     beforeEach(() => {
+        store = mockStore({
+            control: {
+                diversions: {
+                    diversionsForDisruption: {
+                        DISR123: [],
+                    },
+                    diversionResultState: null,
+                },
+            },
+        });
         jest.clearAllMocks();
     });
 
-    describe('Diversion(0) Button Rendering', () => {
-        it('should render the button with "Diversions(0)" text when no diversions exist', () => {
-            render(<DiversionsButton { ...defaultProps } />);
+    it('should render our DiversionsButton when useDiversionFlag is true', () => {
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } />
+            </Provider>,
+        );
 
-            const button = screen.getByRole('button');
-            expect(button).toBeInTheDocument();
-            expect(button).toHaveTextContent('Diversions(0)');
-        });
-
-        it('should render the button with correct styling', () => {
-            render(<DiversionsButton { ...defaultProps } />);
-
-            const button = screen.getByRole('button');
-            expect(button).toHaveClass('diversions-button');
-            expect(button).not.toBeDisabled();
-        });
-
-        it('should display the detour icon', () => {
-            render(<DiversionsButton { ...defaultProps } />);
-
-            const icon = screen.getByRole('img');
-            expect(icon).toHaveAttribute('src', 'detour-icon.svg');
-            expect(icon).toHaveAttribute('alt', 'detour');
-            expect(icon).toHaveAttribute('width', '26');
-            expect(icon).toHaveAttribute('height', '26');
-        });
-
-        it('should not render when useDiversionFlag is false', () => {
-            render(<DiversionsButton { ...defaultProps } useDiversionFlag={ false } />);
-
-            expect(screen.queryByRole('button')).not.toBeInTheDocument();
-        });
+        expect(screen.getByText(/Diversions\(0\)/)).toBeInTheDocument();
     });
 
-    describe('Diversion(0) Button Interaction', () => {
-        it('should open dropdown menu when button is clicked', () => {
-            render(<DiversionsButton { ...defaultProps } />);
+    it('should not render when useDiversionFlag is false', () => {
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } useDiversionFlag={ false } />
+            </Provider>,
+        );
 
-            const button = screen.getByRole('button');
-            fireEvent.click(button);
-
-            expect(screen.getByText('Add Diversion')).toBeInTheDocument();
-            expect(screen.getByText('View & Edit Diversions')).toBeInTheDocument();
-        });
-
-        it('should call add diversion actions when "Add Diversion" is clicked', () => {
-            render(<DiversionsButton { ...defaultProps } />);
-
-            const button = screen.getByRole('button');
-            fireEvent.click(button);
-
-            const addDiversionOption = screen.getByText('Add Diversion');
-            fireEvent.click(addDiversionOption);
-
-            expect(defaultProps.updateDiversionModeAction).toHaveBeenCalledWith('CREATE');
-            expect(defaultProps.openDiversionManagerAction).toHaveBeenCalledWith(true);
-        });
-
-        it('should call onViewDiversions when "View & Edit Diversions" is clicked', () => {
-            const mockOnViewDiversions = jest.fn();
-            render(<DiversionsButton { ...defaultProps } onViewDiversions={ mockOnViewDiversions } />);
-
-            const button = screen.getByRole('button');
-            fireEvent.click(button);
-
-            const viewDiversionsOption = screen.getByText('View & Edit Diversions');
-            fireEvent.click(viewDiversionsOption);
-
-            expect(mockOnViewDiversions).toHaveBeenCalled();
-        });
-
-        it('should close EditEffectPanel when adding diversion', async () => {
-            render(<DiversionsButton { ...defaultProps } />);
-
-            const button = screen.getByRole('button');
-            fireEvent.click(button);
-
-            const addDiversionOption = screen.getByText('Add Diversion');
-            fireEvent.click(addDiversionOption);
-
-            await waitFor(() => {
-                expect(defaultProps.toggleEditEffectPanel).toHaveBeenCalledWith(false);
-            }, { timeout: 200 });
-        });
+        expect(screen.queryByText(/Diversions/)).not.toBeInTheDocument();
     });
 
-    describe('Diversion(0) Button Edge Cases', () => {
-        it('should handle disruption without affectedEntities', () => {
-            render(<DiversionsButton
-                { ...defaultProps }
-                disruption={ {
-                    ...defaultProps.disruption,
-                    affectedEntities: null,
-                } }
-            />);
-
-            const button = screen.getByRole('button');
-            fireEvent.click(button);
-
-            const addDiversionOption = screen.getByText('Add Diversion');
-            expect(addDiversionOption).toHaveStyle({ opacity: '0.5' });
-        });
-
-        it('should handle disruption with empty affectedEntities', () => {
-            render(<DiversionsButton
-                { ...defaultProps }
-                disruption={ {
-                    ...defaultProps.disruption,
-                    affectedEntities: [],
-                } }
-            />);
-
-            const button = screen.getByRole('button');
-            fireEvent.click(button);
-
-            const addDiversionOption = screen.getByText('Add Diversion');
-            expect(addDiversionOption).toHaveStyle({ opacity: '0.5' });
-        });
-
-        it('should handle disruption without start/end time', () => {
-            render(<DiversionsButton
-                { ...defaultProps }
-                disruption={ {
-                    ...defaultProps.disruption,
-                    startTime: null,
-                    endTime: null,
-                } }
-            />);
-
-            const button = screen.getByRole('button');
-            fireEvent.click(button);
-
-            const addDiversionOption = screen.getByText('Add Diversion');
-            expect(addDiversionOption).toHaveStyle({ opacity: '0.5' });
-        });
-
-        it('should handle disruption with non-allowed status', () => {
-            render(<DiversionsButton
-                { ...defaultProps }
-                disruption={ {
-                    ...defaultProps.disruption,
-                    status: 'completed',
-                } }
-            />);
-
-            const button = screen.getByRole('button');
-            fireEvent.click(button);
-
-            const addDiversionOption = screen.getByText('Add Diversion');
-            expect(addDiversionOption).toHaveStyle({ opacity: '0.5' });
-        });
-
-        it('should handle disruption with only train routes', () => {
-            render(<DiversionsButton
-                { ...defaultProps }
-                disruption={ {
-                    ...defaultProps.disruption,
-                    affectedEntities: [
-                        {
-                            routeId: 'ROUTE1',
-                            routeType: 1,
-                            routeName: 'Test Train Route',
+    it('should show correct diversion count from our state', () => {
+        const propsWithDiversions = {
+            ...defaultProps,
+            state: {
+                control: {
+                    diversions: {
+                        diversionsForDisruption: {
+                            DISR123: [
+                                { diversionId: 'DIV1' },
+                                { diversionId: 'DIV2' },
+                            ],
                         },
-                    ],
-                } }
-            />);
-
-            const button = screen.getByRole('button');
-            fireEvent.click(button);
-
-            const addDiversionOption = screen.getByText('Add Diversion');
-            expect(addDiversionOption).toHaveStyle({ opacity: '0.5' });
-        });
-    });
-
-    describe('Diversion Count Display', () => {
-        it('should display correct count when diversions exist', () => {
-            const propsWithDiversions = {
-                ...defaultProps,
-                state: {
-                    ...defaultProps.state,
-                    diversionsData: {
-                        DISR123: [
-                            { diversionId: 'DIV1' },
-                            { diversionId: 'DIV2' },
-                        ],
+                        diversionResultState: null,
                     },
                 },
-            };
+            },
+        };
 
-            render(<DiversionsButton { ...propsWithDiversions } />);
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...propsWithDiversions } />
+            </Provider>,
+        );
 
-            expect(screen.getByText('Diversions(2)')).toBeInTheDocument();
+        expect(screen.getByText(/Diversions\(2\)/)).toBeInTheDocument();
+    });
+
+    it('should open our dropdown menu when button is clicked', () => {
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } />
+            </Provider>,
+        );
+
+        const button = screen.getByText(/Diversions\(0\)/);
+        fireEvent.click(button);
+
+        expect(screen.getByText('Add Diversion')).toBeInTheDocument();
+        expect(screen.getByText('View & Edit Diversions')).toBeInTheDocument();
+    });
+
+    it('should call our openDiversionManager when Add Diversion is clicked', async () => {
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } />
+            </Provider>,
+        );
+
+        const button = screen.getByText(/Diversions\(0\)/);
+        fireEvent.click(button);
+
+        const addButton = screen.getByText('Add Diversion');
+        fireEvent.click(addButton);
+
+        await waitFor(() => {
+            expect(defaultProps.openDiversionManagerAction).toHaveBeenCalledWith(true);
+            expect(defaultProps.updateDiversionModeAction).toHaveBeenCalledWith('CREATE');
+        });
+    });
+
+    it('should call our onViewDiversions when View & Edit Diversions is clicked', () => {
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } />
+            </Provider>,
+        );
+
+        const button = screen.getByText(/Diversions\(0\)/);
+        fireEvent.click(button);
+
+        const viewButton = screen.getByText('View & Edit Diversions');
+        fireEvent.click(viewButton);
+
+        expect(defaultProps.onViewDiversions).toHaveBeenCalled();
+    });
+
+    it('should close our dropdown when clicking outside', async () => {
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } />
+            </Provider>,
+        );
+
+        const button = screen.getByText(/Diversions\(0\)/);
+        fireEvent.click(button);
+
+        expect(screen.getByText('Add Diversion')).toBeInTheDocument();
+
+        // Click outside
+        fireEvent.mouseDown(document.body);
+
+        await waitFor(() => {
+            expect(screen.queryByText('Add Diversion')).not.toBeInTheDocument();
+        });
+    });
+
+    it('should disable Add Diversion when disruption is resolved (our logic)', () => {
+        const resolvedDisruption = {
+            ...mockDisruption,
+            status: 'resolved',
+        };
+
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } disruption={ resolvedDisruption } />
+            </Provider>,
+        );
+
+        const button = screen.getByText(/Diversions\(0\)/);
+        fireEvent.click(button);
+
+        const addButton = screen.getByText('Add Diversion');
+        expect(addButton).toHaveStyle({ cursor: 'not-allowed', opacity: '0.5' });
+    });
+
+    it('should disable Add Diversion when no bus routes available (our validation)', () => {
+        const disruptionWithoutBusRoutes = {
+            ...mockDisruption,
+            affectedEntities: [
+                { routeId: 'ROUTE1', routeType: 1, stopCode: 'STOP1' }, // Train route
+            ],
+        };
+
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } disruption={ disruptionWithoutBusRoutes } />
+            </Provider>,
+        );
+
+        const button = screen.getByText(/Diversions\(0\)/);
+        fireEvent.click(button);
+
+        const addButton = screen.getByText('Add Diversion');
+        expect(addButton).toHaveStyle({ cursor: 'not-allowed', opacity: '0.5' });
+    });
+
+    it('should handle our dropdown state correctly', () => {
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } />
+            </Provider>,
+        );
+
+        const button = screen.getByText(/Diversions\(0\)/);
+
+        // Initially closed
+        expect(screen.queryByText('Add Diversion')).not.toBeInTheDocument();
+
+        // Open dropdown
+        fireEvent.click(button);
+        expect(screen.getByText('Add Diversion')).toBeInTheDocument();
+
+        // Close dropdown
+        fireEvent.click(button);
+        expect(screen.queryByText('Add Diversion')).not.toBeInTheDocument();
+    });
+
+    it('should handle our disruption status validation correctly', () => {
+        const allowedStatuses = ['not-started', 'in-progress', 'draft'];
+        const disallowedStatuses = ['resolved', 'cancelled'];
+
+        allowedStatuses.forEach((status) => {
+            const { unmount } = render(
+                <Provider store={ store }>
+                    <DiversionsButton { ...defaultProps } disruption={ { ...mockDisruption, status } } />
+                </Provider>,
+            );
+
+            const button = screen.getByText(/Diversions\(0\)/);
+            fireEvent.click(button);
+
+            const addButton = screen.getByText('Add Diversion');
+            expect(addButton).not.toHaveStyle({ cursor: 'not-allowed', opacity: '0.5' });
+
+            unmount();
         });
 
-        it('should display zero count when no diversions exist', () => {
-            render(<DiversionsButton { ...defaultProps } />);
+        disallowedStatuses.forEach((status) => {
+            const { unmount } = render(
+                <Provider store={ store }>
+                    <DiversionsButton { ...defaultProps } disruption={ { ...mockDisruption, status } } />
+                </Provider>,
+            );
 
-            expect(screen.getByText('Diversions(0)')).toBeInTheDocument();
+            const button = screen.getByText(/Diversions\(0\)/);
+            fireEvent.click(button);
+
+            const addButton = screen.getByText('Add Diversion');
+            expect(addButton).toHaveStyle({ cursor: 'not-allowed', opacity: '0.5' });
+
+            unmount();
         });
+    });
 
-        it('should handle undefined diversions gracefully', () => {
-            const propsWithEmptyData = {
-                ...defaultProps,
-                state: {
-                    ...defaultProps.state,
-                    diversionsData: {},
+    it('should handle our route type validation correctly', () => {
+        const busRoutes = [
+            { routeId: 'ROUTE1', routeType: 3, stopCode: 'STOP1' },
+            { routeId: 'ROUTE2', routeType: 3, stopCode: 'STOP2' },
+        ];
+
+        const nonBusRoutes = [
+            { routeId: 'ROUTE1', routeType: 1, stopCode: 'STOP1' }, // Train
+            { routeId: 'ROUTE2', routeType: 2, stopCode: 'STOP2' }, // Tram
+        ];
+
+        // Test with bus routes
+        const { rerender } = render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } disruption={ { ...mockDisruption, affectedEntities: busRoutes } } />
+            </Provider>,
+        );
+
+        let button = screen.getByText(/Diversions\(0\)/);
+        fireEvent.click(button);
+
+        let addButton = screen.getByText('Add Diversion');
+        expect(addButton).not.toHaveStyle({ cursor: 'not-allowed', opacity: '0.5' });
+
+        // Test with non-bus routes
+        rerender(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } disruption={ { ...mockDisruption, affectedEntities: nonBusRoutes } } />
+            </Provider>,
+        );
+
+        button = screen.getByText(/Diversions\(0\)/);
+        fireEvent.click(button);
+
+        addButton = screen.getByText('Add Diversion');
+        expect(addButton).toHaveStyle({ cursor: 'not-allowed', opacity: '0.5' });
+    });
+
+    it('should handle our mixed route types correctly', () => {
+        const mixedRoutes = [
+            { routeId: 'ROUTE1', routeType: 3, stopCode: 'STOP1' }, // Bus route
+            { routeId: 'ROUTE2', routeType: 1, stopCode: 'STOP2' }, // Train route
+        ];
+
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } disruption={ { ...mockDisruption, affectedEntities: mixedRoutes } } />
+            </Provider>,
+        );
+
+        const button = screen.getByText(/Diversions\(0\)/);
+        fireEvent.click(button);
+
+        const addButton = screen.getByText('Add Diversion');
+        expect(addButton).not.toHaveStyle({ cursor: 'not-allowed', opacity: '0.5' });
+    });
+
+    it('should handle our edge cases gracefully', () => {
+        // Missing affectedEntities
+        const disruptionWithoutEntities = {
+            disruptionId: 'DISR123',
+            status: 'in-progress',
+        };
+
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } disruption={ disruptionWithoutEntities } />
+            </Provider>,
+        );
+
+        const button = screen.getByText(/Diversions\(0\)/);
+        fireEvent.click(button);
+
+        const addButton = screen.getByText('Add Diversion');
+        expect(addButton).toHaveStyle({ cursor: 'not-allowed', opacity: '0.5' });
+
+        // Empty affectedEntities
+        const disruptionWithEmptyEntities = {
+            ...mockDisruption,
+            affectedEntities: [],
+        };
+
+        const { rerender } = render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } disruption={ disruptionWithEmptyEntities } />
+            </Provider>,
+        );
+
+        rerender(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } disruption={ disruptionWithEmptyEntities } />
+            </Provider>,
+        );
+
+        const button2 = screen.getByText(/Diversions\(0\)/);
+        fireEvent.click(button2);
+
+        const addButton2 = screen.getByText('Add Diversion');
+        expect(addButton2).toHaveStyle({ cursor: 'not-allowed', opacity: '0.5' });
+    });
+
+    it('should handle our dropdown positioning correctly', () => {
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } />
+            </Provider>,
+        );
+
+        const button = screen.getByText(/Diversions\(0\)/);
+        fireEvent.click(button);
+
+        const dropdown = screen.getByText('Add Diversion').closest('.dropdown-menu');
+        expect(dropdown).toBeInTheDocument();
+    });
+
+    it('should handle our keyboard navigation', () => {
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } />
+            </Provider>,
+        );
+
+        const button = screen.getByText(/Diversions\(0\)/);
+        fireEvent.click(button);
+
+        // Escape key should close dropdown
+        fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+
+        expect(screen.queryByText('Add Diversion')).not.toBeInTheDocument();
+    });
+
+    it('should handle our loading states correctly', () => {
+        const loadingState = {
+            ...defaultProps.state,
+            control: {
+                diversions: {
+                    diversionsForDisruption: {
+                        DISR123: [],
+                    },
+                    diversionResultState: null,
+                    isLoading: true,
                 },
-            };
+            },
+        };
 
-            render(<DiversionsButton { ...propsWithEmptyData } />);
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } state={ loadingState } />
+            </Provider>,
+        );
 
-            expect(screen.getByText('Diversions(0)')).toBeInTheDocument();
-        });
+        // Should still render button even when loading
+        expect(screen.getByText(/Diversions\(0\)/)).toBeInTheDocument();
+    });
+
+    it('should handle our diversion result state changes', async () => {
+        const resultState = {
+            ...defaultProps.state,
+            control: {
+                diversions: {
+                    diversionsForDisruption: {
+                        DISR123: [],
+                    },
+                    diversionResultState: {
+                        diversionId: 'DIV123',
+                        isLoading: false,
+                        isSuccess: true,
+                        error: null,
+                    },
+                },
+            },
+        };
+
+        render(
+            <Provider store={ store }>
+                <DiversionsButton { ...defaultProps } state={ resultState } />
+            </Provider>,
+        );
+
+        // Should still render button with result state
+        expect(screen.getByText(/Diversions\(0\)/)).toBeInTheDocument();
     });
 });

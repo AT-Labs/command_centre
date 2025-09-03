@@ -2,7 +2,7 @@ import moment from 'moment';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
-import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap';
+import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
 import { toString, omit, some, isEmpty, uniqBy, uniqWith } from 'lodash-es';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { BsArrowRepeat } from 'react-icons/bs';
@@ -25,9 +25,7 @@ import {
     LABEL_START_DATE,
     LABEL_START_TIME,
     LABEL_STATUS,
-    LABEL_URL,
     TIME_FORMAT,
-    URL_MAX_LENGTH,
     LABEL_DURATION_HOURS,
     LABEL_DISRUPTION_NOTES,
     DESCRIPTION_NOTE_MAX_LENGTH,
