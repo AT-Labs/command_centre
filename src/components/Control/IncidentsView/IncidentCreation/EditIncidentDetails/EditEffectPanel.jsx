@@ -300,25 +300,6 @@ export const EditEffectPanel = (props) => {
         }
     };
 
-    // eslint-disable-next-line no-unused-vars
-    const onUpdateRecurrencePattern = (byweekday) => {
-        setDisruption(prev => ({
-            ...prev,
-            recurrencePattern: { ...prev.recurrencePattern, byweekday },
-        }));
-    };
-
-    // eslint-disable-next-line no-unused-vars
-    const isViewAllDisabled = () => !isDateTimeValid() || isEmpty(safeDisruption.recurrencePattern?.byweekday);
-
-    // eslint-disable-next-line no-unused-vars
-    const displayActivePeriods = () => {
-        setActivePeriods(generateActivePeriodsFromRecurrencePattern(
-            safeDisruption.recurrencePattern,
-            safeDisruption.duration,
-        ));
-        setActivePeriodsModalOpen(true);
-    };
 
     const onAffectedEntitiesUpdate = (disruptionKey, valueKey, affectedEntities) => {
         const updatedDisruptions = {
@@ -438,14 +419,6 @@ export const EditEffectPanel = (props) => {
     const shareToEmailHandler = async () => {
         const disruptionEntity = setDisruptionEntity();
         shareToEmail(disruptionEntity);
-    };
-
-    // eslint-disable-next-line no-unused-vars
-    const activePeriodsValidV2 = () => {
-        if (safeDisruption.recurrent) {
-            return isActivePeriodsValid(safeDisruption.recurrencePattern, safeDisruption.duration, safeDisruption.maxActivePeriodsCount);
-        }
-        return true;
     };
 
     const onBlurTitle = () => {
