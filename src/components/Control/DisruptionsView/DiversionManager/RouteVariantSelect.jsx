@@ -22,10 +22,14 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
 
     return (
         <div className="w-100 position-relative">
-            <label style={ { display: 'block', marginBottom: '5px', fontWeight: 'bold' } }>
+            <label
+                htmlFor="route-variant-select"
+                style={ { display: 'block', marginBottom: '5px', fontWeight: 'bold' } }
+            >
                 { label }
             </label>
             <Select
+                inputId="route-variant-select"
                 key={ selectKey }
                 data-testid="route-variant-select"
                 isDisabled={ disabled }
@@ -101,7 +105,11 @@ const RouteVariantSelect = ({ label, disabled, routeVariants, selectedRouteVaria
                         return {
                             ...provided,
                             color: isDisabled ? '#999' : '#333',
-                            backgroundColor: isDisabled ? '#f5f5f5' : state.isFocused ? '#e6f3ff' : 'white',
+                            backgroundColor: (() => {
+                                if (isDisabled) return '#f5f5f5';
+                                if (state.isFocused) return '#e6f3ff';
+                                return 'white';
+                            })(),
                             cursor: isDisabled ? 'not-allowed' : 'default',
                             opacity: isDisabled ? 0.6 : 1,
                             textDecoration: isDisabled ? 'line-through' : 'none',

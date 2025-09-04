@@ -69,4 +69,10 @@ AdditionalRouteVariantSelector.propTypes = {
     existingDiversions: PropTypes.array,
 };
 
+AdditionalRouteVariantSelector.defaultProps = {
+    isRouteVariantDisabled: null,
+    isLoadingExistingDiversions: false,
+    existingDiversions: [],
+};
+
 export default AdditionalRouteVariantSelector;

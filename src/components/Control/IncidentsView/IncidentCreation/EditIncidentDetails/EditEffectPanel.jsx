@@ -9,7 +9,7 @@ import { FaRegCalendarAlt } from 'react-icons/fa';
 import Flatpickr from 'react-flatpickr';
 import { RRule } from 'rrule';
 import moment from 'moment';
-import { BsArrowRepeat } from 'react-icons/bs';
+
 import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 import HistoryIcon from '@mui/icons-material/History';
 import { isEditEffectPanelOpen,
@@ -45,12 +45,10 @@ import {
 } from '../../../../../utils/control/disruptions';
 import {
     generateActivePeriodsFromRecurrencePattern,
-    getRecurrenceText,
     parseRecurrencePattern,
     isActivePeriodsValid } from '../../../../../utils/recurrence';
 import { DISRUPTION_TYPE, SEVERITIES, DEFAULT_SEVERITY, STATUSES } from '../../../../../types/disruptions-types';
 import SelectEffectEntities from '../WizardSteps/SelectEffectEntities';
-import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
 import {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
@@ -137,7 +135,7 @@ export const EditEffectPanel = (props) => {
     const [isImpactDirty, setIsImpactDirty] = useState(false);
     const [isSeverityDirty, setIsSeverityDirty] = useState(false);
     const [isDurationDirty, setIsDurationDirty] = useState(false);
-    const [isRecurrencePatternDirty, setIsRecurrencePatternDirty] = useState(false);
+
     const [historyNotesModalOpen, setHistoryNotesModalOpen] = useState(false);
     const [noteModalOpen, setNoteModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
@@ -303,7 +301,6 @@ export const EditEffectPanel = (props) => {
     };
 
     const onUpdateRecurrencePattern = (byweekday) => {
-        setIsRecurrencePatternDirty(true);
         setDisruption(prev => ({
             ...prev,
             recurrencePattern: { ...prev.recurrencePattern, byweekday },

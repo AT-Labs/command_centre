@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { getDiversionResultState, getDiversionEditMode } from '../../../../redux/selectors/control/diversions';
-import { resetDiversionResult } from '../../../../redux/actions/control/diversions';
+import { resetDiversionResult as resetDiversionResultAction } from '../../../../redux/actions/control/diversions';
 import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
 
 const PortalModal = ({ isOpen, children, className }) => {
@@ -172,6 +172,8 @@ const DiversionResultModalWrapper = ({
             } }
         >
             <div
+                role="button"
+                tabIndex={ 0 }
                 onClick={ () => {
                     document.body.classList.remove('diversion-result-active');
                     resetDiversionResult();
@@ -179,9 +181,21 @@ const DiversionResultModalWrapper = ({
                         onNewDiversion();
                     }
                 } }
+                onKeyDown={ (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        document.body.classList.remove('diversion-result-active');
+                        resetDiversionResult();
+                        if (onNewDiversion) {
+                            onNewDiversion();
+                        }
+                    }
+                } }
             >
                 <div
+                    role="button"
+                    tabIndex={ 0 }
                     onClick={ e => e.stopPropagation() }
+                    onKeyDown={ e => e.stopPropagation() }
                 >
                     <div className="modal-header"
                         style={ {
@@ -235,5 +249,5 @@ export default connect(state => ({
     resultState: getDiversionResultState(state),
     editMode: getDiversionEditMode(state),
 }), {
-    resetDiversionResult,
+    resetDiversionResult: resetDiversionResultAction,
 })(DiversionResultModalWrapper);

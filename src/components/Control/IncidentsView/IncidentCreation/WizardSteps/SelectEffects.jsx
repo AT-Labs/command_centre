@@ -103,7 +103,7 @@ const useDisruptions = (disruptions) => {
     };
 };
 
-const FooterWithCustomButtons = ({ onBack, onCancel, onSaveDraft, onContinue, onFinish, isDraftSubmitDisabled, isSubmitDisabled, data, isEditMode }) => (
+const FooterWithCustomButtons = ({ onBack, onCancel, onSaveDraft, onContinue, onFinish, isDraftSubmitDisabled, data, isEditMode }) => (
     <footer className="row m-0 justify-content-between align-items-center p-4 position-fixed incident-footer-min-height">
         { !isEditMode && (
             <div className="col-auto">

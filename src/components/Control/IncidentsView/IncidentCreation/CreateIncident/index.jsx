@@ -866,6 +866,7 @@ CreateIncident.defaultProps = {
     routeColors: [],
     incidentToEdit: {},
     isLoading: false,
+    useDiversion: false,
     isEditEffectPanelOpen: false,
     isRequiresToUpdateNotes: false,
     isWorkaroundPanelOpen: false,

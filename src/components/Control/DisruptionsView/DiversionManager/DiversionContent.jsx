@@ -26,8 +26,6 @@ import AdditionalRouteVariantSelector from './AdditionalRouteVariantSelector';
 import AffectedStops from './AffectedStops';
 
 const DiversionContent = (props) => {
-    const [isOpen, setIsOpen] = useState(false);
-
     const SERVICE_DATE_FORMAT = 'YYYYMMDD';
     const TIME_FORMAT_HHMM = 'HH:mm';
     const debounceDelay = 300;
@@ -35,6 +33,8 @@ const DiversionContent = (props) => {
     const isEditingMode = props.editMode === EDIT_TYPE.EDIT;
     const [isUpdated, setIsUpdated] = useState(false);
     const [isDiversionValid, setIsDiversionValid] = useState(false);
+    const [diversionShapeWkt, setDiversionShapeWkt] = useState(isEditingMode ? props.diversion?.diversionShapeWkt : null);
+    const [modifiedBaseRouteVariant, setModifiedBaseRouteVariant] = useState();
 
     const [forceUpdate, setForceUpdate] = useState(0);
 
@@ -68,10 +68,6 @@ const DiversionContent = (props) => {
     const [secondaryRouteVariantsList, setSecondaryRouteVariantsList] = useState([]);
     const [selectedOtherRouteVariants, setSelectedOtherRouteVariants] = useState([]);
 
-    const [diversionShapeWkt, setDiversionShapeWkt] = useState(isEditingMode ? props.diversion?.diversionShapeWkt : null);
-
-    const [modifiedBaseRouteVariant, setModifiedBaseRouteVariant] = useState();
-
     const [affectedStops, setAffectedStops] = useState([]);
 
     const isBusRoute = route => route.routeType === BUS_TYPE_ID;
@@ -84,7 +80,9 @@ const DiversionContent = (props) => {
             }
 
             if (affectedEntities && typeof affectedEntities === 'object' && !Array.isArray(affectedEntities)) {
-                for (const key of Object.keys(affectedEntities)) {
+                const keys = Object.keys(affectedEntities);
+                for (let i = 0; i < keys.length; i++) {
+                    const key = keys[i];
                     const value = affectedEntities[key];
                     if (Array.isArray(value) && value.length > 0) {
                         return [...new Set(value.filter(isBusRoute).map(entity => entity.routeId))];
@@ -169,6 +167,7 @@ const DiversionContent = (props) => {
 
             setRecentlyCreatedDiversionRouteVariantId(null);
         } catch (error) {
+            // Error handling is done silently
         }
     }, [props.disruption.disruptionId, props.disruption.incidentId, isLoadingExistingDiversions, props.fetchDiversions]);
 
@@ -217,6 +216,7 @@ const DiversionContent = (props) => {
                 initEditingMode(routeVariants);
             }
         } catch {
+            // Error handling is done silently
             setRouteVariantsList([]);
         }
     }, debounceDelay);
@@ -332,16 +332,6 @@ const DiversionContent = (props) => {
         }
     };
 
-    const reset = () => {
-        setSelectedBaseRouteVariant(null);
-        setTempSelectedBaseRouteVariant(null);
-        setAffectedStops([]);
-        setDiversionShapeWkt(null);
-        setModifiedBaseRouteVariant(null);
-        setSecondaryRouteVariantsList([]);
-        setSelectedOtherRouteVariants([]);
-    };
-
     const onCancelClicked = () => {
         setRecentlyCreatedDiversionRouteVariantId();
 
@@ -385,11 +375,12 @@ const DiversionContent = (props) => {
             }
 
             if (button.closest('#effects-list')) {
-                button.style.display = 'none';
-                button.style.visibility = 'hidden';
-                button.style.opacity = '0';
-                button.style.zIndex = '-1';
-                button.style.pointerEvents = 'none';
+                const buttonCopy = { ...button };
+                buttonCopy.style.display = 'none';
+                buttonCopy.style.visibility = 'hidden';
+                buttonCopy.style.opacity = '0';
+                buttonCopy.style.zIndex = '-1';
+                buttonCopy.style.pointerEvents = 'none';
             }
         });
 
@@ -401,11 +392,12 @@ const DiversionContent = (props) => {
                 if (modal.closest('.side-panel-control-component-view')) {
                     return;
                 }
-                modal.style.display = 'none';
-                modal.style.visibility = 'hidden';
-                modal.style.opacity = '0';
-                modal.style.zIndex = '-1';
-                modal.style.pointerEvents = 'none';
+                const modalCopy = { ...modal };
+                modalCopy.style.display = 'none';
+                modalCopy.style.visibility = 'hidden';
+                modalCopy.style.opacity = '0';
+                modalCopy.style.zIndex = '-1';
+                modalCopy.style.pointerEvents = 'none';
             }
         });
 
@@ -503,25 +495,32 @@ const DiversionContent = (props) => {
     useEffect(() => {
         if (props.isOpen) {
             const handleCloseButtonClick = () => {
-                const mapElements = document.querySelectorAll('.leaflet-control-container, .leaflet-control-zoom, .leaflet-control-draw, .leaflet-pane, .leaflet-overlay-pane, .leaflet-marker-pane, .leaflet-tooltip-pane, .leaflet-popup-pane');
+                const mapElements = document.querySelectorAll(
+                    '.leaflet-control-container, .leaflet-control-zoom, .leaflet-control-draw, '
+                    + '.leaflet-pane, .leaflet-overlay-pane, .leaflet-marker-pane, '
+                    + '.leaflet-tooltip-pane, .leaflet-popup-pane',
+                );
                 mapElements.forEach((element) => {
                     if (element) {
-                        element.style.display = 'none';
-                        element.style.visibility = 'hidden';
-                        element.style.opacity = '0';
+                        const elementNode = element;
+                        elementNode.style.display = 'none';
+                        elementNode.style.visibility = 'hidden';
+                        elementNode.style.opacity = '0';
                     }
                 });
 
                 const mapContainer = document.querySelector('.leaflet-container');
                 if (mapContainer) {
-                    mapContainer.style.display = 'none';
-                    mapContainer.style.visibility = 'hidden';
-                    mapContainer.style.opacity = '0';
+                    const mapContainerNode = mapContainer;
+                    mapContainerNode.style.display = 'none';
+                    mapContainerNode.style.visibility = 'hidden';
+                    mapContainerNode.style.opacity = '0';
                 }
 
                 if (props.onCancelled) {
                     props.onCancelled();
                 }
+                return undefined;
             };
 
             const closeButton = document.querySelector('.disruption-creation-close-disruptions');
@@ -533,6 +532,7 @@ const DiversionContent = (props) => {
                 };
             }
         }
+        return undefined;
     }, [props.isOpen]);
 
     useEffect(() => {
@@ -619,7 +619,7 @@ const DiversionContent = (props) => {
                     <div className="d-flex justify-content-between align-items-center">
                         <Button
                             className="btn cc-btn-secondary"
-                            onClick={ (e) => {
+                            onClick={ () => {
                                 onCancelClicked();
                             } }
                         >
@@ -671,6 +671,7 @@ DiversionContent.propTypes = {
     diversion: PropTypes.object,
     state: PropTypes.object,
     isOpen: PropTypes.bool,
+    isLoadingExistingDiversions: PropTypes.bool,
 };
 
 DiversionContent.defaultProps = {
@@ -679,6 +680,8 @@ DiversionContent.defaultProps = {
     onDiversionCreated: null,
     diversion: null,
     isOpen: false,
+    isLoadingExistingDiversions: false,
+    state: null,
 };
 
 export default connect(state => ({

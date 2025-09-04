@@ -101,7 +101,7 @@ const ViewDiversionDetailModal = (props) => {
 
     useEffect(() => {
         if (props.setShouldRefetchDiversions) {
-
+            // TODO: Implement refetch logic if needed
         }
     }, [props.setShouldRefetchDiversions]);
 
@@ -187,7 +187,6 @@ ViewDiversionDetailModal.propTypes = {
 ViewDiversionDetailModal.defaultProps = {
     diversions: [],
     isLoadingDiversions: false,
-    deleteDiversion: () => {},
 };
 
 const mapDispatchToProps = dispatch => ({

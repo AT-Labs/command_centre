@@ -27,8 +27,6 @@ import AdditionalRouteVariantSelector from './AdditionalRouteVariantSelector';
 import AffectedStops from './AffectedStops';
 
 const DiversionManager = (props) => {
-    const [isOpen, setIsOpen] = useState(false);
-
     const SERVICE_DATE_FORMAT = 'YYYYMMDD';
     const TIME_FORMAT_HHMM = 'HH:mm';
     const debounceDelay = 300;
@@ -39,20 +37,6 @@ const DiversionManager = (props) => {
 
     // Force update when state changes
     const [forceUpdate, setForceUpdate] = useState(0);
-
-    // Update isDiversionValid when state changes
-    const updateDiversionValid = useCallback(() => {
-        const isValid = modifiedBaseRouteVariant?.shapeWkt?.length > 0
-                       && diversionShapeWkt?.length > 0
-                       && diversionShapeWkt !== 'LINESTRING()';
-
-        setIsDiversionValid(isValid);
-    }, [modifiedBaseRouteVariant, diversionShapeWkt, forceUpdate]);
-
-    // Force update when dependencies change
-    useEffect(() => {
-        updateDiversionValid();
-    }, [updateDiversionValid]);
 
     const title = `${props.editMode === EDIT_TYPE.EDIT ? 'Edit' : 'Add'} Diversion`;
     const buttonText = `${props.editMode === EDIT_TYPE.EDIT ? 'Update' : 'Create'} Diversion`;
@@ -96,7 +80,9 @@ const DiversionManager = (props) => {
             }
 
             if (affectedEntities && typeof affectedEntities === 'object' && !Array.isArray(affectedEntities)) {
-                for (const key of Object.keys(affectedEntities)) {
+                const keys = Object.keys(affectedEntities);
+                for (let i = 0; i < keys.length; i++) {
+                    const key = keys[i];
                     const value = affectedEntities[key];
                     if (Array.isArray(value) && value.length > 0) {
                         return [...new Set(value.filter(isBusRoute).map(entity => entity.routeId))];
@@ -108,6 +94,20 @@ const DiversionManager = (props) => {
         })();
         return routeIdsArray;
     });
+
+    // Update isDiversionValid when state changes
+    const updateDiversionValid = useCallback(() => {
+        const isValid = modifiedBaseRouteVariant?.shapeWkt?.length > 0
+                       && diversionShapeWkt?.length > 0
+                       && diversionShapeWkt !== 'LINESTRING()';
+
+        setIsDiversionValid(isValid);
+    }, [modifiedBaseRouteVariant, diversionShapeWkt, forceUpdate]);
+
+    // Force update when dependencies change
+    useEffect(() => {
+        updateDiversionValid();
+    }, [updateDiversionValid]);
 
     const isRouteVariantDisabled = (routeVariant) => {
         if (!routeVariant) {
@@ -187,6 +187,8 @@ const DiversionManager = (props) => {
 
             setRecentlyCreatedDiversionRouteVariantId(null);
         } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Error fetching diversions:', error);
         }
     }, [props.disruption.disruptionId, props.disruption.incidentId, isLoadingExistingDiversions, props.fetchDiversions]);
 
@@ -240,7 +242,9 @@ const DiversionManager = (props) => {
                 // Restore state for editing mode
                 initEditingMode(routeVariants);
             }
-        } catch {
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Error fetching route variants:', error);
             setRouteVariantsList([]);
         }
     }, debounceDelay);
@@ -370,16 +374,6 @@ const DiversionManager = (props) => {
         }
     };
 
-    const reset = () => {
-        setSelectedBaseRouteVariant(null);
-        setTempSelectedBaseRouteVariant(null);
-        setAffectedStops([]);
-        setDiversionShapeWkt(null);
-        setModifiedBaseRouteVariant(null);
-        setSecondaryRouteVariantsList([]);
-        setSelectedOtherRouteVariants([]);
-    };
-
     // Buttons
     const onCancelClicked = () => {
         setRecentlyCreatedDiversionRouteVariantId(null);
@@ -424,11 +418,12 @@ const DiversionManager = (props) => {
             }
 
             if (button.closest('#effects-list')) {
-                button.style.display = 'none';
-                button.style.visibility = 'hidden';
-                button.style.opacity = '0';
-                button.style.zIndex = '-1';
-                button.style.pointerEvents = 'none';
+                const buttonElement = button;
+                buttonElement.style.display = 'none';
+                buttonElement.style.visibility = 'hidden';
+                buttonElement.style.opacity = '0';
+                buttonElement.style.zIndex = '-1';
+                buttonElement.style.pointerEvents = 'none';
             }
         });
 
@@ -442,11 +437,12 @@ const DiversionManager = (props) => {
                 if (modal.closest('.side-panel-control-component-view')) {
                     return;
                 }
-                modal.style.display = 'none';
-                modal.style.visibility = 'hidden';
-                modal.style.opacity = '0';
-                modal.style.zIndex = '-1';
-                modal.style.pointerEvents = 'none';
+                const modalElement = modal;
+                modalElement.style.display = 'none';
+                modalElement.style.visibility = 'hidden';
+                modalElement.style.opacity = '0';
+                modalElement.style.zIndex = '-1';
+                modalElement.style.pointerEvents = 'none';
             }
         });
 
@@ -549,12 +545,17 @@ const DiversionManager = (props) => {
     React.useEffect(() => {
         if (props.isOpen) {
             const handleCloseButtonClick = () => {
-                const mapElements = document.querySelectorAll('.leaflet-control-container, .leaflet-control-zoom, .leaflet-control-draw, .leaflet-pane, .leaflet-overlay-pane, .leaflet-marker-pane, .leaflet-tooltip-pane, .leaflet-popup-pane');
+                const mapElements = document.querySelectorAll(
+                    '.leaflet-control-container, .leaflet-control-zoom, .leaflet-control-draw, '
+                    + '.leaflet-pane, .leaflet-overlay-pane, .leaflet-marker-pane, '
+                    + '.leaflet-tooltip-pane, .leaflet-popup-pane',
+                );
                 mapElements.forEach((element) => {
                     if (element) {
-                        element.style.display = 'none';
-                        element.style.visibility = 'hidden';
-                        element.style.opacity = '0';
+                        const elementNode = element;
+                        elementNode.style.display = 'none';
+                        elementNode.style.visibility = 'hidden';
+                        elementNode.style.opacity = '0';
                     }
                 });
 
@@ -567,7 +568,6 @@ const DiversionManager = (props) => {
 
                 if (props.onCancelled) {
                     props.onCancelled();
-                } else {
                 }
             };
 
@@ -580,6 +580,7 @@ const DiversionManager = (props) => {
                 };
             }
         }
+        return undefined;
     }, [props.isOpen]);
 
     React.useEffect(() => {
@@ -595,8 +596,6 @@ const DiversionManager = (props) => {
             }
         }
     }, [props.isOpen, props.disruption?.incidentId, props.disruption?.disruptionId, props.isLoadingExistingDiversions, editingDiversions.length]);
-
-    const isRouteVariantDisabledWithLogging = routeVariant => isRouteVariantDisabled(routeVariant);
 
     return (
         <div className="side-panel-control-component-view diversion-manager d-flex">
@@ -652,7 +651,7 @@ const DiversionManager = (props) => {
                         <div className="d-flex justify-content-between align-items-center">
                             <Button
                                 className="btn cc-btn-secondary"
-                                onClick={ (e) => {
+                                onClick={ () => {
                                     onCancelClicked();
                                 } }
                             >
@@ -705,6 +704,9 @@ DiversionManager.propTypes = {
     onDiversionCreated: PropTypes.func,
     diversion: PropTypes.object,
     state: PropTypes.object,
+    isOpen: PropTypes.bool,
+    isLoadingExistingDiversions: PropTypes.bool,
+    resultState: PropTypes.object,
 };
 
 DiversionManager.defaultProps = {
@@ -717,6 +719,9 @@ DiversionManager.defaultProps = {
         error: null,
     },
     diversion: null,
+    isOpen: false,
+    isLoadingExistingDiversions: false,
+    state: null,
 };
 
 export default connect(state => ({
