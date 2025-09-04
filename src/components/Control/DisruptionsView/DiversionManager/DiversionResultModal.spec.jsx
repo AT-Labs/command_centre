@@ -2,7 +2,7 @@
 import React from 'react';
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent } from '@testing-library/react';
-import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
+import DiversionResultModal from './DiversionResultModal';
 
 describe('<DiversionResultModal />', () => {
     let onAction;
@@ -51,7 +51,7 @@ describe('<DiversionResultModal />', () => {
         );
         const goBackBtn = screen.getByRole('button', { name: 'Go back to disruption page' });
         fireEvent.click(goBackBtn);
-        expect(onAction).toHaveBeenCalledWith(ACTION_TYPE.RETURN_TO_DISRUPTION);
+        expect(onAction).toHaveBeenCalledWith('RETURN_TO_DISRUPTION');
     });
 
     it('calls onAction with NEW_DIVERSION when Add new diversion is clicked', () => {
@@ -65,7 +65,7 @@ describe('<DiversionResultModal />', () => {
         );
         const addBtn = screen.getByRole('button', { name: 'Add new diversion' });
         fireEvent.click(addBtn);
-        expect(onAction).toHaveBeenCalledWith(ACTION_TYPE.NEW_DIVERSION);
+        expect(onAction).toHaveBeenCalledWith('NEW_DIVERSION');
     });
 
     it('calls onAction with RETURN_TO_DIVERSION when Return is clicked (error case)', () => {
@@ -79,7 +79,7 @@ describe('<DiversionResultModal />', () => {
         );
         const returnBtn = screen.getByRole('button', { name: 'Return' });
         fireEvent.click(returnBtn);
-        expect(onAction).toHaveBeenCalledWith(ACTION_TYPE.RETURN_TO_DIVERSION);
+        expect(onAction).toHaveBeenCalledWith('RETURN_TO_DIVERSION');
     });
 
     it('does not show Add new diversion button if showNewDiversionButton is false', () => {

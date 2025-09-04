@@ -1,33 +1,53 @@
 @import '../../../../assets/styles/variables';
-
 .side-panel-control-component-view {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: white !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 1000 !important;
     & .side-panel {
         overflow-x: hidden;
+        width: 660px;
+        flex-shrink: 0;
+        border-right: 1px solid #DDD;
         .side-panel__inner {
             box-shadow: none;
         }
+        .side-panel__scroll-size {
+            height: calc(100vh - 149px);
+        }
+        .side-panel-primary-panel {
+            width: $side-panel-width-large;
+        }
     }
-    & .side-panel__scroll-size {
-        height: calc(100vh - 149px);
+    .diversion-creation-container {
+        height: 100vh;
+        overflow-y: auto;
+        padding: 30px;
+        background: white;
+        width: 100%;
     }
-
-    & .side-panel-primary-panel {
-        width: $side-panel-width-large;
+    .select-main-variant-container,
+    .select-multiple-variants-container {
+        margin-bottom: 20px;
+        padding: 0 20px;
     }
-
     .route-variant-select {
         width: 570px;
+        max-width: 570px;
     }
-
     .select-main-variant-container {
         margin-bottom: 10px;
     }
-
     .select-multiple-variants-container {
         margin-top: 10px;
         margin-bottom: 20px;
     }
-
     .other-route-variant-container {
         display: flex;
         align-items: center;
@@ -35,7 +55,6 @@
         margin-top: 20px;
         margin-bottom: 20px;
     }
-
     .other-route-variant-text {
         display: inline-block;
         width: 475px;
@@ -43,7 +62,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
-
     footer {
         width: $side-panel-width-large;
         position: absolute;
@@ -51,10 +69,169 @@
         left: 0;
         background-color: #FFF;
         padding: 1rem;
+        border-top: 1px solid #DDD;
+        z-index: 1000;
     }
-
+    .panel-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 660px;
+        background-color: #FFF;
+        padding: 1rem;
+        border-top: 1px solid #DDD;
+        z-index: 1000;
+    }
     .map {
         margin-left: $side-panel-width-large;
+        flex-grow: 1;
+        position: relative;
         height: calc(100vh - 109px);
+        width: calc(100vw - 660px);
     }
+}
+.diversion-manager {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: white !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    z-index: 1000 !important;
+}
+
+.diversion__confirmation-modal {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+
+    .row {
+        margin: 0 !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+    }
+
+    .col {
+        padding: 0 !important;
+        position: relative !important;
+        width: 100% !important;
+    }
+
+    footer {
+        width: 100% !important;
+        position: relative !important;
+        bottom: auto !important;
+        left: auto !important;
+        background-color: transparent !important;
+        padding: 0 !important;
+        margin-top: 20px !important;
+        display: block !important;
+
+        .row {
+            margin: 0 !important;
+            align-items: stretch !important;
+            display: flex !important;
+            flex-wrap: wrap !important;
+        }
+
+        .col-5 {
+            padding: 0 8px !important;
+            display: block !important;
+            flex: 0 0 41.666667% !important;
+            max-width: 41.666667% !important;
+
+            &:first-child {
+                padding-left: 0 !important;
+            }
+        }
+
+        .col-7 {
+            padding: 0 8px !important;
+            display: block !important;
+            flex: 0 0 58.333333% !important;
+            max-width: 58.333333% !important;
+
+            &:last-child {
+                padding-right: 0 !important;
+            }
+        }
+
+        .btn {
+            width: 100% !important;
+            height: 40px !important;
+            border-radius: 4px !important;
+            font-size: 1rem !important;
+            font-weight: 500 !important;
+            transition: all .2s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+            border: 1px solid transparent !important;
+            padding: .375rem .75rem !important;
+            line-height: 1.5 !important;
+
+            &.cc-btn-secondary {
+                background-color: #6C757D !important;
+                border-color: #6C757D !important;
+                color: white !important;
+
+                &:hover {
+                    background-color: #5A6268 !important;
+                    border-color: #545B62 !important;
+                }
+            }
+
+            &.cc-btn-primary {
+                background-color: #007BFF !important;
+                border-color: #007BFF !important;
+                color: white !important;
+
+                &:hover {
+                    background-color: #0069D9 !important;
+                    border-color: #0062CC !important;
+                }
+            }
+        }
+    }
+}
+
+body #portal-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    pointer-events: none !important;
+    z-index: 1030 !important;
+}
+
+body .diversion-result-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    pointer-events: auto !important;
+    z-index: 1030 !important;
+    background-color: rgba(0, 0, 0, .5) !important;
+}
+
+body .diversion-result-modal > div {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    background-color: white !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .3) !important;
+    border: 1px solid #DEE2E6 !important;
+    max-width: 500px !important;
+    width: 500px !important;
 }

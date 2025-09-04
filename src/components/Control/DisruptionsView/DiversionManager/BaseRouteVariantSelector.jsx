@@ -12,6 +12,9 @@ const BaseRouteVariantSelector = ({
     visibility,
     onSelectVariant,
     onVisibilityChanged,
+    isRouteVariantDisabled,
+    isLoadingExistingDiversions,
+    existingDiversions,
 }) => (
     <div className="select-main-variant-container pl-4 pr-1">
         <p>
@@ -26,6 +29,9 @@ const BaseRouteVariantSelector = ({
                     routeVariants={ routeVariantsList }
                     selectedRouteVariant={ selectedRouteVariant }
                     onSelectVariant={ onSelectVariant }
+                    isRouteVariantDisabled={ isRouteVariantDisabled }
+                    isLoadingExistingDiversions={ isLoadingExistingDiversions }
+                    existingDiversions={ existingDiversions }
                 />
             </div>
             <FormGroup check>
@@ -54,12 +60,18 @@ BaseRouteVariantSelector.propTypes = {
     onSelectVariant: PropTypes.func.isRequired,
     visibility: PropTypes.bool,
     onVisibilityChanged: PropTypes.func.isRequired,
+    isRouteVariantDisabled: PropTypes.func,
+    isLoadingExistingDiversions: PropTypes.bool,
+    existingDiversions: PropTypes.array,
 };
 
 BaseRouteVariantSelector.defaultProps = {
     disabled: true,
     selectedRouteVariant: null,
     visibility: true,
+    isRouteVariantDisabled: null,
+    isLoadingExistingDiversions: false,
+    existingDiversions: [],
 };
 
 export default BaseRouteVariantSelector;

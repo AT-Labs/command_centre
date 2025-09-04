@@ -9,6 +9,9 @@ const AdditionalRouteVariantSelector = ({
     onSelectVariant,
     onVisibilityChange,
     onRouteVariantRemoved,
+    isRouteVariantDisabled,
+    isLoadingExistingDiversions,
+    existingDiversions,
 }) => (
     <div>
         <p>
@@ -20,6 +23,9 @@ const AdditionalRouteVariantSelector = ({
                 className="route-variant-select"
                 routeVariants={ routeVariantsList }
                 onSelectVariant={ onSelectVariant }
+                isRouteVariantDisabled={ isRouteVariantDisabled }
+                isLoadingExistingDiversions={ isLoadingExistingDiversions }
+                existingDiversions={ existingDiversions }
             />
         </div>
         {selectedRouteVariants.map(routeVariant => (
@@ -58,6 +64,15 @@ AdditionalRouteVariantSelector.propTypes = {
     onSelectVariant: PropTypes.func.isRequired,
     onVisibilityChange: PropTypes.func.isRequired,
     onRouteVariantRemoved: PropTypes.func.isRequired,
+    isRouteVariantDisabled: PropTypes.func,
+    isLoadingExistingDiversions: PropTypes.bool,
+    existingDiversions: PropTypes.array,
+};
+
+AdditionalRouteVariantSelector.defaultProps = {
+    isRouteVariantDisabled: null,
+    isLoadingExistingDiversions: false,
+    existingDiversions: [],
 };
 
 export default AdditionalRouteVariantSelector;

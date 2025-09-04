@@ -7,6 +7,7 @@ import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import * as disruptionApi from '../../../../utils/transmitters/disruption-mgt-api';
+import * as tripMgtApi from '../../../../utils/transmitters/trip-mgt-api';
 import * as appSettings from '../../../selectors/appSettings';
 import ACTION_TYPE from '../../../action-types';
 import * as stopDetailActions from './stop';
@@ -331,6 +332,7 @@ describe('Stop detail actions', () => {
             arrivalStatus: undefined,
             numberOfCars: 6,
             occupancyStatus: null,
+            onHold: false,
         }];
         const expectedActions = [
             {
@@ -361,6 +363,9 @@ describe('Stop detail actions', () => {
 
             const fakeGetVehiclesByTripId = sandbox.fake.resolves(vehicles);
             const getVehiclesByTripId = sandbox.stub(ccRealtime, 'getVehiclesByTripId').callsFake(fakeGetVehiclesByTripId);
+
+            const fakeGetTrips = sandbox.fake.resolves({ tripInstances: [{ onHold: false }] });
+            const getTrips = sandbox.stub(tripMgtApi, 'getTrips').callsFake(fakeGetTrips);
 
             await store.dispatch(stopDetailActions.fetchPidInformation('stopCode', true));
             sandbox.assert.calledOnce(getDeparturesByStopCode);

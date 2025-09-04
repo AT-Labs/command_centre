@@ -2,7 +2,7 @@ import moment from 'moment';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
-import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap';
+import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
 import { toString, omit, some, isEmpty, uniqBy, uniqWith } from 'lodash-es';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { BsArrowRepeat } from 'react-icons/bs';
@@ -25,9 +25,7 @@ import {
     LABEL_START_DATE,
     LABEL_START_TIME,
     LABEL_STATUS,
-    LABEL_URL,
     TIME_FORMAT,
-    URL_MAX_LENGTH,
     LABEL_DURATION_HOURS,
     LABEL_DISRUPTION_NOTES,
     DESCRIPTION_NOTE_MAX_LENGTH,
@@ -81,20 +79,19 @@ import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import { ShapeLayer } from '../../../Common/Map/ShapeLayer/ShapeLayer';
 import { SelectedStopsMarker } from '../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import { DisruptionPassengerImpactGridModal } from './DisruptionPassengerImpactGridModal';
+import { ViewDiversionDetailModal } from './ViewDiversionDetailModal';
 import { usePassengerImpact } from '../../../../redux/selectors/appSettings';
+import { useDiversion, getDiversionsForDisruption } from '../../../../redux/selectors/control/diversions';
 
 const { STOP } = SEARCH_RESULT_TYPE;
-
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
     const { NONE, EDIT, COPY } = confirmationModalTypes;
-
+    const diversions = getDiversionsForDisruption(disruption?.disruptionId)(props.state) || [];
     const causes = useAlertCauses();
     const impacts = useAlertEffects();
-
     const formatEndDateFromEndTime = disruption.endTime ? moment(disruption.endTime).format(DATE_FORMAT) : '';
     const fetchEndDate = () => (disruption.recurrent ? fetchEndDateFromRecurrence(disruption.recurrencePattern) : formatEndDateFromEndTime);
-
     const [now] = useState(moment().second(0).millisecond(0));
     const [cause, setCause] = useState(disruption.cause);
     const [impact, setImpact] = useState(disruption.impact);
@@ -123,43 +120,35 @@ const DisruptionDetailView = (props) => {
     const [descriptionNote, setDescriptionNote] = useState('');
     const [lastNote, setLastNote] = useState();
     const [isViewPassengerImpactModalOpen, setIsViewPassengerImpactModalOpen] = useState(false);
-
+    const [isViewDiversionsModalOpen, setIsViewDiversionsModalOpen] = useState(false);
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqWith([...affectedRoutes, ...props.routes], (routeA, routeB) => routeA.routeId === routeB.routeId && routeA.stopCode === routeB.stopCode);
         const uniqStops = uniqWith([...affectedStops, ...props.stops], (stopA, stopB) => stopA.stopCode === stopB.stopCode && stopA.routeId === stopB.routeId);
-
         return uniqRoutes.length !== affectedRoutes.length || uniqStops.length !== affectedStops.length
             || uniqRoutes.length !== props.routes.length || uniqStops.length !== props.stops.length;
     };
-
     // A temporary solution to render the routes on the map. It will only render the first ten routes coming
     // in the array due to the high possibility of collapsing the static API.
     // This piece of code should be deleted when a better performance solution has been put in place.
-
     const affectedEntitiesWithoutShape = toString(disruption.affectedEntities.map(entity => omit(entity, ['shapeWkt'])));
     useEffect(() => {
         const affectedStops = disruption.affectedEntities.filter(entity => entity.type === 'stop');
         const affectedRoutes = disruption.affectedEntities.filter(entity => entity.type === 'route' || (entity.routeId && isEmpty(entity.stopCode)));
-
         if ((isEmpty(props.stops) && isEmpty(props.routes)) || haveRoutesOrStopsChanged(affectedRoutes, affectedStops)) {
             props.updateAffectedStopsState(affectedStops);
             props.updateAffectedRoutesState(affectedRoutes);
-
             const routesToGet = uniqBy([...affectedRoutes, ...affectedStops.filter(stop => stop.routeId)], item => item.routeId);
-
             if (routesToGet.length) {
                 props.getRoutesByShortName(routesToGet.slice(0, 10));
             }
         }
     }, [affectedEntitiesWithoutShape, disruption.affectedEntities]);
-
     useEffect(() => {
         const recurrenceDates = getRecurrenceDates(startDate, startTime, endDate);
         setRecurrencePattern({
             ...recurrencePattern,
             ...recurrenceDates,
         });
-
         const startDateTime = momentFromDateTime(startDate, startTime, now);
         if (startDateTime?.isValid() && status !== STATUSES.RESOLVED) {
             if (startDateTime.isAfter(now) && status === STATUSES.IN_PROGRESS) {
@@ -169,7 +158,6 @@ const DisruptionDetailView = (props) => {
             }
         }
     }, [startDate, startTime, endDate]);
-
     useEffect(() => {
         setIncidentNo(disruption.incidentNo);
         setHeader(disruption.header);
@@ -205,14 +193,12 @@ const DisruptionDetailView = (props) => {
         disruption.recurrent,
         disruption.duration,
     ]);
-
     useEffect(() => {
         if (!isRecurrenceDirty) {
             setRecurrencePattern(disruption.recurrencePattern);
             setActivePeriods(disruption.activePeriods);
         }
     }, [disruption.activePeriods]);
-
     const setDisruption = () => ({
         ...disruption,
         cause,
@@ -232,7 +218,6 @@ const DisruptionDetailView = (props) => {
         notes: [...notes, { description: descriptionNote }],
         severity,
     });
-
     useEffect(() => {
         setDescriptionNote('');
         const { notes: disruptionNotes } = disruption;
@@ -240,19 +225,14 @@ const DisruptionDetailView = (props) => {
             setLastNote(disruptionNotes[disruptionNotes.length - 1]);
         }
     }, [disruption.lastUpdatedTime, lastNote]);
-
     const handleUpdateDisruption = () => updateDisruption(setDisruption());
-
     const handleCopyDisruption = () => {
         props.openCopyDisruption(true, incidentNo);
-
         props.updateEditMode(EDIT_TYPE.COPY);
         props.updateDisruptionToEdit(setDisruption());
     };
-
     const setDisruptionStatus = (selectedStatus) => {
         setStatus(selectedStatus);
-
         if (disruption.status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.RESOLVED) {
             setStartDate(moment().format(DATE_FORMAT));
             setStartTime(moment().format(TIME_FORMAT));
@@ -270,57 +250,40 @@ const DisruptionDetailView = (props) => {
             setEndDate(moment().format(DATE_FORMAT));
             setEndTime(moment().format(TIME_FORMAT));
         }
-
         setIsRecurrenceDirty(true);
     };
-
     const isResolved = () => status === STATUSES.RESOLVED;
     const isEndDateTimeDisabled = () => status === STATUSES.RESOLVED;
     const isStartDateTimeDisabled = () => status === STATUSES.RESOLVED || (recurrent && disruption.status !== STATUSES.NOT_STARTED);
-
     const startTimeValid = () => {
         if (isStartDateTimeDisabled()) {
             return true;
         }
         return isStartTimeValid(startDate, startTime, now, recurrent);
     };
-
     const endTimeValid = () => {
         if (isEndDateTimeDisabled()) {
             return true;
         }
         return isEndTimeValid(endDate, endTime, startDate, startTime);
     };
-
     const endDateValid = () => {
         if (isEndDateTimeDisabled()) {
             return true;
         }
         return isEndDateValid(endDate, startDate, recurrent);
     };
-
     const startDateValid = () => {
         if (isStartDateTimeDisabled()) {
             return true;
         }
         return isStartDateValid(startDate, now, recurrent);
     };
-
-    const getOptionalLabel = label => (
-        <>
-            {label}
-            {' '}
-            <small className="text-muted">optional</small>
-        </>
-    );
-
     const causeAndImpactAreValid = causes.find(c => c.value === cause) && impacts.find(i => i.value === impact);
-
     const durationValid = () => isDurationValid(duration, recurrent);
     const isWeekdayRequiredButEmpty = recurrent && isEmpty(recurrencePattern.byweekday);
     const isPropsEmpty = some([cause, impact, status, header, severity], isEmpty) || isWeekdayRequiredButEmpty;
     const isUpdating = isRequesting && resultDisruptionId === disruption.disruptionId;
-
     const isViewAllDisabled = isWeekdayRequiredButEmpty || !startTimeValid() || !startDateValid() || !endDateValid() || !durationValid();
     const isSaveDisabled = (
         isUpdating
@@ -328,13 +291,11 @@ const DisruptionDetailView = (props) => {
         || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid()
         || !endDateValid() || !durationValid() || !causeAndImpactAreValid);
     const isDiversionUploadDisabled = isUpdating || isPropsEmpty || !isUrlValid(url) || !startTimeValid() || !startDateValid() || !endTimeValid() || !endDateValid();
-
     const editRoutesAndStops = () => {
         props.updateEditMode(EDIT_TYPE.EDIT);
         props.openCreateDisruption(true);
         props.updateDisruptionToEdit(setDisruption());
     };
-
     const minEndDate = () => {
         if (!recurrent) {
             return startDate;
@@ -343,14 +304,12 @@ const DisruptionDetailView = (props) => {
     };
     const datePickerOptionsStartDate = getDatePickerOptions(isStartDateTimeDisabled() || !recurrent ? undefined : 'today');
     const datePickerOptionsEndDate = getDatePickerOptions(isEndDateTimeDisabled() ? undefined : minEndDate());
-
     const displayActivePeriods = () => {
         if (isRecurrenceDirty) {
             setActivePeriods(calculateActivePeriods(recurrencePattern, duration, disruption.activePeriods, isResolved()));
         }
         setActivePeriodsModalOpen(true);
     };
-
     const confirmationModalProps = {
         [NONE]: {
             title: 'title',
@@ -382,9 +341,7 @@ const DisruptionDetailView = (props) => {
             },
         },
     };
-
     const activeConfirmationModalProps = confirmationModalProps[isAlertModalOpen];
-
     return (
         <Form className={ props.className }>
             <div className={ `row position-relative ${props.className === 'magnify' ? 'mr-0' : ''}` }>
@@ -403,6 +360,18 @@ const DisruptionDetailView = (props) => {
                     viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                     showViewPassengerImpactButton={ props.usePassengerImpact }
                     viewPassengerImpactAction={ () => setIsViewPassengerImpactModalOpen(true) }
+                    addDiversionAction={ () => {
+                        props.openCreateDisruption(true);
+                        props.updateEditMode(EDIT_TYPE.CREATE);
+                        props.updateAffectedRoutesState([]);
+                        props.updateAffectedStopsState([]);
+                    } }
+                    viewDiversionsAction={ () => setIsViewDiversionsModalOpen(true) }
+                    diversions={ diversions }
+                    startTime={ disruption.startTime }
+                    endTime={ disruption.endTime }
+                    disruptionStatus={ disruption.status }
+                    useDiversion={ props.useDiversion }
                 />
                 <section className="position-relative w-50 d-flex disruption-detail__map">
                     <Map
@@ -591,23 +560,6 @@ const DisruptionDetailView = (props) => {
                     <div className="row">
                         <div className="col-6">
                             <FormGroup className="mt-2">
-                                <Label for="disruption-detail__url">
-                                    <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
-                                </Label>
-                                <Input id="disruption-detail__url"
-                                    className="border border-dark"
-                                    value={ url }
-                                    disabled={ isResolved() }
-                                    onChange={ e => setUrl(e.currentTarget.value) }
-                                    placeholder="e.g. https://at.govt.nz"
-                                    maxLength={ URL_MAX_LENGTH }
-                                    invalid={ !isUrlValid(url) }
-                                />
-                                <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
-                            </FormGroup>
-                        </div>
-                        <div className="col-6">
-                            <FormGroup className="mt-2">
                                 <DisruptionDetailSelect
                                     id="disruption-detail__severity"
                                     value={ severity }
@@ -653,14 +605,12 @@ const DisruptionDetailView = (props) => {
                     )}
                 </section>
             </div>
-
             <DiversionUpload
                 disruption={ disruption }
                 disabled={ isDiversionUploadDisabled }
                 uploadDisruptionFiles={ props.uploadDisruptionFiles }
                 deleteDisruptionFile={ props.deleteDisruptionFile }
             />
-
             <div className="row">
                 <div className="col-5 disruption-detail__contributors">
                     <LastNoteView label={ LABEL_LAST_NOTE } note={ lastNote } id="disruption-detail__last-note-view" />
@@ -761,10 +711,14 @@ const DisruptionDetailView = (props) => {
                     isOpen={ isViewPassengerImpactModalOpen }
                 />
             ) }
+            <ViewDiversionDetailModal
+                disruption={ disruption }
+                onClose={ () => setIsViewDiversionsModalOpen(false) }
+                isOpen={ isViewDiversionsModalOpen }
+            />
         </Form>
     );
 };
-
 DisruptionDetailView.propTypes = {
     disruption: PropTypes.object.isRequired,
     updateDisruption: PropTypes.func.isRequired,
@@ -787,16 +741,17 @@ DisruptionDetailView.propTypes = {
     className: PropTypes.string,
     boundsToFit: PropTypes.array.isRequired,
     usePassengerImpact: PropTypes.bool.isRequired,
+    useDiversion: PropTypes.bool.isRequired,
+    state: PropTypes.object,
 };
-
 DisruptionDetailView.defaultProps = {
     shapes: [],
     isLoading: false,
     resultDisruptionId: null,
     routeColors: [],
     className: '',
+    state: {},
 };
-
 export default connect(state => ({
     shapes: getShapes(state),
     isLoading: getDisruptionsLoadingState(state),
@@ -805,6 +760,8 @@ export default connect(state => ({
     stops: getAffectedStops(state),
     boundsToFit: getBoundsToFit(state),
     usePassengerImpact: usePassengerImpact(state),
+    useDiversion: useDiversion(state),
+    state,
 }), {
     getRoutesByShortName,
     openCreateDisruption,
