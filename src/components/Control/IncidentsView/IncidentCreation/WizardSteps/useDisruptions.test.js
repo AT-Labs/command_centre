@@ -90,7 +90,7 @@ describe('useDisruptions', () => {
     it('should update disruptions map when disruptions change', () => {
         const { result, rerender } = renderHook(
             ({ disruptions }) => useDisruptions(disruptions),
-            { initialProps: { disruptions: mockDisruptions } }
+            { initialProps: { disruptions: mockDisruptions } },
         );
 
         const firstMap = result.current.disruptionsMap;
@@ -108,4 +108,4 @@ describe('useDisruptions', () => {
             'new-key': { key: 'new-key', impact: 'NEW_IMPACT' },
         });
     });
-}); 
+});

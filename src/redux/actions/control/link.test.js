@@ -1,9 +1,9 @@
-import configureMockStore from "redux-mock-store";
-import thunk from "redux-thunk";
-import sinon from "sinon";
-import chai, { expect } from "chai";
-import sinonChai from "sinon-chai";
-import MockDate from "mockdate";
+import configureMockStore from 'redux-mock-store';
+import thunk from 'redux-thunk';
+import sinon from 'sinon';
+import chai, { expect } from 'chai';
+import sinonChai from 'sinon-chai';
+import MockDate from 'mockdate';
 
 import {
     goToRoutesView,
@@ -11,10 +11,10 @@ import {
     goToDisruptionsView,
     goToDisruptionEditPage,
     goToIncidentsView,
-} from "./link";
-import * as tripMgtApi from "../../../utils/transmitters/trip-mgt-api";
-import ACTION_TYPE from "../../action-types";
-import VIEW_TYPE from "../../../types/view-types";
+} from './link';
+import * as tripMgtApi from '../../../utils/transmitters/trip-mgt-api';
+import ACTION_TYPE from '../../action-types';
+import VIEW_TYPE from '../../../types/view-types';
 
 chai.use(sinonChai);
 
@@ -43,75 +43,75 @@ const mockTrips = {
     totalCount: 2,
     tripInstances: [
         {
-            tripId: "1",
-            serviceDate: "20190608",
-            startTime: "10:00:00",
-            routeShortName: "10",
+            tripId: '1',
+            serviceDate: '20190608',
+            startTime: '10:00:00',
+            routeShortName: '10',
             routeType: 3,
-            status: "COMPLETED",
+            status: 'COMPLETED',
         },
         {
-            tripId: "2",
-            serviceDate: "20190608",
-            startTime: "10:00:00",
-            routeShortName: "20",
+            tripId: '2',
+            serviceDate: '20190608',
+            startTime: '10:00:00',
+            routeShortName: '20',
             routeType: 3,
-            status: "NOT_STARTED",
+            status: 'NOT_STARTED',
         },
     ],
     _links: {
         permissions: [
             {
-                _rel: "cancel",
+                _rel: 'cancel',
             },
             {
-                _rel: "copy",
+                _rel: 'copy',
             },
             {
-                _rel: "delay",
+                _rel: 'delay',
             },
             {
-                _rel: "view",
+                _rel: 'view',
             },
             {
-                _rel: "advancer",
+                _rel: 'advancer',
             },
             {
-                _rel: "recurrent_cancel",
+                _rel: 'recurrent_cancel',
             },
             {
-                _rel: "new",
+                _rel: 'new',
             },
         ],
     },
 };
 const mockTrip = {
-    agencyId: "",
-    routeVariantId: "11111",
+    agencyId: '',
+    routeVariantId: '11111',
     routeType: 2,
-    routeShortName: "EAST",
-    startTime: "06:00:00",
+    routeShortName: 'EAST',
+    startTime: '06:00:00',
 };
 const mockStoreTrips = {
-    "1-20190608-10:00:00": {
-        tripId: "1",
-        serviceDate: "20190608",
-        startTime: "10:00:00",
-        routeShortName: "10",
+    '1-20190608-10:00:00': {
+        tripId: '1',
+        serviceDate: '20190608',
+        startTime: '10:00:00',
+        routeShortName: '10',
         routeType: 3,
-        status: "COMPLETED",
+        status: 'COMPLETED',
     },
-    "2-20190608-10:00:00": {
-        tripId: "2",
-        serviceDate: "20190608",
-        startTime: "10:00:00",
-        routeShortName: "20",
+    '2-20190608-10:00:00': {
+        tripId: '2',
+        serviceDate: '20190608',
+        startTime: '10:00:00',
+        routeShortName: '20',
         routeType: 3,
-        status: "NOT_STARTED",
+        status: 'NOT_STARTED',
     },
 };
 
-describe("Link actions", () => {
+describe('Link actions', () => {
     before(() => {
         MockDate.set(new Date(Date.UTC(2023, 2, 1, 0, 0, 0)));
     });
@@ -129,9 +129,9 @@ describe("Link actions", () => {
         MockDate.reset();
     });
 
-    it("when going from Blocks to R&T, updates the link and sets the route filters", async () => {
+    it('when going from Blocks to R&T, updates the link and sets the route filters', async () => {
         const fakeGetTrips = sandbox.fake.resolves(mockTrips);
-        sandbox.stub(tripMgtApi, "getTrips").callsFake(fakeGetTrips);
+        sandbox.stub(tripMgtApi, 'getTrips').callsFake(fakeGetTrips);
 
         const expectedActions = [
             {
@@ -174,16 +174,16 @@ describe("Link actions", () => {
                 type: ACTION_TYPE.MERGE_CONTROL_ROUTES_FILTERS,
                 payload: {
                     filters: {
-                        agencyId: "",
+                        agencyId: '',
                         depotIds: [],
                         routeType: mockTrip.routeType,
                         isGroupedByRoute: true,
                         isGroupedByRouteVariant: true,
-                        startTimeFrom: "",
-                        startTimeTo: "",
-                        tripStatus: "",
-                        routeShortName: "",
-                        routeVariantId: "",
+                        startTimeFrom: '',
+                        startTimeTo: '',
+                        tripStatus: '',
+                        routeShortName: '',
+                        routeVariantId: '',
                     },
                 },
             },
@@ -193,9 +193,9 @@ describe("Link actions", () => {
                     filterModel: {
                         items: [
                             {
-                                columnField: "startTime",
-                                operatorValue: "onOrAfter",
-                                value: "",
+                                columnField: 'startTime',
+                                operatorValue: 'onOrAfter',
+                                value: '',
                             },
                         ],
                     },
@@ -220,7 +220,7 @@ describe("Link actions", () => {
                         limit: undefined,
                         page: NaN,
                         routeType: 3,
-                        serviceDate: "20230301",
+                        serviceDate: '20230301',
                         sorting: undefined,
                     },
                 },
@@ -243,25 +243,25 @@ describe("Link actions", () => {
                 payload: {
                     permissions: [
                         {
-                            _rel: "cancel",
+                            _rel: 'cancel',
                         },
                         {
-                            _rel: "copy",
+                            _rel: 'copy',
                         },
                         {
-                            _rel: "delay",
+                            _rel: 'delay',
                         },
                         {
-                            _rel: "view",
+                            _rel: 'view',
                         },
                         {
-                            _rel: "advancer",
+                            _rel: 'advancer',
                         },
                         {
-                            _rel: "recurrent_cancel",
+                            _rel: 'recurrent_cancel',
                         },
                         {
-                            _rel: "new",
+                            _rel: 'new',
                         },
                     ],
                 },
@@ -274,18 +274,18 @@ describe("Link actions", () => {
                 routeType: mockTrip.routeType,
                 isGroupedByRoute: true,
                 isGroupedByRouteVariant: true,
-                startTimeFrom: "",
-                startTimeTo: "",
-                tripStatus: "",
-                routeShortName: "",
-                routeVariantId: "",
-            })
+                startTimeFrom: '',
+                startTimeTo: '',
+                tripStatus: '',
+                routeShortName: '',
+                routeVariantId: '',
+            }),
         );
         const actions = store.getActions();
         expect(actions).to.eql(expectedActions);
     });
 
-    it("when going from R&T to Blocks, updates the link", async () => {
+    it('when going from R&T to Blocks, updates the link', async () => {
         const expectedActions = [
             {
                 type: ACTION_TYPE.UPDATE_TRIP_CROSS_LINK,
@@ -305,9 +305,9 @@ describe("Link actions", () => {
         expect(store.getActions()).to.eql(expectedActions);
     });
 
-    it("when going from Messaging to Disruptions, updates the link", async () => {
+    it('when going from Messaging to Disruptions, updates the link', async () => {
         const message = {
-            incidentId: "DISR00644",
+            incidentId: 'DISR00644',
         };
 
         const expectedActions = [
@@ -327,14 +327,14 @@ describe("Link actions", () => {
         ];
 
         await store.dispatch(
-            goToDisruptionsView(message, { setActiveDisruption: false })
+            goToDisruptionsView(message, { setActiveDisruption: false }),
         );
         expect(store.getActions()).to.eql(expectedActions);
     });
 
-    it("when going from Messaging to Disruptions(with an active disruption), updates the link", async () => {
+    it('when going from Messaging to Disruptions(with an active disruption), updates the link', async () => {
         const message = {
-            incidentId: "DISR00643",
+            incidentId: 'DISR00643',
         };
 
         const expectedActions = [
@@ -369,15 +369,15 @@ describe("Link actions", () => {
         ];
 
         await store.dispatch(
-            goToDisruptionsView(message, { setActiveDisruption: true })
+            goToDisruptionsView(message, { setActiveDisruption: true }),
         );
         expect(store.getActions()).to.eql(expectedActions);
     });
 
-    it("goToDisruptionEditPage", () => {
-        const disruptionId = "123456789";
+    it('goToDisruptionEditPage', () => {
+        const disruptionId = '123456789';
         const message = {
-            disruptionId: disruptionId,
+            disruptionId,
         };
         const expectedActions = [
             {
@@ -418,17 +418,17 @@ describe("Link actions", () => {
 
         store.dispatch(
             goToDisruptionEditPage(
-                { disruptionId: disruptionId },
-                { setActiveDisruption: true }
-            )
+                { disruptionId },
+                { setActiveDisruption: true },
+            ),
         );
         expect(store.getActions()).to.eql(expectedActions);
     });
 
-    it("goToDisruptionEditPage with setActiveDisruption false", () => {
-        const disruptionId = "123456789";
+    it('goToDisruptionEditPage with setActiveDisruption false', () => {
+        const disruptionId = '123456789';
         const message = {
-            disruptionId: disruptionId,
+            disruptionId,
         };
         const expectedActions = [
             {
@@ -454,15 +454,15 @@ describe("Link actions", () => {
 
         store.dispatch(
             goToDisruptionEditPage(
-                { disruptionId: disruptionId },
-                { setActiveDisruption: false }
-            )
+                { disruptionId },
+                { setActiveDisruption: false },
+            ),
         );
         expect(store.getActions()).to.eql(expectedActions);
     });
 
-    it("goToIncidentsView", () => {
-        const incidentDisruptionNo = "DISR00644";
+    it('goToIncidentsView', () => {
+        const incidentDisruptionNo = 'DISR00644';
         const expectedActions = [
             {
                 type: ACTION_TYPE.UPDATE_MAIN_VIEW,
@@ -492,14 +492,14 @@ describe("Link actions", () => {
         store.dispatch(
             goToIncidentsView(
                 { incidentDisruptionNo },
-                { setActiveIncident: true }
-            )
+                { setActiveIncident: true },
+            ),
         );
         expect(store.getActions()).to.eql(expectedActions);
     });
 
-    it("goToIncidentsView with setActiveIncident false", () => {
-        const incidentDisruptionNo = "DISR00644";
+    it('goToIncidentsView with setActiveIncident false', () => {
+        const incidentDisruptionNo = 'DISR00644';
         const expectedActions = [
             {
                 type: ACTION_TYPE.UPDATE_MAIN_VIEW,
@@ -518,8 +518,8 @@ describe("Link actions", () => {
         store.dispatch(
             goToIncidentsView(
                 { incidentDisruptionNo },
-                { setActiveIncident: false }
-            )
+                { setActiveIncident: false },
+            ),
         );
         expect(store.getActions()).to.eql(expectedActions);
     });

@@ -9,7 +9,7 @@ import {
     fetchTripInstances, clearActiveTripInstanceId, updateActiveTripInstanceId, collectTripsDataAndUpdateTripsStatus,
     updateTripInstanceStatus, updateTripInstanceStopStatus, updateTripInstanceStopPlatform, updateTripInstanceDelay, filterTripInstances, updateDestination,
     updateEnabledAddTripModal, updateCurrentStepHandler, updateAddTripDatagridConfig, updateSelectedAddTrip, resetAddTripStep,
-    getFilters, updateTripInstanceOperationNotes, bulkUpdateTripsOperationNotes
+    getFilters, updateTripInstanceOperationNotes, bulkUpdateTripsOperationNotes,
 } from './trip-instances';
 import * as tripMgtApi from '../../../../utils/transmitters/trip-mgt-api';
 import * as blockMgtApi from '../../../../utils/transmitters/block-mgt-api';
@@ -44,28 +44,28 @@ const mockTrips = {
     _links: {
         permissions: [
             {
-                _rel: "cancel"
+                _rel: 'cancel',
             },
             {
-                _rel: "copy"
+                _rel: 'copy',
             },
             {
-                _rel: "delay"
+                _rel: 'delay',
             },
             {
-                _rel: "view"
+                _rel: 'view',
             },
             {
-                _rel: "advancer"
+                _rel: 'advancer',
             },
             {
-                _rel: "recurrent_cancel"
+                _rel: 'recurrent_cancel',
             },
             {
-                _rel: "new"
-            }
-        ]
-    }
+                _rel: 'new',
+            },
+        ],
+    },
 };
 
 const mockStoreTrips = {
@@ -161,27 +161,27 @@ describe('Trip instances actions', () => {
                 payload: {
                     permissions: [
                         {
-                            _rel: "cancel"
+                            _rel: 'cancel',
                         },
                         {
-                            _rel: "copy"
+                            _rel: 'copy',
                         },
                         {
-                            _rel: "delay"
+                            _rel: 'delay',
                         },
                         {
-                            _rel: "view"
+                            _rel: 'view',
                         },
                         {
-                            _rel: "advancer"
+                            _rel: 'advancer',
                         },
                         {
-                            _rel: "recurrent_cancel"
+                            _rel: 'recurrent_cancel',
                         },
                         {
-                            _rel: "new"
-                        }
-                    ]
+                            _rel: 'new',
+                        },
+                    ],
                 },
             },
         ];
@@ -240,27 +240,27 @@ describe('Trip instances actions', () => {
                 payload: {
                     permissions: [
                         {
-                            _rel: "cancel"
+                            _rel: 'cancel',
                         },
                         {
-                            _rel: "copy"
+                            _rel: 'copy',
                         },
                         {
-                            _rel: "delay"
+                            _rel: 'delay',
                         },
                         {
-                            _rel: "view"
+                            _rel: 'view',
                         },
                         {
-                            _rel: "advancer"
+                            _rel: 'advancer',
                         },
                         {
-                            _rel: "recurrent_cancel"
+                            _rel: 'recurrent_cancel',
                         },
                         {
-                            _rel: "new"
-                        }
-                    ]
+                            _rel: 'new',
+                        },
+                    ],
                 },
             },
         ];
@@ -324,27 +324,27 @@ describe('Trip instances actions', () => {
                 payload: {
                     permissions: [
                         {
-                            _rel: "cancel"
+                            _rel: 'cancel',
                         },
                         {
-                            _rel: "copy"
+                            _rel: 'copy',
                         },
                         {
-                            _rel: "delay"
+                            _rel: 'delay',
                         },
                         {
-                            _rel: "view"
+                            _rel: 'view',
                         },
                         {
-                            _rel: "advancer"
+                            _rel: 'advancer',
                         },
                         {
-                            _rel: "recurrent_cancel"
+                            _rel: 'recurrent_cancel',
                         },
                         {
-                            _rel: "new"
-                        }
-                    ]
+                            _rel: 'new',
+                        },
+                    ],
                 },
             },
             {
@@ -458,13 +458,13 @@ describe('Trip instances actions', () => {
         const fakeGetTrips = sandbox.fake.resolves(mockTrips);
         sandbox.stub(tripMgtApi, 'getTrips').callsFake(fakeGetTrips);
         const operateTrips = {
-            [mockTrip.tripId]:{
-            tripId: mockTrip.tripId,
-            serviceDate: '20190608',
-            startTime: '10:00:00',
-            tripStatus: mockTrip.status,
-            routeType: mockTrip.routeType,
-        }};
+            [mockTrip.tripId]: {
+                tripId: mockTrip.tripId,
+                serviceDate: '20190608',
+                startTime: '10:00:00',
+                tripStatus: mockTrip.status,
+                routeType: mockTrip.routeType,
+            } };
         const selectedTrips = operateTrips;
         const recurrenceSetting = {
             startDate: '08/06/2019',
@@ -500,7 +500,7 @@ describe('Trip instances actions', () => {
             },
             {
                 type: ACTION_TYPE.UPDATE_CONTROL_SELECTED_TRIPS,
-                payload: { selectedTripsUpdate: [mockTrip]},
+                payload: { selectedTripsUpdate: [mockTrip] },
             },
         ];
 
@@ -513,21 +513,21 @@ describe('Trip instances actions', () => {
         sandbox.stub(tripMgtApi, 'updateStopStatus').callsFake(fakeUpdateStopStatus);
 
         const testCases = [
-            { description: 'without display', options: { display: undefined }, id: 'actionResult3',},
-            { description: 'with display: true', options: { display: true }, id: 'actionResult4', },
+            { description: 'without display', options: { display: undefined }, id: 'actionResult3' },
+            { description: 'with display: true', options: { display: true }, id: 'actionResult4' },
         ];
-    
-        for (const { description, options: displayOption, id } of testCases) {
+
+        await Promise.all(testCases.map(async ({ description, options: displayOption, id }) => {
             const baseOptions = {
                 tripId: mockTrip.tripId,
                 serviceDate: '20190608',
                 startTime: '10:00:00',
                 ...displayOption,
             };
-    
+
             const successMessage = 'success';
             const tripInstanceId = getTripInstanceId(mockTrip);
-    
+
             const expectedActions = [
                 {
                     type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
@@ -552,17 +552,17 @@ describe('Trip instances actions', () => {
                     payload: { tripId: tripInstanceId, isLoading: false },
                 },
             ];
-    
+
             store.clearActions();
-    
+
             await store.dispatch(
-                updateTripInstanceStopStatus(baseOptions, successMessage, MESSAGE_ACTION_TYPES.bulkStopStatusUpdate, 'errorMessage')
+                updateTripInstanceStopStatus(baseOptions, successMessage, MESSAGE_ACTION_TYPES.bulkStopStatusUpdate, 'errorMessage'),
             );
-    
+
             expect(store.getActions(), `Failed case: ${description}`).to.eql(expectedActions);
-        }
+        }));
     });
-    
+
     it('updates trip delay', async () => {
         const fakeUpdateTripDelay = sandbox.fake.resolves(mockTrip);
         sandbox.stub(tripMgtApi, 'updateTripDelay').callsFake(fakeUpdateTripDelay);
@@ -608,7 +608,7 @@ describe('Trip instances actions', () => {
             tripId: mockTrip.tripId,
             serviceDate: '20190608',
             startTime: '10:00:00',
-            stopId: '9102-40006383'
+            stopId: '9102-40006383',
         };
         const successMessage = 'success';
         const tripInstanceId = getTripInstanceId(mockTrip);
@@ -675,7 +675,7 @@ describe('Trip instances actions', () => {
             tripId: mockTrip.tripId,
             serviceDate: '20190608',
             startTime: '10:00:00',
-            operationNotes: "this is a note"
+            operationNotes: 'this is a note',
         };
         const successMessage = 'success';
         const errorMessage = 'error';
@@ -713,20 +713,20 @@ describe('Trip instances actions', () => {
     it('bulk updates trips operation notes', async () => {
         const fakeUpdateTripNotes = sandbox.fake.resolves(mockTrip);
         sandbox.stub(tripMgtApi, 'updateTripOperationNotes').callsFake(fakeUpdateTripNotes);
-        
+
         const operateTrips = {
             [mockTrip.tripId]: {
                 tripId: mockTrip.tripId,
                 serviceDate: '20190608',
                 startTime: '10:00:00',
-            }
+            },
         };
-        
+
         const successMessage = 'Operation notes successfully updated';
         const errorMessage = 'Failed to update operation notes';
         const operationNotes = 'This is a bulk update test note';
         const tripInstanceId = getTripInstanceId(mockTrip);
-    
+
         const expectedActions = [
             {
                 type: ACTION_TYPE.UPDATE_TRIP_INSTANCE_ACTION_LOADING,
@@ -751,12 +751,12 @@ describe('Trip instances actions', () => {
                 payload: { tripId: tripInstanceId, isLoading: false },
             },
         ];
-    
+
         await store.dispatch(bulkUpdateTripsOperationNotes(operateTrips, successMessage, errorMessage, operationNotes));
-        
+
         expect(store.getActions()).to.eql(expectedActions);
         expect(fakeUpdateTripNotes).to.have.been.calledWith({
-            operationNotes: operationNotes,
+            operationNotes,
             tripId: mockTrip.tripId,
             serviceDate: '20190608',
             startTime: '10:00:00',
@@ -784,25 +784,25 @@ describe('Trip instances actions', () => {
                         depotIds: undefined,
                         tripStatus: undefined,
                         serviceDate: '20230320',
-                        startTimeFrom: "21:00",
-                        startTimeTo: "23:00",
-                        endTime: "24:00",
-                        endTimeFrom: "22:00",
-                        endTimeTo: "24:00",
-                        vehicleLabel: ["Label_Test"],
-                        vehicleLabels: ["Label_Test"],
-                        referenceId: ["9111"],
-                        referenceIds: ["9111"],
-                        trackingStatus: ["STOPPED"],
-                        trackingStatuses: ["STOPPED"],
-                        tripId: ["1327-86502-75600-2-96e917d1"],
-                        tripIds: ["1327-86502-75600-2-96e917d1"],
-                        source: "manual",
+                        startTimeFrom: '21:00',
+                        startTimeTo: '23:00',
+                        endTime: '24:00',
+                        endTimeFrom: '22:00',
+                        endTimeTo: '24:00',
+                        vehicleLabel: ['Label_Test'],
+                        vehicleLabels: ['Label_Test'],
+                        referenceId: ['9111'],
+                        referenceIds: ['9111'],
+                        trackingStatus: ['STOPPED'],
+                        trackingStatuses: ['STOPPED'],
+                        tripId: ['1327-86502-75600-2-96e917d1'],
+                        tripIds: ['1327-86502-75600-2-96e917d1'],
+                        source: 'manual',
                         page: 1,
                         limit: 15,
                         sorting: {
-                          sortBy: 'startTime',
-                          order: 'asc',
+                            sortBy: 'startTime',
+                            order: 'asc',
                         },
                     },
                 },
@@ -825,27 +825,27 @@ describe('Trip instances actions', () => {
                 payload: {
                     permissions: [
                         {
-                            _rel: "cancel"
+                            _rel: 'cancel',
                         },
                         {
-                            _rel: "copy"
+                            _rel: 'copy',
                         },
                         {
-                            _rel: "delay"
+                            _rel: 'delay',
                         },
                         {
-                            _rel: "view"
+                            _rel: 'view',
                         },
                         {
-                            _rel: "advancer"
+                            _rel: 'advancer',
                         },
                         {
-                            _rel: "recurrent_cancel"
+                            _rel: 'recurrent_cancel',
                         },
                         {
-                            _rel: "new"
-                        }
-                    ]
+                            _rel: 'new',
+                        },
+                    ],
                 },
             },
         ];
@@ -855,8 +855,8 @@ describe('Trip instances actions', () => {
                 routes: {
                     filters: {
                         routeType: 3,
-                        startTimeFrom: "21:00",
-                        startTimeTo: "23:00",
+                        startTimeFrom: '21:00',
+                        startTimeTo: '23:00',
                     },
                     tripInstances: {},
                 },
@@ -873,45 +873,45 @@ describe('Trip instances actions', () => {
                     density: 'standard',
                     routeSelection: '',
                     filterModel: { items: [{
-                        columnField: "endTime",
-                        operatorValue: "onOrAfter",
+                        columnField: 'endTime',
+                        operatorValue: 'onOrAfter',
                         id: 14456,
-                        value: "22:00"
-                    },{
-                        columnField: "endTime",
-                        operatorValue: "onOrBefore",
+                        value: '22:00',
+                    }, {
+                        columnField: 'endTime',
+                        operatorValue: 'onOrBefore',
                         id: 24456,
-                        value: "24:00"
-                    },{
-                        columnField: "vehicleLabel",
-                        operatorValue: "isAnyOf",
+                        value: '24:00',
+                    }, {
+                        columnField: 'vehicleLabel',
+                        operatorValue: 'isAnyOf',
                         id: 55123,
-                        value: ["Label_Test"]
-                    },{
-                        columnField: "referenceId",
-                        operatorValue: "isAnyOf",
+                        value: ['Label_Test'],
+                    }, {
+                        columnField: 'referenceId',
+                        operatorValue: 'isAnyOf',
                         id: 44512,
-                        value: ["9111"]
-                    },{
-                        columnField: "tripId",
-                        operatorValue: "isAnyOf",
+                        value: ['9111'],
+                    }, {
+                        columnField: 'tripId',
+                        operatorValue: 'isAnyOf',
                         id: 41345,
-                        value: ["1327-86502-75600-2-96e917d1"]
-                    },{
-                        columnField: "trackingStatus",
-                        operatorValue: "isAnyOf",
+                        value: ['1327-86502-75600-2-96e917d1'],
+                    }, {
+                        columnField: 'trackingStatus',
+                        operatorValue: 'isAnyOf',
                         id: 37471,
-                        value: ["STOPPED"]
-                    },{
-                        columnField: "source",
-                        operatorValue: "is",
+                        value: ['STOPPED'],
+                    }, {
+                        columnField: 'source',
+                        operatorValue: 'is',
                         id: 54423,
-                        value: "manual"
+                        value: 'manual',
                     }],
                     linkOperator: 'and' },
                     pinnedColumns: { right: ['__detail_panel_toggle__'] },
                 },
-            }
+            },
         });
 
         await storeWithFilter.dispatch(filterTripInstances());
@@ -946,8 +946,8 @@ describe('Trip instances actions', () => {
                         page: 1,
                         limit: 15,
                         sorting: {
-                          sortBy: 'startTime',
-                          order: 'asc',
+                            sortBy: 'startTime',
+                            order: 'asc',
                         },
                     },
                 },
@@ -970,27 +970,27 @@ describe('Trip instances actions', () => {
                 payload: {
                     permissions: [
                         {
-                            _rel: "cancel"
+                            _rel: 'cancel',
                         },
                         {
-                            _rel: "copy"
+                            _rel: 'copy',
                         },
                         {
-                            _rel: "delay"
+                            _rel: 'delay',
                         },
                         {
-                            _rel: "view"
+                            _rel: 'view',
                         },
                         {
-                            _rel: "advancer"
+                            _rel: 'advancer',
                         },
                         {
-                            _rel: "recurrent_cancel"
+                            _rel: 'recurrent_cancel',
                         },
                         {
-                            _rel: "new"
-                        }
-                    ]
+                            _rel: 'new',
+                        },
+                    ],
                 },
             },
         ];
@@ -1054,8 +1054,8 @@ describe('Trip instances actions', () => {
                         page: 1,
                         limit: 15,
                         sorting: {
-                          sortBy: 'startTime',
-                          order: 'asc',
+                            sortBy: 'startTime',
+                            order: 'asc',
                         },
                     },
                 },
@@ -1078,27 +1078,27 @@ describe('Trip instances actions', () => {
                 payload: {
                     permissions: [
                         {
-                            _rel: "cancel"
+                            _rel: 'cancel',
                         },
                         {
-                            _rel: "copy"
+                            _rel: 'copy',
                         },
                         {
-                            _rel: "delay"
+                            _rel: 'delay',
                         },
                         {
-                            _rel: "view"
+                            _rel: 'view',
                         },
                         {
-                            _rel: "advancer"
+                            _rel: 'advancer',
                         },
                         {
-                            _rel: "recurrent_cancel"
+                            _rel: 'recurrent_cancel',
                         },
                         {
-                            _rel: "new"
-                        }
-                    ]
+                            _rel: 'new',
+                        },
+                    ],
                 },
             },
         ];
@@ -1153,18 +1153,18 @@ describe('Trip instances actions', () => {
 
         const expectedActions = [
             {
-              type: 'update_trip_instance_action_loading',
-              payload: { tripId: 'trip-id-1-20230101-10:00:00', isLoading: true }
+                type: 'update_trip_instance_action_loading',
+                payload: { tripId: 'trip-id-1-20230101-10:00:00', isLoading: true },
             },
             {
-              type: 'deselect-control-all-stops-by-trip',
-              payload: { tripInstance: trip }
-            }
-        ]
+                type: 'deselect-control-all-stops-by-trip',
+                payload: { tripInstance: trip },
+            },
+        ];
 
         const options = { ...trip, headsign: 'new dest', stopCodes: ['9001', '9002'] };
 
-        await store.dispatch(updateDestination(options, "successMessage", trip));
+        await store.dispatch(updateDestination(options, 'successMessage', trip));
         expect(store.getActions()).to.eql(expectedActions);
     });
 
@@ -1172,31 +1172,31 @@ describe('Trip instances actions', () => {
         await store.dispatch(updateEnabledAddTripModal(true));
         expect(store.getActions()).to.eql(
             [
-                { type: 'open-add-trip-modal', payload: { isAddTripEnabled: true } }
-            ]
+                { type: 'open-add-trip-modal', payload: { isAddTripEnabled: true } },
+            ],
         );
-    })
+    });
 
     it('toggle off add trip model', async () => {
         await store.dispatch(updateEnabledAddTripModal(false));
         expect(store.getActions()).to.eql(
             [
-                { type: 'open-add-trip-modal', payload: { isAddTripEnabled: false } }
-            ]
+                { type: 'open-add-trip-modal', payload: { isAddTripEnabled: false } },
+            ],
         );
-    })
+    });
 
     it('update add trip step', async () => {
         await store.dispatch(updateCurrentStepHandler(1));
         expect(store.getActions()).to.eql(
             [
-                { type: 'update-current-step', payload: { activeStep: 1 } }
-            ]
+                { type: 'update-current-step', payload: { activeStep: 1 } },
+            ],
         );
-    })
+    });
 
     it('update add trip datagrid config', async () => {
-        const fakeConfigData =  {
+        const fakeConfigData = {
             columns: [],
             page: 0,
             pageSize: 15,
@@ -1208,31 +1208,31 @@ describe('Trip instances actions', () => {
         await store.dispatch(updateAddTripDatagridConfig(fakeConfigData));
         expect(store.getActions()).to.eql(
             [
-                { type: 'update-trip-instances-add-trip-datagrid-config', payload: fakeConfigData }
-            ]
+                { type: 'update-trip-instances-add-trip-datagrid-config', payload: fakeConfigData },
+            ],
         );
-    })
+    });
 
     it('update selected trip', async () => {
         await store.dispatch(updateSelectedAddTrip(mockTrip));
         expect(store.getActions()).to.eql(
             [
-                { type: 'update-trip-instances-selected-add-trip', payload: { selectedTrip: mockTrip } }
-            ]
+                { type: 'update-trip-instances-selected-add-trip', payload: { selectedTrip: mockTrip } },
+            ],
         );
-    })
+    });
 
     it('reset add trip step', async () => {
         await store.dispatch(resetAddTripStep());
         expect(store.getActions()).to.eql(
             [
-                { type: 'update-trip-instances-reset-add-trip-step' }
-            ]
+                { type: 'update-trip-instances-reset-add-trip-step' },
+            ],
         );
-    })
+    });
 });
 
-describe("getFilters", () => {
+describe('getFilters', () => {
     let mockState;
 
     beforeEach(() => {
@@ -1247,39 +1247,39 @@ describe("getFilters", () => {
 
     const testCases = [
         {
-            columnField: "disruptionId",
-            operatorValue: "is",
-            value: "12345",
-            expectedKey: "disruptionId",
-            expectedValue: "12345",
+            columnField: 'disruptionId',
+            operatorValue: 'is',
+            value: '12345',
+            expectedKey: 'disruptionId',
+            expectedValue: '12345',
         },
         {
-            columnField: "type",
-            operatorValue: "is",
-            value: "anything",
-            expectedKey: "isType",
-            expectedValue: "anything",
+            columnField: 'type',
+            operatorValue: 'is',
+            value: 'anything',
+            expectedKey: 'isType',
+            expectedValue: 'anything',
         },
         {
-            columnField: "type",
-            operatorValue: "not",
-            value: "anything",
-            expectedKey: "notType",
-            expectedValue: "anything",
+            columnField: 'type',
+            operatorValue: 'not',
+            value: 'anything',
+            expectedKey: 'notType',
+            expectedValue: 'anything',
         },
         {
-            columnField: "type",
-            operatorValue: "not",
+            columnField: 'type',
+            operatorValue: 'not',
             value: undefined, // We have to filter not empty or empty as well from the UI
-            expectedKey: "notType",
-            expectedValue: "",
+            expectedKey: 'notType',
+            expectedValue: '',
         },
         {
-            columnField: "directionId",
-            operatorValue: "is",
-            value: 'Inbound/Anticlockwise', 
-            expectedKey: "directionId",
-            expectedValue: "Inbound/Anticlockwise",
+            columnField: 'directionId',
+            operatorValue: 'is',
+            value: 'Inbound/Anticlockwise',
+            expectedKey: 'directionId',
+            expectedValue: 'Inbound/Anticlockwise',
         },
     ];
 
@@ -1293,6 +1293,6 @@ describe("getFilters", () => {
                 const result = getFilters(mockModel, mockState);
                 expect(result[expectedKey]).to.eql(expectedValue);
             });
-        }
+        },
     );
 });

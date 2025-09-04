@@ -1,7 +1,7 @@
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import {
-    getApplicationSettings
+    getApplicationSettings,
 } from './appSettings';
 
 const middlewares = [thunk];
@@ -27,14 +27,14 @@ describe('AppSettings Actions - Diversion Integration', () => {
                 json: () => Promise.resolve({
                     useEditEffectPanel: true,
                     useDiversion: true,
-                    useDisruptionNotePopup: false
-                })
+                    useDisruptionNotePopup: false,
+                }),
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
                 expect(actions[0]).toEqual({
-                    type: 'GET_APPLICATION_SETTINGS_REQUEST'
+                    type: 'GET_APPLICATION_SETTINGS_REQUEST',
                 });
             });
         });
@@ -46,18 +46,18 @@ describe('AppSettings Actions - Diversion Integration', () => {
                 useDisruptionNotePopup: false,
                 otherFeatures: {
                     feature1: true,
-                    feature2: false
-                }
+                    feature2: false,
+                },
             };
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve(mockSettings)
+                json: () => Promise.resolve(mockSettings),
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_SUCCESS');
                 expect(actions[1].payload).toEqual(mockSettings);
@@ -66,16 +66,16 @@ describe('AppSettings Actions - Diversion Integration', () => {
 
         it('should handle settings fetch error', () => {
             const error = new Error('Settings fetch failed');
-            
+
             global.fetch.mockRejectedValueOnce(error);
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_FAILURE');
                 expect(actions[1].payload).toEqual({
-                    error: error.message
+                    error: error.message,
                 });
             });
         });
@@ -84,12 +84,12 @@ describe('AppSettings Actions - Diversion Integration', () => {
             global.fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
-                statusText: 'Internal Server Error'
+                statusText: 'Internal Server Error',
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_FAILURE');
                 expect(actions[1].payload.error).toContain('500');
@@ -99,12 +99,12 @@ describe('AppSettings Actions - Diversion Integration', () => {
         it('should handle malformed JSON response', () => {
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.reject(new Error('Invalid JSON'))
+                json: () => Promise.reject(new Error('Invalid JSON')),
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_FAILURE');
                 expect(actions[1].payload.error).toContain('Invalid JSON');
@@ -115,18 +115,18 @@ describe('AppSettings Actions - Diversion Integration', () => {
             const mockSettings = {
                 otherFeatures: {
                     feature1: true,
-                    feature2: false
-                }
+                    feature2: false,
+                },
             };
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve(mockSettings)
+                json: () => Promise.resolve(mockSettings),
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_SUCCESS');
                 expect(actions[1].payload).toEqual(mockSettings);
@@ -137,17 +137,17 @@ describe('AppSettings Actions - Diversion Integration', () => {
             const mockSettings = {
                 useEditEffectPanel: true,
                 // useDiversion is missing
-                useDisruptionNotePopup: false
+                useDisruptionNotePopup: false,
             };
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve(mockSettings)
+                json: () => Promise.resolve(mockSettings),
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_SUCCESS');
                 expect(actions[1].payload).toEqual(mockSettings);
@@ -158,17 +158,17 @@ describe('AppSettings Actions - Diversion Integration', () => {
             const mockSettings = {
                 useEditEffectPanel: true,
                 useDiversion: true,
-                useDisruptionNotePopup: false
+                useDisruptionNotePopup: false,
             };
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve(mockSettings)
+                json: () => Promise.resolve(mockSettings),
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_SUCCESS');
                 expect(actions[1].payload.useEditEffectPanel).toBe(true);
@@ -181,17 +181,17 @@ describe('AppSettings Actions - Diversion Integration', () => {
             const mockSettings = {
                 useEditEffectPanel: 'true',
                 useDiversion: 'false',
-                useDisruptionNotePopup: 'true'
+                useDisruptionNotePopup: 'true',
             };
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve(mockSettings)
+                json: () => Promise.resolve(mockSettings),
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_SUCCESS');
                 expect(actions[1].payload.useEditEffectPanel).toBe('true');
@@ -204,17 +204,17 @@ describe('AppSettings Actions - Diversion Integration', () => {
             const mockSettings = {
                 useEditEffectPanel: 1,
                 useDiversion: 0,
-                useDisruptionNotePopup: 1
+                useDisruptionNotePopup: 1,
             };
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve(mockSettings)
+                json: () => Promise.resolve(mockSettings),
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_SUCCESS');
                 expect(actions[1].payload.useEditEffectPanel).toBe(1);
@@ -227,17 +227,17 @@ describe('AppSettings Actions - Diversion Integration', () => {
             const mockSettings = {
                 useEditEffectPanel: null,
                 useDiversion: null,
-                useDisruptionNotePopup: null
+                useDisruptionNotePopup: null,
             };
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve(mockSettings)
+                json: () => Promise.resolve(mockSettings),
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_SUCCESS');
                 expect(actions[1].payload.useEditEffectPanel).toBeNull();
@@ -250,17 +250,17 @@ describe('AppSettings Actions - Diversion Integration', () => {
             const mockSettings = {
                 useEditEffectPanel: undefined,
                 useDiversion: undefined,
-                useDisruptionNotePopup: undefined
+                useDisruptionNotePopup: undefined,
             };
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve(mockSettings)
+                json: () => Promise.resolve(mockSettings),
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_SUCCESS');
                 expect(actions[1].payload.useEditEffectPanel).toBeUndefined();
@@ -270,15 +270,13 @@ describe('AppSettings Actions - Diversion Integration', () => {
         });
 
         it('should handle network timeout gracefully', () => {
-            global.fetch.mockImplementationOnce(() => 
-                new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Network timeout')), 100)
-                )
-            );
+            global.fetch.mockImplementationOnce(() => new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Network timeout')), 100);
+            }));
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_FAILURE');
                 expect(actions[1].payload.error).toContain('Network timeout');
@@ -288,12 +286,12 @@ describe('AppSettings Actions - Diversion Integration', () => {
         it('should handle CORS errors gracefully', () => {
             const corsError = new Error('CORS error');
             corsError.name = 'TypeError';
-            
+
             global.fetch.mockRejectedValueOnce(corsError);
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_FAILURE');
                 expect(actions[1].payload.error).toContain('CORS error');
@@ -306,7 +304,7 @@ describe('AppSettings Actions - Diversion Integration', () => {
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_FAILURE');
                 expect(actions[1].payload.error).toContain('fetch is not defined');
@@ -319,7 +317,7 @@ describe('AppSettings Actions - Diversion Integration', () => {
             const largeSettings = {
                 useEditEffectPanel: true,
                 useDiversion: true,
-                useDisruptionNotePopup: false
+                useDisruptionNotePopup: false,
             };
 
             // Add 1000 additional settings
@@ -329,21 +327,21 @@ describe('AppSettings Actions - Diversion Integration', () => {
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve(largeSettings)
+                json: () => Promise.resolve(largeSettings),
             });
 
             const startTime = performance.now();
-            
+
             return store.dispatch(getApplicationSettings()).then(() => {
                 const endTime = performance.now();
                 const actions = store.getActions();
-                
+
                 expect(actions[0].type).toBe('GET_APPLICATION_SETTINGS_REQUEST');
                 expect(actions[1].type).toBe('GET_APPLICATION_SETTINGS_SUCCESS');
                 expect(actions[1].payload.useEditEffectPanel).toBe(true);
                 expect(actions[1].payload.useDiversion).toBe(true);
                 expect(actions[1].payload.useDisruptionNotePopup).toBe(false);
-                
+
                 // Should complete in reasonable time (less than 100ms)
                 expect(endTime - startTime).toBeLessThan(100);
             });
@@ -355,18 +353,18 @@ describe('AppSettings Actions - Diversion Integration', () => {
             const mockSettings = {
                 useEditEffectPanel: true,
                 useDiversion: true,
-                useDisruptionNotePopup: false
+                useDisruptionNotePopup: false,
             };
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve(mockSettings)
+                json: () => Promise.resolve(mockSettings),
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
                 const settings = actions[1].payload;
-                
+
                 // These settings should enable diversion functionality
                 expect(settings.useEditEffectPanel).toBe(true);
                 expect(settings.useDiversion).toBe(true);
@@ -378,18 +376,18 @@ describe('AppSettings Actions - Diversion Integration', () => {
             const mockSettings = {
                 useEditEffectPanel: false,
                 useDiversion: false,
-                useDisruptionNotePopup: false
+                useDisruptionNotePopup: false,
             };
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve(mockSettings)
+                json: () => Promise.resolve(mockSettings),
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
                 const settings = actions[1].payload;
-                
+
                 // These settings should disable diversion functionality
                 expect(settings.useEditEffectPanel).toBe(false);
                 expect(settings.useDiversion).toBe(false);
@@ -401,18 +399,18 @@ describe('AppSettings Actions - Diversion Integration', () => {
             const mockSettings = {
                 useEditEffectPanel: true,
                 useDiversion: false,
-                useDisruptionNotePopup: true
+                useDisruptionNotePopup: true,
             };
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve(mockSettings)
+                json: () => Promise.resolve(mockSettings),
             });
 
             return store.dispatch(getApplicationSettings()).then(() => {
                 const actions = store.getActions();
                 const settings = actions[1].payload;
-                
+
                 // Mixed settings should enable some features and disable others
                 expect(settings.useEditEffectPanel).toBe(true);
                 expect(settings.useDiversion).toBe(false);
@@ -420,4 +418,4 @@ describe('AppSettings Actions - Diversion Integration', () => {
             });
         });
     });
-}); 
+});

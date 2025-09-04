@@ -221,7 +221,6 @@ describe('Vehicle detail actions', () => {
         });
     });
 
-
     context('fetchPastStops()', () => {
         const tenMinutesInPast = `${moment().utc().subtract(10, 'minutes').format(utcDateFormatWithoutTZ)}.000Z`;
         const tenMinutesInPastUnix = `${moment().utc().subtract(10, 'minutes').unix()}`;

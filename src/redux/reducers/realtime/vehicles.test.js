@@ -30,7 +30,7 @@ describe('Vehicles reducer', () => {
                     4: { id: 4, vehicle: { vehicle: { id: 4 }, tags: [UNSCHEDULED_TAG, 'EXISTING_TAG'], route: 'Route B', timestamp: 60 } },
                 },
             };
-    
+
             const action = {
                 payload: {
                     isSnapshotUpdate: true,
@@ -51,25 +51,25 @@ describe('Vehicles reducer', () => {
                     ],
                 },
             };
-    
+
             const newState = handleVehiclesUpdate(initialState, action);
-    
+
             expect(newState.all[1].vehicle.timestamp).to.equal(20);
             expect(newState.all[1].vehicle.tags).contains(UNSCHEDULED_TAG);
             expect(newState.all[1].vehicle.route).to.equal('Route A');
-    
+
             expect(newState.all[2].vehicle.tags.length).to.equal(0);
             expect(newState.all[2].vehicle.timestamp).to.equal(15);
             expect(newState.all[2].vehicle.route).to.equal(undefined);
-    
+
             expect(newState.all[3].vehicle.timestamp).to.equal(50);
-    
+
             expect(newState.all[4].vehicle.tags).contains('EXISTING_TAG');
             expect(newState.all[4].vehicle.tags).contains(UNSCHEDULED_TAG);
             expect(newState.all[4].vehicle.route).to.equal('Route B');
-    
+
             expect(newState.all[5].vehicle.timestamp).to.equal(25);
-    
+
             expect(newState.all[6]).to.equal(undefined);
         });
     });

@@ -12,7 +12,7 @@ import * as appSettings from '../../../selectors/appSettings';
 import ACTION_TYPE from '../../../action-types';
 import * as stopDetailActions from './stop';
 import { utcDateFormatWithoutTZ } from '../../../../utils/dateUtils';
-import {getDisruptionsByStop} from "./stop";
+import { getDisruptionsByStop } from './stop';
 
 const mockStore = configureMockStore([thunk]);
 let store;
@@ -365,7 +365,7 @@ describe('Stop detail actions', () => {
             const getVehiclesByTripId = sandbox.stub(ccRealtime, 'getVehiclesByTripId').callsFake(fakeGetVehiclesByTripId);
 
             const fakeGetTrips = sandbox.fake.resolves({ tripInstances: [{ onHold: false }] });
-            const getTrips = sandbox.stub(tripMgtApi, 'getTrips').callsFake(fakeGetTrips);
+            sandbox.stub(tripMgtApi, 'getTrips').callsFake(fakeGetTrips);
 
             await store.dispatch(stopDetailActions.fetchPidInformation('stopCode', true));
             sandbox.assert.calledOnce(getDeparturesByStopCode);
@@ -431,11 +431,11 @@ describe('Stop detail actions', () => {
     });
 
     context('getDisruptionsByStop', () => {
-        const stop = {key: 'stop-key', stop_code: '1234'};
+        const stop = { key: 'stop-key', stop_code: '1234' };
 
         it('dispatches actions on successful API call', async () => {
             sandbox.stub(appSettings, 'useStopBasedDisruptionsSearch').returns(true);
-            const disruptions = [{ id: 1, affectedEntities:[{stopCode: "1234", type: "stop" }] }];
+            const disruptions = [{ id: 1, affectedEntities: [{ stopCode: '1234', type: 'stop' }] }];
             sandbox.stub(disruptionApi, 'getDisruptionsByFilters').resolves({ disruptions });
 
             await store.dispatch(getDisruptionsByStop(stop));
@@ -478,7 +478,7 @@ describe('Stop detail actions', () => {
 
     context('stopChecked', () => {
         const stop = { key: 'stop-key', stop_code: '1234' };
-        const disruptions= [{id: 1}];
+        const disruptions = [{ id: 1 }];
 
         const versionedRoutes = [
             {

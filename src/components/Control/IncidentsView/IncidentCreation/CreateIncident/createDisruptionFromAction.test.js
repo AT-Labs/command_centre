@@ -1,8 +1,9 @@
-import { DEFAULT_IMPACT, DISRUPTION_TYPE, STATUSES } from '../../../../../types/disruptions-types';
+import { DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
+import { DISRUPTION_TYPE, STATUSES } from '../../../../../types/disruptions-types';
 
 const createDisruptionFromAction = (incidentData, resultIncidentId) => {
     const firstDisruption = incidentData.disruptions[0] || {};
-    
+
     return {
         key: resultIncidentId,
         incidentNo: resultIncidentId,
@@ -126,4 +127,4 @@ describe('createDisruptionFromAction', () => {
         expect(result.recurrencePattern).toEqual(mockIncidentData.recurrencePattern);
         expect(result.header).toBe(mockIncidentData.header);
     });
-}); 
+});

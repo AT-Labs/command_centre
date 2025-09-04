@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import { BUS_TYPE_ID, FERRY_TYPE_ID, TRAIN_TYPE_ID, TRIP_DIRECTION_INBOUND, TRIP_DIRECTION_OUTBOUND, UNSCHEDULED_TAG } from '../../../types/vehicle-types';
 import { getFilteredVehicles, getVisibleVehicles } from './vehicles';
 
-
 const busNewZealandBus = {
     id: '13000',
     vehicle: {
@@ -234,7 +233,7 @@ const busUnscheduled = {
             label: 'NB5076',
             licensePlate: 'GEE828',
         },
-        tags: [UNSCHEDULED_TAG]
+        tags: [UNSCHEDULED_TAG],
     },
 };
 
@@ -311,7 +310,7 @@ const allFleet = {
             type: 'Bus',
         },
         tag: 'Torutek',
-    }
+    },
 };
 const allocations = {};
 const tripUpdates = {};
@@ -686,7 +685,7 @@ describe('Vehicles selectors', () => {
         });
 
         it('should filter by unscheduled route', () => {
-            let filteredVehicles = getFilteredVehicles.resultFunc(
+            const filteredVehicles = getFilteredVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,
@@ -710,9 +709,8 @@ describe('Vehicles selectors', () => {
             });
         });
 
-
         it('should filter by both unscheduled route and not in service', () => {
-            let filteredVehicles = getFilteredVehicles.resultFunc(
+            const filteredVehicles = getFilteredVehicles.resultFunc(
                 allVehicles,
                 allFleet,
                 allocations,

@@ -105,7 +105,6 @@ const mockStoreRouteVariants = {
     },
 };
 
-
 describe('Routes actions', () => {
     beforeEach(() => {
         sandbox = sinon.createSandbox();

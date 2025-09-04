@@ -3,7 +3,6 @@ import thunk from 'redux-thunk';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
-
 import ACTION_TYPE from '../../action-types';
 import * as agencies from './agencies';
 import * as TRIP_MGT_API from '../../../utils/transmitters/trip-mgt-api';

@@ -15,7 +15,7 @@ import * as fleet from '../selectors/static/fleet';
 import * as activity from './activity';
 import * as blocks from '../selectors/control/blocks';
 import * as routesSelector from '../selectors/control/routes/routes';
-import * as routeVariantsSelector  from '../selectors/control/routes/routeVariants';
+import * as routeVariantsSelector from '../selectors/control/routes/routeVariants';
 import * as alerts from '../selectors/control/alerts';
 import * as stopMessaging from '../selectors/control/stopMessaging/stopMessages';
 import * as stopGroups from '../selectors/control/dataManagement/stopGroups';
@@ -468,25 +468,25 @@ describe('Search actions', () => {
     });
 
     context('formatStopDisruptionSearchResults()', () => {
-        const results = []
+        // const results = [];
 
-        const expectedData = [{
-            text: '123 - Fruitvale Rd Train Station',
-            data: results,
-            category: SEARCH_RESULT_TYPE.STOP,
-            icon: SEARCH_RESULT_TYPE.STOP.icon,
-        }];
+        // const expectedData = [{
+        //     text: '123 - Fruitvale Rd Train Station',
+        //     data: results,
+        //     category: SEARCH_RESULT_TYPE.STOP,
+        //     icon: SEARCH_RESULT_TYPE.STOP.icon,
+        // }];
 
         it('searchStopDisruptions() Should return an array of incidentNo', async () => {
             const incidentNos = ['DISR00701', 'DISR00702', 'DISR00703'];
 
-            const expectedData = incidentNos.map(element => ({
+            const expectedStopDisruptionData = incidentNos.map(element => ({
                 text: `${element}`,
                 data: element,
                 category: SEARCH_RESULT_TYPE.STOP_DISRUPTION,
                 icon: '',
             }));
-            expect(search.formatStopDisruptionSearchResults(incidentNos)).to.eql(expectedData);
+            expect(search.formatStopDisruptionSearchResults(incidentNos)).to.eql(expectedStopDisruptionData);
         });
     });
 
@@ -509,7 +509,7 @@ describe('Search actions', () => {
                     },
                     category: SEARCH_RESULT_TYPE.BLOCK,
                     icon: '',
-                }]
+                }],
             });
         });
     });
@@ -532,7 +532,7 @@ describe('Search actions', () => {
                     },
                     category: SEARCH_RESULT_TYPE.CONTROL_ROUTE,
                     icon: '',
-                }]
+                }],
             });
         });
     });
@@ -555,7 +555,7 @@ describe('Search actions', () => {
                     },
                     category: SEARCH_RESULT_TYPE.CONTROL_ROUTE_VARIANT,
                     icon: '',
-                }]
+                }],
             });
         });
     });
@@ -563,13 +563,13 @@ describe('Search actions', () => {
     context('Search alert routes', () => {
         const mockStaticRoutes = [{
             route_short_name: 'NX1',
-            route_id: 'NX1'
+            route_id: 'NX1',
         }, {
             route_short_name: 'WEST',
-            route_id: 'WEST'
+            route_id: 'WEST',
         }, {
             route_short_name: 'EAST',
-            route_id: 'EAST'
+            route_id: 'EAST',
         }];
         const mockAlerts = [{
             routeShortName: 'NX1',
@@ -587,12 +587,12 @@ describe('Search actions', () => {
                 [SEARCH_RESULT_TYPE.CONTROL_ALERTS_ROUTES.type]: [{
                     text: 'WEST',
                     data: {
-                        route_id: "WEST",
+                        route_id: 'WEST',
                         route_short_name: 'WEST',
                     },
                     category: SEARCH_RESULT_TYPE.CONTROL_ALERTS_ROUTES,
                     icon: '',
-                }]
+                }],
             });
         });
     });
@@ -619,7 +619,7 @@ describe('Search actions', () => {
                     },
                     category: SEARCH_RESULT_TYPE.STOP_MESSAGE,
                     icon: '',
-                }]
+                }],
             });
         });
 
@@ -633,11 +633,10 @@ describe('Search actions', () => {
                     data: 'DISR002',
                     category: SEARCH_RESULT_TYPE.STOP_DISRUPTION,
                     icon: '',
-                }]
+                }],
             });
         });
     });
-
 
     context('Search stop in groups', () => {
         const mockStopInGroups = [
@@ -658,7 +657,7 @@ describe('Search actions', () => {
                     label: 'stop3',
                     value: 'stop3',
                 }],
-            }
+            },
         ];
         it('should search stop in groups by stop label', async () => {
             const searchTerm = 'stop2';
@@ -669,14 +668,13 @@ describe('Search actions', () => {
                     text: 'stop2',
                     data: {
                         label: 'stop2',
-                        tokens: [ "stop2" ],
+                        tokens: ['stop2'],
                         value: 'stop2',
                     },
                     category: SEARCH_RESULT_TYPE.STOP_IN_GROUP,
                     icon: 'stop',
-                }]
+                }],
             });
         });
     });
-
 });

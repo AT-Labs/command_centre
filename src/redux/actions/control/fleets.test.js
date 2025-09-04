@@ -3,7 +3,6 @@ import thunk from 'redux-thunk';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
-
 import ACTION_TYPE from '../../action-types';
 import * as fleets from './fleets';
 import * as fleetsApi from '../../../utils/transmitters/fleets-api';
@@ -26,34 +25,34 @@ describe('Fleet actions', () => {
     it('Should dispatch fleets fetch action', async () => {
         const fakeFleetData = [
             {
-                id:"10304",
-                label:"NB0304",
-                registration:"LFT274",
+                id: '10304',
+                label: 'NB0304',
+                registration: 'LFT274',
                 agency: {
-                    agencyId:"NZB",
-                    agencyName:"NEW ZEALAND BUS",
+                    agencyId: 'NZB',
+                    agencyName: 'NEW ZEALAND BUS',
                     depot: {
-                        name:"CITY",
-                    }
+                        name: 'CITY',
+                    },
                 },
                 attributes: {
-                    loweringFloor:true,
-                    wheelchair:true,
+                    loweringFloor: true,
+                    wheelchair: true,
                 },
                 capacity: {
-                    seating:36,
-                    standing:19,
-                    total:55,
+                    seating: 36,
+                    standing: 19,
+                    total: 55,
                 },
                 type: {
-                    type:"Bus",
-                    subtype:"LB-E",
-                    makeModel:"ADL-E200 ELEC",
+                    type: 'Bus',
+                    subtype: 'LB-E',
+                    makeModel: 'ADL-E200 ELEC',
                 },
                 eod: {
-                    generated:{},
-                    activated:{},
-                    beId:101,
+                    generated: {},
+                    activated: {},
+                    beId: 101,
                 },
             },
         ];

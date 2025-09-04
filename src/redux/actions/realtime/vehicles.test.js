@@ -9,7 +9,9 @@ import VIEW_TYPE from '../../../types/view-types';
 
 chai.use(sinonChai);
 
-const sleep = time => new Promise(resolve => setTimeout(resolve, time));
+const sleep = time => new Promise((resolve) => {
+    setTimeout(resolve, time);
+});
 let store;
 
 const vehicleMockDefault = {

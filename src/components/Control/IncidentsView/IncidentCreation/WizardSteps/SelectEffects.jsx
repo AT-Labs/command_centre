@@ -793,3 +793,5 @@ export default connect(state => ({
     toggleIncidentModals,
     search,
 })(SelectEffects);
+
+export { useDisruptions };

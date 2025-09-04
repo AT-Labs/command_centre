@@ -7,7 +7,6 @@ import ACTION_TYPE from '../../../action-types';
 import * as stops from '../../../selectors/static/stops';
 import * as route from './route';
 
-
 const mockStore = configureMockStore([thunk]);
 let store;
 let sandbox;

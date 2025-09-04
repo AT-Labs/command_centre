@@ -32,7 +32,7 @@ describe('Data Management actions', () => {
             {
                 type: ACTION_TYPE.UPDATE_CONTROL_DATAMANAGEMENT_PAGESETTINGS,
                 payload: {
-                    ...mockSettings
+                    ...mockSettings,
                 },
             },
         ];

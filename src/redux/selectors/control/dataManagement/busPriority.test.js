@@ -6,14 +6,13 @@ import {
     getBusPriorityRoutesDatagridConfig,
     getBusPriorityIntersectionsDatagridConfig,
     getIsLoadingBusPriorityIntersections,
-    getAllBusPriorityIntersections
+    getAllBusPriorityIntersections,
 } from './busPriority';
-
 
 const mockState = state => ({
     control: {
         dataManagement: {
-            ...state
+            ...state,
         },
     },
 });
@@ -55,12 +54,12 @@ describe('Bus Priority Selector', () => {
 
         it('should return data grid settings', () => {
             const expectedResult = {
-                    columns: [],
-                    page: 0,
-                    pageSize: 100,
-                    sortModel: [],
-                    density: 'standard',
-                    filterModel: { items: [], linkOperator: 'and' },
+                columns: [],
+                page: 0,
+                pageSize: 100,
+                sortModel: [],
+                density: 'standard',
+                filterModel: { items: [], linkOperator: 'and' },
             };
 
             expect(getBusPriorityRoutesDatagridConfig(mockState(mockPageSettings))).to.deep.equal(expectedResult);
@@ -82,12 +81,12 @@ describe('Bus Priority Selector', () => {
 
         it('should return data grid settings', () => {
             const expectedResult = {
-                    columns: [],
-                    page: 0,
-                    pageSize: 100,
-                    sortModel: [],
-                    density: 'standard',
-                    filterModel: { items: [], linkOperator: 'and' },
+                columns: [],
+                page: 0,
+                pageSize: 100,
+                sortModel: [],
+                density: 'standard',
+                filterModel: { items: [], linkOperator: 'and' },
             };
 
             expect(getBusPriorityIntersectionsDatagridConfig(mockState(mockPageSettings))).to.deep.equal(expectedResult);

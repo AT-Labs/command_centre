@@ -44,9 +44,7 @@ import {
     updateParentDisruptionTimeRange,
 } from '../../../../../utils/control/disruptions';
 import {
-    generateActivePeriodsFromRecurrencePattern,
-    parseRecurrencePattern,
-    isActivePeriodsValid } from '../../../../../utils/recurrence';
+    parseRecurrencePattern } from '../../../../../utils/recurrence';
 import { DISRUPTION_TYPE, SEVERITIES, DEFAULT_SEVERITY, STATUSES } from '../../../../../types/disruptions-types';
 import SelectEffectEntities from '../WizardSteps/SelectEffectEntities';
 import {
@@ -126,7 +124,7 @@ export const EditEffectPanel = (props) => {
     const isLoadingDiversions = getDiversionsLoadingForDisruption(safeDisruption?.disruptionId || safeDisruption?.incidentId)(props.state) || false;
 
     const [now] = useState(moment().second(0).millisecond(0));
-    const [activePeriods, setActivePeriods] = useState([]);
+    const [activePeriods] = useState([]);
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [isStartTimeDirty, setIsStartTimeDirty] = useState(false);
     const [isTitleDirty, setIsTitleDirty] = useState(false);
@@ -207,6 +205,7 @@ export const EditEffectPanel = (props) => {
 
     const startDateValid = () => isEndDateValid(safeDisruption.startDate, moment(modalOpenedTime), disruptionRecurrent);
 
+    // eslint-disable-next-line no-unused-vars
     const isDateTimeValid = () => startTimeValid() && startDateValid() && endDateValid() && durationValid();
 
     const titleValid = () => !isEmpty(safeDisruption.header);
@@ -299,7 +298,6 @@ export const EditEffectPanel = (props) => {
             setIsEndDateDirty(false);
         }
     };
-
 
     const onAffectedEntitiesUpdate = (disruptionKey, valueKey, affectedEntities) => {
         const updatedDisruptions = {
