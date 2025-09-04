@@ -8,6 +8,8 @@ test-reports
 cypress/screenshots
 .scannerwork
 .nyc_output
+coverage
+lcov-report
 # ide
 .idea
 *.iml
