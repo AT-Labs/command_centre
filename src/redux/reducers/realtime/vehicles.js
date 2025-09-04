@@ -51,7 +51,6 @@ export const handleVehiclesUpdate = (state, action) => {
                     ];
                     vehicleToUpdate.vehicle.route = existingVehicle.vehicle.route;
                 }
-
                 return isValidVehicleUpdate(existingVehicle, vehicleToUpdate) ? vehicleToUpdate : existingVehicle;
             }),
             vehicleKeyedById,
