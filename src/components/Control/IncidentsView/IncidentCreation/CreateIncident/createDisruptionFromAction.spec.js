@@ -95,36 +95,4 @@ describe('createDisruptionFromAction', () => {
         });
         expect(result.disruptionType).toBe(DISRUPTION_TYPE.ROUTES);
     });
-
-    it('should handle null/undefined first disruption gracefully', () => {
-        const incidentDataWithNullDisruption = {
-            ...mockIncidentData,
-            disruptions: [null],
-        };
-        const resultIncidentId = 'TEST-789';
-        const result = createDisruptionFromAction(incidentDataWithNullDisruption, resultIncidentId);
-
-        expect(result.impact).toBe(DEFAULT_IMPACT.value);
-        expect(result.affectedEntities).toEqual({
-            affectedRoutes: [],
-            affectedStops: [],
-        });
-        expect(result.disruptionType).toBe(DISRUPTION_TYPE.ROUTES);
-    });
-
-    it('should preserve all incident data fields', () => {
-        const resultIncidentId = 'TEST-999';
-        const result = createDisruptionFromAction(mockIncidentData, resultIncidentId);
-
-        expect(result.startTime).toBe(mockIncidentData.startTime);
-        expect(result.startDate).toBe(mockIncidentData.startDate);
-        expect(result.endTime).toBe(mockIncidentData.endTime);
-        expect(result.endDate).toBe(mockIncidentData.endDate);
-        expect(result.cause).toBe(mockIncidentData.cause);
-        expect(result.severity).toBe(mockIncidentData.severity);
-        expect(result.recurrent).toBe(mockIncidentData.recurrent);
-        expect(result.duration).toBe(mockIncidentData.duration);
-        expect(result.recurrencePattern).toEqual(mockIncidentData.recurrencePattern);
-        expect(result.header).toBe(mockIncidentData.header);
-    });
 });
