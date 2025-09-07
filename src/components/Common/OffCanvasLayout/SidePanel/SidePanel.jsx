@@ -11,8 +11,6 @@ const SidePanel = (props) => {
     const { isOpen, isActive, position, children, toggleButton, className } = props;
     const panelClasses = `side-panel ${isActive ? 'side-panel--active' : ''} ${isOpen ? 'side-panel--open' : ''} side-panel--${position} ${className}`;
 
-    // console.log('🔧 SidePanel: Rendering with props:', { isOpen, isActive, position, className });
-    // console.log('🔧 SidePanel: Generated classes:', panelClasses);
 
     return (
         <section className={ panelClasses }>

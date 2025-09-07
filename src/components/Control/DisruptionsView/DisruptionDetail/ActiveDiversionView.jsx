@@ -47,30 +47,18 @@ const ActiveDiversionView = ({
     const [selectedDiversionId, setSelectedDiversionId] = useState(null);
 
     const handleDeleteRequest = (diversion) => {
-        // console.log('handleDeleteRequest called with diversion:', diversion);
-        // console.log('diversion.diversionId:', diversion.diversionId);
         setSelectedDiversionId(`${diversion.diversionId}`);
         setDeleteDialogOpen(true);
     };
     const handleDeleteDiversionConfirm = async (selectedDiversionIdToDelete) => {
-        // console.log('🔧 handleDeleteDiversionConfirm called with:', selectedDiversionIdToDelete);
-        // console.log('🔧 selectedDiversionId state:', selectedDiversionId);
-
-        // Prevent deletion if already in progress
         if (isDeletingDiversion) {
-            // console.log('🔧 Deletion already in progress, skipping...');
             return;
         }
 
         try {
-            // Close the dialog first
             setDeleteDialogOpen(false);
-
-            // Call the delete function
             await deleteDiversion(selectedDiversionIdToDelete);
         } catch (error) {
-            // console.error('🔧 Error in handleDeleteDiversionConfirm:', error);
-            // Reopen dialog on error
             setDeleteDialogOpen(true);
         }
     };

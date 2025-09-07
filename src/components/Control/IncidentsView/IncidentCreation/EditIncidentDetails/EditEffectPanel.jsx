@@ -155,18 +155,14 @@ export const EditEffectPanel = (props) => {
         }
     }, [shouldRefetchDiversions, safeDisruption?.disruptionId, props.fetchDiversions]);
 
-    // Fetch diversions when disruption changes
     useEffect(() => {
         if (disruption?.disruptionId && !isLoadingDiversions) {
-            // Use centralized diversions data
             props.fetchDiversions(disruption.disruptionId);
         }
     }, [disruption?.disruptionId, shouldRefetchDiversions, props.fetchDiversions, isLoadingDiversions]);
 
-    // Function to refresh diversions data
     const refreshDiversions = useCallback(async () => {
         if (disruption?.disruptionId && !isLoadingDiversions) {
-            // Add additional protection against multiple calls
             const currentTime = Date.now();
             if (refreshDiversions.lastCall && (currentTime - refreshDiversions.lastCall) < 5000) {
                 return;
@@ -174,11 +170,9 @@ export const EditEffectPanel = (props) => {
             refreshDiversions.lastCall = currentTime;
 
             try {
-                // Clear cache and fetch fresh data
                 props.clearDiversionsCache(disruption.disruptionId);
                 await props.fetchDiversions(disruption.disruptionId);
             } catch (error) {
-                // Error refreshing diversions
             }
         }
     }, [disruption?.disruptionId, isLoadingDiversions, props.clearDiversionsCache, props.fetchDiversions]);
@@ -240,7 +234,6 @@ export const EditEffectPanel = (props) => {
 
         setDisruption(updatedDisruption);
 
-        // Automatically update Parent Disruption time range if this Effect timing changes
         if (updatedFields?.startDate || updatedFields?.startTime || updatedFields?.endDate || updatedFields?.endTime) {
             const updatedEffects = props.disruptions.map(d => (d.incidentNo === safeDisruption.incidentNo ? updatedDisruption : d));
             updateParentDisruptionTimeRange(

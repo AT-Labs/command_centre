@@ -875,9 +875,7 @@ CreateIncident.defaultProps = {
     disruptionIncidentNoToEdit: '',
     resultState: {},
     diversionMode: 'CREATE',
-    // TODO: Uncomment when needed
-    // disruptionToEdit: {},
-    // useDiversion: false, // Убираем это, чтобы использовался Redux state
+    // useDiversion: false, // Remove this to use Redux state
 };
 
 export default connect(state => ({

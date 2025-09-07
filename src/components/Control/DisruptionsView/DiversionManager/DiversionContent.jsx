@@ -167,7 +167,6 @@ const DiversionContent = (props) => {
 
             setRecentlyCreatedDiversionRouteVariantId(null);
         } catch (error) {
-            // Error handling is done silently
         }
     }, [props.disruption.disruptionId, props.disruption.incidentId, isLoadingExistingDiversions, props.fetchDiversions]);
 
@@ -216,7 +215,6 @@ const DiversionContent = (props) => {
                 initEditingMode(routeVariants);
             }
         } catch {
-            // Error handling is done silently
             setRouteVariantsList([]);
         }
     }, debounceDelay);

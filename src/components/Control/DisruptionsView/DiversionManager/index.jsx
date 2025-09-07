@@ -35,19 +35,17 @@ const DiversionManager = (props) => {
     const [isUpdated, setIsUpdated] = useState(false);
     const [isDiversionValid, setIsDiversionValid] = useState(false);
 
-    // Force update when state changes
     const [forceUpdate, setForceUpdate] = useState(0);
 
     const title = `${props.editMode === EDIT_TYPE.EDIT ? 'Edit' : 'Add'} Diversion`;
     const buttonText = `${props.editMode === EDIT_TYPE.EDIT ? 'Update' : 'Create'} Diversion`;
     const editingDiversions = props.diversion?.diversionRouteVariants || [];
 
-    // For base route variant
     const [routeVariantsList, setRouteVariantsList] = useState([]);
     const [selectedBaseRouteVariant, setSelectedBaseRouteVariant] = useState(null);
     const [initialBaseRouteShape, setInitialBaseRouteShape] = useState(null);
     const [isBaseRouteVariantVisible, setIsBaseRouteVariantVisible] = useState(true);
-    const [tempSelectedBaseRouteVariant, setTempSelectedBaseRouteVariant] = useState(); // Save temporarily for confirmation modal
+    const [tempSelectedBaseRouteVariant, setTempSelectedBaseRouteVariant] = useState();
     const [isChangeVariantModalOpen, setIsChangeVariantModalOpen] = useState(false);
     const existingDiversions = getDiversionsForDisruption(props.disruption?.disruptionId || props.disruption?.incidentId)(props.state) || [];
     const isLoadingExistingDiversions = getDiversionsLoadingForDisruption(props.disruption?.disruptionId || props.disruption?.incidentId)(props.state) || false;
@@ -165,20 +163,16 @@ const DiversionManager = (props) => {
         setSelectedOtherRouteVariants(updatedSelectedRouteVariants);
     };
 
-    // Fetch existing diversions for this disruption
     const fetchExistingDiversions = useCallback(async () => {
-        if (isLoadingExistingDiversions) return; // Prevent multiple simultaneous calls
+        if (isLoadingExistingDiversions) return;
 
-        // Add additional protection against multiple calls
         const now = Date.now();
         if (fetchExistingDiversions.lastCall && (now - fetchExistingDiversions.lastCall) < 3000) {
-            // Fetch existing diversions called too frequently, skipping
             return;
         }
         fetchExistingDiversions.lastCall = now;
 
         try {
-            // Try both incidentId and disruptionId
             if (!props.disruption?.disruptionId && !props.disruption?.incidentId) {
                 return;
             }
@@ -508,7 +502,6 @@ const DiversionManager = (props) => {
                     || v.directionId !== selectedBaseRouteVariant.directionId
                     || !canMerge(v.shapeWkt, diversionShapeWkt),
             }));
-            // Automatically select all available route variants that has no trip modifications and can be merged
             const availableRouteVariants = updatedSecondaryList.filter(v => !v.hasTripModifications && !v.hidden);
             if (availableRouteVariants.length > 0) {
                 const updatedSelectedOtherRouteVariants = availableRouteVariants.map(rv => mergeDiversionToRouteVariant(rv, rv.shapeWkt, diversionShapeWkt));
@@ -516,7 +509,7 @@ const DiversionManager = (props) => {
                 setSecondaryRouteVariantsList(updatedSecondaryList.map(v => ({
                     ...v,
                     hidden: availableRouteVariants
-                        .some(rv => rv.routeVariantId === v.routeVariantId) ? true : v.hidden, // Hide all as we automatically select all available route variants
+                        .some(rv => rv.routeVariantId === v.routeVariantId) ? true : v.hidden,
                 })));
             } else {
                 setSelectedOtherRouteVariants([]);
