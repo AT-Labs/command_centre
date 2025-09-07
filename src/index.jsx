@@ -1,19 +1,5 @@
 /* eslint-disable no-console */
-
-// Polyfill for process object
-import './polyfills';
 import { getMsalInstance, IS_LOGIN_NOT_REQUIRED } from './auth';
-
-if (typeof window !== 'undefined' && typeof window.process === 'undefined') {
-    window.process = { env: {} };
-}
-if (typeof global !== 'undefined' && typeof global.process === 'undefined') {
-    global.process = { env: {} };
-}
-// Polyfill for globalThis
-if (typeof globalThis === 'undefined') {
-    window.globalThis = window;
-}
 
 let localVersion;
 function loadApp() { }

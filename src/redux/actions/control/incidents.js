@@ -763,7 +763,7 @@ export const setIncidentToUpdate = (incidentId, incidentNo, requireToUpdateForm 
             }
             if (incidentNo) {
                 dispatch(updateDisruptionKeyToEditEffect(incidentNo));
-                // dispatch(toggleEditEffectPanel(true)); // Remove automatic opening
+                dispatch(toggleEditEffectPanel(true));
             }
         });
 };

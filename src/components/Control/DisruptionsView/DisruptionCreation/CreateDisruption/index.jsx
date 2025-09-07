@@ -83,7 +83,7 @@ const INIT_STATE = {
     status: STATUSES.NOT_STARTED,
     header: '',
     description: '',
-
+    url: '',
     createNotification: false,
     exemptAffectedTrips: false,
     recurrent: false,
@@ -407,8 +407,7 @@ export class CreateDisruption extends React.Component {
                             {this.props.editMode !== EDIT_TYPE.EDIT && (<SelectDetails onUpdateDetailsValidation={ this.onUpdateDetailsValidation } />)}
                             <SelectDisruptionEntities
                                 onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
-                                onSubmitUpdate={ this.onSubmitUpdate }
-                                onSubmit={ this.onSubmit } />
+                                onSubmitUpdate={ this.onSubmitUpdate } />
                             <Workarounds
                                 isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
                                 onSubmitUpdate={ this.onSubmitUpdate } />

@@ -113,7 +113,7 @@ App.propTypes = {
     getTrains: PropTypes.func.isRequired,
     getFerries: PropTypes.func.isRequired,
     getBuses: PropTypes.func.isRequired,
-    startTrackingVehicleAllocations: PropTypes.func,
+    startTrackingVehicleAllocations: PropTypes.func.isRequired,
     activeMainView: PropTypes.string.isRequired,
     updateUserProfile: PropTypes.func.isRequired,
     fetchRoutesViewPermission: PropTypes.func.isRequired,
@@ -130,7 +130,6 @@ App.propTypes = {
     getApplicationSettings: PropTypes.func.isRequired,
     getStops: PropTypes.func.isRequired,
 };
-
 
 export default connect(state => ({
     hasError: isAnyError(state),

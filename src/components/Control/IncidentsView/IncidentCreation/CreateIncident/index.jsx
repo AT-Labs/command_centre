@@ -22,13 +22,10 @@ import {
     updateAffectedRoutesState,
     setRequestToUpdateEditEffectState,
     setRequestedDisruptionKeyToUpdateEditEffect,
-    toggleEditEffectPanel,
-    updateDisruptionKeyToEditEffect,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
-    setDisruptionForWorkaroundEdit,
 } from '../../../../../redux/actions/control/incidents';
 import {
+    getAffectedRoutes,
+    getAffectedStops,
     getIncidentAction,
     getIncidentStepCreation,
     getIncidentToEdit,
@@ -43,7 +40,6 @@ import {
     isRequiresToUpdateNotes,
     isWorkaroundPanelOpen,
     isApplyChangesModalOpen,
-    getRequestedDisruptionKeyToUpdateEditEffect,
 } from '../../../../../redux/selectors/control/incidents';
 import { STATUSES, DISRUPTION_TYPE, INCIDENTS_CREATION_STEPS, DEFAULT_SEVERITY, ALERT_TYPES } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
@@ -80,27 +76,11 @@ import StopsLayer from '../../../../Common/Map/StopsLayer/StopsLayer';
 import { HighlightingLayer } from '../../../../Common/Map/HighlightingLayer/HighlightingLayer';
 import { SelectedStopsMarker } from '../../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import DrawLayer from './DrawLayer';
-import { usePassengerImpact, useGeoSearchRoutesByDisruptionPeriod, useDraftDisruptions, useDiversion } from '../../../../../redux/selectors/appSettings';
-// TODO: Uncomment when needed
-// import { useDiversion } from '../../../../../redux/selectors/appSettings';
+import { usePassengerImpact, useGeoSearchRoutesByDisruptionPeriod, useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import WorkaroundPanel from '../WizardSteps/WorkaroundPanel';
 import EditEffectPanel from '../EditIncidentDetails/EditEffectPanel';
 import ApplyChangesModal from '../EditIncidentDetails/ApplyChangesModal';
-import {
-    openDiversionManager,
-    updateDiversionMode,
-    updateDiversionToEdit,
-    fetchDiversions,
-    clearDiversionsCache,
-    resetDiversionResult,
-} from '../../../../../redux/actions/control/diversions';
-import {
-    getIsDiversionManagerOpen,
-    getDiversionResultState,
-} from '../../../../../redux/selectors/control/diversions';
-import DiversionContent from '../../../DisruptionsView/DiversionManager/DiversionContent';
-import DiversionResultModalWrapper from '../../../DisruptionsView/DiversionManager/DiversionResultModalWrapper';
 
 const INIT_STATE = {
     startTime: '',
@@ -113,7 +93,7 @@ const INIT_STATE = {
     status: STATUSES.NOT_STARTED,
     header: '',
     description: '',
-
+    url: '',
     createNotification: false,
     recurrent: false,
     duration: '',
@@ -126,33 +106,6 @@ const INIT_STATE = {
 };
 
 const { STOP } = SEARCH_RESULT_TYPE;
-
-export const createDisruptionFromAction = (incidentData, resultIncidentId) => {
-    const firstDisruption = incidentData.disruptions[0] || {};
-
-    return {
-        key: resultIncidentId,
-        incidentNo: resultIncidentId,
-        startTime: incidentData.startTime,
-        startDate: incidentData.startDate,
-        endTime: incidentData.endTime,
-        endDate: incidentData.endDate,
-        impact: firstDisruption.impact || DEFAULT_IMPACT.value,
-        cause: incidentData.cause,
-        affectedEntities: firstDisruption.affectedEntities || {
-            affectedRoutes: [],
-            affectedStops: [],
-        },
-        createNotification: false,
-        disruptionType: firstDisruption.disruptionType || DISRUPTION_TYPE.ROUTES,
-        severity: incidentData.severity,
-        recurrent: incidentData.recurrent,
-        duration: incidentData.duration,
-        recurrencePattern: incidentData.recurrencePattern,
-        header: incidentData.header,
-        status: STATUSES.NOT_STARTED,
-    };
-};
 
 export class CreateIncident extends React.Component {
     constructor(props) {
@@ -463,14 +416,8 @@ export class CreateIncident extends React.Component {
     };
 
     closeEffectEditPanel = () => {
-        this.props.openDiversionManager(false);
-        this.props.updateDiversionMode(EDIT_TYPE.CREATE);
-        this.props.updateDiversionToEdit(null);
-        this.props.toggleEditEffectPanel(false);
-        this.props.toggleWorkaroundPanel(false);
-        this.props.updateDisruptionKeyToEditEffect('');
         this.props.setRequestedDisruptionKeyToUpdateEditEffect('');
-        this.props.setRequestToUpdateEditEffectState(false);
+        this.props.setRequestToUpdateEditEffectState(true);
     };
 
     renderSteps = () => {
@@ -527,277 +474,181 @@ export class CreateIncident extends React.Component {
             };
             return this.props.activeStep === 1 && <h2 className="pl-4 pr-4 pt-4">{titleByMode[this.props.editMode]}</h2>;
         };
-
         return (
-            <>
-                <div className="sidepanel-control-component-view d-flex">
-                    { (this.props.isLoading) && (<LoadingOverlay />) }
-
-                    {/* BLOCK 1: Side panel (shown only when there is NO result) */}
-                    {!this.props.resultState?.diversionId && !this.props.resultState?.error && (
-                        <SidePanel
-                            isOpen
-                            isActive
-                            className="sidepanel-primary-panel disruption-creation__sidepanel side-panel__scroll-size"
-                            toggleButton={ false }>
-                            {this.props.editMode !== EDIT_TYPE.EDIT && (
-                                <div className="disruption-creation__container h-100">
-                                    {this.renderSteps()}
-                                    {renderMainHeading()}
-                                    <Wizard
-                                        className="disruption-creation__wizard container p-0"
-                                        data={ incidentData }
-                                        response={ this.props.action }
-                                        onDataUpdate={ this.updateData }
-                                        onSubmit={ this.onSubmit }
-                                        onSubmitDraft={ useDraftDisruptions && this.onSubmitDraft }>
-                                        <SelectDetails
-                                            onUpdateDetailsValidation={ this.onUpdateDetailsValidation }
-                                            onSubmitUpdate={ this.onSubmitUpdate } />
-                                        <SelectEffects
-                                            onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
-                                            onSubmitUpdate={ this.onSubmitUpdate } />
-                                        <Workarounds
-                                            isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
-                                            onSubmitUpdate={ this.onSubmitUpdate } />
-                                    </Wizard>
-                                    <CustomModal
-                                        className="disruption-creation__modal"
-                                        title={ this.props.action.resultIncidentId ? 'Disruption created' : 'Log a disruption' }
-                                        isModalOpen={ isConfirmationOpen }>
-                                        <Confirmation response={ this.props.action } />
-                                    </CustomModal>
-                                    <CustomModal
-                                        className="disruption-creation__modal"
-                                        title="Log a disruption"
-                                        isModalOpen={ this.props.isCancellationOpen }>
-                                        <Cancellation />
-                                    </CustomModal>
-                                </div>
-                            )}
-                            {this.props.editMode === EDIT_TYPE.EDIT && (
-                                <div className="disruption-edit__container h-100">
-                                    <div className="label-with-icon">
-                                        {renderMainHeading()}
-                                        {' '}
-                                        {this.props.isEditEffectPanelOpen
-                                            && (
-                                                <KeyboardDoubleArrowLeftIcon onClick={ this.closeEffectEditPanel }
-                                                    className="collapse-icon"
-                                                    style={ { color: '#399CDB', fontSize: '48px' } } />
-                                            )}
-                                    </div>
-                                    <SelectDetails
-                                        onUpdateDetailsValidation={ this.onUpdateDetailsValidation }
-                                        data={ incidentData }
-                                        response={ this.props.action }
-                                        onDataUpdate={ this.updateData }
-                                        onSubmit={ this.onSubmit }
-                                        onSubmitDraft={ useDraftDisruptions && this.onSubmitDraft }
-                                        onSubmitUpdate={ this.onSubmitUpdate }
-                                        isEffectsRequiresToUpdate={ isEffectsRequiresToUpdate }
-                                        updateIsEffectsRequiresToUpdateState={ () => this.setState({ isEffectsRequiresToUpdate: false }) }
-                                        isEffectValid={ isEffectValid }
-                                        toggleEditEffectPanel={ this.props.toggleEditEffectPanel }
-                                        updateDisruptionKeyToEditEffect={ this.props.updateDisruptionKeyToEditEffect }
-                                        toggleWorkaroundPanel={ this.props.toggleWorkaroundPanel }
-                                        updateDisruptionKeyToWorkaroundEdit={ this.props.updateDisruptionKeyToWorkaroundEdit }
-                                        setDisruptionForWorkaroundEdit={ this.props.setDisruptionForWorkaroundEdit }
-                                        setRequestToUpdateEditEffectState={ this.props.setRequestToUpdateEditEffectState }
-                                        setRequestedDisruptionKeyToUpdateEditEffect={ this.props.setRequestedDisruptionKeyToUpdateEditEffect }
-                                    />
-                                    <CustomModal
-                                        className="disruption-creation__modal"
-                                        title={ this.props.action.resultIncidentId ? 'Disruption created' : 'Log a disruption' }
-                                        isModalOpen={ isConfirmationOpen }>
-                                        <Confirmation response={ this.props.action } />
-                                    </CustomModal>
-                                    <CustomModal
-                                        className="disruption-creation__modal"
-                                        title="Log a disruption"
-                                        isModalOpen={ this.props.isCancellationOpen }>
-                                        <Cancellation />
-                                    </CustomModal>
-                                    <CustomModal
-                                        className="disruption-creation__modal"
-                                        title="Save Disruption"
-                                        isModalOpen={ this.props.isApplyChangesOpen }>
-                                        <ApplyChangesModal applyChanges={ this.onSubmitIncidentUpdate } />
-                                    </CustomModal>
-                                </div>
-                            )}
-                        </SidePanel>
+            <div className="sidepanel-control-component-view d-flex">
+                { (this.props.isLoading) && (<LoadingOverlay />) }
+                <SidePanel
+                    isOpen
+                    isActive
+                    className="sidepanel-primary-panel disruption-creation__sidepanel side-panel__scroll-size"
+                    toggleButton={ false }>
+                    {this.props.editMode !== EDIT_TYPE.EDIT && (
+                        <div className="disruption-creation__container h-100">
+                            {this.renderSteps()}
+                            {renderMainHeading()}
+                            <Wizard
+                                className="disruption-creation__wizard container p-0"
+                                data={ incidentData }
+                                response={ this.props.action }
+                                onDataUpdate={ this.updateData }
+                                onSubmit={ this.onSubmit }
+                                onSubmitDraft={ useDraftDisruptions && this.onSubmitDraft }>
+                                <SelectDetails
+                                    onUpdateDetailsValidation={ this.onUpdateDetailsValidation }
+                                    onSubmitUpdate={ this.onSubmitUpdate } />
+                                <SelectEffects
+                                    onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
+                                    onSubmitUpdate={ this.onSubmitUpdate } />
+                                <Workarounds
+                                    isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
+                                    onSubmitUpdate={ this.onSubmitUpdate } />
+                            </Wizard>
+                            <CustomModal
+                                className="disruption-creation__modal"
+                                title={ this.props.action.resultIncidentId ? 'Disruption created' : 'Log a disruption' }
+                                isModalOpen={ isConfirmationOpen }>
+                                <Confirmation response={ this.props.action } />
+                            </CustomModal>
+                            <CustomModal
+                                className="disruption-creation__modal"
+                                title="Log a disruption"
+                                isModalOpen={ this.props.isCancellationOpen }>
+                                <Cancellation />
+                            </CustomModal>
+                        </div>
                     )}
-
-                    <WorkaroundPanel
+                    {this.props.editMode === EDIT_TYPE.EDIT && (
+                        <div className="disruption-edit__container h-100">
+                            <div className="label-with-icon">
+                                {renderMainHeading()}
+                                {' '}
+                                {this.props.isEditEffectPanelOpen
+                                    && (
+                                        <KeyboardDoubleArrowLeftIcon onClick={ this.closeEffectEditPanel }
+                                            className="collapse-icon"
+                                            style={ { color: '#399CDB', fontSize: '48px' } } />
+                                    )}
+                            </div>
+                            <SelectDetails
+                                onUpdateDetailsValidation={ this.onUpdateDetailsValidation }
+                                data={ incidentData }
+                                response={ this.props.action }
+                                onDataUpdate={ this.updateData }
+                                onSubmit={ this.onSubmit }
+                                onSubmitDraft={ useDraftDisruptions && this.onSubmitDraft }
+                                onSubmitUpdate={ this.onSubmitUpdate }
+                                isEffectsRequiresToUpdate={ isEffectsRequiresToUpdate }
+                                updateIsEffectsRequiresToUpdateState={ () => this.setState({ isEffectsRequiresToUpdate: false }) }
+                                isEffectValid={ isEffectValid } />
+                            <CustomModal
+                                className="disruption-creation__modal"
+                                title={ this.props.action.resultIncidentId ? 'Disruption created' : 'Log a disruption' }
+                                isModalOpen={ isConfirmationOpen }>
+                                <Confirmation response={ this.props.action } />
+                            </CustomModal>
+                            <CustomModal
+                                className="disruption-creation__modal"
+                                title="Log a disruption"
+                                isModalOpen={ this.props.isCancellationOpen }>
+                                <Cancellation />
+                            </CustomModal>
+                            <CustomModal
+                                className="disruption-creation__modal"
+                                title="Save Disruption"
+                                isModalOpen={ this.props.isApplyChangesOpen }>
+                                <ApplyChangesModal applyChanges={ this.onSubmitIncidentUpdate } />
+                            </CustomModal>
+                        </div>
+                    )}
+                </SidePanel>
+                <WorkaroundPanel
+                    disruptions={ incidentData.disruptions }
+                    onWorkaroundUpdate={ this.updateDisruptionWorkaround }
+                    onWorkaroundChange={ (key, newWorkarounds) => this.setState({
+                        editableWorkarounds: {
+                            key,
+                            workarounds: newWorkarounds,
+                        },
+                    }) }
+                />
+                {this.props.editMode === EDIT_TYPE.EDIT && (
+                    <EditEffectPanel
                         disruptions={ incidentData.disruptions }
                         onWorkaroundUpdate={ this.updateDisruptionWorkaround }
-                        onWorkaroundChange={ (key, newWorkarounds) => this.setState({
-                            editableWorkarounds: {
-                                key,
-                                workarounds: newWorkarounds,
-                            },
-                        }) }
-                        isDiversionManagerOpen={ this.props.isDiversionManagerOpen }
-                        openDiversionManager={ this.props.openDiversionManager }
-                        updateDiversionMode={ this.props.updateDiversionMode }
-                        updateDiversionToEdit={ this.props.updateDiversionToEdit }
-                        fetchDiversions={ this.props.fetchDiversions }
-                        clearDiversionsCache={ this.props.clearDiversionsCache }
-                    />
-                    {this.props.editMode === EDIT_TYPE.EDIT && (
-                        <EditEffectPanel
-                            disruptions={ incidentData.disruptions }
-                            onWorkaroundUpdate={ this.updateDisruptionWorkaround }
-                            modalOpenedTime={ incidentData.modalOpenedTime
-                                ? moment(incidentData.modalOpenedTime).toISOString()
-                                : '' }
-                            disruptionRecurrent={ incidentData.recurrent }
-                            onDisruptionsUpdate={ this.updateData }
-                            isNotesRequiresToUpdate={ isNotesRequiresToUpdate }
-                            updateIsNotesRequiresToUpdateState={ () => this.setState({ isNotesRequiresToUpdate: false }) }
-                            isWorkaroundsRequiresToUpdate={ isWorkaroundsRequiresToUpdate }
-                            updateIsWorkaroundsRequiresToUpdateState={ () => this.setState({ isWorkaroundsRequiresToUpdate: false }) }
-                            workaroundsToSync={ workaroundsToSync }
-                            updateEditableDisruption={ disruption => this.setState({ editableDisruption: disruption }) }
-                            applyDisruptionChanges={ this.applyDisruptionChanges }
-                            updateEffectValidationState={ valid => this.setState({ isEffectValid: valid }) }
-                            updateIsEffectUpdatedState={ isUpdated => this.setState({ isEffectUpdated: isUpdated }) }
-                            useDiversion={ this.props.useDiversion }
-                            toggleEditEffectPanel={ this.props.toggleEditEffectPanel }
-                            updateDisruptionKeyToEditEffect={ this.props.updateDisruptionKeyToEditEffect }
-                            toggleWorkaroundPanel={ this.props.toggleWorkaroundPanel }
-                            updateDisruptionKeyToWorkaroundEdit={ this.props.updateDisruptionKeyToWorkaroundEdit }
-                            setDisruptionForWorkaroundEdit={ this.props.setDisruptionForWorkaroundEdit }
-                            setRequestToUpdateEditEffectState={ this.props.setRequestToUpdateEditEffectState }
-                            setRequestedDisruptionKeyToUpdateEditEffect={ this.props.setRequestedDisruptionKeyToUpdateEditEffect }
-                            isDiversionManagerOpen={ this.props.isDiversionManagerOpen }
-                            openDiversionManager={ this.props.openDiversionManager }
-                            updateDiversionMode={ this.props.updateDiversionMode }
-                            updateDiversionToEdit={ this.props.updateDiversionToEdit }
-                            fetchDiversions={ this.props.fetchDiversions }
-                            clearDiversionsCache={ this.props.clearDiversionsCache }
-                        />
-                    )}
-                    <Map
-                        shouldOffsetForSidePanel
-                        boundsToFit={ this.props.boundsToFit }
-                        isLoading={ this.props.isLoading }
-                    >
-                        <ShapeLayer
-                            shapes={ this.props.shapes }
-                            routeColors={ this.props.routeColors } />
-                        <StopsLayer
-                            childStops={ this.props.activeStep === 2 ? this.props.childStops : undefined }
-                            stopDetail={ this.props.stopDetail }
-                            focusZoom={ 16 }
-                            onStopClick={ (stop) => {
-                                if (incidentData.disruptionType === DISRUPTION_TYPE.ROUTES) {
-                                    this.setState({ showAlert: true });
-                                    return;
-                                }
-                                this.props.updateAffectedStopsState([...this.props.stops, toCamelCaseKeys(stop)].map(stopEntity => ({
-                                    ...stopEntity,
-                                    valueKey: 'stopCode',
-                                    labelKey: 'stopCode',
-                                    type: SEARCH_RESULT_TYPE.STOP.type,
-                                })));
-                            } } />
-                        <HighlightingLayer
-                            stopDetail={ this.props.stopDetail } />
-                        <SelectedStopsMarker
-                            stops={ uniqBy([...this.props.stops, ...this.props.routes], stop => stop.stopCode).map(stop => itemToEntityTransformers[STOP.type](stop).data) }
-                            size={ 28 }
-                            tooltip
-                            maximumStopsToDisplay={ 200 } />
-                        <DrawLayer
-                            disabled={ this.props.activeStep !== 2 }
-                            disruptionType={ incidentData.disruptionType }
-                            onDrawCreated={ shape => this.props.searchByDrawing(
-                                incidentData.disruptionType,
-                                this.props.useGeoSearchRoutesByDisruptionPeriod && (incidentData.endTime || incidentData.recurrent) ? {
-                                    ...shape,
-                                    activePeriods: incidentData.activePeriods.length > 0 ? incidentData.activePeriods : generateDisruptionActivePeriods(incidentData),
-                                } : shape,
-                            ) } />
-                    </Map>
-                    <Button
-                        className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
-                        onClick={ () => this.toggleModal('Cancellation', true) }>
-                        Close
-                        <AiOutlineClose className="disruption-creation-close" size={ 20 } />
-                    </Button>
-                    {this.state.showAlert && (
-                        <AlertMessage
-                            autoDismiss
-                            message={ {
-                                ...ALERT_TYPES.STOP_SELECTION_DISABLED_ERROR(),
-                            } }
-                            onClose={ () => this.setState({ showAlert: false }) }
-                        />
-                    )}
-                </div>
-
-                {/* BLOCK 2: DiversionContent (shown when diversion manager is open) */}
-                {this.props.isDiversionManagerOpen && (
-                    <div style={ {
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100vw',
-                        height: '100vh',
-                        zIndex: 99999,
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        justifyContent: 'center',
-                        paddingTop: '20px',
-                    } }>
-                        <DiversionContent
-                            key={ `diversion-content-${this.props.resultState?.diversionId || 'new'}` }
-                            disruption={ {
-                                ...this.props.incidentToEdit,
-                                disruptionId: this.props.incidentToEdit?.disruptions?.[0]?.disruptionId,
-                                affectedEntities: (() => {
-                                    const affectedEntities = this.props.incidentToEdit?.disruptions?.[0]?.affectedEntities || [];
-                                    return {
-                                        affectedRoutes: affectedEntities.filter(entity => entity.type === 'route'),
-                                        affectedStops: affectedEntities.filter(entity => entity.type === 'stop'),
-                                    };
-                                })(),
-                            } }
-                            onCancelled={ () => {
-                                this.props.openDiversionManager(false);
-                                this.props.toggleEditEffectPanel(true);
-                                if (this.props.disruptionIncidentNoToEdit) {
-                                    this.props.updateDisruptionKeyToEditEffect(this.props.disruptionIncidentNoToEdit);
-                                }
-                            } }
-                            onDiversionCreated={ () => {
-                                this.props.setRequireToUpdateIncidentForEditState(true);
-                            } }
-                            editMode={ this.props.diversionMode || 'CREATE' }
-                            isOpen={ this.props.isDiversionManagerOpen }
-                        />
-                    </div>
-                )}
-
-                {/* BLOCK 3: Result modal (shown only when there IS a result) */}
-                {(this.props.resultState?.diversionId || this.props.resultState?.error) && (
-                    <DiversionResultModalWrapper
-                        resultState={ this.props.resultState }
-                        editMode={ this.props.diversionMode || 'CREATE' }
-                        resetDiversionResult={ this.props.resetDiversionResult }
-                        onNewDiversion={ () => {
-                            this.forceUpdate();
-                        } }
-                        onReturnToDisruption={ () => {
-                            this.props.openDiversionManager(false);
-                            this.props.toggleEditEffectPanel(true);
-                        } }
+                        modalOpenedTime={ incidentData.modalOpenedTime
+                            ? moment(incidentData.modalOpenedTime).toISOString()
+                            : '' }
+                        disruptionRecurrent={ incidentData.recurrent }
+                        onDisruptionsUpdate={ this.updateData }
+                        isNotesRequiresToUpdate={ isNotesRequiresToUpdate }
+                        updateIsNotesRequiresToUpdateState={ () => this.setState({ isNotesRequiresToUpdate: false }) }
+                        isWorkaroundsRequiresToUpdate={ isWorkaroundsRequiresToUpdate }
+                        updateIsWorkaroundsRequiresToUpdateState={ () => this.setState({ isWorkaroundsRequiresToUpdate: false }) }
+                        workaroundsToSync={ workaroundsToSync }
+                        updateEditableDisruption={ disruption => this.setState({ editableDisruption: disruption }) }
+                        applyDisruptionChanges={ this.applyDisruptionChanges }
+                        updateEffectValidationState={ valid => this.setState({ isEffectValid: valid }) }
+                        updateIsEffectUpdatedState={ isUpdated => this.setState({ isEffectUpdated: isUpdated }) }
                     />
                 )}
-            </>
+                <Map
+                    shouldOffsetForSidePanel
+                    boundsToFit={ this.props.boundsToFit }
+                    isLoading={ this.props.isLoading }
+                >
+                    <ShapeLayer
+                        shapes={ this.props.shapes }
+                        routeColors={ this.props.routeColors } />
+                    <StopsLayer
+                        childStops={ this.props.activeStep === 2 ? this.props.childStops : undefined }
+                        stopDetail={ this.props.stopDetail }
+                        focusZoom={ 16 }
+                        onStopClick={ (stop) => {
+                            if (incidentData.disruptionType === DISRUPTION_TYPE.ROUTES) {
+                                this.setState({ showAlert: true });
+                                return;
+                            }
+                            this.props.updateAffectedStopsState([...this.props.stops, toCamelCaseKeys(stop)].map(stopEntity => ({
+                                ...stopEntity,
+                                valueKey: 'stopCode',
+                                labelKey: 'stopCode',
+                                type: SEARCH_RESULT_TYPE.STOP.type,
+                            })));
+                        } } />
+                    <HighlightingLayer
+                        stopDetail={ this.props.stopDetail } />
+                    <SelectedStopsMarker
+                        stops={ uniqBy([...this.props.stops, ...this.props.routes], stop => stop.stopCode).map(stop => itemToEntityTransformers[STOP.type](stop).data) }
+                        size={ 28 }
+                        tooltip
+                        maximumStopsToDisplay={ 200 } />
+                    <DrawLayer
+                        disabled={ this.props.activeStep !== 2 }
+                        disruptionType={ incidentData.disruptionType }
+                        onDrawCreated={ shape => this.props.searchByDrawing(
+                            incidentData.disruptionType,
+                            this.props.useGeoSearchRoutesByDisruptionPeriod && (incidentData.endTime || incidentData.recurrent) ? {
+                                ...shape,
+                                activePeriods: incidentData.activePeriods.length > 0 ? incidentData.activePeriods : generateDisruptionActivePeriods(incidentData),
+                            } : shape,
+                        ) } />
+                </Map>
+                <Button
+                    className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
+                    onClick={ () => this.toggleModal('Cancellation', true) }>
+                    Close
+                    <AiOutlineClose className="disruption-creation-close" size={ 20 } />
+                </Button>
+                {this.state.showAlert && (
+                    <AlertMessage
+                        autoDismiss
+                        message={ {
+                            ...ALERT_TYPES.STOP_SELECTION_DISABLED_ERROR(),
+                        } }
+                        onClose={ () => this.setState({ showAlert: false }) }
+                    />
+                )}
+            </div>
         );
     }
 }
@@ -826,7 +677,6 @@ CreateIncident.propTypes = {
     isLoading: PropTypes.bool,
     usePassengerImpact: PropTypes.bool.isRequired,
     useGeoSearchRoutesByDisruptionPeriod: PropTypes.bool.isRequired,
-    useDiversion: PropTypes.bool,
     isEditEffectPanelOpen: PropTypes.bool,
     isRequiresToUpdateNotes: PropTypes.bool,
     setRequireToUpdateIncidentForEditState: PropTypes.func.isRequired,
@@ -836,23 +686,6 @@ CreateIncident.propTypes = {
     setRequestedDisruptionKeyToUpdateEditEffect: PropTypes.func.isRequired,
     isWorkaroundPanelOpen: PropTypes.bool,
     isApplyChangesOpen: PropTypes.bool,
-    isDiversionManagerOpen: PropTypes.bool,
-    disruptionIncidentNoToEdit: PropTypes.string,
-    resultState: PropTypes.object,
-    openDiversionManager: PropTypes.func.isRequired,
-    updateDiversionMode: PropTypes.func.isRequired,
-    updateDiversionToEdit: PropTypes.func.isRequired,
-    fetchDiversions: PropTypes.func.isRequired,
-    clearDiversionsCache: PropTypes.func.isRequired,
-    resetDiversionResult: PropTypes.func.isRequired,
-    toggleEditEffectPanel: PropTypes.func.isRequired,
-    updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
-    toggleWorkaroundPanel: PropTypes.func.isRequired,
-    updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
-    setDisruptionForWorkaroundEdit: PropTypes.func.isRequired,
-    diversionMode: PropTypes.string,
-    // TODO: Uncomment when needed
-    // disruptionToEdit: PropTypes.object,
 };
 
 CreateIncident.defaultProps = {
@@ -866,16 +699,10 @@ CreateIncident.defaultProps = {
     routeColors: [],
     incidentToEdit: {},
     isLoading: false,
-    useDiversion: false,
     isEditEffectPanelOpen: false,
     isRequiresToUpdateNotes: false,
     isWorkaroundPanelOpen: false,
     isApplyChangesOpen: false,
-    isDiversionManagerOpen: false,
-    disruptionIncidentNoToEdit: '',
-    resultState: {},
-    diversionMode: 'CREATE',
-    // useDiversion: false, // Remove this to use Redux state
 };
 
 export default connect(state => ({
@@ -883,6 +710,8 @@ export default connect(state => ({
     isCreateOpen: isIncidentCreationOpen(state),
     isCancellationOpen: isIncidentCancellationModalOpen(state),
     activeStep: getIncidentStepCreation(state),
+    stops: getAffectedStops(state),
+    routes: getAffectedRoutes(state),
     shapes: getShapes(state),
     editMode: getEditMode(state),
     routeColors: getRouteColors(state),
@@ -893,15 +722,11 @@ export default connect(state => ({
     isLoading: getIncidentsLoadingState(state),
     usePassengerImpact: usePassengerImpact(state),
     useGeoSearchRoutesByDisruptionPeriod: useGeoSearchRoutesByDisruptionPeriod(state),
-    useDiversion: useDiversion(state),
-    diversionMode: state.control?.diversions?.mode || 'CREATE',
+    useDraftDisruptions: useDraftDisruptions(state),
     isEditEffectPanelOpen: isEditEffectPanelOpen(state),
     isRequiresToUpdateNotes: isRequiresToUpdateNotes(state),
     isWorkaroundPanelOpen: isWorkaroundPanelOpen(state),
     isApplyChangesOpen: isApplyChangesModalOpen(state),
-    isDiversionManagerOpen: getIsDiversionManagerOpen(state),
-    disruptionIncidentNoToEdit: getRequestedDisruptionKeyToUpdateEditEffect(state),
-    resultState: getDiversionResultState(state),
 }), {
     createNewIncident,
     openCreateIncident,
@@ -915,15 +740,4 @@ export default connect(state => ({
     updateAffectedRoutesState,
     setRequestToUpdateEditEffectState,
     setRequestedDisruptionKeyToUpdateEditEffect,
-    openDiversionManager,
-    toggleEditEffectPanel,
-    updateDisruptionKeyToEditEffect,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
-    setDisruptionForWorkaroundEdit,
-    updateDiversionMode,
-    updateDiversionToEdit,
-    fetchDiversions,
-    clearDiversionsCache,
-    resetDiversionResult,
 })(CreateIncident);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { isEmpty, sortBy, uniqueId, some } from 'lodash-es';
 import PropTypes from 'prop-types';
@@ -23,7 +23,7 @@ import {
     updateAffectedRoutesState,
     toggleIncidentModals,
 } from '../../../../../redux/actions/control/incidents';
-// import Footer from './Footer';
+import Footer from './Footer';
 import { search } from '../../../../../redux/actions/search';
 import { getSearchResults } from '../../../../../redux/selectors/search';
 import {
@@ -88,78 +88,6 @@ const INIT_EFFECT_STATE = {
     header: '',
 };
 
-const useDisruptions = (disruptions) => {
-    const disruptionsMap = useMemo(() => disruptions.reduce((acc, disruption) => {
-        acc[disruption.key] = disruption;
-        return acc;
-    }, {}), [disruptions]);
-
-    const getDisruptionByKey = useMemo(() => key => disruptionsMap[key], [disruptionsMap]);
-
-    return {
-        disruptionsMap,
-        getDisruptionByKey,
-        disruptions,
-    };
-};
-
-const FooterWithCustomButtons = ({ onBack, onCancel, onSaveDraft, onContinue, onFinish, isDraftSubmitDisabled, data, isEditMode }) => (
-    <footer className="row m-0 justify-content-between align-items-center p-4 position-fixed incident-footer-min-height">
-        { !isEditMode && (
-            <div className="col-auto">
-                <Button className="btn cc-btn-link" onClick={ onBack }>
-                    Go back
-                </Button>
-            </div>
-        )}
-
-        <div className="col-auto">
-            <div className="d-flex" style={ { gap: '2rem' } }>
-                <Button
-                    className="btn cc-btn-secondary finish-modal-button"
-                    onClick={ onCancel }>
-                    Cancel
-                </Button>
-                { (data?.status === STATUSES.DRAFT) && (
-                    <Button
-                        className="btn cc-btn-secondary finish-modal-button"
-                        disabled={ isDraftSubmitDisabled }
-                        onClick={ onSaveDraft }>
-                        Save draft
-                    </Button>
-                )}
-                <Button
-                    disabled={ isDraftSubmitDisabled }
-                    className="btn cc-btn-primary finish-modal-button"
-                    onClick={ onContinue }>
-                    Continue
-                </Button>
-                <Button
-                    disabled={ isDraftSubmitDisabled }
-                    className="btn cc-btn-primary text-white finish-modal-button"
-                    onClick={ onFinish }>
-                    Finish
-                </Button>
-            </div>
-        </div>
-    </footer>
-);
-
-FooterWithCustomButtons.propTypes = {
-    onBack: PropTypes.func.isRequired,
-    onCancel: PropTypes.func.isRequired,
-    onSaveDraft: PropTypes.func.isRequired,
-    onContinue: PropTypes.func.isRequired,
-    onFinish: PropTypes.func.isRequired,
-    isDraftSubmitDisabled: PropTypes.bool.isRequired,
-    // eslint-disable-next-line react/no-unused-prop-types
-    isSubmitDisabled: PropTypes.bool.isRequired,
-    // eslint-disable-next-line react/no-unused-prop-types
-    useDraftDisruptions: PropTypes.bool.isRequired,
-    data: PropTypes.object.isRequired,
-    isEditMode: PropTypes.bool.isRequired,
-};
-
 export const SelectEffects = (props) => {
     const {
         recurrent: incidentRecurrent,
@@ -171,9 +99,10 @@ export const SelectEffects = (props) => {
         cause: incidentCause,
         header: incidentHeader,
         modalOpenedTime,
-    } = props.data || {};
+    } = props.data;
 
     const setupDisruption = () => {
+        const now = moment();
         let recurrenceDates;
         let recurrencePattern;
         if (incidentRecurrent) {
@@ -182,8 +111,8 @@ export const SelectEffects = (props) => {
         }
         return {
             ...INIT_EFFECT_STATE,
-            startTime: incidentStartTime || moment().format(TIME_FORMAT),
-            startDate: incidentStartDate || moment().format(DATE_FORMAT),
+            startTime: incidentStartTime || now.format(TIME_FORMAT),
+            startDate: incidentStartDate || now.format(DATE_FORMAT),
             endTime: incidentEndTime || '',
             endDate: incidentEndDate || '',
             severity: incidentSeverity || DEFAULT_SEVERITY.value,
@@ -204,24 +133,10 @@ export const SelectEffects = (props) => {
     const [activePeriods, setActivePeriods] = useState([]);
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
+    const impactValid = key => !isEmpty(disruptions.find(d => d.key === key).impact);
 
-    const { getDisruptionByKey } = useDisruptions(disruptions);
-
+    const getDisruptionByKey = key => disruptions.find(d => d.key === key);
     const updateDisruptionsState = () => props.onDataUpdate('disruptions', disruptions);
-
-    useEffect(() => {
-        if (props.data.disruptions && props.data.disruptions.length > 0) {
-            setDisruptions(props.data.disruptions);
-        }
-    }, [props.data.disruptions]);
-
-    useEffect(() => {
-        if (disruptions.length > 0) {
-            updateDisruptionsState();
-        }
-    }, [disruptions]);
-
-    const impactValid = key => !isEmpty(getDisruptionByKey(key)?.impact);
 
     const getOptionalLabel = label => (
         <>
@@ -233,9 +148,9 @@ export const SelectEffects = (props) => {
 
     const datePickerOptions = getDatePickerOptions();
 
-    const endDateDatePickerOptions = key => getDatePickerOptions(getDisruptionByKey(key)?.startDate);
+    const endDateDatePickerOptions = key => getDatePickerOptions(disruptions.find(d => d.key === key).startDate);
 
-    const severityValid = key => !isEmpty(getDisruptionByKey(key)?.severity);
+    const severityValid = key => !isEmpty(disruptions.find(d => d.key === key).severity);
 
     const startTimeValid = (key) => {
         const disruption = getDisruptionByKey(key);
@@ -375,7 +290,7 @@ export const SelectEffects = (props) => {
             } else {
                 props.onSubmitUpdate();
             }
-        }, 0);
+        }, 0); // to run it on next event loop
     };
 
     const onContinue = () => {
@@ -465,14 +380,8 @@ export const SelectEffects = (props) => {
             } else {
                 updateDisruption(key, { endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '', isEndDateDirty: false });
             }
-        } else if (date.length === 0) {
-            updateDisruption(key, { endDate: '', endTime: '', isEndDateDirty: false });
         } else {
-            updateDisruption(key, {
-                endDate: moment(date[0]).format(DATE_FORMAT),
-                endTime: '23:59',
-                isEndDateDirty: false,
-            });
+            updateDisruption(key, { endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '', isEndDateDirty: false });
         }
     };
 
@@ -723,23 +632,17 @@ export const SelectEffects = (props) => {
                 <AiOutlinePlusCircle size={ 36 } color="grey" />
             </button>
 
-            <FooterWithCustomButtons
-                onBack={ onBack }
-                onCancel={ () => props.toggleIncidentModals('isCancellationOpen', true) }
-                onSaveDraft={ onSaveDraft }
-                onContinue={ onContinue }
-                onFinish={ () => {
-                    const result = props.onSubmit();
-                    if (result && result.then) {
-                        result.then(() => {
-                        }).catch(() => {
-                        });
-                    }
-                } }
+            <Footer
+                updateCurrentStep={ props.updateCurrentStep }
+                onStepUpdate={ props.onStepUpdate }
+                toggleIncidentModals={ props.toggleIncidentModals }
+                nextButtonValue="Continue"
+                onContinue={ () => onContinue() }
+                isSubmitDisabled={ props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
                 isDraftSubmitDisabled={ isDraftSubmitDisabled }
-                isSubmitDisabled={ isSubmitDisabled }
-                data={ props.data }
-                isEditMode={ props.isEditMode }
+                isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || !props.isEditMode }
+                onSubmitDraft={ () => onSaveDraft() }
+                onBack={ !props.isEditMode ? onBack : undefined }
             />
             <CustomMuiDialog
                 title="Disruption Active Periods"
@@ -765,7 +668,6 @@ SelectEffects.propTypes = {
     data: PropTypes.object,
     onUpdateEntitiesValidation: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
-    onSubmit: PropTypes.func,
 };
 
 SelectEffects.defaultProps = {
@@ -775,7 +677,6 @@ SelectEffects.defaultProps = {
     isEditMode: false,
     useDraftDisruptions: false,
     data: {},
-    onSubmit: () => { },
 };
 
 export default connect(state => ({
@@ -793,5 +694,3 @@ export default connect(state => ({
     toggleIncidentModals,
     search,
 })(SelectEffects);
-
-export { useDisruptions };
