@@ -5,7 +5,6 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import './RouteShapeEditor.scss';
 import L from 'leaflet';
-
 import PropTypes from 'prop-types';
 import { findDifferences, parseWKT, toCoordinates, toWKT } from './ShapeHelper';
 import IconMarker from '../../IconMarker/IconMarker';
@@ -15,41 +14,7 @@ import { DEFAULT_AUCKLAND_COORDINATES, DIVERSION_SHAPE_COLOR, DIVERSION_SHAPE_OP
 
 L.drawLocal.edit.handlers.edit.tooltip.text = 'Drag the red dots to update the shape for the selected route variant.';
 
-// Empty state component for when no route variant is selected
-const EmptyRouteState = () => (
-    <div style={ {
-        height: '100%',
-        width: '100%',
-        backgroundColor: '#f8f9fa',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        border: '2px dashed #dee2e6',
-        borderRadius: '8px',
-        color: '#6c757d',
-        fontSize: '16px',
-        textAlign: 'center',
-        padding: '20px',
-    } }>
-        <div style={ { marginBottom: '10px' } }>
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.447 2.224A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3" />
-            </svg>
-        </div>
-        <div style={ { fontWeight: 'bold', marginBottom: '5px' } }>
-            Select a Route Variant
-        </div>
-        <div style={ { fontSize: '14px' } }>
-            Please select a route variant from the dropdown to display the map
-        </div>
-    </div>
-);
-
 const RouteShapeEditor = (props) => {
-    // Helper function to check if route variant is valid
-    const hasValidRouteVariant = () => props.routeVariant && Object.keys(props.routeVariant).length > 0;
-
     // Map
     const [center, setCenter] = useState(DEFAULT_AUCKLAND_COORDINATES);
     const mapRef = useRef();
@@ -238,11 +203,7 @@ const RouteShapeEditor = (props) => {
                     <button type="button" onClick={ handleUndo } disabled={ undoStack.length < 2 }>Undo</button>
                 </div>
             )}
-            {/* Placeholder when no route variant is selected */}
-            {!hasValidRouteVariant() && <EmptyRouteState />}
-            {/* Map when route variant is selected */}
-            {hasValidRouteVariant() && (
-                <LeafletMap
+            <LeafletMap
                     key={ `${props.routeVariant?.routeVariantId}-${mapKey}` }
                     center={ center }
                     zoom={ 16 }
@@ -343,7 +304,6 @@ const RouteShapeEditor = (props) => {
                         </FeatureGroup>
                     )}
                 </LeafletMap>
-            )}
         </div>
     );
 };

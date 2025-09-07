@@ -9,11 +9,9 @@ import './SidePanel.scss';
 
 const SidePanel = (props) => {
     const { isOpen, isActive, position, children, toggleButton, className } = props;
-    const panelClasses = `side-panel ${isActive ? 'side-panel--active' : ''} ${isOpen ? 'side-panel--open' : ''} side-panel--${position} ${className}`;
-
 
     return (
-        <section className={ panelClasses }>
+        <section className={ `side-panel ${isActive ? 'side-panel--active' : ''} ${isOpen ? 'side-panel--open' : ''} side-panel--${position} ${className}` }>
             <div className="side-panel__inner h-100 d-flex position-relative flex-column">
                 { children }
             </div>

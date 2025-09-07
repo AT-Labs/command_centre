@@ -10,21 +10,19 @@
     }
 }
 
-// Special rules for diversion-result-modal to ensure it's visible
 .diversion-result-modal {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     pointer-events: auto !important;
-    z-index: 1030 !important;
+    z-index: 1000 !important;
 
-    // Specific rules for modal content
     > div {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
         pointer-events: auto !important;
-        z-index: 1030 !important;
+        z-index: 1000 !important;
     }
 }
 
@@ -36,19 +34,18 @@ body.diversion-result-active {
         width: 100vw !important;
         height: 100vh !important;
         pointer-events: auto !important;
-        z-index: 1030 !important;
+        z-index: 1000 !important;
         background-color: rgba(0, 0, 0, .5) !important;
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
 
-        // Specific rules for modal content
         > div {
             display: flex !important;
             visibility: visible !important;
             opacity: 1 !important;
             pointer-events: auto !important;
-            z-index: 1030 !important;
+            z-index: 1000 !important;
         }
     }
     .edit-effect-panel,
@@ -76,9 +73,8 @@ body.diversion-result-active {
     }
 }
 
-// Special rules for Bootstrap Modal with diversion-result-modal class
 .modal.diversion-result-modal {
-    z-index: 1030 !important;
+    z-index: 1000 !important;
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -90,7 +86,7 @@ body.diversion-result-active {
     height: 100% !important;
 
     .modal-content {
-        z-index: 1030 !important;
+        z-index: 1000 !important;
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
@@ -101,7 +97,7 @@ body.diversion-result-active {
     }
 
     .modal-dialog {
-        z-index: 1030 !important;
+        z-index: 1000 !important;
         position: relative !important;
         margin: 0;
         margin: 0 auto !important;
@@ -110,7 +106,7 @@ body.diversion-result-active {
     }
 
     .modal-backdrop {
-        z-index: 1030 !important;
+        z-index: 1000 !important;
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
@@ -135,9 +131,8 @@ body.diversion-result-active .panel-footer {
     opacity: 0 !important;
 }
 
-// Special rules for Add Diversion modal footer
 .diversion-creation-container footer {
-    z-index: 1000001 !important;
+    z-index: 1000 !important;
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -150,9 +145,8 @@ body.diversion-result-active .panel-footer {
     border-top: 1px solid #DDD !important;
 }
 
-// Ensure Add Diversion modal footer is always visible
 .diversion-manager .panel-footer {
-    z-index: 1000001 !important;
+    z-index: 1000 !important;
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;

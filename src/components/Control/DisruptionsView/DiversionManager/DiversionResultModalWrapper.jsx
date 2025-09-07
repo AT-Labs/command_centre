@@ -21,7 +21,7 @@ const PortalModal = ({ isOpen, children, className }) => {
                 width: 100vw;
                 height: 100vh;
                 pointer-events: none;
-                z-index: 100000;
+                z-index: 1000;
             `;
             document.body.appendChild(container);
         }
@@ -110,7 +110,7 @@ const DiversionResultModalWrapper = ({
                 width: 100vw !important;
                 height: 100vh !important;
                 pointer-events: auto !important;
-                z-index: 100000 !important;
+                z-index: 1000 !important;
                 background-color: rgba(0, 0, 0, 0.5) !important;
             }
             .diversion-result-modal > div:first-child {
