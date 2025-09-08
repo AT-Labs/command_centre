@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import moment from 'moment-timezone';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
-import { debounce } from 'lodash';
+import { debounce } from 'lodash-es';
 
 import '../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
 import './styles.scss';
@@ -11,8 +11,9 @@ import SidePanel from '../../../Common/OffCanvasLayout/SidePanel/SidePanel';
 import RouteShapeEditor from '../../../Common/Map/RouteShapeEditor/RouteShapeEditor';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import ChangeSelectedRouteVariantModal from './ChangeSelectedRouteVariantModal';
-import { createDiversion, updateDiversion, fetchDiversions, clearDiversionsCache } from '../../../../redux/actions/control/diversions';
-import { getDiversionForEditing, getDiversionEditMode, getDiversionsForDisruption, getDiversionsLoadingForDisruption } from '../../../../redux/selectors/control/diversions';
+import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
+import { createDiversion, updateDiversion, resetDiversionResult } from '../../../../redux/actions/control/diversions';
+import { getDiversionResultState, getDiversionForEditing, getDiversionEditMode } from '../../../../redux/selectors/control/diversions';
 
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
 import { isAffectedStop, createAffectedStop,
@@ -32,24 +33,18 @@ const DiversionManager = (props) => {
     const debounceDelay = 300;
 
     const isEditingMode = props.editMode === EDIT_TYPE.EDIT;
-    const [isUpdated, setIsUpdated] = useState(false);
-    const [isDiversionValid, setIsDiversionValid] = useState(false);
-
-    const [forceUpdate, setForceUpdate] = useState(0);
-
-    const title = `${props.editMode === EDIT_TYPE.EDIT ? 'Edit' : 'Add'} Diversion`;
-    const buttonText = `${props.editMode === EDIT_TYPE.EDIT ? 'Update' : 'Create'} Diversion`;
+    const title = `${isEditingMode ? 'Edit' : 'Add'} Diversion`;
+    const resultAction = isEditingMode ? 'updated' : 'added';
+    const buttonText = `${isEditingMode ? 'Update' : 'Create'} Diversion`;
     const editingDiversions = props.diversion?.diversionRouteVariants || [];
 
+    // For base route variant
     const [routeVariantsList, setRouteVariantsList] = useState([]);
     const [selectedBaseRouteVariant, setSelectedBaseRouteVariant] = useState(null);
     const [initialBaseRouteShape, setInitialBaseRouteShape] = useState(null);
     const [isBaseRouteVariantVisible, setIsBaseRouteVariantVisible] = useState(true);
-    const [tempSelectedBaseRouteVariant, setTempSelectedBaseRouteVariant] = useState();
+    const [tempSelectedBaseRouteVariant, setTempSelectedBaseRouteVariant] = useState(); // Save temporarily for confirmation modal
     const [isChangeVariantModalOpen, setIsChangeVariantModalOpen] = useState(false);
-    const existingDiversions = getDiversionsForDisruption(props.disruption?.disruptionId || props.disruption?.incidentId)(props.state) || [];
-    const isLoadingExistingDiversions = getDiversionsLoadingForDisruption(props.disruption?.disruptionId || props.disruption?.incidentId)(props.state) || false;
-    const [recentlyCreatedDiversionRouteVariantId, setRecentlyCreatedDiversionRouteVariantId] = useState(null);
 
     // For additional route variants
     const [baseRouteVariantOnly, setBaseRouteVariantOnly] = useState(true);
@@ -57,7 +52,7 @@ const DiversionManager = (props) => {
     const [selectedOtherRouteVariants, setSelectedOtherRouteVariants] = useState([]); // Also hold the updated shape. It is not the final payload.
 
     // Shared diversion shape
-    const [diversionShapeWkt, setDiversionShapeWkt] = useState(isEditingMode ? props.diversion?.diversionShapeWkt : null);
+    const [diversionShapeWkt, setDiversionShapeWkt] = useState(isEditingMode ? props.diversion.diversionShapeWkt : null);
 
     // Updated base route variant
     const [modifiedBaseRouteVariant, setModifiedBaseRouteVariant] = useState();
@@ -66,82 +61,28 @@ const DiversionManager = (props) => {
     const [affectedStops, setAffectedStops] = useState([]);
 
     // Other variables
+    const isDiversionValid = modifiedBaseRouteVariant?.shapeWkt?.length > 0 && diversionShapeWkt?.length > 0;
+
+    const [isUpdated, setIsUpdated] = useState(false);
 
     // We only support adding diversion to bus route at the moment.
     const isBusRoute = route => route.routeType === BUS_TYPE_ID;
-    const [routeIds] = useState(() => {
-        const affectedEntities = props.disruption?.affectedEntities;
+    const [routeIds] = useState(props.disruption?.affectedEntities?.length > 0
+        ? [...new Set(props.disruption?.affectedEntities.filter(isBusRoute).map(entity => entity.routeId))]
+        : []);
 
-        const routeIdsArray = (() => {
-            if (Array.isArray(affectedEntities) && affectedEntities.length > 0) {
-                return [...new Set(affectedEntities.filter(isBusRoute).map(entity => entity.routeId))];
-            }
-
-            if (affectedEntities && typeof affectedEntities === 'object' && !Array.isArray(affectedEntities)) {
-                const keys = Object.keys(affectedEntities);
-                for (let i = 0; i < keys.length; i++) {
-                    const key = keys[i];
-                    const value = affectedEntities[key];
-                    if (Array.isArray(value) && value.length > 0) {
-                        return [...new Set(value.filter(isBusRoute).map(entity => entity.routeId))];
-                    }
-                }
-            }
-
-            return [];
-        })();
-        return routeIdsArray;
-    });
-
-    // Update isDiversionValid when state changes
-    const updateDiversionValid = useCallback(() => {
-        const isValid = modifiedBaseRouteVariant?.shapeWkt?.length > 0
-                       && diversionShapeWkt?.length > 0
-                       && diversionShapeWkt !== 'LINESTRING()';
-
-        setIsDiversionValid(isValid);
-    }, [modifiedBaseRouteVariant, diversionShapeWkt, forceUpdate]);
-
-    // Force update when dependencies change
-    useEffect(() => {
-        updateDiversionValid();
-    }, [updateDiversionValid]);
-
-    const isRouteVariantDisabled = (routeVariant) => {
-        if (!routeVariant) {
-            return false;
-        }
-
-        if (existingDiversions.length > 0) {
-            const isDisabled = existingDiversions.some((diversion) => {
-                const diversionRouteVariants = diversion.diversionRouteVariants || [];
-                return diversionRouteVariants.some(drv => drv.routeVariantId === routeVariant.routeVariantId);
-            });
-
-            return isDisabled;
-        }
-
-        if (recentlyCreatedDiversionRouteVariantId === routeVariant.routeVariantId) {
-            return true;
-        }
-
-        return false;
-    };
 
     const initEditingMode = (routeVariants) => {
         // Select the base route in edit mode
-        if (!props.diversion?.diversionRouteVariants?.length) {
-            return;
-        }
         const baseRouteVariantId = props.diversion.diversionRouteVariants[0].routeVariantId;
         const baseRouteVariant = routeVariants.find(rv => rv.routeVariantId === baseRouteVariantId);
         if (baseRouteVariant) {
             setSelectedBaseRouteVariant(baseRouteVariant);
-            const initialCoordinates = isEditingMode && props.diversion?.diversionShapeWkt ? mergeCoordinates(
+            const initialCoordinates = isEditingMode ? mergeCoordinates(
                 parseWKT(baseRouteVariant.shapeWkt),
                 parseWKT(props.diversion.diversionShapeWkt),
             ) : [];
-            setInitialBaseRouteShape(initialCoordinates.length > 0 ? toWKT(initialCoordinates) : baseRouteVariant.shapeWkt);
+            setInitialBaseRouteShape(toWKT(initialCoordinates));
         } else {
             return;
         }
@@ -163,34 +104,9 @@ const DiversionManager = (props) => {
         setSelectedOtherRouteVariants(updatedSelectedRouteVariants);
     };
 
-    const fetchExistingDiversions = useCallback(async () => {
-        if (isLoadingExistingDiversions) return;
-
-        const now = Date.now();
-        if (fetchExistingDiversions.lastCall && (now - fetchExistingDiversions.lastCall) < 3000) {
-            return;
-        }
-        fetchExistingDiversions.lastCall = now;
-
-        try {
-            if (!props.disruption?.disruptionId && !props.disruption?.incidentId) {
-                return;
-            }
-            const idToUse = props.disruption.disruptionId || props.disruption.incidentId;
-            await props.fetchDiversions(idToUse);
-
-            setRecentlyCreatedDiversionRouteVariantId(null);
-        } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('Error fetching diversions:', error);
-        }
-    }, [props.disruption.disruptionId, props.disruption.incidentId, isLoadingExistingDiversions, props.fetchDiversions]);
 
     // Fetch available route variants to populate the dropdown lists
     const fetchVariants = debounce(async () => {
-        if (!props.disruption?.startTime || !props.disruption?.endTime) {
-            return;
-        }
         const start = moment(props.disruption.startTime).tz(dateTypes.TIME_ZONE);
         const end = moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE);
         const startDate = start.format(SERVICE_DATE_FORMAT);
@@ -348,13 +264,7 @@ const DiversionManager = (props) => {
         setDiversionShapeWkt(updatedDiversionShape);
 
         if (selectedBaseRouteVariant?.routeVariantId && updatedRouteVariantShape && updatedDiversionShape) {
-            const newModifiedBaseRouteVariant = createModifiedRouteVariant(selectedBaseRouteVariant, updatedRouteVariantShape);
-            setModifiedBaseRouteVariant(newModifiedBaseRouteVariant);
-
-            // Force update after state changes
-            setTimeout(() => {
-                setForceUpdate(prev => prev + 1);
-            }, 0);
+            setModifiedBaseRouteVariant(createModifiedRouteVariant(selectedBaseRouteVariant, updatedRouteVariantShape));
 
             // Merge into other selected route variants
             const updatedOtherRouteVariants = selectedOtherRouteVariants.map((rv) => {
@@ -368,80 +278,27 @@ const DiversionManager = (props) => {
         }
     };
 
+    const reset = () => {
+        setSelectedBaseRouteVariant(null);
+        setTempSelectedBaseRouteVariant(null);
+        setAffectedStops([]);
+        setDiversionShapeWkt(null);
+        setModifiedBaseRouteVariant(null);
+    };
+
+    const handleResultAction = (action) => {
+        props.resetDiversionResult();
+        if (action === ACTION_TYPE.NEW_DIVERSION) {
+            reset();
+        } else if (action === ACTION_TYPE.RETURN_TO_DISRUPTION) {
+            if (props.onCancelled) {
+                props.onCancelled();
+            }
+        }
+    };
+
     // Buttons
     const onCancelClicked = () => {
-        setRecentlyCreatedDiversionRouteVariantId(null);
-
-        const effectsContainer = document.getElementById('effects-list');
-        const buttonsToHide = effectsContainer ? effectsContainer.querySelectorAll('.js-hide-on-cancel') : [];
-
-        const allModals = document.querySelectorAll(`
-            .CustomModal,
-            .CustomMuiDialog,
-            .disruption-creation__modal,
-            .diversion-result-modal,
-            .change-selected-route-variant-modal,
-            .modal,
-            .modal-dialog,
-            .modal-content,
-            .MuiDialog-root,
-            .MuiModal-root,
-            .modal-backdrop,
-            .MuiBackdrop-root,
-            .overlay,
-            .backdrop,
-            [class*="backdrop"],
-            [class*="overlay"],
-            [class*="modal"],
-            button[style*="z-index"],
-            [style*="z-index: 99"],
-            [style*="z-index: 100"],
-            [style*="z-index: 101"],
-            .diversions-button-container,
-            .diversions-button,
-            .diversions-menu-dropdown
-        `);
-
-        buttonsToHide.forEach((button) => {
-            if (button.closest('.edit-effect-panel')) {
-                return;
-            }
-
-            if (button.closest('.disruption-edit__container')) {
-                return;
-            }
-
-            if (button.closest('#effects-list')) {
-                const buttonElement = button;
-                buttonElement.style.display = 'none';
-                buttonElement.style.visibility = 'hidden';
-                buttonElement.style.opacity = '0';
-                buttonElement.style.zIndex = '-1';
-                buttonElement.style.pointerEvents = 'none';
-            }
-        });
-
-        allModals.forEach((modal) => {
-            if (modal && !modal.closest('.side-panel-control-component-view')) {
-                // Don't hide the DISR button in EditEffectPanel
-                if (modal.closest('.edit-effect-panel')) {
-                    return;
-                }
-                // Don't hide any buttons inside DiversionManager itself
-                if (modal.closest('.side-panel-control-component-view')) {
-                    return;
-                }
-                const modalElement = modal;
-                modalElement.style.display = 'none';
-                modalElement.style.visibility = 'hidden';
-                modalElement.style.opacity = '0';
-                modalElement.style.zIndex = '-1';
-                modalElement.style.pointerEvents = 'none';
-            }
-        });
-
-        document.body.classList.remove('modal-open', 'diversion-manager-active');
-
         if (props.onCancelled) {
             props.onCancelled();
         }
@@ -453,10 +310,6 @@ const DiversionManager = (props) => {
             if (selectedOtherRouteVariants.length > 0) {
                 modifiedOtherRouteVariants = selectedOtherRouteVariants
                     .map(rv => createModifiedRouteVariant(rv, rv.shapeWkt));
-            }
-
-            if (!props.disruption?.disruptionId) {
-                return;
             }
 
             const diversionPayload = {
@@ -502,6 +355,7 @@ const DiversionManager = (props) => {
                     || v.directionId !== selectedBaseRouteVariant.directionId
                     || !canMerge(v.shapeWkt, diversionShapeWkt),
             }));
+            // Automatically select all available route variants that has no trip modifications and can be merged
             const availableRouteVariants = updatedSecondaryList.filter(v => !v.hasTripModifications && !v.hidden);
             if (availableRouteVariants.length > 0) {
                 const updatedSelectedOtherRouteVariants = availableRouteVariants.map(rv => mergeDiversionToRouteVariant(rv, rv.shapeWkt, diversionShapeWkt));
@@ -511,6 +365,7 @@ const DiversionManager = (props) => {
                     hidden: availableRouteVariants
                         .some(rv => rv.routeVariantId === v.routeVariantId) ? true : v.hidden,
                 })));
+                // Hide all as we automatically select all available route variants
             } else {
                 setSelectedOtherRouteVariants([]);
                 setSecondaryRouteVariantsList(updatedSecondaryList);
@@ -576,24 +431,11 @@ const DiversionManager = (props) => {
         return undefined;
     }, [props.isOpen]);
 
-    React.useEffect(() => {
-        const hasId = props.disruption?.incidentId || props.disruption?.disruptionId;
-        let lastFetchTime = 0;
-        const MIN_FETCH_INTERVAL = 3000;
-
-        if (props.isOpen && hasId && !props.isLoadingExistingDiversions && editingDiversions.length === 0) {
-            const now = Date.now();
-            if ((now - lastFetchTime) > MIN_FETCH_INTERVAL) {
-                lastFetchTime = now;
-                fetchExistingDiversions();
-            }
-        }
-    }, [props.isOpen, props.disruption?.incidentId, props.disruption?.disruptionId, props.isLoadingExistingDiversions, editingDiversions.length]);
 
     return (
-        <div className="side-panel-control-component-view diversion-manager d-flex">
+        <div className="side-panel-control-component-view d-flex">
             <SidePanel
-                isOpen={ shouldShowDiversionManager }
+                isOpen
                 isActive
                 className="side-panel-primary-panel side-panel__scroll-size"
                 toggleButton={ false }
@@ -608,9 +450,6 @@ const DiversionManager = (props) => {
                         onSelectVariant={ handleSelectMainVariant }
                         visibility={ isBaseRouteVariantVisible }
                         onVisibilityChanged={ handleMainVisibilityChange }
-                        isRouteVariantDisabled={ isRouteVariantDisabled }
-                        isLoadingExistingDiversions={ isLoadingExistingDiversions }
-                        existingDiversions={ existingDiversions }
                     />
                     <div className="select-multiple-variants-container pl-4 pr-1">
                         <FormGroup check>
@@ -626,39 +465,33 @@ const DiversionManager = (props) => {
                                 <span>Apply diversion only to one route variant</span>
                             </Label>
                         </FormGroup>
-                        {!baseRouteVariantOnly && (
+                        { !baseRouteVariantOnly && (
                             <AdditionalRouteVariantSelector
                                 routeVariantsList={ secondaryRouteVariantsList }
                                 selectedRouteVariants={ selectedOtherRouteVariants }
                                 onSelectVariant={ handleSelectOtherVariant }
                                 onVisibilityChange={ handleOtherVisibilityChange }
                                 onRouteVariantRemoved={ handleRemoveRouteVariant }
-                                isRouteVariantDisabled={ isRouteVariantDisabled }
-                                isLoadingExistingDiversions={ isLoadingExistingDiversions }
-                                existingDiversions={ existingDiversions }
                             />
-                        )}
+                        ) }
                     </div>
                     <AffectedStops affectedStops={ affectedStops } />
-                    <div className="panel-footer">
-                        <div className="d-flex justify-content-between align-items-center">
-                            <Button
-                                className="btn cc-btn-secondary"
-                                onClick={ () => {
-                                    onCancelClicked();
-                                } }
-                            >
+                    <footer className="row m-0 justify-content-between p-4 position-fixed">
+                        <div className="col-4 pl-0">
+                            <Button className="btn cc-btn-secondary btn-block pl-0" onClick={ onCancelClicked }>
                                 Cancel
                             </Button>
+                        </div>
+                        <div className="col-4">
                             <Button
-                                className="btn cc-btn-primary"
+                                className="btn cc-btn-primary btn-block continue"
                                 onClick={ onSaveClicked }
-                                disabled={ (isEditingMode && !isUpdated) || !isDiversionValid }
+                                disabled={ (isEditingMode && !isUpdated) || !isDiversionValid || props.resultState.isLoading }
                             >
                                 { buttonText }
                             </Button>
                         </div>
-                    </div>
+                    </footer>
                 </div>
             </SidePanel>
             <RouteShapeEditor
@@ -682,41 +515,65 @@ const DiversionManager = (props) => {
                 />
             </CustomModal>
 
+            <CustomModal
+                className="diversion-result-modal"
+                title={ title }
+                isModalOpen={ !props.resultState.isLoading && (props.resultState?.diversionId || props.resultState?.error) }>
+                <DiversionResultModal
+                    result={ props.resultState?.diversionId ? `Diversion #${props.resultState?.diversionId} has been ${resultAction}.` : null }
+                    error={ props.resultState?.error?.message }
+                    showNewDiversionButton={ !isEditingMode }
+                    onAction={ handleResultAction }
+                />
+            </CustomModal>
+
         </div>
     );
+};
+
+const reset = () => {
+    setSelectedBaseRouteVariant(null);
+    setTempSelectedBaseRouteVariant(null);
+    setAffectedStops([]);
+    setDiversionShapeWkt(null);
+    setModifiedBaseRouteVariant(null);
+};
+
+const handleResultAction = (action) => {
+    props.resetDiversionResult();
+    if (action === ACTION_TYPE.NEW_DIVERSION) {
+        reset();
+    } else if (action === ACTION_TYPE.RETURN_TO_DISRUPTION) {
+        if (props.onCancelled) {
+            props.onCancelled();
+        }
+    }
 };
 
 DiversionManager.propTypes = {
     editMode: PropTypes.string.isRequired,
     createDiversion: PropTypes.func.isRequired,
     updateDiversion: PropTypes.func.isRequired,
-    fetchDiversions: PropTypes.func.isRequired,
-    // eslint-disable-next-line react/no-unused-prop-types
-    clearDiversionsCache: PropTypes.func.isRequired,
+    resetDiversionResult: PropTypes.func.isRequired,
     disruption: PropTypes.object,
     onCancelled: PropTypes.func,
+    resultState: PropTypes.object,
     diversion: PropTypes.object,
-    state: PropTypes.object,
-    isOpen: PropTypes.bool,
-    isLoadingExistingDiversions: PropTypes.bool,
 };
 
 DiversionManager.defaultProps = {
     disruption: null,
     onCancelled: null,
+    resultState: {
+        isLoading: false,
+        diversionId: null,
+        error: null,
+    },
     diversion: null,
-    isOpen: false,
-    isLoadingExistingDiversions: false,
-    state: null,
 };
 
 export default connect(state => ({
     editMode: getDiversionEditMode(state),
+    resultState: getDiversionResultState(state),
     diversion: getDiversionForEditing(state),
-    state,
-}), {
-    createDiversion,
-    updateDiversion,
-    fetchDiversions,
-    clearDiversionsCache,
-})(DiversionManager);
+}), { createDiversion, updateDiversion, resetDiversionResult })(DiversionManager);

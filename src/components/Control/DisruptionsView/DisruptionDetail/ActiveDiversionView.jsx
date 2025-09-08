@@ -31,17 +31,7 @@ const gridColumns = [
     { field: 'directionId', headerName: 'Direction', width: 180, align: 'left', renderCell: createRenderCell('directionId') },
 ];
 
-const ActiveDiversionView = ({
-    diversions,
-    expandedRows,
-    toggleExpand,
-    deleteDiversion,
-    editDiversion,
-    isEditingEnabled,
-    incidentNo,
-    isDeletingDiversion,
-    deletingDiversionId,
-}) => {
+const ActiveDiversionView = ({ diversions, expandedRows, toggleExpand, deleteDiversion, editDiversion, isEditingEnabled, incidentNo }) => {
     const getShortRouteId = routeId => routeId.split('-')[0];
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [selectedDiversionId, setSelectedDiversionId] = useState(null);
@@ -50,17 +40,9 @@ const ActiveDiversionView = ({
         setSelectedDiversionId(`${diversion.diversionId}`);
         setDeleteDialogOpen(true);
     };
-    const handleDeleteDiversionConfirm = async (selectedDiversionIdToDelete) => {
-        if (isDeletingDiversion) {
-            return;
-        }
-
-        try {
-            setDeleteDialogOpen(false);
-            await deleteDiversion(selectedDiversionIdToDelete);
-        } catch (error) {
-            setDeleteDialogOpen(true);
-        }
+    const handleDeleteDiversionConfirm = (selectedDiversionIdToDelete) => {
+        deleteDiversion(selectedDiversionIdToDelete);
+        setDeleteDialogOpen(false);
     };
 
     const renderHeader = diversion => (
@@ -92,19 +74,11 @@ const ActiveDiversionView = ({
             </span>
             <span className="d-flex" data-testid="active-diversion-actions">
                 { isEditingEnabled && (
-                    <IconButton
-                        onClick={ () => editDiversion(diversion) }
-                        data-testid="edit-diversion-icon-button"
-                        disabled={ isDeletingDiversion }
-                    >
+                    <IconButton onClick={ () => editDiversion(diversion) } data-testid="edit-diversion-icon-button">
                         <CreateIcon />
                     </IconButton>
                 )}
-                <IconButton
-                    onClick={ () => handleDeleteRequest(diversion) }
-                    data-testid="delete-diversion-icon-button"
-                    disabled={ isDeletingDiversion }
-                >
+                <IconButton onClick={ () => handleDeleteRequest(diversion) } data-testid="delete-diversion-icon-button">
                     <DeleteIcon />
                 </IconButton>
             </span>
@@ -126,31 +100,8 @@ const ActiveDiversionView = ({
                 Removing this diversion will also remove the replacement trips generated for this diversion and reinstate the related replaced trips.
             </p>
             <div className="d-flex justify-content-between pt-3">
-                <button
-                    data-testid="delete-dialog-cancel-button"
-                    type="button"
-                    className="btn cc-btn-secondary w-25"
-                    onClick={ () => setDeleteDialogOpen(false) }
-                    disabled={ isDeletingDiversion }
-                >
-                    Cancel
-                </button>
-                <button
-                    data-testid="delete-dialog-ok-button"
-                    type="button"
-                    className="btn cc-btn-primary"
-                    onClick={ () => handleDeleteDiversionConfirm(selectedDiversionId) }
-                    disabled={ isDeletingDiversion }
-                >
-                    {isDeletingDiversion && deletingDiversionId === selectedDiversionId ? (
-                        <>
-                            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
-                            Removing...
-                        </>
-                    ) : (
-                        'Remove diversion'
-                    )}
-                </button>
+                <button data-testid="delete-dialog-cancel-button" type="button" className="btn cc-btn-secondary w-25" onClick={ () => setDeleteDialogOpen(false) }>Cancel</button>
+                <button data-testid="delete-dialog-ok-button" type="button" className="btn cc-btn-primary" onClick={ () => handleDeleteDiversionConfirm(selectedDiversionId) }>Remove diversion</button>
             </div>
         </CustomMuiDialog>
     );
@@ -190,17 +141,8 @@ ActiveDiversionView.propTypes = {
     toggleExpand: PropTypes.func.isRequired,
     deleteDiversion: PropTypes.func.isRequired,
     editDiversion: PropTypes.func.isRequired,
-    isEditingEnabled: PropTypes.bool,
-    incidentNo: PropTypes.string,
-    isDeletingDiversion: PropTypes.bool,
-    deletingDiversionId: PropTypes.string,
-};
-
-ActiveDiversionView.defaultProps = {
-    isEditingEnabled: false,
-    incidentNo: '',
-    isDeletingDiversion: false,
-    deletingDiversionId: '',
+    isEditingEnabled: PropTypes.bool.isRequired,
+    incidentNo: PropTypes.string.isRequired,
 };
 
 export { ActiveDiversionView, createRenderCell };

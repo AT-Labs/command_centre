@@ -24,8 +24,8 @@ const DiversionResultModal = props => (
         </div>
         <footer>
             { props.error?.length > 0 ? (
-                <div className="row justify-content-center mt-3">
-                    <div className="col-6">
+                <div className="row justify-content-between mt-3">
+                    <div className="col-5">
                         <Button
                             className="btn btn-block cc-btn-secondary btn-block"
                             aria-label="Return"
@@ -36,14 +36,12 @@ const DiversionResultModal = props => (
                 </div>
             ) : (
                 <div className="row justify-content-between mt-3">
-                    <div className="col-5">
+                    <div className="col-7">
                         <Button
                             className="btn btn-block cc-btn-secondary btn-block"
-                            aria-label="Back"
-                            onClick={ () => {
-                                props.onAction(ACTION_TYPE.RETURN_TO_DISRUPTION);
-                            } }>
-                            Back
+                            aria-label="Go back to disruption page"
+                            onClick={ () => props.onAction(ACTION_TYPE.RETURN_TO_DISRUPTION) }>
+                            Go back to disruption page
                         </Button>
                     </div>
                     <div className="col-5">
