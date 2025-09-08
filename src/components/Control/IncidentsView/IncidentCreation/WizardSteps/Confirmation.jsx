@@ -9,11 +9,11 @@ import {
     updateActiveIncident,
     openCreateIncident,
     deleteAffectedEntities,
-    updateIncidentsDatagridConfig,
+    updateDisruptionsDatagridConfig,
     updateIncidentsSortingParams,
     clearActiveIncident } from '../../../../../redux/actions/control/incidents';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
-import { getIncidentsDatagridConfig } from '../../../../../redux/selectors/control/incidents';
+import { getDisruptionsDatagridConfig } from '../../../../../redux/selectors/control/incidents';
 import { goToNotificationsView } from '../../../../../redux/actions/control/link';
 import { useDisruptionsNotificationsDirectLink } from '../../../../../redux/selectors/appSettings';
 
@@ -101,14 +101,9 @@ const Confirmation = (props) => {
                                 onClick={ () => {
                                     props.openCreateIncident(false);
                                     props.deleteAffectedEntities();
-                                    props.goToNotificationsView({
-                                        version: props.response.resultIncidentVersion ?? 1,
-                                        incidentId: props.response.resultIncidentId,
-                                        source: 'DISR',
-                                        new: true,
-                                    });
+                                    props.goToNotificationsView();
                                 } }>
-                                View notifications
+                                View all notifications
                             </Button>
                         </div>
                     ) }
@@ -138,7 +133,7 @@ Confirmation.defaultProps = {
 export default connect(
     state => ({
         isModalOpen: isModalOpen(state),
-        datagridConfig: getIncidentsDatagridConfig(state),
+        datagridConfig: getDisruptionsDatagridConfig(state),
         useDisruptionsNotificationsDirectLink: useDisruptionsNotificationsDirectLink(state),
     }),
     {
@@ -146,7 +141,7 @@ export default connect(
         updateActiveIncident,
         openCreateIncident,
         deleteAffectedEntities,
-        updateIncidentsDatagridConfig,
+        updateDisruptionsDatagridConfig,
         goToNotificationsView,
         updateIncidentsSortingParams,
         clearActiveIncident,

@@ -3,38 +3,14 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 
-import { toggleIncidentModals,
-    openCreateIncident,
-    deleteAffectedEntities,
-    toggleEditEffectPanel,
-    updateDisruptionKeyToEditEffect,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
-    setDisruptionForWorkaroundEdit,
-    updateCurrentStep,
-    updateEditMode,
-} from '../../../../../redux/actions/control/incidents';
+import { toggleIncidentModals, openCreateIncident, deleteAffectedEntities } from '../../../../../redux/actions/control/incidents';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
-import { getEditMode } from '../../../../../redux/selectors/control/incidents';
-import EDIT_TYPE from '../../../../../types/edit-types';
 
 const Cancellation = (props) => {
-    const closeCreateIncident = () => {
-        if (props.editMode === EDIT_TYPE.ADD_EFFECT) {
-            props.clearNewEffectToIncident();
-            props.updateEditMode(EDIT_TYPE.EDIT);
-            props.updateCurrentStep(1);
-            props.toggleIncidentModals('isCancellationOpen', false);
-        } else {
-            props.openCreateIncident(false);
-            props.deleteAffectedEntities();
-            props.toggleIncidentModals('isCancellationOpen', false);
-            props.toggleWorkaroundPanel(false);
-            props.updateDisruptionKeyToWorkaroundEdit('');
-            props.toggleEditEffectPanel(false);
-            props.updateDisruptionKeyToEditEffect('');
-            props.setDisruptionForWorkaroundEdit({});
-        }
+    const closeCreateDisruption = () => {
+        props.openCreateIncident(false);
+        props.deleteAffectedEntities();
+        props.toggleIncidentModals('isCancellationOpen', false);
     };
     return (
 
@@ -58,7 +34,7 @@ const Cancellation = (props) => {
                 <div className="col-5">
                     <Button
                         className="btn cc-btn-primary btn-block"
-                        onClick={ () => { closeCreateIncident(); } }>
+                        onClick={ () => { closeCreateDisruption(); } }>
                         Discard changes
                     </Button>
                 </div>
@@ -71,33 +47,8 @@ Cancellation.propTypes = {
     toggleIncidentModals: PropTypes.func.isRequired,
     openCreateIncident: PropTypes.func.isRequired,
     deleteAffectedEntities: PropTypes.func.isRequired,
-    toggleEditEffectPanel: PropTypes.func.isRequired,
-    toggleWorkaroundPanel: PropTypes.func.isRequired,
-    updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
-    updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
-    setDisruptionForWorkaroundEdit: PropTypes.func.isRequired,
-    editMode: PropTypes.string,
-    updateCurrentStep: PropTypes.func.isRequired,
-    updateEditMode: PropTypes.func.isRequired,
-    clearNewEffectToIncident: PropTypes.func,
-};
-
-Cancellation.defaultProps = {
-    editMode: EDIT_TYPE.CREATE,
-    clearNewEffectToIncident: () => { },
 };
 
 export default connect(state => ({
     isModalOpen: isModalOpen(state),
-    editMode: getEditMode(state),
-}), { toggleIncidentModals,
-    openCreateIncident,
-    deleteAffectedEntities,
-    toggleEditEffectPanel,
-    updateDisruptionKeyToEditEffect,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
-    setDisruptionForWorkaroundEdit,
-    updateCurrentStep,
-    updateEditMode,
-})(Cancellation);
+}), { toggleIncidentModals, openCreateIncident, deleteAffectedEntities })(Cancellation);

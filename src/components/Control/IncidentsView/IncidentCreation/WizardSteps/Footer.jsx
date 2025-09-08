@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 
 export const Footer = props => (
-    <footer className="row m-0 justify-content-between p-4 position-fixed incident-footer-min-height">
+    <footer className="row m-0 justify-content-between p-4 position-fixed">
         <div className={ (props.useDraftDisruptions && props.isDraftOrCreateMode) ? 'col-3' : 'col-4' }>
             { props.onBack && (
                 <Button
@@ -30,7 +30,7 @@ export const Footer = props => (
                     className="btn cc-btn-secondary btn-block"
                     disabled={ props.isDraftSubmitDisabled }
                     onClick={ props.onSubmitDraft }>
-                    { props.saveDraftButtonValue }
+                    Save draft
                 </Button>
             </div>
         )}
@@ -55,7 +55,6 @@ Footer.propTypes = {
     isDraftSubmitDisabled: PropTypes.bool,
     nextButtonValue: PropTypes.string.isRequired,
     useDraftDisruptions: PropTypes.bool,
-    saveDraftButtonValue: PropTypes.string,
 };
 
 Footer.defaultProps = {
@@ -65,7 +64,6 @@ Footer.defaultProps = {
     isDraftOrCreateMode: true,
     onBack: null,
     onSubmitDraft: () => {},
-    saveDraftButtonValue: 'Save draft',
 };
 
 export default connect(

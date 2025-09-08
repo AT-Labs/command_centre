@@ -14,83 +14,6 @@ const mockStore = configureMockStore(middlewares);
 jest.mock('../../../utils/transmitters/disruption-mgt-api');
 jest.mock('../../../utils/transmitters/cc-static');
 
-const mockIncidentForEdit = {
-    incidentId: 139273,
-    mode: 'Bus',
-    cause: 'CONGESTION',
-    startTime: '2025-08-21T20:27:00.000Z',
-    endTime: null,
-    status: 'in-progress',
-    header: 'test incident n0827',
-    url: '',
-    version: 1,
-    recurrencePattern: null,
-    duration: '',
-    recurrent: false,
-    source: 'UI',
-    notes: [],
-    severity: 'HEADLINE',
-    disruptions: [
-        {
-            disruptionId: 139535,
-            incidentNo: 'DISR139535',
-            mode: 'Bus',
-            affectedEntities: [
-                {
-                    routeId: '101-202',
-                    routeShortName: '101',
-                    routeType: 3,
-                    type: 'route',
-                    notes: [],
-                },
-                {
-                    routeId: '105-202',
-                    routeShortName: '105',
-                    routeType: 3,
-                    type: 'route',
-                    notes: [],
-                },
-            ],
-            impact: 'ESCALATOR_NOT_WORKING',
-            cause: 'CONGESTION',
-            startTime: '2025-08-21T20:27:00.000Z',
-            endTime: null,
-            status: 'in-progress',
-            lastUpdatedTime: '2025-08-21T20:27:33.201Z',
-            lastUpdatedBy: 'aqwe@propellerhead.co.nz',
-            description: null,
-            createdBy: 'aqwe@propellerhead.co.nz',
-            createdTime: '2025-08-21T20:27:33.201Z',
-            url: '',
-            header: 'test incident n0827',
-            feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
-            uploadedFiles: null,
-            createNotification: false,
-            exemptAffectedTrips: null,
-            version: 1,
-            duration: '',
-            activePeriods: [
-                {
-                    startTime: 1755808020,
-                },
-            ],
-            recurrencePattern: null,
-            recurrent: false,
-            workarounds: [],
-            notes: [],
-            severity: 'HEADLINE',
-            passengerCount: null,
-            incidentId: 139273,
-            incidentTitle: 'test incident n0827',
-            incidentDisruptionNo: 'CCD139273',
-        },
-    ],
-    lastUpdatedTime: '2025-08-21T20:27:33.172Z',
-    lastUpdatedBy: 'aqwe@propellerhead.co.nz',
-    createdTime: '2025-08-21T20:27:33.172Z',
-    createdBy: 'aqwe@propellerhead.co.nz',
-};
-
 describe('Incidents Actions', () => {
     let store;
     let dispatch;
@@ -142,12 +65,6 @@ describe('Incidents Actions', () => {
             ],
             _links: { permissions: { view: true } },
         });
-        disruptionsMgtApi.getIncidents.mockResolvedValue({
-            incidents: [
-                { impact: 'Delay', incidentId: 1, disruptions: [1] },
-            ],
-            _links: { permissions: { view: true } },
-        });
 
         await store.dispatch(actions.getDisruptionsAndIncidents());
         const dispatched = store.getActions();
@@ -157,24 +74,11 @@ describe('Incidents Actions', () => {
             expect.objectContaining({ type: 'update-control-incidents-permissions' }),
             expect.objectContaining({ type: 'fetch-control-incidents-disruptions' }),
             expect.objectContaining({ type: 'update-control-incidents-loading' }),
-            expect.objectContaining({ type: 'fetch-control-incidents-disruptions' }),
         ]));
     });
 
-    it('dispatches setBannerError on getDisruptions failure', async () => {
+    it('dispatches setBannerError on getDisruptionsAndIncidents failure', async () => {
         disruptionsMgtApi.getDisruptions.mockRejectedValue(new Error('Fetch error'));
-        ERROR_TYPE.fetchDisruptionsEnabled = true;
-
-        await store.dispatch(actions.getDisruptionsAndIncidents());
-        const dispatched = store.getActions();
-
-        expect(dispatched).toEqual(expect.arrayContaining([
-            expect.objectContaining({ type: 'update-control-incidents-loading' }),
-        ]));
-    });
-
-    it('dispatches setBannerError on getIncidents failure', async () => {
-        disruptionsMgtApi.getIncidents.mockRejectedValue(new Error('Fetch error'));
         ERROR_TYPE.fetchDisruptionsEnabled = true;
 
         await store.dispatch(actions.getDisruptionsAndIncidents());
@@ -317,7 +221,7 @@ describe('Incidents Actions', () => {
             {
                 type: 'set-modal-error',
                 payload: {
-                    error: 'Unable to load incidents, please try again',
+                    error: 'Unable to load disruptions, please try again',
                 },
             },
             {
@@ -329,8 +233,64 @@ describe('Incidents Actions', () => {
         ]));
     });
 
+    it('merges affectedEntities when disruptions share the same incidentId', async () => {
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [
+                { disruptionId: 1, impact: 'Delay', affectedEntities: ['E1'], incidentId: 5 },
+                { disruptionId: 2, impact: 'Delay', affectedEntities: ['E2'], incidentId: 5 },
+            ],
+            _links: { permissions: {} },
+        });
+
+        await store.dispatch(actions.getDisruptionsAndIncidents());
+
+        const dispatched = store.getActions();
+        const merged = dispatched.find(a => a.type === 'update-control-set-all-incidents').payload.allIncidents[0];
+
+        expect(merged.incidentId).toBe(5);
+        expect(merged.affectedEntities).toEqual(expect.arrayContaining(['E1', 'E2']));
+    });
+
+    it('merges impact values uniquely when disruptions share the same incidentId', async () => {
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [
+                { disruptionId: 1, impact: 'Delay', affectedEntities: [], incidentId: 10 },
+                { disruptionId: 2, impact: 'Detour', affectedEntities: [], incidentId: 10 },
+                { disruptionId: 3, impact: 'Delay', affectedEntities: [], incidentId: 10 },
+            ],
+            _links: { permissions: {} },
+        });
+
+        await store.dispatch(actions.getDisruptionsAndIncidents());
+
+        const dispatched = store.getActions();
+        const merged = dispatched.find(a => a.type === 'update-control-set-all-incidents').payload.allIncidents[0];
+
+        const impactSet = new Set(merged.impact.split(',').map(i => i.trim()));
+        expect(impactSet).toEqual(new Set(['Delay', 'Detour']));
+    });
+
+    it('trims and merges impact strings correctly', async () => {
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [
+                { disruptionId: 1, impact: ' Delay , Closure ', affectedEntities: [], incidentId: 20 },
+                { disruptionId: 2, impact: 'Detour', affectedEntities: [], incidentId: 20 },
+            ],
+            _links: { permissions: {} },
+        });
+
+        await store.dispatch(actions.getDisruptionsAndIncidents());
+
+        const dispatched = store.getActions();
+        const merged = dispatched.find(a => a.type === 'update-control-set-all-incidents').payload.allIncidents[0];
+
+        const impactSet = new Set(merged.impact.split(',').map(i => i.trim()));
+        expect(impactSet).toEqual(new Set(['Delay', 'Closure', 'Detour']));
+    });
+
     it('calls updateIncident inside publishDraftIncident and dispatches actions', async () => {
         disruptionsMgtApi.updateIncident.mockResolvedValue({});
+
         const incident = {
             incidentId: 3,
             header: 'INC789',
@@ -350,6 +310,7 @@ describe('Incidents Actions', () => {
 
     it('dispatches error result when updateIncident throws inside publishDraftIncident', async () => {
         disruptionsMgtApi.updateIncident.mockRejectedValue({ code: 'ERR_CODE_XYZ' });
+
         const incident = {
             incidentId: 5,
             header: 'INC999',
@@ -384,6 +345,44 @@ describe('Incidents Actions', () => {
                     resultIncidentId: 5,
                 },
                 type: 'update-control-incident-action-requesting',
+            },
+            {
+                payload: {
+                    allIncidents: [
+                        {
+                            affectedEntities: [],
+                            disruptionId: 1,
+                            impact: 'Delay, Closure, Detour',
+                            incidentId: 20,
+                        },
+                    ],
+                },
+                type: 'update-control-set-all-incidents',
+            },
+            {
+                payload: {
+                    permissions: {},
+                },
+                type: 'update-control-incidents-permissions',
+            },
+            {
+                payload: {
+                    disruptions: [
+                        {
+                            affectedEntities: [],
+                            disruptionId: 1,
+                            impact: ' Delay , Closure ',
+                            incidentId: 20,
+                        },
+                        {
+                            affectedEntities: [],
+                            disruptionId: 2,
+                            impact: 'Detour',
+                            incidentId: 20,
+                        },
+                    ],
+                },
+                type: 'fetch-control-incidents-disruptions',
             },
             {
                 payload: {
@@ -574,6 +573,44 @@ describe('Incidents Actions', () => {
             },
             {
                 payload: {
+                    allIncidents: [
+                        {
+                            affectedEntities: [],
+                            disruptionId: 1,
+                            impact: 'Delay, Closure, Detour',
+                            incidentId: 20,
+                        },
+                    ],
+                },
+                type: 'update-control-set-all-incidents',
+            },
+            {
+                payload: {
+                    permissions: {},
+                },
+                type: 'update-control-incidents-permissions',
+            },
+            {
+                payload: {
+                    disruptions: [
+                        {
+                            affectedEntities: [],
+                            disruptionId: 1,
+                            impact: ' Delay , Closure ',
+                            incidentId: 20,
+                        },
+                        {
+                            affectedEntities: [],
+                            disruptionId: 2,
+                            impact: 'Detour',
+                            incidentId: 20,
+                        },
+                    ],
+                },
+                type: 'fetch-control-incidents-disruptions',
+            },
+            {
+                payload: {
                     isLoading: false,
                 },
                 type: 'update-control-incidents-loading',
@@ -633,6 +670,44 @@ describe('Incidents Actions', () => {
                     affectedRoutes: [],
                 },
                 type: 'update-incident-affected-entities',
+            },
+            {
+                payload: {
+                    allIncidents: [
+                        {
+                            affectedEntities: [],
+                            disruptionId: 1,
+                            impact: 'Delay, Closure, Detour',
+                            incidentId: 20,
+                        },
+                    ],
+                },
+                type: 'update-control-set-all-incidents',
+            },
+            {
+                payload: {
+                    permissions: {},
+                },
+                type: 'update-control-incidents-permissions',
+            },
+            {
+                payload: {
+                    disruptions: [
+                        {
+                            affectedEntities: [],
+                            disruptionId: 1,
+                            impact: ' Delay , Closure ',
+                            incidentId: 20,
+                        },
+                        {
+                            affectedEntities: [],
+                            disruptionId: 2,
+                            impact: 'Detour',
+                            incidentId: 20,
+                        },
+                    ],
+                },
+                type: 'fetch-control-incidents-disruptions',
             },
             {
                 payload: {
@@ -713,208 +788,5 @@ describe('Incidents Actions', () => {
             },
             type: 'update-control-incident-action-result',
         });
-    });
-
-    it('dispatches correct actions on setIncidentToUpdate success', async () => {
-        disruptionsMgtApi.getIncident.mockResolvedValue(mockIncidentForEdit);
-        await store.dispatch(actions.setIncidentToUpdate(139273, false));
-        const dispatched = store.getActions();
-
-        expect(dispatched).toEqual(expect.arrayContaining([
-            {
-                type: 'update-control-incident-for-edit-loading',
-                payload: {
-                    isIncidentForEditLoading: true,
-                },
-            },
-            {
-                type: 'update-incident-to-edit',
-                payload: {
-                    incidentToEdit: mockIncidentForEdit,
-                },
-            },
-            {
-                type: 'update-control-incident-for-edit-loading',
-                payload: {
-                    isIncidentForEditLoading: false,
-                },
-            },
-            {
-                type: 'open-create-incidents',
-                payload: {
-                    isCreateEnabled: true,
-                },
-            },
-        ]));
-    });
-
-    it('dispatches correct actions on setIncidentToUpdate success with require to update form', async () => {
-        disruptionsMgtApi.getIncident.mockResolvedValue(mockIncidentForEdit);
-        await store.dispatch(actions.setIncidentToUpdate(139273, true));
-        const dispatched = store.getActions();
-
-        expect(dispatched).toEqual(expect.arrayContaining([
-            {
-                type: 'update-control-incident-for-edit-loading',
-                payload: {
-                    isIncidentForEditLoading: true,
-                },
-            },
-            {
-                type: 'update-incident-to-edit',
-                payload: {
-                    incidentToEdit: mockIncidentForEdit,
-                },
-            },
-            {
-                type: 'update-control-incident-for-edit-loading',
-                payload: {
-                    isIncidentForEditLoading: false,
-                },
-            },
-            {
-                type: 'open-create-incidents',
-                payload: {
-                    isCreateEnabled: true,
-                },
-            },
-            {
-                type: 'update-disruption-key-to-edit-effect',
-                payload: {
-                    disruptionKeyToEditEffect: true,
-                },
-            },
-            {
-                type: 'set-edit-effect-panel-status',
-                payload: {
-                    isEditEffectPanelOpen: true,
-                },
-            },
-        ]));
-    });
-
-    it('dispatches correct actions on setIncidentToUpdate error', async () => {
-        disruptionsMgtApi.getIncident.mockRejectedValue((new Error('Not found')));
-        await store.dispatch(actions.setIncidentToUpdate(139273, false));
-        const dispatched = store.getActions();
-
-        expect(dispatched).toEqual(expect.arrayContaining([
-            {
-                type: 'update-control-incident-for-edit-loading',
-                payload: {
-                    isIncidentForEditLoading: true,
-                },
-            },
-            {
-                type: 'set-modal-error',
-                payload: {
-                    error: 'Failed to load incident data',
-                },
-            },
-            {
-                type: 'update-control-incident-for-edit-loading',
-                payload: {
-                    isIncidentForEditLoading: false,
-                },
-            },
-            {
-                type: 'open-create-incidents',
-                payload: {
-                    isCreateEnabled: true,
-                },
-            },
-        ]));
-    });
-
-    it('dispatches correct actions on setIncidentLoaderState', async () => {
-        await store.dispatch(actions.setIncidentLoaderState(true));
-        const dispatched = store.getActions();
-
-        expect(dispatched).toEqual(expect.arrayContaining([
-            {
-                type: 'update-control-incident-for-edit-loading',
-                payload: {
-                    isIncidentForEditLoading: true,
-                },
-            },
-        ]));
-    });
-
-    it('dispatches correct actions on updateDisruption success', async () => {
-        disruptionsMgtApi.updateDisruption.mockResolvedValue({ ...mockIncidentForEdit.disruptions[0] });
-        const disruption = {
-            incidentId: 139535,
-            incidentNo: 'DISR139535',
-            createNotification: false,
-        };
-        await store.dispatch(actions.updateDisruption(disruption));
-        const dispatched = store.getActions();
-
-        expect(dispatched).toEqual(expect.arrayContaining([
-            {
-                type: 'update-control-incident-for-edit-loading',
-                payload: {
-                    isIncidentForEditLoading: true,
-                },
-            },
-            {
-                type: 'update-control-incident-action-requesting',
-                payload: {
-                    isRequesting: true,
-                    resultIncidentId: 139535,
-                },
-            },
-            {
-                type: 'update-control-incident-action-result',
-                payload: {
-                    resultIncidentId: 139535,
-                    resultStatus: 'success',
-                    resultMessage: 'Disruption DISR139535 has been updated.',
-                    resultCreateNotification: false,
-                    resultIncidentVersion: undefined,
-                },
-            },
-            {
-                type: 'open-create-incidents',
-                payload: {
-                    isCreateEnabled: true,
-                },
-            },
-            {
-                type: 'update-control-incident-action-requesting',
-                payload: {
-                    isRequesting: false,
-                    resultIncidentId: 139535,
-                },
-            },
-        ]));
-    });
-
-    it('dispatches correct actions on setRequireToUpdateIncidentForEditState', async () => {
-        await store.dispatch(actions.setRequireToUpdateIncidentForEditState(true));
-        const dispatched = store.getActions();
-
-        expect(dispatched).toEqual(expect.arrayContaining([
-            {
-                type: 'update-control-effect-requires-to-update-notes',
-                payload: {
-                    isRequiresToUpdateNotes: true,
-                },
-            },
-        ]));
-    });
-
-    it('dispatches correct actions on setRequireToUpdateWorkaroundsState', async () => {
-        await store.dispatch(actions.setRequireToUpdateWorkaroundsState(true));
-        const dispatched = store.getActions();
-
-        expect(dispatched).toEqual(expect.arrayContaining([
-            {
-                type: 'update-control-workarounds-need-to-be-updated',
-                payload: {
-                    isWorkaroundsNeedsToBeUpdated: true,
-                },
-            },
-        ]));
     });
 });

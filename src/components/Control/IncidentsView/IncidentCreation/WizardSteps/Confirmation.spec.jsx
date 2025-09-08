@@ -155,13 +155,13 @@ describe('Confirmation Component', () => {
         expect(updateActiveIncident).toHaveBeenCalledWith('123');
     });
 
-    it('Close modal on click on View notifications button', () => {
+    it('Close modal on click on View all notifications button', () => {
         render(
             <Provider store={ store }>
                 <Confirmation { ...defaultProps } />
             </Provider>,
         );
-        const button = screen.getByRole('button', { name: /view notifications/i });
+        const button = screen.getByRole('button', { name: /view all notifications/i });
         expect(button).not.toBeNull();
         fireEvent.click(button);
 

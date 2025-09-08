@@ -11,8 +11,8 @@ import { RRule } from 'rrule';
 import { BsArrowRepeat } from 'react-icons/bs';
 import {
     getStopsByRoute as findStopsByRoute,
+    isEditEnabled,
     getIncidentToEdit,
-    getEditMode,
 } from '../../../../../redux/selectors/control/incidents';
 import { DISRUPTION_TYPE, STATUSES, SEVERITIES, DEFAULT_SEVERITY } from '../../../../../types/disruptions-types';
 import {
@@ -59,7 +59,6 @@ import {
     parseRecurrencePattern } from '../../../../../utils/recurrence';
 import CustomMuiDialog from '../../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../../Common/ActivePeriods/ActivePeriods';
-import EDIT_TYPE from '../../../../../types/edit-types';
 
 const INIT_EFFECT_STATE = {
     key: '',
@@ -120,7 +119,6 @@ export const SelectEffects = (props) => {
             cause: incidentCause || DEFAULT_CAUSE.value,
             header: incidentHeader || '',
             key: uniqueId('DISR'),
-            recurrent: incidentRecurrent,
             ...(recurrenceDates && {
                 recurrencePattern: {
                     ...recurrencePattern,
@@ -130,30 +128,14 @@ export const SelectEffects = (props) => {
         };
     };
     const maxActivePeriodsCount = 100;
-
-    const getInitialDisruptions = () => {
-        if (props.editMode !== EDIT_TYPE.ADD_EFFECT && props.data.disruptions.length > 0) {
-            return props.data.disruptions;
-        }
-        if (props.newIncidentEffect?.key) {
-            return [props.newIncidentEffect];
-        }
-        return [setupDisruption()];
-    };
-    const [disruptions, setDisruptions] = useState(getInitialDisruptions);
+    const [disruptions, setDisruptions] = useState(props.data.disruptions.length > 0 ? props.data.disruptions : [setupDisruption()]);
     const [activePeriods, setActivePeriods] = useState([]);
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
     const impactValid = key => !isEmpty(disruptions.find(d => d.key === key).impact);
 
     const getDisruptionByKey = key => disruptions.find(d => d.key === key);
-    const updateDisruptionsState = () => {
-        if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
-            props.onDataUpdate('disruptions', disruptions);
-        } else {
-            props.updateNewIncidentEffect(disruptions[0]);
-        }
-    };
+    const updateDisruptionsState = () => props.onDataUpdate('disruptions', disruptions);
 
     const getOptionalLabel = label => (
         <>
@@ -289,8 +271,9 @@ export const SelectEffects = (props) => {
             const routes = disruptions.map(disruption => disruption.affectedEntities.affectedRoutes).flat();
             const stops = disruptions.map(disruption => disruption.affectedEntities.affectedStops).flat();
             props.updateAffectedStopsState(sortBy(stops, sortedStop => sortedStop.stopCode));
-            props.updateAffectedRoutesState(routes);
+
             if (routes.length > 0) {
+                props.updateAffectedRoutesState(routes);
                 props.getRoutesByShortName(routes);
             }
             setRequireMapUpdate(false);
@@ -301,7 +284,7 @@ export const SelectEffects = (props) => {
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
         setTimeout(() => {
-            if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
+            if (!props.isEditMode) {
                 props.onStepUpdate(3);
                 props.onSubmitDraft();
             } else {
@@ -313,7 +296,7 @@ export const SelectEffects = (props) => {
     const onContinue = () => {
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
-        if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
+        if (!props.isEditMode) {
             props.onUpdateEntitiesValidation(!isSubmitDisabled && activePeriodsValidForAllDisruptionsV2());
             props.onStepUpdate(2);
             props.updateCurrentStep(3);
@@ -438,7 +421,7 @@ export const SelectEffects = (props) => {
         <div className="select_disruption">
             {disruptions.map(disruption => (
                 <Form key={ `${disruption.key}_form` } className="row my-3 p-4 incident-effect">
-                    { disruptions.length > 1 && props.editMode !== EDIT_TYPE.ADD_EFFECT && (
+                    { disruptions.length > 1 && (
                         <div className="col-12">
                             <FormGroup>
                                 <button
@@ -642,14 +625,12 @@ export const SelectEffects = (props) => {
                     </div>
                 </Form>
             ))}
-            {props.editMode !== EDIT_TYPE.ADD_EFFECT && (
-                <button
-                    type="button"
-                    className="disruption-effect-button add-disruption-button"
-                    onClick={ addDisruption }>
-                    <AiOutlinePlusCircle size={ 36 } color="grey" />
-                </button>
-            )}
+            <button
+                type="button"
+                className="disruption-effect-button add-disruption-button"
+                onClick={ addDisruption }>
+                <AiOutlinePlusCircle size={ 36 } color="grey" />
+            </button>
 
             <Footer
                 updateCurrentStep={ props.updateCurrentStep }
@@ -657,11 +638,11 @@ export const SelectEffects = (props) => {
                 toggleIncidentModals={ props.toggleIncidentModals }
                 nextButtonValue="Continue"
                 onContinue={ () => onContinue() }
-                isSubmitDisabled={ props.useDraftDisruptions && props.editMode !== EDIT_TYPE.ADD_EFFECT ? isDraftSubmitDisabled : isSubmitDisabled }
+                isSubmitDisabled={ props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
                 isDraftSubmitDisabled={ isDraftSubmitDisabled }
-                isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || props.editMode !== EDIT_TYPE.ADD_EFFECT }
+                isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || !props.isEditMode }
                 onSubmitDraft={ () => onSaveDraft() }
-                onBack={ props.editMode !== EDIT_TYPE.ADD_EFFECT ? onBack : undefined }
+                onBack={ !props.isEditMode ? onBack : undefined }
             />
             <CustomMuiDialog
                 title="Disruption Active Periods"
@@ -682,32 +663,28 @@ SelectEffects.propTypes = {
     updateAffectedStopsState: PropTypes.func.isRequired,
     updateAffectedRoutesState: PropTypes.func.isRequired,
     getRoutesByShortName: PropTypes.func.isRequired,
+    isEditMode: PropTypes.bool,
     toggleIncidentModals: PropTypes.func.isRequired,
     data: PropTypes.object,
     onUpdateEntitiesValidation: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
-    editMode: PropTypes.string,
-    updateNewIncidentEffect: PropTypes.func,
-    newIncidentEffect: PropTypes.object,
 };
 
 SelectEffects.defaultProps = {
     onSubmitDraft: () => { },
     onSubmitUpdate: () => { },
     onUpdateEntitiesValidation: () => { },
+    isEditMode: false,
     useDraftDisruptions: false,
     data: {},
-    editMode: EDIT_TYPE.CREATE,
-    updateNewIncidentEffect: () => { },
-    newIncidentEffect: {},
 };
 
 export default connect(state => ({
     findStopsByRoute: findStopsByRoute(state),
+    isEditMode: isEditEnabled(state),
     disruptionToEdit: getIncidentToEdit(state),
     searchResults: getSearchResults(state),
     useDraftDisruptions: useDraftDisruptions(state),
-    editMode: getEditMode(state),
 }), {
     updateCurrentStep,
     getStopsByRoute,
