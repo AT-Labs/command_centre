@@ -43,30 +43,25 @@ const DiversionManager = (props) => {
     const [selectedBaseRouteVariant, setSelectedBaseRouteVariant] = useState(null);
     const [initialBaseRouteShape, setInitialBaseRouteShape] = useState(null);
     const [isBaseRouteVariantVisible, setIsBaseRouteVariantVisible] = useState(true);
-    const [tempSelectedBaseRouteVariant, setTempSelectedBaseRouteVariant] = useState(); // Save temporarily for confirmation modal
+    const [tempSelectedBaseRouteVariant, setTempSelectedBaseRouteVariant] = useState();
     const [isChangeVariantModalOpen, setIsChangeVariantModalOpen] = useState(false);
 
     // For additional route variants
     const [baseRouteVariantOnly, setBaseRouteVariantOnly] = useState(true);
     const [secondaryRouteVariantsList, setSecondaryRouteVariantsList] = useState([]);
-    const [selectedOtherRouteVariants, setSelectedOtherRouteVariants] = useState([]); // Also hold the updated shape. It is not the final payload.
+    const [selectedOtherRouteVariants, setSelectedOtherRouteVariants] = useState([]);
 
-    // Shared diversion shape
     const [diversionShapeWkt, setDiversionShapeWkt] = useState(isEditingMode ? props.diversion.diversionShapeWkt : null);
 
-    // Updated base route variant
     const [modifiedBaseRouteVariant, setModifiedBaseRouteVariant] = useState();
 
-    // Affected stops
     const [affectedStops, setAffectedStops] = useState([]);
 
-    // Other variables
     const isDiversionValid = modifiedBaseRouteVariant?.shapeWkt?.length > 0 && diversionShapeWkt?.length > 0;
 
     const [isUpdated, setIsUpdated] = useState(false);
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
 
-    // We only support adding diversion to bus route at the moment.
     const isBusRoute = route => route.routeType === BUS_TYPE_ID;
     const [routeIds] = useState(props.disruption?.affectedEntities?.length > 0
         ? [...new Set(props.disruption?.affectedEntities.filter(isBusRoute).map(entity => entity.routeId))]

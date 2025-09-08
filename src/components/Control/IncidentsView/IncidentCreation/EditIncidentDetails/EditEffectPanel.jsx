@@ -558,9 +558,9 @@ export const EditEffectPanel = (props) => {
                 setTimeout(() => props.toggleEditEffectPanel(true), 0);
                 props.setRequestedDisruptionKeyToUpdateEditEffect('');
                 props.setRequestToUpdateEditEffectState(false);
-            } else if (isValuesChanged) { // open modal
+            } else if (isValuesChanged) {
                 props.toggleIncidentModals('isCancellationEffectOpen', true);
-            } else if (props.newDisruptionKey === '') { // close edit effect panel
+            } else if (props.newDisruptionKey === '') {
                 closeWorkaroundPanel();
                 props.toggleEditEffectPanel(false);
                 props.updateDisruptionKeyToEditEffect('');
