@@ -533,7 +533,7 @@ describe('CreateIncident component', () => {
             buildIncidentSubmitBody.mockReturnValue(expectedIncident);
             await wrapper.instance().onSubmitUpdate();
             expect(buildIncidentSubmitBody).toHaveBeenCalledWith(expect.objectContaining({ ...expectedIncident }), true);
-            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident);
+            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident, false);
             expect(mockOpenCreateIncident).toHaveBeenCalledWith(false);
             expect(mockToggleIncidentModals).toHaveBeenCalledWith('isApplyChangesOpen', false);
         });
@@ -660,7 +660,7 @@ describe('CreateIncident component', () => {
             buildIncidentSubmitBody.mockReturnValue(expectedIncident);
             await wrapper.instance().onSubmitUpdate();
             expect(buildIncidentSubmitBody).toHaveBeenCalledWith(expect.objectContaining({ ...expectedIncident }), true);
-            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident);
+            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident, false);
             expect(mockOpenCreateIncident).toHaveBeenCalledWith(false);
             expect(mockToggleIncidentModals).toHaveBeenCalledWith('isApplyChangesOpen', false);
         });
