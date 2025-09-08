@@ -83,8 +83,9 @@ import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import './EditEffectPanel.scss';
 import AddNoteModal from './AddNoteModal';
 import { useDisruptionNotePopup, useDiversion } from '../../../../../redux/selectors/appSettings';
-import HeaderButtons from './HeaderButtons';
-import { openDiversionManager, updateDiversionMode, fetchDiversions, clearDiversionsCache } from '../../../../../redux/actions/control/diversions';
+import { getDiversionsForDisruption } from '../../../../../redux/selectors/control/diversions';
+import { ViewDiversionDetailModal } from '../../../DisruptionsView/DisruptionDetail/ViewDiversionDetailModal';
+import detourIcon from '../../../../../assets/img/detour.svg';
 
 const INIT_EFFECT_STATE = {
     key: '',
@@ -577,11 +578,55 @@ export const EditEffectPanel = (props) => {
 
     const isApplyDisabled = disruption.status === STATUSES.DRAFT ? isDraftSubmitDisabled : isSubmitDisabled;
 
-    // Diversion functions
-    const handleViewDiversions = () => {
-        // TODO: Implement view diversions functionality
-        console.log('View diversions clicked');
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [isViewDiversionsModalOpen, setIsViewDiversionsModalOpen] = useState(false);
+    
+    const diversions = getDiversionsForDisruption(disruption?.disruptionId)(props.state) || [];
+    const diversionsCount = diversions.length;
+    const isAddDiversionEnabled = () => {
+        if (disruption.status === STATUSES.RESOLVED) {
+            return false;
+        }
+        
+        const hasBusRoutes = disruption.affectedEntities?.affectedRoutes?.some(route => 
+            route.routeType === 'BUS' || !route.routeType
+        );
+        
+        if (!hasBusRoutes) {
+            return false;
+        }
+        const validStatuses = [STATUSES.NOT_STARTED, STATUSES.IN_PROGRESS, STATUSES.DRAFT];
+        return validStatuses.includes(disruption.status);
     };
+    
+    const handleViewDiversions = () => {
+        setIsViewDiversionsModalOpen(true);
+    };
+
+    const handleAddDiversion = () => {
+        console.log('Add Diversion clicked');
+    };
+
+    const handleMenuClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleCloseMenu = () => {
+        setAnchorEl(null);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (anchorEl && !event.target.closest('[data-diversion-menu]')) {
+                setAnchorEl(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [anchorEl]);
 
     useEffect(() => {
         props.updateEffectValidationState(!isApplyDisabled);
@@ -598,39 +643,109 @@ export const EditEffectPanel = (props) => {
                     <div className="edit-effect-panel-body">
                         <div className="label-with-icon">
                             <h2 className="pl-4 pr-4 pt-4">{ `Edit details of Effect ${disruption.incidentNo}` }</h2>
-                            <div className="buttons-container">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 {props.useDiversion && (
-                                    <div className="diversions-button-container">
-                                        <HeaderButtons
-                                            disruption={ disruption }
-                                            useDiversionFlag={ props.useDiversion }
-                                            isDiversionManagerOpen={ false }
-                                            isWorkaroundPanelOpen={ props.isWorkaroundPanelOpen }
-                                            onViewDiversions={ handleViewDiversions }
-                                            onOpenWorkaroundPanel={ openWorkaroundPanel }
-                                            openDiversionManagerAction={ openDiversionManager }
-                                            updateDiversionModeAction={ updateDiversionMode }
-                                            updateDiversionToEditAction={ () => {} }
-                                            toggleEditEffectPanel={ props.toggleEditEffectPanel }
-                                            fetchDiversionsAction={ fetchDiversions }
-                                            clearDiversionsCacheAction={ clearDiversionsCache }
-                                        />
+                                    <div style={{ position: 'relative' }} data-diversion-menu>
+                                        <Button
+                                            onClick={handleMenuClick}
+                                            style={{
+                                                whiteSpace: 'nowrap',
+                                                minWidth: '120px',
+                                                fontWeight: 'bold',
+                                                fontSize: '14px',
+                                                padding: '8px 16px',
+                                                borderRadius: '4px',
+                                                boxShadow: '0 2px 4px rgba(0, 0, 0, .1)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor: '#1976d2',
+                                                borderColor: '#1976d2',
+                                                color: 'white',
+                                                transition: 'background-color 0.2s ease'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.target.style.backgroundColor = '#1565c0';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.target.style.backgroundColor = '#1976d2';
+                                            }}
+                                        >
+                                            <span style={{ color: 'white' }}>
+                                                Diversions({diversionsCount})
+                                            </span>
+                                            <img
+                                                src={detourIcon}
+                                                alt="detour"
+                                                width="26"
+                                                height="26"
+                                                style={{ marginLeft: '8px' }}
+                                            />
+                                        </Button>
+                                        
+                                        {anchorEl && (
+                                            <div
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: '100%',
+                                                    left: '0',
+                                                    background: 'white',
+                                                    border: '1px solid #DDD',
+                                                    borderRadius: '4px',
+                                                    boxShadow: '0 4px 8px rgba(0, 0, 0, .15)',
+                                                    zIndex: 1000,
+                                                    minWidth: '180px',
+                                                    marginTop: '4px'
+                                                }}
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                <div
+                                    style={{
+                                        padding: '12px 16px',
+                                        fontSize: '14px',
+                                        cursor: isAddDiversionEnabled() ? 'pointer' : 'not-allowed',
+                                        opacity: isAddDiversionEnabled() ? 1 : 0.5,
+                                        backgroundColor: isAddDiversionEnabled() ? 'transparent' : '#f5f5f5',
+                                        borderBottom: '1px solid #F0F0F0'
+                                    }}
+                                    onClick={() => {
+                                        if (isAddDiversionEnabled()) {
+                                            handleAddDiversion();
+                                            handleCloseMenu();
+                                        }
+                                    }}
+                                >
+                                    Add Diversion
+                                </div>
+                                <div
+                                    style={{
+                                        padding: '12px 16px',
+                                        fontSize: '14px',
+                                        cursor: 'pointer'
+                                    }}
+                                    onClick={() => {
+                                        handleViewDiversions();
+                                        handleCloseMenu();
+                                    }}
+                                >
+                                    View & Edit Diversions
+                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
-                                <div className="workaround-button-container">
-                                    { props.isWorkaroundPanelOpen
-                                        && (
-                                            <KeyboardDoubleArrowLeftIcon onClick={ closeWorkaroundPanel }
-                                                className="collapse-icon"
-                                                style={ { color: '#399CDB', fontSize: '48px' } } />
-                                        )}
-                                    { !props.isWorkaroundPanelOpen
-                                        && (
-                                            <KeyboardDoubleArrowRightIcon onClick={ openWorkaroundPanel }
-                                                className="collapse-icon"
-                                                style={ { color: '#399CDB', fontSize: '48px' } } />
-                                        )}
-                                </div>
+                                { props.isWorkaroundPanelOpen
+                                    && (
+                                        <KeyboardDoubleArrowLeftIcon onClick={ closeWorkaroundPanel }
+                                            className="collapse-icon"
+                                            style={ { color: '#399CDB', fontSize: '48px' } } />
+                                    )}
+                                { !props.isWorkaroundPanelOpen
+                                    && (
+                                        <KeyboardDoubleArrowRightIcon onClick={ openWorkaroundPanel }
+                                            className="collapse-icon"
+                                            style={ { color: '#399CDB', fontSize: '48px' } } />
+                                    )}
                             </div>
                         </div>
                         <Form key="form" className="row my-3 p-4 incident-effect">
@@ -978,6 +1093,18 @@ export const EditEffectPanel = (props) => {
                 isModalOpen={ props.isCancellationEffectOpen }>
                 <CancellationEffectModal discardChanges={ () => discardEffectChanges() } />
             </CustomModal>
+            {props.useDiversion && (
+                <ViewDiversionDetailModal
+                    disruption={disruption}
+                    onClose={() => setIsViewDiversionsModalOpen(false)}
+                    onEditDiversion={(diversion) => {
+                        console.log('Edit diversion:', diversion);
+                    }}
+                    isOpen={isViewDiversionsModalOpen}
+                    setShouldRefetchDiversions={() => {}}
+                    diversions={diversions}
+                />
+            )}
         </div>
     );
 };
@@ -1016,6 +1143,7 @@ EditEffectPanel.propTypes = {
     updateIsEffectUpdatedState: PropTypes.func.isRequired,
     useDisruptionNotePopup: PropTypes.bool,
     useDiversion: PropTypes.bool,
+    state: PropTypes.object,
 };
 
 EditEffectPanel.defaultProps = {
@@ -1026,6 +1154,7 @@ EditEffectPanel.defaultProps = {
     isCancellationEffectOpen: false,
     useDisruptionNotePopup: false,
     useDiversion: false,
+    state: null,
 };
 
 export default connect(state => ({
@@ -1037,6 +1166,7 @@ export default connect(state => ({
     isCancellationEffectOpen: isCancellationEffectModalOpen(state),
     useDisruptionNotePopup: useDisruptionNotePopup(state),
     useDiversion: useDiversion(state),
+    state,
 }), {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
@@ -1051,8 +1181,4 @@ export default connect(state => ({
     setRequestToUpdateEditEffectState,
     toggleIncidentModals,
     setRequestedDisruptionKeyToUpdateEditEffect,
-    openDiversionManager,
-    updateDiversionMode,
-    fetchDiversions,
-    clearDiversionsCache,
 })(EditEffectPanel);
