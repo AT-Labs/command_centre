@@ -20,7 +20,7 @@ import { dateTimeFormat } from '../../../utils/dateUtils';
 import { getStopGroups } from '../../../redux/actions/control/dataManagement';
 import { DEFAULT_CAUSE } from '../../../types/disruption-cause-and-effect';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
-import { flatInformedEntities } from '../../../utils/control/notifications';
+import { buildQueryParams, findNotificationByQuery, flatInformedEntities } from '../../../utils/control/notifications';
 import { updateQueryParams } from '../../../redux/actions/navigation';
 import Message from '../Common/Message/Message';
 import { goToDisruptionsView, goToIncidentsView } from '../../../redux/actions/control/link';
@@ -39,11 +39,13 @@ export const NotificationsView = (props) => {
     const NOTIFICATIONS_POLLING_INTERVAL = 10000;
     const isActiveNoti = notification => notification.condition === 'published' && notification.status === 'in-progress';
     const disruptionId = query.get('disruptionId');
+    const parentDisruptionId = query.get('incidentId');
     const version = query.get('version');
     const source = query.get('source');
     const isNew = query.get('new') === 'true';
 
     const isQueryParamsValid = disruptionId && version && source;
+    const isQueryIncidentParamsValid = (parentDisruptionId || (disruptionId && version)) && source;
 
     const causes = useAlertCauses();
 
@@ -225,23 +227,20 @@ export const NotificationsView = (props) => {
     }, []);
 
     useEffect(() => {
-        if (isQueryParamsValid) {
+        if (isQueryParamsValid || (isQueryIncidentParamsValid && props.useNotificationEffectColumn)) {
             props.updateNotificationsDatagridConfig({
                 ...props.datagridConfig,
                 filterModel: {
                     ...props.datagridConfig.filterModel,
-                    items: [
-                        { id: uniqueId(), columnField: 'sourceId', operatorValue: '==', value: { id: disruptionId, source: 'DISR' } },
-                        { id: uniqueId(), columnField: 'sourceType', operatorValue: '==', value: source },
-                    ],
+                    items: buildQueryParams({ parentDisruptionId, disruptionId, version, source }, props.useNotificationEffectColumn),
                 },
             });
         }
-    }, [disruptionId, version, source]);
+    }, [parentDisruptionId, disruptionId, version, source]);
 
     useEffect(() => {
-        if (isQueryParamsValid) {
-            const notification = props.notifications.find(n => n.source.identifier === Number(disruptionId) && n.source.version === Number(version));
+        if (isQueryParamsValid || (isQueryIncidentParamsValid && props.useNotificationEffectColumn)) {
+            const notification = findNotificationByQuery({ parentDisruptionId, disruptionId, version, source }, props.notifications, props.useNotificationEffectColumn);
             if (notification) {
                 props.updateSelectedNotification(notification);
                 setShowFeedbackMessage(false);
@@ -270,12 +269,26 @@ export const NotificationsView = (props) => {
         props.updateSelectedNotification(notification);
     };
 
+    const getAlertMessage = () => {
+        const isParentIncident = parentDisruptionId != null && props.useNotificationEffectColumn;
+        const id = isParentIncident ? parentDisruptionId : disruptionId;
+        const transformNo = isParentIncident ? transformParentSourceIdNo : transformIncidentNo;
+
+        return {
+            id: uniqueId(id),
+            type: ALERT_MESSAGE_TYPE,
+            body: `Notification for Disruption ${transformNo(id)} version ${version} is being created...`,
+            tripId: undefined,
+        };
+    };
+
     return (
         <div className="control-notifications-view">
             <div className="mb-3">
                 <h1>Notifications - Service Alerts</h1>
             </div>
-            { props.useDisruptionsNotificationsDirectLink && isQueryParamsValid && isNew && showFeedbackMessage && (
+            { props.useDisruptionsNotificationsDirectLink
+                && (isQueryParamsValid || (isQueryIncidentParamsValid && props.useNotificationEffectColumn)) && isNew && showFeedbackMessage && (
                 <>
                     <div className="row mb-3">
                         <div className="col-md-6 offset-md-3">
@@ -283,11 +296,7 @@ export const NotificationsView = (props) => {
                                 autoDismiss={ false }
                                 isDismissible={ false }
                                 zIndex={ 1000 }
-                                message={ {
-                                    id: uniqueId(disruptionId),
-                                    type: ALERT_MESSAGE_TYPE,
-                                    body: `Notification for Disruption ${transformIncidentNo(disruptionId)} version ${version} is being created...`,
-                                } } />
+                                message={ getAlertMessage() } />
                         </div>
                     </div>
                     <div className="notification-page-overlay">

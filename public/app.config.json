@@ -42,5 +42,6 @@
     "useStopBasedDisruptionsSearch": "false",
     "useTripCancellationCause": "false",
     "useParentChildIncident": "false",
-    "useNotificationEffectColumn": "false"
+    "useNotificationEffectColumn": "false",
+    "useDisruptionNotePopup": "false"
 }
