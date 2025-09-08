@@ -119,6 +119,7 @@ export const SelectEffects = (props) => {
             cause: incidentCause || DEFAULT_CAUSE.value,
             header: incidentHeader || '',
             key: uniqueId('DISR'),
+            recurrent: incidentRecurrent,
             ...(recurrenceDates && {
                 recurrencePattern: {
                     ...recurrencePattern,
@@ -271,9 +272,8 @@ export const SelectEffects = (props) => {
             const routes = disruptions.map(disruption => disruption.affectedEntities.affectedRoutes).flat();
             const stops = disruptions.map(disruption => disruption.affectedEntities.affectedStops).flat();
             props.updateAffectedStopsState(sortBy(stops, sortedStop => sortedStop.stopCode));
-
+            props.updateAffectedRoutesState(routes);
             if (routes.length > 0) {
-                props.updateAffectedRoutesState(routes);
                 props.getRoutesByShortName(routes);
             }
             setRequireMapUpdate(false);

@@ -26,9 +26,6 @@ if (REACT_APP_DISABLE_SENTRY !== 'true') {
         dsn: REACT_APP_SENTRY_DSN,
         normalizeDepth: 3,
         integrations: [
-            new CaptureConsole({
-                levels: ['error'],
-            }),
             new Sentry.BrowserTracing({
                 tracePropagationTargets: ['localhost', /^\//],
             }),

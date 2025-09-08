@@ -29,7 +29,12 @@ export const WorkaroundsForm = forwardRef((props, ref) => {
     };
 
     const saveForm = () => {
-        props.onWorkaroundUpdate(props.disruption.key, workarounds);
+        let filteredWorkarounds;
+        if (workarounds) {
+            filteredWorkarounds = workarounds.filter(w => w.type === WORKAROUND_TYPES.all.key || affectedEntities.some(entity => (w.stopCode && entity.stopCode === w.stopCode)
+            || (w.routeShortName && entity.routeShortName === w.routeShortName)));
+        }
+        props.onWorkaroundUpdate(props.disruption.key, filteredWorkarounds || workarounds);
         setCheckedWorkaroundType(WORKAROUND_TYPES.all.key);
     };
 
@@ -51,6 +56,7 @@ export const WorkaroundsForm = forwardRef((props, ref) => {
         const workaroundsForCheckedType = mergeWorkarounds(workarounds, workaroundsInOneGroup, disruptionType, checkedWorkaroundType);
         setAllWorkarounds({ ...allWorkarounds, [checkedWorkaroundType]: workaroundsForCheckedType });
         updateWorkaroundsInDisruption(workaroundsForCheckedType);
+        props.onWorkaroundChange(props.disruption.key, workaroundsForCheckedType);
     };
 
     const renderWorkaroundItems = () => {
@@ -92,6 +98,7 @@ WorkaroundsForm.propTypes = {
     }),
     onWorkaroundUpdate: PropTypes.func,
     readOnly: PropTypes.bool,
+    onWorkaroundChange: PropTypes.func,
 };
 
 WorkaroundsForm.defaultProps = {
@@ -101,6 +108,7 @@ WorkaroundsForm.defaultProps = {
         workarounds: [],
     },
     onWorkaroundUpdate: () => { /**/ },
+    onWorkaroundChange: () => { /**/ },
     readOnly: false,
 };
 
