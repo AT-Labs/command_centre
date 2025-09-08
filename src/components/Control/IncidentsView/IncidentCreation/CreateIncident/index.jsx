@@ -467,22 +467,17 @@ export class CreateIncident extends React.Component {
         });
     };
 
+    clearNewEffectToIncident = () => {
+        this.setState({
+            newIncidentEffect: {},
+        });
+    };
+
     addNewEffectToIncident = () => {
         this.props.updateAffectedStopsState([]);
         this.props.updateAffectedRoutesState([]);
         this.props.updateEditMode(EDIT_TYPE.ADD_EFFECT);
         this.props.updateCurrentStep(2);
-    };
-
-    saveNewEffectToIncident = () => {
-        this.props.updateEditMode(EDIT_TYPE.EDIT);
-        this.props.updateCurrentStep(1);
-    };
-
-    clearNewEffectToIncident = () => {
-        this.setState({
-            newIncidentEffect: {},
-        });
     };
 
     renderSteps = () => {

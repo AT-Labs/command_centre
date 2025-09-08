@@ -128,12 +128,24 @@ export const SelectDetails = (props) => {
         return disruption.affectedEntities.affectedRoutes.length > 0 || disruption.affectedEntities.affectedStops.length > 0;
     };
 
-    const startTimeValidForAllDisruptions = () => disruptionsForPublishValidation.every(disruption => startTimeValid(disruption.incidentNo));
-    const startDateValidForAllDisruptions = () => disruptionsForPublishValidation.every(disruption => startDateValid(disruption.incidentNo));
-    const endTimeValidForAllDisruptions = () => disruptionsForPublishValidation.every(disruption => endTimeValid(disruption.incidentNo));
-    const endDateValidForAllDisruptions = () => disruptionsForPublishValidation.every(disruption => endDateValid(disruption.incidentNo));
-    const durationValidForAllDisruptions = () => disruptionsForPublishValidation.every(disruption => durationValid(disruption.incidentNo));
-    const affectedEntitySelectedForAllDisruptions = () => disruptionsForPublishValidation.every(disruption => affectedEntitySelected(disruption.incidentNo));
+    const startTimeValidForAllDisruptions = () => disruptionsForPublishValidation.every(
+        disruption => isStartTimeValid(disruption.startDate, disruption.startTime, modalOpenedTime, disruption.recurrent),
+    );
+    const startDateValidForAllDisruptions = () => disruptionsForPublishValidation.every(
+        disruption => isStartDateValid(disruption.startDate, modalOpenedTime, disruption.recurrent),
+    );
+    const endTimeValidForAllDisruptions = () => disruptionsForPublishValidation.every(
+        disruption => isEndTimeValid(disruption.endDate, disruption.endTime, disruption.startDate, disruption.startTime),
+    );
+    const endDateValidForAllDisruptions = () => disruptionsForPublishValidation.every(
+        disruption => isEndDateValid(disruption.endDate, disruption.startDate, disruption.recurrent),
+    );
+    const durationValidForAllDisruptions = () => disruptionsForPublishValidation.every(
+        disruption => isDurationValid(disruption.duration, disruption.recurrent),
+    );
+    const affectedEntitySelectedForAllDisruptions = () => disruptionsForPublishValidation.every(
+        disruption => affectedEntitySelected(disruption.incidentNo),
+    );
 
     const isPublishDisabled = isRequiredDisruptionPropsEmpty()
         || !startTimeValidForAllDisruptions()
