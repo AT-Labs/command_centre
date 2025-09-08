@@ -580,6 +580,10 @@ export const EditEffectPanel = (props) => {
     }, [isApplyDisabled]);
 
     useEffect(() => {
+        props.updateEffectValidationForPublishState(!isSubmitDisabled);
+    }, [isSubmitDisabled]);
+
+    useEffect(() => {
         props.updateIsEffectUpdatedState(isValuesChanged);
     }, [isValuesChanged]);
 
@@ -632,7 +636,7 @@ export const EditEffectPanel = (props) => {
                                         value={ disruption.impact }
                                         options={ impacts }
                                         label={ LABEL_CUSTOMER_IMPACT }
-                                        invalid={ isImpactDirty && !impactValid() }
+                                        invalid={ isImpactDirty && !impactValid() && disruption.status !== STATUSES.DRAFT }
                                         feedback="Please select effect"
                                         disabled={ isResolved() }
                                         disabledClassName="background-color-for-disabled-fields"
@@ -651,6 +655,8 @@ export const EditEffectPanel = (props) => {
                                     <DisruptionDetailSelect
                                         id="disruption-detail__status"
                                         className=""
+                                        disabled={ disruption.status === STATUSES.DRAFT }
+                                        disabledClassName="background-color-for-disabled-fields"
                                         value={ disruption.status }
                                         options={ getStatusOptions(disruption.startDate, disruption.startTime, now, disruption.status) }
                                         label={ LABEL_STATUS }
@@ -810,7 +816,7 @@ export const EditEffectPanel = (props) => {
                                         value={ disruption.severity }
                                         options={ SEVERITIES }
                                         label={ LABEL_SEVERITY }
-                                        invalid={ isSeverityDirty && !severityValid() }
+                                        invalid={ isSeverityDirty && !severityValid() && disruption.status !== STATUSES.DRAFT }
                                         feedback="Please select severity"
                                         disabled={ isResolved() }
                                         disabledClassName="background-color-for-disabled-fields"
@@ -986,6 +992,7 @@ EditEffectPanel.propTypes = {
     updateEffectValidationState: PropTypes.func.isRequired,
     updateIsEffectUpdatedState: PropTypes.func.isRequired,
     useDisruptionNotePopup: PropTypes.bool,
+    updateEffectValidationForPublishState: PropTypes.func.isRequired,
 };
 
 EditEffectPanel.defaultProps = {

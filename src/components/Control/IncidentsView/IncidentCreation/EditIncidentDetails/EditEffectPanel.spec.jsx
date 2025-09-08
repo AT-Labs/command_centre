@@ -138,6 +138,7 @@ describe('Confirmation Component', () => {
         applyDisruptionChanges: jest.fn(),
         updateEffectValidationState: jest.fn(),
         updateIsEffectUpdatedState: jest.fn(),
+        updateEffectValidationForPublishState: jest.fn(),
     };
 
     beforeEach(() => {
