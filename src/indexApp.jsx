@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
-import { CaptureConsole } from '@sentry/integrations';
 
 import './utils/dateLocale';
 import App from './components/App/App';
