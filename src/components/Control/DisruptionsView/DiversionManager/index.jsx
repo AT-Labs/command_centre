@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useReducer } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import moment from 'moment-timezone';
@@ -64,12 +64,16 @@ const DiversionManager = (props) => {
     const isDiversionValid = modifiedBaseRouteVariant?.shapeWkt?.length > 0 && diversionShapeWkt?.length > 0;
 
     const [isUpdated, setIsUpdated] = useState(false);
+    const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
 
     // We only support adding diversion to bus route at the moment.
     const isBusRoute = route => route.routeType === BUS_TYPE_ID;
     const [routeIds] = useState(props.disruption?.affectedEntities?.length > 0
         ? [...new Set(props.disruption?.affectedEntities.filter(isBusRoute).map(entity => entity.routeId))]
         : []);
+    
+    
+    
 
 
     const initEditingMode = (routeVariants) => {
@@ -187,7 +191,7 @@ const DiversionManager = (props) => {
 
                 // Force update after state changes
                 setTimeout(() => {
-                    setForceUpdate(prev => prev + 1);
+                    forceUpdate();
                 }, 0);
             }
         } else {
@@ -388,49 +392,51 @@ const DiversionManager = (props) => {
         );
     };
 
-    const shouldShowDiversionManager = props.isOpen;
-
     React.useEffect(() => {
-        if (props.isOpen) {
-            const handleCloseButtonClick = () => {
-                const mapElements = document.querySelectorAll(
-                    '.leaflet-control-container, .leaflet-control-zoom, .leaflet-control-draw, '
-                    + '.leaflet-pane, .leaflet-overlay-pane, .leaflet-marker-pane, '
-                    + '.leaflet-tooltip-pane, .leaflet-popup-pane',
-                );
-                mapElements.forEach((element) => {
-                    if (element) {
-                        const elementNode = element;
-                        elementNode.style.display = 'none';
-                        elementNode.style.visibility = 'hidden';
-                        elementNode.style.opacity = '0';
-                    }
-                });
-
-                const mapContainer = document.querySelector('.leaflet-container');
-                if (mapContainer) {
-                    mapContainer.style.display = 'none';
-                    mapContainer.style.visibility = 'hidden';
-                    mapContainer.style.opacity = '0';
+        const handleCloseButtonClick = () => {
+            const mapElements = document.querySelectorAll(
+                '.leaflet-control-container, .leaflet-control-zoom, .leaflet-control-draw, '
+                + '.leaflet-pane, .leaflet-overlay-pane, .leaflet-marker-pane, '
+                + '.leaflet-tooltip-pane, .leaflet-popup-pane',
+            );
+            mapElements.forEach((element) => {
+                if (element) {
+                    const elementNode = element;
+                    elementNode.style.display = 'none';
+                    elementNode.style.visibility = 'hidden';
+                    elementNode.style.opacity = '0';
                 }
+            });
 
-                if (props.onCancelled) {
-                    props.onCancelled();
-                }
-            };
-
-            const closeButton = document.querySelector('.disruption-creation-close-disruptions');
-            if (closeButton) {
-                closeButton.addEventListener('click', handleCloseButtonClick);
-
-                return () => {
-                    closeButton.removeEventListener('click', handleCloseButtonClick);
-                };
+            const mapContainer = document.querySelector('.leaflet-container');
+            if (mapContainer) {
+                mapContainer.style.display = 'none';
+                mapContainer.style.visibility = 'hidden';
+                mapContainer.style.opacity = '0';
             }
+
+            if (props.onCancelled) {
+                props.onCancelled();
+            }
+        };
+
+        const closeButton = document.querySelector('.disruption-creation-close-disruptions');
+        if (closeButton) {
+            closeButton.addEventListener('click', handleCloseButtonClick);
+
+            return () => {
+                closeButton.removeEventListener('click', handleCloseButtonClick);
+            };
         }
         return undefined;
-    }, [props.isOpen]);
+    }, []);
 
+
+    console.log('=== DEBUG DiversionManager Render ===');
+    console.log('selectedBaseRouteVariant:', selectedBaseRouteVariant);
+    console.log('routeVariantsList.length:', routeVariantsList.length);
+    console.log('isBaseRouteVariantVisible:', isBaseRouteVariantVisible);
+    console.log('=== END DEBUG ===');
 
     return (
         <div className="side-panel-control-component-view d-flex">
@@ -486,7 +492,7 @@ const DiversionManager = (props) => {
                             <Button
                                 className="btn cc-btn-primary btn-block continue"
                                 onClick={ onSaveClicked }
-                                disabled={ (isEditingMode && !isUpdated) || !isDiversionValid || props.resultState.isLoading }
+                                disabled={ (isEditingMode && !isUpdated) || !isDiversionValid || props.resultState?.isLoading }
                             >
                                 { buttonText }
                             </Button>
@@ -518,7 +524,7 @@ const DiversionManager = (props) => {
             <CustomModal
                 className="diversion-result-modal"
                 title={ title }
-                isModalOpen={ !props.resultState.isLoading && (props.resultState?.diversionId || props.resultState?.error) }>
+                isModalOpen={ !props.resultState?.isLoading && (props.resultState?.diversionId || props.resultState?.error) }>
                 <DiversionResultModal
                     result={ props.resultState?.diversionId ? `Diversion #${props.resultState?.diversionId} has been ${resultAction}.` : null }
                     error={ props.resultState?.error?.message }

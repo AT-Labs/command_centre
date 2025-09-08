@@ -589,24 +589,7 @@ const DisruptionDetailView = (props) => {
                 </section>
                 <section className="col-6">
                     <div className="row">
-                        <div className="col-6">
-                            <FormGroup className="mt-2">
-                                <Label for="disruption-detail__url">
-                                    <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
-                                </Label>
-                                <Input id="disruption-detail__url"
-                                    className="border border-dark"
-                                    value={ url }
-                                    disabled={ isResolved() }
-                                    onChange={ e => setUrl(e.currentTarget.value) }
-                                    placeholder="e.g. https://at.govt.nz"
-                                    maxLength={ URL_MAX_LENGTH }
-                                    invalid={ !isUrlValid(url) }
-                                />
-                                <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
-                            </FormGroup>
-                        </div>
-                        <div className="col-6">
+                        <div className="col-12">
                             <FormGroup className="mt-2">
                                 <DisruptionDetailSelect
                                     id="disruption-detail__severity"
