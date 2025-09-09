@@ -26,8 +26,6 @@ import {
     LABEL_SEVERITY,
     LABEL_START_DATE,
     LABEL_START_TIME,
-    LABEL_URL,
-    URL_MAX_LENGTH,
 } from '../../../../../constants/disruptions';
 import Footer from './Footer';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
@@ -132,8 +130,13 @@ export const SelectDetails = (props) => {
                 setCssEndDateInvalid('');
             }
         } else {
-            props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
+            const endDateValue = date.length ? moment(date[0]).format(DATE_FORMAT) : '';
+            props.onDataUpdate('endDate', endDateValue);
             setCssEndDateInvalid('');
+
+            if (endDateValue && isEmpty(endTime)) {
+                props.onDataUpdate('endTime', '23:59');
+            }
         }
     };
 
@@ -434,24 +437,6 @@ export const SelectDetails = (props) => {
                             invalid={ isTitleDirty && !titleValid() }
                         />
                         <FormFeedback>Please enter disruption title</FormFeedback>
-                    </FormGroup>
-                </div>
-                <div className="col-12">
-                    <FormGroup>
-                        <Label for="disruption-creation__wizard-select-details__url">
-                            <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
-                        </Label>
-                        <Input
-                            id="disruption-creation__wizard-select-details__url"
-                            className="w-100 border border-dark"
-                            type="url"
-                            maxLength={ URL_MAX_LENGTH }
-                            value={ url }
-                            placeholder="e.g. https://at.govt.nz"
-                            onChange={ event => props.onDataUpdate('url', event.target.value) }
-                            invalid={ !isUrlValid(url) }
-                        />
-                        <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
                     </FormGroup>
                 </div>
                 <div className="col-12">
