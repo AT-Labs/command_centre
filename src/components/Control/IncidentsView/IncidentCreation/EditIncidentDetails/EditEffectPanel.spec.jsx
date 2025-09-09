@@ -138,6 +138,7 @@ describe('Confirmation Component', () => {
         applyDisruptionChanges: jest.fn(),
         updateEffectValidationState: jest.fn(),
         updateIsEffectUpdatedState: jest.fn(),
+        updateEffectValidationForPublishState: jest.fn(),
     };
 
     beforeEach(() => {
@@ -499,7 +500,7 @@ describe('Confirmation Component', () => {
         const startPicker = screen.getByTestId('start-date_date-picker');
         fireEvent.change(startPicker, { target: { value: '2025-06-08' } });
 
-        expect(defaultProps.updateEditableDisruption).toHaveBeenCalledTimes(3);
+        expect(defaultProps.updateEditableDisruption).toHaveBeenCalledTimes(5);
         expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith({ ...mockDisruption,
             startDate: '08/06/2025',
             status: 'in-progress',
@@ -521,7 +522,7 @@ describe('Confirmation Component', () => {
         const endPicker = screen.getByTestId('end-date_date-picker');
         fireEvent.change(endPicker, { target: { value: '2025-06-25' } });
 
-        expect(defaultProps.updateEditableDisruption).toHaveBeenCalledTimes(2);
+        expect(defaultProps.updateEditableDisruption).toHaveBeenCalledTimes(4);
         expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith({ ...mockDisruption,
             endDate: '25/06/2025',
             recurrencePattern: {
@@ -542,7 +543,7 @@ describe('Confirmation Component', () => {
         const input = screen.getByTestId('start-time_input');
         fireEvent.change(input, { target: { value: '11:11' } });
 
-        expect(defaultProps.updateEditableDisruption).toHaveBeenCalledTimes(2);
+        expect(defaultProps.updateEditableDisruption).toHaveBeenCalledTimes(4);
         expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith({ ...mockDisruption,
             startTime: '11:11',
             recurrencePattern: {
@@ -563,7 +564,7 @@ describe('Confirmation Component', () => {
         const input = document.getElementById('disruption-detail__status');
         fireEvent.change(input, { target: { value: STATUSES.RESOLVED } });
 
-        expect(defaultProps.updateEditableDisruption).toHaveBeenCalledTimes(3);
+        expect(defaultProps.updateEditableDisruption).toHaveBeenCalledTimes(5);
         expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith({ ...mockDisruption,
             startDate: '09/06/2025',
             startTime: '11:37',
@@ -620,7 +621,7 @@ describe('Confirmation Component', () => {
         const input = screen.getByTestId('end-time_input');
         fireEvent.change(input, { target: { value: '13:13' } });
 
-        // expect(defaultProps.updateEditableDisruption).toHaveBeenCalledTimes(3);
+        expect(defaultProps.updateEditableDisruption).toHaveBeenCalledTimes(4);
         expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith({ ...mockDisruption,
             endTime: '13:13',
             recurrent: false,
