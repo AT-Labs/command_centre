@@ -2,14 +2,15 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import Loader from '../Common/Loader/Loader';
+import LoadingOverlay from '../Common/Overlay/LoadingOverlay';
 import { isLoading } from '../../redux/selectors/activity';
 
 const ActivityIndicator = props => (
     <div>
         { props.isLoading && (
-            <div className="activity-loader position-fixed">
-                <Loader />
+            <div>
+                <LoadingOverlay />
+                <div className="loader position-fixed activity-loader" aria-label="Loading" />
             </div>
         )}
     </div>
