@@ -22,6 +22,7 @@ import { isEditEffectPanelOpen,
     isRequiresToUpdateNotes,
     isWorkaroundsNeedsToBeUpdated,
 } from '../../../../../redux/selectors/control/incidents';
+import { isLoading as isDataLoading } from '../../../../../redux/selectors/activity';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
 import {
     LABEL_CUSTOMER_IMPACT,
@@ -147,6 +148,7 @@ export const EditEffectPanel = (props) => {
     const [isLoadingDisruption, setIsLoadingDisruption] = useState(false);
     const [localDiversions, setLocalDiversions] = useState([]);
     const [shouldRefetchDiversions, setShouldRefetchDiversions] = useState(false);
+    const [isLoaderProtected, setIsLoaderProtected] = useState(false);
 
     const startTimeValid = () => isStartTimeValid(
         disruption.startDate,
@@ -615,11 +617,8 @@ export const EditEffectPanel = (props) => {
         setIsViewDiversionsModalOpen(true);
     };
     const handleAddDiversion = () => {
-        props.updateDataLoading(true);
         props.updateDiversionMode(EDIT_TYPE.CREATE);
-        setTimeout(() => {
-            props.openDiversionManager(true);
-        }, 1500);
+        props.openDiversionManager(true);
     };
 
     const handleMenuClick = (event) => {
@@ -668,18 +667,28 @@ export const EditEffectPanel = (props) => {
     useEffect(() => {
         if (!props.isDiversionManagerOpen) {
             setFetchedDisruption(null);
-        } else {
-            const checkMapHolder = () => {
-                const mapHolder = document.querySelector('.map');
-                if (mapHolder) {
-                    props.updateDataLoading(false);
-                } else {
-                    setTimeout(checkMapHolder, 100);
-                }
-            };
-            setTimeout(checkMapHolder, 3000);
         }
     }, [props.isDiversionManagerOpen]);
+
+    useEffect(() => {
+        if (props.isDiversionManagerOpen) {
+            props.updateDataLoading(true);
+            setIsLoaderProtected(true);
+            
+            setTimeout(() => {
+                setIsLoaderProtected(false);
+            }, 2500);
+        } else {
+            props.updateDataLoading(false);
+            setIsLoaderProtected(false);
+        }
+    }, [props.isDiversionManagerOpen]);
+
+    useEffect(() => {
+        if (props.isDataLoading && props.isDiversionManagerOpen && !isLoaderProtected) {
+            props.updateDataLoading(false);
+        }
+    }, [props.isDataLoading, props.isDiversionManagerOpen, isLoaderProtected]);
 
     useEffect(() => {
         const fetchDiversions = async () => {
@@ -741,10 +750,10 @@ export const EditEffectPanel = (props) => {
                                                 transition: 'background-color 0.2s ease',
                                             } }
                                             onMouseEnter={ (e) => {
-                                                e.target.style.backgroundColor = '#1565c0';
+                                                e.currentTarget.style.backgroundColor = '#1565c0';
                                             } }
                                             onMouseLeave={ (e) => {
-                                                e.target.style.backgroundColor = '#1976d2';
+                                                e.currentTarget.style.backgroundColor = '#1976d2';
                                             } }
                                         >
                                             <span style={ { color: 'black' } }>
@@ -1245,6 +1254,7 @@ EditEffectPanel.propTypes = {
     updateDiversionMode: PropTypes.func.isRequired,
     isDiversionManagerOpen: PropTypes.bool,
     updateDataLoading: PropTypes.func.isRequired,
+    isDataLoading: PropTypes.bool,
 };
 
 EditEffectPanel.defaultProps = {
@@ -1256,6 +1266,7 @@ EditEffectPanel.defaultProps = {
     useDisruptionNotePopup: false,
     useDiversion: false,
     isDiversionManagerOpen: false,
+    isDataLoading: false,
 };
 
 export default connect(state => ({
@@ -1271,6 +1282,7 @@ export default connect(state => ({
     useDiversion: useDiversion(state),
     state,
     isDiversionManagerOpen: getIsDiversionManagerOpen(state),
+    isDataLoading: isDataLoading(state),
 }), {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
