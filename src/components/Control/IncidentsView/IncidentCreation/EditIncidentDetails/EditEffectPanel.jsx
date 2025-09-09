@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Paper, Stack } from '@mui/material';
 import { isEmpty, sortBy, some, isEqual } from 'lodash-es';
 import { Form, FormFeedback, FormGroup, Input, Label, Button } from 'reactstrap';
@@ -149,7 +149,7 @@ export const EditEffectPanel = (props) => {
     const [localDiversions, setLocalDiversions] = useState([]);
     const [shouldRefetchDiversions, setShouldRefetchDiversions] = useState(false);
     const [isLoaderProtected, setIsLoaderProtected] = useState(false);
-
+    const isMounted = useRef(true);
     const startTimeValid = () => isStartTimeValid(
         disruption.startDate,
         disruption.startTime,
@@ -405,14 +405,16 @@ export const EditEffectPanel = (props) => {
     };
 
     const isRequiredPropsEmpty = () => {
+        if (!disruption || !disruption.disruptionId) return true;
+        
         const isPropsEmpty = some([disruption.startTime, disruption.startDate, disruption.impact, disruption.cause, disruption.header, disruption.severity], isEmpty);
         const isEndTimeRequiredAndEmpty = !disruption.recurrent && !isEmpty(disruption.endDate) && isEmpty(disruption.endTime);
-        const isWeekdayRequiredAndEmpty = disruption.recurrent && isEmpty(disruption.recurrencePattern.byweekday);
+        const isWeekdayRequiredAndEmpty = disruption.recurrent && isEmpty(disruption.recurrencePattern?.byweekday);
         return isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
     };
 
-    const affectedEntitySelected = () => disruption.affectedEntities.affectedRoutes.length > 0 || disruption.affectedEntities.affectedStops.length > 0;
-    const isRequiredDraftPropsEmpty = () => some([disruption.header, disruption.cause], isEmpty);
+    const affectedEntitySelected = () => disruption?.affectedEntities?.affectedRoutes?.length > 0 || disruption?.affectedEntities?.affectedStops?.length > 0;
+    const isRequiredDraftPropsEmpty = () => some([disruption?.header, disruption?.cause], isEmpty);
 
     const isSubmitDisabled = isRequiredPropsEmpty()
         || !startTimeValid()
@@ -603,6 +605,8 @@ export const EditEffectPanel = (props) => {
     // Diversion-related logic
     const diversionsCount = localDiversions.length;
     const isAddDiversionEnabled = () => {
+        if (!disruption || !disruption.disruptionId) return false;
+        
         if (disruption.status === STATUSES.RESOLVED) {
             return false;
         }
@@ -617,8 +621,11 @@ export const EditEffectPanel = (props) => {
         setIsViewDiversionsModalOpen(true);
     };
     const handleAddDiversion = () => {
-        props.updateDiversionMode(EDIT_TYPE.CREATE);
-        props.openDiversionManager(true);
+        // Check if diversion manager is already open to prevent errors
+        if (!props.isDiversionManagerOpen) {
+            props.updateDiversionMode(EDIT_TYPE.CREATE);
+            props.openDiversionManager(true);
+        }
     };
 
     const handleMenuClick = (event) => {
@@ -672,26 +679,54 @@ export const EditEffectPanel = (props) => {
 
     useEffect(() => {
         if (props.isDiversionManagerOpen) {
-            props.updateDataLoading(true);
             setIsLoaderProtected(true);
             
-            setTimeout(() => {
+            const timeout = setTimeout(() => {
                 setIsLoaderProtected(false);
-            }, 2500);
+                // Keep the loader active until map holder appears
+            }, 2000);
+            
+            return () => {
+                clearTimeout(timeout);
+            };
         } else {
-            props.updateDataLoading(false);
+            // Deactivate when diversion manager is closed
             setIsLoaderProtected(false);
         }
     }, [props.isDiversionManagerOpen]);
 
     useEffect(() => {
-        if (props.isDataLoading && props.isDiversionManagerOpen && !isLoaderProtected) {
-            props.updateDataLoading(false);
+        if (typeof document !== 'undefined') {
+            if (isLoaderProtected) {
+                document.body.classList.add('diversion-loading');
+            } else {
+                document.body.classList.remove('diversion-loading');
+            }
         }
-    }, [props.isDataLoading, props.isDiversionManagerOpen, isLoaderProtected]);
+        
+        return () => {
+            if (typeof document !== 'undefined') {
+                document.body.classList.remove('diversion-loading');
+            }
+        };
+    }, [isLoaderProtected]);
+
+
+    // Prevent reopening diversion manager if already open
+    useEffect(() => {
+        if (props.isDiversionManagerOpen && !disruption?.disruptionId) {
+            // Close diversion manager if no disruption is available
+            props.openDiversionManager(false);
+        }
+    }, [props.isDiversionManagerOpen, disruption?.disruptionId]);
 
     useEffect(() => {
         const fetchDiversions = async () => {
+            if (!disruption?.disruptionId) {
+                setLocalDiversions([]);
+                return;
+            }
+            
             try {
                 const data = await getDiversionAPI(disruption.disruptionId);
                 setLocalDiversions(data || []);
@@ -700,7 +735,24 @@ export const EditEffectPanel = (props) => {
             }
         };
         fetchDiversions();
-    }, [disruption.disruptionId, shouldRefetchDiversions]);
+    }, [disruption?.disruptionId, shouldRefetchDiversions]);
+
+    useEffect(() => {
+        return () => {
+            if (typeof document !== 'undefined') {
+                document.body.classList.remove('diversion-loading');
+            }
+            isMounted.current = false;
+            setDisruption({ ...INIT_EFFECT_STATE });
+            setLocalDiversions([]);
+            setIsLoadingDisruption(false);
+            setIsLoaderProtected(false);
+        };
+    }, []);
+
+    if (!disruptions || disruptions.length === 0) {
+        return null;
+    }
 
     if (props.useDiversion && props.isDiversionManagerOpen) {
         if (isLoadingDisruption) {

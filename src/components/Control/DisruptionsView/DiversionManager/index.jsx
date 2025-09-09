@@ -26,6 +26,11 @@ import AdditionalRouteVariantSelector from './AdditionalRouteVariantSelector';
 import AffectedStops from './AffectedStops';
 
 const DiversionManager = (props) => {
+    // Prevent rendering if no disruption is available
+    if (!props.disruption || !props.disruption.disruptionId) {
+        return null;
+    }
+
     const SERVICE_DATE_FORMAT = 'YYYYMMDD';
     const TIME_FORMAT_HHMM = 'HH:mm';
     const debounceDelay = 300;
