@@ -224,9 +224,27 @@ export class CreateIncident extends React.Component {
         }
     }
 
+    drawAffectedEntity() {
+        const { incidentToEdit } = this.props;
+        if (incidentToEdit?.disruptions?.length > 0) {
+            const routesToDraw = incidentToEdit.disruptions.map(disruption => disruption.affectedEntities.filter(entity => entity.type === 'route')).flat();
+            const stopsToDraw = incidentToEdit.disruptions.map(disruption => disruption.affectedEntities.filter(entity => entity.type === 'stop')).flat();
+            this.props.updateAffectedStopsState(sortBy(stopsToDraw, sortedStop => sortedStop.stopCode));
+            this.props.updateAffectedRoutesState(routesToDraw);
+
+            if (routesToDraw.length > 0) {
+                this.props.getRoutesByShortName(routesToDraw);
+            }
+        }
+    }
+
     componentDidUpdate(prevProps) {
         if (!prevProps.isRequiresToUpdateNotes && this.props.isRequiresToUpdateNotes) {
             this.setupDataEdit(true); // for updating form on add note
+        }
+
+        if (prevProps.incidentToEdit?.disruptions?.length !== this.props.incidentToEdit?.disruptions?.length) {
+            this.drawAffectedEntity(); // for redraw affected entity after add effect
         }
     }
 

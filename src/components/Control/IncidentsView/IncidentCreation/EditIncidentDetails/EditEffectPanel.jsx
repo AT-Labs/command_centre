@@ -130,6 +130,30 @@ export const EditEffectPanel = (props) => {
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
     const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
 
+    const initDisruptionData = () => {
+        const disruptionToSet = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
+        setDisruption(disruptionToSet);
+        props.updateEditableDisruption(disruptionToSet);
+        setOriginalDisruption(disruptionToSet);
+        props.setDisruptionForWorkaroundEdit(disruptionToSet);
+        props.updateIsNotesRequiresToUpdateState();
+        setTimeout(() => setRequireMapUpdate(true), 0);
+    };
+
+    useEffect(() => {
+        if (disruptionIncidentNoToEdit && disruptions && disruptions.length > 0) {
+            initDisruptionData();
+        } else {
+            setDisruption({ ...INIT_EFFECT_STATE });
+        }
+    }, []);
+
+    useEffect(() => {
+        if (props.disruptions && disruptionIncidentNoToEdit) {
+            initDisruptionData();
+        }
+    }, [props.disruptions]);
+
     const startTimeValid = () => isStartTimeValid(
         disruption.startDate,
         disruption.startTime,
@@ -492,13 +516,10 @@ export const EditEffectPanel = (props) => {
     }, [requireMapUpdate]);
 
     useEffect(() => {
-        if (disruptionIncidentNoToEdit) {
-            const disruptionToSet = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
-            setDisruption(disruptionToSet);
-            props.updateEditableDisruption(disruptionToSet);
-            setOriginalDisruption(disruptionToSet);
-            props.setDisruptionForWorkaroundEdit(disruptionToSet);
-            props.updateIsNotesRequiresToUpdateState();
+        if (disruptionIncidentNoToEdit && disruptions && disruptions.length > 0) {
+            initDisruptionData();
+        } else {
+            setDisruption({ ...INIT_EFFECT_STATE });
         }
     }, [disruptionIncidentNoToEdit]);
 
