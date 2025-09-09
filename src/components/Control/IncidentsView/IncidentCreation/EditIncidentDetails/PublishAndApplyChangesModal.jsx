@@ -7,7 +7,7 @@ import { toggleIncidentModals,
 } from '../../../../../redux/actions/control/incidents';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
 
-const ApplyChangesModal = (props) => {
+const PublishAndApplyChangesModal = (props) => {
     const keepEditing = () => {
         props.toggleIncidentModals('isPublishAndApplyChangesOpen', false);
     };
@@ -43,7 +43,7 @@ const ApplyChangesModal = (props) => {
     );
 };
 
-ApplyChangesModal.propTypes = {
+PublishAndApplyChangesModal.propTypes = {
     toggleIncidentModals: PropTypes.func.isRequired,
     publishIncidentChanges: PropTypes.func.isRequired,
 };
@@ -51,4 +51,4 @@ ApplyChangesModal.propTypes = {
 export default connect(state => ({
     isModalOpen: isModalOpen(state),
 }), { toggleIncidentModals,
-})(ApplyChangesModal);
+})(PublishAndApplyChangesModal);
