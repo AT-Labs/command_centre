@@ -40,13 +40,13 @@ describe('<Footer />', () => {
         jest.clearAllMocks();
     });
 
-    it('should render columns with "col-2" when useDraftDisruptions and isDraftOrCreateMode are true', () => {
+    it('should render columns with "col-3" when useDraftDisruptions and isDraftOrCreateMode are true', () => {
         useDraftDisruptions.mockReturnValue(true);
 
         const wrapper = setup({ isDraftOrCreateMode: true });
 
-        expect(wrapper.find('.col-2').length).toBeGreaterThan(0);
-        expect(wrapper.find('.col-3').length).toBe(0);
+        expect(wrapper.find('.col-3').length).toBeGreaterThan(0);
+        expect(wrapper.find('.col-4').exists()).toBe(false);
     });
 
     it('should render "Save draft" block only when useDraftDisruptions and isDraftOrCreateMode are true', () => {
