@@ -92,15 +92,8 @@ export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
     };
 };
 
-const getMode = disruption => [
-    ...(disruption.affectedEntities?.affectedRoutes || [])
-        .map(route => VEHICLE_TYPES[route?.routeType]?.type)
-        .filter(Boolean),
-
-    ...(disruption.affectedEntities?.affectedStops || [])
-        .map(stop => VEHICLE_TYPES[stop?.routeType]?.type)
-        .filter(Boolean),
-];
+const getMode = disruption => [...disruption.affectedEntities.affectedRoutes.map(route => VEHICLE_TYPES[route.routeType].type),
+    ...disruption.affectedEntities.affectedStops.map(stop => VEHICLE_TYPES[stop.routeType].type)];
 
 const filterWorkaroundsByAffectedEntity = (workarounds, affectedRoutes, affectedStops) => workarounds.filter((workaround) => {
     if (workaround.type === 'stop') {

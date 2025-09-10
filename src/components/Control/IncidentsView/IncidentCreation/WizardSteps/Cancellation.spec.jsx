@@ -18,11 +18,7 @@ import {
     updateDisruptionKeyToEditEffect,
     updateDisruptionKeyToWorkaroundEdit,
     setDisruptionForWorkaroundEdit,
-    updateEditMode,
-    updateCurrentStep,
 } from '../../../../../redux/actions/control/incidents';
-import EDIT_TYPE from '../../../../../types/edit-types';
-import { getEditMode } from '../../../../../redux/selectors/control/incidents';
 
 const mockStore = configureStore([thunk]);
 
@@ -37,15 +33,11 @@ jest.mock('../../../../../redux/actions/control/incidents', () => ({
     updateDisruptionKeyToEditEffect: jest.fn(),
     updateDisruptionKeyToWorkaroundEdit: jest.fn(),
     setDisruptionForWorkaroundEdit: jest.fn(),
-    updateEditMode: jest.fn(),
-    updateCurrentStep: jest.fn(),
 }));
 
 jest.mock('../../../../../redux/actions/control/link', () => ({
     goToNotificationsView: jest.fn(),
 }));
-
-jest.mock('../../../../../redux/selectors/control/incidents');
 
 describe('Confirmation Component', () => {
     let store;
@@ -59,8 +51,6 @@ describe('Confirmation Component', () => {
         updateDisruptionKeyToEditEffect: jest.fn(),
         updateDisruptionKeyToWorkaroundEdit: jest.fn(),
         setDisruptionForWorkaroundEdit: jest.fn(),
-        clearNewEffectToIncident: jest.fn(),
-        editMode: EDIT_TYPE.CREATE,
     };
 
     beforeEach(() => {
@@ -98,12 +88,6 @@ describe('Confirmation Component', () => {
         setDisruptionForWorkaroundEdit.mockImplementation(disruptionForWorkaroundEdit => (dispatch) => {
             dispatch({ type: 'MOCK_DISRUPTION_FOR_WORKAROUND_EDIT', payload: disruptionForWorkaroundEdit });
         });
-        updateEditMode.mockImplementation(mode => (dispatch) => {
-            dispatch({ type: 'MOCK_UPDATE_EDIT_MODE', payload: mode });
-        });
-        updateCurrentStep.mockImplementation(currentStep => (dispatch) => {
-            dispatch({ type: 'MOCK_CURRENT_STEP', payload: currentStep });
-        });
         store = mockStore({
             control:
                 {
@@ -128,7 +112,6 @@ describe('Confirmation Component', () => {
     });
 
     it('Renders without crashing and displays modal cancel window', () => {
-        getEditMode.mockReturnValue(EDIT_TYPE.CREATE);
         render(
             <Provider store={ store }>
                 <Cancellation { ...defaultProps } />
@@ -140,7 +123,6 @@ describe('Confirmation Component', () => {
     });
 
     it('Close modal on click on Keep editing', () => {
-        getEditMode.mockReturnValue(EDIT_TYPE.CREATE);
         render(
             <Provider store={ store }>
                 <Cancellation { ...defaultProps } />
@@ -154,7 +136,6 @@ describe('Confirmation Component', () => {
     });
 
     it('Close modal on click on Discard changes button and return to disruption tab', () => {
-        getEditMode.mockReturnValue(EDIT_TYPE.CREATE);
         render(
             <Provider store={ store }>
                 <Cancellation { ...defaultProps } />
@@ -171,21 +152,5 @@ describe('Confirmation Component', () => {
         expect(toggleEditEffectPanel).toHaveBeenCalledWith(false);
         expect(updateDisruptionKeyToEditEffect).toHaveBeenCalledWith('');
         expect(setDisruptionForWorkaroundEdit).toHaveBeenCalledWith({});
-    });
-
-    it('Close modal on click on Discard changes button for add effect flow and return to edit flow', () => {
-        getEditMode.mockReturnValue(EDIT_TYPE.ADD_EFFECT);
-        render(
-            <Provider store={ store }>
-                <Cancellation { ...defaultProps } />
-            </Provider>,
-        );
-        const button = screen.getByRole('button', { name: /discard changes/i });
-        expect(button).not.toBeNull();
-        fireEvent.click(button);
-        expect(defaultProps.clearNewEffectToIncident).toHaveBeenCalled();
-        expect(updateEditMode).toHaveBeenCalledWith(EDIT_TYPE.EDIT);
-        expect(updateCurrentStep).toHaveBeenCalledWith(1);
-        expect(toggleIncidentModals).toHaveBeenCalledWith('isCancellationOpen', false);
     });
 });
