@@ -605,7 +605,7 @@ export const EditEffectPanel = (props) => {
     // Diversion-related logic
     const diversionsCount = localDiversions.length;
     const isAddDiversionEnabled = () => {
-        if (!disruption || !disruption.disruptionId) return false;
+        if (!disruption?.disruptionId) return false;
 
         if (disruption.status === STATUSES.RESOLVED) {
             return false;

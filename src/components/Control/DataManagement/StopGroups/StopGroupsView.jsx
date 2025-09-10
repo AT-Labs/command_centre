@@ -206,7 +206,7 @@ export class StopGroupsView extends React.Component {
                             title={ this.MODALS.cancel.title }
                             message={ this.MODALS.cancel.message }
                             isOpen={ modalType === cancel.type && isModalOpen }
-                            onAction={ () => this.updateStopGroup(null).then(() => this.toggleModals(null, null)).catch((error) => console.error('Failed to update stop group:', error)) }
+                            onAction={ () => this.updateStopGroup(null).then(() => this.toggleModals(null, null)).catch(() => {}) }
                             onClose={ () => this.toggleModals(null, null) } />
                     </div>
                 </div>

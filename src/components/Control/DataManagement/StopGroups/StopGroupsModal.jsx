@@ -88,7 +88,7 @@ export class StopGroupsModal extends React.Component {
             };
             this.props.onAction(payload)
                 .then(() => this.toggleModal())
-                .catch((error) => console.error('Failed to perform stop group action:', error));
+                .catch(() => {});
         }
     };
 
