@@ -431,7 +431,7 @@ const DiversionManager = (props) => {
     };
 
     // Prevent rendering if no disruption is available
-    if (!props.disruption || !props.disruption.disruptionId) {
+    if (!props.disruption?.disruptionId) {
         return null;
     }
 

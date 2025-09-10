@@ -284,7 +284,7 @@ export class StopMessagesView extends React.Component {
                             title={ this.MODALS.cancel.title }
                             message={ this.MODALS.cancel.message }
                             isOpen={ modal.type === cancel.type && modal.isOpen }
-                            onAction={ () => this.updateStopMessage(null).then(() => this.props.toggleModals(null, null)).catch(() => {}) }
+                            onAction={ () => this.updateStopMessage(null).then(() => this.props.toggleModals(null, null)).catch((error) => console.error('Failed to update stop message:', error)) }
                             onClose={ () => this.props.toggleModals(null, null) } />
                     </div>
                     <div className="col-3">

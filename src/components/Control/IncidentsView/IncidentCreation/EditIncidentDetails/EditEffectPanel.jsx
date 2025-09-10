@@ -405,7 +405,7 @@ export const EditEffectPanel = (props) => {
     };
 
     const isRequiredPropsEmpty = () => {
-        if (!disruption || !disruption.disruptionId) return true;
+        if (!disruption?.disruptionId) return true;
 
         const isPropsEmpty = some([disruption.startTime, disruption.startDate, disruption.impact, disruption.cause, disruption.header, disruption.severity], isEmpty);
         const isEndTimeRequiredAndEmpty = !disruption.recurrent && !isEmpty(disruption.endDate) && isEmpty(disruption.endTime);
@@ -469,7 +469,7 @@ export const EditEffectPanel = (props) => {
             return;
         }
         disruptions.forEach((d) => {
-            if (d && d.affectedEntities && d.affectedEntities.affectedStops && Array.isArray(d.affectedEntities.affectedStops)) {
+            if (Array.isArray(d?.affectedEntities?.affectedStops)) {
                 const filterStops = d.affectedEntities.affectedStops.filter(stop => stop.stopCode !== 'Not Found');
                 if (filterStops.length !== d.affectedEntities.affectedStops.length) {
                     onAffectedEntitiesUpdate(d.key, 'affectedStops', filterStops);
@@ -661,7 +661,7 @@ export const EditEffectPanel = (props) => {
                     const disruptionData = await getDisruptionAPI(disruption.disruptionId);
                     setFetchedDisruption(disruptionData);
                 } catch (error) {
-                    // Error handled silently
+                    console.error('Failed to fetch disruption data:', error);
                 } finally {
                     setIsLoadingDisruption(false);
                 }
@@ -727,6 +727,7 @@ export const EditEffectPanel = (props) => {
                 const data = await getDiversionAPI(disruption.disruptionId);
                 setLocalDiversions(data || []);
             } catch (error) {
+                console.error('Failed to fetch diversions:', error);
                 setLocalDiversions([]);
             }
         };
@@ -830,22 +831,20 @@ export const EditEffectPanel = (props) => {
                                                     marginTop: '4px',
                                                 } }
                                             >
-                                                <div
-                                                    role="button"
-                                                    tabIndex={ 0 }
+                                                <button
+                                                    type="button"
+                                                    disabled={ !isAddDiversionEnabled() }
                                                     style={ {
                                                         padding: '8px 16px',
                                                         cursor: isAddDiversionEnabled() ? 'pointer' : 'not-allowed',
                                                         backgroundColor: isAddDiversionEnabled() ? 'white' : '#f5f5f5',
                                                         color: isAddDiversionEnabled() ? '#333' : '#999',
                                                         borderBottom: '1px solid #eee',
+                                                        border: 'none',
+                                                        width: '100%',
+                                                        textAlign: 'left',
                                                     } }
                                                     onClick={ isAddDiversionEnabled() ? handleAddDiversion : undefined }
-                                                    onKeyDown={ (e) => {
-                                                        if (e.key === 'Enter' && isAddDiversionEnabled()) {
-                                                            handleAddDiversion();
-                                                        }
-                                                    } }
                                                     onMouseEnter={ (e) => {
                                                         if (isAddDiversionEnabled()) {
                                                             e.target.style.backgroundColor = '#f0f0f0';
@@ -858,22 +857,19 @@ export const EditEffectPanel = (props) => {
                                                     } }
                                                 >
                                                     Add Diversion
-                                                </div>
-                                                <div
-                                                    role="button"
-                                                    tabIndex={ 0 }
+                                                </button>
+                                                <button
+                                                    type="button"
                                                     style={ {
                                                         padding: '8px 16px',
                                                         cursor: 'pointer',
                                                         backgroundColor: 'white',
                                                         color: '#333',
+                                                        border: 'none',
+                                                        width: '100%',
+                                                        textAlign: 'left',
                                                     } }
                                                     onClick={ handleViewDiversions }
-                                                    onKeyDown={ (e) => {
-                                                        if (e.key === 'Enter') {
-                                                            handleViewDiversions();
-                                                        }
-                                                    } }
                                                     onMouseEnter={ (e) => {
                                                         e.target.style.backgroundColor = '#f0f0f0';
                                                     } }
@@ -882,7 +878,7 @@ export const EditEffectPanel = (props) => {
                                                     } }
                                                 >
                                                     View & Edit Diversions
-                                                </div>
+                                                </button>
                                             </div>
                                         )}
                                     </div>
