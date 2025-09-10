@@ -729,4 +729,163 @@ describe('SelectDetails Component', () => {
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
         });
     });
+
+    describe('URL field removal', () => {
+        it('should hide URL field in Create New Disruption mode', () => {
+            const { container } = render(
+                <Provider store={ store }>
+                    <SelectDetails { ...defaultProps } />
+                </Provider>,
+            );
+
+            const urlField = container.querySelector('#disruption-creation__wizard-select-details__url');
+            expect(urlField).toBeInTheDocument();
+            expect(urlField.closest('.col-12')).toHaveClass('d-none');
+        });
+
+        it('should hide URL field in Edit Disruption mode', () => {
+            const props = {
+                ...defaultProps,
+                editMode: EDIT_TYPE.EDIT,
+                data: { ...incidentForEdit },
+            };
+            const { container } = render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+
+            const urlField = container.querySelector('#disruption-creation__wizard-select-details__url');
+            expect(urlField).toBeInTheDocument();
+            expect(urlField.closest('.col-12')).toHaveClass('d-none');
+        });
+
+        it('should hide URL field in Copy Disruption mode', () => {
+            const props = {
+                ...defaultProps,
+                editMode: EDIT_TYPE.COPY,
+                data: { ...incidentForEdit },
+            };
+            const { container } = render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+
+            const urlField = container.querySelector('#disruption-creation__wizard-select-details__url');
+            expect(urlField).toBeInTheDocument();
+            expect(urlField.closest('.col-12')).toHaveClass('d-none');
+        });
+
+        it('should hide URL field container div', () => {
+            const { container } = render(
+                <Provider store={ store }>
+                    <SelectDetails { ...defaultProps } />
+                </Provider>,
+            );
+
+            const urlContainer = container.querySelector('.col-12.d-none');
+            expect(urlContainer).toBeInTheDocument();
+            expect(urlContainer).toHaveClass('d-none');
+        });
+
+        it('should hide URL label', () => {
+            render(
+                <Provider store={ store }>
+                    <SelectDetails { ...defaultProps } />
+                </Provider>,
+            );
+
+            expect(screen.queryByText('URL')).toBeInTheDocument();
+            const urlLabel = screen.getByText('URL');
+            expect(urlLabel.closest('.col-12')).toHaveClass('d-none');
+        });
+    });
+
+    describe('Severity Level Default functionality', () => {
+        it('should have "Unknown" as default severity level in Create New Disruption mode', () => {
+            const { container } = render(
+                <Provider store={ store }>
+                    <SelectDetails { ...defaultProps } />
+                </Provider>,
+            );
+
+            const severityField = container.querySelector('#disruption-creation__wizard-select-details__severity');
+            expect(severityField).toBeInTheDocument();
+            expect(severityField.value).toBe('UNKNOWN');
+        });
+
+        it('should have "Unknown" as default severity level in Edit Disruption mode', () => {
+            const props = {
+                ...defaultProps,
+                editMode: EDIT_TYPE.EDIT,
+                data: { ...incidentForEdit, severity: '' },
+            };
+            const { container } = render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+
+            const severityField = container.querySelector('#disruption-creation__wizard-select-details__severity');
+            expect(severityField).toBeInTheDocument();
+            expect(severityField.value).toBe('UNKNOWN');
+        });
+
+        it('should have "Unknown" as default severity level in Copy Disruption mode', () => {
+            const props = {
+                ...defaultProps,
+                editMode: EDIT_TYPE.COPY,
+                data: { ...incidentForEdit, severity: '' },
+            };
+            const { container } = render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+
+            const severityField = container.querySelector('#disruption-creation__wizard-select-details__severity');
+            expect(severityField).toBeInTheDocument();
+            expect(severityField.value).toBe('UNKNOWN');
+        });
+
+        it('should allow users to change severity level after default is set', () => {
+            const onDataUpdate = jest.fn();
+            const props = { ...defaultProps, onDataUpdate };
+            const { container } = render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+
+            const severityField = container.querySelector('#disruption-creation__wizard-select-details__severity');
+            expect(severityField.value).toBe('UNKNOWN');
+
+            fireEvent.change(severityField, { target: { value: 'MINOR' } });
+            expect(onDataUpdate).toHaveBeenCalledWith('severity', 'MINOR');
+        });
+
+        it('should display "Unknown" label in severity dropdown', () => {
+            render(
+                <Provider store={ store }>
+                    <SelectDetails { ...defaultProps } />
+                </Provider>,
+            );
+
+            expect(screen.getByText('Unknown')).toBeInTheDocument();
+        });
+
+        it('should NOT have blank/empty severity level as default', () => {
+            const { container } = render(
+                <Provider store={ store }>
+                    <SelectDetails { ...defaultProps } />
+                </Provider>,
+            );
+
+            const severityField = container.querySelector('#disruption-creation__wizard-select-details__severity');
+            expect(severityField.value).not.toBe('');
+            expect(severityField.value).not.toBe(undefined);
+            expect(severityField.value).not.toBe(null);
+        });
+    });
 });

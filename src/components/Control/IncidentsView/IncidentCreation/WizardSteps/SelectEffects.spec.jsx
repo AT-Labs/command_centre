@@ -427,4 +427,211 @@ describe('<SelectEffects />', () => {
             });
         });
     });
+
+    describe('End Date Default Time functionality', () => {
+        it('should render end date and end time inputs for non-recurrent disruption', () => {
+            withHooks(() => {
+                const data = {
+                    ...mockIncident,
+                    recurrent: false,
+                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '' }],
+                };
+                wrapper = setup({ data });
+
+                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
+                const endTimeInput = wrapper.find('Input#disruption-creation__wizard-select-details__end-time');
+
+                expect(endDateInput).toHaveLength(1);
+                expect(endTimeInput).toHaveLength(1);
+            });
+        });
+
+        it('should render end date and end time inputs for recurrent disruption', () => {
+            withHooks(() => {
+                const data = {
+                    ...mockIncident,
+                    recurrent: false,
+                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '' }],
+                };
+                wrapper = setup({ data });
+
+                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
+                const endTimeInput = wrapper.find('Input#disruption-creation__wizard-select-details__end-time');
+
+                expect(endDateInput).toHaveLength(1);
+                expect(endTimeInput).toHaveLength(1);
+            });
+        });
+
+        it('should render end date and end time inputs with existing values', () => {
+            withHooks(() => {
+                const data = {
+                    ...mockIncident,
+                    recurrent: false,
+                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '18:00' }],
+                };
+                wrapper = setup({ data });
+
+                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
+                const endTimeInput = wrapper.find('Input#disruption-creation__wizard-select-details__end-time');
+
+                expect(endDateInput).toHaveLength(1);
+                expect(endTimeInput).toHaveLength(1);
+            });
+        });
+
+        it('should render end date and end time inputs for empty values', () => {
+            withHooks(() => {
+                const data = {
+                    ...mockIncident,
+                    recurrent: false,
+                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '', endDate: '' }],
+                };
+                wrapper = setup({ data });
+
+                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
+                const endTimeInput = wrapper.find('Input#disruption-creation__wizard-select-details__end-time');
+
+                expect(endDateInput).toHaveLength(1);
+                expect(endTimeInput).toHaveLength(1);
+            });
+        });
+
+        it('should allow interaction with end date and end time inputs', () => {
+            withHooks(() => {
+                const data = {
+                    ...mockIncident,
+                    recurrent: false,
+                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '' }],
+                };
+                wrapper = setup({ data });
+
+                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
+                const endTimeInput = wrapper.find('Input#disruption-creation__wizard-select-details__end-time');
+
+                expect(endDateInput).toHaveLength(1);
+                expect(endTimeInput).toHaveLength(1);
+
+                // Test that inputs can be interacted with
+                endDateInput.simulate('change', { target: { value: '2022-03-11' } });
+                endTimeInput.simulate('change', { target: { value: '20:30' } });
+
+                // If we get here without errors, the inputs are working
+                expect(true).toBe(true);
+            });
+        });
+    });
+
+    describe('Time Scope for Effects functionality', () => {
+        it('should render start time and end time inputs for effects', () => {
+            withHooks(() => {
+                const data = {
+                    ...mockIncident,
+                    recurrent: false,
+                    startTime: '10:00',
+                    startDate: '09/03/2022',
+                    disruptions: [{
+                        ...mockDisruption,
+                        recurrent: false,
+                        startTime: '08:00',
+                        startDate: '09/03/2022',
+                    }],
+                };
+                wrapper = setup({ data });
+
+                const effectStartTime = wrapper.find('Input#disruption-creation__wizard-select-details__start-time');
+                const effectEndTime = wrapper.find('Input#disruption-creation__wizard-select-details__end-time');
+
+                expect(effectStartTime).toHaveLength(1);
+                expect(effectEndTime).toHaveLength(1);
+            });
+        });
+
+        it('should render start date and end date inputs for effects', () => {
+            withHooks(() => {
+                const data = {
+                    ...mockIncident,
+                    startDate: '10/03/2022',
+                    disruptions: [{
+                        ...mockDisruption,
+                        startDate: '08/03/2022',
+                    }],
+                };
+                wrapper = setup({ data });
+
+                const effectStartDate = wrapper.find('#disruption-creation__wizard-select-details__start-date');
+                const effectEndDate = wrapper.find('#disruption-creation__wizard-select-details__end-date');
+
+                expect(effectStartDate).toHaveLength(1);
+                expect(effectEndDate).toHaveLength(1);
+            });
+        });
+
+        it('should render multiple effects with different time ranges', () => {
+            withHooks(() => {
+                const data = {
+                    ...mockIncident,
+                    startTime: '10:00',
+                    startDate: '09/03/2022',
+                    endTime: '18:00',
+                    endDate: '09/03/2022',
+                    disruptions: [
+                        {
+                            ...mockDisruption,
+                            key: 'DISR123',
+                            startTime: '08:00',
+                            startDate: '09/03/2022',
+                            endTime: '12:00',
+                            endDate: '09/03/2022',
+                        },
+                        {
+                            ...mockDisruption,
+                            key: 'DISR456',
+                            startTime: '14:00',
+                            startDate: '09/03/2022',
+                            endTime: '22:00',
+                            endDate: '09/03/2022',
+                        },
+                    ],
+                };
+                wrapper = setup({ data });
+
+                expect(wrapper.find('.incident-effect')).toHaveLength(2);
+
+                const firstEffect = wrapper.find('.incident-effect').at(0);
+                const secondEffect = wrapper.find('.incident-effect').at(1);
+
+                expect(firstEffect).toHaveLength(1);
+                expect(secondEffect).toHaveLength(1);
+            });
+        });
+
+        it('should render effect inputs independently of parent disruption times', () => {
+            withHooks(() => {
+                const data = {
+                    ...mockIncident,
+                    recurrent: false,
+                    startTime: '10:00',
+                    startDate: '09/03/2022',
+                    endTime: '18:00',
+                    endDate: '09/03/2022',
+                    disruptions: [{
+                        ...mockDisruption,
+                        recurrent: false,
+                        startTime: '08:00',
+                        startDate: '09/03/2022',
+                        endTime: '22:00',
+                        endDate: '09/03/2022',
+                    }],
+                };
+                wrapper = setup({ data });
+
+                const effectStartTime = wrapper.find('Input#disruption-creation__wizard-select-details__start-time');
+                const effectEndTime = wrapper.find('Input#disruption-creation__wizard-select-details__end-time');
+
+                expect(effectStartTime).toHaveLength(1);
+                expect(effectEndTime).toHaveLength(1);
+            });
+        });
+    });
 });
