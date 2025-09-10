@@ -657,14 +657,9 @@ export const EditEffectPanel = (props) => {
         const fetchDisruptionForDiversion = async () => {
             if (props.isDiversionManagerOpen && disruption.disruptionId && !fetchedDisruption) {
                 setIsLoadingDisruption(true);
-                try {
-                    const disruptionData = await getDisruptionAPI(disruption.disruptionId);
-                    setFetchedDisruption(disruptionData);
-                } catch (error) {
-                    console.error('Failed to fetch disruption data:', error);
-                } finally {
-                    setIsLoadingDisruption(false);
-                }
+                const disruptionData = await getDisruptionAPI(disruption.disruptionId);
+                setFetchedDisruption(disruptionData);
+                setIsLoadingDisruption(false);
             }
         };
 
@@ -723,13 +718,8 @@ export const EditEffectPanel = (props) => {
                 return;
             }
 
-            try {
-                const data = await getDiversionAPI(disruption.disruptionId);
-                setLocalDiversions(data || []);
-            } catch (error) {
-                console.error('Failed to fetch diversions:', error);
-                setLocalDiversions([]);
-            }
+            const data = await getDiversionAPI(disruption.disruptionId);
+            setLocalDiversions(data || []);
         };
         fetchDiversions();
     }, [disruption?.disruptionId, shouldRefetchDiversions]);

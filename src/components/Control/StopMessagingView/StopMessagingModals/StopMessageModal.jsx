@@ -225,7 +225,7 @@ export class StopMessageModal extends React.Component {
 
         this.props.onAction(payload, recurrence.weeks ? recurrence : null)
             .then(() => this.toggleModal())
-            .catch((error) => console.error('Failed to perform stop message action:', error));
+            .catch(() => {});
     };
 
     render() {
