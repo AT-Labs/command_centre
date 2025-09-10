@@ -121,31 +121,4 @@
     .justify-content-end {
         justify-content: flex-end;
     }
-
-    .buttons-container {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem;
-        background-color: #F8F9FA;
-        border-bottom: 1px solid #DEE2E6;
-    }
-
-    .diversions-button-container {
-        position: relative;
-        z-index: 1;
-    }
-
-    .workaround-button-container {
-        margin-left: auto;
-        display: flex;
-        align-items: center;
-    }
-
-    .diversion-button-custom {
-        color: black !important;
-        span {
-            color: black !important;
-        }
-    }
 }
