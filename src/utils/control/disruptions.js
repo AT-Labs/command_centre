@@ -100,11 +100,6 @@ const getMode = disruption => [
     ...(disruption.affectedEntities?.affectedStops || [])
         .map(stop => VEHICLE_TYPES[stop?.routeType]?.type)
         .filter(Boolean),
-
-    ...(disruption.affectedEntities?.affectedStops || [])
-        .filter(stop => stop?.routeId)
-        .map(stop => VEHICLE_TYPES[stop?.routeType]?.type)
-        .filter(Boolean),
 ];
 
 const filterWorkaroundsByAffectedEntity = (workarounds, affectedRoutes, affectedStops) => workarounds.filter((workaround) => {
