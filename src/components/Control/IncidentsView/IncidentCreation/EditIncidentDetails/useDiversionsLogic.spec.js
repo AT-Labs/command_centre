@@ -1,144 +1,142 @@
-import { useAffectedEntities, useDiversionValidation } from './useDiversionsLogic';
+/* eslint-disable react/jsx-filename-extension */
+import React from 'react';
+import PropTypes from 'prop-types';
+import { mount } from 'enzyme';
+import { act } from 'react-dom/test-utils';
+import { useDiversionsLogic } from './useDiversionsLogic';
 
-// Mock React hooks
-jest.mock('react', () => ({
-    useState: jest.fn(),
-    useEffect: jest.fn(),
-}));
+jest.useFakeTimers();
+
+const TestComponent = ({ disruption, fetchDiversionsAction, isDiversionManagerOpen, diversionResultState, clearDiversionsCacheAction }) => {
+    const { anchorEl, setAnchorEl } = useDiversionsLogic(disruption, fetchDiversionsAction, isDiversionManagerOpen, diversionResultState, clearDiversionsCacheAction);
+
+    return (
+        <div>
+            <div data-testid="anchorEl">{anchorEl ? 'hasAnchor' : 'noAnchor'}</div>
+            <button type="button" data-testid="setAnchor" onClick={ () => setAnchorEl(document.createElement('div')) }>Set Anchor</button>
+        </div>
+    );
+};
+
+TestComponent.propTypes = {
+    disruption: PropTypes.object,
+    fetchDiversionsAction: PropTypes.func,
+    isDiversionManagerOpen: PropTypes.bool,
+    diversionResultState: PropTypes.object,
+    clearDiversionsCacheAction: PropTypes.func,
+};
+
+TestComponent.defaultProps = {
+    disruption: null,
+    fetchDiversionsAction: null,
+    isDiversionManagerOpen: false,
+    diversionResultState: null,
+    clearDiversionsCacheAction: null,
+};
 
 describe('useDiversionsLogic', () => {
-    const mockDisruption = {
-        disruptionId: 'DISR123',
-        startTime: '2023-01-01T10:00:00Z',
-        endTime: '2023-01-01T18:00:00Z',
-    };
+    let mockFetchDiversionsAction;
+    let mockClearDiversionsCacheAction;
 
     beforeEach(() => {
+        mockFetchDiversionsAction = jest.fn();
+        mockClearDiversionsCacheAction = jest.fn();
         jest.clearAllMocks();
     });
 
-    describe('useAffectedEntities', () => {
-        it('should return reduxAffectedRoutes when available', () => {
-            const reduxAffectedRoutes = [{ routeId: 1, routeType: 3 }];
-            const result = useAffectedEntities(mockDisruption, reduxAffectedRoutes);
-            expect(result).toEqual(reduxAffectedRoutes);
+    afterEach(() => {
+        jest.runOnlyPendingTimers();
+        jest.useRealTimers();
+        jest.useFakeTimers();
+    });
+
+    describe('anchorEl state management', () => {
+        it('should initialize anchorEl as null', () => {
+            const wrapper = mount(
+                <TestComponent
+                    disruption={ null }
+                    fetchDiversionsAction={ mockFetchDiversionsAction }
+                    isDiversionManagerOpen={ false }
+                    diversionResultState={ null }
+                    clearDiversionsCacheAction={ mockClearDiversionsCacheAction }
+                />,
+            );
+
+            expect(wrapper.find('[data-testid="anchorEl"]').text()).toBe('noAnchor');
         });
 
-        it('should return empty array when no disruption affectedEntities', () => {
-            const disruption = { disruptionId: 'DISR123' };
-            const result = useAffectedEntities(disruption, []);
-            expect(result).toEqual([]);
-        });
+        it('should update anchorEl when setAnchorEl is called', () => {
+            const wrapper = mount(
+                <TestComponent
+                    disruption={ null }
+                    fetchDiversionsAction={ mockFetchDiversionsAction }
+                    isDiversionManagerOpen={ false }
+                    diversionResultState={ null }
+                    clearDiversionsCacheAction={ mockClearDiversionsCacheAction }
+                />,
+            );
 
-        it('should return disruption.affectedEntities when it is an array', () => {
-            const disruption = {
-                disruptionId: 'DISR123',
-                affectedEntities: [{ routeId: 1, routeType: 3 }],
-            };
-            const result = useAffectedEntities(disruption, []);
-            expect(result).toEqual([{ routeId: 1, routeType: 3 }]);
-        });
+            act(() => {
+                wrapper.find('[data-testid="setAnchor"]').simulate('click');
+            });
 
-        it('should return disruption.affectedEntities.affectedRoutes when available', () => {
-            const disruption = {
-                disruptionId: 'DISR123',
-                affectedEntities: {
-                    affectedRoutes: [{ routeId: 1, routeType: 3 }],
-                },
-            };
-            const result = useAffectedEntities(disruption, []);
-            expect(result).toEqual([{ routeId: 1, routeType: 3 }]);
-        });
-
-        it('should return disruption.routes when available', () => {
-            const disruption = {
-                disruptionId: 'DISR123',
-                routes: [{ routeId: 1, routeType: 3 }],
-            };
-            const result = useAffectedEntities(disruption, []);
-            expect(result).toEqual([]);
-        });
-
-        it('should return disruption.affectedRoutes when available', () => {
-            const disruption = {
-                disruptionId: 'DISR123',
-                affectedRoutes: [{ routeId: 1, routeType: 3 }],
-            };
-            const result = useAffectedEntities(disruption, []);
-            expect(result).toEqual([]);
-        });
-
-        it('should return empty array when no valid routes found', () => {
-            const disruption = {
-                disruptionId: 'DISR123',
-                affectedEntities: {},
-            };
-            const result = useAffectedEntities(disruption, []);
-            expect(result).toEqual([]);
+            expect(wrapper.find('[data-testid="anchorEl"]').text()).toBe('hasAnchor');
         });
     });
 
-    describe('useDiversionValidation', () => {
-        const mockAffectedEntities = [
-            { routeId: 1, routeType: 3 }, // bus route
-            { routeId: 2, routeType: 3 }, // bus route
-        ];
+    describe('disruption change effect', () => {
+        it('should call fetchDiversionsAction when disruption has disruptionId', () => {
+            const disruption = { disruptionId: 'DISR123' };
+            mount(
+                <TestComponent
+                    disruption={ disruption }
+                    fetchDiversionsAction={ mockFetchDiversionsAction }
+                    isDiversionManagerOpen={ false }
+                    diversionResultState={ null }
+                    clearDiversionsCacheAction={ mockClearDiversionsCacheAction }
+                />,
+            );
 
-        it('should return false when no disruption', () => {
-            const result = useDiversionValidation(null, mockAffectedEntities);
-            expect(result).toBe(false);
+            expect(mockFetchDiversionsAction).toHaveBeenCalledWith('DISR123');
         });
 
-        it('should return false when disruption status is resolved', () => {
-            const disruption = { ...mockDisruption, status: 'resolved' };
-            const result = useDiversionValidation(disruption, mockAffectedEntities);
-            expect(result).toBe(false);
-        });
+        it('should not call fetchDiversionsAction when disruption has no disruptionId', () => {
+            const disruption = { id: 'DISR123' };
+            mount(
+                <TestComponent
+                    disruption={ disruption }
+                    fetchDiversionsAction={ mockFetchDiversionsAction }
+                    isDiversionManagerOpen={ false }
+                    diversionResultState={ null }
+                    clearDiversionsCacheAction={ mockClearDiversionsCacheAction }
+                />,
+            );
 
-        it('should return false when disruption status is not allowed', () => {
-            const disruption = { ...mockDisruption, status: 'cancelled' };
-            const result = useDiversionValidation(disruption, mockAffectedEntities);
-            expect(result).toBe(false);
+            expect(mockFetchDiversionsAction).not.toHaveBeenCalled();
         });
+    });
 
-        it('should return false when no bus routes', () => {
-            const affectedEntities = [{ routeId: 1, routeType: 1 }]; // train route only
-            const result = useDiversionValidation(mockDisruption, affectedEntities);
-            expect(result).toBe(false);
-        });
+    describe('isDiversionManagerOpen effect', () => {
+        it('should close anchorEl when isDiversionManagerOpen becomes true', () => {
+            const wrapper = mount(
+                <TestComponent
+                    disruption={ null }
+                    fetchDiversionsAction={ mockFetchDiversionsAction }
+                    isDiversionManagerOpen={ false }
+                    diversionResultState={ null }
+                    clearDiversionsCacheAction={ mockClearDiversionsCacheAction }
+                />,
+            );
 
-        it('should return false when only train routes', () => {
-            const affectedEntities = [{ routeId: 1, routeType: 1 }]; // train route only
-            const disruption = { ...mockDisruption, status: 'in-progress' };
-            const result = useDiversionValidation(disruption, affectedEntities);
-            expect(result).toBe(false);
-        });
+            act(() => {
+                wrapper.find('[data-testid="setAnchor"]').simulate('click');
+            });
 
-        it('should return true when bus routes available and no existing diversions', () => {
-            const disruption = { ...mockDisruption, status: 'in-progress' };
-            const result = useDiversionValidation(disruption, mockAffectedEntities, []);
-            expect(result).toBe(true);
-        });
+            expect(wrapper.find('[data-testid="anchorEl"]').text()).toBe('hasAnchor');
 
-        it('should return false when all bus routes already have diversions', () => {
-            const disruption = { ...mockDisruption, status: 'in-progress' };
-            const diversions = [{
-                diversionRouteVariants: [
-                    { routeId: 1 },
-                    { routeId: 2 },
-                ],
-            }];
-            const result = useDiversionValidation(disruption, mockAffectedEntities, diversions);
-            expect(result).toBe(false);
-        });
+            wrapper.setProps({ isDiversionManagerOpen: true });
 
-        it('should return true when some bus routes have diversions but not all', () => {
-            const disruption = { ...mockDisruption, status: 'in-progress' };
-            const diversions = [{
-                diversionRouteVariants: [{ routeId: 1 }],
-            }];
-            const result = useDiversionValidation(disruption, mockAffectedEntities, diversions);
-            expect(result).toBe(true);
+            expect(wrapper.find('[data-testid="anchorEl"]').text()).toBe('noAnchor');
         });
     });
 });

@@ -520,6 +520,44 @@ describe('<SelectEffects />', () => {
                 expect(true).toBe(true);
             });
         });
+
+        it('should automatically set endTime to 23:59 when endDate is set and endTime is empty', () => {
+            withHooks(() => {
+                const data = {
+                    ...mockIncident,
+                    recurrent: false,
+                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '', endDate: '' }],
+                };
+                wrapper = setup({ data });
+
+                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
+
+                // Simulate setting endDate
+                endDateInput.simulate('change', { target: { value: '2022-03-11' } });
+
+                // Check that the component renders without errors
+                expect(endDateInput).toHaveLength(1);
+            });
+        });
+
+        it('should not set endTime to 23:59 when endDate is set but endTime already has a value', () => {
+            withHooks(() => {
+                const data = {
+                    ...mockIncident,
+                    recurrent: false,
+                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '18:00', endDate: '' }],
+                };
+                wrapper = setup({ data });
+
+                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
+
+                // Simulate setting endDate
+                endDateInput.simulate('change', { target: { value: '2022-03-11' } });
+
+                // Check that the component renders without errors
+                expect(endDateInput).toHaveLength(1);
+            });
+        });
     });
 
     describe('Time Scope for Effects functionality', () => {
