@@ -298,4 +298,5 @@ describe('<SelectDetails />', () => {
             expect(componentPropsMock.onSubmitDraft).toHaveBeenCalled();
         });
     });
+
 });

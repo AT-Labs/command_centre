@@ -49,7 +49,7 @@ const DiversionManager = (props) => {
     const [selectedOtherRouteVariants, setSelectedOtherRouteVariants] = useState([]); // Also hold the updated shape. It is not the final payload.
 
     // Shared diversion shape
-    const [diversionShapeWkt, setDiversionShapeWkt] = useState(isEditingMode ? props.diversion?.diversionShapeWkt : null);
+    const [diversionShapeWkt, setDiversionShapeWkt] = useState(isEditingMode ? props.diversion.diversionShapeWkt : null);
 
     // Updated base route variant
     const [modifiedBaseRouteVariant, setModifiedBaseRouteVariant] = useState();
@@ -69,13 +69,13 @@ const DiversionManager = (props) => {
 
     const initEditingMode = (routeVariants) => {
         // Select the base route in edit mode
-        const baseRouteVariantId = props.diversion?.diversionRouteVariants?.[0]?.routeVariantId;
+        const baseRouteVariantId = props.diversion.diversionRouteVariants[0].routeVariantId;
         const baseRouteVariant = routeVariants.find(rv => rv.routeVariantId === baseRouteVariantId);
         if (baseRouteVariant) {
             setSelectedBaseRouteVariant(baseRouteVariant);
             const initialCoordinates = isEditingMode ? mergeCoordinates(
                 parseWKT(baseRouteVariant.shapeWkt),
-                parseWKT(props.diversion?.diversionShapeWkt),
+                parseWKT(props.diversion.diversionShapeWkt),
             ) : [];
             setInitialBaseRouteShape(toWKT(initialCoordinates));
         } else {
@@ -85,7 +85,7 @@ const DiversionManager = (props) => {
         // set the selected route variants
         const selectedRouteVariants = routeVariants.filter(rv => editingDiversions.some(ed => ed.routeVariantId === rv.routeVariantId));
         const updatedSelectedRouteVariants = selectedRouteVariants.filter(v => v.routeVariantId !== baseRouteVariantId)
-            .map(rv => mergeDiversionToRouteVariant(rv, rv.shapeWkt, props.diversion?.diversionShapeWkt));
+            .map(rv => mergeDiversionToRouteVariant(rv, rv.shapeWkt, props.diversion.diversionShapeWkt));
 
         setBaseRouteVariantOnly(selectedRouteVariants.length === 1);
         setSecondaryRouteVariantsList(routeVariants
@@ -124,7 +124,7 @@ const DiversionManager = (props) => {
             }
             setRouteVariantsList(routeVariants);
             if (isEditingMode && routeVariants && props.diversion) {
-                props.diversion?.diversionRouteVariants?.forEach((rv) => {
+                props.diversion.diversionRouteVariants.forEach((rv) => {
                     const existingVariant = routeVariants.find(r => r.routeVariantId === rv.routeVariantId);
                     if (existingVariant) {
                         // override hasTripModifications for the existing route variants in editing mode.
@@ -202,7 +202,7 @@ const DiversionManager = (props) => {
             const isModified = hasDiversionModified({
                 isEditingMode,
                 diversionShapeWkt,
-                originalDiversionShapeWkt: props.diversion?.diversionShapeWkt,
+                originalDiversionShapeWkt: props.diversion.diversionShapeWkt,
                 selectedOtherRouteVariants,
                 editingDiversions,
             });
@@ -271,7 +271,7 @@ const DiversionManager = (props) => {
             if (isEditingMode) {
                 props.updateDiversion({
                     ...diversionPayload,
-                    diversionId: props.diversion?.diversionId,
+                    diversionId: props.diversion.diversionId,
                 });
             } else {
                 props.createDiversion(diversionPayload);
@@ -345,7 +345,7 @@ const DiversionManager = (props) => {
     };
 
     // Prevent rendering if no disruption is available
-    if (!props.disruption?.disruptionId) {
+    if (!props.disruption.disruptionId) {
         return null;
     }
 
@@ -403,7 +403,7 @@ const DiversionManager = (props) => {
                             <Button
                                 className="btn cc-btn-primary btn-block continue"
                                 onClick={ onSaveClicked }
-                                disabled={ (isEditingMode && !isUpdated) || !isDiversionValid || props.resultState?.isLoading }
+                                disabled={ (isEditingMode && !isUpdated) || !isDiversionValid || props.resultState.isLoading }
                             >
                                 { buttonText }
                             </Button>
@@ -434,7 +434,7 @@ const DiversionManager = (props) => {
             <CustomModal
                 className="diversion-result-modal"
                 title={ title }
-                isModalOpen={ !props.resultState?.isLoading && (props.resultState?.diversionId || props.resultState?.error) }>
+                isModalOpen={ !props.resultState.isLoading && (props.resultState?.diversionId || props.resultState?.error) }>
                 <DiversionResultModal
                     showNewDiversionButton={ !isEditingMode }
                     result={ props.resultState?.diversionId ? `Diversion #${props.resultState?.diversionId} has been ${resultAction}.` : null }

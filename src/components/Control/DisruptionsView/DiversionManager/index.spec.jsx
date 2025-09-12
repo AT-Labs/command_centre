@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { mount } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
+import { expect } from 'chai';
 
 const MockDiversionManager = ({ disruption, resultState, diversion }) => {
     if (!disruption?.disruptionId) {
@@ -89,7 +90,7 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(1);
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(1);
         });
 
         it('should return null when disruption is null', () => {
@@ -100,7 +101,7 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(0);
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(0);
         });
 
         it('should return null when disruption is undefined', () => {
@@ -111,7 +112,7 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(0);
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(0);
         });
 
         it('should return null when disruption.disruptionId is null', () => {
@@ -122,7 +123,7 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(0);
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(0);
         });
 
         it('should return null when disruption.disruptionId is undefined', () => {
@@ -133,7 +134,7 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(0);
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(0);
         });
     });
 
@@ -146,8 +147,8 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(1);
-            expect(wrapper.find('[data-testid="is-modal-open"]').text()).toBe('false');
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(1);
+            expect(wrapper.find('[data-testid="is-modal-open"]').text()).to.equal('false');
         });
 
         it('should handle resultState being undefined', () => {
@@ -158,8 +159,8 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(1);
-            expect(wrapper.find('[data-testid="is-modal-open"]').text()).toBe('false');
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(1);
+            expect(wrapper.find('[data-testid="is-modal-open"]').text()).to.equal('false');
         });
 
         it('should handle resultState.isLoading being undefined', () => {
@@ -176,8 +177,8 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(1);
-            expect(wrapper.find('[data-testid="is-modal-open"]').text()).toBe('false');
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(1);
+            expect(wrapper.find('[data-testid="is-modal-open"]').text()).to.equal('false');
         });
     });
 
@@ -196,8 +197,8 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(1);
-            expect(wrapper.find('[data-testid="is-modal-open"]').text()).toBe('false');
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(1);
+            expect(wrapper.find('[data-testid="is-modal-open"]').text()).to.equal('false');
         });
     });
 
@@ -216,8 +217,8 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(1);
-            expect(wrapper.find('[data-testid="is-modal-open"]').text()).toBe('false');
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(1);
+            expect(wrapper.find('[data-testid="is-modal-open"]').text()).to.equal('false');
         });
     });
 
@@ -230,8 +231,8 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(1);
-            expect(wrapper.find('[data-testid="editing-diversions-count"]').text()).toBe('0');
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(1);
+            expect(wrapper.find('[data-testid="editing-diversions-count"]').text()).to.equal('0');
         });
 
         it('should handle diversion being undefined', () => {
@@ -242,8 +243,8 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(1);
-            expect(wrapper.find('[data-testid="editing-diversions-count"]').text()).toBe('0');
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(1);
+            expect(wrapper.find('[data-testid="editing-diversions-count"]').text()).to.equal('0');
         });
     });
 
@@ -261,7 +262,7 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(0);
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(0);
         });
 
         it('should handle partial null/undefined values', () => {
@@ -277,9 +278,9 @@ describe('DiversionManager - Optional Chaining Tests', () => {
                 </Provider>,
             );
 
-            expect(wrapper.find('[data-testid="diversion-manager"]')).toHaveLength(1);
-            expect(wrapper.find('[data-testid="is-modal-open"]').text()).toBe('false');
-            expect(wrapper.find('[data-testid="editing-diversions-count"]').text()).toBe('0');
+            expect(wrapper.find('[data-testid="diversion-manager"]')).to.have.length(1);
+            expect(wrapper.find('[data-testid="is-modal-open"]').text()).to.equal('false');
+            expect(wrapper.find('[data-testid="editing-diversions-count"]').text()).to.equal('0');
         });
     });
 });
