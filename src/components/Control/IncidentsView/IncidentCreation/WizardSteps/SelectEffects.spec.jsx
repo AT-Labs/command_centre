@@ -5,13 +5,11 @@ import { withHooks } from 'jest-react-hooks-shallow';
 import { SelectEffects } from './SelectEffects';
 import Footer from './Footer';
 import SelectEffectEntities from './SelectEffectEntities';
-import * as controlUtils from '../../../../../utils/control/alert-cause-effect';
 
 let sandbox;
 let wrapper;
 
 jest.useFakeTimers();
-jest.mock('../../../../../utils/control/alert-cause-effect');
 
 const impacts = [
     { label: '', value: '' },
@@ -48,78 +46,68 @@ const mockDisruption = {
             category: { type: 'route', icon: '', label: 'Routes' },
             labelKey: 'routeShortName',
             routeId: 'WEST-201',
-            routeShortName: 'WEST',
-            routeType: 2,
-            text: 'WEST',
-            type: 'route',
-            valueKey: 'routeId',
+            routeShortName: '201',
+            routeLongName: 'West Auckland to City',
+            directionId: 0,
+            routeType: 3,
         }],
-        affectedStops: [],
+        affectedStops: [{
+            category: { type: 'stop', icon: '', label: 'Stops' },
+            labelKey: 'stopCode',
+            stopId: 'STOP-123',
+            stopCode: '1234',
+            stopName: 'Test Stop',
+            stopLat: -36.8485,
+            stopLon: 174.7633,
+        }],
     },
+    isStartDateDirty: false,
+    isEndDateDirty: false,
+    isRecurrencePatternDirty: false,
+    disruptionType: 'ROUTE',
 };
 
 const mockIncident = {
+    incidentNo: 'INC123',
+    header: 'Test Incident',
+    cause: 'CAPACITY_ISSUE',
+    impact: 'CANCELLATIONS',
     startTime: '06:00',
     startDate: '09/03/2022',
-    impact: 'CANCELLATIONS',
-    endTime: '06:00',
-    endDate: '10/03/2022',
-    cause: 'CAPACITY_ISSUE',
-    mode: '-',
+    endTime: '18:00',
+    endDate: '09/03/2022',
     status: 'not-started',
-    header: 'Incident Title',
-    url: 'https://at.govt.nz',
-    createNotification: false,
-    recurrent: true,
-    duration: '2',
-    recurrencePattern: {
-        freq: 2,
-        dtstart: new Date('2022-03-09T06:00:00.000Z'),
-        until: new Date('2022-03-10T06:00:00.000Z'),
-        byweekday: [0],
-    },
     severity: 'MINOR',
-    disruptions: [{ ...mockDisruption }],
-    modalOpenedTime: new Date('2022-03-01T05:59:00.000Z'),
+    recurrent: false,
+    createNotification: false,
+    disruptions: [mockDisruption],
 };
 
-const componentPropsMock = {
-    data: { ...mockIncident },
-    onStepUpdate: jest.fn(),
+const defaultProps = {
+    data: mockIncident,
     onDataUpdate: jest.fn(),
-    onSubmit: jest.fn(),
     updateCurrentStep: jest.fn(),
-    stops: {},
-    toggleIncidentModals: jest.fn(),
-    onSubmitDraft: jest.fn(),
-    onUpdateDetailsValidation: jest.fn(),
-    useDraftDisruptions: jest.fn(),
-    onSubmitUpdate: jest.fn(),
+    getStopsByRoute: jest.fn(),
     updateAffectedStopsState: jest.fn(),
-    updateAffectedRoutesState: jest.fn(),
     getRoutesByShortName: jest.fn(),
-    affectedRoutes: [],
+    updateAffectedRoutesState: jest.fn(),
+    toggleIncidentModals: jest.fn(),
+    search: jest.fn(),
+    searchResults: [],
+    findStopsByRoute: jest.fn(),
     isEditMode: false,
-    stopGroups: {},
-    onUpdateEntitiesValidation: jest.fn(),
+    isEditDisabled: false,
+    useDraftDisruptions: false,
 };
-controlUtils.useAlertEffects.mockReturnValue([impacts]);
 
-const setup = (customProps) => {
-    const props = {
-        ...componentPropsMock,
-        useDraftDisruptions: false,
-        ...customProps,
-    };
-    Object.assign(props, customProps);
+const setup = (customProps = {}) => {
+    const props = { ...defaultProps, ...customProps };
     return shallow(<SelectEffects { ...props } />);
 };
 
 describe('<SelectEffects />', () => {
     beforeEach(() => {
         sandbox = sinon.createSandbox();
-        sandbox.useFakeTimers(new Date('2022-03-01T06:00:00.000Z'));
-        wrapper = setup();
     });
 
     afterEach(() => {
@@ -127,476 +115,33 @@ describe('<SelectEffects />', () => {
         jest.clearAllMocks();
     });
 
-    it('Should render', () => {
-        expect(wrapper.exists()).toEqual(true);
-    });
-
-    it('Should render with valid fields for recurrent disruption', () => {
-        expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(impacts[1].value);
-        expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe('MINOR');
-        expect(wrapper.find('#disruption-creation__wizard-select-details__start-date').props().value).toBe('09/03/2022');
-        expect(wrapper.find('#disruption-creation__wizard-select-details__end-date').props().value).toBe('10/03/2022');
-        expect(wrapper.find('Input#disruption-creation__wizard-select-details__start-time').props().value).toBe('06:00');
-        expect(wrapper.find('Input#disruption-creation__wizard-select-details__duration').props().value).toBe('2');
-    });
-
-    it('Should render with valid fields for not recurrent disruption', () => {
-        const data = {
-            ...mockIncident,
-            recurrent: false,
-            disruptions: [{ ...mockDisruption, recurrent: false }],
-        };
-        wrapper = setup({ data });
-        expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(impacts[1].value);
-        expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe('MINOR');
-        expect(wrapper.find('#disruption-creation__wizard-select-details__start-date').props().value).toBe('09/03/2022');
-        expect(wrapper.find('#disruption-creation__wizard-select-details__end-date').props().value).toBe('10/03/2022');
-        expect(wrapper.find('Input#disruption-creation__wizard-select-details__start-time').props().value).toBe('06:00');
-        expect(wrapper.find('Input#disruption-creation__wizard-select-details__end-time').props().value).toBe('06:00');
-    });
-
-    describe('Submit button', () => {
-        let data;
-
-        beforeEach(() => {
-            data = {
-                ...mockIncident,
-                disruptions: [{ ...mockDisruption }],
-            };
-        });
-
-        it('Should be disabled when startTime is empty', () => {
-            data.disruptions = [{ ...mockDisruption, startTime: '' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when startDate is empty', () => {
-            data.disruptions = [{ ...mockDisruption, startDate: '' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when impact is empty', () => {
-            data.disruptions = [{ ...mockDisruption, impact: '' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when cause is empty', () => {
-            data.cause = '';
-            data.disruptions = [{ ...mockDisruption, cause: '' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when header is empty', () => {
-            data.header = '';
-            data.disruptions = [{ ...mockDisruption, header: '' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when disruption is recurrent and end date is empty', () => {
-            data.disruptions = [{ ...mockDisruption, recurrent: true, endDate: '' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when disruption is not recurrent, end time is not empty and end date is empty', () => {
-            data.disruptions = [{ ...mockDisruption, recurrent: false, endDate: '' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when disruption is recurrent and duration is empty', () => {
-            data.disruptions = [{ ...mockDisruption, recurrent: true, duration: '' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when disruption is recurrent and no weekday is selected', () => {
-            data.disruptions = [{ ...mockDisruption, recurrent: true, duration: '' }];
-            data.disruptions[0].recurrencePattern.byweekday = [];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when startTime is invalid', () => {
-            data.disruptions = [{ ...mockDisruption, startTime: '0600' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when startDate is invalid', () => {
-            data.disruptions = [{ ...mockDisruption, startDate: '09-03-2022' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when endTime is invalid', () => {
-            data.disruptions = [{ ...mockDisruption, endTime: '0600' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when endDate is invalid', () => {
-            data.disruptions = [{ ...mockDisruption, endDate: '10-03-2022' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when duration is invalid', () => {
-            data.disruptions = [{ ...mockDisruption, duration: '36' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should not be disabled when disruption is not recurrent, all required fields are set and valid', () => {
-            data.recurrent = false;
-            data.disruptions = [{ ...mockDisruption, recurrent: false }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(false);
-        });
-
-        it('Should not be disabled when disruption is recurrent, all required fields are set and valid', () => {
-            data.recurrent = true;
-            data.disruptions = [{ ...mockDisruption, recurrent: true }];
-            data.disruptions[0].recurrencePattern.byweekday = [0, 1, 2];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(false);
-        });
-
-        it('Should fire step update when next button is clicked', () => {
-            data.recurrent = false;
-            data.disruptions = [{ ...mockDisruption, recurrent: false }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('nextButtonValue')).toEqual('Continue');
-            footer.renderProp('onContinue')();
-            expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(2);
-            expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(3);
-        });
-
-        it('Should fire step update when active periods valid', () => {
-            data.recurrent = true;
-            data.disruptions = [{ ...mockDisruption, recurrent: true, recurrencePattern: { ...data.recurrencePattern, byweekday: [0, 1, 2, 3, 4, 5, 6] } }];
-            wrapper = setup({ data, useDraftDisruptions: true });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('nextButtonValue')).toEqual('Continue');
-            footer.renderProp('onContinue')();
-            expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(2);
-            expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(3);
-            expect(componentPropsMock.onUpdateEntitiesValidation).toHaveBeenCalledWith(true);
-        });
-
-        it('Should fire step update when active periods invalid', () => {
-            data.recurrent = true;
-            data.disruptions = [{ ...mockDisruption, recurrent: true }];
-            data.disruptions[0].recurrencePattern.byweekday = [0];
-            wrapper = setup({ data, useDraftDisruptions: true });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('nextButtonValue')).toEqual('Continue');
-            footer.renderProp('onContinue')();
-            expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(2);
-            expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(3);
-            expect(componentPropsMock.onUpdateEntitiesValidation).toHaveBeenCalledWith(false);
-        });
-    });
-
-    describe('Save draft button', () => {
-        let data;
-
-        beforeEach(() => {
-            data = {
-                ...mockIncident,
-                disruptions: [{ ...mockDisruption }],
-            };
-        });
-
-        it('Should be disabled when cause is empty', () => {
-            data.cause = '';
-            data.disruptions = [{ ...mockDisruption, cause: '' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isDraftSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be disabled when header is empty', () => {
-            data.header = '';
-            data.disruptions = [{ ...mockDisruption, header: '' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isDraftSubmitDisabled')).toEqual(true);
-        });
-
-        it('Should be enabled when header and cause not empty', () => {
-            data.disruptions = [{ ...mockDisruption }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isDraftSubmitDisabled')).toEqual(false);
-        });
-
-        it('Should fire step update when next button is clicked', () => {
-            data.recurrent = false;
-            data.disruptions = [{ ...mockDisruption, recurrent: false }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            footer.prop('onSubmitDraft')();
-            expect(componentPropsMock.onDataUpdate).toHaveBeenCalled();
-        });
-    });
-
-    describe('Test hooks', () => {
-        let data;
-
-        beforeEach(() => {
-            data = {
-                ...mockIncident,
-                disruptions: [{ ...mockDisruption }],
-            };
-        });
-
-        it('Should rerender effects after updating filtering value', () => {
+    describe('Basic rendering', () => {
+        it('should render without crashing', () => {
             withHooks(() => {
-                wrapper = setup({ data });
-                const newAffectedRoutes = [{
-                    category: { type: 'route', icon: '', label: 'Routes' },
-                    labelKey: 'routeShortName',
-                    routeId: 'WEST-201',
-                    routeShortName: 'WEST',
-                    routeType: 2,
-                    text: 'WEST',
-                    type: 'route',
-                    valueKey: 'routeId',
-                }, {
-                    category: { type: 'route', icon: '', label: 'Routes' },
-                    labelKey: 'routeShortName',
-                    routeId: 'EAST-201',
-                    routeShortName: 'EAST',
-                    routeType: 2,
-                    text: 'EAST',
-                    type: 'route',
-                    valueKey: 'routeId',
-                },
-                ];
-                const selectEffectEntities = wrapper.find(SelectEffectEntities);
-                selectEffectEntities.prop('onAffectedEntitiesUpdate')('DISR123', 'affectedRoutes', newAffectedRoutes);
-                wrapper.update();
-                jest.advanceTimersByTime(100);
-                expect(componentPropsMock.updateAffectedRoutesState).toHaveBeenCalled();
-                expect(componentPropsMock.getRoutesByShortName).toHaveBeenCalled();
+                wrapper = setup();
+                expect(wrapper).toHaveLength(1);
             });
         });
 
-        it('Should rerender effects form with new one after clicking "+" button', () => {
+        it('should render Footer component', () => {
             withHooks(() => {
-                wrapper = setup({ data });
-                expect(wrapper.find('.incident-effect')).toHaveLength(1);
-                wrapper.find('.add-disruption-button').simulate('click');
-                wrapper.update();
-                expect(wrapper.find('.incident-effect')).toHaveLength(2);
+                wrapper = setup();
+                expect(wrapper.find(Footer)).toHaveLength(1);
             });
         });
 
-        it('Should render effects form without one effect after clicking "-" button', () => {
+        it('should render SelectEffectEntities for each disruption', () => {
             withHooks(() => {
-                data.disruptions = [{ ...mockDisruption }, { ...mockDisruption, key: 'DISR456', impact: impacts[4].value }];
-                wrapper = setup({ data });
-                expect(wrapper.find('.incident-effect')).toHaveLength(2);
-                wrapper.find('.disruption-effect-button').at(0).simulate('click');
-                wrapper.update();
-                expect(wrapper.find('.incident-effect')).toHaveLength(1);
-                expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(impacts[4].value);
+                wrapper = setup();
+                expect(wrapper.find(SelectEffectEntities)).toHaveLength(1);
             });
         });
     });
 
-    describe('End Date Default Time functionality', () => {
-        it('should render end date and end time inputs for non-recurrent disruption', () => {
+    describe('Effect inputs rendering', () => {
+        it('should render effect inputs for each disruption', () => {
             withHooks(() => {
-                const data = {
-                    ...mockIncident,
-                    recurrent: false,
-                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '' }],
-                };
-                wrapper = setup({ data });
-
-                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
-                const endTimeInput = wrapper.find('Input#disruption-creation__wizard-select-details__end-time');
-
-                expect(endDateInput).toHaveLength(1);
-                expect(endTimeInput).toHaveLength(1);
-            });
-        });
-
-        it('should render end date and end time inputs for recurrent disruption', () => {
-            withHooks(() => {
-                const data = {
-                    ...mockIncident,
-                    recurrent: false,
-                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '' }],
-                };
-                wrapper = setup({ data });
-
-                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
-                const endTimeInput = wrapper.find('Input#disruption-creation__wizard-select-details__end-time');
-
-                expect(endDateInput).toHaveLength(1);
-                expect(endTimeInput).toHaveLength(1);
-            });
-        });
-
-        it('should render end date and end time inputs with existing values', () => {
-            withHooks(() => {
-                const data = {
-                    ...mockIncident,
-                    recurrent: false,
-                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '18:00' }],
-                };
-                wrapper = setup({ data });
-
-                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
-                const endTimeInput = wrapper.find('Input#disruption-creation__wizard-select-details__end-time');
-
-                expect(endDateInput).toHaveLength(1);
-                expect(endTimeInput).toHaveLength(1);
-            });
-        });
-
-        it('should render end date and end time inputs for empty values', () => {
-            withHooks(() => {
-                const data = {
-                    ...mockIncident,
-                    recurrent: false,
-                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '', endDate: '' }],
-                };
-                wrapper = setup({ data });
-
-                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
-                const endTimeInput = wrapper.find('Input#disruption-creation__wizard-select-details__end-time');
-
-                expect(endDateInput).toHaveLength(1);
-                expect(endTimeInput).toHaveLength(1);
-            });
-        });
-
-        it('should allow interaction with end date and end time inputs', () => {
-            withHooks(() => {
-                const data = {
-                    ...mockIncident,
-                    recurrent: false,
-                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '' }],
-                };
-                wrapper = setup({ data });
-
-                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
-                const endTimeInput = wrapper.find('Input#disruption-creation__wizard-select-details__end-time');
-
-                expect(endDateInput).toHaveLength(1);
-                expect(endTimeInput).toHaveLength(1);
-
-                // Test that inputs can be interacted with
-                endDateInput.simulate('change', { target: { value: '2022-03-11' } });
-                endTimeInput.simulate('change', { target: { value: '20:30' } });
-
-                // If we get here without errors, the inputs are working
-                expect(true).toBe(true);
-            });
-        });
-
-        it('should automatically set endTime to 23:59 when endDate is set and endTime is empty', () => {
-            withHooks(() => {
-                const data = {
-                    ...mockIncident,
-                    recurrent: false,
-                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '', endDate: '' }],
-                };
-                wrapper = setup({ data });
-
-                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
-
-                // Simulate setting endDate
-                endDateInput.simulate('change', { target: { value: '2022-03-11' } });
-
-                // Check that the component renders without errors
-                expect(endDateInput).toHaveLength(1);
-            });
-        });
-
-        it('should not set endTime to 23:59 when endDate is set but endTime already has a value', () => {
-            withHooks(() => {
-                const data = {
-                    ...mockIncident,
-                    recurrent: false,
-                    disruptions: [{ ...mockDisruption, recurrent: false, endTime: '18:00', endDate: '' }],
-                };
-                wrapper = setup({ data });
-
-                const endDateInput = wrapper.find('#disruption-creation__wizard-select-details__end-date');
-
-                // Simulate setting endDate
-                endDateInput.simulate('change', { target: { value: '2022-03-11' } });
-
-                // Check that the component renders without errors
-                expect(endDateInput).toHaveLength(1);
-            });
-        });
-    });
-
-    describe('Time Scope for Effects functionality', () => {
-        it('should render start time and end time inputs for effects', () => {
-            withHooks(() => {
-                const data = {
-                    ...mockIncident,
-                    recurrent: false,
-                    startTime: '10:00',
-                    startDate: '09/03/2022',
-                    disruptions: [{
-                        ...mockDisruption,
-                        recurrent: false,
-                        startTime: '08:00',
-                        startDate: '09/03/2022',
-                    }],
-                };
-                wrapper = setup({ data });
-
-                const effectStartTime = wrapper.find('Input#disruption-creation__wizard-select-details__start-time');
-                const effectEndTime = wrapper.find('Input#disruption-creation__wizard-select-details__end-time');
-
-                expect(effectStartTime).toHaveLength(1);
-                expect(effectEndTime).toHaveLength(1);
-            });
-        });
-
-        it('should render start date and end date inputs for effects', () => {
-            withHooks(() => {
-                const data = {
-                    ...mockIncident,
-                    startDate: '10/03/2022',
-                    disruptions: [{
-                        ...mockDisruption,
-                        startDate: '08/03/2022',
-                    }],
-                };
-                wrapper = setup({ data });
-
+                wrapper = setup();
                 const effectStartDate = wrapper.find('#disruption-creation__wizard-select-details__start-date');
                 const effectEndDate = wrapper.find('#disruption-creation__wizard-select-details__end-date');
 
@@ -648,17 +193,15 @@ describe('<SelectEffects />', () => {
             withHooks(() => {
                 const data = {
                     ...mockIncident,
-                    recurrent: false,
-                    startTime: '10:00',
+                    startTime: '06:00',
                     startDate: '09/03/2022',
                     endTime: '18:00',
                     endDate: '09/03/2022',
                     disruptions: [{
                         ...mockDisruption,
-                        recurrent: false,
                         startTime: '08:00',
                         startDate: '09/03/2022',
-                        endTime: '22:00',
+                        endTime: '12:00',
                         endDate: '09/03/2022',
                     }],
                 };

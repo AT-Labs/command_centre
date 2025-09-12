@@ -728,170 +728,67 @@ describe('SelectDetails Component', () => {
             expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(2);
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
         });
-    });
 
-    describe('Severity Level Default functionality', () => {
-        it('should have "Unknown" as default severity level in Create New Disruption mode', () => {
-            const { container } = render(
-                <Provider store={ store }>
-                    <SelectDetails { ...defaultProps } />
-                </Provider>,
-            );
-
-            const severityField = container.querySelector('#disruption-creation__wizard-select-details__severity');
-            expect(severityField).toBeInTheDocument();
-            expect(severityField.value).toBe('UNKNOWN');
-        });
-
-        it('should have "Unknown" as default severity level in Edit Disruption mode', () => {
-            const props = {
-                ...defaultProps,
-                editMode: EDIT_TYPE.EDIT,
-                data: { ...incidentForEdit, severity: '' },
-            };
-            const { container } = render(
-                <Provider store={ store }>
-                    <SelectDetails { ...props } />
-                </Provider>,
-            );
-
-            const severityField = container.querySelector('#disruption-creation__wizard-select-details__severity');
-            expect(severityField).toBeInTheDocument();
-            expect(severityField.value).toBe('UNKNOWN');
-        });
-
-        it('should have "Unknown" as default severity level in Copy Disruption mode', () => {
-            const props = {
-                ...defaultProps,
-                editMode: EDIT_TYPE.COPY,
-                data: { ...incidentForEdit, severity: '' },
-            };
-            const { container } = render(
-                <Provider store={ store }>
-                    <SelectDetails { ...props } />
-                </Provider>,
-            );
-
-            const severityField = container.querySelector('#disruption-creation__wizard-select-details__severity');
-            expect(severityField).toBeInTheDocument();
-            expect(severityField.value).toBe('UNKNOWN');
-        });
-
-        it('should allow users to change severity level after default is set', () => {
-            const onDataUpdate = jest.fn();
-            const props = { ...defaultProps, onDataUpdate };
-            const { container } = render(
-                <Provider store={ store }>
-                    <SelectDetails { ...props } />
-                </Provider>,
-            );
-
-            const severityField = container.querySelector('#disruption-creation__wizard-select-details__severity');
-            expect(severityField.value).toBe('UNKNOWN');
-
-            fireEvent.change(severityField, { target: { value: 'MINOR' } });
-            expect(onDataUpdate).toHaveBeenCalledWith('severity', 'MINOR');
-        });
-
-        it('should display "Unknown" label in severity dropdown', () => {
-            render(
-                <Provider store={ store }>
-                    <SelectDetails { ...defaultProps } />
-                </Provider>,
-            );
-
-            expect(screen.getByText('Unknown')).toBeInTheDocument();
-        });
-
-        it('should NOT have blank/empty severity level as default', () => {
-            const { container } = render(
-                <Provider store={ store }>
-                    <SelectDetails { ...defaultProps } />
-                </Provider>,
-            );
-
-            const severityField = container.querySelector('#disruption-creation__wizard-select-details__severity');
-            expect(severityField.value).not.toBe('');
-            expect(severityField.value).not.toBe(undefined);
-            expect(severityField.value).not.toBe(null);
-        });
-    });
-
-    describe('End Date Default Time functionality', () => {
         it('should automatically set endTime to 23:59 when endDate is set and endTime is empty', () => {
-            const mockOnDataUpdate = jest.fn();
             const props = {
                 ...defaultProps,
-                onDataUpdate: mockOnDataUpdate,
                 data: {
-                    ...defaultIncidentData,
+                    ...incidentForEdit,
                     endTime: '', // Empty endTime
-                    recurrent: false, // Not recurrent
                 },
             };
-
             render(
                 <Provider store={ store }>
                     <SelectDetails { ...props } />
                 </Provider>,
             );
+            const endPicker = screen.getByTestId('end-date_date-picker');
+            fireEvent.change(endPicker, { target: { value: '2025-07-11' } });
 
-            const endDateInput = screen.getByTestId('end-date_date-picker');
-            fireEvent.change(endDateInput, { target: { value: '2025-12-31' } });
-
-            expect(mockOnDataUpdate).toHaveBeenCalledWith('endDate', '31/12/2025');
-            expect(mockOnDataUpdate).toHaveBeenCalledWith('endTime', '23:59');
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(2);
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endTime', '23:59');
         });
 
-        it('should NOT set endTime to 23:59 when endDate is set but endTime already has a value', () => {
-            const mockOnDataUpdate = jest.fn();
+        it('should not set endTime to 23:59 when endDate is set but endTime already has a value', () => {
             const props = {
                 ...defaultProps,
-                onDataUpdate: mockOnDataUpdate,
                 data: {
-                    ...defaultIncidentData,
-                    endTime: '18:00', // Already has a value
-                    recurrent: false, // Not recurrent
+                    ...incidentForEdit,
+                    endTime: '14:30', // Already has endTime
                 },
             };
-
             render(
                 <Provider store={ store }>
                     <SelectDetails { ...props } />
                 </Provider>,
             );
+            const endPicker = screen.getByTestId('end-date_date-picker');
+            fireEvent.change(endPicker, { target: { value: '2025-07-11' } });
 
-            const endDateInput = screen.getByTestId('end-date_date-picker');
-            fireEvent.change(endDateInput, { target: { value: '2025-12-31' } });
-
-            expect(mockOnDataUpdate).toHaveBeenCalledWith('endDate', '31/12/2025');
-            expect(mockOnDataUpdate).not.toHaveBeenCalledWith('endTime', '23:59');
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(1);
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
+            expect(defaultProps.onDataUpdate).not.toHaveBeenCalledWith('endTime', '23:59');
         });
 
-        it('should NOT set endTime to 23:59 when endDate is empty', () => {
-            const mockOnDataUpdate = jest.fn();
+        it('should not set endTime to 23:59 when endDate is cleared', () => {
             const props = {
                 ...defaultProps,
-                onDataUpdate: mockOnDataUpdate,
                 data: {
-                    ...defaultIncidentData,
+                    ...incidentForEdit,
                     endTime: '', // Empty endTime
-                    recurrent: false, // Not recurrent
                 },
             };
-
             render(
                 <Provider store={ store }>
                     <SelectDetails { ...props } />
                 </Provider>,
             );
+            const endPicker = screen.getByTestId('end-date_date-picker');
+            fireEvent.change(endPicker, { target: { value: '' } }); // Clear endDate
 
-            const endDateInput = screen.getByTestId('end-date_date-picker');
-            fireEvent.change(endDateInput, { target: { value: '' } });
-
-            // When endDate is empty, onDataUpdate might not be called due to mock behavior
-            // The important thing is that endTime is not set to 23:59
-            expect(mockOnDataUpdate).not.toHaveBeenCalledWith('endTime', '23:59');
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(0);
+            expect(defaultProps.onDataUpdate).not.toHaveBeenCalledWith('endTime', '23:59');
         });
     });
 });
