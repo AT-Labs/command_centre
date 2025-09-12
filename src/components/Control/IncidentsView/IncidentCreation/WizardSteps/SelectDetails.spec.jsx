@@ -816,4 +816,82 @@ describe('SelectDetails Component', () => {
             expect(severityField.value).not.toBe(null);
         });
     });
+
+    describe('End Date Default Time functionality', () => {
+        it('should automatically set endTime to 23:59 when endDate is set and endTime is empty', () => {
+            const mockOnDataUpdate = jest.fn();
+            const props = {
+                ...defaultProps,
+                onDataUpdate: mockOnDataUpdate,
+                data: {
+                    ...defaultIncidentData,
+                    endTime: '', // Empty endTime
+                    recurrent: false, // Not recurrent
+                },
+            };
+
+            render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+
+            const endDateInput = screen.getByTestId('end-date_date-picker');
+            fireEvent.change(endDateInput, { target: { value: '2025-12-31' } });
+
+            expect(mockOnDataUpdate).toHaveBeenCalledWith('endDate', '31/12/2025');
+            expect(mockOnDataUpdate).toHaveBeenCalledWith('endTime', '23:59');
+        });
+
+        it('should NOT set endTime to 23:59 when endDate is set but endTime already has a value', () => {
+            const mockOnDataUpdate = jest.fn();
+            const props = {
+                ...defaultProps,
+                onDataUpdate: mockOnDataUpdate,
+                data: {
+                    ...defaultIncidentData,
+                    endTime: '18:00', // Already has a value
+                    recurrent: false, // Not recurrent
+                },
+            };
+
+            render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+
+            const endDateInput = screen.getByTestId('end-date_date-picker');
+            fireEvent.change(endDateInput, { target: { value: '2025-12-31' } });
+
+            expect(mockOnDataUpdate).toHaveBeenCalledWith('endDate', '31/12/2025');
+            expect(mockOnDataUpdate).not.toHaveBeenCalledWith('endTime', '23:59');
+        });
+
+        it('should NOT set endTime to 23:59 when endDate is empty', () => {
+            const mockOnDataUpdate = jest.fn();
+            const props = {
+                ...defaultProps,
+                onDataUpdate: mockOnDataUpdate,
+                data: {
+                    ...defaultIncidentData,
+                    endTime: '', // Empty endTime
+                    recurrent: false, // Not recurrent
+                },
+            };
+
+            render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+
+            const endDateInput = screen.getByTestId('end-date_date-picker');
+            fireEvent.change(endDateInput, { target: { value: '' } });
+
+            // When endDate is empty, onDataUpdate might not be called due to mock behavior
+            // The important thing is that endTime is not set to 23:59
+            expect(mockOnDataUpdate).not.toHaveBeenCalledWith('endTime', '23:59');
+        });
+    });
 });

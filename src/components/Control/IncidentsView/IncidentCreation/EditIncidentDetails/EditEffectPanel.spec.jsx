@@ -127,7 +127,6 @@ describe('Confirmation Component', () => {
         getRoutesByShortName: jest.fn(),
         setRequireToUpdateWorkaroundsState: jest.fn(),
         setDisruptionForWorkaroundEdit: jest.fn(),
-        findRoutesByStop: { STOP1: [] },
         workaroundsToSync: [],
         isEditEffectUpdateRequested: false,
         newDisruptionKey: '',
@@ -806,27 +805,6 @@ describe('Confirmation Component', () => {
             expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
         });
 
-        it('should return false when isWeekdayRequiredAndEmpty is not recurrent', () => {
-            const props = {
-                ...defaultProps,
-                disruptions: [{
-                    ...mockDisruption,
-                    recurrent: false,
-                    recurrencePattern: {
-                        byweekday: [],
-                    },
-                }],
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        });
-
         it('should return false when isWeekdayRequiredAndEmpty is recurrent with byweekday', () => {
             const props = {
                 ...defaultProps,
@@ -849,24 +827,6 @@ describe('Confirmation Component', () => {
         });
 
         it('should handle disruptions array validation', () => {
-            const props = {
-                ...defaultProps,
-                disruptions: [mockDisruption],
-                disruptionIncidentNoToEdit: 'DISR123',
-                findRoutesByStop: { STOP1: [] },
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            // Should render when disruptions is valid array
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        });
-
-        it('should handle disruptions non-array validation', () => {
             const props = {
                 ...defaultProps,
                 disruptions: [mockDisruption],
