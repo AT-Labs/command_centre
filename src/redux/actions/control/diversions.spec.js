@@ -9,7 +9,7 @@ const mockStore = configureMockStore([thunk]);
 
 jest.mock('../../../utils/transmitters/disruption-mgt-api');
 
-describe('Diversions Actions - Our New Code', () => {
+describe('Diversions Actions', () => {
     let store;
 
     beforeEach(() => {
@@ -17,7 +17,7 @@ describe('Diversions Actions - Our New Code', () => {
         jest.clearAllMocks();
     });
 
-    describe('Synchronous Actions - Our New Code', () => {
+    describe('Synchronous Actions', () => {
         it('should dispatch openDiversionManager action', () => {
             const isDiversionManagerOpen = true;
             const expectedActions = [
@@ -146,7 +146,7 @@ describe('Diversions Actions - Our New Code', () => {
         });
     });
 
-    describe('Asynchronous Actions - Our New Code', () => {
+    describe('Asynchronous Actions', () => {
         it('should dispatch createDiversion success', async () => {
             const diversion = { name: 'Test Diversion' };
             const mockResponse = { diversionId: '123' };

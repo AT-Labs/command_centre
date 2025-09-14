@@ -2,12 +2,12 @@ import diversionsReducer, { INIT_STATE } from './diversions';
 import ACTION_TYPE from '../../action-types';
 import EDIT_TYPE from '../../../types/edit-types';
 
-describe('Diversions Reducer - Our New Code', () => {
+describe('Diversions Reducer', () => {
     it('should return the initial state', () => {
         expect(diversionsReducer(undefined, {})).toEqual(INIT_STATE);
     });
 
-    describe('OPEN_DIVERSION_MANAGER - Our New Code', () => {
+    describe('OPEN_DIVERSION_MANAGER', () => {
         it('should handle opening diversion manager', () => {
             const action = {
                 type: ACTION_TYPE.OPEN_DIVERSION_MANAGER,
@@ -48,7 +48,7 @@ describe('Diversions Reducer - Our New Code', () => {
         });
     });
 
-    describe('SET_DIVERSION_MANAGER_LOADING - Our New Code', () => {
+    describe('SET_DIVERSION_MANAGER_LOADING', () => {
         it('should handle setting diversion manager loading to true', () => {
             const action = {
                 type: ACTION_TYPE.SET_DIVERSION_MANAGER_LOADING,
@@ -87,7 +87,7 @@ describe('Diversions Reducer - Our New Code', () => {
         });
     });
 
-    describe('UPDATE_DIVERSION_EDIT_MODE - Our New Code', () => {
+    describe('UPDATE_DIVERSION_EDIT_MODE', () => {
         it('should handle updating diversion edit mode to CREATE', () => {
             const action = {
                 type: ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE,
@@ -121,7 +121,7 @@ describe('Diversions Reducer - Our New Code', () => {
         });
     });
 
-    describe('UPDATE_DIVERSION_TO_EDIT - Our New Code', () => {
+    describe('UPDATE_DIVERSION_TO_EDIT', () => {
         it('should handle updating diversion to edit', () => {
             const diversion = { id: '123', name: 'Test Diversion' };
             const action = {
@@ -156,7 +156,7 @@ describe('Diversions Reducer - Our New Code', () => {
         });
     });
 
-    describe('UPDATE_DIVERSION_RESULT_STATE - Our New Code', () => {
+    describe('UPDATE_DIVERSION_RESULT_STATE', () => {
         it('should handle updating diversion result state with loading', () => {
             const action = {
                 type: ACTION_TYPE.UPDATE_DIVERSION_RESULT_STATE,
@@ -225,7 +225,7 @@ describe('Diversions Reducer - Our New Code', () => {
         });
     });
 
-    describe('FETCH_DIVERSIONS_START - Our New Code', () => {
+    describe('FETCH_DIVERSIONS_START', () => {
         it('should handle fetch diversions start', () => {
             const disruptionId = '123';
             const action = {
@@ -275,7 +275,7 @@ describe('Diversions Reducer - Our New Code', () => {
         });
     });
 
-    describe('FETCH_DIVERSIONS_SUCCESS - Our New Code', () => {
+    describe('FETCH_DIVERSIONS_SUCCESS', () => {
         it('should handle fetch diversions success', () => {
             const disruptionId = '123';
             const diversions = [{ id: '1' }, { id: '2' }];
@@ -333,7 +333,7 @@ describe('Diversions Reducer - Our New Code', () => {
         });
     });
 
-    describe('FETCH_DIVERSIONS_ERROR - Our New Code', () => {
+    describe('FETCH_DIVERSIONS_ERROR', () => {
         it('should handle fetch diversions error', () => {
             const disruptionId = '123';
             const error = 'Network error';
@@ -389,7 +389,7 @@ describe('Diversions Reducer - Our New Code', () => {
         });
     });
 
-    describe('CLEAR_DIVERSIONS_CACHE - Our New Code', () => {
+    describe('CLEAR_DIVERSIONS_CACHE', () => {
         it('should handle clearing diversions cache for specific disruption', () => {
             const disruptionId = '123';
             const initialState = {

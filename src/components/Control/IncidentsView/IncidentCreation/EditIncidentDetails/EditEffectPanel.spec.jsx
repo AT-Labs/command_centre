@@ -648,7 +648,7 @@ describe('Confirmation Component', () => {
         });
     });
 
-    describe('Diversion functionality - new code', () => {
+    describe('Diversion functionality', () => {
         it('should render normal panel when useDiversion is false', () => {
             const normalProps = {
                 ...defaultProps,
@@ -681,7 +681,7 @@ describe('Confirmation Component', () => {
         });
     });
 
-    describe('Validation functions - new code', () => {
+    describe('Validation functions', () => {
         it('should return true when affectedEntitySelected has affected routes', () => {
             const props = {
                 ...defaultProps,
