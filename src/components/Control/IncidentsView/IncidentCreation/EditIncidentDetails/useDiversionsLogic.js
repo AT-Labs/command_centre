@@ -1,5 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 
+const canFetchDiversions = (disruption, fetchDiversionsAction) => disruption?.disruptionId && fetchDiversionsAction;
+
+const fetchDiversions = (disruption, fetchDiversionsAction, forceRefresh = false) => {
+    if (canFetchDiversions(disruption, fetchDiversionsAction)) {
+        fetchDiversionsAction(disruption.disruptionId, forceRefresh);
+    }
+};
+
 export const useDiversionsLogic = (disruption, fetchDiversionsAction, isDiversionManagerOpen, diversionResultState, clearDiversionsCacheAction) => {
     const [anchorEl, setAnchorEl] = useState(null);
 
@@ -23,32 +31,30 @@ export const useDiversionsLogic = (disruption, fetchDiversionsAction, isDiversio
     }, [isDiversionManagerOpen, anchorEl]);
 
     useEffect(() => {
-        if (disruption?.disruptionId && fetchDiversionsAction) {
-            fetchDiversionsAction(disruption.disruptionId);
-        }
+        fetchDiversions(disruption, fetchDiversionsAction);
     }, [disruption?.disruptionId, fetchDiversionsAction]);
 
     useEffect(() => {
-        if (!isDiversionManagerOpen && disruption?.disruptionId && fetchDiversionsAction) {
+        if (!isDiversionManagerOpen) {
             setTimeout(() => {
-                fetchDiversionsAction(disruption.disruptionId);
+                fetchDiversions(disruption, fetchDiversionsAction);
             }, 500);
         }
     }, [isDiversionManagerOpen, disruption?.disruptionId, fetchDiversionsAction]);
 
     useEffect(() => {
-        if (diversionResultState?.diversionId && disruption?.disruptionId && fetchDiversionsAction && clearDiversionsCacheAction) {
+        if (diversionResultState?.diversionId && canFetchDiversions(disruption, fetchDiversionsAction) && clearDiversionsCacheAction) {
             setTimeout(() => {
                 clearDiversionsCacheAction(disruption.disruptionId);
-                fetchDiversionsAction(disruption.disruptionId, true);
+                fetchDiversions(disruption, fetchDiversionsAction, true);
             }, 1000);
         }
     }, [diversionResultState?.diversionId, disruption?.disruptionId, fetchDiversionsAction, clearDiversionsCacheAction]);
 
     useEffect(() => {
-        if (diversionResultState && !diversionResultState.isLoading && diversionResultState.diversionId && disruption?.disruptionId && fetchDiversionsAction) {
+        if (diversionResultState && !diversionResultState.isLoading && diversionResultState.diversionId) {
             setTimeout(() => {
-                fetchDiversionsAction(disruption.disruptionId, true);
+                fetchDiversions(disruption, fetchDiversionsAction, true);
             }, 500);
         }
     }, [diversionResultState?.isLoading, diversionResultState?.diversionId, disruption?.disruptionId, fetchDiversionsAction]);
@@ -83,10 +89,6 @@ export const useAffectedEntities = (disruption, reduxAffectedRoutes) => {
 
         if (disruption.affectedRoutes) {
             return disruption.affectedRoutes;
-        }
-
-        if (disruption.affectedEntities?.affectedRoutes) {
-            return disruption.affectedEntities.affectedRoutes;
         }
 
         return [];
