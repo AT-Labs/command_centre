@@ -3,9 +3,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { mount } from 'enzyme';
 import { act } from 'react-dom/test-utils';
-import { useDiversionsLogic, useAffectedEntities, useDiversionValidation } from './useDiversionsLogic';
+import sinon from 'sinon';
+import chai, { expect } from 'chai';
+import sinonChai from 'sinon-chai';
+import { useDiversionsLogic, useAffectedEntities, getDiversionValidation } from './useDiversionsLogic';
 
-jest.useFakeTimers();
+chai.use(sinonChai);
 
 const TestComponent = ({ disruption, fetchDiversionsAction, isDiversionManagerOpen, diversionResultState, clearDiversionsCacheAction }) => {
     const { anchorEl, setAnchorEl } = useDiversionsLogic(disruption, fetchDiversionsAction, isDiversionManagerOpen, diversionResultState, clearDiversionsCacheAction);
@@ -39,15 +42,12 @@ describe('useDiversionsLogic', () => {
     let mockClearDiversionsCacheAction;
 
     beforeEach(() => {
-        mockFetchDiversionsAction = jest.fn();
-        mockClearDiversionsCacheAction = jest.fn();
-        jest.clearAllMocks();
+        mockFetchDiversionsAction = sinon.stub();
+        mockClearDiversionsCacheAction = sinon.stub();
     });
 
     afterEach(() => {
-        jest.runOnlyPendingTimers();
-        jest.useRealTimers();
-        jest.useFakeTimers();
+        // Cleanup for Mocha
     });
 
     describe('anchorEl state management', () => {
@@ -62,7 +62,7 @@ describe('useDiversionsLogic', () => {
                 />,
             );
 
-            expect(wrapper.find('[data-testid="anchorEl"]').text()).toBe('noAnchor');
+            expect(wrapper.find('[data-testid="anchorEl"]').text()).to.equal('noAnchor');
         });
 
         it('should update anchorEl when setAnchorEl is called', () => {
@@ -80,7 +80,7 @@ describe('useDiversionsLogic', () => {
                 wrapper.find('[data-testid="setAnchor"]').simulate('click');
             });
 
-            expect(wrapper.find('[data-testid="anchorEl"]').text()).toBe('hasAnchor');
+            expect(wrapper.find('[data-testid="anchorEl"]').text()).to.equal('hasAnchor');
         });
     });
 
@@ -97,7 +97,7 @@ describe('useDiversionsLogic', () => {
                 />,
             );
 
-            expect(mockFetchDiversionsAction).toHaveBeenCalledWith('DISR123');
+            expect(mockFetchDiversionsAction).to.have.been.calledWith('DISR123');
         });
 
         it('should not call fetchDiversionsAction when disruption has no disruptionId', () => {
@@ -112,7 +112,8 @@ describe('useDiversionsLogic', () => {
                 />,
             );
 
-            expect(mockFetchDiversionsAction).not.toHaveBeenCalled();
+            // eslint-disable-next-line no-unused-expressions
+            expect(mockFetchDiversionsAction).to.not.have.been.called;
         });
     });
 
@@ -132,11 +133,11 @@ describe('useDiversionsLogic', () => {
                 wrapper.find('[data-testid="setAnchor"]').simulate('click');
             });
 
-            expect(wrapper.find('[data-testid="anchorEl"]').text()).toBe('hasAnchor');
+            expect(wrapper.find('[data-testid="anchorEl"]').text()).to.equal('hasAnchor');
 
             wrapper.setProps({ isDiversionManagerOpen: true });
 
-            expect(wrapper.find('[data-testid="anchorEl"]').text()).toBe('noAnchor');
+            expect(wrapper.find('[data-testid="anchorEl"]').text()).to.equal('noAnchor');
         });
     });
 });
@@ -148,7 +149,7 @@ describe('useAffectedEntities', () => {
 
         const result = useAffectedEntities(disruption, reduxAffectedRoutes);
 
-        expect(result).toEqual(reduxAffectedRoutes);
+        expect(result).to.deep.equal(reduxAffectedRoutes);
     });
 
     it('should return empty array when disruption has no affectedEntities', () => {
@@ -157,7 +158,7 @@ describe('useAffectedEntities', () => {
 
         const result = useAffectedEntities(disruption, reduxAffectedRoutes);
 
-        expect(result).toEqual([]);
+        expect(result).to.deep.equal([]);
     });
 
     it('should return disruption.affectedEntities when it is an array', () => {
@@ -166,7 +167,7 @@ describe('useAffectedEntities', () => {
 
         const result = useAffectedEntities(disruption, reduxAffectedRoutes);
 
-        expect(result).toEqual(disruption.affectedEntities);
+        expect(result).to.deep.equal(disruption.affectedEntities);
     });
 
     it('should return disruption.affectedEntities.affectedRoutes when available', () => {
@@ -179,7 +180,7 @@ describe('useAffectedEntities', () => {
 
         const result = useAffectedEntities(disruption, reduxAffectedRoutes);
 
-        expect(result).toEqual(disruption.affectedEntities.affectedRoutes);
+        expect(result).to.deep.equal(disruption.affectedEntities.affectedRoutes);
     });
 
     it('should return disruption.routes when available', () => {
@@ -191,7 +192,7 @@ describe('useAffectedEntities', () => {
 
         const result = useAffectedEntities(disruption, reduxAffectedRoutes);
 
-        expect(result).toEqual(disruption.routes);
+        expect(result).to.deep.equal(disruption.routes);
     });
 
     it('should return disruption.affectedRoutes when available', () => {
@@ -203,7 +204,7 @@ describe('useAffectedEntities', () => {
 
         const result = useAffectedEntities(disruption, reduxAffectedRoutes);
 
-        expect(result).toEqual(disruption.affectedRoutes);
+        expect(result).to.deep.equal(disruption.affectedRoutes);
     });
 
     it('should return disruption.affectedEntities?.affectedRoutes when available', () => {
@@ -216,7 +217,7 @@ describe('useAffectedEntities', () => {
 
         const result = useAffectedEntities(disruption, reduxAffectedRoutes);
 
-        expect(result).toEqual(disruption.affectedEntities.affectedRoutes);
+        expect(result).to.deep.equal(disruption.affectedEntities.affectedRoutes);
     });
 
     it('should return empty array when no routes are found', () => {
@@ -225,33 +226,33 @@ describe('useAffectedEntities', () => {
 
         const result = useAffectedEntities(disruption, reduxAffectedRoutes);
 
-        expect(result).toEqual([]);
+        expect(result).to.deep.equal([]);
     });
 });
 
-describe('useDiversionValidation', () => {
+describe('getDiversionValidation', () => {
     it('should return false when disruption is null', () => {
-        const result = useDiversionValidation(null, [], []);
+        const result = getDiversionValidation(null, [], []);
 
-        expect(result).toBe(false);
+        expect(result).to.equal(false);
     });
 
     it('should return false when disruption status is resolved', () => {
         const disruption = { status: 'resolved' };
         const affectedEntities = [{ routeId: '1', routeType: 3 }];
 
-        const result = useDiversionValidation(disruption, affectedEntities, []);
+        const result = getDiversionValidation(disruption, affectedEntities, []);
 
-        expect(result).toBe(false);
+        expect(result).to.equal(false);
     });
 
     it('should return false when disruption status is not allowed', () => {
         const disruption = { status: 'cancelled' };
         const affectedEntities = [{ routeId: '1', routeType: 3 }];
 
-        const result = useDiversionValidation(disruption, affectedEntities, []);
+        const result = getDiversionValidation(disruption, affectedEntities, []);
 
-        expect(result).toBe(false);
+        expect(result).to.equal(false);
     });
 
     it('should return false when status is in-progress but missing startTime', () => {
@@ -261,9 +262,9 @@ describe('useDiversionValidation', () => {
         };
         const affectedEntities = [{ routeId: '1', routeType: 3 }];
 
-        const result = useDiversionValidation(disruption, affectedEntities, []);
+        const result = getDiversionValidation(disruption, affectedEntities, []);
 
-        expect(result).toBe(false);
+        expect(result).to.equal(false);
     });
 
     it('should return false when status is in-progress but missing endTime', () => {
@@ -273,54 +274,54 @@ describe('useDiversionValidation', () => {
         };
         const affectedEntities = [{ routeId: '1', routeType: 3 }];
 
-        const result = useDiversionValidation(disruption, affectedEntities, []);
+        const result = getDiversionValidation(disruption, affectedEntities, []);
 
-        expect(result).toBe(false);
+        expect(result).to.equal(false);
     });
 
     it('should return true when status is draft with missing times', () => {
         const disruption = { status: 'draft' };
         const affectedEntities = [{ routeId: '1', routeType: 3 }];
 
-        const result = useDiversionValidation(disruption, affectedEntities, []);
+        const result = getDiversionValidation(disruption, affectedEntities, []);
 
-        expect(result).toBe(true);
+        expect(result).to.equal(true);
     });
 
     it('should return true when status is not-started with missing times', () => {
         const disruption = { status: 'not-started' };
         const affectedEntities = [{ routeId: '1', routeType: 3 }];
 
-        const result = useDiversionValidation(disruption, affectedEntities, []);
+        const result = getDiversionValidation(disruption, affectedEntities, []);
 
-        expect(result).toBe(true);
+        expect(result).to.equal(true);
     });
 
     it('should return false when no bus routes are present', () => {
         const disruption = { status: 'draft' };
         const affectedEntities = [{ routeId: '1', routeType: 1 }]; // train route
 
-        const result = useDiversionValidation(disruption, affectedEntities, []);
+        const result = getDiversionValidation(disruption, affectedEntities, []);
 
-        expect(result).toBe(false);
+        expect(result).to.equal(false);
     });
 
     it('should return false when only train routes are present', () => {
         const disruption = { status: 'draft' };
         const affectedEntities = [{ routeId: '1', routeType: 1 }]; // train route
 
-        const result = useDiversionValidation(disruption, affectedEntities, []);
+        const result = getDiversionValidation(disruption, affectedEntities, []);
 
-        expect(result).toBe(false);
+        expect(result).to.equal(false);
     });
 
     it('should return true when bus routes are present', () => {
         const disruption = { status: 'draft' };
         const affectedEntities = [{ routeId: '1', routeType: 3 }]; // bus route
 
-        const result = useDiversionValidation(disruption, affectedEntities, []);
+        const result = getDiversionValidation(disruption, affectedEntities, []);
 
-        expect(result).toBe(true);
+        expect(result).to.equal(true);
     });
 
     it('should return true when both bus and train routes are present', () => {
@@ -330,9 +331,9 @@ describe('useDiversionValidation', () => {
             { routeId: '2', routeType: 1 }, // train route
         ];
 
-        const result = useDiversionValidation(disruption, affectedEntities, []);
+        const result = getDiversionValidation(disruption, affectedEntities, []);
 
-        expect(result).toBe(true);
+        expect(result).to.equal(true);
     });
 
     it('should return false when all bus routes already have diversions', () => {
@@ -342,9 +343,9 @@ describe('useDiversionValidation', () => {
             diversionRouteVariants: [{ routeId: '1' }],
         }];
 
-        const result = useDiversionValidation(disruption, affectedEntities, diversions);
+        const result = getDiversionValidation(disruption, affectedEntities, diversions);
 
-        expect(result).toBe(false);
+        expect(result).to.equal(false);
     });
 
     it('should return true when some bus routes do not have diversions', () => {
@@ -357,9 +358,9 @@ describe('useDiversionValidation', () => {
             diversionRouteVariants: [{ routeId: '1' }],
         }];
 
-        const result = useDiversionValidation(disruption, affectedEntities, diversions);
+        const result = getDiversionValidation(disruption, affectedEntities, diversions);
 
-        expect(result).toBe(true);
+        expect(result).to.equal(true);
     });
 
     it('should return true when diversions array is empty', () => {
@@ -367,9 +368,9 @@ describe('useDiversionValidation', () => {
         const affectedEntities = [{ routeId: '1', routeType: 3 }]; // bus route
         const diversions = [];
 
-        const result = useDiversionValidation(disruption, affectedEntities, diversions);
+        const result = getDiversionValidation(disruption, affectedEntities, diversions);
 
-        expect(result).toBe(true);
+        expect(result).to.equal(true);
     });
 
     it('should return true when diversions is null', () => {
@@ -377,9 +378,9 @@ describe('useDiversionValidation', () => {
         const affectedEntities = [{ routeId: '1', routeType: 3 }]; // bus route
         const diversions = null;
 
-        const result = useDiversionValidation(disruption, affectedEntities, diversions);
+        const result = getDiversionValidation(disruption, affectedEntities, diversions);
 
-        expect(result).toBe(true);
+        expect(result).to.equal(true);
     });
 
     it('should handle diversions with empty diversionRouteVariants', () => {
@@ -389,9 +390,9 @@ describe('useDiversionValidation', () => {
             diversionRouteVariants: [],
         }];
 
-        const result = useDiversionValidation(disruption, affectedEntities, diversions);
+        const result = getDiversionValidation(disruption, affectedEntities, diversions);
 
-        expect(result).toBe(true);
+        expect(result).to.equal(true);
     });
 
     it('should handle diversions with null diversionRouteVariants', () => {
@@ -401,8 +402,8 @@ describe('useDiversionValidation', () => {
             diversionRouteVariants: null,
         }];
 
-        const result = useDiversionValidation(disruption, affectedEntities, diversions);
+        const result = getDiversionValidation(disruption, affectedEntities, diversions);
 
-        expect(result).toBe(true);
+        expect(result).to.equal(true);
     });
 });
