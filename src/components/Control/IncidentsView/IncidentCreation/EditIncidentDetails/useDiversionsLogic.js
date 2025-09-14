@@ -95,57 +95,7 @@ export const useAffectedEntities = (disruption, reduxAffectedRoutes) => {
     return getAffectedEntities();
 };
 
-export const useDiversionValidation = (disruption, affectedEntities, diversions = []) => {
-    const isAddDiversionEnabled = useMemo(() => {
-        if (!disruption) {
-            return false;
-        }
-
-        if (disruption.status === 'resolved') {
-            return false;
-        }
-
-        const allowedStatuses = ['not-started', 'in-progress', 'draft'];
-        const isStatusAllowed = allowedStatuses.includes(disruption.status);
-        if (!isStatusAllowed) return false;
-
-        if (disruption.status !== 'draft' && disruption.status !== 'not-started') {
-            if (!disruption.startTime || !disruption.endTime) {
-                return false;
-            }
-        }
-
-        const isBusRoute = route => route.routeType === 3;
-        const isTrainRoute = route => route.routeType === 1;
-        const busRoutes = affectedEntities.filter(isBusRoute);
-        const trainRoutes = affectedEntities.filter(isTrainRoute);
-
-        if (busRoutes.length === 0) {
-            return false;
-        }
-
-        if (trainRoutes.length > 0 && busRoutes.length === 0) {
-            return false;
-        }
-
-        const existingDiversions = diversions || [];
-
-        const busRoutesWithDiversions = busRoutes.filter(route => existingDiversions.some((diversion) => {
-            const diversionRouteVariants = diversion.diversionRouteVariants || [];
-            return diversionRouteVariants.some(drv => drv.routeId === route.routeId);
-        }));
-
-        if (busRoutesWithDiversions.length === busRoutes.length && busRoutes.length > 0) {
-            return false;
-        }
-
-        return true;
-    }, [disruption, affectedEntities, diversions]);
-
-    return isAddDiversionEnabled;
-};
-
-export const getDiversionValidation = (disruption, affectedEntities, diversions = []) => {
+const getDiversionValidationLogic = (disruption, affectedEntities, diversions = []) => {
     if (!disruption) {
         return false;
     }
@@ -190,3 +140,10 @@ export const getDiversionValidation = (disruption, affectedEntities, diversions 
 
     return true;
 };
+
+export const useDiversionValidation = (disruption, affectedEntities, diversions = []) => useMemo(
+    () => getDiversionValidationLogic(disruption, affectedEntities, diversions),
+    [disruption, affectedEntities, diversions],
+);
+
+export const getDiversionValidation = getDiversionValidationLogic;
