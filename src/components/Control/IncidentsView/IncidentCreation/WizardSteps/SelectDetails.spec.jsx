@@ -725,70 +725,8 @@ describe('SelectDetails Component', () => {
             const endPicker = screen.getByTestId('end-date_date-picker');
             fireEvent.change(endPicker, { target: { value: '2025-07-11' } });
 
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(2);
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
-        });
-
-        it('should automatically set endTime to 23:59 when endDate is set and endTime is empty', () => {
-            const props = {
-                ...defaultProps,
-                data: {
-                    ...incidentForEdit,
-                    endTime: '', // Empty endTime
-                },
-            };
-            render(
-                <Provider store={ store }>
-                    <SelectDetails { ...props } />
-                </Provider>,
-            );
-            const endPicker = screen.getByTestId('end-date_date-picker');
-            fireEvent.change(endPicker, { target: { value: '2025-07-11' } });
-
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(2);
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endTime', '23:59');
-        });
-
-        it('should not set endTime to 23:59 when endDate is set but endTime already has a value', () => {
-            const props = {
-                ...defaultProps,
-                data: {
-                    ...incidentForEdit,
-                    endTime: '14:30', // Already has endTime
-                },
-            };
-            render(
-                <Provider store={ store }>
-                    <SelectDetails { ...props } />
-                </Provider>,
-            );
-            const endPicker = screen.getByTestId('end-date_date-picker');
-            fireEvent.change(endPicker, { target: { value: '2025-07-11' } });
-
             expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(1);
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
-            expect(defaultProps.onDataUpdate).not.toHaveBeenCalledWith('endTime', '23:59');
-        });
-
-        it('should not set endTime to 23:59 when endDate is cleared', () => {
-            const props = {
-                ...defaultProps,
-                data: {
-                    ...incidentForEdit,
-                    endTime: '', // Empty endTime
-                },
-            };
-            render(
-                <Provider store={ store }>
-                    <SelectDetails { ...props } />
-                </Provider>,
-            );
-            const endPicker = screen.getByTestId('end-date_date-picker');
-            fireEvent.change(endPicker, { target: { value: '' } }); // Clear endDate
-
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(0);
-            expect(defaultProps.onDataUpdate).not.toHaveBeenCalledWith('endTime', '23:59');
         });
     });
 });

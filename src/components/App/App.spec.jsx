@@ -1,5 +1,4 @@
 /** @jest-environment jsdom */
-
 import { shallow } from 'enzyme';
 import React from 'react';
 import { withHooks } from 'jest-react-hooks-shallow';
@@ -10,8 +9,6 @@ import ActivityIndicator from './ActivityIndicator';
 import BrowserCompatibilityModal from '../Common/BrowserCompatibilityModal/BrowserCompatibilityModal';
 import RealTimeView from '../RealTime/RealTimeView';
 import VIEW_TYPE from '../../types/view-types';
-
-jest.mock('../Control/DisruptionsView/DiversionManager', () => jest.fn());
 
 let sandbox;
 let wrapper;

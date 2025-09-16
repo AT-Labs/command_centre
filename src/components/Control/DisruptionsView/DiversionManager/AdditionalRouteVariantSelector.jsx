@@ -60,6 +60,4 @@ AdditionalRouteVariantSelector.propTypes = {
     onRouteVariantRemoved: PropTypes.func.isRequired,
 };
 
-AdditionalRouteVariantSelector.defaultProps = {};
-
 export default AdditionalRouteVariantSelector;
