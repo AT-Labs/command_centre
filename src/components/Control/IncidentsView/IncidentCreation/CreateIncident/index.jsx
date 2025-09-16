@@ -224,6 +224,10 @@ export class CreateIncident extends React.Component {
         }
     }
 
+    componentWillUnmount() {
+        this.setState = () => {};
+    }
+
     updateData = (key, value) => {
         const { incidentData } = this.state;
         let recurrenceDates;
