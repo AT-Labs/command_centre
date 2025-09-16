@@ -727,7 +727,7 @@ describe('Confirmation Component', () => {
             expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
         });
 
-        it('should return true when affectedEntitySelected has only affected stops', () => {
+        it('should disable submit button when affectedRoutes and affectedStops are empty', () => {
             const props = {
                 ...defaultProps,
                 disruptions: [{
@@ -745,94 +745,11 @@ describe('Confirmation Component', () => {
                 </Provider>,
             );
 
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+            const applyButton = screen.getByRole('button', { name: /apply/i });
+            expect(applyButton).toBeDisabled();
         });
 
-        it('should return true when affectedEntitySelected has both affected routes and stops', () => {
-            const props = {
-                ...defaultProps,
-                disruptions: [{
-                    ...mockDisruption,
-                    affectedEntities: {
-                        affectedRoutes: [{ routeId: 'ROUTE1' }],
-                        affectedStops: [],
-                    },
-                }],
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        });
-
-        it('should return false when affectedEntities is null', () => {
-            const props = {
-                ...defaultProps,
-                disruptions: [{
-                    ...mockDisruption,
-                    affectedEntities: {
-                        affectedRoutes: [],
-                        affectedStops: [],
-                    },
-                }],
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        });
-
-        it('should return false when affectedEntities is undefined', () => {
-            const props = {
-                ...defaultProps,
-                disruptions: [{
-                    ...mockDisruption,
-                    affectedEntities: {
-                        affectedRoutes: [],
-                        affectedStops: [],
-                    },
-                }],
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        });
-
-        it('should return false when affectedRoutes and affectedStops are null', () => {
-            const props = {
-                ...defaultProps,
-                disruptions: [{
-                    ...mockDisruption,
-                    affectedEntities: {
-                        affectedRoutes: [],
-                        affectedStops: [],
-                    },
-                }],
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        });
-
-        it('should return true when isRequiredDraftPropsEmpty has empty header', () => {
+        it('should disable apply button when header is empty', () => {
             const props = {
                 ...defaultProps,
                 disruptions: [{
@@ -848,10 +765,11 @@ describe('Confirmation Component', () => {
                 </Provider>,
             );
 
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+            const applyButton = screen.getByRole('button', { name: /apply/i });
+            expect(applyButton).toBeDisabled();
         });
 
-        it('should return true when isRequiredDraftPropsEmpty has empty cause', () => {
+        it('should disable apply button when cause is empty', () => {
             const props = {
                 ...defaultProps,
                 disruptions: [{
@@ -867,29 +785,11 @@ describe('Confirmation Component', () => {
                 </Provider>,
             );
 
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+            const applyButton = screen.getByRole('button', { name: /apply/i });
+            expect(applyButton).toBeDisabled();
         });
 
-        it('should return false when isRequiredDraftPropsEmpty has both header and cause', () => {
-            const props = {
-                ...defaultProps,
-                disruptions: [{
-                    ...mockDisruption,
-                    header: 'Test Header',
-                    cause: 'CONGESTION',
-                }],
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        });
-
-        it('should return true when isWeekdayRequiredAndEmpty is recurrent with empty byweekday', () => {
+        it('should disable submit button when recurrent with empty byweekday', () => {
             const props = {
                 ...defaultProps,
                 disruptions: [{
@@ -907,86 +807,8 @@ describe('Confirmation Component', () => {
                 </Provider>,
             );
 
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        });
-
-        it('should return false when isWeekdayRequiredAndEmpty is recurrent with byweekday', () => {
-            const props = {
-                ...defaultProps,
-                disruptions: [{
-                    ...mockDisruption,
-                    recurrent: true,
-                    recurrencePattern: {
-                        byweekday: [0, 1, 2],
-                    },
-                }],
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        });
-
-        it('should return false when isWeekdayRequiredAndEmpty is not recurrent', () => {
-            const props = {
-                ...defaultProps,
-                disruptions: [{
-                    ...mockDisruption,
-                    recurrent: false,
-                    recurrencePattern: {
-                        byweekday: [],
-                    },
-                }],
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        });
-
-        it('should return false when isWeekdayRequiredAndEmpty has null recurrencePattern', () => {
-            const props = {
-                ...defaultProps,
-                disruptions: [{
-                    ...mockDisruption,
-                    recurrent: true,
-                    recurrencePattern: null,
-                }],
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        });
-
-        it('should handle disruptions array validation', () => {
-            const props = {
-                ...defaultProps,
-                disruptions: [mockDisruption],
-                disruptionIncidentNoToEdit: 'DISR123',
-                findRoutesByStop: { STOP1: [] },
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            // Should render when disruptions is valid array
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+            const applyButton = screen.getByRole('button', { name: /apply/i });
+            expect(applyButton).toBeDisabled();
         });
     });
 });
