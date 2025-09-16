@@ -727,6 +727,235 @@ describe('Confirmation Component', () => {
             expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
         });
 
+        it('should return true when affectedEntitySelected has only affected stops', () => {
+            const props = {
+                ...defaultProps,
+                disruptions: [{
+                    ...mockDisruption,
+                    affectedEntities: {
+                        affectedRoutes: [],
+                        affectedStops: [],
+                    },
+                }],
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+        });
+
+        it('should return true when affectedEntitySelected has both affected routes and stops', () => {
+            const props = {
+                ...defaultProps,
+                disruptions: [{
+                    ...mockDisruption,
+                    affectedEntities: {
+                        affectedRoutes: [{ routeId: 'ROUTE1' }],
+                        affectedStops: [],
+                    },
+                }],
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+        });
+
+        it('should return false when affectedEntities is null', () => {
+            const props = {
+                ...defaultProps,
+                disruptions: [{
+                    ...mockDisruption,
+                    affectedEntities: {
+                        affectedRoutes: [],
+                        affectedStops: [],
+                    },
+                }],
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+        });
+
+        it('should return false when affectedEntities is undefined', () => {
+            const props = {
+                ...defaultProps,
+                disruptions: [{
+                    ...mockDisruption,
+                    affectedEntities: {
+                        affectedRoutes: [],
+                        affectedStops: [],
+                    },
+                }],
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+        });
+
+        it('should return false when affectedRoutes and affectedStops are null', () => {
+            const props = {
+                ...defaultProps,
+                disruptions: [{
+                    ...mockDisruption,
+                    affectedEntities: {
+                        affectedRoutes: [],
+                        affectedStops: [],
+                    },
+                }],
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+        });
+
+        describe('affectedEntitySelected function logic', () => {
+            it('should return true when affectedRoutes has items', () => {
+                const disruption = {
+                    affectedEntities: {
+                        affectedRoutes: [{ routeId: 'ROUTE1' }],
+                        affectedStops: [],
+                    },
+                };
+                const result = disruption?.affectedEntities?.affectedRoutes?.length > 0 || disruption?.affectedEntities?.affectedStops?.length > 0;
+                expect(result).toBe(true);
+            });
+
+            it('should return true when affectedStops has items', () => {
+                const disruption = {
+                    affectedEntities: {
+                        affectedRoutes: [],
+                        affectedStops: [{ stopId: 'STOP1' }],
+                    },
+                };
+                const result = disruption?.affectedEntities?.affectedRoutes?.length > 0 || disruption?.affectedEntities?.affectedStops?.length > 0;
+                expect(result).toBe(true);
+            });
+
+            it('should return true when both affectedRoutes and affectedStops have items', () => {
+                const disruption = {
+                    affectedEntities: {
+                        affectedRoutes: [{ routeId: 'ROUTE1' }],
+                        affectedStops: [{ stopId: 'STOP1' }],
+                    },
+                };
+                const result = disruption?.affectedEntities?.affectedRoutes?.length > 0 || disruption?.affectedEntities?.affectedStops?.length > 0;
+                expect(result).toBe(true);
+            });
+
+            it('should return false when both affectedRoutes and affectedStops are empty', () => {
+                const disruption = {
+                    affectedEntities: {
+                        affectedRoutes: [],
+                        affectedStops: [],
+                    },
+                };
+                const result = disruption?.affectedEntities?.affectedRoutes?.length > 0 || disruption?.affectedEntities?.affectedStops?.length > 0;
+                expect(result).toBe(false);
+            });
+
+            it('should return false when affectedEntities is null', () => {
+                const disruption = {
+                    affectedEntities: null,
+                };
+                const result = disruption?.affectedEntities?.affectedRoutes?.length > 0 || disruption?.affectedEntities?.affectedStops?.length > 0;
+                expect(result).toBe(false);
+            });
+
+            it('should return false when affectedEntities is undefined', () => {
+                const disruption = {
+                    affectedEntities: undefined,
+                };
+                const result = disruption?.affectedEntities?.affectedRoutes?.length > 0 || disruption?.affectedEntities?.affectedStops?.length > 0;
+                expect(result).toBe(false);
+            });
+
+            it('should return false when disruption is null', () => {
+                const disruption = null;
+                const result = disruption?.affectedEntities?.affectedRoutes?.length > 0 || disruption?.affectedEntities?.affectedStops?.length > 0;
+                expect(result).toBe(false);
+            });
+
+            it('should return false when disruption is undefined', () => {
+                const disruption = undefined;
+                const result = disruption?.affectedEntities?.affectedRoutes?.length > 0 || disruption?.affectedEntities?.affectedStops?.length > 0;
+                expect(result).toBe(false);
+            });
+        });
+
+        describe('isRequiredPropsEmpty function logic', () => {
+            it('should return true when disruption is null', () => {
+                const disruption = null;
+                const result = !disruption?.disruptionId;
+                expect(result).toBe(true);
+            });
+
+            it('should return true when disruption is undefined', () => {
+                const disruption = undefined;
+                const result = !disruption?.disruptionId;
+                expect(result).toBe(true);
+            });
+
+            it('should return true when disruptionId is null', () => {
+                const disruption = { disruptionId: null };
+                const result = !disruption?.disruptionId;
+                expect(result).toBe(true);
+            });
+
+            it('should return true when disruptionId is undefined', () => {
+                const disruption = { disruptionId: undefined };
+                const result = !disruption?.disruptionId;
+                expect(result).toBe(true);
+            });
+
+            it('should return true when disruptionId is empty string', () => {
+                const disruption = { disruptionId: '' };
+                const result = !disruption?.disruptionId;
+                expect(result).toBe(true);
+            });
+
+            it('should return true when disruptionId is 0', () => {
+                const disruption = { disruptionId: 0 };
+                const result = !disruption?.disruptionId;
+                expect(result).toBe(true);
+            });
+
+            it('should return false when disruptionId has a valid value', () => {
+                const disruption = { disruptionId: 'DISR123' };
+                const result = !disruption?.disruptionId;
+                expect(result).toBe(false);
+            });
+
+            it('should return false when disruptionId is a number', () => {
+                const disruption = { disruptionId: 123 };
+                const result = !disruption?.disruptionId;
+                expect(result).toBe(false);
+            });
+        });
+
         it('should return true when isRequiredDraftPropsEmpty has empty header', () => {
             const props = {
                 ...defaultProps,
@@ -814,6 +1043,46 @@ describe('Confirmation Component', () => {
                     recurrencePattern: {
                         byweekday: [0, 1, 2],
                     },
+                }],
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+        });
+
+        it('should return false when isWeekdayRequiredAndEmpty is not recurrent', () => {
+            const props = {
+                ...defaultProps,
+                disruptions: [{
+                    ...mockDisruption,
+                    recurrent: false,
+                    recurrencePattern: {
+                        byweekday: [],
+                    },
+                }],
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+        });
+
+        it('should return false when isWeekdayRequiredAndEmpty has null recurrencePattern', () => {
+            const props = {
+                ...defaultProps,
+                disruptions: [{
+                    ...mockDisruption,
+                    recurrent: true,
+                    recurrencePattern: null,
                 }],
             };
 

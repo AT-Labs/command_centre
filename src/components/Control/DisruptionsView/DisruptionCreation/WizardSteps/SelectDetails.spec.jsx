@@ -350,9 +350,11 @@ describe('<SelectDetails />', () => {
 
             wrapper = setup({ data: mockData, stops, routes });
 
-            const flatpickr = wrapper.find('Flatpickr').first();
-            if (flatpickr.length > 0) {
-                const onChange = flatpickr.prop('onChange');
+            const flatpickrs = wrapper.find('Flatpickr');
+            const endDateFlatpickr = flatpickrs.findWhere(flatpickr => flatpickr.prop('id') === 'disruption-creation__wizard-select-details__end-date');
+
+            if (endDateFlatpickr.length > 0) {
+                const onChange = endDateFlatpickr.prop('onChange');
 
                 const testDate = [new Date('2022-03-10T06:00:00.000Z')];
                 onChange(testDate);
@@ -372,9 +374,11 @@ describe('<SelectDetails />', () => {
 
             wrapper = setup({ data: mockData, stops, routes });
 
-            const flatpickr = wrapper.find('Flatpickr').first();
-            if (flatpickr.length > 0) {
-                const onChange = flatpickr.prop('onChange');
+            const flatpickrs = wrapper.find('Flatpickr');
+            const endDateFlatpickr = flatpickrs.findWhere(flatpickr => flatpickr.prop('id') === 'disruption-creation__wizard-select-details__end-date');
+
+            if (endDateFlatpickr.length > 0) {
+                const onChange = endDateFlatpickr.prop('onChange');
 
                 const testDate = [];
                 onChange(testDate);
@@ -394,9 +398,11 @@ describe('<SelectDetails />', () => {
 
             wrapper = setup({ data: mockData, stops, routes });
 
-            const flatpickr = wrapper.find('Flatpickr').first();
-            if (flatpickr.length > 0) {
-                const onChange = flatpickr.prop('onChange');
+            const flatpickrs = wrapper.find('Flatpickr');
+            const endDateFlatpickr = flatpickrs.findWhere(flatpickr => flatpickr.prop('id') === 'disruption-creation__wizard-select-details__end-date');
+
+            if (endDateFlatpickr.length > 0) {
+                const onChange = endDateFlatpickr.prop('onChange');
 
                 const testDate = [new Date('2022-03-10T06:00:00.000Z')];
                 onChange(testDate);
