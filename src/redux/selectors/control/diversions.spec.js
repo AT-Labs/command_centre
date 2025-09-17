@@ -7,39 +7,39 @@ describe('Diversions Selectors', () => {
                 diversionsData: {
                     'disruption-1': [
                         { diversionId: 'div-1', name: 'Diversion 1' },
-                        { diversionId: 'div-2', name: 'Diversion 2' }
+                        { diversionId: 'div-2', name: 'Diversion 2' },
                     ],
                     'disruption-2': [
-                        { diversionId: 'div-3', name: 'Diversion 3' }
-                    ]
+                        { diversionId: 'div-3', name: 'Diversion 3' },
+                    ],
                 },
                 diversionsLoading: {
                     'disruption-1': false,
-                    'disruption-2': true
+                    'disruption-2': true,
                 },
                 diversionsError: {
                     'disruption-1': null,
-                    'disruption-2': 'Error loading diversions'
+                    'disruption-2': 'Error loading diversions',
                 },
                 isDiversionManagerOpen: true,
                 isDiversionManagerLoading: false,
                 diversionEditMode: 'create',
                 diversionResultState: 'success',
-                diversion: { diversionId: 'div-1', name: 'Test Diversion' }
-            }
-        }
+                diversion: { diversionId: 'div-1', name: 'Test Diversion' },
+            },
+        },
     };
 
     const emptyState = {
         control: {
-            diversions: {}
-        }
+            diversions: {},
+        },
     };
 
     const nullState = {
         control: {
-            diversions: null
-        }
+            diversions: null,
+        },
     };
 
     describe('getDiversionsState', () => {
@@ -171,7 +171,7 @@ describe('Diversions Selectors', () => {
             const result = selector(mockState);
             expect(result).toEqual([
                 { diversionId: 'div-1', name: 'Diversion 1' },
-                { diversionId: 'div-2', name: 'Diversion 2' }
+                { diversionId: 'div-2', name: 'Diversion 2' },
             ]);
         });
 
