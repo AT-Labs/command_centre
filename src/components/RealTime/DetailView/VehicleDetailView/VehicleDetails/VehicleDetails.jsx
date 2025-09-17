@@ -53,6 +53,9 @@ const VehicleDetails = (props) => {
 
     const vehicleLabel = getJoinedVehicleLabel(vehicleDetail, vehicleAllocations) || getFleetVehicleLabel(vehicleFleetInfo);
     const tripId = get(vehicleDetail, 'trip.tripId');
+    const replacementTripId = vehicleDetail?.trip?.['.replacementTripId'];
+    const displayTripId = replacementTripId || tripId;
+
     const tripHeadsign = get(vehicleDetail, 'trip.trip_headsign');
     const startTime = get(vehicleDetail, 'trip.startTime');
     const route = get(vehicleDetail, 'route');
@@ -85,7 +88,7 @@ const VehicleDetails = (props) => {
                         ...(vehicleTag ? [['Tags:', vehicleTag]] : []),
                         ['Trip Start Time:', startTime],
                         ['Route ID:', routeId],
-                        ['Trip ID:', tripId],
+                        ['Trip ID:', displayTripId],
 
                     ]) || [
                         ['Description:', nonTripDescription()],
