@@ -72,6 +72,8 @@ export const INIT_STATE = {
     requestedDisruptionKeyToUpdateEditEffect: '',
     isCancellationEffectOpen: false,
     isApplyChangesOpen: false,
+    isPublishAndApplyChangesOpen: false,
+    selectedEffect: null,
 };
 
 const handleIncidentsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });
@@ -103,6 +105,7 @@ const handleIncidentActionResultUpdate = (state, { payload: { resultIncidentId, 
         resultDisruptionVersion,
     },
 });
+const handleUpdateSelectedEffect = (state, { payload: { selectedEffect } }) => ({ ...state, selectedEffect });
 
 const handleCopyIncidentsUpdate = (state, { payload: { isCopied } }) => ({
     ...state,
@@ -210,4 +213,5 @@ export default handleActions({
     [ACTION_TYPE.SET_DISRUPTION_FOR_WORKAROUND_EDIT]: handleDisruptionForWorkaroundEdit,
     [ACTION_TYPE.SET_REQUEST_TO_UPDATE_EDIT_EFFECT]: handleRequestToUpdateEditEffect,
     [ACTION_TYPE.SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT]: handleUpdateDisruptionKeyToUpdateEditEffect,
+    [ACTION_TYPE.UPDATE_SELECTED_EFFECT]: handleUpdateSelectedEffect,
 }, INIT_STATE);

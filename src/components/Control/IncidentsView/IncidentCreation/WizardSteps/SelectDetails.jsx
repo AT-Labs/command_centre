@@ -104,6 +104,57 @@ export const SelectDetails = (props) => {
         return true;
     };
 
+    const disruptionsForPublishValidation = disruptions.filter(disruption => props.disruptionIncidentNoToEdit !== disruption.incidentNo);
+
+    const isEndDateAndEndTimeValid = disruption => !isEmpty(disruption.endDate) && isEmpty(disruption.endTime);
+
+    const isRequiredDisruptionPropsEmpty = () => {
+        const isPropsEmpty = disruptionsForPublishValidation.some(disruption => some([
+            disruption.startTime,
+            disruption.startDate,
+            disruption.impact,
+            disruption.cause,
+            disruption.severity,
+            disruption.header], isEmpty));
+        const isEndTimeRequiredAndEmpty = !recurrent
+            && disruptionsForPublishValidation.some(isEndDateAndEndTimeValid);
+        const isWeekdayRequiredAndEmpty = recurrent
+            && disruptionsForPublishValidation.some(disruption => isEmpty(disruption.recurrencePattern.byweekday));
+        return isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
+    };
+
+    const affectedEntitySelected = (incidentNo) => {
+        const disruption = disruptions.find(d => d.incidentNo === incidentNo);
+        return disruption.affectedEntities.affectedRoutes.length > 0 || disruption.affectedEntities.affectedStops.length > 0;
+    };
+
+    const startTimeValidForAllDisruptions = () => disruptionsForPublishValidation.every(
+        disruption => isStartTimeValid(disruption.startDate, disruption.startTime, modalOpenedTime, disruption.recurrent),
+    );
+    const startDateValidForAllDisruptions = () => disruptionsForPublishValidation.every(
+        disruption => isStartDateValid(disruption.startDate, modalOpenedTime, disruption.recurrent),
+    );
+    const endTimeValidForAllDisruptions = () => disruptionsForPublishValidation.every(
+        disruption => isEndTimeValid(disruption.endDate, disruption.endTime, disruption.startDate, disruption.startTime),
+    );
+    const endDateValidForAllDisruptions = () => disruptionsForPublishValidation.every(
+        disruption => isEndDateValid(disruption.endDate, disruption.startDate, disruption.recurrent),
+    );
+    const durationValidForAllDisruptions = () => disruptionsForPublishValidation.every(
+        disruption => isDurationValid(disruption.duration, disruption.recurrent),
+    );
+    const affectedEntitySelectedForAllDisruptions = () => disruptionsForPublishValidation.every(
+        disruption => affectedEntitySelected(disruption.incidentNo),
+    );
+
+    const isPublishDisabled = isRequiredDisruptionPropsEmpty()
+        || !startTimeValidForAllDisruptions()
+        || !startDateValidForAllDisruptions()
+        || !endTimeValidForAllDisruptions()
+        || !endDateValidForAllDisruptions()
+        || !durationValidForAllDisruptions()
+        || !affectedEntitySelectedForAllDisruptions();
+
     const onBlurTitle = () => {
         setIsTitleDirty(true);
     };
@@ -215,7 +266,9 @@ export const SelectDetails = (props) => {
         || !endTimeValid()
         || !endDateValid()
         || !durationValid()
-        || (!props.isEffectValid && props.isEditEffectPanelOpen);
+        || (!props.isEffectValid && props.isEditEffectPanelOpen)
+        || (status === STATUSES.DRAFT && isPublishDisabled)
+        || (status === STATUSES.DRAFT && !props.isEffectForPublishValid && props.isEditEffectPanelOpen);
 
     const isDraftSubmitDisabled = isRequiredDraftPropsEmpty();
 
@@ -250,12 +303,20 @@ export const SelectDetails = (props) => {
     };
 
     const onSave = () => {
-        props.onSubmitUpdate();
+        if (props.editMode === EDIT_TYPE.EDIT && status === STATUSES.DRAFT) {
+            props.onPublishUpdate();
+        } else {
+            props.onSubmitUpdate();
+        }
     };
 
     const onSaveDraft = () => {
-        props.onStepUpdate(3);
-        props.onSubmitDraft();
+        if (props.editMode === EDIT_TYPE.EDIT && status === STATUSES.DRAFT) {
+            props.onSubmitUpdate();
+        } else {
+            props.onStepUpdate(3);
+            props.onSubmitDraft();
+        }
     };
 
     const displayActivePeriods = () => {
@@ -350,7 +411,7 @@ export const SelectDetails = (props) => {
     const isResolved = () => status === STATUSES.RESOLVED;
     return (
         <div className="disruption-creation__wizard-select-details">
-            <Form className="row my-3 p-4">
+            <Form className={ props.editMode === EDIT_TYPE.EDIT ? 'row mb-3 px-4 pb-4' : 'row my-3 p-4' }>
                 <div className="col-12">
                     <RadioButtons
                         { ...recurrenceRadioOptions(recurrent) }
@@ -405,6 +466,8 @@ export const SelectDetails = (props) => {
                     <div className="col-6">
                         <DisruptionDetailSelect
                             id="disruption-detail__status"
+                            disabled={ status === STATUSES.DRAFT }
+                            disabledClassName="background-color-for-disabled-fields"
                             className=""
                             value={ status }
                             options={ statusOptions }
@@ -687,11 +750,14 @@ export const SelectDetails = (props) => {
             )}
             { props.editMode === EDIT_TYPE.EDIT && (
                 <Footer
-                    isDraftOrCreateMode={ false }
                     toggleIncidentModals={ props.toggleIncidentModals }
+                    isDraftOrCreateMode={ status === STATUSES.DRAFT }
                     isSubmitDisabled={ isSubmitDisabledForEdit }
-                    nextButtonValue="Save"
+                    nextButtonValue={ status === STATUSES.DRAFT ? 'Publish' : 'Save' }
                     onContinue={ () => onSave() }
+                    saveDraftButtonValue="Save draft"
+                    isDraftSubmitDisabled={ isDraftSubmitDisabled }
+                    onSubmitDraft={ () => onSaveDraft() }
                 />
             )}
             <CustomMuiDialog
@@ -741,6 +807,8 @@ SelectDetails.propTypes = {
     isEffectsRequiresToUpdate: PropTypes.bool,
     updateIsEffectsRequiresToUpdateState: PropTypes.func,
     isEffectValid: PropTypes.bool,
+    isEffectForPublishValid: PropTypes.bool,
+    onPublishUpdate: PropTypes.func,
 };
 
 SelectDetails.defaultProps = {
@@ -758,6 +826,8 @@ SelectDetails.defaultProps = {
     isEffectsRequiresToUpdate: false,
     updateIsEffectsRequiresToUpdateState: () => { },
     isEffectValid: true,
+    isEffectForPublishValid: true,
+    onPublishUpdate: () => { },
 };
 
 export default connect(state => ({

@@ -1,4 +1,4 @@
-import { max, map, isEmpty, filter } from 'lodash-es';
+import { max, map } from 'lodash-es';
 import { handleActions } from 'redux-actions';
 import ACTION_TYPE from '../../action-types';
 
@@ -208,24 +208,6 @@ const handleRemoveSelectedSearchResult = (state, { payload: { selectedSearchResu
 
 const handleClearSelectedSearchResult = state => ({ ...state, selectedSearchResults: {} });
 
-// This handler basically updates the selected vehicle in detail from the vehicle updates received
-export const handleVehiclesUpdate = (state, { payload: { vehicles } }) => {
-    if (isEmpty(vehicles)) return state;
-
-    const vehicleId = state?.vehicle?.id;
-    const possibleUpdates = filter(vehicles, v => v.id === vehicleId);
-    if (!vehicleId || isEmpty(possibleUpdates)) return state; // Another early return
-
-    const vehicleToBeUpdated = possibleUpdates.length ? possibleUpdates[0].vehicle : {};
-    return {
-        ...state,
-        vehicle: {
-            ...state.vehicle,
-            ...vehicleToBeUpdated,
-        },
-    };
-};
-
 export default handleActions({
     [ACTION_TYPE.CLEAR_DETAIL]: handleClearDetail,
     [ACTION_TYPE.UPDATE_SELECTED_ADDRESS]: handleSelectedAddress,
@@ -254,5 +236,4 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_STOP_VEHICLE_PREDICATE]: handleUpdateStopVehiclePredicate,
     [ACTION_TYPE.REMOVE_SELECTED_SEARCH_RESULT]: handleRemoveSelectedSearchResult,
     [ACTION_TYPE.CLEAR_SELECTED_SEARCH_RESULT]: handleClearSelectedSearchResult,
-    [ACTION_TYPE.FETCH_VEHICLES_REALTIME]: handleVehiclesUpdate,
 }, INIT_STATE);

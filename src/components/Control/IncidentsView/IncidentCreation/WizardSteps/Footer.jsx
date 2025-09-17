@@ -30,7 +30,7 @@ export const Footer = props => (
                     className="btn cc-btn-secondary btn-block"
                     disabled={ props.isDraftSubmitDisabled }
                     onClick={ props.onSubmitDraft }>
-                    Save draft
+                    { props.saveDraftButtonValue }
                 </Button>
             </div>
         )}
@@ -55,6 +55,7 @@ Footer.propTypes = {
     isDraftSubmitDisabled: PropTypes.bool,
     nextButtonValue: PropTypes.string.isRequired,
     useDraftDisruptions: PropTypes.bool,
+    saveDraftButtonValue: PropTypes.string,
 };
 
 Footer.defaultProps = {
@@ -64,6 +65,7 @@ Footer.defaultProps = {
     isDraftOrCreateMode: true,
     onBack: null,
     onSubmitDraft: () => {},
+    saveDraftButtonValue: 'Save draft',
 };
 
 export default connect(

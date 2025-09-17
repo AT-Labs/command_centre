@@ -945,3 +945,133 @@ describe('buildDisruptionSubmitBody', () => {
         expect(buildIncidentSubmitBody(mockIncident, true)).toEqual(expectedIncident);
     });
 });
+
+describe('getMode', () => {
+    it('Should return empty mode', () => {
+        const incident = {
+            ...mockIncident,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    affectedEntities: {
+                        affectedRoutes: [],
+                        affectedStops: [],
+                    },
+                },
+            ],
+        };
+        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('');
+    });
+
+    it('Should return multiple modes from routes with duplicated mode', () => {
+        const incident = {
+            ...mockIncident,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    affectedEntities: {
+                        affectedRoutes: [{ routeType: 3 }, { routeType: 2 }, { routeType: 2 }],
+                        affectedStops: [],
+                    },
+                },
+            ],
+        };
+        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('Bus, Train');
+    });
+
+    it('Should return multiple modes from routes', () => {
+        const incident = {
+            ...mockIncident,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    affectedEntities: {
+                        affectedRoutes: [{ routeType: 3 }, { routeType: 2 }],
+                        affectedStops: [],
+                    },
+                },
+            ],
+        };
+        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('Bus, Train');
+    });
+
+    it('Should return empty mode due to invalid routeType from route', () => {
+        const incident = {
+            ...mockIncident,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    affectedEntities: {
+                        affectedRoutes: [{ routeType: 555 }],
+                        affectedStops: [],
+                    },
+                },
+            ],
+        };
+        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('');
+    });
+
+    it('Should return mode from stop', () => {
+        const incident = {
+            ...mockIncident,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    affectedEntities: {
+                        affectedRoutes: [],
+                        affectedStops: [{ routeType: 4 }],
+                    },
+                },
+            ],
+        };
+        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('Ferry');
+    });
+
+    it('Should return multiple modes from stops', () => {
+        const incident = {
+            ...mockIncident,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    affectedEntities: {
+                        affectedRoutes: [],
+                        affectedStops: [{ routeType: 3 }, { routeType: 2 }],
+                    },
+                },
+            ],
+        };
+        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('Bus, Train');
+    });
+
+    it('Should return multiple modes from stops with duplicated mode', () => {
+        const incident = {
+            ...mockIncident,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    affectedEntities: {
+                        affectedRoutes: [],
+                        affectedStops: [{ routeType: 3 }, { routeType: 3 }, { routeType: 2 }],
+                    },
+                },
+            ],
+        };
+        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('Bus, Train');
+    });
+
+    it('Should return empty mode due to invalid routeType from stops', () => {
+        const incident = {
+            ...mockIncident,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    affectedEntities: {
+                        affectedRoutes: [],
+                        affectedStops: [{ routeType: 555 }, { routeType: 333 }],
+                    },
+                },
+            ],
+        };
+        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('');
+    });
+});

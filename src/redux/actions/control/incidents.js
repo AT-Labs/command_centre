@@ -812,7 +812,8 @@ export const setDisruptionForWorkaroundEdit = disruptionForWorkaroundEdit => (di
     });
 };
 
-export const updateIncident = incident => async (dispatch) => {
+export const updateIncident = (incident, isAddEffect = false) => async (dispatch) => {
+    dispatch(updateLoadingIncidentForEditState(true));
     const { incidentId, createNotification } = incident;
     dispatch(updateRequestingIncidentState(true, incidentId));
 
@@ -827,8 +828,17 @@ export const updateIncident = incident => async (dispatch) => {
     } catch (error) {
         dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
     } finally {
+        if (isAddEffect) {
+            dispatch(updateEditMode(EDIT_TYPE.EDIT));
+            dispatch(updateCurrentStep(1));
+            dispatch(setIncidentToUpdate(incidentId, undefined, true));
+        } else {
+            dispatch(deleteAffectedEntities());
+            dispatch(openCreateIncident(false));
+            dispatch(toggleIncidentModals('isApplyChangesOpen', false));
+            dispatch(updateLoadingIncidentForEditState(false));
+        }
         dispatch(updateRequestingIncidentState(false, incidentId));
-        dispatch(deleteAffectedEntities());
         dispatch(toggleWorkaroundPanel(false));
         dispatch(updateDisruptionKeyToWorkaroundEdit(''));
         dispatch(toggleEditEffectPanel(false));
@@ -839,3 +849,10 @@ export const updateIncident = incident => async (dispatch) => {
 
     return result;
 };
+
+export const updateSelectedEffect = selectedEffect => ({
+    type: ACTION_TYPE.UPDATE_SELECTED_EFFECT,
+    payload: {
+        selectedEffect,
+    },
+});
