@@ -10,6 +10,13 @@ export const openDiversionManager = isDiversionManagerOpen => (dispatch) => {
     });
 };
 
+export const setDiversionManagerLoading = isLoading => ({
+    type: ACTION_TYPE.SET_DIVERSION_MANAGER_LOADING,
+    payload: {
+        isLoading,
+    },
+});
+
 export const updateDiversionMode = editMode => ({
     type: ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE,
     payload: {
@@ -68,4 +75,61 @@ export const resetDiversionResult = () => (dispatch) => {
     dispatch(
         updateDiversionResultState(false, null, null),
     );
+};
+
+export const fetchDiversionsStart = disruptionId => ({
+    type: ACTION_TYPE.FETCH_DIVERSIONS_START,
+    payload: { disruptionId },
+});
+
+export const fetchDiversionsSuccess = (disruptionId, diversions) => ({
+    type: ACTION_TYPE.FETCH_DIVERSIONS_SUCCESS,
+    payload: { disruptionId, diversions },
+});
+
+export const fetchDiversionsError = (disruptionId, error) => ({
+    type: ACTION_TYPE.FETCH_DIVERSIONS_ERROR,
+    payload: { disruptionId, error },
+});
+
+export const clearDiversionsCache = (disruptionId = null) => ({
+    type: ACTION_TYPE.CLEAR_DIVERSIONS_CACHE,
+    payload: { disruptionId },
+});
+
+export const fetchDiversions = (disruptionId, forceRefresh = false) => async (dispatch, getState) => {
+    if (!disruptionId) {
+        return undefined;
+    }
+
+    const state = getState();
+    const diversionsState = state.control.diversions;
+
+    if (diversionsState.diversionsLoading[disruptionId]) {
+        return undefined;
+    }
+
+    if (!forceRefresh && diversionsState.diversionsData[disruptionId]) {
+        return diversionsState.diversionsData[disruptionId];
+    }
+
+    dispatch(fetchDiversionsStart(disruptionId));
+
+    try {
+        let diversions = await disruptionsMgtApi.getDiversion(disruptionId);
+
+        if ((!diversions || diversions.length === 0) && disruptionId && disruptionId.toString().length > 5) {
+            const disruptionsState = state.control?.incidents?.disruptions || [];
+            const disruption = disruptionsState.find(d => d.disruptionId === disruptionId);
+            if (disruption?.incidentId && disruption.incidentId !== disruptionId) {
+                diversions = await disruptionsMgtApi.getDiversion(disruption.incidentId);
+            }
+        }
+
+        dispatch(fetchDiversionsSuccess(disruptionId, diversions || []));
+        return diversions || [];
+    } catch (error) {
+        dispatch(fetchDiversionsError(disruptionId, error.message));
+        return [];
+    }
 };

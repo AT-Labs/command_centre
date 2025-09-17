@@ -146,8 +146,13 @@ export const SelectDetails = (props) => {
                 setIsEndDateDirty(false);
             }
         } else {
-            props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
+            const endDateValue = date.length ? moment(date[0]).format(DATE_FORMAT) : '';
+            props.onDataUpdate('endDate', endDateValue);
             setIsEndDateDirty(false);
+
+            if (endDateValue && isEmpty(endTime)) {
+                props.onDataUpdate('endTime', '23:59');
+            }
         }
     };
 
