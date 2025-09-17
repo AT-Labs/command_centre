@@ -133,24 +133,10 @@ export const SelectEffects = (props) => {
     const [activePeriods, setActivePeriods] = useState([]);
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const impactValid = key => !isEmpty(disruptions.find(d => d.key === key).impact);
 
     const getDisruptionByKey = key => disruptions.find(d => d.key === key);
     const updateDisruptionsState = () => props.onDataUpdate('disruptions', disruptions);
-
-    useEffect(() => {
-        if (isSubmitting && props.data.disruptions.length > 0) {
-            setIsSubmitting(false);
-            if (!props.isEditMode) {
-                props.onStepUpdate(3);
-                props.updateCurrentStep(1);
-                props.onSubmit();
-            } else {
-                props.onSubmitUpdate();
-            }
-        }
-    }, [props.data.disruptions, isSubmitting]);
 
     const getOptionalLabel = label => (
         <>
@@ -395,13 +381,7 @@ export const SelectEffects = (props) => {
                 updateDisruption(key, { endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '', isEndDateDirty: false });
             }
         } else {
-            const endDateValue = date.length ? moment(date[0]).format(DATE_FORMAT) : '';
-            const disruption = getDisruptionByKey(key);
-            updateDisruption(key, { endDate: endDateValue, isEndDateDirty: false });
-
-            if (endDateValue && isEmpty(disruption.endTime)) {
-                updateDisruption(key, { endTime: '23:59' });
-            }
+            updateDisruption(key, { endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '', isEndDateDirty: false });
         }
     };
 
@@ -663,18 +643,6 @@ export const SelectEffects = (props) => {
                 isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || !props.isEditMode }
                 onSubmitDraft={ () => onSaveDraft() }
                 onBack={ !props.isEditMode ? onBack : undefined }
-                showFinishButton
-                isFinishDisabled={ isSubmitting || (props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled) }
-                finishButtonValue={ (() => {
-                    if (isSubmitting) return 'Saving...';
-                    if (props.isEditMode) return 'Save';
-                    return 'Finish';
-                })() }
-                onFinish={ () => {
-                    removeNotFoundFromStopGroups();
-                    updateDisruptionsState();
-                    setIsSubmitting(true);
-                } }
             />
             <CustomMuiDialog
                 title="Disruption Active Periods"
@@ -691,7 +659,6 @@ SelectEffects.propTypes = {
     onDataUpdate: PropTypes.func.isRequired,
     onSubmitDraft: PropTypes.func,
     onSubmitUpdate: PropTypes.func,
-    onSubmit: PropTypes.func,
     updateCurrentStep: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
     updateAffectedRoutesState: PropTypes.func.isRequired,
@@ -706,7 +673,6 @@ SelectEffects.propTypes = {
 SelectEffects.defaultProps = {
     onSubmitDraft: () => { },
     onSubmitUpdate: () => { },
-    onSubmit: () => { },
     onUpdateEntitiesValidation: () => { },
     isEditMode: false,
     useDraftDisruptions: false,

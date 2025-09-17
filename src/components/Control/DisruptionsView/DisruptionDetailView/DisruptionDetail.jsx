@@ -3,7 +3,7 @@ import { connect, useDispatch } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
-import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
+import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap';
 import { toString, omit, some, isEmpty, uniqBy, uniqWith } from 'lodash-es';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { BsArrowRepeat } from 'react-icons/bs';
@@ -26,7 +26,9 @@ import {
     LABEL_START_DATE,
     LABEL_START_TIME,
     LABEL_STATUS,
+    LABEL_URL,
     TIME_FORMAT,
+    URL_MAX_LENGTH,
     LABEL_DURATION_HOURS,
     LABEL_DISRUPTION_NOTES,
     DESCRIPTION_NOTE_MAX_LENGTH,
@@ -384,6 +386,14 @@ const DisruptionDetailView = (props) => {
         return startDateValid();
     };
 
+    const getOptionalLabel = label => (
+        <>
+            {label}
+            {' '}
+            <small className="text-muted">optional</small>
+        </>
+    );
+
     const causeAndImpactAreValid = causes.find(c => c.value === cause) && impacts.find(i => i.value === impact);
     const causeAndImpactAreValidForDraft = () => {
         const causeIsValid = causes.some(c => c.value === cause);
@@ -578,7 +588,6 @@ const DisruptionDetailView = (props) => {
                         editAction={ affectedEntitiesEditActionHandler }
                         addDiversionAction={ addDiversion }
                         isEditDisabled={ isRequesting || isLoading || isResolved() || isReadOnlyMode }
-                        isDiversionManagerLoading={ props.isDiversionManagerLoading }
                         affectedEntities={ disruption.affectedEntities }
                         startTime={ disruption.startTime }
                         endTime={ disruption.endTime }
@@ -757,7 +766,24 @@ const DisruptionDetailView = (props) => {
                 <div className="row mt-3">
                     <section className="col-6">
                         <div className="row">
-                            <div className="col-12">
+                            <div className="col-6">
+                                <FormGroup className="mt-2">
+                                    <Label for="disruption-detail__url">
+                                        <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
+                                    </Label>
+                                    <Input id="disruption-detail__url"
+                                        className="border border-dark"
+                                        value={ url }
+                                        disabled={ isResolved() || isReadOnlyMode }
+                                        onChange={ e => setUrl(e.currentTarget.value) }
+                                        placeholder="e.g. https://at.govt.nz"
+                                        maxLength={ URL_MAX_LENGTH }
+                                        invalid={ !isUrlValid(url) }
+                                    />
+                                    <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
+                                </FormGroup>
+                            </div>
+                            <div className="col-6">
                                 <FormGroup className="mt-2">
                                     <DisruptionDetailSelect
                                         id="disruption-detail__severity"
@@ -974,7 +1000,6 @@ DisruptionDetailView.propTypes = {
     boundsToFit: PropTypes.array.isRequired,
     usePassengerImpact: PropTypes.bool.isRequired,
     useDraftDisruptions: PropTypes.bool.isRequired,
-    isDiversionManagerLoading: PropTypes.bool,
     isReadOnlyMode: PropTypes.bool,
     actions: PropTypes.objectOf(PropTypes.func).isRequired,
 };
@@ -985,7 +1010,6 @@ DisruptionDetailView.defaultProps = {
     resultDisruptionId: null,
     routeColors: [],
     className: 'disruption-details__page',
-    isDiversionManagerLoading: false,
     isReadOnlyMode: false,
 };
 
