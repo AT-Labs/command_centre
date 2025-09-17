@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { result, map, uniqBy, flatten, isInteger, orderBy, isEmpty } from 'lodash-es';
+import { result, map, uniqBy, flatten, isInteger, orderBy } from 'lodash-es';
 import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';

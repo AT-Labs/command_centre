@@ -211,7 +211,7 @@ const handleClearSelectedSearchResult = state => ({ ...state, selectedSearchResu
 // This handler basically updates the selected vehicle in detail from the vehicle updates received
 const handleVehiclesUpdate = (state, { payload: { vehicles } }) => {
     if (isEmpty(vehicles)) return state;
-    console.log('Processing vehicles', vehicles);
+    // console.log('Processing vehicles', vehicles);
     // eslint-disable-next-line no-debugger
     // debugger;
 
