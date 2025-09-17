@@ -7,9 +7,9 @@ export const getIsDiversionManagerLoading = createSelector(getDiversionsState, d
 export const getDiversionEditMode = createSelector(getDiversionsState, disruptionsState => result(disruptionsState, 'diversionEditMode'));
 export const getDiversionResultState = createSelector(getDiversionsState, ({ diversionResultState }) => diversionResultState);
 export const getDiversionForEditing = createSelector(getDiversionsState, ({ diversion }) => diversion);
-export const getDiversionsData = createSelector(getDiversionsState, ({ diversionsData } = {}) => diversionsData);
-export const getDiversionsLoading = createSelector(getDiversionsState, ({ diversionsLoading } = {}) => diversionsLoading);
-export const getDiversionsError = createSelector(getDiversionsState, ({ diversionsError } = {}) => diversionsError);
+export const getDiversionsData = createSelector(getDiversionsState, (diversionsState = {}) => diversionsState?.diversionsData);
+export const getDiversionsLoading = createSelector(getDiversionsState, (diversionsState = {}) => diversionsState?.diversionsLoading);
+export const getDiversionsError = createSelector(getDiversionsState, (diversionsState = {}) => diversionsState?.diversionsError);
 export const getDiversionsForDisruption = disruptionId => createSelector(
     getDiversionsData,
     (diversionsData) => {

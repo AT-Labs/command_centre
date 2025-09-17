@@ -275,6 +275,7 @@ export const SelectDetails = (props) => {
                         { !recurrent && (
                             <Flatpickr
                                 id="disruption-creation__wizard-select-details__end-date"
+                                data-testid="disruption-creation__wizard-select-details__end-date"
                                 className={ `font-weight-normal cc-form-control form-control ${cssEndDateInvalid}` }
                                 value={ endDate }
                                 options={ endDateDatePickerOptions }
@@ -286,6 +287,7 @@ export const SelectDetails = (props) => {
                         { recurrent && (
                             <Flatpickr
                                 id="disruption-creation__wizard-select-details__end-date"
+                                data-testid="disruption-creation__wizard-select-details__end-date"
                                 className={ `font-weight-normal cc-form-control form-control ${cssEndDateInvalid}` }
                                 value={ endDate }
                                 options={ endDateDatePickerOptions }
