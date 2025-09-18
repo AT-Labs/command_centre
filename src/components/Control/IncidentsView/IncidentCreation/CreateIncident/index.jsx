@@ -30,8 +30,6 @@ import {
     getIncidentAction,
     getIncidentStepCreation,
     getIncidentToEdit,
-    getRouteColors,
-    getShapes,
     getEditMode,
     isIncidentCancellationModalOpen,
     isIncidentCreationOpen,
@@ -85,7 +83,7 @@ import WorkaroundPanel from '../WizardSteps/WorkaroundPanel';
 import EditEffectPanel from '../EditIncidentDetails/EditEffectPanel';
 import ApplyChangesModal from '../EditIncidentDetails/ApplyChangesModal';
 import PublishAndApplyChangesModal from '../EditIncidentDetails/PublishAndApplyChangesModal';
-import { getShapes as getShapesV2, getRouteColors as getRouteColorsV2 } from '../../../../../utils/control/incidents';
+import { getShapes, getRouteColors } from '../../../../../utils/control/incidents';
 
 const INIT_STATE = {
     startTime: '',
@@ -582,8 +580,8 @@ export class CreateIncident extends React.Component {
         if (this.state.selectedEffect) {
             const disruption = this.state.incidentData.disruptions.find(d => d.key === this.state.selectedEffect);
             if (disruption) {
-                const shapes = getShapesV2(disruption.affectedEntities.affectedRoutes, disruption.affectedEntities.affectedStops);
-                const routeColors = getRouteColorsV2(disruption.affectedEntities.affectedRoutes, disruption.affectedEntities.affectedStops);
+                const shapes = getShapes(disruption.affectedEntities.affectedRoutes, disruption.affectedEntities.affectedStops);
+                const routeColors = getRouteColors(disruption.affectedEntities.affectedRoutes, disruption.affectedEntities.affectedStops);
                 return <ShapeLayer shapes={ shapes } routeColors={ routeColors } />;
             }
         }
@@ -864,9 +862,7 @@ CreateIncident.propTypes = {
     activeStep: PropTypes.number,
     stops: PropTypes.array,
     routes: PropTypes.array,
-    shapes: PropTypes.array,
     editMode: PropTypes.string,
-    routeColors: PropTypes.array,
     updateIncident: PropTypes.func.isRequired,
     incidentToEdit: PropTypes.object,
     openCreateIncident: PropTypes.func.isRequired,
@@ -897,9 +893,7 @@ CreateIncident.defaultProps = {
     activeStep: 1,
     stops: [],
     routes: [],
-    shapes: [],
     editMode: EDIT_TYPE.CREATE,
-    routeColors: [],
     incidentToEdit: {},
     isLoading: false,
     isEditEffectPanelOpen: false,
@@ -916,9 +910,7 @@ export default connect(state => ({
     activeStep: getIncidentStepCreation(state),
     stops: getAffectedStops(state),
     routes: getAffectedRoutes(state),
-    shapes: getShapes(state),
     editMode: getEditMode(state),
-    routeColors: getRouteColors(state),
     incidentToEdit: getIncidentToEdit(state),
     boundsToFit: getBoundsToFit(state),
     childStops: getChildStops(state),
