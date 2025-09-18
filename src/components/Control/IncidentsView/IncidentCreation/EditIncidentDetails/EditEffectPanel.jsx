@@ -58,7 +58,7 @@ import {
     getRecurrenceText,
     parseRecurrencePattern,
     isActivePeriodsValid } from '../../../../../utils/recurrence';
-import { DISRUPTION_TYPE, SEVERITIES, DEFAULT_SEVERITY, STATUSES, getSeverityOptions } from '../../../../../types/disruptions-types';
+import { DISRUPTION_TYPE, STATUSES, getSeverityOptions } from '../../../../../types/disruptions-types';
 import SelectEffectEntities from '../WizardSteps/SelectEffectEntities';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
 import {

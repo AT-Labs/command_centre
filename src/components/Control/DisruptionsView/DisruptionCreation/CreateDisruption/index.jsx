@@ -523,6 +523,7 @@ CreateDisruption.propTypes = {
     updateDisruptionToEdit: PropTypes.func.isRequired,
     usePassengerImpact: PropTypes.bool.isRequired,
     useGeoSearchRoutesByDisruptionPeriod: PropTypes.bool.isRequired,
+    useAdditionalFrontendChanges: PropTypes.bool.isRequired,
 };
 
 CreateDisruption.defaultProps = {

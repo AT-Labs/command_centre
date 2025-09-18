@@ -13,7 +13,7 @@ import { isUrlValid } from '../../../../../utils/helpers';
 import { isDurationValid, isEndDateValid, isEndTimeValid, isStartDateValid, isStartTimeValid, recurrenceRadioOptions } from '../../../../../utils/control/disruptions';
 import { toggleDisruptionModals, updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { DisruptionDetailSelect } from '../../DisruptionDetail/DisruptionDetailSelect';
-import { SEVERITIES, getSeverityOptions } from '../../../../../types/disruptions-types';
+import { getSeverityOptions } from '../../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
     HEADER_MAX_LENGTH,
@@ -26,6 +26,8 @@ import {
     LABEL_SEVERITY,
     LABEL_START_DATE,
     LABEL_START_TIME,
+    LABEL_URL,
+    URL_MAX_LENGTH,
 } from '../../../../../constants/disruptions';
 import Footer from './Footer';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
@@ -423,6 +425,26 @@ export const SelectDetails = (props) => {
                         />
                     </FormGroup>
                 </div>
+                {!props.useAdditionalFrontendChanges && (
+                    <div className="col-12">
+                        <FormGroup>
+                            <Label for="disruption-creation__wizard-select-details__url">
+                                <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
+                            </Label>
+                            <Input
+                                id="disruption-creation__wizard-select-details__url"
+                                className="w-100 border border-dark"
+                                type="url"
+                                maxLength={ URL_MAX_LENGTH }
+                                value={ url }
+                                placeholder="e.g. https://at.govt.nz"
+                                onChange={ event => props.onDataUpdate('url', event.target.value) }
+                                invalid={ !isUrlValid(url) }
+                            />
+                            <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
+                        </FormGroup>
+                    </div>
+                )}
                 <div className="col-12">
                     <FormGroup>
                         <Label for="disruption-creation__wizard-select-details__header">
@@ -506,6 +528,7 @@ SelectDetails.propTypes = {
     updateCurrentStep: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
     onUpdateDetailsValidation: PropTypes.func,
+    useAdditionalFrontendChanges: PropTypes.bool,
 };
 
 SelectDetails.defaultProps = {
@@ -517,6 +540,7 @@ SelectDetails.defaultProps = {
     onSubmitDraft: () => { },
     onUpdateDetailsValidation: () => { },
     useDraftDisruptions: false,
+    useAdditionalFrontendChanges: false,
 };
 
 export default connect(state => ({ useDraftDisruptions: useDraftDisruptions(state) }), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);

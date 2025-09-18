@@ -30,7 +30,7 @@ import {
     setRequestToUpdateEditEffectState,
     setRequestedDisruptionKeyToUpdateEditEffect } from '../../../../../redux/actions/control/incidents';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
-import { SEVERITIES, STATUSES, getSeverityOptions } from '../../../../../types/disruptions-types';
+import { STATUSES, getSeverityOptions } from '../../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
     TIME_FORMAT,

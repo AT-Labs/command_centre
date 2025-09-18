@@ -2,7 +2,7 @@ import moment from 'moment';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
-import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
+import { Button, Form, FormGroup, Input, Label, FormFeedback } from 'reactstrap';
 import { toString, omit, some, isEmpty, uniqBy, uniqWith } from 'lodash-es';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { BsArrowRepeat } from 'react-icons/bs';
@@ -28,6 +28,8 @@ import {
     TIME_FORMAT,
     LABEL_DURATION_HOURS,
     LABEL_DISRUPTION_NOTES,
+    LABEL_URL,
+    URL_MAX_LENGTH,
     DESCRIPTION_NOTE_MAX_LENGTH,
     LABEL_LAST_NOTE,
     LABEL_SEVERITY,
@@ -79,9 +81,17 @@ import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import { ShapeLayer } from '../../../Common/Map/ShapeLayer/ShapeLayer';
 import { SelectedStopsMarker } from '../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import { DisruptionPassengerImpactGridModal } from './DisruptionPassengerImpactGridModal';
-import { usePassengerImpact } from '../../../../redux/selectors/appSettings';
+import { usePassengerImpact, useAdditionalFrontendChanges } from '../../../../redux/selectors/appSettings';
 
 const { STOP } = SEARCH_RESULT_TYPE;
+
+const getOptionalLabel = label => (
+    <>
+        {label}
+        {' '}
+        <small className="text-muted">optional</small>
+    </>
+);
 
 const DisruptionDetailView = (props) => {
     const { disruption, updateDisruption, isRequesting, resultDisruptionId, isLoading } = props;
@@ -590,6 +600,25 @@ const DisruptionDetailView = (props) => {
                             </FormGroup>
                         </div>
                     </div>
+                    {!props.useAdditionalFrontendChanges && (
+                        <div className="col-6">
+                            <FormGroup className="mt-2">
+                                <Label for="disruption-detail__url">
+                                    <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
+                                </Label>
+                                <Input id="disruption-detail__url"
+                                    className="border border-dark"
+                                    value={ url }
+                                    disabled={ isResolved() }
+                                    onChange={ e => setUrl(e.currentTarget.value) }
+                                    placeholder="e.g. https://at.govt.nz"
+                                    maxLength={ URL_MAX_LENGTH }
+                                    invalid={ !isUrlValid(url) }
+                                />
+                                <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
+                            </FormGroup>
+                        </div>
+                    )}
                     <FormGroup className="mt-2">
                         <Label for="disruption-detail__header">
                             <span className="font-size-md font-weight-bold">{LABEL_HEADER}</span>
@@ -758,6 +787,7 @@ DisruptionDetailView.propTypes = {
     className: PropTypes.string,
     boundsToFit: PropTypes.array.isRequired,
     usePassengerImpact: PropTypes.bool.isRequired,
+    useAdditionalFrontendChanges: PropTypes.bool.isRequired,
 };
 
 DisruptionDetailView.defaultProps = {
@@ -776,6 +806,7 @@ export default connect(state => ({
     stops: getAffectedStops(state),
     boundsToFit: getBoundsToFit(state),
     usePassengerImpact: usePassengerImpact(state),
+    useAdditionalFrontendChanges: useAdditionalFrontendChanges(state),
 }), {
     getRoutesByShortName,
     openCreateDisruption,

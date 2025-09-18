@@ -14,7 +14,7 @@ import {
     isEditEnabled,
     getIncidentToEdit,
 } from '../../../../../redux/selectors/control/incidents';
-import { DISRUPTION_TYPE, STATUSES, SEVERITIES, DEFAULT_SEVERITY, getSeverityOptions } from '../../../../../types/disruptions-types';
+import { DISRUPTION_TYPE, STATUSES, DEFAULT_SEVERITY, getSeverityOptions } from '../../../../../types/disruptions-types';
 import {
     updateCurrentStep,
     getStopsByRoute,
