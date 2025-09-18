@@ -13,7 +13,7 @@ import { isUrlValid } from '../../../../../utils/helpers';
 import { isDurationValid, isEndDateValid, isEndTimeValid, isStartDateValid, isStartTimeValid, recurrenceRadioOptions } from '../../../../../utils/control/disruptions';
 import { toggleDisruptionModals, updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { DisruptionDetailSelect } from '../../DisruptionDetail/DisruptionDetailSelect';
-import { getSeverityOptions } from '../../../../../types/disruptions-types';
+import { SEVERITIES } from '../../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
     HEADER_MAX_LENGTH,
@@ -416,13 +416,31 @@ export const SelectDetails = (props) => {
                             id="disruption-creation__wizard-select-details__severity"
                             className=""
                             value={ severity }
-                            options={ getSeverityOptions(props.useAdditionalFrontendChanges) }
+                            options={ SEVERITIES }
                             label={ LABEL_SEVERITY }
                             invalid={ isSeverityDirty && !severityValid() }
                             feedback="Please select severity"
                             onBlur={ selectedItem => onChangeSeverity(selectedItem) }
                             onChange={ selectedItem => onChangeSeverity(selectedItem) }
                         />
+                    </FormGroup>
+                </div>
+                <div className="col-12">
+                    <FormGroup>
+                        <Label for="disruption-creation__wizard-select-details__header">
+                            <span className="font-size-md font-weight-bold">{LABEL_HEADER}</span>
+                        </Label>
+                        <Input
+                            id="disruption-creation__wizard-select-details__header"
+                            className="w-100 border border-dark"
+                            placeholder="Title of the message"
+                            maxLength={ HEADER_MAX_LENGTH }
+                            onChange={ event => props.onDataUpdate('header', event.target.value) }
+                            onBlur={ onBlurTitle }
+                            value={ header }
+                            invalid={ isTitleDirty && !titleValid() }
+                        />
+                        <FormFeedback>Please enter disruption title</FormFeedback>
                     </FormGroup>
                 </div>
                 {!props.useAdditionalFrontendChanges && (
@@ -445,24 +463,6 @@ export const SelectDetails = (props) => {
                         </FormGroup>
                     </div>
                 )}
-                <div className="col-12">
-                    <FormGroup>
-                        <Label for="disruption-creation__wizard-select-details__header">
-                            <span className="font-size-md font-weight-bold">{LABEL_HEADER}</span>
-                        </Label>
-                        <Input
-                            id="disruption-creation__wizard-select-details__header"
-                            className="w-100 border border-dark"
-                            placeholder="Title of the message"
-                            maxLength={ HEADER_MAX_LENGTH }
-                            onChange={ event => props.onDataUpdate('header', event.target.value) }
-                            onBlur={ onBlurTitle }
-                            value={ header }
-                            invalid={ isTitleDirty && !titleValid() }
-                        />
-                        <FormFeedback>Please enter disruption title</FormFeedback>
-                    </FormGroup>
-                </div>
                 <div className="col-12">
                     <FormGroup className="disruption-creation__checkbox">
                         <Input

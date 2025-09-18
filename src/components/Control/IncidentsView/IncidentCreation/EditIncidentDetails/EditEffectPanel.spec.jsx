@@ -476,6 +476,21 @@ describe('Confirmation Component', () => {
         jest.clearAllMocks();
     });
 
+    it('Renders without crashing and displays edit effect panel', () => {
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...defaultProps } />
+            </Provider>,
+        );
+
+        expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+        expect(screen.getByText('Disruption Title')).toBeInTheDocument();
+        expect(screen.getByText('Start Time')).toBeInTheDocument();
+        expect(screen.getByText('Start Date')).toBeInTheDocument();
+        expect(screen.getByText('End Date')).toBeInTheDocument();
+        expect(screen.getByText('Search routes or draw in the map')).toBeInTheDocument();
+    });
+
     it('Should update startDate value with status(if start date is before now) and recurrencePattern on startDate change', () => {
         render(
             <Provider store={ store }>
