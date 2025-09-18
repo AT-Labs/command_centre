@@ -25,7 +25,6 @@ import {
 } from '../../redux/actions/user';
 import { hasPrerequisiteDataLoaded, isAnyError } from '../../redux/selectors/activity';
 import { getActiveMainView } from '../../redux/selectors/navigation';
-import { useAdditionalFrontendChanges } from '../../redux/selectors/appSettings';
 import VIEW_TYPE from '../../types/view-types';
 import {
     IS_ALERTS_ENABLED,
@@ -94,7 +93,7 @@ export function App(props) {
     }, []);
 
     return (
-        <div className={ `app ${props.useAdditionalFrontendChanges ? 'additional-frontend-changes-enabled' : ''}` }>
+        <div className="app">
             <div>
                 <Header />
                 {(props.isInitLoading && <MaskLoader error={ props.hasError ? ERROR_TYPE.initial : null } />) || (mainViews[props.activeMainView])}
@@ -130,18 +129,12 @@ App.propTypes = {
     fetchBusPriorityViewPermission: PropTypes.func.isRequired,
     getApplicationSettings: PropTypes.func.isRequired,
     getStops: PropTypes.func.isRequired,
-    useAdditionalFrontendChanges: PropTypes.bool,
-};
-
-App.defaultProps = {
-    useAdditionalFrontendChanges: false,
 };
 
 export default connect(state => ({
     hasError: isAnyError(state),
     isInitLoading: !hasPrerequisiteDataLoaded(state),
     activeMainView: getActiveMainView(state),
-    useAdditionalFrontendChanges: useAdditionalFrontendChanges(state),
 }), {
     setCache,
     startPollingSiteStatus,

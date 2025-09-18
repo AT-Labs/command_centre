@@ -3,8 +3,6 @@
 .side-panel-control-component-view {
     & .side-panel {
         overflow-x: hidden;
-        z-index: 1001;
-        position: relative;
         .side-panel__inner {
             box-shadow: none;
         }
@@ -53,18 +51,10 @@
         left: 0;
         background-color: #FFF;
         padding: 1rem;
-        z-index: 1002;
     }
 
     .map {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: calc(100vw - 60px);
-        height: calc(100vh - 60px);
-        z-index: 1000;
-        margin-left: 0;
-        margin-top: 60px;
-        margin-right: 60px;
+        margin-left: $side-panel-width-large;
+        height: calc(100vh - 109px);
     }
 }
