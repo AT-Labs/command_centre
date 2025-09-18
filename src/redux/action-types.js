@@ -296,6 +296,7 @@ export default {
     SET_DISRUPTION_FOR_WORKAROUND_EDIT: 'set-disruption-for-workaround-edit',
     SET_REQUEST_TO_UPDATE_EDIT_EFFECT: 'set-request-to-update-edit-effect',
     SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT: 'set-requested-disruption-key-to-update-edit-effect',
+    UPDATE_MAP_DRAWING_ENTITIES: 'update-map-drawing-entities',
     // UPDATE_INCIDENT_DIVERSION_EDIT_MODE: 'update-incident-diversion-edit-mode',
     // OPEN_INCIDENT_CREATE_DIVERSION: 'open-incident-create-diversion',
     // ADD_INCIDENT_DIVERSION: 'add-incident-diversion',
