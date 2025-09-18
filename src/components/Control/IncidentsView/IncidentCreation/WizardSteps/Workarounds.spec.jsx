@@ -3,8 +3,6 @@ import React from 'react';
 import { withHooks } from 'jest-react-hooks-shallow';
 import { Workarounds } from './Workarounds';
 import Footer from './Footer';
-import EDIT_TYPE from '../../../../../types/edit-types';
-import { STATUSES } from '../../../../../types/disruptions-types';
 
 let wrapper;
 jest.useFakeTimers();
@@ -39,12 +37,6 @@ const componentPropsMock = {
     onSubmitDraft: jest.fn(),
     toggleWorkaroundPanel: jest.fn(),
     updateDisruptionKeyToWorkaroundEdit: jest.fn(),
-    isWorkaroundPanelOpen: false,
-    disruptionKeyToEdit: '',
-    editMode: EDIT_TYPE.CREATE,
-    newIncidentEffect: { ...mockDisruptions[0] },
-    setDisruptionForWorkaroundEdit: jest.fn(),
-    incidentStatus: STATUSES.NOT_STARTED,
 };
 
 const setup = (customProps) => {
@@ -64,8 +56,7 @@ describe('<Workarounds />', () => {
         expect(footer.prop('nextButtonValue')).toEqual('Finish');
     });
 
-    it('Should fire step update and submit when next button is clicked and is not add effect mode', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.CREATE });
+    it('Should fire step update and submit when next button is clicked and is not edit mode', () => {
         const footer = wrapper.find(Footer);
         footer.renderProp('onContinue')();
         expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3);
@@ -73,8 +64,7 @@ describe('<Workarounds />', () => {
         expect(componentPropsMock.onSubmit).toHaveBeenCalled();
     });
 
-    it('Should fire step update when back button is clicked and is not add effect mode', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.CREATE });
+    it('Should fire step update when back button is clicked and is not edit mode', () => {
         const footer = wrapper.find(Footer);
         footer.renderProp('onBack')();
         expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(1);
@@ -82,15 +72,15 @@ describe('<Workarounds />', () => {
         expect(componentPropsMock.toggleWorkaroundPanel).toHaveBeenCalledWith(false);
     });
 
-    it('Should fire step update and submit update when next button is clicked and is add effect mode', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.ADD_EFFECT });
+    it('Should fire step update and submit update when next button is clicked and is edit mode', () => {
+        wrapper = setup({ isEditMode: true });
         const footer = wrapper.find(Footer);
         footer.renderProp('onContinue')();
         expect(componentPropsMock.onSubmitUpdate).toHaveBeenCalled();
     });
 
-    it('Should fire step update when back button is clicked and is add effect mode', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.ADD_EFFECT });
+    it('Should fire step update when back button is clicked and is edit mode', () => {
+        wrapper = setup({ isEditMode: true });
         const footer = wrapper.find(Footer);
         footer.renderProp('onBack')();
         expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(0);
@@ -99,14 +89,12 @@ describe('<Workarounds />', () => {
     });
 
     it('Should render editMode', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.ADD_EFFECT });
         expect(wrapper.exists()).toEqual(true);
         const footer = wrapper.find(Footer);
         expect(footer.prop('nextButtonValue')).toEqual('Save');
     });
 
-    it('Should call onSubmit and update steps when next button is clicked and not in add effect mode', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.CREATE });
+    it('Should call onSubmit and update steps when next button is clicked and not in edit mode', () => {
         const footer = wrapper.find(Footer);
         footer.prop('onContinue')();
         expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3);
@@ -114,10 +102,10 @@ describe('<Workarounds />', () => {
         expect(componentPropsMock.onSubmit).toHaveBeenCalled();
     });
 
-    it('Should call onSubmitDraft and update steps when save draft button is clicked and not in add effect mode', () => {
+    it('Should call onSubmitDraft and update steps when save draft button is clicked and not in edit mode', () => {
         const onSubmitDraftSpy = jest.fn();
         wrapper = setup({
-            editMode: EDIT_TYPE.CREATE,
+            isEditMode: false,
             onSubmitDraft: onSubmitDraftSpy,
         });
         const footer = wrapper.find(Footer);
@@ -127,14 +115,13 @@ describe('<Workarounds />', () => {
     });
 
     it('Should call onSubmitUpdate when next button is clicked and in edit mode', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.ADD_EFFECT });
+        wrapper = setup({ isEditMode: true });
         const footer = wrapper.find(Footer);
         footer.prop('onContinue')();
         expect(componentPropsMock.onSubmitUpdate).toHaveBeenCalled();
     });
 
-    it('Should call onStepUpdate and updateCurrentStep when back button is clicked and not in add effect mode', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.CREATE });
+    it('Should call onStepUpdate and updateCurrentStep when back button is clicked and not in edit mode', () => {
         const footer = wrapper.find(Footer);
         footer.prop('onBack')();
         expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(1);
@@ -142,8 +129,8 @@ describe('<Workarounds />', () => {
         expect(componentPropsMock.toggleWorkaroundPanel).toHaveBeenCalledWith(false);
     });
 
-    it('Should call onStepUpdate and updateCurrentStep when back button is clicked and in add effect mode', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.ADD_EFFECT });
+    it('Should call onStepUpdate and updateCurrentStep when back button is clicked and in edit mode', () => {
+        wrapper = setup({ isEditMode: true });
         const footer = wrapper.find(Footer);
         footer.prop('onBack')();
         expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(0);
@@ -151,36 +138,36 @@ describe('<Workarounds />', () => {
         expect(componentPropsMock.toggleWorkaroundPanel).toHaveBeenCalledWith(false);
     });
 
-    it('Should render with correct next button value in add effect mode', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.ADD_EFFECT });
+    it('Should render with correct next button value in edit mode', () => {
+        wrapper = setup({ isEditMode: true });
         const footer = wrapper.find(Footer);
         expect(footer.prop('nextButtonValue')).toEqual('Save');
     });
 
-    it('Should call onSubmitUpdate when save button is clicked and in add effect mode', () => {
+    it('Should call onSubmitUpdate when save button is clicked and in edit mode', () => {
         const onSubmitUpdateSpy = jest.fn();
         wrapper = setup({
-            editMode: EDIT_TYPE.ADD_EFFECT,
+            isEditMode: true,
             onSubmitUpdate: onSubmitUpdateSpy,
         });
         const footer = wrapper.find(Footer);
         footer.prop('onSubmitDraft')();
         expect(onSubmitUpdateSpy).toHaveBeenCalled();
     });
-    it('Should set isDraftOrCreateMode to true when not in add effect mode', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.CREATE });
+    it('Should set isDraftOrCreateMode to true when not in edit mode', () => {
+        wrapper = setup({ isEditMode: false });
         const footer = wrapper.find(Footer);
         expect(footer.prop('isDraftOrCreateMode')).toBe(true);
     });
 
-    it('Should set isDraftOrCreateMode to false when in add effect mode', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.ADD_EFFECT });
+    it('Should set isDraftOrCreateMode to false when in edit mode', () => {
+        wrapper = setup({ isEditMode: true });
         const footer = wrapper.find(Footer);
         expect(footer.prop('isDraftOrCreateMode')).toBe(false);
     });
 
     it('Should render table with correct disruptions data', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.CREATE });
+        wrapper = setup({ isEditMode: false });
         const routes = wrapper.find('.disruption-effect-item-route');
         const stops = wrapper.find('.disruption-effect-item-stop');
         expect(wrapper.find('Button').length).toBe(2);
@@ -191,7 +178,7 @@ describe('<Workarounds />', () => {
     });
 
     it('Should call toggleWorkaroundPanel when openWorkaroundPanel is called', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.CREATE });
+        wrapper = setup({ isEditMode: false });
         const buttons = wrapper.find('Button');
         buttons.at(0).simulate('click');
         expect(componentPropsMock.updateDisruptionKeyToWorkaroundEdit).toHaveBeenCalledWith(mockDisruptions[0].key);
@@ -200,7 +187,7 @@ describe('<Workarounds />', () => {
 
     it('Should rerender effects after updating filtering value', () => {
         withHooks(() => {
-            wrapper = setup({ editMode: EDIT_TYPE.CREATE });
+            wrapper = setup({ isEditMode: false });
             const routes = wrapper.find('.disruption-effect-item-route');
             const stops = wrapper.find('.disruption-effect-item-stop');
             expect(wrapper.find('Button').length).toBe(2);
@@ -220,22 +207,6 @@ describe('<Workarounds />', () => {
             const updatedStops = wrapper.find('.disruption-effect-item-stop');
             expect(updatedRoutes).toHaveLength(2);
             expect(updatedStops).toHaveLength(0);
-        });
-    });
-
-    it('Should render footer with correct button on draft status for add effect mode', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.ADD_EFFECT, incidentStatus: STATUSES.DRAFT });
-        const footer = wrapper.find(Footer);
-        expect(footer.prop('nextButtonValue')).toEqual('Save draft');
-    });
-
-    it('Should update disruptions on update newIncidentEffect value', () => {
-        withHooks(() => {
-            wrapper = setup({ editMode: EDIT_TYPE.ADD_EFFECT });
-            wrapper.setProps({ newIncidentEffect: { ...mockDisruptions[1] } });
-            const stops = wrapper.find('.disruption-effect-item-stop');
-            expect(stops).toHaveLength(2);
-            expect(stops.at(0).text()).toBe('Stop - 100 test stop');
         });
     });
 });

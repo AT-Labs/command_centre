@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Paper, Stack } from '@mui/material';
 import { isEmpty, sortBy, some, isEqual } from 'lodash-es';
 import { Form, FormFeedback, FormGroup, Input, Label, Button } from 'reactstrap';
@@ -19,7 +19,10 @@ import { isEditEffectPanelOpen,
     isEditEffectUpdateRequested,
     getRequestedDisruptionKeyToUpdateEditEffect,
     isCancellationEffectModalOpen,
+    isRequiresToUpdateNotes,
+    isWorkaroundsNeedsToBeUpdated,
 } from '../../../../../redux/selectors/control/incidents';
+import { isLoading as isDataLoading } from '../../../../../redux/selectors/activity';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
 import {
     LABEL_CUSTOMER_IMPACT,
@@ -35,7 +38,9 @@ import {
     HEADER_MAX_LENGTH,
     LABEL_STATUS,
     LABEL_DISRUPTION_NOTES,
-    DESCRIPTION_NOTE_MAX_LENGTH } from '../../../../../constants/disruptions';
+    DESCRIPTION_NOTE_MAX_LENGTH,
+    LABEL_URL,
+    URL_MAX_LENGTH } from '../../../../../constants/disruptions';
 import {
     isEndDateValid,
     isEndTimeValid,
@@ -47,12 +52,13 @@ import {
     formatCreatedUpdatedTime,
     momentFromDateTime,
 } from '../../../../../utils/control/disruptions';
+import { isUrlValid } from '../../../../../utils/helpers';
 import {
     generateActivePeriodsFromRecurrencePattern,
     getRecurrenceText,
     parseRecurrencePattern,
     isActivePeriodsValid } from '../../../../../utils/recurrence';
-import { DISRUPTION_TYPE, SEVERITIES, DEFAULT_SEVERITY, STATUSES } from '../../../../../types/disruptions-types';
+import { DISRUPTION_TYPE, STATUSES, getSeverityOptions } from '../../../../../types/disruptions-types';
 import SelectEffectEntities from '../WizardSteps/SelectEffectEntities';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
 import {
@@ -70,6 +76,7 @@ import {
     toggleIncidentModals,
     setRequestedDisruptionKeyToUpdateEditEffect,
 } from '../../../../../redux/actions/control/incidents';
+import { updateDataLoading } from '../../../../../redux/actions/activity';
 import { useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
@@ -82,7 +89,14 @@ import CancellationEffectModal from './CancellationEffectModal';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import './EditEffectPanel.scss';
 import AddNoteModal from './AddNoteModal';
-import { useDisruptionNotePopup } from '../../../../../redux/selectors/appSettings';
+import { useDisruptionNotePopup, useDiversion, useAdditionalFrontendChanges } from '../../../../../redux/selectors/appSettings';
+import { getIsDiversionManagerOpen } from '../../../../../redux/selectors/control/diversions';
+import { ViewDiversionDetailModal } from '../../../DisruptionsView/DisruptionDetail/ViewDiversionDetailModal';
+import { openDiversionManager, updateDiversionMode } from '../../../../../redux/actions/control/diversions';
+import EDIT_TYPE from '../../../../../types/edit-types';
+import detourIcon from '../../../../../assets/img/detour.svg';
+import DiversionManager from '../../../DisruptionsView/DiversionManager';
+import { getDisruption as getDisruptionAPI, getDiversion as getDiversionAPI } from '../../../../../utils/transmitters/disruption-mgt-api';
 
 const INIT_EFFECT_STATE = {
     key: '',
@@ -98,7 +112,7 @@ const INIT_EFFECT_STATE = {
     },
     createNotification: false,
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: DEFAULT_SEVERITY.value,
+    severity: '',
     recurrent: false,
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
@@ -130,29 +144,22 @@ export const EditEffectPanel = (props) => {
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
     const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
 
-    const initDisruptionData = () => {
-        const disruptionToSet = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
-        setDisruption(disruptionToSet);
-        props.updateEditableDisruption(disruptionToSet);
-        setOriginalDisruption(disruptionToSet);
-        props.setDisruptionForWorkaroundEdit(disruptionToSet);
-        props.updateIsNotesRequiresToUpdateState();
-        setTimeout(() => setRequireMapUpdate(true), 0);
-    };
+    // Diversion-related state
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [isViewDiversionsModalOpen, setIsViewDiversionsModalOpen] = useState(false);
+    const [fetchedDisruption, setFetchedDisruption] = useState(null);
+    const [isLoadingDisruption, setIsLoadingDisruption] = useState(false);
+    const [localDiversions, setLocalDiversions] = useState([]);
+    const [shouldRefetchDiversions, setShouldRefetchDiversions] = useState(false);
+    const [isLoaderProtected, setIsLoaderProtected] = useState(false);
+    const isMounted = useRef(true);
 
-    useEffect(() => {
-        if (disruptionIncidentNoToEdit && disruptions && disruptions.length > 0) {
-            initDisruptionData();
-        } else {
-            setDisruption({ ...INIT_EFFECT_STATE });
-        }
-    }, []);
-
-    useEffect(() => {
-        if (props.disruptions && disruptionIncidentNoToEdit) {
-            initDisruptionData();
-        }
-    }, [props.disruptions]);
+    const getOptionalLabel = label => (
+        <>
+            {label}
+            <span className="text-muted"> (optional)</span>
+        </>
+    );
 
     const startTimeValid = () => isStartTimeValid(
         disruption.startDate,
@@ -235,8 +242,13 @@ export const EditEffectPanel = (props) => {
                 setIsEndDateDirty(false);
             }
         } else {
-            updateDisruption({ endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '' });
+            const endDateValue = date.length ? moment(date[0]).format(DATE_FORMAT) : '';
+            updateDisruption({ endDate: endDateValue });
             setIsEndDateDirty(false);
+
+            if (endDateValue && isEmpty(disruption.endTime) && props.useAdditionalFrontendChanges) {
+                updateDisruption({ endTime: '23:59' });
+            }
         }
     };
 
@@ -309,14 +321,6 @@ export const EditEffectPanel = (props) => {
     const onDisruptionTypeUpdate = (key, disruptionType) => {
         updateDisruption({ disruptionType });
     };
-
-    const getOptionalLabel = label => (
-        <>
-            {label}
-            {' '}
-            <small className="text-muted">optional</small>
-        </>
-    );
 
     const setDisruptionStatus = (selectedStatus) => {
         if (disruption.status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.RESOLVED) {
@@ -409,14 +413,16 @@ export const EditEffectPanel = (props) => {
     };
 
     const isRequiredPropsEmpty = () => {
+        if (!disruption?.disruptionId) return true;
+
         const isPropsEmpty = some([disruption.startTime, disruption.startDate, disruption.impact, disruption.cause, disruption.header, disruption.severity], isEmpty);
         const isEndTimeRequiredAndEmpty = !disruption.recurrent && !isEmpty(disruption.endDate) && isEmpty(disruption.endTime);
-        const isWeekdayRequiredAndEmpty = disruption.recurrent && isEmpty(disruption.recurrencePattern.byweekday);
+        const isWeekdayRequiredAndEmpty = disruption.recurrent && isEmpty(disruption.recurrencePattern?.byweekday);
         return isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
     };
 
-    const affectedEntitySelected = () => disruption.affectedEntities.affectedRoutes.length > 0 || disruption.affectedEntities.affectedStops.length > 0;
-    const isRequiredDraftPropsEmpty = () => some([disruption.header, disruption.cause], isEmpty);
+    const affectedEntitySelected = () => disruption?.affectedEntities?.affectedRoutes?.length > 0 || disruption?.affectedEntities?.affectedStops?.length > 0;
+    const isRequiredDraftPropsEmpty = () => some([disruption?.header, disruption?.cause], isEmpty);
 
     const isSubmitDisabled = isRequiredPropsEmpty()
         || !startTimeValid()
@@ -424,7 +430,8 @@ export const EditEffectPanel = (props) => {
         || !endTimeValid()
         || !endDateValid()
         || !durationValid()
-        || !affectedEntitySelected();
+        || !affectedEntitySelected()
+        || !isUrlValid(disruption.url);
     const isDraftSubmitDisabled = isRequiredDraftPropsEmpty();
 
     const impacts = useAlertEffects();
@@ -467,10 +474,15 @@ export const EditEffectPanel = (props) => {
     };
 
     const removeNotFoundFromStopGroupsForAllDisruptions = () => {
+        if (!disruptions || !Array.isArray(disruptions)) {
+            return;
+        }
         disruptions.forEach((d) => {
-            const filterStops = d.affectedEntities.affectedStops.filter(stop => stop.stopCode !== 'Not Found');
-            if (filterStops.length !== d.affectedEntities.affectedStops.length) {
-                onAffectedEntitiesUpdate(d.key, 'affectedStops', filterStops);
+            if (Array.isArray(d?.affectedEntities?.affectedStops)) {
+                const filterStops = d.affectedEntities.affectedStops.filter(stop => stop.stopCode !== 'Not Found');
+                if (filterStops.length !== d.affectedEntities.affectedStops.length) {
+                    onAffectedEntitiesUpdate(d.key, 'affectedStops', filterStops);
+                }
             }
         });
     };
@@ -516,10 +528,13 @@ export const EditEffectPanel = (props) => {
     }, [requireMapUpdate]);
 
     useEffect(() => {
-        if (disruptionIncidentNoToEdit && disruptions && disruptions.length > 0) {
-            initDisruptionData();
-        } else {
-            setDisruption({ ...INIT_EFFECT_STATE });
+        if (disruptionIncidentNoToEdit) {
+            const disruptionToSet = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
+            setDisruption(disruptionToSet);
+            props.updateEditableDisruption(disruptionToSet);
+            setOriginalDisruption(disruptionToSet);
+            props.setDisruptionForWorkaroundEdit(disruptionToSet);
+            props.updateIsNotesRequiresToUpdateState();
         }
     }, [disruptionIncidentNoToEdit]);
 
@@ -596,38 +611,290 @@ export const EditEffectPanel = (props) => {
 
     const isApplyDisabled = disruption.status === STATUSES.DRAFT ? isDraftSubmitDisabled : isSubmitDisabled;
 
+    // Diversion-related logic
+    const diversionsCount = localDiversions.length;
+    const isAddDiversionEnabled = () => {
+        if (!disruption?.disruptionId) return false;
+
+        if (disruption.status === STATUSES.RESOLVED) {
+            return false;
+        }
+        const hasBusRoutes = disruption.affectedEntities?.affectedRoutes?.some(route => route.routeType === 3);
+        if (!hasBusRoutes) {
+            return false;
+        }
+        const validStatuses = [STATUSES.NOT_STARTED, STATUSES.IN_PROGRESS, STATUSES.DRAFT];
+        return validStatuses.includes(disruption.status);
+    };
+    const handleViewDiversions = () => {
+        setIsViewDiversionsModalOpen(true);
+    };
+    const handleAddDiversion = () => {
+        // Check if diversion manager is already open to prevent errors
+        if (!props.isDiversionManagerOpen) {
+            props.updateDiversionMode(EDIT_TYPE.CREATE);
+            props.openDiversionManager(true);
+        }
+    };
+
+    const handleMenuClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
     useEffect(() => {
         props.updateEffectValidationState(!isApplyDisabled);
     }, [isApplyDisabled]);
 
     useEffect(() => {
-        props.updateEffectValidationForPublishState(!isSubmitDisabled);
-    }, [isSubmitDisabled]);
-
-    useEffect(() => {
         props.updateIsEffectUpdatedState(isValuesChanged);
     }, [isValuesChanged]);
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (anchorEl && !event.target.closest('[data-diversion-menu]')) {
+                setAnchorEl(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [anchorEl]);
+
+    useEffect(() => {
+        const fetchDisruptionForDiversion = async () => {
+            if (props.isDiversionManagerOpen && disruption.disruptionId && !fetchedDisruption) {
+                setIsLoadingDisruption(true);
+                const disruptionData = await getDisruptionAPI(disruption.disruptionId);
+                setFetchedDisruption(disruptionData);
+                setIsLoadingDisruption(false);
+            }
+        };
+
+        fetchDisruptionForDiversion();
+    }, [props.isDiversionManagerOpen, disruption.disruptionId, fetchedDisruption]);
+
+    useEffect(() => {
+        if (!props.isDiversionManagerOpen) {
+            setFetchedDisruption(null);
+        }
+    }, [props.isDiversionManagerOpen]);
+
+    useEffect(() => {
+        if (props.isDiversionManagerOpen) {
+            setIsLoaderProtected(true);
+
+            const timeout = setTimeout(() => {
+                setIsLoaderProtected(false);
+            }, 2000);
+
+            return () => {
+                clearTimeout(timeout);
+            };
+        }
+        setIsLoaderProtected(false);
+        return undefined;
+    }, [props.isDiversionManagerOpen]);
+
+    useEffect(() => {
+        if (typeof document !== 'undefined') {
+            if (isLoaderProtected) {
+                document.body.classList.add('diversion-loading');
+            } else {
+                document.body.classList.remove('diversion-loading');
+            }
+        }
+
+        return () => {
+            if (typeof document !== 'undefined') {
+                document.body.classList.remove('diversion-loading');
+            }
+        };
+    }, [isLoaderProtected]);
+
+    // Prevent reopening diversion manager if already open
+    useEffect(() => {
+        if (props.isDiversionManagerOpen && !disruption?.disruptionId) {
+            props.openDiversionManager(false);
+        }
+    }, [props.isDiversionManagerOpen, disruption?.disruptionId]);
+
+    useEffect(() => {
+        const fetchDiversions = async () => {
+            if (!disruption?.disruptionId) {
+                setLocalDiversions([]);
+                return;
+            }
+
+            const data = await getDiversionAPI(disruption.disruptionId);
+            setLocalDiversions(data || []);
+        };
+        fetchDiversions();
+    }, [disruption?.disruptionId, shouldRefetchDiversions]);
+
+    useEffect(() => () => {
+        if (typeof document !== 'undefined') {
+            document.body.classList.remove('diversion-loading');
+        }
+        isMounted.current = false;
+        setDisruption({ ...INIT_EFFECT_STATE });
+        setLocalDiversions([]);
+        setIsLoadingDisruption(false);
+        setIsLoaderProtected(false);
+    }, []);
+
+    if (!disruptions || disruptions.length === 0) {
+        return null;
+    }
+
+    if (props.useDiversion && props.isDiversionManagerOpen) {
+        if (isLoadingDisruption) {
+            return <div>Loading...</div>;
+        }
+        if (!fetchedDisruption) {
+            return <div>Failed to load disruption data.</div>;
+        }
+        return (
+            <DiversionManager
+                disruption={ fetchedDisruption }
+                onCancelled={ () => {
+                    props.openDiversionManager(false);
+                    setShouldRefetchDiversions(prev => !prev);
+                } }
+            />
+        );
+    }
+
     return (
-        <div className={ `edit-effect-panel ${!props.isEditEffectPanelOpen ? 'pointer-event-none' : ''}` }>
+        <div className={ `edit-effect-panel ${!props.isEditEffectPanelOpen ? 'pointer-events-none' : ''}` }>
             { props.isEditEffectPanelOpen && (
                 <Paper component={ Stack } direction="column" justifyContent="center" className="mui-paper">
                     <div className="edit-effect-panel-body">
                         <div className="label-with-icon">
                             <h2 className="pl-4 pr-4 pt-4">{ `Edit details of Effect ${disruption.incidentNo}` }</h2>
-                            {' '}
-                            { props.isWorkaroundPanelOpen
-                                && (
-                                    <KeyboardDoubleArrowLeftIcon onClick={ closeWorkaroundPanel }
-                                        className="collapse-icon"
-                                        style={ { color: '#399CDB', fontSize: '48px' } } />
+                            <div style={ { display: 'flex', alignItems: 'center', gap: '10px' } }>
+                                {props.useDiversion && (
+                                    <div style={ { position: 'relative' } } data-diversion-menu>
+                                        <Button
+                                            className="diversion-button-custom"
+                                            onClick={ handleMenuClick }
+                                            style={ {
+                                                whiteSpace: 'nowrap',
+                                                minWidth: '120px',
+                                                fontWeight: 'bold',
+                                                fontSize: '16.8px',
+                                                padding: '8px 16px',
+                                                borderRadius: '4px',
+                                                boxShadow: '0 2px 4px rgba(0, 0, 0, .1)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor: '#1976d2',
+                                                borderColor: '#1976d2',
+                                                color: 'black',
+                                                transition: 'background-color 0.2s ease',
+                                            } }
+                                            onMouseEnter={ (e) => {
+                                                e.currentTarget.style.backgroundColor = '#1565c0';
+                                            } }
+                                            onMouseLeave={ (e) => {
+                                                e.currentTarget.style.backgroundColor = '#1976d2';
+                                            } }
+                                        >
+                                            <span style={ { color: 'black' } }>
+                                                Diversions(
+                                                { diversionsCount }
+                                                )
+                                            </span>
+                                            <img
+                                                src={ detourIcon }
+                                                alt="detour"
+                                                width="26"
+                                                height="26"
+                                                style={ { marginLeft: '8px' } }
+                                            />
+                                        </Button>
+                                        {anchorEl && (
+                                            <div
+                                                style={ {
+                                                    position: 'absolute',
+                                                    top: '100%',
+                                                    left: 0,
+                                                    backgroundColor: 'white',
+                                                    border: '1px solid #ccc',
+                                                    borderRadius: '4px',
+                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                                    zIndex: 1000,
+                                                    minWidth: '200px',
+                                                    marginTop: '4px',
+                                                } }
+                                            >
+                                                <button
+                                                    type="button"
+                                                    disabled={ !isAddDiversionEnabled() }
+                                                    style={ {
+                                                        padding: '8px 16px',
+                                                        cursor: isAddDiversionEnabled() ? 'pointer' : 'not-allowed',
+                                                        backgroundColor: isAddDiversionEnabled() ? 'white' : '#f5f5f5',
+                                                        color: isAddDiversionEnabled() ? '#333' : '#999',
+                                                        borderBottom: '1px solid #eee',
+                                                        border: 'none',
+                                                        width: '100%',
+                                                        textAlign: 'left',
+                                                    } }
+                                                    onClick={ isAddDiversionEnabled() ? handleAddDiversion : undefined }
+                                                    onMouseEnter={ (e) => {
+                                                        if (isAddDiversionEnabled()) {
+                                                            e.target.style.backgroundColor = '#f0f0f0';
+                                                        }
+                                                    } }
+                                                    onMouseLeave={ (e) => {
+                                                        if (isAddDiversionEnabled()) {
+                                                            e.target.style.backgroundColor = 'white';
+                                                        }
+                                                    } }
+                                                >
+                                                    Add Diversion
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    style={ {
+                                                        padding: '8px 16px',
+                                                        cursor: 'pointer',
+                                                        backgroundColor: 'white',
+                                                        color: '#333',
+                                                        border: 'none',
+                                                        width: '100%',
+                                                        textAlign: 'left',
+                                                    } }
+                                                    onClick={ handleViewDiversions }
+                                                    onMouseEnter={ (e) => {
+                                                        e.target.style.backgroundColor = '#f0f0f0';
+                                                    } }
+                                                    onMouseLeave={ (e) => {
+                                                        e.target.style.backgroundColor = 'white';
+                                                    } }
+                                                >
+                                                    View & Edit Diversions
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
-                            { !props.isWorkaroundPanelOpen
-                                && (
-                                    <KeyboardDoubleArrowRightIcon onClick={ openWorkaroundPanel }
-                                        className="collapse-icon"
-                                        style={ { color: '#399CDB', fontSize: '48px' } } />
-                                )}
+                                { props.isWorkaroundPanelOpen
+                                    && (
+                                        <KeyboardDoubleArrowLeftIcon onClick={ closeWorkaroundPanel }
+                                            className="collapse-icon"
+                                            style={ { color: '#399CDB', fontSize: '48px' } } />
+                                    )}
+                                { !props.isWorkaroundPanelOpen
+                                    && (
+                                        <KeyboardDoubleArrowRightIcon onClick={ openWorkaroundPanel }
+                                            className="collapse-icon"
+                                            style={ { color: '#399CDB', fontSize: '48px' } } />
+                                    )}
+                            </div>
                         </div>
                         <Form key="form" className="row my-3 p-4 incident-effect">
                             <div className="col-12">
@@ -657,7 +924,7 @@ export const EditEffectPanel = (props) => {
                                         value={ disruption.impact }
                                         options={ impacts }
                                         label={ LABEL_CUSTOMER_IMPACT }
-                                        invalid={ isImpactDirty && !impactValid() && disruption.status !== STATUSES.DRAFT }
+                                        invalid={ isImpactDirty && !impactValid() }
                                         feedback="Please select effect"
                                         disabled={ isResolved() }
                                         disabledClassName="background-color-for-disabled-fields"
@@ -676,8 +943,6 @@ export const EditEffectPanel = (props) => {
                                     <DisruptionDetailSelect
                                         id="disruption-detail__status"
                                         className=""
-                                        disabled={ disruption.status === STATUSES.DRAFT }
-                                        disabledClassName="background-color-for-disabled-fields"
                                         value={ disruption.status }
                                         options={ getStatusOptions(disruption.startDate, disruption.startTime, now, disruption.status) }
                                         label={ LABEL_STATUS }
@@ -835,9 +1100,9 @@ export const EditEffectPanel = (props) => {
                                         id="disruption-creation__wizard-select-details__severity"
                                         className=""
                                         value={ disruption.severity }
-                                        options={ SEVERITIES }
+                                        options={ getSeverityOptions(props.useAdditionalFrontendChanges) }
                                         label={ LABEL_SEVERITY }
-                                        invalid={ isSeverityDirty && !severityValid() && disruption.status !== STATUSES.DRAFT }
+                                        invalid={ isSeverityDirty && !severityValid() }
                                         feedback="Please select severity"
                                         disabled={ isResolved() }
                                         disabledClassName="background-color-for-disabled-fields"
@@ -852,6 +1117,28 @@ export const EditEffectPanel = (props) => {
                                     />
                                 </FormGroup>
                             </div>
+
+                            {!props.useAdditionalFrontendChanges && (
+                                <div className="col-12">
+                                    <FormGroup>
+                                        <Label for="disruption-detail__url">
+                                            <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
+                                        </Label>
+                                        <Input
+                                            id="disruption-detail__url"
+                                            className="w-100 border border-dark"
+                                            type="url"
+                                            maxLength={ URL_MAX_LENGTH }
+                                            value={ disruption.url || '' }
+                                            placeholder="e.g. https://at.govt.nz"
+                                            onChange={ event => updateDisruption({ url: event.target.value }) }
+                                            invalid={ !isUrlValid(disruption.url) }
+                                            disabled={ isResolved() }
+                                        />
+                                        <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
+                                    </FormGroup>
+                                </div>
+                            )}
 
                             <div className="col-12">
                                 <FormGroup>
@@ -923,7 +1210,7 @@ export const EditEffectPanel = (props) => {
                             </div>
                         </Form>
                     </div>
-                    <footer className="row m-0 justify-content-end p-4 position-fixed incident-footer-min-height">
+                    <footer className="row m-0 justify-content-end p-2 position-fixed incident-footer-min-height">
                         <div className="col-4">
                             <Button
                                 className="btn cc-btn-primary btn-block save-workaround"
@@ -976,6 +1263,18 @@ export const EditEffectPanel = (props) => {
                 isModalOpen={ props.isCancellationEffectOpen }>
                 <CancellationEffectModal discardChanges={ () => discardEffectChanges() } />
             </CustomModal>
+            {props.useDiversion && (
+                <ViewDiversionDetailModal
+                    disruption={ disruption }
+                    onClose={ () => setIsViewDiversionsModalOpen(false) }
+                    onEditDiversion={ () => {
+                        // Edit diversion handler
+                    } }
+                    isOpen={ isViewDiversionsModalOpen }
+                    setShouldRefetchDiversions={ setShouldRefetchDiversions }
+                    diversions={ localDiversions }
+                />
+            )}
         </div>
     );
 };
@@ -1013,7 +1312,11 @@ EditEffectPanel.propTypes = {
     updateEffectValidationState: PropTypes.func.isRequired,
     updateIsEffectUpdatedState: PropTypes.func.isRequired,
     useDisruptionNotePopup: PropTypes.bool,
-    updateEffectValidationForPublishState: PropTypes.func.isRequired,
+    useDiversion: PropTypes.bool,
+    openDiversionManager: PropTypes.func.isRequired,
+    updateDiversionMode: PropTypes.func.isRequired,
+    isDiversionManagerOpen: PropTypes.bool,
+    useAdditionalFrontendChanges: PropTypes.bool,
 };
 
 EditEffectPanel.defaultProps = {
@@ -1023,16 +1326,26 @@ EditEffectPanel.defaultProps = {
     workaroundsToSync: [],
     isCancellationEffectOpen: false,
     useDisruptionNotePopup: false,
+    useDiversion: false,
+    isDiversionManagerOpen: false,
+    useAdditionalFrontendChanges: false,
 };
 
 export default connect(state => ({
     isEditEffectPanelOpen: isEditEffectPanelOpen(state),
     disruptionIncidentNoToEdit: getDisruptionKeyToEditEffect(state),
     isWorkaroundPanelOpen: isWorkaroundPanelOpen(state),
+    isNotesRequiresToUpdate: isRequiresToUpdateNotes(state),
+    isWorkaroundsRequiresToUpdate: isWorkaroundsNeedsToBeUpdated(state),
     isEditEffectUpdateRequested: isEditEffectUpdateRequested(state),
     newDisruptionKey: getRequestedDisruptionKeyToUpdateEditEffect(state),
     isCancellationEffectOpen: isCancellationEffectModalOpen(state),
     useDisruptionNotePopup: useDisruptionNotePopup(state),
+    useDiversion: useDiversion(state),
+    state,
+    isDiversionManagerOpen: getIsDiversionManagerOpen(state),
+    isDataLoading: isDataLoading(state),
+    useAdditionalFrontendChanges: useAdditionalFrontendChanges(state),
 }), {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
@@ -1047,4 +1360,7 @@ export default connect(state => ({
     setRequestToUpdateEditEffectState,
     toggleIncidentModals,
     setRequestedDisruptionKeyToUpdateEditEffect,
+    openDiversionManager,
+    updateDiversionMode,
+    updateDataLoading,
 })(EditEffectPanel);

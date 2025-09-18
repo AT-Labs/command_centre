@@ -93,8 +93,8 @@ export const DISRUPTIONS_MESSAGE_TYPE = {
 };
 
 export const DEFAULT_SEVERITY = {
-    label: '',
-    value: '',
+    label: 'Unknown',
+    value: 'UNKNOWN',
 };
 
 export const SEVERITIES = [
@@ -119,11 +119,17 @@ export const SEVERITIES = [
         label: '1 (Minor)',
         value: 'MINOR',
     },
-    {
-        label: 'Unknown',
-        value: 'UNKNOWN',
-    },
 ];
+
+export const getSeverityOptions = (useAdditionalFrontendChanges) => {
+    if (useAdditionalFrontendChanges) {
+        return SEVERITIES;
+    }
+    return [
+        { label: 'Select severity...', value: '' },
+        ...SEVERITIES.slice(1), // Exclude DEFAULT_SEVERITY
+    ];
+};
 
 export const PASSENGER_IMPACT_RANGE = {
     LOWER_THAN_500: '<500',

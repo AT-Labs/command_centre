@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { connect } from 'react-redux';
 import { isEmpty, sortBy, uniqueId, some } from 'lodash-es';
 import PropTypes from 'prop-types';
@@ -11,11 +11,10 @@ import { RRule } from 'rrule';
 import { BsArrowRepeat } from 'react-icons/bs';
 import {
     getStopsByRoute as findStopsByRoute,
+    isEditEnabled,
     getIncidentToEdit,
-    getEditMode,
-    getMapDrawingEntities,
 } from '../../../../../redux/selectors/control/incidents';
-import { DISRUPTION_TYPE, STATUSES, SEVERITIES, DEFAULT_SEVERITY } from '../../../../../types/disruptions-types';
+import { DISRUPTION_TYPE, STATUSES, DEFAULT_SEVERITY, getSeverityOptions } from '../../../../../types/disruptions-types';
 import {
     updateCurrentStep,
     getStopsByRoute,
@@ -23,8 +22,6 @@ import {
     getRoutesByShortName,
     updateAffectedRoutesState,
     toggleIncidentModals,
-    clearAffectedRoutes,
-    clearAffectedStops,
 } from '../../../../../redux/actions/control/incidents';
 import Footer from './Footer';
 import { search } from '../../../../../redux/actions/search';
@@ -37,7 +34,7 @@ import {
     isDurationValid,
     getRecurrenceDates,
 } from '../../../../../utils/control/disruptions';
-import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
+import { useDraftDisruptions, useAdditionalFrontendChanges } from '../../../../../redux/selectors/appSettings';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
 import {
     LABEL_CUSTOMER_IMPACT,
@@ -62,9 +59,6 @@ import {
     parseRecurrencePattern } from '../../../../../utils/recurrence';
 import CustomMuiDialog from '../../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../../Common/ActivePeriods/ActivePeriods';
-import EDIT_TYPE from '../../../../../types/edit-types';
-
-import './SelectEffects.scss';
 
 const INIT_EFFECT_STATE = {
     key: '',
@@ -84,7 +78,7 @@ const INIT_EFFECT_STATE = {
     },
     createNotification: false,
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: DEFAULT_SEVERITY.value,
+    severity: '',
     isSeverityDirty: false,
     recurrent: false,
     duration: '',
@@ -117,11 +111,11 @@ export const SelectEffects = (props) => {
         }
         return {
             ...INIT_EFFECT_STATE,
-            startTime: incidentStartTime || now.format(TIME_FORMAT),
-            startDate: incidentStartDate || now.format(DATE_FORMAT),
+            startTime: incidentStartTime || (props.useAdditionalFrontendChanges ? now.format(TIME_FORMAT) : ''),
+            startDate: incidentStartDate || (props.useAdditionalFrontendChanges ? now.format(DATE_FORMAT) : ''),
             endTime: incidentEndTime || '',
             endDate: incidentEndDate || '',
-            severity: incidentSeverity || DEFAULT_SEVERITY.value,
+            severity: incidentSeverity || (props.useAdditionalFrontendChanges ? DEFAULT_SEVERITY.value : ''),
             cause: incidentCause || DEFAULT_CAUSE.value,
             header: incidentHeader || '',
             key: uniqueId('DISR'),
@@ -135,32 +129,28 @@ export const SelectEffects = (props) => {
         };
     };
     const maxActivePeriodsCount = 100;
-
-    const getInitialDisruptions = () => {
-        if (props.editMode !== EDIT_TYPE.ADD_EFFECT && props.data.disruptions.length > 0) {
-            return props.data.disruptions;
-        }
-        if (props.newIncidentEffect?.key) {
-            return [props.newIncidentEffect];
-        }
-        const newDisruption = setupDisruption();
-        props.effectAddedHandler(newDisruption.key);
-        return [newDisruption];
-    };
-    const [disruptions, setDisruptions] = useState(getInitialDisruptions);
+    const [disruptions, setDisruptions] = useState(props.data.disruptions.length > 0 ? props.data.disruptions : [setupDisruption()]);
     const [activePeriods, setActivePeriods] = useState([]);
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const impactValid = key => !isEmpty(disruptions.find(d => d.key === key).impact);
 
     const getDisruptionByKey = key => disruptions.find(d => d.key === key);
-    const updateDisruptionsState = () => {
-        if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
-            props.onDataUpdate('disruptions', disruptions);
-        } else {
-            props.updateNewIncidentEffect(disruptions[0]);
+    const updateDisruptionsState = () => props.onDataUpdate('disruptions', disruptions);
+
+    useEffect(() => {
+        if (isSubmitting && props.data.disruptions.length > 0) {
+            setIsSubmitting(false);
+            if (!props.isEditMode) {
+                props.onStepUpdate(3);
+                props.updateCurrentStep(1);
+                props.onSubmit();
+            } else {
+                props.onSubmitUpdate();
+            }
         }
-    };
+    }, [props.data.disruptions, isSubmitting]);
 
     const getOptionalLabel = label => (
         <>
@@ -239,7 +229,7 @@ export const SelectEffects = (props) => {
         return true;
     };
 
-    const isEndDateAndEndTimeValid = disruption => !isEmpty(disruption.endDate) && isEmpty(disruption.endTime);
+    const isEndDateAndEndTimeValid = disruption => !isEmpty(disruption.endDate) && !isEmpty(disruption.endTime);
 
     const isRequiredPropsEmpty = () => {
         const isPropsEmpty = disruptions.some(disruption => some([
@@ -250,22 +240,28 @@ export const SelectEffects = (props) => {
             disruption.severity,
             disruption.header], isEmpty));
         const isEndTimeRequiredAndEmpty = !incidentRecurrent
-            && disruptions.some(isEndDateAndEndTimeValid);
+            && disruptions.some(disruption => !isEndDateAndEndTimeValid(disruption));
         const isWeekdayRequiredAndEmpty = incidentRecurrent
-            && disruptions.some(disruption => isEmpty(disruption.recurrencePattern.byweekday));
+            && disruptions.some(disruption => isEmpty(disruption.recurrencePattern?.byweekday));
         return isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
     };
 
     const isRequiredDraftPropsEmpty = () => disruptions.some(disruption => some([disruption.header, disruption.cause], isEmpty));
 
-    const isSubmitDisabled = isRequiredPropsEmpty()
+    const isSubmitDisabled = useMemo(
+        () => isRequiredPropsEmpty()
         || !startTimeValidForAllDisruptions()
         || !startDateValidForAllDisruptions()
         || !endTimeValidForAllDisruptions()
         || !endDateValidForAllDisruptions()
         || !durationValidForAllDisruptions()
-        || !affectedEntitySelectedForAllDisruptions();
-    const isDraftSubmitDisabled = isRequiredDraftPropsEmpty();
+        || !affectedEntitySelectedForAllDisruptions(),
+        [disruptions, incidentRecurrent],
+    );
+    const isDraftSubmitDisabled = useMemo(
+        () => isRequiredDraftPropsEmpty(),
+        [disruptions],
+    );
 
     const onAffectedEntitiesUpdate = (disruptionKey, valueKey, affectedEntities) => {
         const updatedDisruptions = disruptions.map(disruption => (disruption.key === disruptionKey
@@ -280,24 +276,6 @@ export const SelectEffects = (props) => {
         setDisruptions(updatedDisruptions);
         setRequireMapUpdate(true);
     };
-
-    useEffect(() => {
-        props.onDataUpdate('disruptions', disruptions);
-    }, [disruptions]);
-
-    useEffect(() => {
-        setDisruptions(prevIncidentData => prevIncidentData.map(disruption => (disruption.key === props.selectedEffect
-            ? {
-                ...disruption,
-                affectedEntities: {
-                    affectedRoutes: props.mapDrawingEntities.filter(e => e.type === 'route'),
-                    affectedStops: props.mapDrawingEntities.filter(e => e.type === 'stop'),
-                },
-            }
-            : disruption)));
-        props.clearAffectedRoutes();
-        props.clearAffectedStops();
-    }, [props.mapDrawingEntities]);
 
     const removeNotFoundFromStopGroups = () => {
         disruptions.forEach((disruption) => {
@@ -323,23 +301,16 @@ export const SelectEffects = (props) => {
     }, [requireMapUpdate]);
 
     useEffect(() => {
-        if (props.effectToBeCleared) {
-            setDisruptions(prev => prev.map(d => (d.key === props.effectToBeCleared ? {
-                ...d,
-                affectedEntities: {
-                    affectedRoutes: [],
-                    affectedStops: [],
-                },
-            } : d)));
-            props.effectCleared();
+        if (!props.isEditMode) {
+            props.onUpdateEntitiesValidation(!isSubmitDisabled && activePeriodsValidForAllDisruptionsV2());
         }
-    }, [props.effectToBeCleared]);
+    }, [disruptions, isSubmitDisabled, props.isEditMode]);
 
     const onSaveDraft = () => {
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
         setTimeout(() => {
-            if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
+            if (!props.isEditMode) {
                 props.onStepUpdate(3);
                 props.onSubmitDraft();
             } else {
@@ -351,7 +322,7 @@ export const SelectEffects = (props) => {
     const onContinue = () => {
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
-        if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
+        if (!props.isEditMode) {
             props.onUpdateEntitiesValidation(!isSubmitDisabled && activePeriodsValidForAllDisruptionsV2());
             props.onStepUpdate(2);
             props.updateCurrentStep(3);
@@ -401,9 +372,7 @@ export const SelectEffects = (props) => {
     };
 
     const addDisruption = () => {
-        const newDisruption = setupDisruption();
-        setDisruptions(prev => [...prev, newDisruption]);
-        props.effectAddedHandler(newDisruption.key);
+        setDisruptions(prev => [...prev, setupDisruption()]);
     };
 
     const removeDisruption = (key) => {
@@ -438,7 +407,13 @@ export const SelectEffects = (props) => {
                 updateDisruption(key, { endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '', isEndDateDirty: false });
             }
         } else {
-            updateDisruption(key, { endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '', isEndDateDirty: false });
+            const endDateValue = date.length ? moment(date[0]).format(DATE_FORMAT) : '';
+            const disruption = getDisruptionByKey(key);
+            updateDisruption(key, { endDate: endDateValue, isEndDateDirty: false });
+
+            if (endDateValue && isEmpty(disruption.endTime) && props.useAdditionalFrontendChanges) {
+                updateDisruption(key, { endTime: '23:59' });
+            }
         }
     };
 
@@ -477,232 +452,217 @@ export const SelectEffects = (props) => {
     return (
         <div className="select_disruption">
             {disruptions.map(disruption => (
-                <div
-                    className={ `${props.selectedEffect === disruption.key ? 'active-incident-effect' : ''}` }
-                    key={ disruption.key }
-                    role="button"
-                    tabIndex={ 0 }
-                    onClick={ () => (props.selectedEffect !== disruption.key && props.updateSelectedEffect(disruption.key)) }
-                    onKeyDown={ (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            props.updateSelectedEffect(disruption.key);
-                        }
-                    } }
-                >
-                    <Form key={ `${disruption.key}_form` } className="row p-2 incident-effect">
-                        { disruptions.length > 1 && props.editMode !== EDIT_TYPE.ADD_EFFECT && (
-                            <div className="col-12">
-                                <FormGroup>
-                                    <button
-                                        type="button"
-                                        className="disruption-effect-button"
-                                        onClick={ () => removeDisruption(disruption.key) }>
-                                        <AiOutlineMinusCircle size={ 36 } color="grey" />
-                                    </button>
-                                </FormGroup>
-                            </div>
-                        )}
-                        <div className="col-6">
+                <Form key={ `${disruption.key}_form` } className="row my-3 p-4 incident-effect">
+                    { disruptions.length > 1 && (
+                        <div className="col-12">
                             <FormGroup>
-                                <DisruptionDetailSelect
-                                    id="disruption-creation__wizard-select-details__impact"
-                                    className=""
-                                    value={ disruption.impact }
-                                    options={ impacts }
-                                    label={ LABEL_CUSTOMER_IMPACT }
-                                    invalid={ disruption.isImpactDirty && !impactValid(disruption.key) }
-                                    feedback="Please select effect"
-                                    onBlur={ selectedItem => updateDisruption(disruption.key, { impact: selectedItem, isImpactDirty: true }) }
-                                    onChange={ selectedItem => updateDisruption(disruption.key, { impact: selectedItem, isImpactDirty: true }) } />
+                                <button
+                                    type="button"
+                                    className="disruption-effect-button"
+                                    onClick={ () => removeDisruption(disruption.key) }>
+                                    <AiOutlineMinusCircle size={ 36 } color="grey" />
+                                </button>
                             </FormGroup>
                         </div>
-                        <div className="col-6">
-                            <FormGroup>
-                                <DisruptionDetailSelect
-                                    id="disruption-creation__wizard-select-details__severity"
-                                    className=""
-                                    value={ disruption.severity }
-                                    options={ SEVERITIES }
-                                    label={ LABEL_SEVERITY }
-                                    invalid={ disruption.isSeverityDirty && !severityValid(disruption.key) }
-                                    feedback="Please select severity"
-                                    onBlur={ selectedItem => updateDisruption(disruption.key, { severity: selectedItem, isSeverityDirty: true }) }
-                                    onChange={ selectedItem => updateDisruption(disruption.key, { severity: selectedItem, isSeverityDirty: true }) }
-                                />
-                            </FormGroup>
-                        </div>
-                        <div className="col-6">
-                            <FormGroup className="position-relative">
-                                <Label for="disruption-creation__wizard-select-details__start-date">
-                                    <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
-                                </Label>
+                    )}
+                    <div className="col-6">
+                        <FormGroup>
+                            <DisruptionDetailSelect
+                                id="disruption-creation__wizard-select-details__impact"
+                                className=""
+                                value={ disruption.impact }
+                                options={ impacts }
+                                label={ LABEL_CUSTOMER_IMPACT }
+                                invalid={ disruption.isImpactDirty && !impactValid(disruption.key) }
+                                feedback="Please select effect"
+                                onBlur={ selectedItem => updateDisruption(disruption.key, { impact: selectedItem, isImpactDirty: true }) }
+                                onChange={ selectedItem => updateDisruption(disruption.key, { impact: selectedItem, isImpactDirty: true }) } />
+                        </FormGroup>
+                    </div>
+                    <div className="col-6">
+                        <FormGroup>
+                            <DisruptionDetailSelect
+                                id="disruption-creation__wizard-select-details__severity"
+                                className=""
+                                value={ disruption.severity }
+                                options={ getSeverityOptions(props.useAdditionalFrontendChanges) }
+                                label={ LABEL_SEVERITY }
+                                invalid={ disruption.isSeverityDirty && !severityValid(disruption.key) }
+                                feedback="Please select severity"
+                                onBlur={ selectedItem => updateDisruption(disruption.key, { severity: selectedItem, isSeverityDirty: true }) }
+                                onChange={ selectedItem => updateDisruption(disruption.key, { severity: selectedItem, isSeverityDirty: true }) }
+                            />
+                        </FormGroup>
+                    </div>
+                    <div className="col-6">
+                        <FormGroup className="position-relative">
+                            <Label for="disruption-creation__wizard-select-details__start-date">
+                                <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
+                            </Label>
+                            <Flatpickr
+                                key={ `${disruption.key}_start-date` }
+                                id="disruption-creation__wizard-select-details__start-date"
+                                className={ `font-weight-normal cc-form-control form-control ${disruption.isStartDateDirty ? 'is-invalid' : ''}` }
+                                value={ disruption.startDate }
+                                options={ datePickerOptions }
+                                placeholder="Select date"
+                                onChange={ date => onChangeStartDate(disruption.key, date) } />
+                            {!disruption.isStartDateDirty && (
+                                <FaRegCalendarAlt
+                                    className="disruption-creation__wizard-select-details__icon position-absolute"
+                                    size={ 22 } />
+                            )}
+                            {disruption.isStartDateDirty && (
+                                <div className="disruption-recurrence-invalid">Please select start date</div>
+                            )}
+                        </FormGroup>
+                        <FormGroup className="position-relative">
+                            <Label for="disruption-creation__wizard-select-details__end-date">
+                                <span className="font-size-md font-weight-bold">
+                                    {!incidentRecurrent ? getOptionalLabel(LABEL_END_DATE) : LABEL_END_DATE}
+                                </span>
+                            </Label>
+                            {!incidentRecurrent && (
                                 <Flatpickr
-                                    key={ `${disruption.key}_start-date` }
-                                    id="disruption-creation__wizard-select-details__start-date"
-                                    className={ `font-weight-normal cc-form-control form-control ${disruption.isStartDateDirty ? 'is-invalid' : ''}` }
-                                    value={ disruption.startDate }
-                                    options={ datePickerOptions }
-                                    placeholder="Select date"
-                                    onChange={ date => onChangeStartDate(disruption.key, date) } />
-                                {!disruption.isStartDateDirty && (
-                                    <FaRegCalendarAlt
-                                        className="disruption-creation__wizard-select-details__icon position-absolute"
-                                        size={ 22 } />
-                                )}
-                                {disruption.isStartDateDirty && (
-                                    <div className="disruption-recurrence-invalid">Please select start date</div>
-                                )}
-                            </FormGroup>
-                            <FormGroup className="position-relative">
-                                <Label for="disruption-creation__wizard-select-details__end-date">
-                                    <span className="font-size-md font-weight-bold">
-                                        {!incidentRecurrent ? getOptionalLabel(LABEL_END_DATE) : LABEL_END_DATE}
-                                    </span>
-                                </Label>
-                                {!incidentRecurrent && (
-                                    <Flatpickr
-                                        key={ `${disruption.key}_end-date` }
-                                        id="disruption-creation__wizard-select-details__end-date"
-                                        className={ `font-weight-normal cc-form-control form-control ${disruption.isEndDateDirty ? 'is-invalid' : ''}` }
-                                        value={ disruption.endDate }
-                                        options={ endDateDatePickerOptions(disruption.key) }
-                                        onChange={ date => onChangeEndDate(disruption.key, date, false) }
-                                        onOpen={ date => onBlurEndDate(disruption.key, date, false) }
-                                    />
-                                )}
-                                {incidentRecurrent && (
-                                    <Flatpickr
-                                        key={ `${disruption.key}_end-date` }
-                                        id="disruption-creation__wizard-select-details__end-date"
-                                        className={ `font-weight-normal cc-form-control form-control ${disruption.isEndDateDirty ? 'is-invalid' : ''}` }
-                                        value={ disruption.endDate }
-                                        options={ endDateDatePickerOptions(disruption.key) }
-                                        onChange={ date => onChangeEndDate(disruption.key, date, true) }
-                                        onOpen={ date => onBlurEndDate(disruption.key, date, true) }
-                                    />
-                                )}
-                                {!disruption.isEndDateDirty && (
-                                    <FaRegCalendarAlt
-                                        className="disruption-creation__wizard-select-details__icon position-absolute"
-                                        size={ 22 } />
-                                )}
-                                {disruption.isEndDateDirty && (
-                                    <span className="disruption-recurrence-invalid">Please select end date</span>
-                                )}
-                            </FormGroup>
-                        </div>
-                        <div className="col-6">
+                                    key={ `${disruption.key}_end-date` }
+                                    id="disruption-creation__wizard-select-details__end-date"
+                                    className={ `font-weight-normal cc-form-control form-control ${disruption.isEndDateDirty ? 'is-invalid' : ''}` }
+                                    value={ disruption.endDate }
+                                    options={ endDateDatePickerOptions(disruption.key) }
+                                    onChange={ date => onChangeEndDate(disruption.key, date, false) }
+                                    onOpen={ date => onBlurEndDate(disruption.key, date, false) }
+                                />
+                            )}
+                            {incidentRecurrent && (
+                                <Flatpickr
+                                    key={ `${disruption.key}_end-date` }
+                                    id="disruption-creation__wizard-select-details__end-date"
+                                    className={ `font-weight-normal cc-form-control form-control ${disruption.isEndDateDirty ? 'is-invalid' : ''}` }
+                                    value={ disruption.endDate }
+                                    options={ endDateDatePickerOptions(disruption.key) }
+                                    onChange={ date => onChangeEndDate(disruption.key, date, true) }
+                                    onOpen={ date => onBlurEndDate(disruption.key, date, true) }
+                                />
+                            )}
+                            {!disruption.isEndDateDirty && (
+                                <FaRegCalendarAlt
+                                    className="disruption-creation__wizard-select-details__icon position-absolute"
+                                    size={ 22 } />
+                            )}
+                            {disruption.isEndDateDirty && (
+                                <span className="disruption-recurrence-invalid">Please select end date</span>
+                            )}
+                        </FormGroup>
+                    </div>
+                    <div className="col-6">
+                        <FormGroup>
+                            <Label for="disruption-creation__wizard-select-details__start-time">
+                                <span className="font-size-md font-weight-bold">{LABEL_START_TIME}</span>
+                            </Label>
+                            <Input
+                                id="disruption-creation__wizard-select-details__start-time"
+                                className="border border-dark"
+                                value={ disruption.startTime }
+                                onChange={ event => updateDisruption(disruption.key, { startTime: event.target.value, isStartTimeDirty: false }) }
+                                invalid={ (props.useDraftDisruptions ? (!disruption.isStartTimeDirty && !startTimeValid(disruption.key)) : !startTimeValid(disruption.key)) }
+                            />
+                            <FormFeedback>Not valid values</FormFeedback>
+                        </FormGroup>
+                        {!incidentRecurrent && (
                             <FormGroup>
-                                <Label for="disruption-creation__wizard-select-details__start-time">
-                                    <span className="font-size-md font-weight-bold">{LABEL_START_TIME}</span>
+                                <Label for="disruption-creation__wizard-select-details__end-time">
+                                    <span className="font-size-md font-weight-bold">{getOptionalLabel(LABEL_END_TIME)}</span>
                                 </Label>
                                 <Input
-                                    id="disruption-creation__wizard-select-details__start-time"
+                                    id="disruption-creation__wizard-select-details__end-time"
                                     className="border border-dark"
-                                    value={ disruption.startTime }
-                                    onChange={ event => updateDisruption(disruption.key, { startTime: event.target.value, isStartTimeDirty: false }) }
-                                    invalid={ (props.useDraftDisruptions ? (!disruption.isStartTimeDirty && !startTimeValid(disruption.key)) : !startTimeValid(disruption.key)) }
+                                    value={ disruption.endTime }
+                                    onChange={ event => updateDisruption(disruption.key, { endTime: event.target.value }) }
+                                    invalid={ !endTimeValid(disruption.key) }
                                 />
                                 <FormFeedback>Not valid values</FormFeedback>
                             </FormGroup>
-                            {!incidentRecurrent && (
-                                <FormGroup>
-                                    <Label for="disruption-creation__wizard-select-details__end-time">
-                                        <span className="font-size-md font-weight-bold">{getOptionalLabel(LABEL_END_TIME)}</span>
-                                    </Label>
-                                    <Input
-                                        id="disruption-creation__wizard-select-details__end-time"
-                                        className="border border-dark"
-                                        value={ disruption.endTime }
-                                        onChange={ event => updateDisruption(disruption.key, { endTime: event.target.value }) }
-                                        invalid={ !endTimeValid(disruption.key) }
-                                    />
-                                    <FormFeedback>Not valid values</FormFeedback>
-                                </FormGroup>
-                            )}
-                            { incidentRecurrent && (
-                                <FormGroup>
-                                    <Label for="disruption-creation__wizard-select-details__duration">
-                                        <span className="font-size-md font-weight-bold">{LABEL_DURATION_HOURS}</span>
-                                    </Label>
-                                    <Input
-                                        id="disruption-creation__wizard-select-details__duration"
-                                        className="border border-dark"
-                                        value={ disruption.duration }
-                                        onChange={ event => updateDisruption(disruption.key, { duration: event.target.value }) }
-                                        invalid={ disruption.isDurationDirty && !durationValid(disruption.key) }
-                                        onBlur={ () => updateDisruption(disruption.key, { isDurationDirty: true }) }
-                                        type="number"
-                                        min="1"
-                                        max="24"
-                                    />
-                                    <FormFeedback>Not valid duration</FormFeedback>
-                                </FormGroup>
-                            )}
-                        </div>
-                        { incidentRecurrent && (
-                            <>
-                                <div className="col-6 text-center">
-                                    <WeekdayPicker
-                                        selectedWeekdays={ disruption.recurrencePattern.byweekday || [] }
-                                        onUpdate={ byweekday => onUpdateRecurrencePattern(disruption.key, byweekday) }
-                                    />
-                                </div>
-                                <div className="col-6 pb-3 text-center">
-                                    <Button disabled={ isViewAllDisabled(disruption.key) }
-                                        className="showActivePeriods btn btn-secondary lh-1"
-                                        onClick={ () => displayActivePeriods(disruption.key) }>
-                                        View All
-                                    </Button>
-                                </div>
-                                { (props.useDraftDisruptions
-                                    ? (!isEmpty(disruption.recurrencePattern.byweekday) && activePeriodsValidV2(disruption.key))
-                                    : !isEmpty(disruption.recurrencePattern.byweekday)) && (
-                                    <div className="col-12 mb-3">
-                                        <BsArrowRepeat size={ 22 } />
-                                        <span className="pl-1">{ getRecurrenceText(disruption.recurrencePattern) }</span>
-                                    </div>
-                                )}
-                                { (props.useDraftDisruptions
-                                    ? (disruption.isRecurrencePatternDirty && (isEmpty(disruption.recurrencePattern.byweekday) || !activePeriodsValidV2(disruption.key)))
-                                    : (disruption.isRecurrencePatternDirty && isEmpty(disruption.recurrencePattern.byweekday))) && (
-                                    <div className="col-12 mb-3">
-                                        <span className="disruption-recurrence-invalid">Please select recurrence</span>
-                                    </div>
-                                )}
-                            </>
                         )}
-                        <div className="col-12">
-                            <FormGroup className="disruption-creation__checkbox">
+                        { incidentRecurrent && (
+                            <FormGroup>
+                                <Label for="disruption-creation__wizard-select-details__duration">
+                                    <span className="font-size-md font-weight-bold">{LABEL_DURATION_HOURS}</span>
+                                </Label>
                                 <Input
-                                    type="checkbox"
-                                    className="ml-0"
-                                    onChange={ event => updateDisruption(disruption.key, { createNotification: event.currentTarget.checked }) }
-                                    checked={ disruption.createNotification }
+                                    id="disruption-creation__wizard-select-details__duration"
+                                    className="border border-dark"
+                                    value={ disruption.duration }
+                                    onChange={ event => updateDisruption(disruption.key, { duration: event.target.value }) }
+                                    invalid={ disruption.isDurationDirty && !durationValid(disruption.key) }
+                                    onBlur={ () => updateDisruption(disruption.key, { isDurationDirty: true }) }
+                                    type="number"
+                                    min="1"
+                                    max="24"
                                 />
-                                <span className="pl-2">Draft Stop Message</span>
+                                <FormFeedback>Not valid duration</FormFeedback>
                             </FormGroup>
-                        </div>
-                        <div className="disruption-display-block">
-                            <SelectEffectEntities
-                                disruptionKey={ disruption.key }
-                                affectedEntities={ disruption.affectedEntities }
-                                onAffectedEntitiesUpdate={ onAffectedEntitiesUpdate }
-                                resetAffectedEntities={ resetAffectedEntities }
-                                disruptionType={ disruption.disruptionType }
-                                onDisruptionTypeUpdate={ onDisruptionTypeUpdate } />
-                        </div>
-                    </Form>
-                </div>
+                        )}
+                    </div>
+                    { incidentRecurrent && (
+                        <>
+                            <div className="col-6 text-center">
+                                <WeekdayPicker
+                                    selectedWeekdays={ disruption.recurrencePattern.byweekday || [] }
+                                    onUpdate={ byweekday => onUpdateRecurrencePattern(disruption.key, byweekday) }
+                                />
+                            </div>
+                            <div className="col-6 pb-3 text-center">
+                                <Button disabled={ isViewAllDisabled(disruption.key) }
+                                    className="showActivePeriods btn btn-secondary lh-1"
+                                    onClick={ () => displayActivePeriods(disruption.key) }>
+                                    View All
+                                </Button>
+                            </div>
+                            { (props.useDraftDisruptions
+                                ? (!isEmpty(disruption.recurrencePattern.byweekday) && activePeriodsValidV2(disruption.key))
+                                : !isEmpty(disruption.recurrencePattern.byweekday)) && (
+                                <div className="col-12 mb-3">
+                                    <BsArrowRepeat size={ 22 } />
+                                    <span className="pl-1">{ getRecurrenceText(disruption.recurrencePattern) }</span>
+                                </div>
+                            )}
+                            { (props.useDraftDisruptions
+                                ? (disruption.isRecurrencePatternDirty && (isEmpty(disruption.recurrencePattern.byweekday) || !activePeriodsValidV2(disruption.key)))
+                                : (disruption.isRecurrencePatternDirty && isEmpty(disruption.recurrencePattern.byweekday))) && (
+                                <div className="col-12 mb-3">
+                                    <span className="disruption-recurrence-invalid">Please select recurrence</span>
+                                </div>
+                            )}
+                        </>
+                    )}
+                    <div className="col-12">
+                        <FormGroup className="disruption-creation__checkbox">
+                            <Input
+                                type="checkbox"
+                                className="ml-0"
+                                onChange={ event => updateDisruption(disruption.key, { createNotification: event.currentTarget.checked }) }
+                                checked={ disruption.createNotification }
+                            />
+                            <span className="pl-2">Draft Stop Message</span>
+                        </FormGroup>
+                    </div>
+                    <div className="disruption-display-block">
+                        <SelectEffectEntities
+                            disruptionKey={ disruption.key }
+                            affectedEntities={ disruption.affectedEntities }
+                            onAffectedEntitiesUpdate={ onAffectedEntitiesUpdate }
+                            resetAffectedEntities={ resetAffectedEntities }
+                            disruptionType={ disruption.disruptionType }
+                            onDisruptionTypeUpdate={ onDisruptionTypeUpdate } />
+                    </div>
+                </Form>
             ))}
-            {props.editMode !== EDIT_TYPE.ADD_EFFECT && (
-                <button
-                    type="button"
-                    className="disruption-effect-button add-disruption-button"
-                    onClick={ addDisruption }>
-                    <AiOutlinePlusCircle size={ 36 } color="grey" />
-                </button>
-            )}
+            <button
+                type="button"
+                className="disruption-effect-button add-disruption-button"
+                onClick={ addDisruption }>
+                <AiOutlinePlusCircle size={ 36 } color="grey" />
+            </button>
 
             <Footer
                 updateCurrentStep={ props.updateCurrentStep }
@@ -710,11 +670,28 @@ export const SelectEffects = (props) => {
                 toggleIncidentModals={ props.toggleIncidentModals }
                 nextButtonValue="Continue"
                 onContinue={ () => onContinue() }
-                isSubmitDisabled={ props.useDraftDisruptions && props.editMode !== EDIT_TYPE.ADD_EFFECT ? isDraftSubmitDisabled : isSubmitDisabled }
+                isSubmitDisabled={ props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
                 isDraftSubmitDisabled={ isDraftSubmitDisabled }
-                isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || props.editMode !== EDIT_TYPE.ADD_EFFECT }
+                isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || !props.isEditMode }
                 onSubmitDraft={ () => onSaveDraft() }
-                onBack={ props.editMode !== EDIT_TYPE.ADD_EFFECT ? onBack : undefined }
+                onBack={ !props.isEditMode ? onBack : undefined }
+                showFinishButton={ props.useAdditionalFrontendChanges }
+                isAddEffectsStep
+                additionalFrontendChangesEnabled={ props.useAdditionalFrontendChanges }
+                isFinishDisabled={ props.useDraftDisruptions ? props.isFinishDisabled : false }
+                finishButtonValue={ (() => {
+                    if (isSubmitting) return 'Saving...';
+                    if (props.isEditMode) return 'Save';
+                    return 'Finish';
+                })() }
+                onFinish={ () => {
+                    if (isSubmitting || (props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled)) {
+                        return;
+                    }
+                    removeNotFoundFromStopGroups();
+                    updateDisruptionsState();
+                    setIsSubmitting(true);
+                } }
             />
             <CustomMuiDialog
                 title="Disruption Active Periods"
@@ -731,50 +708,39 @@ SelectEffects.propTypes = {
     onDataUpdate: PropTypes.func.isRequired,
     onSubmitDraft: PropTypes.func,
     onSubmitUpdate: PropTypes.func,
+    onSubmit: PropTypes.func,
     updateCurrentStep: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
     updateAffectedRoutesState: PropTypes.func.isRequired,
     getRoutesByShortName: PropTypes.func.isRequired,
+    isEditMode: PropTypes.bool,
     toggleIncidentModals: PropTypes.func.isRequired,
     data: PropTypes.object,
     onUpdateEntitiesValidation: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
-    editMode: PropTypes.string,
-    updateNewIncidentEffect: PropTypes.func,
-    newIncidentEffect: PropTypes.object,
-    selectedEffect: PropTypes.string,
-    updateSelectedEffect: PropTypes.func,
-    mapDrawingEntities: PropTypes.arrayOf(PropTypes.object).isRequired,
-    effectAddedHandler: PropTypes.func,
-    effectToBeCleared: PropTypes.string,
-    effectCleared: PropTypes.func,
-    clearAffectedRoutes: PropTypes.func.isRequired,
-    clearAffectedStops: PropTypes.func.isRequired,
+    useAdditionalFrontendChanges: PropTypes.bool,
+    isFinishDisabled: PropTypes.bool,
 };
 
 SelectEffects.defaultProps = {
     onSubmitDraft: () => { },
     onSubmitUpdate: () => { },
+    onSubmit: () => { },
     onUpdateEntitiesValidation: () => { },
+    isEditMode: false,
     useDraftDisruptions: false,
+    useAdditionalFrontendChanges: false,
+    isFinishDisabled: false,
     data: {},
-    editMode: EDIT_TYPE.CREATE,
-    updateNewIncidentEffect: () => { },
-    newIncidentEffect: {},
-    selectedEffect: null,
-    updateSelectedEffect: () => { },
-    effectAddedHandler: () => { },
-    effectToBeCleared: null,
-    effectCleared: () => { },
 };
 
 export default connect(state => ({
     findStopsByRoute: findStopsByRoute(state),
+    isEditMode: isEditEnabled(state),
     disruptionToEdit: getIncidentToEdit(state),
     searchResults: getSearchResults(state),
     useDraftDisruptions: useDraftDisruptions(state),
-    editMode: getEditMode(state),
-    mapDrawingEntities: getMapDrawingEntities(state),
+    useAdditionalFrontendChanges: useAdditionalFrontendChanges(state),
 }), {
     updateCurrentStep,
     getStopsByRoute,
@@ -783,6 +749,4 @@ export default connect(state => ({
     updateAffectedRoutesState,
     toggleIncidentModals,
     search,
-    clearAffectedRoutes,
-    clearAffectedStops,
 })(SelectEffects);

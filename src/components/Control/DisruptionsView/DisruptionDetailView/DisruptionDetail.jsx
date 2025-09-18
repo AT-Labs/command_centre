@@ -3,7 +3,7 @@ import { connect, useDispatch } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
-import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap';
+import { Button, Form, FormGroup, Input, Label, FormFeedback } from 'reactstrap';
 import { toString, omit, some, isEmpty, uniqBy, uniqWith } from 'lodash-es';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { BsArrowRepeat } from 'react-icons/bs';
@@ -96,7 +96,7 @@ import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import { ShapeLayer } from '../../../Common/Map/ShapeLayer/ShapeLayer';
 import { SelectedStopsMarker } from '../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import { DisruptionPassengerImpactGridModal } from '../DisruptionDetail/DisruptionPassengerImpactGridModal';
-import { useDraftDisruptions, usePassengerImpact } from '../../../../redux/selectors/appSettings';
+import { useDraftDisruptions, usePassengerImpact, useAdditionalFrontendChanges } from '../../../../redux/selectors/appSettings';
 import { updateActiveControlEntityId } from '../../../../redux/actions/navigation';
 import { shareToEmail } from '../../../../utils/control/disruption-sharing';
 import { reportError } from '../../../../redux/actions/activity';
@@ -107,6 +107,14 @@ import { updateDiversionMode, openDiversionManager, updateDiversionToEdit } from
 import { getDiversion as getDiversionAPI } from '../../../../utils/transmitters/disruption-mgt-api';
 
 const { STOP } = SEARCH_RESULT_TYPE;
+
+const getOptionalLabel = label => (
+    <>
+        {label}
+        {' '}
+        <small className="text-muted">optional</small>
+    </>
+);
 
 const DisruptionDetailView = (props) => {
     const { disruption, isRequesting, resultDisruptionId, isLoading, isReadOnlyMode } = props;
@@ -386,14 +394,6 @@ const DisruptionDetailView = (props) => {
         return startDateValid();
     };
 
-    const getOptionalLabel = label => (
-        <>
-            {label}
-            {' '}
-            <small className="text-muted">optional</small>
-        </>
-    );
-
     const causeAndImpactAreValid = causes.find(c => c.value === cause) && impacts.find(i => i.value === impact);
     const causeAndImpactAreValidForDraft = () => {
         const causeIsValid = causes.some(c => c.value === cause);
@@ -588,6 +588,7 @@ const DisruptionDetailView = (props) => {
                         editAction={ affectedEntitiesEditActionHandler }
                         addDiversionAction={ addDiversion }
                         isEditDisabled={ isRequesting || isLoading || isResolved() || isReadOnlyMode }
+                        isDiversionManagerLoading={ props.isDiversionManagerLoading }
                         affectedEntities={ disruption.affectedEntities }
                         startTime={ disruption.startTime }
                         endTime={ disruption.endTime }
@@ -767,21 +768,23 @@ const DisruptionDetailView = (props) => {
                     <section className="col-6">
                         <div className="row">
                             <div className="col-6">
-                                <FormGroup className="mt-2">
-                                    <Label for="disruption-detail__url">
-                                        <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
-                                    </Label>
-                                    <Input id="disruption-detail__url"
-                                        className="border border-dark"
-                                        value={ url }
-                                        disabled={ isResolved() || isReadOnlyMode }
-                                        onChange={ e => setUrl(e.currentTarget.value) }
-                                        placeholder="e.g. https://at.govt.nz"
-                                        maxLength={ URL_MAX_LENGTH }
-                                        invalid={ !isUrlValid(url) }
-                                    />
-                                    <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
-                                </FormGroup>
+                                {!props.useAdditionalFrontendChanges && (
+                                    <FormGroup className="mt-2">
+                                        <Label for="disruption-detail__url">
+                                            <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
+                                        </Label>
+                                        <Input id="disruption-detail__url"
+                                            className="border border-dark"
+                                            value={ url }
+                                            disabled={ isResolved() || isReadOnlyMode }
+                                            onChange={ e => setUrl(e.currentTarget.value) }
+                                            placeholder="e.g. https://at.govt.nz"
+                                            maxLength={ URL_MAX_LENGTH }
+                                            invalid={ !isUrlValid(url) }
+                                        />
+                                        <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
+                                    </FormGroup>
+                                )}
                             </div>
                             <div className="col-6">
                                 <FormGroup className="mt-2">
@@ -1000,6 +1003,8 @@ DisruptionDetailView.propTypes = {
     boundsToFit: PropTypes.array.isRequired,
     usePassengerImpact: PropTypes.bool.isRequired,
     useDraftDisruptions: PropTypes.bool.isRequired,
+    useAdditionalFrontendChanges: PropTypes.bool.isRequired,
+    isDiversionManagerLoading: PropTypes.bool,
     isReadOnlyMode: PropTypes.bool,
     actions: PropTypes.objectOf(PropTypes.func).isRequired,
 };
@@ -1010,6 +1015,7 @@ DisruptionDetailView.defaultProps = {
     resultDisruptionId: null,
     routeColors: [],
     className: 'disruption-details__page',
+    isDiversionManagerLoading: false,
     isReadOnlyMode: false,
 };
 
@@ -1043,4 +1049,5 @@ export default connect(state => ({
     usePassengerImpact: usePassengerImpact(state),
     isRequesting: getDisruptionAction(state)?.isRequesting,
     useDraftDisruptions: useDraftDisruptions(state),
+    useAdditionalFrontendChanges: useAdditionalFrontendChanges(state),
 }), mapDispatchToProps)(DisruptionDetailView);

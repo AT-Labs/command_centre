@@ -6,7 +6,6 @@ import { SelectEffects } from './SelectEffects';
 import Footer from './Footer';
 import SelectEffectEntities from './SelectEffectEntities';
 import * as controlUtils from '../../../../../utils/control/alert-cause-effect';
-import EDIT_TYPE from '../../../../../types/edit-types';
 
 let sandbox;
 let wrapper;
@@ -100,13 +99,9 @@ const componentPropsMock = {
     updateAffectedRoutesState: jest.fn(),
     getRoutesByShortName: jest.fn(),
     affectedRoutes: [],
-    editMode: EDIT_TYPE.CREATE,
+    isEditMode: false,
     stopGroups: {},
     onUpdateEntitiesValidation: jest.fn(),
-    newIncidentEffect: {},
-    updateNewIncidentEffect: jest.fn(),
-    clearAffectedRoutes: jest.fn(),
-    clearAffectedStops: jest.fn(),
 };
 controlUtils.useAlertEffects.mockReturnValue([impacts]);
 
@@ -158,32 +153,6 @@ describe('<SelectEffects />', () => {
         expect(wrapper.find('#disruption-creation__wizard-select-details__end-date').props().value).toBe('10/03/2022');
         expect(wrapper.find('Input#disruption-creation__wizard-select-details__start-time').props().value).toBe('06:00');
         expect(wrapper.find('Input#disruption-creation__wizard-select-details__end-time').props().value).toBe('06:00');
-    });
-
-    it('Should render with valid init value for add effect mode', () => {
-        const data = {
-            ...mockIncident,
-            recurrent: false,
-            disruptions: [{ ...mockDisruption, recurrent: false }],
-        };
-        wrapper = setup({ data, editMode: EDIT_TYPE.ADD_EFFECT });
-        expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(impacts[0].value); // default value
-        expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe('MINOR'); // values from incident below
-        expect(wrapper.find('#disruption-creation__wizard-select-details__start-date').props().value).toBe('09/03/2022');
-        expect(wrapper.find('#disruption-creation__wizard-select-details__end-date').props().value).toBe('10/03/2022');
-        expect(wrapper.find('Input#disruption-creation__wizard-select-details__start-time').props().value).toBe('06:00');
-        expect(wrapper.find('Input#disruption-creation__wizard-select-details__end-time').props().value).toBe('06:00');
-    });
-
-    it('Should render with valid value from newIncidentEffect', () => {
-        const data = {
-            ...mockIncident,
-            recurrent: false,
-            disruptions: [{ ...mockDisruption, recurrent: false }],
-        };
-        wrapper = setup({ data, editMode: EDIT_TYPE.ADD_EFFECT, newIncidentEffect: { ...mockDisruption, impact: impacts[4].value, severity: 'HEADLINE', key: 'DISR321' } });
-        expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(impacts[4].value);
-        expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe('HEADLINE');
     });
 
     describe('Submit button', () => {
@@ -312,18 +281,6 @@ describe('<SelectEffects />', () => {
             wrapper = setup({ data });
             const footer = wrapper.find(Footer);
             expect(footer.prop('isSubmitDisabled')).toEqual(false);
-        });
-
-        it('Should fire step update and updateNewIncidentEffect when next button is clicked whe is add effect mode', () => {
-            data.recurrent = false;
-            data.disruptions = [{ ...mockDisruption, recurrent: false }];
-            wrapper = setup({ data, editMode: EDIT_TYPE.ADD_EFFECT, newIncidentEffect: { ...mockDisruption, impact: impacts[4].value, severity: 'HEADLINE', key: 'DISR321' } });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('nextButtonValue')).toEqual('Continue');
-            footer.renderProp('onContinue')();
-            expect(componentPropsMock.updateNewIncidentEffect).toHaveBeenCalled();
-            expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(1);
-            expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(3);
         });
 
         it('Should fire step update when next button is clicked', () => {

@@ -276,14 +276,6 @@ export const publishDraftIncident = incident => async (dispatch) => {
     return response;
 };
 
-export const clearAffectedRoutes = () => (dispatch) => {
-    dispatch(updateAffectedRoutesState([]));
-};
-
-export const clearAffectedStops = () => (dispatch) => {
-    dispatch(updateAffectedStopsState([]));
-};
-
 export const createNewIncident = incident => async (dispatch, getState) => {
     let response;
     const state = getState();
@@ -612,13 +604,6 @@ export const setRequestToUpdateEditEffectState = requestToUpdateEditEffect => ({
     },
 });
 
-export const setMapDrawingEntities = mapDrawingEntities => ({
-    type: ACTION_TYPE.UPDATE_MAP_DRAWING_ENTITIES,
-    payload: {
-        mapDrawingEntities,
-    },
-});
-
 export const setRequestedDisruptionKeyToUpdateEditEffect = requestedDisruptionKeyToUpdateEditEffect => ({
     type: ACTION_TYPE.SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT,
     payload: {
@@ -702,7 +687,6 @@ const geographySearchRoutes = searchBody => async (dispatch, getState) => {
     const newAffectedRoutes = [...new Set(existingAffectedRoutes.concat(enrichedRoutes))];
     dispatch(updateAffectedRoutesState(newAffectedRoutes));
     dispatch(getRoutesByShortName(newAffectedRoutes));
-    dispatch(setMapDrawingEntities(newAffectedRoutes));
 };
 
 const geographySearchStops = searchBody => async (dispatch, getState) => {
@@ -729,7 +713,6 @@ const geographySearchStops = searchBody => async (dispatch, getState) => {
     const existingAffectedStops = getAffectedStops(getState());
     const newAffectedStops = [...new Set(existingAffectedStops.concat(enrichedStops))];
     dispatch(updateAffectedStopsState(newAffectedStops));
-    dispatch(setMapDrawingEntities(newAffectedStops));
 };
 
 export const searchByDrawing = (incidentType, content) => async (dispatch) => {
@@ -829,8 +812,7 @@ export const setDisruptionForWorkaroundEdit = disruptionForWorkaroundEdit => (di
     });
 };
 
-export const updateIncident = (incident, isAddEffect = false) => async (dispatch) => {
-    dispatch(updateLoadingIncidentForEditState(true));
+export const updateIncident = incident => async (dispatch) => {
     const { incidentId, createNotification } = incident;
     dispatch(updateRequestingIncidentState(true, incidentId));
 
@@ -845,17 +827,8 @@ export const updateIncident = (incident, isAddEffect = false) => async (dispatch
     } catch (error) {
         dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
     } finally {
-        if (isAddEffect) {
-            dispatch(updateEditMode(EDIT_TYPE.EDIT));
-            dispatch(updateCurrentStep(1));
-            dispatch(setIncidentToUpdate(incidentId, undefined, true));
-        } else {
-            dispatch(deleteAffectedEntities());
-            dispatch(openCreateIncident(false));
-            dispatch(toggleIncidentModals('isApplyChangesOpen', false));
-            dispatch(updateLoadingIncidentForEditState(false));
-        }
         dispatch(updateRequestingIncidentState(false, incidentId));
+        dispatch(deleteAffectedEntities());
         dispatch(toggleWorkaroundPanel(false));
         dispatch(updateDisruptionKeyToWorkaroundEdit(''));
         dispatch(toggleEditEffectPanel(false));
@@ -866,10 +839,3 @@ export const updateIncident = (incident, isAddEffect = false) => async (dispatch
 
     return result;
 };
-
-export const updateSelectedEffect = selectedEffect => ({
-    type: ACTION_TYPE.UPDATE_SELECTED_EFFECT,
-    payload: {
-        selectedEffect,
-    },
-});
