@@ -767,8 +767,8 @@ const DisruptionDetailView = (props) => {
                 <div className="row mt-3">
                     <section className="col-6">
                         <div className="row">
-                            {!props.useAdditionalFrontendChanges && (
-                                <div className="col-6">
+                            <div className="col-6">
+                                {!props.useAdditionalFrontendChanges && (
                                     <FormGroup className="mt-2">
                                         <Label for="disruption-detail__url">
                                             <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
@@ -784,8 +784,8 @@ const DisruptionDetailView = (props) => {
                                         />
                                         <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
                                     </FormGroup>
-                                </div>
-                            )}
+                                )}
+                            </div>
                             <div className="col-6">
                                 <FormGroup className="mt-2">
                                     <DisruptionDetailSelect
