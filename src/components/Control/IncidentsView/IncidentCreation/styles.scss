@@ -92,20 +92,6 @@
             cursor: pointer;
         }
 
-        .add-effect-button-wrapper {
-            width: 100%;
-            justify-content: end;
-            display: flex;
-
-            .add-effect-button {
-                float: right;
-                color: #399CDB;
-                border: 0 !important;
-                background-color: transparent !important;
-                font-weight: bold;
-            }
-        }
-
         & .handler-wrap {
             display: flex;
             align-items: center;

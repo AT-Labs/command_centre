@@ -130,30 +130,6 @@ export const EditEffectPanel = (props) => {
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
     const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
 
-    const initDisruptionData = () => {
-        const disruptionToSet = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
-        setDisruption(disruptionToSet);
-        props.updateEditableDisruption(disruptionToSet);
-        setOriginalDisruption(disruptionToSet);
-        props.setDisruptionForWorkaroundEdit(disruptionToSet);
-        props.updateIsNotesRequiresToUpdateState();
-        setTimeout(() => setRequireMapUpdate(true), 0);
-    };
-
-    useEffect(() => {
-        if (disruptionIncidentNoToEdit && disruptions && disruptions.length > 0) {
-            initDisruptionData();
-        } else {
-            setDisruption({ ...INIT_EFFECT_STATE });
-        }
-    }, []);
-
-    useEffect(() => {
-        if (props.disruptions && disruptionIncidentNoToEdit) {
-            initDisruptionData();
-        }
-    }, [props.disruptions]);
-
     const startTimeValid = () => isStartTimeValid(
         disruption.startDate,
         disruption.startTime,
@@ -516,10 +492,13 @@ export const EditEffectPanel = (props) => {
     }, [requireMapUpdate]);
 
     useEffect(() => {
-        if (disruptionIncidentNoToEdit && disruptions && disruptions.length > 0) {
-            initDisruptionData();
-        } else {
-            setDisruption({ ...INIT_EFFECT_STATE });
+        if (disruptionIncidentNoToEdit) {
+            const disruptionToSet = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
+            setDisruption(disruptionToSet);
+            props.updateEditableDisruption(disruptionToSet);
+            setOriginalDisruption(disruptionToSet);
+            props.setDisruptionForWorkaroundEdit(disruptionToSet);
+            props.updateIsNotesRequiresToUpdateState();
         }
     }, [disruptionIncidentNoToEdit]);
 
@@ -601,10 +580,6 @@ export const EditEffectPanel = (props) => {
     }, [isApplyDisabled]);
 
     useEffect(() => {
-        props.updateEffectValidationForPublishState(!isSubmitDisabled);
-    }, [isSubmitDisabled]);
-
-    useEffect(() => {
         props.updateIsEffectUpdatedState(isValuesChanged);
     }, [isValuesChanged]);
 
@@ -657,7 +632,7 @@ export const EditEffectPanel = (props) => {
                                         value={ disruption.impact }
                                         options={ impacts }
                                         label={ LABEL_CUSTOMER_IMPACT }
-                                        invalid={ isImpactDirty && !impactValid() && disruption.status !== STATUSES.DRAFT }
+                                        invalid={ isImpactDirty && !impactValid() }
                                         feedback="Please select effect"
                                         disabled={ isResolved() }
                                         disabledClassName="background-color-for-disabled-fields"
@@ -676,8 +651,6 @@ export const EditEffectPanel = (props) => {
                                     <DisruptionDetailSelect
                                         id="disruption-detail__status"
                                         className=""
-                                        disabled={ disruption.status === STATUSES.DRAFT }
-                                        disabledClassName="background-color-for-disabled-fields"
                                         value={ disruption.status }
                                         options={ getStatusOptions(disruption.startDate, disruption.startTime, now, disruption.status) }
                                         label={ LABEL_STATUS }
@@ -837,7 +810,7 @@ export const EditEffectPanel = (props) => {
                                         value={ disruption.severity }
                                         options={ SEVERITIES }
                                         label={ LABEL_SEVERITY }
-                                        invalid={ isSeverityDirty && !severityValid() && disruption.status !== STATUSES.DRAFT }
+                                        invalid={ isSeverityDirty && !severityValid() }
                                         feedback="Please select severity"
                                         disabled={ isResolved() }
                                         disabledClassName="background-color-for-disabled-fields"
@@ -1013,7 +986,6 @@ EditEffectPanel.propTypes = {
     updateEffectValidationState: PropTypes.func.isRequired,
     updateIsEffectUpdatedState: PropTypes.func.isRequired,
     useDisruptionNotePopup: PropTypes.bool,
-    updateEffectValidationForPublishState: PropTypes.func.isRequired,
 };
 
 EditEffectPanel.defaultProps = {
