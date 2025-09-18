@@ -18,6 +18,38 @@ export const momentFromDateTime = (date, time) => {
     return undefined;
 };
 
+export const calculateParentIncidentTimeFromDisruptions = (disruptions) => {
+    if (!disruptions || disruptions.length === 0) {
+        return { startDate: '', startTime: '', endDate: '', endTime: '' };
+    }
+
+    let earliestStart = null;
+    let latestEnd = null;
+
+    disruptions.forEach((disruption) => {
+        if (disruption.startDate && disruption.startTime) {
+            const startMoment = momentFromDateTime(disruption.startDate, disruption.startTime);
+            if (startMoment && (!earliestStart || startMoment.isBefore(earliestStart))) {
+                earliestStart = startMoment;
+            }
+        }
+
+        if (disruption.endDate && disruption.endTime) {
+            const endMoment = momentFromDateTime(disruption.endDate, disruption.endTime);
+            if (endMoment && (!latestEnd || endMoment.isAfter(latestEnd))) {
+                latestEnd = endMoment;
+            }
+        }
+    });
+
+    return {
+        startDate: earliestStart ? earliestStart.format(DATE_FORMAT) : '',
+        startTime: earliestStart ? earliestStart.format(TIME_FORMAT) : '',
+        endDate: latestEnd ? latestEnd.format(DATE_FORMAT) : '',
+        endTime: latestEnd ? latestEnd.format(TIME_FORMAT) : '',
+    };
+};
+
 export const generateDisruptionActivePeriods = (disruption) => {
     if (disruption.recurrent) {
         return calculateActivePeriods(disruption.recurrencePattern, Number(disruption.duration), [], false);

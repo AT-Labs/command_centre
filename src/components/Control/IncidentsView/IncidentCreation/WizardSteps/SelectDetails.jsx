@@ -30,7 +30,7 @@ import {
     setRequestToUpdateEditEffectState,
     setRequestedDisruptionKeyToUpdateEditEffect } from '../../../../../redux/actions/control/incidents';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
-import { SEVERITIES, STATUSES } from '../../../../../types/disruptions-types';
+import { SEVERITIES, STATUSES, getSeverityOptions } from '../../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
     TIME_FORMAT,
@@ -56,7 +56,7 @@ import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText, isActive
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
-import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
+import { useDraftDisruptions, useAdditionalFrontendChanges } from '../../../../../redux/selectors/appSettings';
 import EDIT_TYPE from '../../../../../types/edit-types';
 import { getEditMode, getDisruptionKeyToEditEffect, isEditEffectPanelOpen } from '../../../../../redux/selectors/control/incidents';
 
@@ -146,8 +146,13 @@ export const SelectDetails = (props) => {
                 setIsEndDateDirty(false);
             }
         } else {
-            props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
+            const endDateValue = date.length ? moment(date[0]).format(DATE_FORMAT) : '';
+            props.onDataUpdate('endDate', endDateValue);
             setIsEndDateDirty(false);
+
+            if (endDateValue && isEmpty(endTime) && props.useAdditionalFrontendChanges) {
+                props.onDataUpdate('endTime', '23:59');
+            }
         }
     };
 
@@ -569,7 +574,7 @@ export const SelectDetails = (props) => {
                             id="disruption-creation__wizard-select-details__severity"
                             className=""
                             value={ severity }
-                            options={ SEVERITIES }
+                            options={ getSeverityOptions(props.useAdditionalFrontendChanges) }
                             label={ LABEL_SEVERITY }
                             invalid={ isSeverityDirty && !severityValid() }
                             feedback="Please select severity"
@@ -599,25 +604,27 @@ export const SelectDetails = (props) => {
                         </FormGroup>
                     </div>
                 )}
-                <div className="col-12 d-none">
-                    <FormGroup>
-                        <Label for="disruption-creation__wizard-select-details__url">
-                            <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
-                        </Label>
-                        <Input
-                            id="disruption-creation__wizard-select-details__url"
-                            className="w-100 border border-dark"
-                            type="url"
-                            maxLength={ URL_MAX_LENGTH }
-                            value={ url }
-                            placeholder="e.g. https://at.govt.nz"
-                            onChange={ event => props.onDataUpdate('url', event.target.value) }
-                            invalid={ !isUrlValid(url) }
-                            disabled={ isResolved() }
-                        />
-                        <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
-                    </FormGroup>
-                </div>
+                {!props.useAdditionalFrontendChanges && (
+                    <div className="col-12">
+                        <FormGroup>
+                            <Label for="disruption-creation__wizard-select-details__url">
+                                <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
+                            </Label>
+                            <Input
+                                id="disruption-creation__wizard-select-details__url"
+                                className="w-100 border border-dark"
+                                type="url"
+                                maxLength={ URL_MAX_LENGTH }
+                                value={ url }
+                                placeholder="e.g. https://at.govt.nz"
+                                onChange={ event => props.onDataUpdate('url', event.target.value) }
+                                invalid={ !isUrlValid(url) }
+                                disabled={ isResolved() }
+                            />
+                            <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
+                        </FormGroup>
+                    </div>
+                )}
             </Form>
             { props.editMode === EDIT_TYPE.EDIT && (
                 <div className="ml-4 mr-4 ">
@@ -727,6 +734,7 @@ SelectDetails.propTypes = {
     toggleIncidentModals: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
+    useAdditionalFrontendChanges: PropTypes.bool,
     onUpdateDetailsValidation: PropTypes.func,
     editMode: PropTypes.string,
     toggleEditEffectPanel: PropTypes.func.isRequired,
@@ -752,6 +760,7 @@ SelectDetails.defaultProps = {
     onSubmitDraft: () => { },
     onUpdateDetailsValidation: () => { },
     useDraftDisruptions: false,
+    useAdditionalFrontendChanges: false,
     editMode: EDIT_TYPE.CREATE,
     disruptionIncidentNoToEdit: '',
     isEditEffectPanelOpen: false,
@@ -762,6 +771,7 @@ SelectDetails.defaultProps = {
 
 export default connect(state => ({
     useDraftDisruptions: useDraftDisruptions(state),
+    useAdditionalFrontendChanges: useAdditionalFrontendChanges(state),
     editMode: getEditMode(state),
     disruptionIncidentNoToEdit: getDisruptionKeyToEditEffect(state),
     isEditEffectPanelOpen: isEditEffectPanelOpen(state),

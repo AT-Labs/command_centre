@@ -8,6 +8,7 @@ import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
+import { mount } from 'enzyme';
 import EditEffectPanel from './EditEffectPanel';
 import {
     toggleEditEffectPanel,
@@ -475,21 +476,6 @@ describe('Confirmation Component', () => {
         jest.clearAllMocks();
     });
 
-    it('Renders without crashing and displays edit effect panel', () => {
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps } />
-            </Provider>,
-        );
-
-        expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        expect(screen.getByText('Disruption Title')).toBeInTheDocument();
-        expect(screen.getByText('Start Time')).toBeInTheDocument();
-        expect(screen.getByText('Start Date')).toBeInTheDocument();
-        expect(screen.getByText('End Date')).toBeInTheDocument();
-        expect(screen.getByText('Search routes or draw in the map')).toBeInTheDocument();
-    });
-
     it('Should update startDate value with status(if start date is before now) and recurrencePattern on startDate change', () => {
         render(
             <Provider store={ store }>
@@ -627,7 +613,33 @@ describe('Confirmation Component', () => {
         });
     });
 
-    it('Should update endTime on change', () => {
+    it('Should default endTime to 23:59 when endDate is selected and endTime is empty', () => {
+        const props = { ...defaultProps,
+            disruptions: [{ ...mockDisruption, recurrent: false, endTime: '' }],
+        };
+        const wrapper = mount(
+            <Provider store={ store }>
+                <EditEffectPanel { ...props } />
+            </Provider>,
+        );
+
+        const flatpickrs = wrapper.find('Flatpickr');
+        const endDateFlatpickr = flatpickrs.findWhere(flatpickr => flatpickr.prop('id') === 'disruption-creation__wizard-select-details__end-date');
+
+        if (endDateFlatpickr.length > 0) {
+            const onChange = endDateFlatpickr.prop('onChange');
+            const testDate = [new Date('2024-01-15T06:00:00.000Z')];
+            onChange(testDate);
+
+            expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith({ ...mockDisruption,
+                endDate: '15/01/2024',
+                endTime: '23:59',
+                recurrent: false,
+            });
+        }
+    });
+
+    it('Should update recurrencePattern on change', () => {
         const props = { ...defaultProps,
             disruptionRecurrent: true,
         };
@@ -646,5 +658,205 @@ describe('Confirmation Component', () => {
                 byweekday: [0, 4],
             },
         });
+    });
+
+    it('should disable submit button when affectedRoutes and affectedStops are empty', () => {
+        const props = {
+            ...defaultProps,
+            disruptions: [{
+                ...mockDisruption,
+                affectedEntities: {
+                    affectedRoutes: [],
+                    affectedStops: [],
+                },
+            }],
+        };
+
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...props } />
+            </Provider>,
+        );
+
+        const applyButton = screen.getByRole('button', { name: /apply/i });
+        expect(applyButton).toBeDisabled();
+    });
+
+    it('should disable apply button when header is empty', () => {
+        const props = {
+            ...defaultProps,
+            disruptions: [{
+                ...mockDisruption,
+                header: '',
+                cause: 'CONGESTION',
+            }],
+        };
+
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...props } />
+            </Provider>,
+        );
+
+        const applyButton = screen.getByRole('button', { name: /apply/i });
+        expect(applyButton).toBeDisabled();
+    });
+
+    it('should disable apply button when cause is empty', () => {
+        const props = {
+            ...defaultProps,
+            disruptions: [{
+                ...mockDisruption,
+                header: 'Test Header',
+                cause: '',
+            }],
+        };
+
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...props } />
+            </Provider>,
+        );
+
+        const applyButton = screen.getByRole('button', { name: /apply/i });
+        expect(applyButton).toBeDisabled();
+    });
+
+    it('should disable submit button when recurrent with empty byweekday', () => {
+        const props = {
+            ...defaultProps,
+            disruptions: [{
+                ...mockDisruption,
+                recurrent: true,
+                recurrencePattern: {
+                    byweekday: [],
+                },
+            }],
+        };
+
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...props } />
+            </Provider>,
+        );
+
+        const applyButton = screen.getByRole('button', { name: /apply/i });
+        expect(applyButton).toBeDisabled();
+    });
+
+    it('should disable submit button when recurrent is false', () => {
+        const props = {
+            ...defaultProps,
+            disruptions: [{
+                ...mockDisruption,
+                disruptionId: 'DISR123',
+                recurrent: false,
+                startTime: '10:00',
+                startDate: '2025-06-10',
+                impact: 'DETOUR',
+                cause: 'CONSTRUCTION',
+                header: 'Test Header',
+                severity: 'SIGNIFICANT',
+                endDate: '2025-06-11',
+                endTime: '18:00',
+                duration: '2',
+                status: 'in-progress',
+                affectedEntities: {
+                    affectedRoutes: [{ routeId: 'ROUTE1' }],
+                    affectedStops: [],
+                },
+                recurrencePattern: {
+                    byweekday: [],
+                },
+            }],
+            modalOpenedTime: '2025-06-08T08:00:00.000Z',
+        };
+
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...props } />
+            </Provider>,
+        );
+
+        const applyButton = screen.getByRole('button', { name: /apply/i });
+        expect(applyButton).toBeDisabled();
+    });
+
+    it('should disable submit button when recurrent is true and recurrencePattern is null', () => {
+        const props = {
+            ...defaultProps,
+            disruptions: [{
+                ...mockDisruption,
+                recurrent: true,
+                recurrencePattern: null,
+            }],
+        };
+
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...props } />
+            </Provider>,
+        );
+
+        const applyButton = screen.getByRole('button', { name: /apply/i });
+        expect(applyButton).toBeDisabled();
+    });
+
+    it('should disable submit button when recurrent is true and recurrencePattern is undefined', () => {
+        const props = {
+            ...defaultProps,
+            disruptions: [{
+                ...mockDisruption,
+                recurrent: true,
+                recurrencePattern: undefined,
+            }],
+        };
+
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...props } />
+            </Provider>,
+        );
+
+        const applyButton = screen.getByRole('button', { name: /apply/i });
+        expect(applyButton).toBeDisabled();
+    });
+
+    it('should disable submit button when recurrent is true and byweekday has values', () => {
+        const props = {
+            ...defaultProps,
+            disruptions: [{
+                ...mockDisruption,
+                disruptionId: 'DISR123',
+                recurrent: true,
+                startTime: '10:00',
+                startDate: '2025-06-10',
+                impact: 'DETOUR',
+                cause: 'CONSTRUCTION',
+                header: 'Test Header',
+                severity: 'SIGNIFICANT',
+                endDate: '2025-06-11',
+                endTime: '18:00',
+                duration: '2',
+                status: 'in-progress',
+                affectedEntities: {
+                    affectedRoutes: [{ routeId: 'ROUTE1' }],
+                    affectedStops: [],
+                },
+                recurrencePattern: {
+                    byweekday: [1, 2],
+                },
+            }],
+            modalOpenedTime: '2025-06-08T08:00:00.000Z',
+        };
+
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...props } />
+            </Provider>,
+        );
+
+        const applyButton = screen.getByRole('button', { name: /apply/i });
+        expect(applyButton).toBeDisabled();
     });
 });

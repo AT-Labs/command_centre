@@ -50,6 +50,7 @@ import {
     toCamelCaseKeys,
     generateDisruptionActivePeriods,
     buildIncidentSubmitBody,
+    calculateParentIncidentTimeFromDisruptions,
 } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
@@ -76,13 +77,13 @@ import StopsLayer from '../../../../Common/Map/StopsLayer/StopsLayer';
 import { HighlightingLayer } from '../../../../Common/Map/HighlightingLayer/HighlightingLayer';
 import { SelectedStopsMarker } from '../../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import DrawLayer from './DrawLayer';
-import { usePassengerImpact, useGeoSearchRoutesByDisruptionPeriod, useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
+import { usePassengerImpact, useGeoSearchRoutesByDisruptionPeriod, useDraftDisruptions, useAdditionalFrontendChanges } from '../../../../../redux/selectors/appSettings';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import WorkaroundPanel from '../WizardSteps/WorkaroundPanel';
 import EditEffectPanel from '../EditIncidentDetails/EditEffectPanel';
 import ApplyChangesModal from '../EditIncidentDetails/ApplyChangesModal';
 
-const INIT_STATE = {
+const getInitialState = isFeatureEnabled => ({
     startTime: '',
     startDate: '',
     endTime: '',
@@ -99,11 +100,10 @@ const INIT_STATE = {
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: DEFAULT_SEVERITY.value,
-
+    severity: isFeatureEnabled ? DEFAULT_SEVERITY.value : '',
     notes: '',
     disruptions: [],
-};
+});
 
 const { STOP } = SEARCH_RESULT_TYPE;
 
@@ -112,7 +112,7 @@ export class CreateIncident extends React.Component {
         super(props);
 
         this.state = {
-            incidentData: INIT_STATE,
+            incidentData: getInitialState(props.useAdditionalFrontendChanges),
             isConfirmationOpen: false,
             showAlert: false,
             isSetDetailsValid: false,
@@ -161,7 +161,7 @@ export class CreateIncident extends React.Component {
 
         this.setState({
             incidentData: {
-                ...INIT_STATE,
+                ...getInitialState(this.props.useAdditionalFrontendChanges),
                 disruptionType,
                 ...incidentToEdit,
                 ...(requireToUpdateForm ? { startTime: incidentData.startTime } : (startTime && { startTime: moment(startTime).format(TIME_FORMAT) })),
@@ -199,8 +199,10 @@ export class CreateIncident extends React.Component {
         const disruptionType = isEmpty(this.props.routes) && !isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
         this.setState({
             incidentData: {
-                ...INIT_STATE,
-                startTime: this.props.isCreateOpen ? now.format(TIME_FORMAT) : INIT_STATE.startTime,
+                ...getInitialState(this.props.useAdditionalFrontendChanges),
+                startTime: this.props.isCreateOpen && this.props.useAdditionalFrontendChanges
+                    ? now.format(TIME_FORMAT)
+                    : getInitialState(this.props.useAdditionalFrontendChanges).startTime,
                 startDate: now.format(DATE_FORMAT),
                 disruptionType,
                 modalOpenedTime: moment().second(0).millisecond(0),
@@ -224,20 +226,34 @@ export class CreateIncident extends React.Component {
         }
     }
 
+    componentWillUnmount() {
+        this.setState = () => {};
+    }
+
     updateData = (key, value) => {
         const { incidentData } = this.state;
         let recurrenceDates;
         let recurrencePattern;
+        let parentTimeUpdate = {};
 
         if (['startDate', 'startTime', 'endDate', 'recurrent'].includes(key)) {
             const updatedIncidentData = { ...incidentData, [key]: value };
             recurrenceDates = getRecurrenceDates(updatedIncidentData.startDate, updatedIncidentData.startTime, updatedIncidentData.endDate);
             recurrencePattern = incidentData.recurrent ? parseRecurrencePattern(incidentData.recurrencePattern) : { freq: RRule.WEEKLY };
         }
+
+        if (key === 'disruptions' && value && value.length > 0 && this.props.useAdditionalFrontendChanges) {
+            const parentTime = calculateParentIncidentTimeFromDisruptions(value);
+            if (parentTime.startDate && parentTime.startTime && parentTime.endDate && parentTime.endTime) {
+                parentTimeUpdate = parentTime;
+            }
+        }
+
         this.setState(prevState => ({
             incidentData: {
                 ...prevState.incidentData,
                 [key]: value,
+                ...parentTimeUpdate,
                 ...(recurrenceDates && {
                     recurrencePattern: {
                         ...recurrencePattern,
@@ -250,18 +266,29 @@ export class CreateIncident extends React.Component {
 
     applyDisruptionChanges = (newDisruption) => {
         const { editableWorkarounds } = this.state;
-        this.setState(prevState => ({
-            incidentData: { ...prevState.incidentData,
-                disruptions: prevState.incidentData.disruptions.map(disruption => (disruption.incidentNo === newDisruption.incidentNo
-                    ? {
-                        ...disruption,
-                        ...newDisruption,
-                        ...((this.props.isWorkaroundPanelOpen && editableWorkarounds?.key === newDisruption.incidentNo) && { workarounds: editableWorkarounds.workarounds }),
-                    }
-                    : disruption)),
-            },
-            isEffectsRequiresToUpdate: true,
-        }));
+        this.setState((prevState) => {
+            const updatedDisruptions = prevState.incidentData.disruptions.map(disruption => (disruption.incidentNo === newDisruption.incidentNo
+                ? {
+                    ...disruption,
+                    ...newDisruption,
+                    ...((this.props.isWorkaroundPanelOpen && editableWorkarounds?.key === newDisruption.incidentNo) && { workarounds: editableWorkarounds.workarounds }),
+                }
+                : disruption));
+
+            const parentTime = this.props.useAdditionalFrontendChanges
+                ? calculateParentIncidentTimeFromDisruptions(updatedDisruptions)
+                : { startDate: '', startTime: '', endDate: '', endTime: '' };
+            const parentTimeUpdate = (parentTime.startDate && parentTime.startTime && parentTime.endDate && parentTime.endTime) ? parentTime : {};
+
+            return {
+                incidentData: {
+                    ...prevState.incidentData,
+                    disruptions: updatedDisruptions,
+                    ...parentTimeUpdate,
+                },
+                isEffectsRequiresToUpdate: true,
+            };
+        });
     };
 
     updateDisruptionWorkaround = (key, newWorkarounds) => {
@@ -495,10 +522,14 @@ export class CreateIncident extends React.Component {
                                 onSubmitDraft={ useDraftDisruptions && this.onSubmitDraft }>
                                 <SelectDetails
                                     onUpdateDetailsValidation={ this.onUpdateDetailsValidation }
-                                    onSubmitUpdate={ this.onSubmitUpdate } />
+                                    onSubmitUpdate={ this.onSubmitUpdate }
+                                    useAdditionalFrontendChanges={ useAdditionalFrontendChanges } />
                                 <SelectEffects
                                     onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
-                                    onSubmitUpdate={ this.onSubmitUpdate } />
+                                    onSubmitUpdate={ this.onSubmitUpdate }
+                                    isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
+                                    showFinishButton={ useAdditionalFrontendChanges }
+                                    useAdditionalFrontendChanges={ useAdditionalFrontendChanges } />
                                 <Workarounds
                                     isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
                                     onSubmitUpdate={ this.onSubmitUpdate } />
@@ -686,6 +717,7 @@ CreateIncident.propTypes = {
     setRequestedDisruptionKeyToUpdateEditEffect: PropTypes.func.isRequired,
     isWorkaroundPanelOpen: PropTypes.bool,
     isApplyChangesOpen: PropTypes.bool,
+    useAdditionalFrontendChanges: PropTypes.bool,
 };
 
 CreateIncident.defaultProps = {
@@ -703,6 +735,7 @@ CreateIncident.defaultProps = {
     isRequiresToUpdateNotes: false,
     isWorkaroundPanelOpen: false,
     isApplyChangesOpen: false,
+    useAdditionalFrontendChanges: false,
 };
 
 export default connect(state => ({
@@ -723,6 +756,7 @@ export default connect(state => ({
     usePassengerImpact: usePassengerImpact(state),
     useGeoSearchRoutesByDisruptionPeriod: useGeoSearchRoutesByDisruptionPeriod(state),
     useDraftDisruptions: useDraftDisruptions(state),
+    useAdditionalFrontendChanges: useAdditionalFrontendChanges(state),
     isEditEffectPanelOpen: isEditEffectPanelOpen(state),
     isRequiresToUpdateNotes: isRequiresToUpdateNotes(state),
     isWorkaroundPanelOpen: isWorkaroundPanelOpen(state),

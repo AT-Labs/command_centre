@@ -17,6 +17,8 @@ jest.mock('../../../../Common/Map/HighlightingLayer/HighlightingLayer', () => je
 
 jest.mock('../../../../Common/Map/StopsLayer/SelectedStopsMarker', () => jest.fn());
 
+jest.mock('../../../DisruptionsView/DiversionManager', () => jest.fn());
+
 jest.mock('./DrawLayer', () => jest.fn());
 
 jest.mock('../../../../Common/CustomModal/CustomModal', () => jest.fn());
@@ -663,6 +665,23 @@ describe('CreateIncident component', () => {
             expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident);
             expect(mockOpenCreateIncident).toHaveBeenCalledWith(false);
             expect(mockToggleIncidentModals).toHaveBeenCalledWith('isApplyChangesOpen', false);
+        });
+    });
+
+    describe('componentWillUnmount', () => {
+        it('should set setState to empty function to prevent memory leaks', () => {
+            const wrapper = shallow(<CreateIncident action={ mockAction } updateCurrentStep={ updateCurrentStep } />);
+            const instance = wrapper.instance();
+
+            // Verify setState is initially a function
+            expect(typeof instance.setState).toBe('function');
+
+            // Call componentWillUnmount
+            instance.componentWillUnmount();
+
+            // Verify setState is now an empty function
+            expect(instance.setState).toEqual(expect.any(Function));
+            expect(instance.setState()).toBeUndefined();
         });
     });
 });

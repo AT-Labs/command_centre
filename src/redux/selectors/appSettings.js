@@ -64,5 +64,7 @@ export const useStopBasedDisruptionsSearch = createSelector(getAppSettingsState,
 export const useTripOperationNotes = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useTripOperationNotes') === 'true'));
 export const useTripCancellationCause = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useTripCancellationCause') === 'true'));
 export const useParentChildIncident = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useParentChildIncident') === 'true'));
+export const useEditEffectPanel = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useEditEffectPanel') === 'true'));
+export const useAdditionalFrontendChanges = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useAdditionalFrontendChanges') === 'true'));
 export const useNotificationEffectColumn = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useNotificationEffectColumn') === 'true'));
 export const useDisruptionNotePopup = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useDisruptionNotePopup') === 'true'));

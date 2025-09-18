@@ -18,6 +18,7 @@ import {
     getDurationWithoutSeconds,
     buildIncidentSubmitBody,
     buildDisruptionsQuery,
+    calculateParentIncidentTimeFromDisruptions,
     transformParentSourceIdNo,
 } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
@@ -943,5 +944,61 @@ describe('buildDisruptionSubmitBody', () => {
             disruptions: [{ ...expectedDisruption1 }, { ...expectedDisruption2 }],
         };
         expect(buildIncidentSubmitBody(mockIncident, true)).toEqual(expectedIncident);
+    });
+});
+
+describe('calculateParentIncidentTimeFromDisruptions', () => {
+    it('should return empty times when no disruptions provided', () => {
+        const result = calculateParentIncidentTimeFromDisruptions([]);
+        expect(result).toEqual({
+            startDate: '',
+            startTime: '',
+            endDate: '',
+            endTime: '',
+        });
+    });
+
+    it('should calculate parent time from single disruption', () => {
+        const disruptions = [
+            {
+                startDate: '15/01/2024',
+                startTime: '09:00',
+                endDate: '15/01/2024',
+                endTime: '17:00',
+            },
+        ];
+
+        const result = calculateParentIncidentTimeFromDisruptions(disruptions);
+        expect(result).toEqual({
+            startDate: '15/01/2024',
+            startTime: '09:00',
+            endDate: '15/01/2024',
+            endTime: '17:00',
+        });
+    });
+
+    it('should calculate parent time from multiple disruptions', () => {
+        const disruptions = [
+            {
+                startDate: '16/01/2024',
+                startTime: '10:00',
+                endDate: '16/01/2024',
+                endTime: '16:00',
+            },
+            {
+                startDate: '15/01/2024',
+                startTime: '08:00',
+                endDate: '17/01/2024',
+                endTime: '18:00',
+            },
+        ];
+
+        const result = calculateParentIncidentTimeFromDisruptions(disruptions);
+        expect(result).toEqual({
+            startDate: '15/01/2024',
+            startTime: '08:00',
+            endDate: '17/01/2024',
+            endTime: '18:00',
+        });
     });
 });
