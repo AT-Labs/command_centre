@@ -16,7 +16,6 @@ const realTimeTrackingSubscription = `
             startTime
             startDate
             directionId
-            .replacementTripId
         }
         timestamp
         position {
