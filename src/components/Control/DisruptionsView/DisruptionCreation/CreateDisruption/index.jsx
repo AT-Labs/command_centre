@@ -288,7 +288,31 @@ export class CreateDisruption extends React.Component {
             startTime: startTimeMoment,
             notes: [],
         };
-        this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds));
+
+        const submitBody = buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds);
+        this.props.createDisruption(submitBody);
+    };
+
+    onFinish = async () => {
+        this.toggleModal('Confirmation', true);
+        const { disruptionData } = this.state;
+
+        const startDate = disruptionData.startDate ? disruptionData.startDate : moment(disruptionData.startTime).format(DATE_FORMAT);
+        const startTimeMoment = momentFromDateTime(startDate, disruptionData.startTime);
+
+        let endTimeMoment;
+        if (!isEmpty(disruptionData.endDate) && !isEmpty(disruptionData.endTime)) {
+            endTimeMoment = momentFromDateTime(disruptionData.endDate, disruptionData.endTime);
+        }
+        const disruption = {
+            ...disruptionData,
+            endTime: endTimeMoment,
+            startTime: startTimeMoment,
+            notes: [],
+        };
+
+        const submitBody = buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds);
+        this.props.createDisruption(submitBody);
     };
 
     onSubmitDraft = async () => {
@@ -408,7 +432,10 @@ export class CreateDisruption extends React.Component {
                             {this.props.editMode !== EDIT_TYPE.EDIT && (<SelectDetails onUpdateDetailsValidation={ this.onUpdateDetailsValidation } />)}
                             <SelectDisruptionEntities
                                 onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
-                                onSubmitUpdate={ this.onSubmitUpdate } />
+                                onSubmitUpdate={ this.onSubmitUpdate }
+                                onSubmit={ this.onSubmit }
+                                onFinish={ this.onFinish }
+                                useAdditionalFrontendChanges={ useAdditionalFrontendChanges } />
                             <Workarounds
                                 isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
                                 onSubmitUpdate={ this.onSubmitUpdate } />

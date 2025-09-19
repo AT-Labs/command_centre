@@ -38,7 +38,7 @@ import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText, isActive
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
-import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
+import { useDraftDisruptions, useAdditionalFrontendChanges } from '../../../../../redux/selectors/appSettings';
 
 export const SelectDetails = (props) => {
     const { startDate, startTime, endDate, endTime, impact, cause, header, url, createNotification, exemptAffectedTrips, severity } = props.data;
@@ -543,4 +543,7 @@ SelectDetails.defaultProps = {
     useAdditionalFrontendChanges: false,
 };
 
-export default connect(state => ({ useDraftDisruptions: useDraftDisruptions(state) }), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);
+export default connect(state => ({
+    useDraftDisruptions: useDraftDisruptions(state),
+    useAdditionalFrontendChanges: useAdditionalFrontendChanges(state),
+}), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);
