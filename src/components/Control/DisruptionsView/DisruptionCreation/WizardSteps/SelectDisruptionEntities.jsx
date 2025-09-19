@@ -46,7 +46,7 @@ import {
     entityToItemTransformers,
     itemToEntityTransformers,
 } from '../../../../../utils/control/disruptions';
-import { useDraftDisruptions, useAdditionalFrontendChanges } from '../../../../../redux/selectors/appSettings';
+import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 
 export const SelectDisruptionEntities = (props) => {
     const { ROUTE, STOP, STOP_GROUP } = SEARCH_RESULT_TYPE;
@@ -468,11 +468,6 @@ export const SelectDisruptionEntities = (props) => {
                 isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || !props.isEditMode }
                 onSubmitDraft={ () => onSaveDraft() }
                 onBack={ !props.isEditMode ? onBack : undefined }
-                showFinishButton={ props.useAdditionalFrontendChanges }
-                isAddEffectsStep
-                additionalFrontendChangesEnabled={ props.useAdditionalFrontendChanges }
-                isFinishDisabled={ props.useDraftDisruptions ? props.isFinishDisabled : false }
-                onFinish={ () => props.onFinish() }
             />
             <CustomModal
                 title="Log a Disruption"
@@ -522,9 +517,6 @@ SelectDisruptionEntities.propTypes = {
     data: PropTypes.object,
     onUpdateEntitiesValidation: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
-    useAdditionalFrontendChanges: PropTypes.bool,
-    isFinishDisabled: PropTypes.bool,
-    onFinish: PropTypes.func,
 };
 
 SelectDisruptionEntities.defaultProps = {
@@ -535,9 +527,6 @@ SelectDisruptionEntities.defaultProps = {
     isLoadingRoutesByStop: false,
     isEditMode: false,
     useDraftDisruptions: false,
-    useAdditionalFrontendChanges: false,
-    isFinishDisabled: false,
-    onFinish: () => {},
     data: {},
 };
 
@@ -553,7 +542,6 @@ export default connect(state => ({
     stops: getAllStops(state),
     stopGroups: getStopGroupsIncludingDeleted(state),
     useDraftDisruptions: useDraftDisruptions(state),
-    useAdditionalFrontendChanges: useAdditionalFrontendChanges(state),
 }), {
     deleteAffectedEntities,
     updateCurrentStep,

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { handleUpcomingStopsOfSelectedVehicle, handleUpcomingVehiclesOfSelectedStop } from './detail';
+import { handleUpcomingStopsOfSelectedVehicle, handleUpcomingVehiclesOfSelectedStop, handleVehiclesUpdate } from './detail';
 
 describe('Details reducer', () => {
     describe('when filtering past stops', () => {
@@ -73,6 +73,168 @@ describe('Details reducer', () => {
                 { payload: { upcomingVehicles: vehiclesListA } },
             ).stop.upcomingVehicles)
                 .to.eql(vehiclesListA);
+        });
+    });
+});
+
+describe('handleVehiclesUpdate', () => {
+    it('should update vehicle correctly when replacementTripId clears', () => {
+        const state = {
+            vehicle: {
+                id: 'bus-1',
+                trip: {
+                    tripId: 'trip-1',
+                    ".replacementTripId": "1",
+                },
+            },
+        };
+        const vehicles = [
+            {
+                id: 'bus-1',
+                vehicle: {
+                    trip: {
+                        tripId: 'trip-1',
+                    },
+                    foo: 'new',
+                    bar: 'baz',
+                },
+            },
+            {
+                id: 'bus-2',
+                vehicle: {
+                    trip: {
+                        tripId: 'trip-2',
+                    },
+                    foo: 'other',
+                },
+            },
+        ];
+        const result = handleVehiclesUpdate(state, { payload: { vehicles } });
+        expect(result.vehicle).to.eql({
+            id: 'bus-1',
+            trip: {
+                tripId: 'trip-1',
+            },
+            foo: 'new',
+            bar: 'baz',
+        });
+    });
+
+    it('should update vehicle in state if matching id and newer data exists', () => {
+        const state = {
+            vehicle: {
+                id: 'bus-1',
+                trip: {
+                    tripId: 'trip-1',
+                    ".replacementTripId": "1",
+                },
+            },
+        };
+        const vehicles = [
+            {
+                id: 'bus-1',
+                vehicle: {
+                    trip: {
+                        tripId: 'trip-1',
+                        foo: 'bar',
+                        ".replacementTripId": "2",
+                    },
+                    foo: 'new',
+                    bar: 'baz',
+                },
+            },
+            {
+                id: 'bus-2',
+                vehicle: {
+                    trip: {
+                        tripId: 'trip-2',
+                    },
+                    foo: 'other',
+                },
+            },
+        ];
+        const result = handleVehiclesUpdate(state, { payload: { vehicles } });
+        expect(result.vehicle).to.eql({
+            id: 'bus-1',
+            trip: {
+                tripId: 'trip-1',
+                foo: 'bar',
+                ".replacementTripId": "2",
+            },
+            foo: 'new',
+            bar: 'baz',
+        });
+    });
+
+    it('should return original state if no vehicles', () => {
+        const state = {
+            vehicle: {
+                id: 'bus-1',
+                trip: {
+                    tripId: 'trip-1',
+                },
+            },
+        };
+        const result = handleVehiclesUpdate(state, { payload: { vehicles: [] } });
+        expect(result).to.equal(state);
+    });
+
+    it('should return original state if vehicle id not found', () => {
+        const state = {
+            vehicle: {
+                id: 'bus-3',
+                trip: {
+                    tripId: 'trip-3',
+                },
+            },
+        };
+        const vehicles = [
+            {
+                id: 'bus-1',
+                vehicle: {
+                    trip: {
+                        tripId: 'trip-1',
+                    },
+                    foo: 'new',
+                },
+            },
+        ];
+        const result = handleVehiclesUpdate(state, { payload: { vehicles } });
+        expect(result).to.equal(state);
+    });
+
+    it('should merge vehicle data if possibleUpdates is not empty', () => {
+        const state = {
+            vehicle: {
+                id: 'bus-1',
+                trip: {
+                    tripId: 'trip-1',
+                },
+                foo: 'old',
+                keep: 'yes',
+            },
+        };
+        const vehicles = [
+            {
+                id: 'bus-1',
+                vehicle: {
+                    trip: {
+                        tripId: 'trip-1-updated',
+                        ".replacementTripId": null,
+                    },
+                    foo: 'new',
+                },
+            },
+        ];
+        const result = handleVehiclesUpdate(state, { payload: { vehicles } });
+        expect(result.vehicle).to.eql({
+            id: 'bus-1',
+            trip: {
+                tripId: 'trip-1-updated',
+                ".replacementTripId": null,
+            },
+            foo: 'new',
+            keep: 'yes',
         });
     });
 });

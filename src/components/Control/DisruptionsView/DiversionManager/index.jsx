@@ -344,11 +344,6 @@ const DiversionManager = (props) => {
         );
     };
 
-    // Prevent rendering if no disruption is available
-    if (!props.disruption.disruptionId) {
-        return null;
-    }
-
     return (
         <div className="side-panel-control-component-view d-flex">
             <SidePanel

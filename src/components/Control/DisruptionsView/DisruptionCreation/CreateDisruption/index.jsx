@@ -67,10 +67,10 @@ import { HighlightingLayer } from '../../../../Common/Map/HighlightingLayer/High
 import { SelectedStopsMarker } from '../../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import DrawLayer from './DrawLayer';
 import PassengerImpactDrawer from '../../PassengerImpact/PassengerImpactDrawer';
-import { usePassengerImpact, useGeoSearchRoutesByDisruptionPeriod, useDraftDisruptions, useAdditionalFrontendChanges } from '../../../../../redux/selectors/appSettings';
+import { usePassengerImpact, useGeoSearchRoutesByDisruptionPeriod, useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 
-const getInitialState = isFeatureEnabled => ({
+const INIT_STATE = {
     startTime: '',
     startDate: '',
     endTime: '',
@@ -90,9 +90,9 @@ const getInitialState = isFeatureEnabled => ({
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: isFeatureEnabled ? DEFAULT_SEVERITY.value : '',
+    severity: DEFAULT_SEVERITY.value,
     passengerCount: undefined,
-});
+};
 
 const { STOP } = SEARCH_RESULT_TYPE;
 
@@ -101,7 +101,7 @@ export class CreateDisruption extends React.Component {
         super(props);
 
         this.state = {
-            disruptionData: getInitialState(props.useAdditionalFrontendChanges),
+            disruptionData: INIT_STATE,
             isConfirmationOpen: false,
             showAlert: false,
             isSetDetailsValid: false,
@@ -210,7 +210,7 @@ export class CreateDisruption extends React.Component {
         const disruptionType = isEmpty(this.props.routes) && !isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
         this.setState({
             disruptionData: {
-                ...getInitialState(this.props.useAdditionalFrontendChanges),
+                ...INIT_STATE,
                 disruptionType,
                 ...disruptionToEdit,
                 ...(startTime && { startTime: startTime.toISOString() }),
@@ -222,12 +222,11 @@ export class CreateDisruption extends React.Component {
     setupData = () => {
         const now = moment();
         const disruptionType = isEmpty(this.props.routes) && !isEmpty(this.props.stops) ? DISRUPTION_TYPE.STOPS : DISRUPTION_TYPE.ROUTES;
-        const initialState = getInitialState(this.props.useAdditionalFrontendChanges);
         this.setState({
             disruptionData: {
-                ...initialState,
+                ...INIT_STATE,
                 affectedEntities: [...this.props.routes, ...this.props.stops],
-                startTime: this.props.isCreateOpen ? now.format(TIME_FORMAT) : initialState.startTime,
+                startTime: this.props.isCreateOpen ? now.format(TIME_FORMAT) : INIT_STATE.startTime,
                 startDate: now.format(DATE_FORMAT),
                 disruptionType,
             },
@@ -288,31 +287,7 @@ export class CreateDisruption extends React.Component {
             startTime: startTimeMoment,
             notes: [],
         };
-
-        const submitBody = buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds);
-        this.props.createDisruption(submitBody);
-    };
-
-    onFinish = async () => {
-        this.toggleModal('Confirmation', true);
-        const { disruptionData } = this.state;
-
-        const startDate = disruptionData.startDate ? disruptionData.startDate : moment(disruptionData.startTime).format(DATE_FORMAT);
-        const startTimeMoment = momentFromDateTime(startDate, disruptionData.startTime);
-
-        let endTimeMoment;
-        if (!isEmpty(disruptionData.endDate) && !isEmpty(disruptionData.endTime)) {
-            endTimeMoment = momentFromDateTime(disruptionData.endDate, disruptionData.endTime);
-        }
-        const disruption = {
-            ...disruptionData,
-            endTime: endTimeMoment,
-            startTime: startTimeMoment,
-            notes: [],
-        };
-
-        const submitBody = buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds);
-        this.props.createDisruption(submitBody);
+        this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds));
     };
 
     onSubmitDraft = async () => {
@@ -432,10 +407,7 @@ export class CreateDisruption extends React.Component {
                             {this.props.editMode !== EDIT_TYPE.EDIT && (<SelectDetails onUpdateDetailsValidation={ this.onUpdateDetailsValidation } />)}
                             <SelectDisruptionEntities
                                 onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
-                                onSubmitUpdate={ this.onSubmitUpdate }
-                                onSubmit={ this.onSubmit }
-                                onFinish={ this.onFinish }
-                                useAdditionalFrontendChanges={ useAdditionalFrontendChanges } />
+                                onSubmitUpdate={ this.onSubmitUpdate } />
                             <Workarounds
                                 isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
                                 onSubmitUpdate={ this.onSubmitUpdate } />
@@ -550,7 +522,6 @@ CreateDisruption.propTypes = {
     updateDisruptionToEdit: PropTypes.func.isRequired,
     usePassengerImpact: PropTypes.bool.isRequired,
     useGeoSearchRoutesByDisruptionPeriod: PropTypes.bool.isRequired,
-    useAdditionalFrontendChanges: PropTypes.bool.isRequired,
 };
 
 CreateDisruption.defaultProps = {
@@ -584,7 +555,6 @@ export default connect(state => ({
     usePassengerImpact: usePassengerImpact(state),
     useGeoSearchRoutesByDisruptionPeriod: useGeoSearchRoutesByDisruptionPeriod(state),
     useDraftDisruptions: useDraftDisruptions(state),
-    useAdditionalFrontendChanges: useAdditionalFrontendChanges(state),
 }), {
     createDisruption,
     openCreateDisruption,

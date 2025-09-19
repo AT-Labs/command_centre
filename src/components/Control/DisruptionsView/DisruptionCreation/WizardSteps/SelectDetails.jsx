@@ -38,7 +38,7 @@ import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText, isActive
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
-import { useDraftDisruptions, useAdditionalFrontendChanges } from '../../../../../redux/selectors/appSettings';
+import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 
 export const SelectDetails = (props) => {
     const { startDate, startTime, endDate, endTime, impact, cause, header, url, createNotification, exemptAffectedTrips, severity } = props.data;
@@ -132,13 +132,8 @@ export const SelectDetails = (props) => {
                 setCssEndDateInvalid('');
             }
         } else {
-            const endDateValue = date.length ? moment(date[0]).format(DATE_FORMAT) : '';
-            props.onDataUpdate('endDate', endDateValue);
+            props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
             setCssEndDateInvalid('');
-
-            if (endDateValue && isEmpty(endTime) && props.useAdditionalFrontendChanges) {
-                props.onDataUpdate('endTime', '23:59');
-            }
         }
     };
 
@@ -277,7 +272,6 @@ export const SelectDetails = (props) => {
                         { !recurrent && (
                             <Flatpickr
                                 id="disruption-creation__wizard-select-details__end-date"
-                                data-testid="disruption-creation__wizard-select-details__end-date"
                                 className={ `font-weight-normal cc-form-control form-control ${cssEndDateInvalid}` }
                                 value={ endDate }
                                 options={ endDateDatePickerOptions }
@@ -289,7 +283,6 @@ export const SelectDetails = (props) => {
                         { recurrent && (
                             <Flatpickr
                                 id="disruption-creation__wizard-select-details__end-date"
-                                data-testid="disruption-creation__wizard-select-details__end-date"
                                 className={ `font-weight-normal cc-form-control form-control ${cssEndDateInvalid}` }
                                 value={ endDate }
                                 options={ endDateDatePickerOptions }
@@ -443,26 +436,24 @@ export const SelectDetails = (props) => {
                         <FormFeedback>Please enter disruption title</FormFeedback>
                     </FormGroup>
                 </div>
-                {!props.useAdditionalFrontendChanges && (
-                    <div className="col-12">
-                        <FormGroup>
-                            <Label for="disruption-creation__wizard-select-details__url">
-                                <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
-                            </Label>
-                            <Input
-                                id="disruption-creation__wizard-select-details__url"
-                                className="w-100 border border-dark"
-                                type="url"
-                                maxLength={ URL_MAX_LENGTH }
-                                value={ url }
-                                placeholder="e.g. https://at.govt.nz"
-                                onChange={ event => props.onDataUpdate('url', event.target.value) }
-                                invalid={ !isUrlValid(url) }
-                            />
-                            <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
-                        </FormGroup>
-                    </div>
-                )}
+                <div className="col-12">
+                    <FormGroup>
+                        <Label for="disruption-creation__wizard-select-details__url">
+                            <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
+                        </Label>
+                        <Input
+                            id="disruption-creation__wizard-select-details__url"
+                            className="w-100 border border-dark"
+                            type="url"
+                            maxLength={ URL_MAX_LENGTH }
+                            value={ url }
+                            placeholder="e.g. https://at.govt.nz"
+                            onChange={ event => props.onDataUpdate('url', event.target.value) }
+                            invalid={ !isUrlValid(url) }
+                        />
+                        <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
+                    </FormGroup>
+                </div>
                 <div className="col-12">
                     <FormGroup className="disruption-creation__checkbox">
                         <Input
@@ -528,7 +519,6 @@ SelectDetails.propTypes = {
     updateCurrentStep: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
     onUpdateDetailsValidation: PropTypes.func,
-    useAdditionalFrontendChanges: PropTypes.bool,
 };
 
 SelectDetails.defaultProps = {
@@ -540,10 +530,6 @@ SelectDetails.defaultProps = {
     onSubmitDraft: () => { },
     onUpdateDetailsValidation: () => { },
     useDraftDisruptions: false,
-    useAdditionalFrontendChanges: false,
 };
 
-export default connect(state => ({
-    useDraftDisruptions: useDraftDisruptions(state),
-    useAdditionalFrontendChanges: useAdditionalFrontendChanges(state),
-}), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);
+export default connect(state => ({ useDraftDisruptions: useDraftDisruptions(state) }), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);

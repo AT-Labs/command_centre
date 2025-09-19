@@ -17,8 +17,6 @@ jest.mock('../../../../Common/Map/HighlightingLayer/HighlightingLayer', () => je
 
 jest.mock('../../../../Common/Map/StopsLayer/SelectedStopsMarker', () => jest.fn());
 
-jest.mock('../../../DisruptionsView/DiversionManager', () => jest.fn());
-
 jest.mock('./DrawLayer', () => jest.fn());
 
 jest.mock('../../../../Common/CustomModal/CustomModal', () => jest.fn());
@@ -397,6 +395,7 @@ describe('CreateIncident component', () => {
         const mockUpdateAffectedStopsState = jest.fn();
         const mockUpdateAffectedRoutesState = jest.fn();
         const mockGetRoutesByShortName = jest.fn();
+        const mockUpdateEditMode = jest.fn();
 
         beforeEach(() => {
             wrapper = shallow(
@@ -535,9 +534,7 @@ describe('CreateIncident component', () => {
             buildIncidentSubmitBody.mockReturnValue(expectedIncident);
             await wrapper.instance().onSubmitUpdate();
             expect(buildIncidentSubmitBody).toHaveBeenCalledWith(expect.objectContaining({ ...expectedIncident }), true);
-            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident);
-            expect(mockOpenCreateIncident).toHaveBeenCalledWith(false);
-            expect(mockToggleIncidentModals).toHaveBeenCalledWith('isApplyChangesOpen', false);
+            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident, false);
         });
 
         it('Should update incident with data from editableDisruption and expectedWorkarounds', async () => {
@@ -662,26 +659,546 @@ describe('CreateIncident component', () => {
             buildIncidentSubmitBody.mockReturnValue(expectedIncident);
             await wrapper.instance().onSubmitUpdate();
             expect(buildIncidentSubmitBody).toHaveBeenCalledWith(expect.objectContaining({ ...expectedIncident }), true);
-            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident);
-            expect(mockOpenCreateIncident).toHaveBeenCalledWith(false);
-            expect(mockToggleIncidentModals).toHaveBeenCalledWith('isApplyChangesOpen', false);
+            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident, false);
         });
-    });
 
-    describe('componentWillUnmount', () => {
-        it('should set setState to empty function to prevent memory leaks', () => {
-            const wrapper = shallow(<CreateIncident action={ mockAction } updateCurrentStep={ updateCurrentStep } />);
-            const instance = wrapper.instance();
+        it('Should call drawAffectedEntity when disruptions length was changed', () => {
+            const newDisruption = {
+                disruptionId: 139537,
+                incidentNo: 'DISR139537',
+                mode: 'Bus',
+                affectedEntities: [{
+                    stopId: '100-56c57897',
+                    stopName: 'Papatoetoe Train Station',
+                    stopCode: '100',
+                    locationType: 1,
+                    stopLat: -36.97766,
+                    stopLon: 174.84925,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '100 - Papatoetoe Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+                {
+                    stopId: '101-9ef61446',
+                    stopName: 'Otahuhu Train Station',
+                    stopCode: '101',
+                    locationType: 1,
+                    stopLat: -36.94669,
+                    stopLon: 174.83321,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '101 - Otahuhu Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+                {
+                    stopId: '102-a4eddeea',
+                    stopName: 'Penrose Train Station',
+                    stopCode: '102',
+                    locationType: 1,
+                    stopLat: -36.91009,
+                    stopLon: 174.8157,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '102 - Penrose Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+                {
+                    stopId: '103-be3d2b7e',
+                    stopName: 'Glen Innes Train Station',
+                    stopCode: '103',
+                    locationType: 1,
+                    stopLat: -36.8788,
+                    stopLon: 174.85412,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '103 - Glen Innes Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                }],
+                impact: 'ESCALATOR_NOT_WORKING',
+                cause: 'CONGESTION',
+                startTime: '2025-08-21T20:27:00.000Z',
+                endTime: null,
+                status: 'in-progress',
+                lastUpdatedTime: '2025-08-21T20:27:33.201Z',
+                lastUpdatedBy: 'aqwe@propellerhead.co.nz',
+                description: null,
+                createdBy: 'aqwe@propellerhead.co.nz',
+                createdTime: '2025-08-21T20:27:33.201Z',
+                url: '',
+                header: 'test incident n0827',
+                feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
+                uploadedFiles: null,
+                createNotification: false,
+                exemptAffectedTrips: null,
+                version: 1,
+                duration: '',
+                activePeriods: [
+                    {
+                        startTime: 1755808020,
+                    },
+                ],
+                recurrencePattern: null,
+                recurrent: false,
+                workarounds: [],
+                notes: [],
+                severity: 'HEADLINE',
+                passengerCount: null,
+                incidentId: 139273,
+                incidentTitle: 'test incident n0827',
+                incidentDisruptionNo: 'CCD139273',
+            };
 
-            // Verify setState is initially a function
-            expect(typeof instance.setState).toBe('function');
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentForEdit }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    isEditEffectPanelOpen
+                />,
+            );
 
-            // Call componentWillUnmount
-            instance.componentWillUnmount();
+            wrapper.setProps({ incidentToEdit: {
+                ...incidentForEdit,
+                disruptions: [...incidentForEdit.disruptions, { ...newDisruption }],
+            } });
+            expect(mockUpdateAffectedStopsState).toHaveBeenCalledTimes(3); // 2 times for setup + 1 for redraw
+            expect(mockUpdateAffectedRoutesState).toHaveBeenCalledTimes(3);
+        });
 
-            // Verify setState is now an empty function
-            expect(instance.setState).toEqual(expect.any(Function));
-            expect(instance.setState()).toBeUndefined();
+        it('Should call updateIncident on add new effect with additional disruption', async () => {
+            const newDisruption = {
+                disruptionId: 139537,
+                incidentNo: 'DISR139537',
+                mode: 'Bus',
+                affectedEntities: [{
+                    stopId: '100-56c57897',
+                    stopName: 'Papatoetoe Train Station',
+                    stopCode: '100',
+                    locationType: 1,
+                    stopLat: -36.97766,
+                    stopLon: 174.84925,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '100 - Papatoetoe Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+                {
+                    stopId: '101-9ef61446',
+                    stopName: 'Otahuhu Train Station',
+                    stopCode: '101',
+                    locationType: 1,
+                    stopLat: -36.94669,
+                    stopLon: 174.83321,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '101 - Otahuhu Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+                {
+                    stopId: '102-a4eddeea',
+                    stopName: 'Penrose Train Station',
+                    stopCode: '102',
+                    locationType: 1,
+                    stopLat: -36.91009,
+                    stopLon: 174.8157,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '102 - Penrose Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+                {
+                    stopId: '103-be3d2b7e',
+                    stopName: 'Glen Innes Train Station',
+                    stopCode: '103',
+                    locationType: 1,
+                    stopLat: -36.8788,
+                    stopLon: 174.85412,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '103 - Glen Innes Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                }],
+                impact: 'ESCALATOR_NOT_WORKING',
+                cause: 'CONGESTION',
+                startTime: '2025-08-21T20:27:00.000Z',
+                endTime: null,
+                status: 'in-progress',
+                lastUpdatedTime: '2025-08-21T20:27:33.201Z',
+                lastUpdatedBy: 'aqwe@propellerhead.co.nz',
+                description: null,
+                createdBy: 'aqwe@propellerhead.co.nz',
+                createdTime: '2025-08-21T20:27:33.201Z',
+                url: '',
+                header: 'test incident n0827',
+                feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
+                uploadedFiles: null,
+                createNotification: false,
+                exemptAffectedTrips: null,
+                version: 1,
+                duration: '',
+                activePeriods: [
+                    {
+                        startTime: 1755808020,
+                    },
+                ],
+                recurrencePattern: null,
+                recurrent: false,
+                workarounds: [],
+                notes: [],
+                severity: 'HEADLINE',
+                passengerCount: null,
+                incidentId: 139273,
+                incidentTitle: 'test incident n0827',
+                incidentDisruptionNo: 'CCD139273',
+                key: 'DISR139537',
+            };
+
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentForEdit }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    isEditEffectPanelOpen
+                />,
+            );
+            wrapper.setProps({ editMode: EDIT_TYPE.ADD_EFFECT });
+            wrapper.setState(prevState => ({
+                ...prevState,
+                newIncidentEffect: {
+                    ...newDisruption,
+                },
+            }));
+            momentFromDateTime.mockReturnValue(mockTimeForMoment);
+            buildIncidentSubmitBody.mockReturnValue({});
+            await wrapper.instance().onSubmitUpdate();
+            expect(buildIncidentSubmitBody).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    disruptions: expect.arrayContaining([expect.anything()]),
+                }),
+                true,
+            );
+            const callArgs = buildIncidentSubmitBody.mock.calls[0][0];
+            expect(callArgs.disruptions).toHaveLength(2);
+            expect(mockUpdateIncident).toHaveBeenCalled();
+        });
+
+        it('Should update edit mode on addNewEffectToIncident call', async () => {
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentForEdit }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateEditMode={ mockUpdateEditMode }
+                    isEditEffectPanelOpen
+                />,
+            );
+            await wrapper.instance().addNewEffectToIncident();
+            expect(mockUpdateAffectedStopsState).toHaveBeenCalledWith([]);
+            expect(mockUpdateAffectedRoutesState).toHaveBeenCalledWith([]);
+            expect(mockUpdateEditMode).toHaveBeenCalledWith(EDIT_TYPE.ADD_EFFECT);
+            expect(mockUpdateCurrentStep).toHaveBeenCalledWith(2);
+        });
+
+        it('Should update newIncidentEffect value on updateNewIncidentEffect call', async () => {
+            const newDisruption = {
+                disruptionId: 139537,
+                incidentNo: 'DISR139537',
+                mode: 'Bus',
+                affectedEntities: [],
+                impact: 'ESCALATOR_NOT_WORKING',
+                cause: 'CONGESTION',
+                startTime: '2025-08-21T20:27:00.000Z',
+                endTime: null,
+                status: 'in-progress',
+                lastUpdatedTime: '2025-08-21T20:27:33.201Z',
+                lastUpdatedBy: 'aqwe@propellerhead.co.nz',
+                description: null,
+                createdBy: 'aqwe@propellerhead.co.nz',
+                createdTime: '2025-08-21T20:27:33.201Z',
+                url: '',
+                header: 'test incident n0827',
+                feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
+                uploadedFiles: null,
+                createNotification: false,
+                exemptAffectedTrips: null,
+                version: 1,
+                duration: '',
+                recurrencePattern: null,
+                recurrent: false,
+                workarounds: [],
+                notes: [],
+                severity: 'HEADLINE',
+                passengerCount: null,
+                incidentId: 139273,
+                incidentTitle: 'test incident n0827',
+                incidentDisruptionNo: 'CCD139273',
+                key: 'DISR139537',
+            };
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentForEdit }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateEditMode={ mockUpdateEditMode }
+                    isEditEffectPanelOpen
+                />,
+            );
+            await wrapper.instance().updateNewIncidentEffect(newDisruption);
+            expect(wrapper.state('newIncidentEffect')).toEqual(newDisruption);
+        });
+
+        it('Should update newIncidentEffect value on updateNewIncidentEffect call', async () => {
+            const newIncidentEffect = {
+                disruptionId: 139537,
+                incidentNo: 'DISR139537',
+                mode: 'Bus',
+                affectedEntities: [],
+                impact: 'ESCALATOR_NOT_WORKING',
+                cause: 'CONGESTION',
+                startTime: '2025-08-21T20:27:00.000Z',
+                endTime: null,
+                status: 'in-progress',
+                lastUpdatedTime: '2025-08-21T20:27:33.201Z',
+                lastUpdatedBy: 'aqwe@propellerhead.co.nz',
+                description: null,
+                createdBy: 'aqwe@propellerhead.co.nz',
+                createdTime: '2025-08-21T20:27:33.201Z',
+                url: '',
+                header: 'test incident n0827',
+                feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
+                uploadedFiles: null,
+                createNotification: false,
+                exemptAffectedTrips: null,
+                version: 1,
+                duration: '',
+                recurrencePattern: null,
+                recurrent: false,
+                workarounds: [],
+                notes: [],
+                severity: 'HEADLINE',
+                passengerCount: null,
+                incidentId: 139273,
+                incidentTitle: 'test incident n0827',
+                incidentDisruptionNo: 'CCD139273',
+                key: 'DISR139537',
+            };
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentForEdit }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateEditMode={ mockUpdateEditMode }
+                    isEditEffectPanelOpen
+                />,
+            );
+
+            wrapper.setState(prevState => ({
+                ...prevState,
+                newIncidentEffect: {
+                    ...newIncidentEffect,
+                },
+            }));
+            await wrapper.instance().clearNewEffectToIncident();
+            expect(wrapper.state('newIncidentEffect')).toEqual({});
+        });
+
+        it('Should open publish and apply modal on onPublishUpdate call', async () => {
+            const draftIncident = {
+                ...incidentForEdit,
+                status: STATUSES.DRAFT,
+                disruptions: [{ ...incidentForEdit.disruptions[0], status: STATUSES.DRAFT }],
+            };
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ draftIncident }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateEditMode={ mockUpdateEditMode }
+                    isEditEffectPanelOpen
+                />,
+            );
+            wrapper.setState(prevState => ({
+                ...prevState,
+                isEffectUpdated: true,
+            }));
+            await wrapper.instance().onPublishUpdate();
+            expect(mockToggleIncidentModals).toHaveBeenCalledWith('isPublishAndApplyChangesOpen', true);
+        });
+
+        it('Should update status to not-started on onPublishUpdate call', async () => {
+            const draftIncident = {
+                ...incidentForEdit,
+                status: STATUSES.DRAFT,
+                disruptions: [{ ...incidentForEdit.disruptions[0], status: STATUSES.DRAFT }],
+            };
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ draftIncident }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateEditMode={ mockUpdateEditMode }
+                    isEditEffectPanelOpen
+                />,
+            );
+            await wrapper.instance().onPublishUpdate();
+            expect(wrapper.state('incidentData').status).toEqual(STATUSES.NOT_STARTED);
+        });
+
+        it('Should update status to not-started on onPublishIncidentUpdate call and close publish and apply modal', async () => {
+            const draftIncident = {
+                ...incidentForEdit,
+                status: STATUSES.DRAFT,
+                disruptions: [{ ...incidentForEdit.disruptions[0], status: STATUSES.DRAFT }],
+            };
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ draftIncident }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateEditMode={ mockUpdateEditMode }
+                    isEditEffectPanelOpen
+                />,
+            );
+            await wrapper.instance().onPublishIncidentUpdate();
+            expect(wrapper.state('incidentData').status).toEqual(STATUSES.NOT_STARTED);
+            expect(mockToggleIncidentModals).toHaveBeenCalledWith('isPublishAndApplyChangesOpen', false);
         });
     });
 });

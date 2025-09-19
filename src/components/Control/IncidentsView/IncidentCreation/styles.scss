@@ -52,14 +52,6 @@
 
         footer {
             width: $side-panel-width-large;
-            background-color: #FFF;
-            border-top: 1px solid $at-light-gray;
-            bottom: 0;
-            z-index: 1;
-
-            & .cc-btn-link {
-                text-decoration: underline;
-            }
         }
 
         .map {
@@ -100,6 +92,20 @@
             cursor: pointer;
         }
 
+        .add-effect-button-wrapper {
+            width: 100%;
+            justify-content: end;
+            display: flex;
+
+            .add-effect-button {
+                float: right;
+                color: #399CDB;
+                border: 0 !important;
+                background-color: transparent !important;
+                font-weight: bold;
+            }
+        }
+
         & .handler-wrap {
             display: flex;
             align-items: center;
@@ -125,59 +131,6 @@
 
         .incident-footer-min-height {
             min-height: 89px;
-        }
-
-        footer.additional-frontend-changes-enabled.footer-with-finish-button {
-            .btn:not(.cc-btn-link) {
-                font-size: .975rem !important;
-                padding: .375rem .75rem !important;
-                white-space: nowrap !important;
-            }
-
-            .btn.cc-btn-primary {
-                background-color: #FFF !important;
-                border: 2px solid #399CDB !important;
-                color: #000000 !important;
-            }
-
-            .btn.cc-btn-primary:hover {
-                background-color: #399CDB !important;
-                border-color: #399CDB !important;
-                color: #000000 !important;
-            }
-
-            .btn.cc-btn-primary:focus {
-                box-shadow: 0 0 0 .2rem rgba(57, 156, 219, .25) !important;
-            }
-
-            .btn.cc-btn-success {
-                background-color: #399CDB !important;
-                border: 2px solid #399CDB !important;
-                color: #FFFFFF !important;
-            }
-
-            .btn.cc-btn-success:hover {
-                background-color: #399CDB !important;
-                border-color: #399CDB !important;
-                color: #FFFFFF !important;
-            }
-
-            .btn.cc-btn-success:focus {
-                box-shadow: 0 0 0 .2rem rgba(57, 156, 219, .25) !important;
-            }
-
-            .col-2 {
-                padding-left: .001rem !important;
-                padding-right: .001rem !important;
-            }
-
-            .col-2:first-child {
-                padding-left: 0 !important;
-            }
-
-            .col-2:last-child {
-                padding-right: 0 !important;
-            }
         }
     }
 
