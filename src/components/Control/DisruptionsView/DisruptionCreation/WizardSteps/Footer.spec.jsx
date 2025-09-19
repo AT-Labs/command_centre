@@ -3,7 +3,7 @@ import { mount } from 'enzyme';
 import { Button } from 'reactstrap';
 import configureStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
-import { useDraftDisruptions, useAdditionalFrontendChanges } from '../../../../../redux/selectors/appSettings';
+import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 import Footer from './Footer';
 
 let store;
