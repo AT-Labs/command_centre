@@ -3,13 +3,14 @@ import { mount } from 'enzyme';
 import { Button } from 'reactstrap';
 import configureStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
-import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
+import { useDraftDisruptions, useAdditionalFrontendChanges } from '../../../../../redux/selectors/appSettings';
 import Footer from './Footer';
 
 let store;
 
 jest.mock('../../../../../redux/selectors/appSettings', () => ({
     useDraftDisruptions: jest.fn(),
+    useAdditionalFrontendChanges: jest.fn(),
 }));
 
 const mockStore = configureStore([]);
@@ -38,6 +39,7 @@ const setup = (customProps = {}) => {
 describe('<Footer />', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        useAdditionalFrontendChanges.mockReturnValue(false);
     });
 
     it('should render columns with "col-3" when useDraftDisruptions and isDraftOrCreateMode are true', () => {
@@ -49,32 +51,43 @@ describe('<Footer />', () => {
         expect(wrapper.find('.col-2').length).toBe(0);
     });
 
-    it('should render columns with "col-2" when showFinishButton and isAddEffectsStep are true and additionalFrontendChangesEnabled is true', () => {
-        useDraftDisruptions.mockReturnValue(true);
+    it('should render columns with "col-2" when showFinishButton, isAddEffectsStep and additionalFrontendChangesEnabled are true', () => {
+        useAdditionalFrontendChanges.mockReturnValue(true);
 
-        const wrapper = setup({ isDraftOrCreateMode: true, showFinishButton: true, isAddEffectsStep: true, additionalFrontendChangesEnabled: true });
+        const wrapper = setup({
+            showFinishButton: true,
+            isAddEffectsStep: true,
+            additionalFrontendChangesEnabled: true,
+        });
 
         expect(wrapper.find('.col-2').length).toBeGreaterThan(0);
         expect(wrapper.find('.col-3').length).toBe(0);
     });
 
-    it('should render columns with "col-3" when isAddEffectsStep is true but additionalFrontendChangesEnabled is false', () => {
-        useDraftDisruptions.mockReturnValue(true);
-
-        const wrapper = setup({ isDraftOrCreateMode: true, showFinishButton: false, isAddEffectsStep: true, additionalFrontendChangesEnabled: false });
-
-        expect(wrapper.find('.col-3').length).toBeGreaterThan(0);
-        expect(wrapper.find('.col-2').length).toBe(0);
-    });
-
-    it('should render columns with "col-4" when isAddEffectsStep is true but additionalFrontendChangesEnabled is false and useDraftDisruptions is false', () => {
+    it('should render columns with "col-4" when showFinishButton is true but isAddEffectsStep is false', () => {
+        useAdditionalFrontendChanges.mockReturnValue(false);
         useDraftDisruptions.mockReturnValue(false);
 
-        const wrapper = setup({ isDraftOrCreateMode: true, showFinishButton: false, isAddEffectsStep: true, additionalFrontendChangesEnabled: false });
+        const wrapper = setup({
+            showFinishButton: true,
+            isAddEffectsStep: false,
+            additionalFrontendChangesEnabled: false,
+        });
 
         expect(wrapper.find('.col-4').length).toBeGreaterThan(0);
-        expect(wrapper.find('.col-2').length).toBe(0);
-        expect(wrapper.find('.col-3').length).toBe(0);
+        expect(wrapper.find('.col-2').length).toBe(1);
+    });
+
+    it('should render Finish button when showFinishButton is true', () => {
+        const wrapper = setup({ showFinishButton: true });
+
+        expect(wrapper.find(Button).filterWhere(btn => btn.text() === 'Finish').exists()).toBe(true);
+    });
+
+    it('should NOT render Finish button when showFinishButton is false', () => {
+        const wrapper = setup({ showFinishButton: false });
+
+        expect(wrapper.find(Button).filterWhere(btn => btn.text() === 'Finish').exists()).toBe(false);
     });
 
     it('should render "Save draft" block only when useDraftDisruptions and isDraftOrCreateMode are true', () => {
