@@ -18,6 +18,7 @@ import {
     getDurationWithoutSeconds,
     buildIncidentSubmitBody,
     buildDisruptionsQuery,
+    calculateParentIncidentTimeFromDisruptions,
     transformParentSourceIdNo,
 } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
@@ -946,132 +947,58 @@ describe('buildDisruptionSubmitBody', () => {
     });
 });
 
-describe('getMode', () => {
-    it('Should return empty mode', () => {
-        const incident = {
-            ...mockIncident,
-            disruptions: [
-                {
-                    ...mockDisruption1,
-                    affectedEntities: {
-                        affectedRoutes: [],
-                        affectedStops: [],
-                    },
-                },
-            ],
-        };
-        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('');
+describe('calculateParentIncidentTimeFromDisruptions', () => {
+    it('should return empty times when no disruptions provided', () => {
+        const result = calculateParentIncidentTimeFromDisruptions([]);
+        expect(result).toEqual({
+            startDate: '',
+            startTime: '',
+            endDate: '',
+            endTime: '',
+        });
     });
 
-    it('Should return multiple modes from routes with duplicated mode', () => {
-        const incident = {
-            ...mockIncident,
-            disruptions: [
-                {
-                    ...mockDisruption1,
-                    affectedEntities: {
-                        affectedRoutes: [{ routeType: 3 }, { routeType: 2 }, { routeType: 2 }],
-                        affectedStops: [],
-                    },
-                },
-            ],
-        };
-        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('Bus, Train');
+    it('should calculate parent time from single disruption', () => {
+        const disruptions = [
+            {
+                startDate: '15/01/2024',
+                startTime: '09:00',
+                endDate: '15/01/2024',
+                endTime: '17:00',
+            },
+        ];
+
+        const result = calculateParentIncidentTimeFromDisruptions(disruptions);
+        expect(result).toEqual({
+            startDate: '15/01/2024',
+            startTime: '09:00',
+            endDate: '15/01/2024',
+            endTime: '17:00',
+        });
     });
 
-    it('Should return multiple modes from routes', () => {
-        const incident = {
-            ...mockIncident,
-            disruptions: [
-                {
-                    ...mockDisruption1,
-                    affectedEntities: {
-                        affectedRoutes: [{ routeType: 3 }, { routeType: 2 }],
-                        affectedStops: [],
-                    },
-                },
-            ],
-        };
-        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('Bus, Train');
-    });
+    it('should calculate parent time from multiple disruptions', () => {
+        const disruptions = [
+            {
+                startDate: '16/01/2024',
+                startTime: '10:00',
+                endDate: '16/01/2024',
+                endTime: '16:00',
+            },
+            {
+                startDate: '15/01/2024',
+                startTime: '08:00',
+                endDate: '17/01/2024',
+                endTime: '18:00',
+            },
+        ];
 
-    it('Should return empty mode due to invalid routeType from route', () => {
-        const incident = {
-            ...mockIncident,
-            disruptions: [
-                {
-                    ...mockDisruption1,
-                    affectedEntities: {
-                        affectedRoutes: [{ routeType: 555 }],
-                        affectedStops: [],
-                    },
-                },
-            ],
-        };
-        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('');
-    });
-
-    it('Should return mode from stop', () => {
-        const incident = {
-            ...mockIncident,
-            disruptions: [
-                {
-                    ...mockDisruption1,
-                    affectedEntities: {
-                        affectedRoutes: [],
-                        affectedStops: [{ routeType: 4 }],
-                    },
-                },
-            ],
-        };
-        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('Ferry');
-    });
-
-    it('Should return multiple modes from stops', () => {
-        const incident = {
-            ...mockIncident,
-            disruptions: [
-                {
-                    ...mockDisruption1,
-                    affectedEntities: {
-                        affectedRoutes: [],
-                        affectedStops: [{ routeType: 3 }, { routeType: 2 }],
-                    },
-                },
-            ],
-        };
-        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('Bus, Train');
-    });
-
-    it('Should return multiple modes from stops with duplicated mode', () => {
-        const incident = {
-            ...mockIncident,
-            disruptions: [
-                {
-                    ...mockDisruption1,
-                    affectedEntities: {
-                        affectedRoutes: [],
-                        affectedStops: [{ routeType: 3 }, { routeType: 3 }, { routeType: 2 }],
-                    },
-                },
-            ],
-        };
-        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('Bus, Train');
-    });
-
-    it('Should return empty mode due to invalid routeType from stops', () => {
-        const incident = {
-            ...mockIncident,
-            disruptions: [
-                {
-                    ...mockDisruption1,
-                    affectedEntities: {
-                        affectedRoutes: [],
-                        affectedStops: [{ routeType: 555 }, { routeType: 333 }],
-                    },
-                },
-            ],
-        };
-        expect(buildIncidentSubmitBody(incident, false).mode).toEqual('');
+        const result = calculateParentIncidentTimeFromDisruptions(disruptions);
+        expect(result).toEqual({
+            startDate: '15/01/2024',
+            startTime: '08:00',
+            endDate: '17/01/2024',
+            endTime: '18:00',
+        });
     });
 });

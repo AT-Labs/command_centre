@@ -2,11 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
-import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
+import { useDraftDisruptions, useAdditionalFrontendChanges } from '../../../../../redux/selectors/appSettings';
+import { getColumnClass, getFooterClassName, getCancelButtonClassName } from '../../../../../utils/common/footer-utils';
 
 export const Footer = props => (
-    <footer className="row m-0 justify-content-between p-4 position-fixed">
-        <div className={ (props.useDraftDisruptions && props.isDraftOrCreateMode) ? 'col-3' : 'col-4' }>
+    <footer className={ getFooterClassName(props) }>
+        <div className={ getColumnClass(props, '') }>
             { props.onBack && (
                 <Button
                     className="btn cc-btn-link"
@@ -15,17 +16,17 @@ export const Footer = props => (
                 </Button>
             )}
         </div>
-        <div className={ (props.useDraftDisruptions && props.isDraftOrCreateMode) ? 'col-3 pl-0' : 'col-4 pl-0' }>
+        <div className={ getColumnClass(props, ' pl-0') }>
             <Button
-                className={ (props.useDraftDisruptions && props.isDraftOrCreateMode) ? 'btn cc-btn-secondary btn-block' : 'btn cc-btn-secondary btn-block pl-0' }
+                className={ getCancelButtonClassName(props) }
                 onClick={ () => {
-                    props.toggleDisruptionModals('isCancellationOpen', true);
+                    props.toggleModals('isCancellationOpen', true);
                 } }>
                 Cancel
             </Button>
         </div>
         { (props.useDraftDisruptions && props.isDraftOrCreateMode) && (
-            <div className="col-3 pl-0">
+            <div className={ getColumnClass(props, ' pl-0') }>
                 <Button
                     className="btn cc-btn-secondary btn-block"
                     disabled={ props.isDraftSubmitDisabled }
@@ -34,7 +35,7 @@ export const Footer = props => (
                 </Button>
             </div>
         )}
-        <div className={ (props.useDraftDisruptions && props.isDraftOrCreateMode) ? 'col-3 pl-0' : 'col-4' }>
+        <div className={ getColumnClass(props, props.useDraftDisruptions && props.isDraftOrCreateMode ? ' pl-0' : '') }>
             <Button
                 disabled={ props.isSubmitDisabled }
                 className="btn cc-btn-primary btn-block continue"
@@ -42,11 +43,21 @@ export const Footer = props => (
                 { props.nextButtonValue }
             </Button>
         </div>
+        { props.showFinishButton && (
+            <div className="col-2 pl-0">
+                <Button
+                    disabled={ props.isFinishDisabled }
+                    className="btn cc-btn-success btn-block"
+                    onClick={ props.onFinish }>
+                    { props.finishButtonValue || 'Finish' }
+                </Button>
+            </div>
+        )}
     </footer>
 );
 
 Footer.propTypes = {
-    toggleDisruptionModals: PropTypes.func.isRequired,
+    toggleModals: PropTypes.func.isRequired,
     onContinue: PropTypes.func.isRequired,
     onSubmitDraft: PropTypes.func,
     onBack: PropTypes.func,
@@ -55,6 +66,10 @@ Footer.propTypes = {
     isDraftSubmitDisabled: PropTypes.bool,
     nextButtonValue: PropTypes.string.isRequired,
     useDraftDisruptions: PropTypes.bool,
+    showFinishButton: PropTypes.bool,
+    isFinishDisabled: PropTypes.bool,
+    onFinish: PropTypes.func,
+    finishButtonValue: PropTypes.string,
 };
 
 Footer.defaultProps = {
@@ -64,11 +79,16 @@ Footer.defaultProps = {
     isDraftOrCreateMode: true,
     onBack: null,
     onSubmitDraft: () => {},
+    showFinishButton: false,
+    isFinishDisabled: false,
+    finishButtonValue: 'Finish',
+    onFinish: () => {},
 };
 
 export default connect(
     state => ({
         useDraftDisruptions: useDraftDisruptions(state),
+        useAdditionalFrontendChanges: useAdditionalFrontendChanges(state),
     }),
     {
     },

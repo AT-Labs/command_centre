@@ -250,6 +250,11 @@ export default {
     OPEN_DIVERSION_MANAGER: 'open-diversion-manager',
     ADD_DIVERSION: 'add-diversion',
     UPDATE_DIVERSION_RESULT_STATE: 'update-diversion-result-state',
+    SET_DIVERSION_MANAGER_LOADING: 'set-diversion-manager-loading',
+    FETCH_DIVERSIONS_START: 'fetch-diversions-start',
+    FETCH_DIVERSIONS_SUCCESS: 'fetch-diversions-success',
+    FETCH_DIVERSIONS_ERROR: 'fetch-diversions-error',
+    CLEAR_DIVERSIONS_CACHE: 'clear-diversions-cache',
 
     // Incidents
     FETCH_CONTROL_INCIDENTS_DISRUPTIONS: 'fetch-control-incidents-disruptions',

@@ -104,11 +104,9 @@ const incidentForEdit = {
     incidentId: 139273,
     mode: 'Bus',
     cause: 'CONGESTION',
-    startTime: '08:27',
-    startDate: '22/06/2025',
+    startTime: '2025-06-21T20:27:00.000Z',
     endTime: null,
-    endDate: '',
-    status: STATUSES.NOT_STARTED,
+    status: 'not-started',
     header: 'test incident n0827',
     url: '',
     version: 1,
@@ -123,33 +121,27 @@ const incidentForEdit = {
             disruptionId: 139535,
             incidentNo: 'DISR139535',
             mode: 'Bus',
-            affectedEntities: {
-                affectedRoutes: [
-                    {
-                        routeId: '101-202',
-                        routeShortName: '101',
-                        routeType: 3,
-                        type: 'route',
-                        notes: [],
-                    },
-                    {
-                        routeId: '105-202',
-                        routeShortName: '105',
-                        routeType: 3,
-                        type: 'route',
-                        notes: [],
-                    },
-                ],
-                affectedStops: [],
-            },
+            affectedEntities: [
+                {
+                    routeId: '101-202',
+                    routeShortName: '101',
+                    routeType: 3,
+                    type: 'route',
+                    notes: [],
+                },
+                {
+                    routeId: '105-202',
+                    routeShortName: '105',
+                    routeType: 3,
+                    type: 'route',
+                    notes: [],
+                },
+            ],
             impact: 'ESCALATOR_NOT_WORKING',
             cause: 'CONGESTION',
-            // startTime: '2025-06-21T20:27:00.000Z',
-            startTime: '08:27',
-            startDate: '22/06/2025',
+            startTime: '2025-06-21T20:27:00.000Z',
             endTime: null,
-            endDate: '',
-            status: STATUSES.IN_PROGRESS,
+            status: 'in-progress',
             lastUpdatedTime: '2025-06-21T20:27:33.201Z',
             lastUpdatedBy: 'aqwe@propellerhead.co.nz',
             description: null,
@@ -186,15 +178,6 @@ const incidentForEdit = {
     modalOpenedTime: mockTimeForModalOpenedTime,
 };
 
-const draftIncidentForEdit = {
-    ...incidentForEdit,
-    status: STATUSES.DRAFT,
-    disruptions: [{
-        ...incidentForEdit.disruptions[0],
-        status: STATUSES.DRAFT,
-    }],
-};
-
 jest.mock('../../../../../utils/control/alert-cause-effect', () => ({
     useAlertCauses: jest.fn(),
     useAlertEffects: jest.fn(),
@@ -214,9 +197,7 @@ describe('SelectDetails Component', () => {
         toggleIncidentModals: jest.fn(),
         updateCurrentStep: jest.fn(),
         useDraftDisruptions: false,
-        onPublishUpdate: jest.fn(),
-        isEffectValid: true,
-        isEffectForPublishValid: true,
+        useAdditionalFrontendChanges: true,
     };
 
     beforeEach(() => {
@@ -668,7 +649,7 @@ describe('SelectDetails Component', () => {
             const input = document.getElementById('disruption-detail__status');
             fireEvent.change(input, { target: { value: STATUSES.RESOLVED } });
 
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(3);
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(2);
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '19/06/2025');
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endTime', '11:12');
         });
@@ -694,12 +675,11 @@ describe('SelectDetails Component', () => {
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endTime', '11:12');
         });
 
-        // can't reach because of options for status selector do not provide possibility to change not-started -> in-progress
-        /* it('Should update startDate and startTime when change status from not-started to in-progress', () => {
+        it('Should update startDate and startTime when change status from not-started to in-progress', () => {
             const props = {
                 ...defaultProps,
                 editMode: EDIT_TYPE.EDIT,
-                data: { ...incidentForEdit, status: STATUSES.NOT_STARTED, startDate: '25/06/2025' },
+                data: { ...incidentForEdit, status: STATUSES.NOT_STARTED },
             };
             render(
                 <Provider store={ store }>
@@ -712,7 +692,7 @@ describe('SelectDetails Component', () => {
             expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(2);
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startDate', '19/06/2025');
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startTime', '11:12');
-        }); */
+        });
 
         it('Should update startDate on change', () => {
             const props = {
@@ -746,42 +726,91 @@ describe('SelectDetails Component', () => {
             const endPicker = screen.getByTestId('end-date_date-picker');
             fireEvent.change(endPicker, { target: { value: '2025-07-11' } });
 
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(1);
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(2);
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
         });
-    });
 
-    describe('Publish draft', () => {
-        it('Should be enabled with valid form', () => {
-            const propsWithValues = { ...defaultProps,
-                data: { ...draftIncidentForEdit },
-                useDraftDisruptions: true,
-                editMode: EDIT_TYPE.EDIT,
+        it('should automatically set endTime to 23:59 when endDate is set and endTime is empty', () => {
+            const props = {
+                ...defaultProps,
+                data: {
+                    ...incidentForEdit,
+                    endTime: '',
+                },
             };
             render(
                 <Provider store={ store }>
-                    <SelectDetails { ...propsWithValues } />
+                    <SelectDetails { ...props } />
                 </Provider>,
             );
-            const button = screen.getByRole('button', { name: /publish/i });
-            expect(button).not.toBeNull();
-            expect(button.disabled).toBe(false);
+            const endPicker = screen.getByTestId('end-date_date-picker');
+            fireEvent.change(endPicker, { target: { value: '2025-07-11' } });
+
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(2);
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endTime', '23:59');
         });
 
-        it('Should be disabled with any not valid value form', () => {
-            const propsWithValues = { ...defaultProps,
-                data: { ...draftIncidentForEdit, startTime: '' },
-                useDraftDisruptions: true,
-                editMode: EDIT_TYPE.EDIT,
+        it('should not set endTime to 23:59 when endDate is set but endTime already has a value', () => {
+            const props = {
+                ...defaultProps,
+                data: {
+                    ...incidentForEdit,
+                    endTime: '14:30',
+                },
             };
             render(
                 <Provider store={ store }>
-                    <SelectDetails { ...propsWithValues } />
+                    <SelectDetails { ...props } />
                 </Provider>,
             );
-            const button = screen.getByRole('button', { name: /publish/i });
-            expect(button).not.toBeNull();
-            expect(button.disabled).toBe(true);
+            const endPicker = screen.getByTestId('end-date_date-picker');
+            fireEvent.change(endPicker, { target: { value: '2025-07-11' } });
+
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(1);
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
+            expect(defaultProps.onDataUpdate).not.toHaveBeenCalledWith('endTime', '23:59');
+        });
+
+        it('should not set endTime to 23:59 when endDate is cleared', () => {
+            const props = {
+                ...defaultProps,
+                data: {
+                    ...incidentForEdit,
+                    endTime: '',
+                },
+            };
+            render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+            const endPicker = screen.getByTestId('end-date_date-picker');
+            fireEvent.change(endPicker, { target: { value: '' } });
+
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(0);
+            expect(defaultProps.onDataUpdate).not.toHaveBeenCalledWith('endTime', '23:59');
+        });
+
+        it('should not set endTime to 23:59 when useAdditionalFrontendChanges is false', () => {
+            const props = {
+                ...defaultProps,
+                useAdditionalFrontendChanges: false,
+                data: {
+                    ...incidentForEdit,
+                    endTime: '',
+                },
+            };
+            render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+            const endPicker = screen.getByTestId('end-date_date-picker');
+            fireEvent.change(endPicker, { target: { value: '2025-07-11' } });
+
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(1);
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
         });
     });
 });

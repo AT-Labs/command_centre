@@ -117,9 +117,9 @@ describe('<Workarounds />', () => {
         expect(footer.prop('nextButtonValue')).toEqual('Save');
     });
 
-    it('should call toggleDisruptionModals when toggleDisruptionModals is called', () => {
+    it('should call toggleDisruptionModals when toggleModals is called', () => {
         const footer = wrapper.find(Footer);
-        footer.prop('toggleDisruptionModals')();
+        footer.prop('toggleModals')();
         expect(componentPropsMock.toggleDisruptionModals).toHaveBeenCalled();
     });
 
