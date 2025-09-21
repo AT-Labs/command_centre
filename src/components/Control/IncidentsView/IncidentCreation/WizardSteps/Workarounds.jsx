@@ -2,19 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Button, Input, Label } from 'reactstrap';
-import { isEditEnabled, isWorkaroundPanelOpen, getDisruptionKeyToWorkaroundEdit } from '../../../../../redux/selectors/control/incidents';
-import { toggleIncidentModals, updateCurrentStep, toggleWorkaroundPanel, updateDisruptionKeyToWorkaroundEdit } from '../../../../../redux/actions/control/incidents';
+import { isWorkaroundPanelOpen, getDisruptionKeyToWorkaroundEdit, getEditMode } from '../../../../../redux/selectors/control/incidents';
+import { toggleIncidentModals,
+    updateCurrentStep,
+    toggleWorkaroundPanel,
+    updateDisruptionKeyToWorkaroundEdit,
+    setDisruptionForWorkaroundEdit,
+} from '../../../../../redux/actions/control/incidents';
 import Footer from './Footer';
 import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 import { useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
+import EDIT_TYPE from '../../../../../types/edit-types';
+import { STATUSES } from '../../../../../types/disruptions-types';
 
 export const Workarounds = (props) => {
-    const { disruptions } = props.data;
+    const disruptions = props.editMode !== EDIT_TYPE.ADD_EFFECT ? props.data.disruptions : [props.newIncidentEffect];
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [filteredDisruptions, setFilteredDisruptions] = useState(disruptions || []);
     const onContinue = () => {
-        if (!props.isEditMode) {
+        if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
             props.onStepUpdate(3);
             props.updateCurrentStep(1);
             props.onSubmit();
@@ -24,7 +31,7 @@ export const Workarounds = (props) => {
     };
 
     const onSaveDraft = () => {
-        if (!props.isEditMode) {
+        if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
             props.onStepUpdate(3);
             props.onSubmitDraft();
         } else {
@@ -33,7 +40,7 @@ export const Workarounds = (props) => {
     };
 
     const onBack = () => {
-        if (!props.isEditMode) {
+        if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
             props.onStepUpdate(1);
             props.updateCurrentStep(2);
         } else {
@@ -44,6 +51,9 @@ export const Workarounds = (props) => {
     };
 
     const openWorkaroundPanel = (disruption) => {
+        if (props.editMode === EDIT_TYPE.ADD_EFFECT) {
+            props.setDisruptionForWorkaroundEdit(disruption);
+        }
         props.updateDisruptionKeyToWorkaroundEdit(disruption.key);
         props.toggleWorkaroundPanel(true);
     };
@@ -71,7 +81,24 @@ export const Workarounds = (props) => {
         setFilteredDisruptions(filtered);
     }, [debouncedSearchTerm]);
 
-    const isSubmitDisabled = props.useDraftDisruptions ? (props.isFinishDisabled && !props.isEditMode) : false;
+    useEffect(() => {
+        if (props.editMode === EDIT_TYPE.ADD_EFFECT) {
+            const term = debouncedSearchTerm.toLowerCase();
+            const filtered = [props.newIncidentEffect].filter(d => d.impact?.toLowerCase().includes(term)
+                || d.affectedEntities?.affectedRoutes?.some(route => route.routeShortName.toLowerCase().includes(term))
+                || d.affectedEntities?.affectedStops?.some(stop => stop.text.toLowerCase().includes(term)));
+            setFilteredDisruptions(filtered);
+        }
+    }, [props.newIncidentEffect]);
+
+    const getNextButton = () => {
+        if (props.editMode === EDIT_TYPE.ADD_EFFECT && props.incidentStatus === STATUSES.DRAFT) {
+            return 'Save draft';
+        }
+        return props.editMode !== EDIT_TYPE.ADD_EFFECT ? 'Finish' : 'Save';
+    };
+
+    const isSubmitDisabled = props.useDraftDisruptions ? (props.isFinishDisabled && props.editMode !== EDIT_TYPE.ADD_EFFECT) : false;
 
     return (
         <div>
@@ -127,8 +154,8 @@ export const Workarounds = (props) => {
                 onStepUpdate={ props.onStepUpdate }
                 toggleModals={ props.toggleIncidentModals }
                 isSubmitDisabled={ isSubmitDisabled || props.isWorkaroundPanelOpen }
-                nextButtonValue={ props.isEditMode ? 'Save' : 'Finish' }
-                isDraftOrCreateMode={ !props.isEditMode }
+                nextButtonValue={ getNextButton() }
+                isDraftOrCreateMode={ props.editMode !== EDIT_TYPE.ADD_EFFECT }
                 onContinue={ () => onContinue() }
                 onSubmitDraft={ () => onSaveDraft() }
                 onBack={ () => onBack() } />
@@ -144,13 +171,16 @@ Workarounds.propTypes = {
     toggleIncidentModals: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func,
     onSubmitUpdate: PropTypes.func.isRequired,
-    isEditMode: PropTypes.bool,
     isFinishDisabled: PropTypes.bool,
     useDraftDisruptions: PropTypes.bool,
     toggleWorkaroundPanel: PropTypes.func.isRequired,
     updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
     isWorkaroundPanelOpen: PropTypes.bool,
     disruptionKeyToEdit: PropTypes.string,
+    editMode: PropTypes.string,
+    newIncidentEffect: PropTypes.object,
+    setDisruptionForWorkaroundEdit: PropTypes.func.isRequired,
+    incidentStatus: PropTypes.string,
 };
 
 Workarounds.defaultProps = {
@@ -159,16 +189,18 @@ Workarounds.defaultProps = {
     onSubmitDraft: () => { /**/ },
     onSubmit: () => { /**/ },
     updateCurrentStep: () => { /**/ },
-    isEditMode: false,
     isFinishDisabled: false,
     useDraftDisruptions: false,
     isWorkaroundPanelOpen: false,
     disruptionKeyToEdit: '',
+    editMode: EDIT_TYPE.CREATE,
+    newIncidentEffect: {},
+    incidentStatus: STATUSES.NOT_STARTED,
 };
 
 export default connect(state => ({
-    isEditMode: isEditEnabled(state),
     useDraftDisruptions: useDraftDisruptions(state),
     isWorkaroundPanelOpen: isWorkaroundPanelOpen(state),
     disruptionKeyToEdit: getDisruptionKeyToWorkaroundEdit(state),
-}), { toggleIncidentModals, updateCurrentStep, toggleWorkaroundPanel, updateDisruptionKeyToWorkaroundEdit })(Workarounds);
+    editMode: getEditMode(state),
+}), { toggleIncidentModals, updateCurrentStep, toggleWorkaroundPanel, updateDisruptionKeyToWorkaroundEdit, setDisruptionForWorkaroundEdit })(Workarounds);

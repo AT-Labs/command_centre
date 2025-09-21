@@ -3,7 +3,7 @@ import React from 'react';
 import { isEmpty, uniqBy, sortBy } from 'lodash-es';
 import moment from 'moment';
 import PropTypes from 'prop-types';
-import { AiOutlineClose } from 'react-icons/ai';
+import { AiOutlineClose, AiOutlinePlusCircle } from 'react-icons/ai';
 import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 import { RRule } from 'rrule';
@@ -22,6 +22,7 @@ import {
     updateAffectedRoutesState,
     setRequestToUpdateEditEffectState,
     setRequestedDisruptionKeyToUpdateEditEffect,
+    updateEditMode,
 } from '../../../../../redux/actions/control/incidents';
 import {
     getAffectedRoutes,
@@ -40,6 +41,7 @@ import {
     isRequiresToUpdateNotes,
     isWorkaroundPanelOpen,
     isApplyChangesModalOpen,
+    isPublishAndApplyChangesModalOpen,
 } from '../../../../../redux/selectors/control/incidents';
 import { STATUSES, DISRUPTION_TYPE, INCIDENTS_CREATION_STEPS, DEFAULT_SEVERITY, ALERT_TYPES } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
@@ -77,11 +79,12 @@ import StopsLayer from '../../../../Common/Map/StopsLayer/StopsLayer';
 import { HighlightingLayer } from '../../../../Common/Map/HighlightingLayer/HighlightingLayer';
 import { SelectedStopsMarker } from '../../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import DrawLayer from './DrawLayer';
-import { usePassengerImpact, useGeoSearchRoutesByDisruptionPeriod, useDraftDisruptions, useAdditionalFrontendChanges } from '../../../../../redux/selectors/appSettings';
+import { useGeoSearchRoutesByDisruptionPeriod, useDraftDisruptions, useAdditionalFrontendChanges } from '../../../../../redux/selectors/appSettings';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import WorkaroundPanel from '../WizardSteps/WorkaroundPanel';
 import EditEffectPanel from '../EditIncidentDetails/EditEffectPanel';
 import ApplyChangesModal from '../EditIncidentDetails/ApplyChangesModal';
+import PublishAndApplyChangesModal from '../EditIncidentDetails/PublishAndApplyChangesModal';
 
 const getInitialState = isFeatureEnabled => ({
     startTime: '',
@@ -124,7 +127,9 @@ export class CreateIncident extends React.Component {
             editableWorkarounds: {},
             isEffectsRequiresToUpdate: false,
             isEffectValid: true,
+            isEffectForPublishValid: true,
             isEffectUpdated: false,
+            newIncidentEffect: {},
         };
     }
 
@@ -142,18 +147,19 @@ export class CreateIncident extends React.Component {
         const disruptionType = routes.length > 0 ? DISRUPTION_TYPE.ROUTES : DISRUPTION_TYPE.STOPS;
         const updatedDisruptions = disruptions.map((disruption) => {
             const type = disruption.affectedEntities.some(entity => entity.type === 'route') ? DISRUPTION_TYPE.ROUTES : DISRUPTION_TYPE.STOPS;
+            const entities = disruption.affectedEntities ?? [];
             return {
                 ...disruption,
                 ...(disruption.startTime && { startTime: moment(disruption.startTime).format(TIME_FORMAT) }),
                 ...(disruption.startTime && { startDate: moment(disruption.startTime).format(DATE_FORMAT) }),
                 ...(disruption.endTime && { endTime: moment(disruption.endTime).format(TIME_FORMAT) }),
                 ...(disruption.endTime && { endDate: moment(disruption.endTime).format(DATE_FORMAT) }),
-                ...(disruption.affectedEntities.length > 0 && {
+                ...{
                     affectedEntities: {
-                        affectedStops: [...disruption.affectedEntities.filter(entity => entity.type === 'stop')],
-                        affectedRoutes: [...disruption.affectedEntities.filter(entity => entity.type === 'route')],
+                        affectedStops: entities.filter(entity => entity.type === 'stop'),
+                        affectedRoutes: entities.filter(entity => entity.type === 'route'),
                     },
-                }),
+                },
                 disruptionType: type,
                 key: disruption.incidentNo,
             };
@@ -220,9 +226,27 @@ export class CreateIncident extends React.Component {
         }
     }
 
+    drawAffectedEntity() {
+        const { incidentToEdit } = this.props;
+        if (incidentToEdit?.disruptions?.length > 0) {
+            const routesToDraw = incidentToEdit.disruptions.map(disruption => disruption.affectedEntities.filter(entity => entity.type === 'route')).flat();
+            const stopsToDraw = incidentToEdit.disruptions.map(disruption => disruption.affectedEntities.filter(entity => entity.type === 'stop')).flat();
+            this.props.updateAffectedStopsState(sortBy(stopsToDraw, sortedStop => sortedStop.stopCode));
+            this.props.updateAffectedRoutesState(routesToDraw);
+
+            if (routesToDraw.length > 0) {
+                this.props.getRoutesByShortName(routesToDraw);
+            }
+        }
+    }
+
     componentDidUpdate(prevProps) {
         if (!prevProps.isRequiresToUpdateNotes && this.props.isRequiresToUpdateNotes) {
             this.setupDataEdit(true); // for updating form on add note
+        }
+
+        if (prevProps.incidentToEdit?.disruptions?.length !== this.props.incidentToEdit?.disruptions?.length) {
+            this.drawAffectedEntity(); // for redraw affected entity after add effect
         }
     }
 
@@ -297,6 +321,12 @@ export class CreateIncident extends React.Component {
                 workaroundsToSync: newWorkarounds,
                 isWorkaroundsRequiresToUpdate: true,
             });
+        } else if (this.props.editMode === EDIT_TYPE.ADD_EFFECT) {
+            this.setState(prevState => ({
+                newIncidentEffect: { ...prevState.newIncidentEffect,
+                    workarounds: newWorkarounds,
+                },
+            }));
         } else {
             this.setState(prevState => ({
                 incidentData: { ...prevState.incidentData,
@@ -397,7 +427,7 @@ export class CreateIncident extends React.Component {
     };
 
     onSubmitIncidentUpdate = async () => {
-        const { incidentData, editableDisruption, editableWorkarounds } = this.state;
+        const { incidentData, editableDisruption, editableWorkarounds, newIncidentEffect } = this.state;
         let updatedDisruption;
         if (this.props.isEditEffectPanelOpen) {
             updatedDisruption = incidentData.disruptions.map(disruption => (disruption.incidentNo === editableDisruption.incidentNo
@@ -405,16 +435,28 @@ export class CreateIncident extends React.Component {
                     ...editableDisruption,
                     ...(this.props.isWorkaroundPanelOpen && editableWorkarounds?.key === disruption.incidentNo ? { workarounds: editableWorkarounds.workarounds } : {}),
                     ...(editableDisruption.note && { notes: [...editableDisruption.notes, ...([{ description: editableDisruption.note }])] }),
+                    ...(disruption.status === STATUSES.DRAFT && incidentData.status === STATUSES.NOT_STARTED && { status: STATUSES.NOT_STARTED }),
                 }
                 : {
                     ...disruption,
                     ...(disruption.note && { notes: [...disruption.notes, ...([{ description: disruption.note }])] }),
+                    ...(disruption.status === STATUSES.DRAFT && incidentData.status === STATUSES.NOT_STARTED && { status: STATUSES.NOT_STARTED }),
                 }));
         } else {
             updatedDisruption = incidentData.disruptions.map(disruption => ({
                 ...disruption,
                 ...(disruption.note && { notes: [...disruption.notes, ...([{ description: disruption.note }])] }),
+                ...(disruption.status === STATUSES.DRAFT && incidentData.status === STATUSES.NOT_STARTED && { status: STATUSES.NOT_STARTED }),
             }));
+        }
+
+        if (this.props.editMode === EDIT_TYPE.ADD_EFFECT && newIncidentEffect.key) {
+            updatedDisruption = [
+                ...updatedDisruption,
+                {
+                    ...newIncidentEffect,
+                    ...(incidentData.status === STATUSES.DRAFT ? { status: STATUSES.DRAFT } : { status: STATUSES.NOT_STARTED }),
+                }];
         }
 
         const incidentStartDate = incidentData.startDate ? incidentData.startDate : moment(incidentData.startTime).format(DATE_FORMAT);
@@ -431,9 +473,25 @@ export class CreateIncident extends React.Component {
             notes: [],
             ...(updatedDisruption && { disruptions: updatedDisruption }),
         };
-        this.props.updateIncident(buildIncidentSubmitBody(incident, true));
-        this.props.openCreateIncident(false);
-        this.props.toggleIncidentModals('isApplyChangesOpen', false);
+        this.props.updateIncident(buildIncidentSubmitBody(incident, true), this.props.editMode === EDIT_TYPE.ADD_EFFECT);
+        this.clearNewEffectToIncident();
+    };
+
+    onPublishUpdate = () => {
+        const { isEffectUpdated } = this.state;
+        if (isEffectUpdated && this.props.isEditEffectPanelOpen) {
+            this.props.toggleIncidentModals('isPublishAndApplyChangesOpen', true);
+        } else {
+            this.updateData('status', STATUSES.NOT_STARTED);
+            setTimeout(() => this.onSubmitIncidentUpdate(), 0);
+        }
+    };
+
+    onPublishIncidentUpdate = () => {
+        this.updateData('status', STATUSES.NOT_STARTED);
+
+        setTimeout(() => this.onSubmitIncidentUpdate(), 0);
+        this.props.toggleIncidentModals('isPublishAndApplyChangesOpen', false);
     };
 
     toggleModal = (modalType, isOpen) => {
@@ -445,6 +503,27 @@ export class CreateIncident extends React.Component {
     closeEffectEditPanel = () => {
         this.props.setRequestedDisruptionKeyToUpdateEditEffect('');
         this.props.setRequestToUpdateEditEffectState(true);
+    };
+
+    updateNewIncidentEffect = (disruption) => {
+        this.setState({
+            newIncidentEffect: {
+                ...disruption,
+            },
+        });
+    };
+
+    clearNewEffectToIncident = () => {
+        this.setState({
+            newIncidentEffect: {},
+        });
+    };
+
+    addNewEffectToIncident = () => {
+        this.props.updateAffectedStopsState([]);
+        this.props.updateAffectedRoutesState([]);
+        this.props.updateEditMode(EDIT_TYPE.ADD_EFFECT);
+        this.props.updateCurrentStep(2);
     };
 
     renderSteps = () => {
@@ -461,7 +540,7 @@ export class CreateIncident extends React.Component {
             ),
             [INCIDENTS_CREATION_STEPS.ADD_WORKAROUNDS]: (
                 <li key="3" className={ this.props.activeStep === 3 ? 'active' : '' }>
-                    { this.props.usePassengerImpact ? 'Workarounds and Passenger Impact' : 'Add Workarounds' }
+                    Add Workarounds
                     <div className="text-muted optional-text">(Optional)</div>
                 </li>
             ),
@@ -470,12 +549,12 @@ export class CreateIncident extends React.Component {
         return (
             <div className="disruption-creation__steps p-4">
                 <ol>
-                    { this.props.editMode !== EDIT_TYPE.EDIT && ([
+                    { this.props.editMode === EDIT_TYPE.CREATE && ([
                         steps[INCIDENTS_CREATION_STEPS.ENTER_DETAILS],
                         steps[INCIDENTS_CREATION_STEPS.ADD_EFFECTS],
                         steps[INCIDENTS_CREATION_STEPS.ADD_WORKAROUNDS],
                     ])}
-                    { this.props.editMode === EDIT_TYPE.EDIT && ([
+                    { this.props.editMode === EDIT_TYPE.ADD_EFFECT && ([
                         steps[INCIDENTS_CREATION_STEPS.ADD_EFFECTS],
                         steps[INCIDENTS_CREATION_STEPS.ADD_WORKAROUNDS],
                     ])}
@@ -492,13 +571,19 @@ export class CreateIncident extends React.Component {
             isWorkaroundsRequiresToUpdate,
             workaroundsToSync,
             isEffectsRequiresToUpdate,
-            isEffectValid } = this.state;
+            isEffectValid,
+            isEffectForPublishValid,
+            newIncidentEffect } = this.state;
         const renderMainHeading = () => {
             const titleByMode = {
                 [EDIT_TYPE.CREATE]: 'Create a new Disruption',
                 [EDIT_TYPE.COPY]: `Copy Disruption #${this.props.incidentToEdit.incidentNo}`,
                 [EDIT_TYPE.EDIT]: `Disruption #CCD${this.props.incidentToEdit.incidentId}`,
+                [EDIT_TYPE.ADD_EFFECT]: `Add effect on Disruption #CCD${this.props.incidentToEdit.incidentId}`,
             };
+            if (this.props.editMode === EDIT_TYPE.ADD_EFFECT) {
+                return this.props.activeStep === 2 && <h2 className="pl-4 pr-4 pt-4">{titleByMode[this.props.editMode]}</h2>;
+            }
             return this.props.activeStep === 1 && <h2 className="pl-4 pr-4 pt-4">{titleByMode[this.props.editMode]}</h2>;
         };
         return (
@@ -530,9 +615,25 @@ export class CreateIncident extends React.Component {
                                     isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
                                     showFinishButton={ useAdditionalFrontendChanges }
                                     useAdditionalFrontendChanges={ useAdditionalFrontendChanges } />
+                                {this.props.editMode !== EDIT_TYPE.ADD_EFFECT && (
+                                    <SelectDetails
+                                        onUpdateDetailsValidation={ this.onUpdateDetailsValidation }
+                                        onSubmitUpdate={ this.onSubmitUpdate }
+                                        useAdditionalFrontendChanges={ useAdditionalFrontendChanges } />
+                                )}
+                                <SelectEffects
+                                    onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
+                                    updateNewIncidentEffect={ this.updateNewIncidentEffect }
+                                    newIncidentEffect={ newIncidentEffect }
+                                    onSubmitUpdate={ this.onSubmitUpdate }
+                                    isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
+                                    showFinishButton={ useAdditionalFrontendChanges }
+                                    useAdditionalFrontendChanges={ useAdditionalFrontendChanges } />
                                 <Workarounds
                                     isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
-                                    onSubmitUpdate={ this.onSubmitUpdate } />
+                                    newIncidentEffect={ newIncidentEffect }
+                                    onSubmitUpdate={ this.onSubmitUpdate }
+                                    incidentStatus={ incidentData.status } />
                             </Wizard>
                             <CustomModal
                                 className="disruption-creation__modal"
@@ -544,7 +645,7 @@ export class CreateIncident extends React.Component {
                                 className="disruption-creation__modal"
                                 title="Log a disruption"
                                 isModalOpen={ this.props.isCancellationOpen }>
-                                <Cancellation />
+                                <Cancellation clearNewEffectToIncident={ this.clearNewEffectToIncident } />
                             </CustomModal>
                         </div>
                     )}
@@ -560,6 +661,19 @@ export class CreateIncident extends React.Component {
                                             style={ { color: '#399CDB', fontSize: '48px' } } />
                                     )}
                             </div>
+                            {this.props.editMode === EDIT_TYPE.EDIT
+                                    && (
+                                        <div className="add-effect-button-wrapper pr-4">
+                                            <button
+                                                type="button"
+                                                className="add-effect-button"
+                                                onClick={ () => this.addNewEffectToIncident() }>
+                                                <AiOutlinePlusCircle size={ 36 } color="#399CDB" />
+                                                {' '}
+                                                Add effect
+                                            </button>
+                                        </div>
+                                    ) }
                             <SelectDetails
                                 onUpdateDetailsValidation={ this.onUpdateDetailsValidation }
                                 data={ incidentData }
@@ -570,7 +684,9 @@ export class CreateIncident extends React.Component {
                                 onSubmitUpdate={ this.onSubmitUpdate }
                                 isEffectsRequiresToUpdate={ isEffectsRequiresToUpdate }
                                 updateIsEffectsRequiresToUpdateState={ () => this.setState({ isEffectsRequiresToUpdate: false }) }
-                                isEffectValid={ isEffectValid } />
+                                isEffectValid={ isEffectValid }
+                                isEffectForPublishValid={ isEffectForPublishValid }
+                                onPublishUpdate={ this.onPublishUpdate } />
                             <CustomModal
                                 className="disruption-creation__modal"
                                 title={ this.props.action.resultIncidentId ? 'Disruption created' : 'Log a disruption' }
@@ -588,6 +704,12 @@ export class CreateIncident extends React.Component {
                                 title="Save Disruption"
                                 isModalOpen={ this.props.isApplyChangesOpen }>
                                 <ApplyChangesModal applyChanges={ this.onSubmitIncidentUpdate } />
+                            </CustomModal>
+                            <CustomModal
+                                className="disruption-creation__modal"
+                                title="Publish Disruption"
+                                isModalOpen={ this.props.isPublishAndApplyChangesOpen }>
+                                <PublishAndApplyChangesModal publishIncidentChanges={ this.onPublishIncidentUpdate } />
                             </CustomModal>
                         </div>
                     )}
@@ -620,6 +742,7 @@ export class CreateIncident extends React.Component {
                         applyDisruptionChanges={ this.applyDisruptionChanges }
                         updateEffectValidationState={ valid => this.setState({ isEffectValid: valid }) }
                         updateIsEffectUpdatedState={ isUpdated => this.setState({ isEffectUpdated: isUpdated }) }
+                        updateEffectValidationForPublishState={ valid => this.setState({ isEffectForPublishValid: valid }) }
                     />
                 )}
                 <Map
@@ -706,7 +829,6 @@ CreateIncident.propTypes = {
     updateAffectedStopsState: PropTypes.func.isRequired,
     stopDetail: PropTypes.object.isRequired,
     isLoading: PropTypes.bool,
-    usePassengerImpact: PropTypes.bool.isRequired,
     useGeoSearchRoutesByDisruptionPeriod: PropTypes.bool.isRequired,
     isEditEffectPanelOpen: PropTypes.bool,
     isRequiresToUpdateNotes: PropTypes.bool,
@@ -718,6 +840,8 @@ CreateIncident.propTypes = {
     isWorkaroundPanelOpen: PropTypes.bool,
     isApplyChangesOpen: PropTypes.bool,
     useAdditionalFrontendChanges: PropTypes.bool,
+    updateEditMode: PropTypes.func.isRequired,
+    isPublishAndApplyChangesOpen: PropTypes.bool,
 };
 
 CreateIncident.defaultProps = {
@@ -736,6 +860,7 @@ CreateIncident.defaultProps = {
     isWorkaroundPanelOpen: false,
     isApplyChangesOpen: false,
     useAdditionalFrontendChanges: false,
+    isPublishAndApplyChangesOpen: false,
 };
 
 export default connect(state => ({
@@ -753,7 +878,6 @@ export default connect(state => ({
     childStops: getChildStops(state),
     stopDetail: getStopDetail(state),
     isLoading: getIncidentsLoadingState(state),
-    usePassengerImpact: usePassengerImpact(state),
     useGeoSearchRoutesByDisruptionPeriod: useGeoSearchRoutesByDisruptionPeriod(state),
     useDraftDisruptions: useDraftDisruptions(state),
     useAdditionalFrontendChanges: useAdditionalFrontendChanges(state),
@@ -761,6 +885,7 @@ export default connect(state => ({
     isRequiresToUpdateNotes: isRequiresToUpdateNotes(state),
     isWorkaroundPanelOpen: isWorkaroundPanelOpen(state),
     isApplyChangesOpen: isApplyChangesModalOpen(state),
+    isPublishAndApplyChangesOpen: isPublishAndApplyChangesModalOpen(state),
 }), {
     createNewIncident,
     openCreateIncident,
@@ -774,4 +899,5 @@ export default connect(state => ({
     updateAffectedRoutesState,
     setRequestToUpdateEditEffectState,
     setRequestedDisruptionKeyToUpdateEditEffect,
+    updateEditMode,
 })(CreateIncident);
