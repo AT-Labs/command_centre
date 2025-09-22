@@ -152,7 +152,7 @@ export const Workarounds = (props) => {
             <Footer
                 updateCurrentStep={ props.updateCurrentStep }
                 onStepUpdate={ props.onStepUpdate }
-                toggleModals={ props.toggleIncidentModals }
+                toggleIncidentModals={ props.toggleIncidentModals }
                 isSubmitDisabled={ isSubmitDisabled || props.isWorkaroundPanelOpen }
                 nextButtonValue={ getNextButton() }
                 isDraftOrCreateMode={ props.editMode !== EDIT_TYPE.ADD_EFFECT }

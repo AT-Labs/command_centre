@@ -10,13 +10,12 @@ let store;
 
 jest.mock('../../../../../redux/selectors/appSettings', () => ({
     useDraftDisruptions: jest.fn(),
-    useAdditionalFrontendChanges: jest.fn(),
 }));
 
 const mockStore = configureStore([]);
 
 const mockProps = {
-    toggleModals: jest.fn(),
+    toggleDisruptionModals: jest.fn(),
     onContinue: jest.fn(),
     onSubmitDraft: jest.fn(),
     onBack: jest.fn(),
@@ -27,7 +26,7 @@ const mockProps = {
 };
 
 const setup = (customProps = {}) => {
-    store = mockStore({ useDraftDisruptions: false, useAdditionalFrontendChanges: false });
+    store = mockStore({ useDraftDisruptions: false });
     const props = { ...mockProps, ...customProps };
     return mount(
         <Provider store={ store }>
