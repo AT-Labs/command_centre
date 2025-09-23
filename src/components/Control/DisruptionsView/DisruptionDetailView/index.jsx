@@ -69,25 +69,17 @@ const DisruptionDetailsPage = (props) => {
 
     useEffect(() => {
         const handleVisibilityChange = () => {
-            console.log('🔍 DisruptionDetailsPage - Visibility change detected:', {
-                documentHidden: document.hidden,
-                isDiversionManagerOpen: props.isDiversionManagerOpen
-            });
-            
             if (document.hidden && props.isDiversionManagerOpen) {
-                console.log('🚪 DisruptionDetailsPage - Closing diversion manager via visibilitychange');
                 props.openDiversionManager(false);
             }
         };
 
-        console.log('📝 DisruptionDetailsPage - Adding visibilitychange listener');
         document.addEventListener('visibilitychange', handleVisibilityChange);
         
         return () => {
-            console.log('🧹 DisruptionDetailsPage - Removing visibilitychange listener');
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, []); // Убираем зависимость, чтобы listener создавался только один раз
+    }, []);
 
     useEffect(async () => {
         const result = await getDisruptionAPI(props.activeControlEntityId);

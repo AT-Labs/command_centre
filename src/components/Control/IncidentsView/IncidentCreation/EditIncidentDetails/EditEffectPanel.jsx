@@ -458,11 +458,9 @@ export const EditEffectPanel = (props) => {
     };
 
     const closeWorkaroundPanel = () => {
-        console.log('🔧 closeWorkaroundPanel called');
         props.updateDisruptionKeyToWorkaroundEdit('');
         props.toggleWorkaroundPanel(false);
         props.setDisruptionForWorkaroundEdit({});
-        console.log('🔧 closeWorkaroundPanel completed');
     };
 
     const openWorkaroundPanel = () => {
