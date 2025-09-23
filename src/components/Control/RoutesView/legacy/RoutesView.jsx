@@ -13,7 +13,6 @@ import VIEW_TYPE from '../../../../types/view-types';
 import RouteVariantView from './RouteVariantView';
 import { clearActiveTripInstanceId } from '../../../../redux/actions/control/routes/trip-instances';
 import { PAGE_SIZE } from '../../../../utils/control/routes';
-import { ROUTE_TYPES } from '../../../../utils/control/diversions';
 
 export class RoutesView extends React.Component {
     static propTypes = {
@@ -78,7 +77,7 @@ export class RoutesView extends React.Component {
 
     render() {
         const pageData = slice(this.props.routes, (this.props.page - 1) * PAGE_SIZE, this.props.page * PAGE_SIZE);
-        const columns = pageData.length && pageData[0].routeType !== ROUTE_TYPES.RAIL ? this.ROUTES : filter(this.ROUTES, route => route.label !== 'description');
+        const columns = pageData.length && pageData[0].routeType !== 2 ? this.ROUTES : filter(this.ROUTES, route => route.label !== 'description');
 
         return (
             <ControlTable

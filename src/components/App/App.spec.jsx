@@ -10,8 +10,6 @@ import BrowserCompatibilityModal from '../Common/BrowserCompatibilityModal/Brows
 import RealTimeView from '../RealTime/RealTimeView';
 import VIEW_TYPE from '../../types/view-types';
 
-jest.mock('../Control/DisruptionsView/DiversionManager', () => jest.fn());
-
 let sandbox;
 let wrapper;
 

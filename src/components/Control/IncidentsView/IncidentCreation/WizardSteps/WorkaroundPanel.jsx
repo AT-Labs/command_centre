@@ -40,7 +40,6 @@ export const WorkaroundPanel = (props) => {
         }
     }, [props.isWorkaroundsNeedsToBeUpdated]);
 
-
     const onSubmit = () => {
         formRef.current?.saveForm();
         props.toggleWorkaroundPanel(false);

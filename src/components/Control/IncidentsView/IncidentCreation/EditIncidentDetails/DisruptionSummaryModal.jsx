@@ -11,7 +11,7 @@ import {
     LABEL_STATUS, LABEL_URL, LABEL_CREATED_BY, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
     LABEL_SEVERITY,
 } from '../../../../../constants/disruptions';
-import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES, DEFAULT_SEVERITY } from '../../../../../types/disruptions-types';
+import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES } from '../../../../../types/disruptions-types';
 import { formatCreatedUpdatedTime, momentFromDateTime } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import { getWorkaroundsAsText } from '../../../../../utils/control/disruption-workarounds';
@@ -111,7 +111,7 @@ const DisruptionSummaryModal = (props) => {
             <Table className="table-layout-fixed">
                 <tbody>
                     {createLine(LABEL_HEADER, props.disruption.header)}
-                    {createLine(LABEL_SEVERITY, (find(SEVERITIES, { value: props.disruption.severity }) || DEFAULT_SEVERITY).label)}
+                    {createLine(LABEL_SEVERITY, find(SEVERITIES, { value: props.disruption.severity }).label)}
                     {createLine(LABEL_STATUS, props.disruption.status)}
                     {createLine(LABEL_MODE, props.disruption.mode)}
                     {createLine(LABEL_AFFECTED_ROUTES, [...new Set(props.disruption.affectedEntities.affectedRoutes.map(({ routeShortName }) => routeShortName))].join(', '))}
