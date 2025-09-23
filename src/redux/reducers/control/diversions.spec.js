@@ -461,4 +461,144 @@ describe('Diversions Reducer', () => {
             expect(diversionsReducer(initialState, action)).toEqual(expectedState);
         });
     });
+
+    describe('Diversion Flow Access Integration', () => {
+        it('should handle diversion manager state transitions correctly', () => {
+            const initialState = {
+                ...INIT_STATE,
+                isDiversionManagerOpen: false,
+                isDiversionManagerLoading: false,
+            };
+
+            const openAction = {
+                type: ACTION_TYPE.OPEN_DIVERSION_MANAGER,
+                payload: { isDiversionManagerOpen: true },
+            };
+
+            const openState = diversionsReducer(initialState, openAction);
+            expect(openState.isDiversionManagerOpen).toBe(true);
+
+            const closeAction = {
+                type: ACTION_TYPE.OPEN_DIVERSION_MANAGER,
+                payload: { isDiversionManagerOpen: false },
+            };
+
+            const closeState = diversionsReducer(openState, closeAction);
+            expect(closeState.isDiversionManagerOpen).toBe(false);
+        });
+
+        it('should handle diversion mode changes for create flow', () => {
+            const action = {
+                type: ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE,
+                payload: { diversionEditMode: EDIT_TYPE.CREATE },
+            };
+
+            const expectedState = {
+                ...INIT_STATE,
+                diversionEditMode: EDIT_TYPE.CREATE,
+            };
+
+            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
+        });
+
+        it('should handle diversion mode changes for edit flow', () => {
+            const action = {
+                type: ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE,
+                payload: { diversionEditMode: EDIT_TYPE.EDIT },
+            };
+
+            const expectedState = {
+                ...INIT_STATE,
+                diversionEditMode: EDIT_TYPE.EDIT,
+            };
+
+            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
+        });
+
+        it('should handle diversion to edit updates', () => {
+            const diversionToEdit = { id: 'DIV123', name: 'Test Diversion' };
+            const action = {
+                type: ACTION_TYPE.UPDATE_DIVERSION_TO_EDIT,
+                payload: { diversion: diversionToEdit },
+            };
+
+            const expectedState = {
+                ...INIT_STATE,
+                diversion: diversionToEdit,
+            };
+
+            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
+        });
+
+        it('should handle loading state changes during diversion operations', () => {
+            const action = {
+                type: ACTION_TYPE.SET_DIVERSION_MANAGER_LOADING,
+                payload: { isLoading: true },
+            };
+
+            const expectedState = {
+                ...INIT_STATE,
+                isDiversionManagerLoading: true,
+            };
+
+            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
+        });
+
+        it('should maintain state consistency during complex diversion flow', () => {
+            let state = INIT_STATE;
+
+            const openManagerAction = {
+                type: ACTION_TYPE.OPEN_DIVERSION_MANAGER,
+                payload: { isDiversionManagerOpen: true },
+            };
+            state = diversionsReducer(state, openManagerAction);
+
+            const setModeAction = {
+                type: ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE,
+                payload: { diversionEditMode: EDIT_TYPE.CREATE },
+            };
+            state = diversionsReducer(state, setModeAction);
+
+            const setLoadingAction = {
+                type: ACTION_TYPE.SET_DIVERSION_MANAGER_LOADING,
+                payload: { isLoading: true },
+            };
+            state = diversionsReducer(state, setLoadingAction);
+
+            expect(state.isDiversionManagerOpen).toBe(true);
+            expect(state.diversionEditMode).toBe(EDIT_TYPE.CREATE);
+            expect(state.isDiversionManagerLoading).toBe(true);
+
+            const closeManagerAction = {
+                type: ACTION_TYPE.OPEN_DIVERSION_MANAGER,
+                payload: { isDiversionManagerOpen: false },
+            };
+            state = diversionsReducer(state, closeManagerAction);
+
+            expect(state.isDiversionManagerOpen).toBe(false);
+            expect(state.diversionEditMode).toBe(EDIT_TYPE.CREATE);
+            expect(state.isDiversionManagerLoading).toBe(true);
+        });
+
+        it('should handle diversion to edit with existing state', () => {
+            const initialState = {
+                ...INIT_STATE,
+                isDiversionManagerOpen: true,
+                diversionEditMode: EDIT_TYPE.EDIT,
+            };
+
+            const diversionToEdit = { id: 'DIV456', name: 'Updated Diversion' };
+            const action = {
+                type: ACTION_TYPE.UPDATE_DIVERSION_TO_EDIT,
+                payload: { diversion: diversionToEdit },
+            };
+
+            const expectedState = {
+                ...initialState,
+                diversion: diversionToEdit,
+            };
+
+            expect(diversionsReducer(initialState, action)).toEqual(expectedState);
+        });
+    });
 });

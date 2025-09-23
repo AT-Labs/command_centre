@@ -360,27 +360,6 @@ export class CreateIncident extends React.Component {
         this.props.createNewIncident(buildIncidentSubmitBody(incident, false));
     };
 
-    onFinish = async () => {
-        this.toggleModal('Confirmation', true);
-        const { incidentData } = this.state;
-
-        const startDate = incidentData.startDate ? incidentData.startDate : moment(incidentData.startTime).format(DATE_FORMAT);
-        const startTimeMoment = momentFromDateTime(startDate, incidentData.startTime);
-
-        let endTimeMoment;
-        if (!isEmpty(incidentData.endDate) && !isEmpty(incidentData.endTime)) {
-            endTimeMoment = momentFromDateTime(incidentData.endDate, incidentData.endTime);
-        }
-        const incident = {
-            ...incidentData,
-            endTime: endTimeMoment,
-            startTime: startTimeMoment,
-            notes: [],
-        };
-
-        this.props.createNewIncident(buildIncidentSubmitBody(incident, false));
-    };
-
     onSubmitDraft = async () => {
         this.props.updateCurrentStep(1);
         const { incidentData } = this.state;

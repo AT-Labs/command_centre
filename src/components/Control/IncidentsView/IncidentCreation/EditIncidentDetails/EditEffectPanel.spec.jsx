@@ -875,4 +875,75 @@ describe('Confirmation Component', () => {
         const applyButton = screen.getByRole('button', { name: /apply/i });
         expect(applyButton).toBeDisabled();
     });
+
+    describe('Diversion functionality', () => {
+        const mockDiversionProps = {
+            ...defaultProps,
+            useDiversion: true,
+            isDiversionManagerOpen: false,
+            openDiversionManager: jest.fn(),
+            updateDiversionMode: jest.fn(),
+        };
+
+        it('should handle diversion manager state correctly', () => {
+            const props = {
+                ...mockDiversionProps,
+                disruptions: [{
+                    ...mockDisruption,
+                    disruptionId: 'DISR123',
+                    status: STATUSES.NOT_STARTED,
+                    affectedEntities: {
+                        affectedRoutes: [{ routeType: 3 }],
+                        affectedStops: [],
+                    },
+                }],
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+        });
+
+        it('should not render diversion button when useDiversion is false', () => {
+            const props = {
+                ...mockDiversionProps,
+                useDiversion: false,
+                disruptions: [{
+                    ...mockDisruption,
+                    disruptionId: 'DISR123',
+                }],
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(screen.queryByText(/Diversions/)).not.toBeInTheDocument();
+        });
+
+        it('should handle diversion manager open state', () => {
+            const props = {
+                ...mockDiversionProps,
+                isDiversionManagerOpen: true,
+                disruptions: [{
+                    ...mockDisruption,
+                    disruptionId: 'DISR123',
+                }],
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+        });
+    });
 });
