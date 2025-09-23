@@ -1,9 +1,3 @@
-export const ROUTE_TYPES = {
-    TRAIN: 1,
-    RAIL: 2,
-    BUS: 3,
-};
-
 export const LOADER_PROTECTION_TIMEOUT = 2000;
 
 export const DISRUPTION_STATUSES = {
@@ -98,8 +92,8 @@ export const getDiversionValidation = (disruption, affectedEntities, diversions 
         }
     }
 
-    const isBusRoute = route => route.routeType === ROUTE_TYPES.BUS;
-    const isTrainRoute = route => route.routeType === ROUTE_TYPES.TRAIN;
+    const isBusRoute = route => route.routeType === 3;
+    const isTrainRoute = route => route.routeType === 1;
     const busRoutes = affectedEntities.filter(isBusRoute);
     const trainRoutes = affectedEntities.filter(isTrainRoute);
 

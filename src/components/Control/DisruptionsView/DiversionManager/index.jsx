@@ -13,6 +13,7 @@ import ChangeSelectedRouteVariantModal from './ChangeSelectedRouteVariantModal';
 import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
 import { createDiversion, updateDiversion, resetDiversionResult } from '../../../../redux/actions/control/diversions';
 import { getDiversionResultState, getDiversionForEditing, getDiversionEditMode } from '../../../../redux/selectors/control/diversions';
+import { useParentChildIncident } from '../../../../redux/selectors/appSettings';
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
 import { isAffectedStop, createAffectedStop,
     getUniqueStops, createModifiedRouteVariant, canMerge, hasDiversionModified, getUniqueAffectedStopIds,
@@ -344,8 +345,10 @@ const DiversionManager = (props) => {
         );
     };
 
+    const containerClassName = `side-panel-control-component-view d-flex${props.useParentChildIncident ? ' parent-child-incident-enabled' : ''}`;
+    
     return (
-        <div className="side-panel-control-component-view d-flex">
+        <div className={containerClassName}>
             <SidePanel
                 isOpen
                 isActive
@@ -450,6 +453,7 @@ DiversionManager.propTypes = {
     onCancelled: PropTypes.func,
     resultState: PropTypes.object,
     diversion: PropTypes.object,
+    useParentChildIncident: PropTypes.bool.isRequired,
 };
 
 DiversionManager.defaultProps = {
@@ -467,4 +471,5 @@ export default connect(state => ({
     editMode: getDiversionEditMode(state),
     resultState: getDiversionResultState(state),
     diversion: getDiversionForEditing(state),
+    useParentChildIncident: useParentChildIncident(state),
 }), { createDiversion, updateDiversion, resetDiversionResult })(DiversionManager);

@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 import { slice, filter } from 'lodash-es';
 import ControlTable from '../Common/ControlTable/ControlTable';
 import { PAGE_SIZE } from '../../../utils/control/routes';
-import { ROUTE_TYPES } from '../../../utils/control/diversions';
 
 import { RouteType } from './Types';
 import VIEW_TYPE from '../../../types/view-types';
@@ -59,7 +58,7 @@ export const GroupByRouteView = (props) => {
     };
 
     const pageData = slice(props.routes, (props.page - 1) * PAGE_SIZE, props.page * PAGE_SIZE);
-    const columns = pageData.length && pageData[0].routeType !== ROUTE_TYPES.RAIL ? ROUTES : filter(ROUTES, route => route.label !== 'description');
+    const columns = pageData.length && pageData[0].routeType !== 2 ? ROUTES : filter(ROUTES, route => route.label !== 'description');
 
     return (
         <ControlTable

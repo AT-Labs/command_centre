@@ -86,7 +86,7 @@ import EditEffectPanel from '../EditIncidentDetails/EditEffectPanel';
 import ApplyChangesModal from '../EditIncidentDetails/ApplyChangesModal';
 import PublishAndApplyChangesModal from '../EditIncidentDetails/PublishAndApplyChangesModal';
 
-const getInitialState = isFeatureEnabled => ({
+const getInitialState = isParentIncidentEnabled => ({
     startTime: '',
     startDate: '',
     endTime: '',
@@ -103,7 +103,7 @@ const getInitialState = isFeatureEnabled => ({
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: isFeatureEnabled ? DEFAULT_SEVERITY.value : '',
+    severity: isParentIncidentEnabled ? DEFAULT_SEVERITY.value : '',
     notes: '',
     disruptions: [],
 });
