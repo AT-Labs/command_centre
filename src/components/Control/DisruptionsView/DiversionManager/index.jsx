@@ -102,17 +102,11 @@ const DiversionManager = (props) => {
     // Fetch available route variants to populate the dropdown lists
     const fetchVariants = debounce(async () => {
         const start = moment(props.disruption.startTime).tz(dateTypes.TIME_ZONE);
+        const end = moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE);
         const startDate = start.format(SERVICE_DATE_FORMAT);
         const startTime = start.format(TIME_FORMAT_HHMM);
-        let end = null;
-        let endDate = null;
-        let endTime = null;
-        if (props.disruption.endTime) {
-            end = moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE);
-            endDate = end.format(SERVICE_DATE_FORMAT);
-            endTime = end.format(TIME_FORMAT_HHMM);
-        }
-
+        const endDate = end.format(SERVICE_DATE_FORMAT);
+        const endTime = end.format(TIME_FORMAT_HHMM);
         try {
             const search = {
                 page: 1,

@@ -107,6 +107,37 @@ describe('VehicleDetails Component', () => {
         expect(tagsValue.exists()).to.equal(true);
     });
 
+    it('should display the correct trip id in normal scenario', () => {
+        const wrapper = setup();
+        const tagsRow = wrapper.findWhere(node => node.type() === 'dt' && node.text() === 'Trip ID:');
+        expect(tagsRow.exists()).to.equal(true);
+
+        const tagsValue = wrapper.findWhere(node => node.type() === 'dd' && node.text() === 'trip-123');
+        expect(tagsValue.exists()).to.equal(true);
+    });
+
+    it('should display the replaced trip id in replacement scenario', () => {
+        const propsWithReplacementTrip = {
+            ...defaultProps,
+            vehicleDetail: {
+                ...defaultProps.vehicleDetail,
+                trip: {
+                    ...defaultProps.vehicleDetail.trip,
+                    '.replacementTripId': 'replacement-trip-123',
+                },
+            },
+        };
+
+        const wrapper = setup(propsWithReplacementTrip);
+        const labelRow = wrapper.findWhere(node => node.type() === 'dt' && node.text() === 'Trip ID:');
+        expect(labelRow.exists()).to.equal(true);
+
+        let valueRow = wrapper.findWhere(node => node.type() === 'dd' && node.text() === 'replacement-trip-123');
+        expect(valueRow.exists()).to.equal(true);
+        valueRow = wrapper.findWhere(node => node.type() === 'dd' && node.text() === 'trip-123');
+        expect(valueRow.exists()).to.equal(false);
+    });
+
     it('should not display tags when not available', () => {
         const propsWithoutTags = {
             ...defaultProps,

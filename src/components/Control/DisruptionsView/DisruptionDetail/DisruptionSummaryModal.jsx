@@ -97,7 +97,7 @@ const DisruptionSummaryModal = (props) => {
             <Table className="table-layout-fixed">
                 <tbody>
                     {createLine(LABEL_HEADER, props.disruption.header)}
-                    {createLine(LABEL_SEVERITY, find(SEVERITIES, { value: props.disruption.severity }).label)}
+                    {createLine(LABEL_SEVERITY, find(SEVERITIES, { value: props.disruption.severity })?.label || props.disruption.severity || '')}
                     {createLine(LABEL_STATUS, props.disruption.status)}
                     {createLine(LABEL_MODE, props.disruption.mode)}
                     {createLine(LABEL_AFFECTED_ROUTES, getDeduplcatedAffectedRoutes(props.disruption.affectedEntities).join(', '))}

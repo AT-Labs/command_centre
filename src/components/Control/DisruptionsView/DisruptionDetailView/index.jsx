@@ -67,6 +67,20 @@ const DisruptionDetailsPage = (props) => {
         };
     }, []);
 
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden && props.isDiversionManagerOpen) {
+                props.openDiversionManager(false);
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, []);
+
     useEffect(async () => {
         const result = await getDisruptionAPI(props.activeControlEntityId);
         setDisruption(result);
