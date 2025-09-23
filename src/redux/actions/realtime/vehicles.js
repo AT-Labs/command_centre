@@ -78,7 +78,6 @@ const queryRealTimeSnapshot = () => (dispatch, getState) => {
             const allFleet = getFleetState(state);
             const vehicles = data.filter(vehicle => isValidVehicleUpdate(vehicle, allFleet))
                 .map(vehicle => decorateWithRouteType(vehicle, routes));
-
             dispatch({
                 type: ACTION_TYPE.FETCH_VEHICLES_REALTIME,
                 payload: { vehicles, isSnapshotUpdate: true },

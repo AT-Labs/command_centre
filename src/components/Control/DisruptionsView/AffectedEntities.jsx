@@ -10,6 +10,7 @@ import './AffectedEntities.scss';
 import { DIRECTIONS } from './types';
 import CustomCollapse from '../../Common/CustomCollapse/CustomCollapse';
 import { useDiversion } from '../../../redux/selectors/appSettings';
+import { ROUTE_TYPES } from '../../../utils/control/diversions';
 
 export const AffectedEntities = (props) => {
     const diversions = props.diversions || [];
@@ -60,7 +61,7 @@ export const AffectedEntities = (props) => {
     };
 
     // We only support adding diversion to bus route at the moment.
-    const isBusRoute = route => route.routeType === 3;
+    const isBusRoute = route => route.routeType === ROUTE_TYPES.BUS;
     const showAddDiversion = props.useDiversion && props.startTime && props.endTime && !isDisruptionResolved
         && props.affectedEntities.filter(isBusRoute).length > 0;
 
