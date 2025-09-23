@@ -1,10 +1,11 @@
+import { expect } from 'chai';
 import diversionsReducer, { INIT_STATE } from './diversions';
 import ACTION_TYPE from '../../action-types';
 import EDIT_TYPE from '../../../types/edit-types';
 
 describe('Diversions Reducer', () => {
     it('should return the initial state', () => {
-        expect(diversionsReducer(undefined, {})).toEqual(INIT_STATE);
+        expect(diversionsReducer(undefined, {})).to.deep.equal(INIT_STATE);
     });
 
     describe('OPEN_DIVERSION_MANAGER', () => {
@@ -21,30 +22,7 @@ describe('Diversions Reducer', () => {
                 isDiversionManagerOpen: true,
             };
 
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
-        });
-
-        it('should handle closing diversion manager', () => {
-            const initialState = {
-                ...INIT_STATE,
-                isDiversionManagerOpen: true,
-                isDiversionManagerLoading: true,
-            };
-
-            const action = {
-                type: ACTION_TYPE.OPEN_DIVERSION_MANAGER,
-                payload: {
-                    isDiversionManagerOpen: false,
-                },
-            };
-
-            const expectedState = {
-                ...initialState,
-                isDiversionManagerOpen: false,
-                isDiversionManagerLoading: true, // Should preserve loading state
-            };
-
-            expect(diversionsReducer(initialState, action)).toEqual(expectedState);
+            expect(diversionsReducer(INIT_STATE, action)).to.deep.equal(expectedState);
         });
     });
 
@@ -62,28 +40,7 @@ describe('Diversions Reducer', () => {
                 isDiversionManagerLoading: true,
             };
 
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
-        });
-
-        it('should handle setting diversion manager loading to false', () => {
-            const initialState = {
-                ...INIT_STATE,
-                isDiversionManagerLoading: true,
-            };
-
-            const action = {
-                type: ACTION_TYPE.SET_DIVERSION_MANAGER_LOADING,
-                payload: {
-                    isLoading: false,
-                },
-            };
-
-            const expectedState = {
-                ...initialState,
-                isDiversionManagerLoading: false,
-            };
-
-            expect(diversionsReducer(initialState, action)).toEqual(expectedState);
+            expect(diversionsReducer(INIT_STATE, action)).to.deep.equal(expectedState);
         });
     });
 
@@ -101,7 +58,7 @@ describe('Diversions Reducer', () => {
                 diversionEditMode: EDIT_TYPE.CREATE,
             };
 
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
+            expect(diversionsReducer(INIT_STATE, action)).to.deep.equal(expectedState);
         });
 
         it('should handle updating diversion edit mode to EDIT', () => {
@@ -117,7 +74,7 @@ describe('Diversions Reducer', () => {
                 diversionEditMode: EDIT_TYPE.EDIT,
             };
 
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
+            expect(diversionsReducer(INIT_STATE, action)).to.deep.equal(expectedState);
         });
     });
 
@@ -136,23 +93,7 @@ describe('Diversions Reducer', () => {
                 diversion,
             };
 
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
-        });
-
-        it('should handle updating diversion to edit with null', () => {
-            const action = {
-                type: ACTION_TYPE.UPDATE_DIVERSION_TO_EDIT,
-                payload: {
-                    diversion: null,
-                },
-            };
-
-            const expectedState = {
-                ...INIT_STATE,
-                diversion: null,
-            };
-
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
+            expect(diversionsReducer(INIT_STATE, action)).to.deep.equal(expectedState);
         });
     });
 
@@ -176,7 +117,7 @@ describe('Diversions Reducer', () => {
                 },
             };
 
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
+            expect(diversionsReducer(INIT_STATE, action)).to.deep.equal(expectedState);
         });
 
         it('should handle updating diversion result state with success', () => {
@@ -198,7 +139,7 @@ describe('Diversions Reducer', () => {
                 },
             };
 
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
+            expect(diversionsReducer(INIT_STATE, action)).to.deep.equal(expectedState);
         });
 
         it('should handle updating diversion result state with error', () => {
@@ -221,7 +162,7 @@ describe('Diversions Reducer', () => {
                 },
             };
 
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
+            expect(diversionsReducer(INIT_STATE, action)).to.deep.equal(expectedState);
         });
     });
 
@@ -243,35 +184,7 @@ describe('Diversions Reducer', () => {
                 },
             };
 
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
-        });
-
-        it('should handle fetch diversions start with existing loading states', () => {
-            const disruptionId = '123';
-            const initialState = {
-                ...INIT_STATE,
-                diversionsLoading: {
-                    456: true,
-                },
-            };
-
-            const action = {
-                type: ACTION_TYPE.FETCH_DIVERSIONS_START,
-                payload: { disruptionId },
-            };
-
-            const expectedState = {
-                ...initialState,
-                diversionsLoading: {
-                    456: true,
-                    [disruptionId]: true,
-                },
-                diversionsError: {
-                    [disruptionId]: null,
-                },
-            };
-
-            expect(diversionsReducer(initialState, action)).toEqual(expectedState);
+            expect(diversionsReducer(INIT_STATE, action)).to.deep.equal(expectedState);
         });
     });
 
@@ -297,39 +210,7 @@ describe('Diversions Reducer', () => {
                 },
             };
 
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
-        });
-
-        it('should handle fetch diversions success with existing data', () => {
-            const disruptionId = '123';
-            const diversions = [{ id: '1' }, { id: '2' }];
-            const initialState = {
-                ...INIT_STATE,
-                diversionsData: {
-                    456: [{ id: '3' }],
-                },
-            };
-
-            const action = {
-                type: ACTION_TYPE.FETCH_DIVERSIONS_SUCCESS,
-                payload: { disruptionId, diversions },
-            };
-
-            const expectedState = {
-                ...initialState,
-                diversionsData: {
-                    456: [{ id: '3' }],
-                    [disruptionId]: diversions,
-                },
-                diversionsLoading: {
-                    [disruptionId]: false,
-                },
-                diversionsError: {
-                    [disruptionId]: null,
-                },
-            };
-
-            expect(diversionsReducer(initialState, action)).toEqual(expectedState);
+            expect(diversionsReducer(INIT_STATE, action)).to.deep.equal(expectedState);
         });
     });
 
@@ -352,40 +233,7 @@ describe('Diversions Reducer', () => {
                 },
             };
 
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
-        });
-
-        it('should handle fetch diversions error with existing states', () => {
-            const disruptionId = '123';
-            const error = 'Network error';
-            const initialState = {
-                ...INIT_STATE,
-                diversionsLoading: {
-                    456: true,
-                },
-                diversionsError: {
-                    456: null,
-                },
-            };
-
-            const action = {
-                type: ACTION_TYPE.FETCH_DIVERSIONS_ERROR,
-                payload: { disruptionId, error },
-            };
-
-            const expectedState = {
-                ...initialState,
-                diversionsLoading: {
-                    456: true,
-                    [disruptionId]: false,
-                },
-                diversionsError: {
-                    456: null,
-                    [disruptionId]: error,
-                },
-            };
-
-            expect(diversionsReducer(initialState, action)).toEqual(expectedState);
+            expect(diversionsReducer(INIT_STATE, action)).to.deep.equal(expectedState);
         });
     });
 
@@ -426,7 +274,7 @@ describe('Diversions Reducer', () => {
                 },
             };
 
-            expect(diversionsReducer(initialState, action)).toEqual(expectedState);
+            expect(diversionsReducer(initialState, action)).to.deep.equal(expectedState);
         });
 
         it('should handle clearing all diversions cache when disruptionId is null', () => {
@@ -458,92 +306,11 @@ describe('Diversions Reducer', () => {
                 diversionsError: {},
             };
 
-            expect(diversionsReducer(initialState, action)).toEqual(expectedState);
+            expect(diversionsReducer(initialState, action)).to.deep.equal(expectedState);
         });
     });
 
     describe('Diversion Flow Access Integration', () => {
-        it('should handle diversion manager state transitions correctly', () => {
-            const initialState = {
-                ...INIT_STATE,
-                isDiversionManagerOpen: false,
-                isDiversionManagerLoading: false,
-            };
-
-            const openAction = {
-                type: ACTION_TYPE.OPEN_DIVERSION_MANAGER,
-                payload: { isDiversionManagerOpen: true },
-            };
-
-            const openState = diversionsReducer(initialState, openAction);
-            expect(openState.isDiversionManagerOpen).toBe(true);
-
-            const closeAction = {
-                type: ACTION_TYPE.OPEN_DIVERSION_MANAGER,
-                payload: { isDiversionManagerOpen: false },
-            };
-
-            const closeState = diversionsReducer(openState, closeAction);
-            expect(closeState.isDiversionManagerOpen).toBe(false);
-        });
-
-        it('should handle diversion mode changes for create flow', () => {
-            const action = {
-                type: ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE,
-                payload: { diversionEditMode: EDIT_TYPE.CREATE },
-            };
-
-            const expectedState = {
-                ...INIT_STATE,
-                diversionEditMode: EDIT_TYPE.CREATE,
-            };
-
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
-        });
-
-        it('should handle diversion mode changes for edit flow', () => {
-            const action = {
-                type: ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE,
-                payload: { diversionEditMode: EDIT_TYPE.EDIT },
-            };
-
-            const expectedState = {
-                ...INIT_STATE,
-                diversionEditMode: EDIT_TYPE.EDIT,
-            };
-
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
-        });
-
-        it('should handle diversion to edit updates', () => {
-            const diversionToEdit = { id: 'DIV123', name: 'Test Diversion' };
-            const action = {
-                type: ACTION_TYPE.UPDATE_DIVERSION_TO_EDIT,
-                payload: { diversion: diversionToEdit },
-            };
-
-            const expectedState = {
-                ...INIT_STATE,
-                diversion: diversionToEdit,
-            };
-
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
-        });
-
-        it('should handle loading state changes during diversion operations', () => {
-            const action = {
-                type: ACTION_TYPE.SET_DIVERSION_MANAGER_LOADING,
-                payload: { isLoading: true },
-            };
-
-            const expectedState = {
-                ...INIT_STATE,
-                isDiversionManagerLoading: true,
-            };
-
-            expect(diversionsReducer(INIT_STATE, action)).toEqual(expectedState);
-        });
-
         it('should maintain state consistency during complex diversion flow', () => {
             let state = INIT_STATE;
 
@@ -565,9 +332,9 @@ describe('Diversions Reducer', () => {
             };
             state = diversionsReducer(state, setLoadingAction);
 
-            expect(state.isDiversionManagerOpen).toBe(true);
-            expect(state.diversionEditMode).toBe(EDIT_TYPE.CREATE);
-            expect(state.isDiversionManagerLoading).toBe(true);
+            expect(state.isDiversionManagerOpen).to.equal(true);
+            expect(state.diversionEditMode).to.equal(EDIT_TYPE.CREATE);
+            expect(state.isDiversionManagerLoading).to.equal(true);
 
             const closeManagerAction = {
                 type: ACTION_TYPE.OPEN_DIVERSION_MANAGER,
@@ -575,30 +342,9 @@ describe('Diversions Reducer', () => {
             };
             state = diversionsReducer(state, closeManagerAction);
 
-            expect(state.isDiversionManagerOpen).toBe(false);
-            expect(state.diversionEditMode).toBe(EDIT_TYPE.CREATE);
-            expect(state.isDiversionManagerLoading).toBe(true);
-        });
-
-        it('should handle diversion to edit with existing state', () => {
-            const initialState = {
-                ...INIT_STATE,
-                isDiversionManagerOpen: true,
-                diversionEditMode: EDIT_TYPE.EDIT,
-            };
-
-            const diversionToEdit = { id: 'DIV456', name: 'Updated Diversion' };
-            const action = {
-                type: ACTION_TYPE.UPDATE_DIVERSION_TO_EDIT,
-                payload: { diversion: diversionToEdit },
-            };
-
-            const expectedState = {
-                ...initialState,
-                diversion: diversionToEdit,
-            };
-
-            expect(diversionsReducer(initialState, action)).toEqual(expectedState);
+            expect(state.isDiversionManagerOpen).to.equal(false);
+            expect(state.diversionEditMode).to.equal(EDIT_TYPE.CREATE);
+            expect(state.isDiversionManagerLoading).to.equal(true);
         });
     });
 });

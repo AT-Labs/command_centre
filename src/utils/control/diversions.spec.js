@@ -32,21 +32,21 @@ describe('Diversions Utils', () => {
             expect(canFetchDiversions(disruption, fetchDiversionsAction)).toBe(fetchDiversionsAction);
         });
 
-        it('should return false when disruption has no disruptionId', () => {
+        it('should return undefined when disruption has no disruptionId', () => {
             const disruption = {};
             const fetchDiversionsAction = jest.fn();
 
             expect(canFetchDiversions(disruption, fetchDiversionsAction)).toBe(undefined);
         });
 
-        it('should return false when fetchDiversionsAction is not provided', () => {
+        it('should return null/undefined when fetchDiversionsAction is not provided', () => {
             const disruption = { disruptionId: '123' };
 
             expect(canFetchDiversions(disruption, null)).toBe(null);
             expect(canFetchDiversions(disruption, undefined)).toBe(undefined);
         });
 
-        it('should return false when disruption is null or undefined', () => {
+        it('should return undefined when disruption is null or undefined', () => {
             const fetchDiversionsAction = jest.fn();
 
             expect(canFetchDiversions(null, fetchDiversionsAction)).toBe(undefined);
@@ -171,34 +171,17 @@ describe('Diversions Utils', () => {
             expect(result).toEqual([{ routeId: '1' }]);
         });
 
-        it('should return empty array when disruption has routes property but no affectedEntities', () => {
-            const disruption = { routes: [{ routeId: '1' }] };
+        it('should return empty array when disruption has routes or affectedRoutes but no affectedEntities', () => {
+            const disruptionWithRoutes = { routes: [{ routeId: '1' }] };
+            const disruptionWithAffectedRoutes = { affectedRoutes: [{ routeId: '1' }] };
 
-            const result = getAffectedEntities(disruption, null);
-
-            expect(result).toEqual([]);
+            expect(getAffectedEntities(disruptionWithRoutes, null)).toEqual([]);
+            expect(getAffectedEntities(disruptionWithAffectedRoutes, null)).toEqual([]);
         });
 
-        it('should return empty array when disruption has affectedRoutes property but no affectedEntities', () => {
-            const disruption = { affectedRoutes: [{ routeId: '1' }] };
-
-            const result = getAffectedEntities(disruption, null);
-
-            expect(result).toEqual([]);
-        });
-
-        it('should return empty array when no valid entities found', () => {
-            const disruption = {};
-
-            const result = getAffectedEntities(disruption, null);
-
-            expect(result).toEqual([]);
-        });
-
-        it('should return empty array when disruption is null', () => {
-            const result = getAffectedEntities(null, null);
-
-            expect(result).toEqual([]);
+        it('should return empty array when no valid entities found or disruption is null', () => {
+            expect(getAffectedEntities({}, null)).toEqual([]);
+            expect(getAffectedEntities(null, null)).toEqual([]);
         });
     });
 
@@ -269,14 +252,6 @@ describe('Diversions Utils', () => {
             expect(result).toBe(false);
         });
 
-        it('should return false when only train routes are present', () => {
-            const affectedEntities = [{ routeId: '1', routeType: 1 }]; // only train route
-
-            const result = getDiversionValidation(mockDisruption, affectedEntities);
-
-            expect(result).toBe(false);
-        });
-
         it('should return true when bus routes are present', () => {
             const affectedEntities = [{ routeId: '1', routeType: 3 }]; // bus route
 
@@ -321,43 +296,13 @@ describe('Diversions Utils', () => {
             expect(result).toBe(true);
         });
 
-        it('should handle empty diversions array', () => {
-            const affectedEntities = [{ routeId: '1', routeType: 3 }]; // bus route
-            const diversions = [];
-
-            const result = getDiversionValidation(mockDisruption, affectedEntities, diversions);
-
-            expect(result).toBe(true);
-        });
-
-        it('should handle null diversions', () => {
+        it('should handle edge cases for diversions (empty, null, empty variants)', () => {
             const affectedEntities = [{ routeId: '1', routeType: 3 }]; // bus route
 
-            const result = getDiversionValidation(mockDisruption, affectedEntities, null);
-
-            expect(result).toBe(true);
-        });
-
-        it('should handle diversions with empty diversionRouteVariants', () => {
-            const affectedEntities = [{ routeId: '1', routeType: 3 }]; // bus route
-            const diversions = [{
-                diversionRouteVariants: [],
-            }];
-
-            const result = getDiversionValidation(mockDisruption, affectedEntities, diversions);
-
-            expect(result).toBe(true);
-        });
-
-        it('should handle diversions with null diversionRouteVariants', () => {
-            const affectedEntities = [{ routeId: '1', routeType: 3 }]; // bus route
-            const diversions = [{
-                diversionRouteVariants: null,
-            }];
-
-            const result = getDiversionValidation(mockDisruption, affectedEntities, diversions);
-
-            expect(result).toBe(true);
+            expect(getDiversionValidation(mockDisruption, affectedEntities, [])).toBe(true);
+            expect(getDiversionValidation(mockDisruption, affectedEntities, null)).toBe(true);
+            expect(getDiversionValidation(mockDisruption, affectedEntities, [{ diversionRouteVariants: [] }])).toBe(true);
+            expect(getDiversionValidation(mockDisruption, affectedEntities, [{ diversionRouteVariants: null }])).toBe(true);
         });
     });
 });

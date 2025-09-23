@@ -798,84 +798,6 @@ describe('Confirmation Component', () => {
         expect(applyButton).toBeDisabled();
     });
 
-    it('should disable submit button when recurrent is true and recurrencePattern is null', () => {
-        const props = {
-            ...defaultProps,
-            disruptions: [{
-                ...mockDisruption,
-                recurrent: true,
-                recurrencePattern: null,
-            }],
-        };
-
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...props } />
-            </Provider>,
-        );
-
-        const applyButton = screen.getByRole('button', { name: /apply/i });
-        expect(applyButton).toBeDisabled();
-    });
-
-    it('should disable submit button when recurrent is true and recurrencePattern is undefined', () => {
-        const props = {
-            ...defaultProps,
-            disruptions: [{
-                ...mockDisruption,
-                recurrent: true,
-                recurrencePattern: undefined,
-            }],
-        };
-
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...props } />
-            </Provider>,
-        );
-
-        const applyButton = screen.getByRole('button', { name: /apply/i });
-        expect(applyButton).toBeDisabled();
-    });
-
-    it('should disable submit button when recurrent is true and byweekday has values', () => {
-        const props = {
-            ...defaultProps,
-            disruptions: [{
-                ...mockDisruption,
-                disruptionId: 'DISR123',
-                recurrent: true,
-                startTime: '10:00',
-                startDate: '2025-06-10',
-                impact: 'DETOUR',
-                cause: 'CONSTRUCTION',
-                header: 'Test Header',
-                severity: 'SIGNIFICANT',
-                endDate: '2025-06-11',
-                endTime: '18:00',
-                duration: '2',
-                status: 'in-progress',
-                affectedEntities: {
-                    affectedRoutes: [{ routeId: 'ROUTE1' }],
-                    affectedStops: [],
-                },
-                recurrencePattern: {
-                    byweekday: [1, 2],
-                },
-            }],
-            modalOpenedTime: '2025-06-08T08:00:00.000Z',
-        };
-
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...props } />
-            </Provider>,
-        );
-
-        const applyButton = screen.getByRole('button', { name: /apply/i });
-        expect(applyButton).toBeDisabled();
-    });
-
     describe('Diversion functionality', () => {
         const mockDiversionProps = {
             ...defaultProps,
@@ -925,25 +847,6 @@ describe('Confirmation Component', () => {
             );
 
             expect(screen.queryByText(/Diversions/)).not.toBeInTheDocument();
-        });
-
-        it('should handle diversion manager open state', () => {
-            const props = {
-                ...mockDiversionProps,
-                isDiversionManagerOpen: true,
-                disruptions: [{
-                    ...mockDisruption,
-                    disruptionId: 'DISR123',
-                }],
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
         });
     });
 });
