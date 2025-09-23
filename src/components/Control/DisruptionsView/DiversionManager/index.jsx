@@ -346,9 +346,9 @@ const DiversionManager = (props) => {
     };
 
     const containerClassName = `side-panel-control-component-view d-flex${props.useParentChildIncident ? ' parent-child-incident-enabled' : ''}`;
-    
+
     return (
-        <div className={containerClassName}>
+        <div className={ containerClassName }>
             <SidePanel
                 isOpen
                 isActive

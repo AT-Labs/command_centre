@@ -315,7 +315,12 @@ describe('<SelectEffects />', () => {
         it('Should fire step update and updateNewIncidentEffect when next button is clicked whe is add effect mode', () => {
             data.recurrent = false;
             data.disruptions = [{ ...mockDisruption, recurrent: false }];
-            wrapper = setup({ data, editMode: EDIT_TYPE.ADD_EFFECT, newIncidentEffect: { ...mockDisruption, impact: impacts[4].value, severity: 'HEADLINE', key: 'DISR321' } });
+            wrapper = setup({
+                data,
+                editMode: EDIT_TYPE.ADD_EFFECT,
+                isEditMode: true,
+                newIncidentEffect: { ...mockDisruption, impact: impacts[4].value, severity: 'HEADLINE', key: 'DISR321' },
+            });
             const footer = wrapper.find(Footer);
             expect(footer.prop('nextButtonValue')).toEqual('Continue');
             footer.renderProp('onContinue')();

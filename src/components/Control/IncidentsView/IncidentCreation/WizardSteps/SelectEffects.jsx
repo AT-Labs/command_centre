@@ -339,7 +339,7 @@ export const SelectEffects = (props) => {
     const onContinue = () => {
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
-        if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
+        if (!props.isEditMode) {
             props.onUpdateEntitiesValidation(!isSubmitDisabled && activePeriodsValidForAllDisruptionsV2());
             props.onStepUpdate(2);
             props.updateCurrentStep(3);
@@ -690,7 +690,7 @@ export const SelectEffects = (props) => {
                 showFinishButton={ props.showFinishButton }
                 nextButtonValue="Continue"
                 onContinue={ () => onContinue() }
-                isSubmitDisabled={ props.useDraftDisruptions && props.editMode !== EDIT_TYPE.ADD_EFFECT ? isDraftSubmitDisabled : isSubmitDisabled }
+                isSubmitDisabled={ props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
                 isDraftSubmitDisabled={ isDraftSubmitDisabled }
                 isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || props.editMode !== EDIT_TYPE.ADD_EFFECT }
                 onSubmitDraft={ () => onSaveDraft() }
