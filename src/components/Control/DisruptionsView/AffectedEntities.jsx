@@ -62,7 +62,7 @@ export const AffectedEntities = (props) => {
     // We only support adding diversion to bus route at the moment.
     const isBusRoute = route => route.routeType === 3;
     const showAddDiversion = props.useDiversion && !isDisruptionResolved
-        && props.affectedEntities.filter(isBusRoute).length > 0;
+        && props.affectedEntities.some(isBusRoute);
 
     return (
         <section className={ `disruption__affected-entities ${props.heightSmall ? 'small' : ''} ${props.className}` }>
