@@ -265,6 +265,7 @@ const DisruptionDetailView = (props) => {
         setDescriptionNote('');
         const { notes: disruptionNotes } = disruption;
         if (disruptionNotes.length > 0) {
+            // NOSONAR: Node 14 does not support .at(), so we use [length - 1]
             setLastNote(disruptionNotes[disruptionNotes.length - 1]);
         }
     }, [disruption.lastUpdatedTime, lastNote]);
@@ -933,7 +934,7 @@ const DisruptionDetailView = (props) => {
                             >
                                 <ShapeLayer
                                     shapes={ isLoading ? [] : props.shapes }
-                                    routeColors={ !isLoading ? props.routeColors : [] } />
+                                    routeColors={ isLoading ? [] : props.routeColors } />
                                 <SelectedStopsMarker
                                     stops={
                                         isLoading
