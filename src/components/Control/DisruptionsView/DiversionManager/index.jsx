@@ -13,7 +13,6 @@ import ChangeSelectedRouteVariantModal from './ChangeSelectedRouteVariantModal';
 import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
 import { createDiversion, updateDiversion, resetDiversionResult } from '../../../../redux/actions/control/diversions';
 import { getDiversionResultState, getDiversionForEditing, getDiversionEditMode } from '../../../../redux/selectors/control/diversions';
-import { useParentChildIncident } from '../../../../redux/selectors/appSettings';
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
 import { isAffectedStop, createAffectedStop,
     getUniqueStops, createModifiedRouteVariant, canMerge, hasDiversionModified, getUniqueAffectedStopIds,
@@ -103,11 +102,17 @@ const DiversionManager = (props) => {
     // Fetch available route variants to populate the dropdown lists
     const fetchVariants = debounce(async () => {
         const start = moment(props.disruption.startTime).tz(dateTypes.TIME_ZONE);
-        const end = moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE);
         const startDate = start.format(SERVICE_DATE_FORMAT);
         const startTime = start.format(TIME_FORMAT_HHMM);
-        const endDate = end.format(SERVICE_DATE_FORMAT);
-        const endTime = end.format(TIME_FORMAT_HHMM);
+        let end = null;
+        let endDate = null;
+        let endTime = null;
+        if (props.disruption.endTime) {
+            end = moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE);
+            endDate = end.format(SERVICE_DATE_FORMAT);
+            endTime = end.format(TIME_FORMAT_HHMM);
+        }
+
         try {
             const search = {
                 page: 1,
@@ -345,10 +350,8 @@ const DiversionManager = (props) => {
         );
     };
 
-    const containerClassName = `side-panel-control-component-view d-flex${props.useParentChildIncident ? ' parent-child-incident-enabled' : ''}`;
-
     return (
-        <div className={ containerClassName }>
+        <div className="side-panel-control-component-view d-flex">
             <SidePanel
                 isOpen
                 isActive
@@ -453,7 +456,6 @@ DiversionManager.propTypes = {
     onCancelled: PropTypes.func,
     resultState: PropTypes.object,
     diversion: PropTypes.object,
-    useParentChildIncident: PropTypes.bool.isRequired,
 };
 
 DiversionManager.defaultProps = {
@@ -471,5 +473,4 @@ export default connect(state => ({
     editMode: getDiversionEditMode(state),
     resultState: getDiversionResultState(state),
     diversion: getDiversionForEditing(state),
-    useParentChildIncident: useParentChildIncident(state),
 }), { createDiversion, updateDiversion, resetDiversionResult })(DiversionManager);

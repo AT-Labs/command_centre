@@ -10,13 +10,6 @@ import {
     updateEditMode,
     updateAffectedRoutesState,
     updateAffectedStopsState,
-    toggleEditEffectPanel,
-    updateDisruptionKeyToEditEffect,
-    setRequestedDisruptionKeyToUpdateEditEffect,
-    setRequestToUpdateEditEffectState,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
-    setDisruptionForWorkaroundEdit,
 } from '../../../redux/actions/control/incidents';
 import {
     isIncidentCreationAllowed,
@@ -24,7 +17,6 @@ import {
     getFilteredDisruptions,
     getIncidentsWithDisruptions,
     getIncidentForEditLoadingState,
-    isWorkaroundPanelOpen,
 } from '../../../redux/selectors/control/incidents';
 import { DISRUPTION_POLLING_INTERVAL } from '../../../constants/disruptions';
 import Filters from './Filters/Filters';
@@ -70,10 +62,6 @@ export class IncidentsView extends React.Component {
 
     componentWillUnmount() {
         clearTimeout(this.state.timer);
-        this.props.toggleEditEffectPanel(false);
-        this.props.updateDisruptionKeyToEditEffect('');
-        this.props.setRequestedDisruptionKeyToUpdateEditEffect('');
-        this.props.setRequestToUpdateEditEffectState(false);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -155,10 +143,6 @@ IncidentsView.propTypes = {
     updateAffectedStopsState: PropTypes.func.isRequired,
     getStopGroups: PropTypes.func.isRequired,
     isIncidentLoading: PropTypes.bool,
-    toggleEditEffectPanel: PropTypes.func.isRequired,
-    updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
-    setRequestedDisruptionKeyToUpdateEditEffect: PropTypes.func.isRequired,
-    setRequestToUpdateEditEffectState: PropTypes.func.isRequired,
 };
 
 IncidentsView.defaultProps = {
@@ -171,19 +155,4 @@ export default connect(state => ({
     isCreateOpen: isIncidentCreationOpen(state),
     isCreateAllowed: isIncidentCreationAllowed(state),
     isIncidentLoading: getIncidentForEditLoadingState(state),
-    isWorkaroundPanelOpen: isWorkaroundPanelOpen(state),
-}), {
-    getDisruptionsAndIncidents,
-    openCreateIncident,
-    updateEditMode,
-    updateAffectedRoutesState,
-    updateAffectedStopsState,
-    getStopGroups,
-    toggleEditEffectPanel,
-    updateDisruptionKeyToEditEffect,
-    setRequestedDisruptionKeyToUpdateEditEffect,
-    setRequestToUpdateEditEffectState,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
-    setDisruptionForWorkaroundEdit,
-})(IncidentsView);
+}), { getDisruptionsAndIncidents, openCreateIncident, updateEditMode, updateAffectedRoutesState, updateAffectedStopsState, getStopGroups })(IncidentsView);

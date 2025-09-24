@@ -260,53 +260,21 @@ describe('Incidents Actions', () => {
                 },
             },
             {
-                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING,
+                type: ACTION_TYPE.UPDATE_INCIDENT_EDIT_MODE,
                 payload: {
-                    isRequesting: false,
-                    resultIncidentId: 1,
+                    editMode: EDIT_TYPE.EDIT,
                 },
             },
             {
-                type: ACTION_TYPE.DELETE_INCIDENT_AFFECTED_ENTITIES,
+                type: ACTION_TYPE.UPDATE_INCIDENT_CURRENT_STEP,
                 payload: {
-                    activeStep: 2,
-                    affectedEntities: {
-                        affectedRoutes: [],
-                        affectedStops: [],
-                    },
-                    routesByStop: {},
-                    showSelectedRoutes: false,
-                    stopsByRoute: {},
+                    activeStep: 1,
                 },
             },
             {
                 type: ACTION_TYPE.SET_WORKAROUND_PANEL_STATUS,
                 payload: {
                     isOpen: false,
-                },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_WORKAROUND_EDIT,
-                payload: {
-                    disruptionKeyToWorkaroundEdit: '',
-                },
-            },
-            {
-                type: ACTION_TYPE.SET_EDIT_EFFECT_PANEL_STATUS,
-                payload: {
-                    isEditEffectPanelOpen: false,
-                },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_EDIT_EFFECT,
-                payload: {
-                    disruptionKeyToEditEffect: '',
-                },
-            },
-            {
-                type: ACTION_TYPE.SET_DISRUPTION_FOR_WORKAROUND_EDIT,
-                payload: {
-                    disruptionForWorkaroundEdit: {},
                 },
             },
         ]));
