@@ -18,38 +18,6 @@ export const momentFromDateTime = (date, time) => {
     return undefined;
 };
 
-export const calculateParentIncidentTimeFromDisruptions = (disruptions) => {
-    if (!disruptions?.length) {
-        return { startDate: '', startTime: '', endDate: '', endTime: '' };
-    }
-
-    let earliestStart = null;
-    let latestEnd = null;
-
-    disruptions.forEach((disruption) => {
-        if (disruption.startDate && disruption.startTime) {
-            const startMoment = momentFromDateTime(disruption.startDate, disruption.startTime);
-            if (startMoment && (!earliestStart || startMoment.isBefore(earliestStart))) {
-                earliestStart = startMoment;
-            }
-        }
-
-        if (disruption.endDate && disruption.endTime) {
-            const endMoment = momentFromDateTime(disruption.endDate, disruption.endTime);
-            if (endMoment && (!latestEnd || endMoment.isAfter(latestEnd))) {
-                latestEnd = endMoment;
-            }
-        }
-    });
-
-    return {
-        startDate: earliestStart ? earliestStart.format(DATE_FORMAT) : '',
-        startTime: earliestStart ? earliestStart.format(TIME_FORMAT) : '',
-        endDate: latestEnd ? latestEnd.format(DATE_FORMAT) : '',
-        endTime: latestEnd ? latestEnd.format(TIME_FORMAT) : '',
-    };
-};
-
 export const generateDisruptionActivePeriods = (disruption) => {
     if (disruption.recurrent) {
         return calculateActivePeriods(disruption.recurrencePattern, Number(disruption.duration), [], false);
@@ -99,10 +67,8 @@ export const isStartDateValid = (startDate, openingTime, recurrent = false) => m
 export const isDurationValid = (duration, recurrent) => !recurrent || (!isEmpty(duration) && (Number.isInteger(+duration) && +duration > 0 && +duration < 25));
 
 export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
-    const modes = [
-        ...routes.map(route => VEHICLE_TYPES[route.routeType]?.type).filter(Boolean),
-        ...stops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType]?.type).filter(Boolean),
-    ];
+    const modes = [...routes.map(route => VEHICLE_TYPES[route.routeType].type),
+        ...stops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType].type)];
     const routesToRequest = routes.map(({ routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon }) => ({
         routeId,
         routeShortName,
@@ -127,11 +93,12 @@ export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
 };
 
 const getMode = disruption => [
-    ...disruption.affectedEntities.affectedRoutes
-        .map(route => VEHICLE_TYPES[route.routeType]?.type)
+    ...(disruption.affectedEntities?.affectedRoutes || [])
+        .map(route => VEHICLE_TYPES[route?.routeType]?.type)
         .filter(Boolean),
-    ...disruption.affectedEntities.affectedStops
-        .map(stop => VEHICLE_TYPES[stop.routeType]?.type)
+
+    ...(disruption.affectedEntities?.affectedStops || [])
+        .map(stop => VEHICLE_TYPES[stop?.routeType]?.type)
         .filter(Boolean),
 ];
 

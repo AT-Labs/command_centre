@@ -156,7 +156,6 @@ export const Workarounds = (props) => {
                 isSubmitDisabled={ isSubmitDisabled || props.isWorkaroundPanelOpen }
                 nextButtonValue={ getNextButton() }
                 isDraftOrCreateMode={ props.editMode !== EDIT_TYPE.ADD_EFFECT }
-                showFinishButton={ false }
                 onContinue={ () => onContinue() }
                 onSubmitDraft={ () => onSaveDraft() }
                 onBack={ () => onBack() } />

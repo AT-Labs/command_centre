@@ -48,13 +48,6 @@ export const FREQUENCY_TYPE = {
     RECURRING: 'Recurring',
 };
 
-export const DISRUPTION_STATUSES = {
-    NOT_STARTED: 'not-started',
-    IN_PROGRESS: 'in-progress',
-    DRAFT: 'draft',
-    RESOLVED: 'resolved',
-};
-
 export const NOTE_DISCLAIMER = `This notification is a communication tool to inform multiple internal and external stakeholders about a disruption. 
 Auckland Transport does not deem this notification as evidence of actual impact to service. Auckland Transport advises that 
 the agreed operational data and metrics will need to be utilised to ascertain the actual impact to service performance.`;
