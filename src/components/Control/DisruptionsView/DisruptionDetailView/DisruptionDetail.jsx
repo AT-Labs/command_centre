@@ -265,7 +265,7 @@ const DisruptionDetailView = (props) => {
         setDescriptionNote('');
         const { notes: disruptionNotes } = disruption;
         if (disruptionNotes.length > 0) {
-            setLastNote(disruptionNotes[disruptionNotes.length - 1]);
+            setLastNote(disruptionNotes.at(-1));
         }
     }, [disruption.lastUpdatedTime, lastNote]);
 
@@ -932,13 +932,14 @@ const DisruptionDetailView = (props) => {
                                 isLoading={ isLoading }
                             >
                                 <ShapeLayer
-                                    shapes={ !isLoading ? props.shapes : [] }
+                                    shapes={ isLoading ? [] : props.shapes }
                                     routeColors={ !isLoading ? props.routeColors : [] } />
                                 <SelectedStopsMarker
                                     stops={
-                                        !isLoading
-                                            ? disruption.affectedEntities.filter(entity => entity.stopCode).slice(0, 10).map(stop => itemToEntityTransformers[STOP.type](stop).data)
-                                            : []
+                                        isLoading
+                                            ? []
+                                            : disruption.affectedEntities.filter(entity => entity.stopCode).slice(0, 10).map(stop => itemToEntityTransformers[STOP.type](stop).data)
+
                                     }
                                     size={ 28 }
                                     tooltip
