@@ -265,7 +265,7 @@ const DisruptionDetailView = (props) => {
         setDescriptionNote('');
         const { notes: disruptionNotes } = disruption;
         if (disruptionNotes.length > 0) {
-            // NOSONAR: Node 14 does not support .at(), so we use [length - 1]
+            // NOSONAR: Node 14 does not support .at(-1), so we use [length - 1]. Should change this when we upgrade to Node 16+
             setLastNote(disruptionNotes[disruptionNotes.length - 1]);
         }
     }, [disruption.lastUpdatedTime, lastNote]);
