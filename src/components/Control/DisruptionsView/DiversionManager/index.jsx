@@ -97,7 +97,6 @@ const DiversionManager = (props) => {
 
     // Fetch available route variants to populate the dropdown lists
     const fetchVariants = debounce(async () => {
-        // istanbul ignore next - Logic tested
         const dateFilters = createRouteVariantDateFilters(props.disruption);
 
         try {
