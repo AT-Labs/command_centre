@@ -19,6 +19,10 @@ describe('IncidentsView', () => {
         updateAffectedRoutesState: jest.fn(),
         updateAffectedStopsState: jest.fn(),
         getStopGroups: jest.fn(),
+        toggleEditEffectPanel: jest.fn(),
+        updateDisruptionKeyToEditEffect: jest.fn(),
+        setRequestedDisruptionKeyToUpdateEditEffect: jest.fn(),
+        setRequestToUpdateEditEffectState: jest.fn(),
     };
 
     let wrapper;

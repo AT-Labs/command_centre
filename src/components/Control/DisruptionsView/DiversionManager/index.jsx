@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import moment from 'moment-timezone';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
 import { debounce } from 'lodash-es';
 import '../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
@@ -12,11 +13,13 @@ import ChangeSelectedRouteVariantModal from './ChangeSelectedRouteVariantModal';
 import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
 import { createDiversion, updateDiversion, resetDiversionResult } from '../../../../redux/actions/control/diversions';
 import { getDiversionResultState, getDiversionForEditing, getDiversionEditMode } from '../../../../redux/selectors/control/diversions';
+import { useParentChildIncident } from '../../../../redux/selectors/appSettings';
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
 import { isAffectedStop, createAffectedStop,
     getUniqueStops, createModifiedRouteVariant, canMerge, hasDiversionModified, getUniqueAffectedStopIds,
-    mergeDiversionToRouteVariant, removeDuplicatePoints, createRouteVariantDateFilters } from './DiversionHelper';
+    mergeDiversionToRouteVariant, removeDuplicatePoints } from './DiversionHelper';
 import { mergeCoordinates, parseWKT, toWKT } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
+import dateTypes from '../../../../types/date-types';
 import EDIT_TYPE from '../../../../types/edit-types';
 import { BUS_TYPE_ID } from '../../../../types/vehicle-types';
 import BaseRouteVariantSelector from './BaseRouteVariantSelector';
@@ -24,6 +27,8 @@ import AdditionalRouteVariantSelector from './AdditionalRouteVariantSelector';
 import AffectedStops from './AffectedStops';
 
 const DiversionManager = (props) => {
+    const SERVICE_DATE_FORMAT = 'YYYYMMDD';
+    const TIME_FORMAT_HHMM = 'HH:mm';
     const debounceDelay = 300;
     const isEditingMode = props.editMode === EDIT_TYPE.EDIT;
     const title = `${isEditingMode ? 'Edit' : 'Add'} Diversion`;
@@ -97,14 +102,21 @@ const DiversionManager = (props) => {
 
     // Fetch available route variants to populate the dropdown lists
     const fetchVariants = debounce(async () => {
-        const dateFilters = createRouteVariantDateFilters(props.disruption);
-
+        const start = moment(props.disruption.startTime).tz(dateTypes.TIME_ZONE);
+        const end = moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE);
+        const startDate = start.format(SERVICE_DATE_FORMAT);
+        const startTime = start.format(TIME_FORMAT_HHMM);
+        const endDate = end.format(SERVICE_DATE_FORMAT);
+        const endTime = end.format(TIME_FORMAT_HHMM);
         try {
             const search = {
                 page: 1,
                 limit: 1000,
                 routeIds,
-                ...dateFilters,
+                ...(startDate !== null && { serviceDateFrom: startDate }),
+                ...(startTime !== null && { startTime }),
+                ...(endDate !== null && { serviceDateTo: endDate }),
+                ...(endTime !== null && { endTime }),
             };
             let { routeVariants } = await searchRouteVariants(search);
             if (routeVariants?.length > 0) {
@@ -333,8 +345,10 @@ const DiversionManager = (props) => {
         );
     };
 
+    const containerClassName = `side-panel-control-component-view d-flex${props.useParentChildIncident ? ' parent-child-incident-enabled' : ''}`;
+
     return (
-        <div className="side-panel-control-component-view d-flex">
+        <div className={ containerClassName }>
             <SidePanel
                 isOpen
                 isActive
@@ -439,6 +453,7 @@ DiversionManager.propTypes = {
     onCancelled: PropTypes.func,
     resultState: PropTypes.object,
     diversion: PropTypes.object,
+    useParentChildIncident: PropTypes.bool.isRequired,
 };
 
 DiversionManager.defaultProps = {
@@ -456,4 +471,5 @@ export default connect(state => ({
     editMode: getDiversionEditMode(state),
     resultState: getDiversionResultState(state),
     diversion: getDiversionForEditing(state),
+    useParentChildIncident: useParentChildIncident(state),
 }), { createDiversion, updateDiversion, resetDiversionResult })(DiversionManager);

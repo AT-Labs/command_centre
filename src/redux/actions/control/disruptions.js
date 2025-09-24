@@ -208,29 +208,19 @@ export const updateActiveDisruptionId = activeDisruptionId => (dispatch) => {
     dispatch(clearDisruptionActionResult());
 };
 
-export const publishDraftDisruption = (disruption, diversions) => async (dispatch) => {
+export const publishDraftDisruption = disruption => async (dispatch) => {
     let response;
     dispatch(updateRequestingDisruptionState(true, disruption.disruptionId));
     try {
-        if (!disruption?.endTime && diversions?.length > 0) {
-            dispatch(updateRequestingDisruptionResult(
+        response = await disruptionsMgtApi.updateDisruption(disruption);
+        dispatch(
+            updateRequestingDisruptionResult(
                 disruption.disruptionId,
-                ACTION_RESULT.PUBLISH_DRAFT_ERROR(
-                    null,
-                    'Disruption with diversion(s) require and End Date and Time to be published. Please inform the End Date and End Time and try again.',
-                ),
-            ));
-        } else {
-            response = await disruptionsMgtApi.updateDisruption(disruption);
-            dispatch(
-                updateRequestingDisruptionResult(
-                    disruption.disruptionId,
-                    ACTION_RESULT.PUBLISH_DRAFT_SUCCESS(response.incidentNo, response.version, response.createNotification),
-                ),
-            );
-        }
+                ACTION_RESULT.PUBLISH_DRAFT_SUCCESS(response.incidentNo, response.version, response.createNotification),
+            ),
+        );
     } catch (error) {
-        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.PUBLISH_DRAFT_ERROR(error.code, error.message || 'Failed to publish draft disruption')));
+        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.PUBLISH_DRAFT_ERROR(error.code)));
     } finally {
         dispatch(updateRequestingDisruptionState(false, disruption.disruptionId));
     }
