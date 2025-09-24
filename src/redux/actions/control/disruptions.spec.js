@@ -765,4 +765,38 @@ describe('Disruptions actions', () => {
             },
         });
     });
+
+    it('should dispatch PUBLISH_DRAFT_ERROR with error code and message when updateDisruption throws', async () => {
+        const disruption = {
+            disruptionId: 'error-test',
+            endTime: '2025-09-24T12:00:00Z',
+        };
+        const diversions = [];
+
+        // Mock updateDisruption to throw error with code and message
+        const errorObj = { code: 'ERR_XYZ', message: 'Unit test error message' };
+        disruptionsMgtApi.updateDisruption.mockRejectedValue(errorObj);
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [disruption],
+            _links: { permissions: [] },
+        });
+
+        await store.dispatch(publishDraftDisruption(disruption, diversions));
+
+        // Find the error action in the dispatched actions
+        const errorAction = store.getActions().find(
+            a => a.type === ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
+        );
+
+        expect(errorAction).to.deep.include({
+            type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
+            payload: {
+                resultDisruptionId: 'error-test',
+                resultStatus: 'danger',
+                resultMessage: 'Unit test error message',
+                resultCreateNotification: undefined,
+                resultDisruptionVersion: undefined,
+            },
+        });
+    });
 });

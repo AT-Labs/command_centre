@@ -106,10 +106,6 @@ const DiversionManager = (props) => {
                 limit: 1000,
                 routeIds,
                 ...dateFilters,
-                // ...(startDate !== null && { serviceDateFrom: startDate }),
-                // ...(startTime !== null && { startTime }),
-                // ...(endDate !== null && { serviceDateTo: endDate }),
-                // ...(endTime !== null && { endTime }),
             };
             let { routeVariants } = await searchRouteVariants(search);
             if (routeVariants?.length > 0) {
