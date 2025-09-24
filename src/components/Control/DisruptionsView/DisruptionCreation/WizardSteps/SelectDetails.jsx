@@ -13,7 +13,7 @@ import { isUrlValid } from '../../../../../utils/helpers';
 import { isDurationValid, isEndDateValid, isEndTimeValid, isStartDateValid, isStartTimeValid, recurrenceRadioOptions } from '../../../../../utils/control/disruptions';
 import { toggleDisruptionModals, updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { DisruptionDetailSelect } from '../../DisruptionDetail/DisruptionDetailSelect';
-import { SEVERITIES } from '../../../../../types/disruptions-types';
+import { getSeverityOptions } from '../../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
     HEADER_MAX_LENGTH,
@@ -38,7 +38,7 @@ import { generateActivePeriodsFromRecurrencePattern, getRecurrenceText, isActive
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
-import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
+import { useDraftDisruptions, useParentChildIncident } from '../../../../../redux/selectors/appSettings';
 
 export const SelectDetails = (props) => {
     const { startDate, startTime, endDate, endTime, impact, cause, header, url, createNotification, exemptAffectedTrips, severity } = props.data;
@@ -409,7 +409,7 @@ export const SelectDetails = (props) => {
                             id="disruption-creation__wizard-select-details__severity"
                             className=""
                             value={ severity }
-                            options={ SEVERITIES }
+                            options={ getSeverityOptions(props.useParentChildIncident) }
                             label={ LABEL_SEVERITY }
                             invalid={ isSeverityDirty && !severityValid() }
                             feedback="Please select severity"
@@ -518,6 +518,7 @@ SelectDetails.propTypes = {
     toggleDisruptionModals: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
+    useParentChildIncident: PropTypes.bool,
     onUpdateDetailsValidation: PropTypes.func,
 };
 
@@ -530,6 +531,10 @@ SelectDetails.defaultProps = {
     onSubmitDraft: () => { },
     onUpdateDetailsValidation: () => { },
     useDraftDisruptions: false,
+    useParentChildIncident: false,
 };
 
-export default connect(state => ({ useDraftDisruptions: useDraftDisruptions(state) }), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);
+export default connect(state => ({
+    useDraftDisruptions: useDraftDisruptions(state),
+    useParentChildIncident: useParentChildIncident(state),
+}), { toggleDisruptionModals, updateCurrentStep })(SelectDetails);
