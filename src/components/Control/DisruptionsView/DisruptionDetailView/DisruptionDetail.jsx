@@ -265,7 +265,7 @@ const DisruptionDetailView = (props) => {
         setDescriptionNote('');
         const { notes: disruptionNotes } = disruption;
         if (disruptionNotes.length > 0) {
-            setLastNote(disruptionNotes.at(-1));
+            setLastNote(disruptionNotes[disruptionNotes.length - 1]);
         }
     }, [disruption.lastUpdatedTime, lastNote]);
 
