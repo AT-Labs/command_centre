@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import moment from 'moment-timezone';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
 import { debounce } from 'lodash-es';
 import '../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
@@ -16,9 +15,8 @@ import { getDiversionResultState, getDiversionForEditing, getDiversionEditMode }
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
 import { isAffectedStop, createAffectedStop,
     getUniqueStops, createModifiedRouteVariant, canMerge, hasDiversionModified, getUniqueAffectedStopIds,
-    mergeDiversionToRouteVariant, removeDuplicatePoints } from './DiversionHelper';
+    mergeDiversionToRouteVariant, removeDuplicatePoints, createRouteVariantDateFilters } from './DiversionHelper';
 import { mergeCoordinates, parseWKT, toWKT } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
-import dateTypes from '../../../../types/date-types';
 import EDIT_TYPE from '../../../../types/edit-types';
 import { BUS_TYPE_ID } from '../../../../types/vehicle-types';
 import BaseRouteVariantSelector from './BaseRouteVariantSelector';
@@ -26,8 +24,6 @@ import AdditionalRouteVariantSelector from './AdditionalRouteVariantSelector';
 import AffectedStops from './AffectedStops';
 
 const DiversionManager = (props) => {
-    const SERVICE_DATE_FORMAT = 'YYYYMMDD';
-    const TIME_FORMAT_HHMM = 'HH:mm';
     const debounceDelay = 300;
     const isEditingMode = props.editMode === EDIT_TYPE.EDIT;
     const title = `${isEditingMode ? 'Edit' : 'Add'} Diversion`;
@@ -101,27 +97,30 @@ const DiversionManager = (props) => {
 
     // Fetch available route variants to populate the dropdown lists
     const fetchVariants = debounce(async () => {
-        const start = moment(props.disruption.startTime).tz(dateTypes.TIME_ZONE);
-        const startDate = start.format(SERVICE_DATE_FORMAT);
-        const startTime = start.format(TIME_FORMAT_HHMM);
-        let end = null;
-        let endDate = null;
-        let endTime = null;
-        if (props.disruption.endTime) {
-            end = moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE);
-            endDate = end.format(SERVICE_DATE_FORMAT);
-            endTime = end.format(TIME_FORMAT_HHMM);
-        }
+        const dateFilters = createRouteVariantDateFilters(props.disruption);
+
+        // const start = moment(props.disruption.startTime).tz(dateTypes.TIME_ZONE);
+        // const startDate = start.format(SERVICE_DATE_FORMAT);
+        // const startTime = start.format(TIME_FORMAT_HHMM);
+        // let end = null;
+        // let endDate = null;
+        // let endTime = null;
+        // if (props.disruption.endTime) {
+        //     end = moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE);
+        //     endDate = end.format(SERVICE_DATE_FORMAT);
+        //     endTime = end.format(TIME_FORMAT_HHMM);
+        // }
 
         try {
             const search = {
                 page: 1,
                 limit: 1000,
                 routeIds,
-                ...(startDate !== null && { serviceDateFrom: startDate }),
-                ...(startTime !== null && { startTime }),
-                ...(endDate !== null && { serviceDateTo: endDate }),
-                ...(endTime !== null && { endTime }),
+                ...dateFilters,
+                // ...(startDate !== null && { serviceDateFrom: startDate }),
+                // ...(startTime !== null && { startTime }),
+                // ...(endDate !== null && { serviceDateTo: endDate }),
+                // ...(endTime !== null && { endTime }),
             };
             let { routeVariants } = await searchRouteVariants(search);
             if (routeVariants?.length > 0) {
