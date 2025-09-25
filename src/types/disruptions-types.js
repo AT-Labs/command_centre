@@ -93,8 +93,8 @@ export const DISRUPTIONS_MESSAGE_TYPE = {
 };
 
 export const DEFAULT_SEVERITY = {
-    label: 'Unknown',
-    value: 'UNKNOWN',
+    label: '',
+    value: '',
 };
 
 export const SEVERITIES = [
@@ -119,17 +119,11 @@ export const SEVERITIES = [
         label: '1 (Minor)',
         value: 'MINOR',
     },
+    {
+        label: 'Unknown',
+        value: 'UNKNOWN',
+    },
 ];
-
-export const getSeverityOptions = (useParentChildIncident) => {
-    if (useParentChildIncident) {
-        return SEVERITIES;
-    }
-    return [
-        { label: 'Select severity...', value: '' },
-        ...SEVERITIES.slice(1),
-    ];
-};
 
 export const PASSENGER_IMPACT_RANGE = {
     LOWER_THAN_500: '<500',

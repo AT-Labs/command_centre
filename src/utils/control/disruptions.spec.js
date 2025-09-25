@@ -1002,7 +1002,7 @@ describe('getMode', () => {
                 {
                     ...mockDisruption1,
                     affectedEntities: {
-                        affectedRoutes: [{ routeType: 999 }],
+                        affectedRoutes: [{ routeType: 555 }],
                         affectedStops: [],
                     },
                 },
@@ -1067,7 +1067,7 @@ describe('getMode', () => {
                     ...mockDisruption1,
                     affectedEntities: {
                         affectedRoutes: [],
-                        affectedStops: [{ routeType: 999 }, { routeType: 888 }],
+                        affectedStops: [{ routeType: 555 }, { routeType: 333 }],
                     },
                 },
             ],

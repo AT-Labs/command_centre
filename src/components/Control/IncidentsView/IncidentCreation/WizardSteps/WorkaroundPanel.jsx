@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Paper, Stack, CircularProgress } from '@mui/material';
+import { Paper, Stack, CircularProgress } from '@mui/material';
+import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 import { getEditMode,
     isWorkaroundPanelOpen,

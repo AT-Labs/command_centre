@@ -14,19 +14,32 @@ const HistoryNotesModal = (props) => {
     return (
         <CustomModal
             className="cc-modal-standard-width disruption-summary"
-            title={ `History notes for Disruption #${props.disruption.incidentNo}` }
+            title={ `Disruption notes history #${props.disruption.incidentNo}` }
             isModalOpen={ props.isModalOpen }
             onClose={ () => props.onClose() }
             customFooter={ generateModalFooter() }
         >
             {(Array.isArray(props.disruption.notes) && props.disruption.notes.length > 0) && (
-                <Table className="table-layout-fixed">
+                <Table style={ { width: '100%', tableLayout: 'auto' } }>
+                    <thead>
+                        <tr>
+                            <th style={ { width: '25%', borderTop: '2px solid #dee2e6', borderBottom: '2px solid #dee2e6' } }>Last updated time</th>
+                            <th style={ { width: '25%', borderTop: '2px solid #dee2e6', borderBottom: '2px solid #dee2e6' } }>Last updated by</th>
+                            <th style={ { width: '50%', borderTop: '2px solid #dee2e6', borderBottom: '2px solid #dee2e6' } }>Notes</th>
+                        </tr>
+                    </thead>
                     <tbody className="notes-tbody">
                         {[...props.disruption.notes].reverse().map(note => (
-                            <tr key={ note.id } className="row d-block">
-                                <td className="col-3">{formatCreatedUpdatedTime(note.createdTime)}</td>
-                                <td className="col-3">{note.createdBy}</td>
-                                <td className="col-6">{note.description}</td>
+                            <tr key={ note.id }>
+                                <td>
+                                    {formatCreatedUpdatedTime(note.lastUpdatedTime ?? note.createdTime)}
+                                </td>
+                                <td style={ { overflowWrap: 'anywhere' } }>
+                                    {note.lastUpdatedBy ?? note.createdBy}
+                                </td>
+                                <td style={ { overflowWrap: 'anywhere' } }>
+                                    {note.description}
+                                </td>
                             </tr>
                         ))}
                     </tbody>

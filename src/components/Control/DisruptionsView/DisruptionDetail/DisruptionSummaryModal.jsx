@@ -13,13 +13,13 @@ import {
     LABEL_STATUS, LABEL_URL, TIME_FORMAT, LABEL_CREATED_BY, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
     LABEL_SEVERITY,
 } from '../../../../constants/disruptions';
-import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES, DEFAULT_SEVERITY } from '../../../../types/disruptions-types';
-import { useParentChildIncident, useDisruptionEmailFormat, useDraftDisruptions, useDisruptionDraftEmailSharing } from '../../../../redux/selectors/appSettings';
+import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES } from '../../../../types/disruptions-types';
 import { formatCreatedUpdatedTime, getDeduplcatedAffectedRoutes, getDeduplcatedAffectedStops } from '../../../../utils/control/disruptions';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import { getWorkaroundsAsText } from '../../../../utils/control/disruption-workarounds';
 import { shareToEmail, shareToEmailLegacy } from '../../../../utils/control/disruption-sharing';
 import CustomCollapse from '../../../Common/CustomCollapse/CustomCollapse';
+import { useDisruptionEmailFormat, useDraftDisruptions, useDisruptionDraftEmailSharing } from '../../../../redux/selectors/appSettings';
 import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../types/disruption-cause-and-effect';
 
@@ -97,9 +97,7 @@ const DisruptionSummaryModal = (props) => {
             <Table className="table-layout-fixed">
                 <tbody>
                     {createLine(LABEL_HEADER, props.disruption.header)}
-                    {createLine(LABEL_SEVERITY, props.useParentChildIncident
-                        ? (find(SEVERITIES, { value: props.disruption.severity }) || DEFAULT_SEVERITY).label
-                        : (find(SEVERITIES, { value: props.disruption.severity })?.label || props.disruption.severity || ''))}
+                    {createLine(LABEL_SEVERITY, find(SEVERITIES, { value: props.disruption.severity }).label)}
                     {createLine(LABEL_STATUS, props.disruption.status)}
                     {createLine(LABEL_MODE, props.disruption.mode)}
                     {createLine(LABEL_AFFECTED_ROUTES, getDeduplcatedAffectedRoutes(props.disruption.affectedEntities).join(', '))}
@@ -131,12 +129,10 @@ DisruptionSummaryModal.propTypes = {
     useDisruptionEmailFormat: PropTypes.bool.isRequired,
     useDraftDisruptions: PropTypes.bool.isRequired,
     useDisruptionDraftEmailSharing: PropTypes.bool.isRequired,
-    useParentChildIncident: PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({
     useDisruptionEmailFormat: useDisruptionEmailFormat(state),
     useDraftDisruptions: useDraftDisruptions(state),
     useDisruptionDraftEmailSharing: useDisruptionDraftEmailSharing(state),
-    useParentChildIncident: useParentChildIncident(state),
 }), {})(DisruptionSummaryModal);

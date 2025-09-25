@@ -110,7 +110,7 @@ async function generateHtmlEmailBodyLegacy(disruption) {
         margin-bottom: 1rem; color: #212529; table-layout: fixed;" width="100%">
         <tbody>
             ${createHtmlLine(LABEL_HEADER, disruption.header)}
-            ${createHtmlLine(LABEL_SEVERITY, (find(SEVERITIES, { value: disruption.severity ?? '' }) ?? { label: 'Unknown' }).label)}
+            ${createHtmlLine(LABEL_SEVERITY, find(SEVERITIES, { value: disruption.severity ?? '' }).label)}
             ${createHtmlLine(LABEL_STATUS, disruption.status)}
             ${createHtmlLine(LABEL_MODE, disruption.mode)}
             ${createHtmlLine(LABEL_AFFECTED_ROUTES, getDeduplcatedAffectedRoutes(disruption.affectedEntities).join(', '))}
@@ -173,7 +173,7 @@ async function getMapFieldValue(disruption) {
         [LABEL_AFFECTED_ROUTES]: getDeduplcatedAffectedRoutes(disruption.affectedEntities).join(', '),
         [LABEL_AFFECTED_STOPS]: getDeduplcatedAffectedStops(disruption.affectedEntities).join(', '),
         [LABEL_CAUSE]: (find(causes, { value: disruption.cause }) ?? DEFAULT_CAUSE).label,
-        [LABEL_SEVERITY]: (find(SEVERITIES, { value: disruption.severity ?? '' }) ?? { label: 'Unknown' }).label,
+        [LABEL_SEVERITY]: find(SEVERITIES, { value: disruption.severity ?? '' }).label,
         [LABEL_IS_RECURRING]: disruption.recurrent ? 'Yes' : 'No',
         [LABEL_RECURRING_PERIOD]: disruption.recurrent ? getRecurringPeriod(disruption) : '-',
         [LABEL_CUSTOMER_IMPACT]: (find(impacts, { value: disruption.impact }) ?? DEFAULT_IMPACT).label,
