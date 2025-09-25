@@ -2,7 +2,6 @@
 import { isEmpty, uniqBy, each } from 'lodash-es';
 
 import { ACTION_RESULT, DISRUPTION_TYPE, STATUSES } from '../../../types/disruptions-types';
-import EDIT_TYPE from '../../../types/edit-types';
 import ERROR_TYPE from '../../../types/error-types';
 import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
@@ -22,6 +21,7 @@ import {
 } from '../../selectors/control/incidents';
 import { getAllRoutes } from '../../selectors/static/routes';
 import { getAllStops } from '../../selectors/static/stops';
+import EDIT_TYPE from '../../../types/edit-types';
 
 export const updateIncidentsSortingParams = sortingParams => ({
     type: ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_SORTING_PARAMS,
@@ -65,7 +65,7 @@ const updateLoadingRoutesByStop = isLoadingRoutesByStop => ({
     },
 });
 
-export const updateLoadingIncidentForEditState = isIncidentForEditLoading => ({
+const updateLoadingIncidentForEditState = isIncidentForEditLoading => ({
     type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
     payload: {
         isIncidentForEditLoading,
@@ -812,7 +812,8 @@ export const setDisruptionForWorkaroundEdit = disruptionForWorkaroundEdit => (di
     });
 };
 
-export const updateIncident = incident => async (dispatch) => {
+export const updateIncident = (incident, isAddEffect = false) => async (dispatch) => {
+    dispatch(updateLoadingIncidentForEditState(true));
     const { incidentId, createNotification } = incident;
     dispatch(updateRequestingIncidentState(true, incidentId));
 
@@ -827,8 +828,17 @@ export const updateIncident = incident => async (dispatch) => {
     } catch (error) {
         dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
     } finally {
+        if (isAddEffect) {
+            dispatch(updateEditMode(EDIT_TYPE.EDIT));
+            dispatch(updateCurrentStep(1));
+            dispatch(setIncidentToUpdate(incidentId, undefined, true));
+        } else {
+            dispatch(deleteAffectedEntities());
+            dispatch(openCreateIncident(false));
+            dispatch(toggleIncidentModals('isApplyChangesOpen', false));
+            dispatch(updateLoadingIncidentForEditState(false));
+        }
         dispatch(updateRequestingIncidentState(false, incidentId));
-        dispatch(deleteAffectedEntities());
         dispatch(toggleWorkaroundPanel(false));
         dispatch(updateDisruptionKeyToWorkaroundEdit(''));
         dispatch(toggleEditEffectPanel(false));
