@@ -59,18 +59,14 @@ const mockDisruption = {
     workarounds: [],
     notes: [
         {
-            createdTime: '2020-03-09T06:00:00.000Z',
+            createdTime: '2022-03-09T06:00:00.000Z',
             createdBy: 'username@test.com',
             description: 'test description note 1',
-            lastUpdatedTime: '2021-04-09T10:00:00.000Z',
-            lastUpdatedBy: 'username2@test.com',
         },
         {
-            createdTime: '2022-05-09T07:00:00.000Z',
+            createdTime: '2022-03-09T07:00:00.000Z',
             createdBy: 'username@test.com',
             description: 'test description note 2',
-            lastUpdatedTime: null,
-            lastUpdatedBy: null,
         },
     ],
 };
@@ -112,7 +108,7 @@ describe('HistoryNotesModal Component', () => {
             </Provider>,
         );
 
-        expect(screen.getByText('Disruption notes history #DISR123')).toBeInTheDocument();
+        expect(screen.getByText('History notes for Disruption #DISR123')).toBeInTheDocument();
         expect(screen.getByText('test description note 1')).toBeInTheDocument();
         expect(screen.getByText('test description note 2')).toBeInTheDocument();
     });
@@ -129,28 +125,5 @@ describe('HistoryNotesModal Component', () => {
         fireEvent.click(button);
 
         expect(defaultProps.onClose).toHaveBeenCalled();
-    });
-
-    it('Should display lastUpdatedTime and lastUpdatedBy if they exist', () => {
-        render(
-            <Provider store={ store }>
-                <HistoryNotesModal { ...defaultProps } />
-            </Provider>,
-        );
-
-        // header
-        expect(screen.getByText('Last updated time')).toBeInTheDocument();
-        expect(screen.getByText('Last updated by')).toBeInTheDocument();
-        expect(screen.getByText('Notes')).toBeInTheDocument();
-
-        // updated note
-        expect(screen.getByText('09/04/2021 22:00')).toBeInTheDocument();
-        expect(screen.getByText('username2@test.com')).toBeInTheDocument();
-        expect(screen.getByText('test description note 1')).toBeInTheDocument();
-
-        // note without updates
-        expect(screen.getByText('09/05/2022 19:00')).toBeInTheDocument();
-        expect(screen.getByText('username@test.com')).toBeInTheDocument();
-        expect(screen.getByText('test description note 2')).toBeInTheDocument();
     });
 });

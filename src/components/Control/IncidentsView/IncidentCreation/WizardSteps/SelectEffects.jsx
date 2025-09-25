@@ -14,7 +14,8 @@ import {
     getIncidentToEdit,
     getEditMode,
 } from '../../../../../redux/selectors/control/incidents';
-import { DISRUPTION_TYPE, STATUSES, SEVERITIES, DEFAULT_SEVERITY } from '../../../../../types/disruptions-types';
+import { DISRUPTION_TYPE, STATUSES, DEFAULT_SEVERITY, getSeverityOptions } from '../../../../../types/disruptions-types';
+import EDIT_TYPE from '../../../../../types/edit-types';
 import {
     updateCurrentStep,
     getStopsByRoute,
@@ -59,7 +60,6 @@ import {
     parseRecurrencePattern } from '../../../../../utils/recurrence';
 import CustomMuiDialog from '../../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../../Common/ActivePeriods/ActivePeriods';
-import EDIT_TYPE from '../../../../../types/edit-types';
 
 const INIT_EFFECT_STATE = {
     key: '',
@@ -79,7 +79,7 @@ const INIT_EFFECT_STATE = {
     },
     createNotification: false,
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: DEFAULT_SEVERITY.value,
+    severity: '',
     isSeverityDirty: false,
     recurrent: false,
     duration: '',
@@ -144,6 +144,7 @@ export const SelectEffects = (props) => {
     const [activePeriods, setActivePeriods] = useState([]);
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const impactValid = key => !isEmpty(disruptions.find(d => d.key === key).impact);
 
     const getDisruptionByKey = key => disruptions.find(d => d.key === key);
@@ -154,6 +155,19 @@ export const SelectEffects = (props) => {
             props.updateNewIncidentEffect(disruptions[0]);
         }
     };
+
+    useEffect(() => {
+        if (isSubmitting && props.data.disruptions.length > 0) {
+            setIsSubmitting(false);
+            if (!props.isEditMode) {
+                props.onStepUpdate(3);
+                props.updateCurrentStep(1);
+                props.onSubmit();
+            } else {
+                props.onSubmitUpdate();
+            }
+        }
+    }, [props.data.disruptions, isSubmitting]);
 
     const getOptionalLabel = label => (
         <>
@@ -187,6 +201,9 @@ export const SelectEffects = (props) => {
 
     const endTimeValid = (key) => {
         const disruption = getDisruptionByKey(key);
+        if (isEmpty(disruption.endDate) && isEmpty(disruption.endTime)) {
+            return true;
+        }
         return isEndTimeValid(
             disruption.endDate,
             disruption.endTime,
@@ -199,6 +216,9 @@ export const SelectEffects = (props) => {
 
     const endDateValid = (key) => {
         const disruption = getDisruptionByKey(key);
+        if (isEmpty(disruption.endDate)) {
+            return true;
+        }
         return isEndDateValid(disruption.endDate, disruption.startDate, incidentRecurrent);
     };
 
@@ -232,7 +252,7 @@ export const SelectEffects = (props) => {
         return true;
     };
 
-    const isEndDateAndEndTimeValid = disruption => !isEmpty(disruption.endDate) && isEmpty(disruption.endTime);
+    const isEndDateAndEndTimeValid = disruption => isEmpty(disruption.endDate) || !isEmpty(disruption.endTime) || (!isEmpty(disruption.endDate) && isEmpty(disruption.endTime));
 
     const isRequiredPropsEmpty = () => {
         const isPropsEmpty = disruptions.some(disruption => some([
@@ -243,9 +263,9 @@ export const SelectEffects = (props) => {
             disruption.severity,
             disruption.header], isEmpty));
         const isEndTimeRequiredAndEmpty = !incidentRecurrent
-            && disruptions.some(isEndDateAndEndTimeValid);
+            && disruptions.some(disruption => !isEndDateAndEndTimeValid(disruption));
         const isWeekdayRequiredAndEmpty = incidentRecurrent
-            && disruptions.some(disruption => isEmpty(disruption.recurrencePattern.byweekday));
+            && disruptions.some(disruption => isEmpty(disruption.recurrencePattern?.byweekday));
         return isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
     };
 
@@ -297,6 +317,12 @@ export const SelectEffects = (props) => {
         }
     }, [requireMapUpdate]);
 
+    useEffect(() => {
+        if (!props.isEditMode) {
+            props.onUpdateEntitiesValidation(!isSubmitDisabled && activePeriodsValidForAllDisruptionsV2());
+        }
+    }, [disruptions, isSubmitDisabled, props.isEditMode]);
+
     const onSaveDraft = () => {
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
@@ -313,7 +339,7 @@ export const SelectEffects = (props) => {
     const onContinue = () => {
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
-        if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
+        if (!props.isEditMode) {
             props.onUpdateEntitiesValidation(!isSubmitDisabled && activePeriodsValidForAllDisruptionsV2());
             props.onStepUpdate(2);
             props.updateCurrentStep(3);
@@ -398,7 +424,13 @@ export const SelectEffects = (props) => {
                 updateDisruption(key, { endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '', isEndDateDirty: false });
             }
         } else {
-            updateDisruption(key, { endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '', isEndDateDirty: false });
+            const endDateValue = date.length ? moment(date[0]).format(DATE_FORMAT) : '';
+            const disruption = getDisruptionByKey(key);
+            updateDisruption(key, { endDate: endDateValue, isEndDateDirty: false });
+
+            if (endDateValue && isEmpty(disruption.endTime)) {
+                updateDisruption(key, { endTime: '23:59' });
+            }
         }
     };
 
@@ -470,7 +502,7 @@ export const SelectEffects = (props) => {
                                 id="disruption-creation__wizard-select-details__severity"
                                 className=""
                                 value={ disruption.severity }
-                                options={ SEVERITIES }
+                                options={ getSeverityOptions(true) }
                                 label={ LABEL_SEVERITY }
                                 invalid={ disruption.isSeverityDirty && !severityValid(disruption.key) }
                                 feedback="Please select severity"
@@ -655,12 +687,28 @@ export const SelectEffects = (props) => {
                 updateCurrentStep={ props.updateCurrentStep }
                 onStepUpdate={ props.onStepUpdate }
                 toggleIncidentModals={ props.toggleIncidentModals }
+                showFinishButton={ props.showFinishButton }
                 nextButtonValue="Continue"
                 onContinue={ () => onContinue() }
-                isSubmitDisabled={ props.useDraftDisruptions && props.editMode !== EDIT_TYPE.ADD_EFFECT ? isDraftSubmitDisabled : isSubmitDisabled }
+                isSubmitDisabled={ props.useDraftDisruptions ? isDraftSubmitDisabled : isSubmitDisabled }
                 isDraftSubmitDisabled={ isDraftSubmitDisabled }
                 isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || props.editMode !== EDIT_TYPE.ADD_EFFECT }
                 onSubmitDraft={ () => onSaveDraft() }
+                isAddEffectsStep
+                additionalFrontendChangesEnabled
+                isFinishDisabled={ isSubmitDisabled }
+                finishButtonValue={ (() => {
+                    if (isSubmitting) return 'Saving...';
+                    if (props.isEditMode) return 'Save';
+                    return 'Finish';
+                })() }
+                onFinish={ () => {
+                    removeNotFoundFromStopGroups();
+                    updateDisruptionsState();
+                    setTimeout(() => {
+                        props.onSubmit();
+                    }, 0);
+                } }
                 onBack={ props.editMode !== EDIT_TYPE.ADD_EFFECT ? onBack : undefined }
             />
             <CustomMuiDialog
@@ -678,6 +726,7 @@ SelectEffects.propTypes = {
     onDataUpdate: PropTypes.func.isRequired,
     onSubmitDraft: PropTypes.func,
     onSubmitUpdate: PropTypes.func,
+    onSubmit: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func.isRequired,
     updateAffectedStopsState: PropTypes.func.isRequired,
     updateAffectedRoutesState: PropTypes.func.isRequired,
@@ -687,8 +736,10 @@ SelectEffects.propTypes = {
     onUpdateEntitiesValidation: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
     editMode: PropTypes.string,
+    isEditMode: PropTypes.bool,
     updateNewIncidentEffect: PropTypes.func,
     newIncidentEffect: PropTypes.object,
+    showFinishButton: PropTypes.bool,
 };
 
 SelectEffects.defaultProps = {
@@ -696,10 +747,12 @@ SelectEffects.defaultProps = {
     onSubmitUpdate: () => { },
     onUpdateEntitiesValidation: () => { },
     useDraftDisruptions: false,
+    isEditMode: false,
     data: {},
     editMode: EDIT_TYPE.CREATE,
     updateNewIncidentEffect: () => { },
     newIncidentEffect: {},
+    showFinishButton: false,
 };
 
 export default connect(state => ({

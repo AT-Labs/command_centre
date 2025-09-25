@@ -2,6 +2,7 @@
 import { isEmpty, uniqBy, each } from 'lodash-es';
 
 import { ACTION_RESULT, DISRUPTION_TYPE, STATUSES } from '../../../types/disruptions-types';
+import EDIT_TYPE from '../../../types/edit-types';
 import ERROR_TYPE from '../../../types/error-types';
 import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
@@ -21,7 +22,6 @@ import {
 } from '../../selectors/control/incidents';
 import { getAllRoutes } from '../../selectors/static/routes';
 import { getAllStops } from '../../selectors/static/stops';
-import EDIT_TYPE from '../../../types/edit-types';
 
 export const updateIncidentsSortingParams = sortingParams => ({
     type: ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_SORTING_PARAMS,
@@ -65,7 +65,7 @@ const updateLoadingRoutesByStop = isLoadingRoutesByStop => ({
     },
 });
 
-const updateLoadingIncidentForEditState = isIncidentForEditLoading => ({
+export const updateLoadingIncidentForEditState = isIncidentForEditLoading => ({
     type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
     payload: {
         isIncidentForEditLoading,

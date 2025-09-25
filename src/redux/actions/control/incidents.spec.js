@@ -243,6 +243,12 @@ describe('Incidents Actions', () => {
         const dispatched = store.getActions();
         expect(dispatched).toEqual(expect.arrayContaining([
             {
+                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
+                payload: {
+                    isIncidentForEditLoading: true,
+                },
+            },
+            {
                 type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING,
                 payload: {
                     isRequesting: true,
@@ -260,9 +266,16 @@ describe('Incidents Actions', () => {
                 },
             },
             {
+                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING,
+                payload: {
+                    isRequesting: false,
+                    resultIncidentId: 1,
+                },
+            },
+            {
                 type: ACTION_TYPE.UPDATE_INCIDENT_EDIT_MODE,
                 payload: {
-                    editMode: EDIT_TYPE.EDIT,
+                    editMode: 'EDIT',
                 },
             },
             {
@@ -272,9 +285,39 @@ describe('Incidents Actions', () => {
                 },
             },
             {
+                type: ACTION_TYPE.UPDATE_INCIDENT_TO_EDIT,
+                payload: {
+                    incidentToEdit: expect.any(Object),
+                },
+            },
+            {
                 type: ACTION_TYPE.SET_WORKAROUND_PANEL_STATUS,
                 payload: {
                     isOpen: false,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_WORKAROUND_EDIT,
+                payload: {
+                    disruptionKeyToWorkaroundEdit: '',
+                },
+            },
+            {
+                type: ACTION_TYPE.SET_EDIT_EFFECT_PANEL_STATUS,
+                payload: {
+                    isEditEffectPanelOpen: false,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_EDIT_EFFECT,
+                payload: {
+                    disruptionKeyToEditEffect: '',
+                },
+            },
+            {
+                type: ACTION_TYPE.SET_DISRUPTION_FOR_WORKAROUND_EDIT,
+                payload: {
+                    disruptionForWorkaroundEdit: {},
                 },
             },
         ]));
