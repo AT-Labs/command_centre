@@ -23,8 +23,6 @@ import {
     getRoutesByShortName,
     updateAffectedRoutesState,
     toggleIncidentModals,
-    updateEditMode,
-    setIncidentToUpdate,
 } from '../../../../../redux/actions/control/incidents';
 import Footer from './Footer';
 import { search } from '../../../../../redux/actions/search';
@@ -707,9 +705,7 @@ export const SelectEffects = (props) => {
                 onFinish={ () => {
                     const isAddEffect = props.editMode === EDIT_TYPE.ADD_EFFECT;
                     if (isAddEffect) {
-                        props.updateEditMode(EDIT_TYPE.EDIT);
-                        props.updateCurrentStep(1);
-                        props.setIncidentToUpdate(props.data.incidentId, undefined, true);
+                        props.onSubmitUpdate();
                     } else {
                         removeNotFoundFromStopGroups();
                         updateDisruptionsState();
@@ -741,8 +737,6 @@ SelectEffects.propTypes = {
     updateAffectedRoutesState: PropTypes.func.isRequired,
     getRoutesByShortName: PropTypes.func.isRequired,
     toggleIncidentModals: PropTypes.func.isRequired,
-    updateEditMode: PropTypes.func.isRequired,
-    setIncidentToUpdate: PropTypes.func.isRequired,
     data: PropTypes.object,
     onUpdateEntitiesValidation: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
@@ -779,7 +773,5 @@ export default connect(state => ({
     getRoutesByShortName,
     updateAffectedRoutesState,
     toggleIncidentModals,
-    updateEditMode,
-    setIncidentToUpdate,
     search,
 })(SelectEffects);

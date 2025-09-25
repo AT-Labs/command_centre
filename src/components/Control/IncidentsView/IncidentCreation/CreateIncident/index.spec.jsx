@@ -536,7 +536,7 @@ describe('CreateIncident component', () => {
             buildIncidentSubmitBody.mockReturnValue(expectedIncident);
             await wrapper.instance().onSubmitUpdate();
             expect(buildIncidentSubmitBody).toHaveBeenCalledWith(expect.objectContaining({ ...expectedIncident }), true);
-            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident, false);
+            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident);
         });
 
         it('Should update incident with data from editableDisruption and expectedWorkarounds', async () => {
@@ -661,7 +661,7 @@ describe('CreateIncident component', () => {
             buildIncidentSubmitBody.mockReturnValue(expectedIncident);
             await wrapper.instance().onSubmitUpdate();
             expect(buildIncidentSubmitBody).toHaveBeenCalledWith(expect.objectContaining({ ...expectedIncident }), true);
-            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident, false);
+            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident);
         });
 
         it('Should call drawAffectedEntity when disruptions length was changed', () => {

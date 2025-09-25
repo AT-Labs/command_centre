@@ -239,15 +239,9 @@ describe('Incidents Actions', () => {
         disruptionsMgtApi.getIncident.mockResolvedValue(mockIncidentForEdit);
 
         const incident = { incidentId: 1, header: 'INC123', status: STATUSES.ACTIVE, createNotification: true };
-        await store.dispatch(actions.updateIncident(incident, true));
+        await store.dispatch(actions.updateIncident(incident));
         const dispatched = store.getActions();
         expect(dispatched).toEqual(expect.arrayContaining([
-            {
-                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
-                payload: {
-                    isIncidentForEditLoading: true,
-                },
-            },
             {
                 type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING,
                 payload: {
@@ -273,22 +267,8 @@ describe('Incidents Actions', () => {
                 },
             },
             {
-                type: ACTION_TYPE.UPDATE_INCIDENT_EDIT_MODE,
-                payload: {
-                    editMode: 'EDIT',
-                },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_INCIDENT_CURRENT_STEP,
-                payload: {
-                    activeStep: 1,
-                },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_INCIDENT_TO_EDIT,
-                payload: {
-                    incidentToEdit: expect.any(Object),
-                },
+                type: ACTION_TYPE.DELETE_INCIDENT_AFFECTED_ENTITIES,
+                payload: expect.any(Object),
             },
             {
                 type: ACTION_TYPE.SET_WORKAROUND_PANEL_STATUS,
