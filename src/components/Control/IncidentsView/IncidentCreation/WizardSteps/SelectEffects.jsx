@@ -23,6 +23,8 @@ import {
     getRoutesByShortName,
     updateAffectedRoutesState,
     toggleIncidentModals,
+    updateEditMode,
+    setIncidentToUpdate,
 } from '../../../../../redux/actions/control/incidents';
 import Footer from './Footer';
 import { search } from '../../../../../redux/actions/search';
@@ -703,11 +705,18 @@ export const SelectEffects = (props) => {
                     return 'Finish';
                 })() }
                 onFinish={ () => {
-                    removeNotFoundFromStopGroups();
-                    updateDisruptionsState();
-                    setTimeout(() => {
-                        props.onSubmit();
-                    }, 0);
+                    const isAddEffect = props.editMode === EDIT_TYPE.ADD_EFFECT;
+                    if (isAddEffect) {
+                        props.updateEditMode(EDIT_TYPE.EDIT);
+                        props.updateCurrentStep(1);
+                        props.setIncidentToUpdate(props.data.incidentId, undefined, true);
+                    } else {
+                        removeNotFoundFromStopGroups();
+                        updateDisruptionsState();
+                        setTimeout(() => {
+                            props.onSubmit();
+                        }, 0);
+                    }
                 } }
                 onBack={ props.editMode !== EDIT_TYPE.ADD_EFFECT ? onBack : undefined }
             />
@@ -732,6 +741,8 @@ SelectEffects.propTypes = {
     updateAffectedRoutesState: PropTypes.func.isRequired,
     getRoutesByShortName: PropTypes.func.isRequired,
     toggleIncidentModals: PropTypes.func.isRequired,
+    updateEditMode: PropTypes.func.isRequired,
+    setIncidentToUpdate: PropTypes.func.isRequired,
     data: PropTypes.object,
     onUpdateEntitiesValidation: PropTypes.func,
     useDraftDisruptions: PropTypes.bool,
@@ -768,5 +779,7 @@ export default connect(state => ({
     getRoutesByShortName,
     updateAffectedRoutesState,
     toggleIncidentModals,
+    updateEditMode,
+    setIncidentToUpdate,
     search,
 })(SelectEffects);
