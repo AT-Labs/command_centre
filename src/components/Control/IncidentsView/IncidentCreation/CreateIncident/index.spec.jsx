@@ -5,7 +5,7 @@ import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import { updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { buildIncidentSubmitBody, momentFromDateTime } from '../../../../../utils/control/disruptions';
-import { STATUSES, DISRUPTION_TYPE, DEFAULT_SEVERITY } from '../../../../../types/disruptions-types';
+import { STATUSES, DISRUPTION_TYPE, getDefaultSeverity } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
 
@@ -46,13 +46,12 @@ const defaultIncidentData = {
     mode: '-',
     status: STATUSES.NOT_STARTED,
     header: '',
-    url: '',
     createNotification: false,
     recurrent: false,
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: DEFAULT_SEVERITY.value,
+    severity: getDefaultSeverity(true).value,
 
     notes: '',
     disruptions: [],
@@ -67,7 +66,6 @@ const incidentForEdit = {
     endTime: null,
     status: 'in-progress',
     header: 'test incident n0827',
-    url: '',
     version: 1,
     recurrencePattern: null,
     duration: '',
@@ -106,7 +104,6 @@ const incidentForEdit = {
             description: null,
             createdBy: 'aqwe@propellerhead.co.nz',
             createdTime: '2025-08-21T20:27:33.201Z',
-            url: '',
             header: 'test incident n0827',
             feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
             uploadedFiles: null,
@@ -479,7 +476,6 @@ describe('CreateIncident component', () => {
                 description: null,
                 createdBy: 'aqwe@propellerhead.co.nz',
                 createdTime: '2025-08-21T20:27:33.201Z',
-                url: '',
                 header: 'test incident n0827',
                 feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
                 uploadedFiles: null,
@@ -514,7 +510,6 @@ describe('CreateIncident component', () => {
                 status: 'in-progress',
                 header: 'test incident n0827',
                 description: '',
-                url: '',
                 createNotification: false,
                 recurrent: false,
                 duration: '',
@@ -596,7 +591,6 @@ describe('CreateIncident component', () => {
                 description: null,
                 createdBy: 'aqwe@propellerhead.co.nz',
                 createdTime: '2025-08-21T20:27:33.201Z',
-                url: '',
                 header: 'test incident n0827',
                 feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
                 uploadedFiles: null,
@@ -631,7 +625,6 @@ describe('CreateIncident component', () => {
                 status: 'in-progress',
                 header: 'test incident n0827',
                 description: '',
-                url: '',
                 createNotification: false,
                 recurrent: false,
                 duration: '',
@@ -761,7 +754,6 @@ describe('CreateIncident component', () => {
                 description: null,
                 createdBy: 'aqwe@propellerhead.co.nz',
                 createdTime: '2025-08-21T20:27:33.201Z',
-                url: '',
                 header: 'test incident n0827',
                 feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
                 uploadedFiles: null,
@@ -909,7 +901,6 @@ describe('CreateIncident component', () => {
                 description: null,
                 createdBy: 'aqwe@propellerhead.co.nz',
                 createdTime: '2025-08-21T20:27:33.201Z',
-                url: '',
                 header: 'test incident n0827',
                 feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
                 uploadedFiles: null,
@@ -1012,7 +1003,6 @@ describe('CreateIncident component', () => {
                 description: null,
                 createdBy: 'aqwe@propellerhead.co.nz',
                 createdTime: '2025-08-21T20:27:33.201Z',
-                url: '',
                 header: 'test incident n0827',
                 feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
                 uploadedFiles: null,
@@ -1068,7 +1058,6 @@ describe('CreateIncident component', () => {
                 description: null,
                 createdBy: 'aqwe@propellerhead.co.nz',
                 createdTime: '2025-08-21T20:27:33.201Z',
-                url: '',
                 header: 'test incident n0827',
                 feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
                 uploadedFiles: null,

@@ -43,7 +43,7 @@ import {
     isApplyChangesModalOpen,
     isPublishAndApplyChangesModalOpen,
 } from '../../../../../redux/selectors/control/incidents';
-import { STATUSES, DISRUPTION_TYPE, INCIDENTS_CREATION_STEPS, DEFAULT_SEVERITY, ALERT_TYPES } from '../../../../../types/disruptions-types';
+import { STATUSES, DISRUPTION_TYPE, INCIDENTS_CREATION_STEPS, getDefaultSeverity, ALERT_TYPES } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
 import {
     momentFromDateTime,
@@ -96,13 +96,12 @@ const INIT_STATE = {
     status: STATUSES.NOT_STARTED,
     header: '',
     description: '',
-    url: '',
     createNotification: false,
     recurrent: false,
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: DEFAULT_SEVERITY.value,
+    severity: getDefaultSeverity(true).value,
 
     notes: '',
     disruptions: [],
@@ -546,7 +545,8 @@ export class CreateIncident extends React.Component {
             isEffectsRequiresToUpdate,
             isEffectValid,
             isEffectForPublishValid,
-            newIncidentEffect } = this.state;
+            newIncidentEffect,
+            isSetDetailsValid } = this.state;
         const renderMainHeading = () => {
             const titleByMode = {
                 [EDIT_TYPE.CREATE]: 'Create a new Disruption',
@@ -587,7 +587,8 @@ export class CreateIncident extends React.Component {
                                     onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
                                     updateNewIncidentEffect={ this.updateNewIncidentEffect }
                                     newIncidentEffect={ newIncidentEffect }
-                                    onSubmitUpdate={ this.onSubmitUpdate } />
+                                    onSubmitUpdate={ this.onSubmitUpdate }
+                                    isDetailsValid={ isSetDetailsValid } />
                                 <Workarounds
                                     isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
                                     newIncidentEffect={ newIncidentEffect }

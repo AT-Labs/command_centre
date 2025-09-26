@@ -115,7 +115,7 @@ const filterWorkaroundsByAffectedEntity = (workarounds, affectedRoutes, affected
     return false;
 });
 
-export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, incidentUrl, isEditMode, incidentEndTimeMoment) => {
+export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, isEditMode, incidentEndTimeMoment) => {
     const startDate = disruption.startDate ? disruption.startDate : moment(disruption.startTime).format(DATE_FORMAT);
     const startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
     let endTimeMoment;
@@ -149,13 +149,13 @@ export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentSt
         ...(isEditMode ? { } : { header: incidentHeader }),
         ...(isEditMode ? { } : { status: incidentStatus }),
         ...(isEditMode ? { } : { cause: incidentCause }),
-        url: incidentUrl,
         endTime: endTimeMoment,
         startTime: startTimeMoment,
         mode: uniq(modes).join(', '),
         affectedEntities: [...routesToRequest, ...stopsToRequest],
         ...(isStatusBecomeResolved && incidentEndTimeMoment ? { status: STATUSES.RESOLVED, endTime: incidentEndTimeMoment } : { }),
         workarounds,
+        url: '',
     };
 };
 
@@ -166,7 +166,6 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
         incident.header,
         incident.status,
         incident.cause,
-        incident.url,
         isEditMode,
         incident.endTime,
     ));
@@ -182,6 +181,7 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
         ...(allResolved && { status: STATUSES.RESOLVED }),
         ...(earliestStartTime.isBefore(incident.startTime) && { startTime: earliestStartTime }),
         ...(latestEndTime && incident.endTime && (latestEndTime.isAfter(incident.endTime) || (incident.status !== STATUSES.RESOLVED && allResolved)) && { endTime: latestEndTime }),
+        url: '',
     };
 };
 
