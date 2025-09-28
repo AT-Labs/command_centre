@@ -69,6 +69,7 @@ export const NotificationsView = (props) => {
                         onClick={ () => {
                             props.goToIncidentsView({
                                 incidentDisruptionNo: causeId,
+                                disruptionId: incidentId,
                             }, { setActiveIncident: true });
                         } }>
                         {transformIncidentNo(incidentId)}

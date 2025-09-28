@@ -67,10 +67,8 @@ export const isStartDateValid = (startDate, openingTime, recurrent = false) => m
 export const isDurationValid = (duration, recurrent) => !recurrent || (!isEmpty(duration) && (Number.isInteger(+duration) && +duration > 0 && +duration < 25));
 
 export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
-    const modes = [
-        ...routes.map(route => VEHICLE_TYPES[route.routeType]?.type).filter(Boolean),
-        ...stops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType]?.type).filter(Boolean),
-    ];
+    const modes = [...routes.map(route => VEHICLE_TYPES[route.routeType].type),
+        ...stops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType].type)];
     const routesToRequest = routes.map(({ routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon }) => ({
         routeId,
         routeShortName,
@@ -96,10 +94,11 @@ export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
 
 const getMode = disruption => [
     ...(disruption.affectedEntities?.affectedRoutes || [])
-        .map(route => VEHICLE_TYPES[route.routeType]?.type)
+        .map(route => VEHICLE_TYPES[route?.routeType]?.type)
         .filter(Boolean),
+
     ...(disruption.affectedEntities?.affectedStops || [])
-        .map(stop => VEHICLE_TYPES[stop.routeType]?.type)
+        .map(stop => VEHICLE_TYPES[stop?.routeType]?.type)
         .filter(Boolean),
 ];
 
@@ -116,7 +115,7 @@ const filterWorkaroundsByAffectedEntity = (workarounds, affectedRoutes, affected
     return false;
 });
 
-export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, incidentUrl, isEditMode, incidentEndTimeMoment) => {
+export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, isEditMode, incidentEndTimeMoment) => {
     const startDate = disruption.startDate ? disruption.startDate : moment(disruption.startTime).format(DATE_FORMAT);
     const startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
     let endTimeMoment;
@@ -150,13 +149,13 @@ export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentSt
         ...(isEditMode ? { } : { header: incidentHeader }),
         ...(isEditMode ? { } : { status: incidentStatus }),
         ...(isEditMode ? { } : { cause: incidentCause }),
-        url: incidentUrl,
         endTime: endTimeMoment,
         startTime: startTimeMoment,
         mode: uniq(modes).join(', '),
         affectedEntities: [...routesToRequest, ...stopsToRequest],
         ...(isStatusBecomeResolved && incidentEndTimeMoment ? { status: STATUSES.RESOLVED, endTime: incidentEndTimeMoment } : { }),
         workarounds,
+        url: '',
     };
 };
 
@@ -167,10 +166,12 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
         incident.header,
         incident.status,
         incident.cause,
-        incident.url,
         isEditMode,
         incident.endTime,
     ));
+    const earliestStartTime = moment.min(disruptions.map(disruption => disruption.startTime));
+    const endTimes = disruptions.map(disruption => disruption.endTime).filter(endTime => endTime != null);
+    const latestEndTime = endTimes.length > 0 ? moment.max(endTimes) : null;
     const allResolved = disruptions.every(disruption => disruption.status === STATUSES.RESOLVED);
 
     return {
@@ -178,6 +179,9 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
         mode: uniq(modes).join(', '),
         disruptions,
         ...(allResolved && { status: STATUSES.RESOLVED }),
+        ...(earliestStartTime.isBefore(incident.startTime) && { startTime: earliestStartTime }),
+        ...(latestEndTime && incident.endTime && (latestEndTime.isAfter(incident.endTime) || (incident.status !== STATUSES.RESOLVED && allResolved)) && { endTime: latestEndTime }),
+        url: '',
     };
 };
 

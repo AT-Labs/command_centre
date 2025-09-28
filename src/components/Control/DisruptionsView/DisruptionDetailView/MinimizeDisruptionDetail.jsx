@@ -284,13 +284,15 @@ export const MinimizeDisruptionDetail = (props) => {
                 </div>
                 <div className="col-7">
                     <FormGroup className="pl-0 h-100 d-flex align-items-end justify-content-end">
-                        <Button
-                            className="cc-btn-primary ml-1 mr-1 mb-2"
-                            onClick={ onCopyHandler }
-                            disabled={ isUpdating || isSaveDisabled }
-                        >
-                            Copy
-                        </Button>
+                        { !props.useParentChildIncident && (
+                            <Button
+                                className="cc-btn-primary ml-1 mr-1 mb-2"
+                                onClick={ onCopyHandler }
+                                disabled={ isUpdating || isSaveDisabled }
+                            >
+                                Copy
+                            </Button>
+                        )}
                         <Button
                             className="control-messaging-view__stop-groups-btn cc-btn-primary ml-1 mb-2"
                             onClick={ () => setDisruptionsDetailsModalOpen(true) }>
