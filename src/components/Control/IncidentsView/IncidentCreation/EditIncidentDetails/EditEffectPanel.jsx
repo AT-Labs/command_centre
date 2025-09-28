@@ -19,7 +19,6 @@ import { isEditEffectPanelOpen,
     isEditEffectUpdateRequested,
     getRequestedDisruptionKeyToUpdateEditEffect,
     isCancellationEffectModalOpen,
-    getMapDrawingEntities,
 } from '../../../../../redux/selectors/control/incidents';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
 import {
@@ -53,7 +52,7 @@ import {
     getRecurrenceText,
     parseRecurrencePattern,
     isActivePeriodsValid } from '../../../../../utils/recurrence';
-import { DISRUPTION_TYPE, SEVERITIES, DEFAULT_SEVERITY, STATUSES } from '../../../../../types/disruptions-types';
+import { DISRUPTION_TYPE, getDefaultSeverity, STATUSES, getSeverityOptions } from '../../../../../types/disruptions-types';
 import SelectEffectEntities from '../WizardSteps/SelectEffectEntities';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
 import {
@@ -99,7 +98,7 @@ const INIT_EFFECT_STATE = {
     },
     createNotification: false,
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: DEFAULT_SEVERITY.value,
+    severity: getDefaultSeverity(true).value,
     recurrent: false,
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
@@ -150,47 +149,10 @@ export const EditEffectPanel = (props) => {
     }, []);
 
     useEffect(() => {
-        props.onDisruptionChange(disruption);
-    }, [disruption]);
-
-    useEffect(() => {
-        if (props.disruptions && disruptionIncidentNoToEdit) {
+        if (props.disruptions && disruptionIncidentNoToEdit && !props.isNotesRequiresToUpdate) {
             initDisruptionData();
         }
     }, [props.disruptions]);
-
-    useEffect(() => {
-        if (props.mapDrawingEntities && props.mapDrawingEntities.length > 0) {
-            const newRoutes = props.mapDrawingEntities.filter(e => e.type === 'route');
-            const newStops = props.mapDrawingEntities.filter(e => e.type === 'stop');
-
-            const mergedRoutes = [
-                ...disruption.affectedEntities.affectedRoutes,
-                ...newRoutes.filter(
-                    nr => !disruption.affectedEntities.affectedRoutes.some(
-                        ar => ar.routeId === nr.routeId,
-                    ),
-                ),
-            ];
-
-            const mergedStops = [
-                ...disruption.affectedEntities.affectedStops,
-                ...newStops.filter(
-                    ns => !disruption.affectedEntities.affectedStops.some(
-                        as => as.stopId === ns.stopId,
-                    ),
-                ),
-            ];
-
-            setDisruption({
-                ...disruption,
-                affectedEntities: {
-                    affectedRoutes: mergedRoutes,
-                    affectedStops: mergedStops,
-                },
-            });
-        }
-    }, [props.mapDrawingEntities]);
 
     const startTimeValid = () => isStartTimeValid(
         disruption.startDate,
@@ -243,6 +205,7 @@ export const EditEffectPanel = (props) => {
                         ...recurrenceDates,
                     },
                 }),
+                ...(updatedFields.endDate?.length && isEmpty(prev.endTime) && !updatedFields.endTime && { endTime: '23:59' }),
             };
             props.updateEditableDisruption(updatedDisruption);
             return updatedDisruption;
@@ -873,7 +836,7 @@ export const EditEffectPanel = (props) => {
                                         id="disruption-creation__wizard-select-details__severity"
                                         className=""
                                         value={ disruption.severity }
-                                        options={ SEVERITIES }
+                                        options={ getSeverityOptions(true) }
                                         label={ LABEL_SEVERITY }
                                         invalid={ isSeverityDirty && !severityValid() && disruption.status !== STATUSES.DRAFT }
                                         feedback="Please select severity"
@@ -1052,8 +1015,6 @@ EditEffectPanel.propTypes = {
     updateIsEffectUpdatedState: PropTypes.func.isRequired,
     useDisruptionNotePopup: PropTypes.bool,
     updateEffectValidationForPublishState: PropTypes.func.isRequired,
-    mapDrawingEntities: PropTypes.arrayOf(PropTypes.object).isRequired,
-    onDisruptionChange: PropTypes.func,
 };
 
 EditEffectPanel.defaultProps = {
@@ -1063,7 +1024,6 @@ EditEffectPanel.defaultProps = {
     workaroundsToSync: [],
     isCancellationEffectOpen: false,
     useDisruptionNotePopup: false,
-    onDisruptionChange: () => {},
 };
 
 export default connect(state => ({
@@ -1074,7 +1034,6 @@ export default connect(state => ({
     newDisruptionKey: getRequestedDisruptionKeyToUpdateEditEffect(state),
     isCancellationEffectOpen: isCancellationEffectModalOpen(state),
     useDisruptionNotePopup: useDisruptionNotePopup(state),
-    mapDrawingEntities: getMapDrawingEntities(state),
 }), {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,

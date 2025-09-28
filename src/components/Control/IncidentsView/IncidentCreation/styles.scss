@@ -56,13 +56,6 @@
 
         .map {
             margin-left: $side-panel-width-large;
-            &.edit-effect-panel-expanded {
-                margin-left: calc(#{$side-panel-width-large} * 2);
-            }
-
-            &.workaround-panel-expanded {
-                margin-left: calc(#{$side-panel-width-large} * 3);
-            }
         }
 
         select {
