@@ -134,10 +134,6 @@
         }
     }
 
-    .disruption-creation__sidepanel {
-        background-color: $very-light-blue;
-    }
-
     .disruption-creation-close-disruptions {
         background-color: $at-shore;
         color: #FFF;
@@ -254,7 +250,10 @@
     }
 }
 
-.disruption-creation__container {
+.disruption-creation__container,
+.disruption-edit__container {
+    height: auto;
+    box-sizing: border-box;
     background-color: #FFF;
 
     & .border-primary {
@@ -267,10 +266,6 @@
         padding-left: 25px;
         padding-right: 25px;
     }
-}
-
-.disruption-edit__container {
-    background-color: #FFF;
 }
 
 .disruption-creation__steps {
