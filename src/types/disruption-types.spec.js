@@ -1,4 +1,4 @@
-import { ACTION_RESULT, ACTION_RESULT_TYPES } from './disruptions-types';
+import { ACTION_RESULT, ACTION_RESULT_TYPES, getSeverityOptions, getDefaultSeverity } from './disruptions-types';
 
 describe('Disruption types', () => {
     describe('PUBLISH_DRAFT_SUCCESS', () => {
@@ -78,6 +78,32 @@ describe('Disruption types', () => {
         it('should handle default createNotification as false', () => {
             const result = ACTION_RESULT.SAVE_DRAFT_SUCCESS(100);
             expect(result.resultCreateNotification).toBe(false);
+        });
+    });
+
+    describe('SEVERITIES', () => {
+        it('should return severities in valid order if useParentChildIncident true', () => {
+            const result = getSeverityOptions(true);
+            expect(result.length).toEqual(7);
+            expect(result[0].value).toEqual('UNKNOWN');
+            expect(result[6].value).toEqual('');
+        });
+
+        it('should return severities in valid order if useParentChildIncident false', () => {
+            const result = getSeverityOptions(false);
+            expect(result.length).toEqual(7);
+            expect(result[0].value).toEqual('');
+            expect(result[6].value).toEqual('UNKNOWN');
+        });
+
+        it('should return default severity if useParentChildIncident true', () => {
+            const result = getDefaultSeverity(true);
+            expect(result.value).toEqual('UNKNOWN');
+        });
+
+        it('should return default severity if useParentChildIncident false', () => {
+            const result = getDefaultSeverity(false);
+            expect(result.value).toEqual('');
         });
     });
 });

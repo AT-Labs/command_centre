@@ -52,7 +52,7 @@ import {
     getRecurrenceText,
     parseRecurrencePattern,
     isActivePeriodsValid } from '../../../../../utils/recurrence';
-import { DISRUPTION_TYPE, SEVERITIES, DEFAULT_SEVERITY, STATUSES } from '../../../../../types/disruptions-types';
+import { DISRUPTION_TYPE, getDefaultSeverity, STATUSES, getSeverityOptions } from '../../../../../types/disruptions-types';
 import SelectEffectEntities from '../WizardSteps/SelectEffectEntities';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
 import {
@@ -98,7 +98,7 @@ const INIT_EFFECT_STATE = {
     },
     createNotification: false,
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: DEFAULT_SEVERITY.value,
+    severity: getDefaultSeverity(true).value,
     recurrent: false,
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
@@ -149,7 +149,7 @@ export const EditEffectPanel = (props) => {
     }, []);
 
     useEffect(() => {
-        if (props.disruptions && disruptionIncidentNoToEdit) {
+        if (props.disruptions && disruptionIncidentNoToEdit && !props.isNotesRequiresToUpdate) {
             initDisruptionData();
         }
     }, [props.disruptions]);
@@ -205,6 +205,7 @@ export const EditEffectPanel = (props) => {
                         ...recurrenceDates,
                     },
                 }),
+                ...(updatedFields.endDate?.length && isEmpty(prev.endTime) && !updatedFields.endTime && { endTime: '23:59' }),
             };
             props.updateEditableDisruption(updatedDisruption);
             return updatedDisruption;
@@ -835,7 +836,7 @@ export const EditEffectPanel = (props) => {
                                         id="disruption-creation__wizard-select-details__severity"
                                         className=""
                                         value={ disruption.severity }
-                                        options={ SEVERITIES }
+                                        options={ getSeverityOptions(true) }
                                         label={ LABEL_SEVERITY }
                                         invalid={ isSeverityDirty && !severityValid() && disruption.status !== STATUSES.DRAFT }
                                         feedback="Please select severity"
