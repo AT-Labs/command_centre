@@ -56,13 +56,6 @@
 
         .map {
             margin-left: $side-panel-width-large;
-            &.edit-effect-panel-expanded {
-                margin-left: calc(#{$side-panel-width-large} * 2);
-            }
-
-            &.workaround-panel-expanded {
-                margin-left: calc(#{$side-panel-width-large} * 3);
-            }
         }
 
         select {
@@ -139,10 +132,6 @@
         .incident-footer-min-height {
             min-height: 89px;
         }
-    }
-
-    .disruption-creation__sidepanel {
-        background-color: $very-light-blue;
     }
 
     .disruption-creation-close-disruptions {
@@ -261,7 +250,10 @@
     }
 }
 
-.disruption-creation__container {
+.disruption-creation__container,
+.disruption-edit__container {
+    height: auto;
+    box-sizing: border-box;
     background-color: #FFF;
 
     & .border-primary {
@@ -274,10 +266,6 @@
         padding-left: 25px;
         padding-right: 25px;
     }
-}
-
-.disruption-edit__container {
-    background-color: #FFF;
 }
 
 .disruption-creation__steps {

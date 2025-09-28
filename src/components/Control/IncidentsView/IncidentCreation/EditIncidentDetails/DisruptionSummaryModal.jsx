@@ -8,10 +8,10 @@ import {
     LABEL_CAUSE, LABEL_CREATED_AT, LABEL_CUSTOMER_IMPACT, LABEL_DESCRIPTION, LABEL_END_DATE, LABEL_END_TIME,
     LABEL_HEADER, LABEL_LAST_UPDATED_AT, LABEL_LAST_UPDATED_BY,
     LABEL_MODE, LABEL_START_DATE, LABEL_START_TIME,
-    LABEL_STATUS, LABEL_URL, LABEL_CREATED_BY, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
+    LABEL_STATUS, LABEL_CREATED_BY, LABEL_AFFECTED_STOPS, LABEL_WORKAROUNDS, LABEL_DISRUPTION_NOTES,
     LABEL_SEVERITY,
 } from '../../../../../constants/disruptions';
-import { DISRUPTIONS_MESSAGE_TYPE, SEVERITIES, STATUSES } from '../../../../../types/disruptions-types';
+import { DISRUPTIONS_MESSAGE_TYPE, getSeverityOptions, STATUSES } from '../../../../../types/disruptions-types';
 import { formatCreatedUpdatedTime, momentFromDateTime } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import { getWorkaroundsAsText } from '../../../../../utils/control/disruption-workarounds';
@@ -111,7 +111,7 @@ const DisruptionSummaryModal = (props) => {
             <Table className="table-layout-fixed">
                 <tbody>
                     {createLine(LABEL_HEADER, props.disruption.header)}
-                    {createLine(LABEL_SEVERITY, find(SEVERITIES, { value: props.disruption.severity }).label)}
+                    {createLine(LABEL_SEVERITY, find(getSeverityOptions(true), { value: props.disruption.severity }).label)}
                     {createLine(LABEL_STATUS, props.disruption.status)}
                     {createLine(LABEL_MODE, props.disruption.mode)}
                     {createLine(LABEL_AFFECTED_ROUTES, [...new Set(props.disruption.affectedEntities.affectedRoutes.map(({ routeShortName }) => routeShortName))].join(', '))}
@@ -123,7 +123,6 @@ const DisruptionSummaryModal = (props) => {
                     {createLine(LABEL_START_TIME, props.disruption.startTime)}
                     {createLine(LABEL_END_DATE, props.disruption.endDate)}
                     {createLine(LABEL_END_TIME, props.disruption.endTime)}
-                    {createLine(LABEL_URL, props.disruption.url)}
                     {createLine(LABEL_CREATED_AT, formatCreatedUpdatedTime(props.disruption.createdTime))}
                     {createLine(LABEL_CREATED_BY, props.disruption.createdBy)}
                     {createLine(LABEL_LAST_UPDATED_AT, formatCreatedUpdatedTime(props.disruption.lastUpdatedTime))}

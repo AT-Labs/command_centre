@@ -59,6 +59,7 @@ const defaultProps = {
     boundsToFit: [],
     clearDisruptionActionResult: jest.fn(),
     useDraftDisruptions: true,
+    useParentChildIncident: false,
 };
 
 const mockIncidents = [
@@ -117,6 +118,15 @@ describe('MinimizeDisruptionDetail', () => {
 
         expect(screen.getByText(/Preview/i)).toBeInTheDocument();
         expect(screen.getByText(/Copy/i)).toBeInTheDocument();
+        expect(screen.getByText(/Save Changes/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/Disruption Notes/i)).toBeInTheDocument();
+    });
+
+    it('renders component without copy button', () => {
+        renderWithStore({ useParentChildIncident: true });
+
+        expect(screen.getByText(/Preview/i)).toBeInTheDocument();
+        expect(screen.queryByText(/Copy/i)).not.toBeInTheDocument();
         expect(screen.getByText(/Save Changes/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/Disruption Notes/i)).toBeInTheDocument();
     });

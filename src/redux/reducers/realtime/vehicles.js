@@ -1,4 +1,4 @@
-import { result, isEqual, keyBy, map, filter, has } from 'lodash-es';
+import { result, isEqual, keyBy, map, filter, has, isEmpty } from 'lodash-es';
 import { handleActions } from 'redux-actions';
 
 import ACTION_TYPE from '../../action-types';
@@ -37,6 +37,12 @@ const isValidVehicleUpdate = (existingVehicle, vehicleUpdate) => result(existing
 
 export const handleVehiclesUpdate = (state, action) => {
     const { payload: { isSnapshotUpdate, vehicles } } = action;
+
+    // Early returns if no vehicles, nothing to process
+    if (isEmpty(vehicles)) {
+        return state;
+    }
+
     let allVehicles = [];
     if (isSnapshotUpdate) {
         allVehicles = keyBy(
@@ -51,7 +57,6 @@ export const handleVehiclesUpdate = (state, action) => {
                     ];
                     vehicleToUpdate.vehicle.route = existingVehicle.vehicle.route;
                 }
-
                 return isValidVehicleUpdate(existingVehicle, vehicleToUpdate) ? vehicleToUpdate : existingVehicle;
             }),
             vehicleKeyedById,

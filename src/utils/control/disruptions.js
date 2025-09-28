@@ -115,7 +115,7 @@ const filterWorkaroundsByAffectedEntity = (workarounds, affectedRoutes, affected
     return false;
 });
 
-export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, incidentUrl, isEditMode, incidentEndTimeMoment) => {
+export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, isEditMode, incidentEndTimeMoment) => {
     const startDate = disruption.startDate ? disruption.startDate : moment(disruption.startTime).format(DATE_FORMAT);
     const startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
     let endTimeMoment;
@@ -149,14 +149,26 @@ export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentSt
         ...(isEditMode ? { } : { header: incidentHeader }),
         ...(isEditMode ? { } : { status: incidentStatus }),
         ...(isEditMode ? { } : { cause: incidentCause }),
-        url: incidentUrl,
         endTime: endTimeMoment,
         startTime: startTimeMoment,
         mode: uniq(modes).join(', '),
         affectedEntities: [...routesToRequest, ...stopsToRequest],
         ...(isStatusBecomeResolved && incidentEndTimeMoment ? { status: STATUSES.RESOLVED, endTime: incidentEndTimeMoment } : { }),
         workarounds,
+        url: '',
     };
+};
+
+const getLaterEndDate = (currentEndDate, latestMoment) => {
+    const currentMoment = moment(currentEndDate, DATE_FORMAT, true);
+
+    if (!currentMoment.isValid()) {
+        return latestMoment.format(DATE_FORMAT);
+    }
+
+    return currentMoment.isAfter(latestMoment)
+        ? { endDate: currentMoment.format(DATE_FORMAT) }
+        : { endDate: latestMoment.format(DATE_FORMAT) };
 };
 
 export const buildIncidentSubmitBody = (incident, isEditMode) => {
@@ -166,7 +178,6 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
         incident.header,
         incident.status,
         incident.cause,
-        incident.url,
         isEditMode,
         incident.endTime,
     ));
@@ -175,6 +186,16 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
     const latestEndTime = endTimes.length > 0 ? moment.max(endTimes) : null;
     const allResolved = disruptions.every(disruption => disruption.status === STATUSES.RESOLVED);
 
+    let latestEndDate;
+    if (incident.recurrent) { // TODO: TBD
+        const endDates = disruptions.map((disruption) => {
+            if (!disruption.endDate) return null;
+            const date = moment(disruption.endDate, 'DD/MM/YYYY', true);
+            return date.isValid() ? date : null;
+        }).filter(Boolean);
+        latestEndDate = endDates.length > 0 ? moment.max(endDates) : null;
+    }
+
     return {
         ...incident,
         mode: uniq(modes).join(', '),
@@ -182,6 +203,8 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
         ...(allResolved && { status: STATUSES.RESOLVED }),
         ...(earliestStartTime.isBefore(incident.startTime) && { startTime: earliestStartTime }),
         ...(latestEndTime && incident.endTime && (latestEndTime.isAfter(incident.endTime) || (incident.status !== STATUSES.RESOLVED && allResolved)) && { endTime: latestEndTime }),
+        ...(incident.recurrent && incident.endDate && getLaterEndDate(incident.endDate, latestEndDate)),
+        url: '',
     };
 };
 
