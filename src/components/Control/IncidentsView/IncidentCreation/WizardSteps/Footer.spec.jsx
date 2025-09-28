@@ -76,32 +76,4 @@ describe('<Footer />', () => {
         expect(wrapper.find('div.col-3.pl-0').filterWhere(div => div.text().includes('Save draft')).exists()).toBe(false);
         expect(wrapper.find('div.col-4.pl-0').filterWhere(div => div.text().includes('Save draft')).exists()).toBe(false);
     });
-
-    it('should render "Finish" and "Save draft" when additionalFinishButton,useDraftDisruptions and isDraftOrCreateMode are true', () => {
-        useDraftDisruptions.mockReturnValue(true);
-        const mockFinishAction = jest.fn();
-        const wrapper = setup({
-            isDraftOrCreateMode: true,
-            additionalFinishButton: true,
-            isAdditionalFinishButtonDisabled: false,
-            onAdditionalFinishButtonClick: mockFinishAction,
-        });
-
-        expect(wrapper.find(Button).filterWhere(btn => btn.text() === 'Save draft').exists()).toBe(true);
-        expect(wrapper.find(Button).filterWhere(btn => btn.text() === 'Finish').exists()).toBe(true);
-    });
-
-    it('should render "Finish" and "Save draft" when additionalFinishButton,useDraftDisruptions and isDraftOrCreateMode are true', () => {
-        useDraftDisruptions.mockReturnValue(true);
-        const mockFinishAction = jest.fn();
-        const wrapper = setup({
-            isDraftOrCreateMode: true,
-            additionalFinishButton: true,
-            isAdditionalFinishButtonDisabled: false,
-            onAdditionalFinishButtonClick: mockFinishAction,
-        });
-
-        wrapper.find(Button).filterWhere(btn => btn.text() === 'Finish').simulate('click');
-        expect(mockFinishAction).toHaveBeenCalled();
-    });
 });

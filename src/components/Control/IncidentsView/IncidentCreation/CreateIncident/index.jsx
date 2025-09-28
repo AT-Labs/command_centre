@@ -23,9 +23,6 @@ import {
     setRequestToUpdateEditEffectState,
     setRequestedDisruptionKeyToUpdateEditEffect,
     updateEditMode,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
-    setDisruptionForWorkaroundEdit,
 } from '../../../../../redux/actions/control/incidents';
 import {
     getAffectedRoutes,
@@ -46,7 +43,7 @@ import {
     isApplyChangesModalOpen,
     isPublishAndApplyChangesModalOpen,
 } from '../../../../../redux/selectors/control/incidents';
-import { STATUSES, DISRUPTION_TYPE, INCIDENTS_CREATION_STEPS, getParentChildDefaultSeverity, ALERT_TYPES } from '../../../../../types/disruptions-types';
+import { STATUSES, DISRUPTION_TYPE, INCIDENTS_CREATION_STEPS, DEFAULT_SEVERITY, ALERT_TYPES } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
 import {
     momentFromDateTime,
@@ -99,12 +96,13 @@ const INIT_STATE = {
     status: STATUSES.NOT_STARTED,
     header: '',
     description: '',
+    url: '',
     createNotification: false,
     recurrent: false,
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: getParentChildDefaultSeverity().value,
+    severity: DEFAULT_SEVERITY.value,
 
     notes: '',
     disruptions: [],
@@ -495,9 +493,6 @@ export class CreateIncident extends React.Component {
     };
 
     addNewEffectToIncident = () => {
-        this.props.setDisruptionForWorkaroundEdit({});
-        this.props.toggleWorkaroundPanel(false);
-        this.props.updateDisruptionKeyToWorkaroundEdit('');
         this.props.updateAffectedStopsState([]);
         this.props.updateAffectedRoutesState([]);
         this.props.updateEditMode(EDIT_TYPE.ADD_EFFECT);
@@ -551,8 +546,7 @@ export class CreateIncident extends React.Component {
             isEffectsRequiresToUpdate,
             isEffectValid,
             isEffectForPublishValid,
-            newIncidentEffect,
-            isSetDetailsValid } = this.state;
+            newIncidentEffect } = this.state;
         const renderMainHeading = () => {
             const titleByMode = {
                 [EDIT_TYPE.CREATE]: 'Create a new Disruption',
@@ -593,8 +587,7 @@ export class CreateIncident extends React.Component {
                                     onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
                                     updateNewIncidentEffect={ this.updateNewIncidentEffect }
                                     newIncidentEffect={ newIncidentEffect }
-                                    onSubmitUpdate={ this.onSubmitUpdate }
-                                    isDetailsValid={ isSetDetailsValid } />
+                                    onSubmitUpdate={ this.onSubmitUpdate } />
                                 <Workarounds
                                     isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
                                     newIncidentEffect={ newIncidentEffect }
@@ -807,9 +800,6 @@ CreateIncident.propTypes = {
     isApplyChangesOpen: PropTypes.bool,
     updateEditMode: PropTypes.func.isRequired,
     isPublishAndApplyChangesOpen: PropTypes.bool,
-    toggleWorkaroundPanel: PropTypes.func.isRequired,
-    updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
-    setDisruptionForWorkaroundEdit: PropTypes.func.isRequired,
 };
 
 CreateIncident.defaultProps = {
@@ -866,7 +856,4 @@ export default connect(state => ({
     setRequestToUpdateEditEffectState,
     setRequestedDisruptionKeyToUpdateEditEffect,
     updateEditMode,
-    toggleWorkaroundPanel,
-    updateDisruptionKeyToWorkaroundEdit,
-    setDisruptionForWorkaroundEdit,
 })(CreateIncident);
