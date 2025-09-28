@@ -54,7 +54,6 @@ export const WorkaroundPanel = (props) => {
         props.toggleWorkaroundPanel(false);
         props.updateDisruptionKeyToWorkaroundEdit('');
     };
-
     return (
         <div className={ `workaround-panel ${props.editMode === EDIT_TYPE.EDIT ? 'edit-flow-workaround-panel' : ''} ${props.isWorkaroundPanelOpen ? '' : 'pointer-event-none'}` }>
             {props.isWorkaroundPanelOpen && (
