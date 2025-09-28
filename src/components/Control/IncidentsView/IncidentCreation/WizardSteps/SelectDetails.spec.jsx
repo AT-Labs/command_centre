@@ -10,7 +10,7 @@ import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import { RRule } from 'rrule';
 import { SelectDetails } from './SelectDetails';
-import { STATUSES, DISRUPTION_TYPE, getParentChildDefaultSeverity } from '../../../../../types/disruptions-types';
+import { STATUSES, DISRUPTION_TYPE, DEFAULT_SEVERITY } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
@@ -34,12 +34,13 @@ const defaultIncidentData = {
     mode: '-',
     status: STATUSES.NOT_STARTED,
     header: '',
+    url: '',
     createNotification: false,
     recurrent: false,
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: getParentChildDefaultSeverity().value,
+    severity: DEFAULT_SEVERITY.value,
 
     notes: '',
     disruptions: [],
@@ -53,6 +54,7 @@ const filledIncidentData = {
     endDate: '28/06/2025',
     status: STATUSES.NOT_STARTED,
     header: 'Incident Test Title',
+    url: 'https://at.govt.nz',
     disruptionType: DISRUPTION_TYPE.ROUTES,
     severity: 'MINOR',
     cause: 'CONGESTION',
@@ -75,6 +77,7 @@ const filledRecurrentIncidentData = {
     endDate: '28/06/2025',
     status: STATUSES.NOT_STARTED,
     header: 'Incident Test Title',
+    url: 'https://at.govt.nz',
     disruptionType: DISRUPTION_TYPE.ROUTES,
     severity: 'MINOR',
     cause: 'CONGESTION',
@@ -101,12 +104,11 @@ const incidentForEdit = {
     incidentId: 139273,
     mode: 'Bus',
     cause: 'CONGESTION',
-    startTime: '08:27',
-    startDate: '22/06/2025',
-    endTime: '21:21',
-    endDate: '24/06/2025',
-    status: STATUSES.NOT_STARTED,
+    startTime: '2025-06-21T20:27:00.000Z',
+    endTime: null,
+    status: 'not-started',
     header: 'test incident n0827',
+    url: '',
     version: 1,
     recurrencePattern: null,
     duration: '',
@@ -119,38 +121,33 @@ const incidentForEdit = {
             disruptionId: 139535,
             incidentNo: 'DISR139535',
             mode: 'Bus',
-            affectedEntities: {
-                affectedRoutes: [
-                    {
-                        routeId: '101-202',
-                        routeShortName: '101',
-                        routeType: 3,
-                        type: 'route',
-                        notes: [],
-                    },
-                    {
-                        routeId: '105-202',
-                        routeShortName: '105',
-                        routeType: 3,
-                        type: 'route',
-                        notes: [],
-                    },
-                ],
-                affectedStops: [],
-            },
+            affectedEntities: [
+                {
+                    routeId: '101-202',
+                    routeShortName: '101',
+                    routeType: 3,
+                    type: 'route',
+                    notes: [],
+                },
+                {
+                    routeId: '105-202',
+                    routeShortName: '105',
+                    routeType: 3,
+                    type: 'route',
+                    notes: [],
+                },
+            ],
             impact: 'ESCALATOR_NOT_WORKING',
             cause: 'CONGESTION',
-            // startTime: '2025-06-21T20:27:00.000Z',
-            startTime: '08:27',
-            startDate: '22/06/2025',
+            startTime: '2025-06-21T20:27:00.000Z',
             endTime: null,
-            endDate: '',
-            status: STATUSES.IN_PROGRESS,
+            status: 'in-progress',
             lastUpdatedTime: '2025-06-21T20:27:33.201Z',
             lastUpdatedBy: 'aqwe@propellerhead.co.nz',
             description: null,
             createdBy: 'aqwe@propellerhead.co.nz',
             createdTime: '2025-06-21T20:27:33.201Z',
+            url: '',
             header: 'test incident n0827',
             feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
             uploadedFiles: null,
@@ -181,15 +178,6 @@ const incidentForEdit = {
     modalOpenedTime: mockTimeForModalOpenedTime,
 };
 
-const draftIncidentForEdit = {
-    ...incidentForEdit,
-    status: STATUSES.DRAFT,
-    disruptions: [{
-        ...incidentForEdit.disruptions[0],
-        status: STATUSES.DRAFT,
-    }],
-};
-
 jest.mock('../../../../../utils/control/alert-cause-effect', () => ({
     useAlertCauses: jest.fn(),
     useAlertEffects: jest.fn(),
@@ -209,9 +197,6 @@ describe('SelectDetails Component', () => {
         toggleIncidentModals: jest.fn(),
         updateCurrentStep: jest.fn(),
         useDraftDisruptions: false,
-        onPublishUpdate: jest.fn(),
-        isEffectValid: true,
-        isEffectForPublishValid: true,
     };
 
     beforeEach(() => {
@@ -663,7 +648,7 @@ describe('SelectDetails Component', () => {
             const input = document.getElementById('disruption-detail__status');
             fireEvent.change(input, { target: { value: STATUSES.RESOLVED } });
 
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(3);
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(2);
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '19/06/2025');
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endTime', '11:12');
         });
@@ -689,12 +674,11 @@ describe('SelectDetails Component', () => {
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endTime', '11:12');
         });
 
-        // can't reach because of options for status selector do not provide possibility to change not-started -> in-progress
-        /* it('Should update startDate and startTime when change status from not-started to in-progress', () => {
+        it('Should update startDate and startTime when change status from not-started to in-progress', () => {
             const props = {
                 ...defaultProps,
                 editMode: EDIT_TYPE.EDIT,
-                data: { ...incidentForEdit, status: STATUSES.NOT_STARTED, startDate: '25/06/2025' },
+                data: { ...incidentForEdit, status: STATUSES.NOT_STARTED },
             };
             render(
                 <Provider store={ store }>
@@ -707,7 +691,7 @@ describe('SelectDetails Component', () => {
             expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(2);
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startDate', '19/06/2025');
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startTime', '11:12');
-        }); */
+        });
 
         it('Should update startDate on change', () => {
             const props = {
@@ -743,77 +727,6 @@ describe('SelectDetails Component', () => {
 
             expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(1);
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
-        });
-
-        it('Should update endDate and endTime if it empty on change', () => {
-            const props = {
-                ...defaultProps,
-                editMode: EDIT_TYPE.EDIT,
-                data: { ...incidentForEdit, status: STATUSES.NOT_STARTED, endDate: '', endTime: '' },
-            };
-            render(
-                <Provider store={ store }>
-                    <SelectDetails { ...props } />
-                </Provider>,
-            );
-            const endPicker = screen.getByTestId('end-date_date-picker');
-            fireEvent.change(endPicker, { target: { value: '2025-07-11' } });
-
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(2);
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endTime', '23:59');
-        });
-
-        it('Should update only endDate if endTime has value on change', () => {
-            const props = {
-                ...defaultProps,
-                editMode: EDIT_TYPE.EDIT,
-                data: { ...incidentForEdit, status: STATUSES.NOT_STARTED, endDate: '', endTime: '1' },
-            };
-            render(
-                <Provider store={ store }>
-                    <SelectDetails { ...props } />
-                </Provider>,
-            );
-            const endPicker = screen.getByTestId('end-date_date-picker');
-            fireEvent.change(endPicker, { target: { value: '2025-07-11' } });
-
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(1);
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
-        });
-    });
-
-    describe('Publish draft', () => {
-        it('Should be enabled with valid form', () => {
-            const propsWithValues = { ...defaultProps,
-                data: { ...draftIncidentForEdit },
-                useDraftDisruptions: true,
-                editMode: EDIT_TYPE.EDIT,
-            };
-            render(
-                <Provider store={ store }>
-                    <SelectDetails { ...propsWithValues } />
-                </Provider>,
-            );
-            const button = screen.getByRole('button', { name: /publish/i });
-            expect(button).not.toBeNull();
-            expect(button.disabled).toBe(false);
-        });
-
-        it('Should be disabled with any not valid value form', () => {
-            const propsWithValues = { ...defaultProps,
-                data: { ...draftIncidentForEdit, startTime: '' },
-                useDraftDisruptions: true,
-                editMode: EDIT_TYPE.EDIT,
-            };
-            render(
-                <Provider store={ store }>
-                    <SelectDetails { ...propsWithValues } />
-                </Provider>,
-            );
-            const button = screen.getByRole('button', { name: /publish/i });
-            expect(button).not.toBeNull();
-            expect(button.disabled).toBe(true);
         });
     });
 });

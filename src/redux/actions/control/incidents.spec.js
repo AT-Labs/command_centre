@@ -22,6 +22,7 @@ const mockIncidentForEdit = {
     endTime: null,
     status: 'in-progress',
     header: 'test incident n0827',
+    url: '',
     version: 1,
     recurrencePattern: null,
     duration: '',
@@ -60,6 +61,7 @@ const mockIncidentForEdit = {
             description: null,
             createdBy: 'aqwe@propellerhead.co.nz',
             createdTime: '2025-08-21T20:27:33.201Z',
+            url: '',
             header: 'test incident n0827',
             feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
             uploadedFiles: null,
@@ -227,52 +229,6 @@ describe('Incidents Actions', () => {
                     resultMessage: 'Draft disruption number #1 saved successfully.',
                     resultCreateNotification: false,
                     resultIncidentVersion: undefined,
-                },
-            },
-        ]));
-    });
-
-    it('dispatches correct actions on updateIncident success if it add effect', async () => {
-        disruptionsMgtApi.updateIncident.mockResolvedValue({});
-        disruptionsMgtApi.getIncident.mockResolvedValue(mockIncidentForEdit);
-
-        const incident = { incidentId: 1, header: 'INC123', status: STATUSES.ACTIVE, createNotification: true };
-        await store.dispatch(actions.updateIncident(incident, true));
-        const dispatched = store.getActions();
-        expect(dispatched).toEqual(expect.arrayContaining([
-            {
-                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING,
-                payload: {
-                    isRequesting: true,
-                    resultIncidentId: 1,
-                },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_RESULT,
-                payload: {
-                    resultIncidentId: 1,
-                    resultStatus: 'success',
-                    resultCreateNotification: true,
-                    resultIncidentVersion: undefined,
-                    resultMessage: 'Disruption 1 has been updated.',
-                },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_INCIDENT_EDIT_MODE,
-                payload: {
-                    editMode: EDIT_TYPE.EDIT,
-                },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_INCIDENT_CURRENT_STEP,
-                payload: {
-                    activeStep: 1,
-                },
-            },
-            {
-                type: ACTION_TYPE.SET_WORKAROUND_PANEL_STATUS,
-                payload: {
-                    isOpen: false,
                 },
             },
         ]));

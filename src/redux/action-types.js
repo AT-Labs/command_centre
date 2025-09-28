@@ -250,6 +250,10 @@ export default {
     OPEN_DIVERSION_MANAGER: 'open-diversion-manager',
     ADD_DIVERSION: 'add-diversion',
     UPDATE_DIVERSION_RESULT_STATE: 'update-diversion-result-state',
+    FETCH_DIVERSIONS_START: 'fetch-diversions-start',
+    FETCH_DIVERSIONS_SUCCESS: 'fetch-diversions-success',
+    FETCH_DIVERSIONS_ERROR: 'fetch-diversions-error',
+    CLEAR_DIVERSIONS_CACHE: 'clear-diversions-cache',
 
     // Incidents
     FETCH_CONTROL_INCIDENTS_DISRUPTIONS: 'fetch-control-incidents-disruptions',
@@ -296,7 +300,6 @@ export default {
     SET_DISRUPTION_FOR_WORKAROUND_EDIT: 'set-disruption-for-workaround-edit',
     SET_REQUEST_TO_UPDATE_EDIT_EFFECT: 'set-request-to-update-edit-effect',
     SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT: 'set-requested-disruption-key-to-update-edit-effect',
-    UPDATE_MAP_DRAWING_ENTITIES: 'update-map-drawing-entities',
     // UPDATE_INCIDENT_DIVERSION_EDIT_MODE: 'update-incident-diversion-edit-mode',
     // OPEN_INCIDENT_CREATE_DIVERSION: 'open-incident-create-diversion',
     // ADD_INCIDENT_DIVERSION: 'add-incident-diversion',
