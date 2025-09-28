@@ -33,6 +33,7 @@ const mockDisruption = {
     mode: '-',
     status: 'not-started',
     header: 'Incident Title',
+    url: 'https://at.govt.nz',
     createNotification: false,
     recurrent: true,
     duration: '2',
@@ -68,6 +69,7 @@ const mockIncident = {
     mode: '-',
     status: 'not-started',
     header: 'Incident Title',
+    url: 'https://at.govt.nz',
     createNotification: false,
     recurrent: true,
     duration: '2',
@@ -103,6 +105,8 @@ const componentPropsMock = {
     onUpdateEntitiesValidation: jest.fn(),
     newIncidentEffect: {},
     updateNewIncidentEffect: jest.fn(),
+    clearAffectedRoutes: jest.fn(),
+    clearAffectedStops: jest.fn(),
 };
 controlUtils.useAlertEffects.mockReturnValue([impacts]);
 

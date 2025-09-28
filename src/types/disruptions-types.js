@@ -97,12 +97,8 @@ export const DEFAULT_SEVERITY = {
     value: '',
 };
 
-export const UNKNOWN_SEVERITY = {
-    label: 'Unknown',
-    value: 'UNKNOWN',
-};
-
-export const SEVERITY_OPTIONS = [
+export const SEVERITIES = [
+    DEFAULT_SEVERITY,
     {
         label: '5 (Catastrophic)',
         value: 'CATASTROPHIC',
@@ -123,12 +119,10 @@ export const SEVERITY_OPTIONS = [
         label: '1 (Minor)',
         value: 'MINOR',
     },
-];
-
-export const SEVERITIES = [
-    DEFAULT_SEVERITY,
-    ...SEVERITY_OPTIONS,
-    UNKNOWN_SEVERITY,
+    {
+        label: 'Unknown',
+        value: 'UNKNOWN',
+    },
 ];
 
 export const PASSENGER_IMPACT_RANGE = {
@@ -148,16 +142,3 @@ export const WEEKDAYS = [
     'Sa',
     'Su',
 ];
-
-export const getSeverityOptions = (useParentChildIncident) => {
-    if (useParentChildIncident) {
-        return [
-            UNKNOWN_SEVERITY,
-            ...SEVERITY_OPTIONS,
-            DEFAULT_SEVERITY,
-        ];
-    }
-    return SEVERITIES;
-};
-
-export const getDefaultSeverity = useParentChildIncident => (useParentChildIncident ? UNKNOWN_SEVERITY : DEFAULT_SEVERITY);

@@ -118,7 +118,7 @@ export const IncidentsDataGrid = (props) => {
 
     const getIncidentsButton = incident => (
         [
-            <Tooltip title="Open & Edit Disruption" placement="top-end" key={ uniqueId(incident.incidentId) }>
+            <Tooltip title="Open & Edit Incident" placement="top-end" key={ uniqueId(incident.incidentId) }>
                 <IconButton aria-label="open-edit-incident"
                     onClick={ () => {
                         props.setIncidentToUpdate(incident.incidentId, incident.incidentNo);
