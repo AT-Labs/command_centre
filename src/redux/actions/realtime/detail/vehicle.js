@@ -102,7 +102,6 @@ export const vehicleSelected = selectedVehicle => (dispatch, getState) => {
                 },
             },
         ));
-
         const selectedTripId = result(trackingVehicle, 'vehicle.trip.tripId');
         if (selectedTripId) {
             dispatch(getVehicleTripInfo(selectedTripId, selectedVehicle.key));

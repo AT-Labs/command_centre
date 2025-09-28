@@ -276,6 +276,14 @@ export const publishDraftIncident = incident => async (dispatch) => {
     return response;
 };
 
+export const clearAffectedRoutes = () => (dispatch) => {
+    dispatch(updateAffectedRoutesState([]));
+};
+
+export const clearAffectedStops = () => (dispatch) => {
+    dispatch(updateAffectedStopsState([]));
+};
+
 export const createNewIncident = incident => async (dispatch, getState) => {
     let response;
     const state = getState();
@@ -604,6 +612,13 @@ export const setRequestToUpdateEditEffectState = requestToUpdateEditEffect => ({
     },
 });
 
+export const setMapDrawingEntities = mapDrawingEntities => ({
+    type: ACTION_TYPE.UPDATE_MAP_DRAWING_ENTITIES,
+    payload: {
+        mapDrawingEntities,
+    },
+});
+
 export const setRequestedDisruptionKeyToUpdateEditEffect = requestedDisruptionKeyToUpdateEditEffect => ({
     type: ACTION_TYPE.SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT,
     payload: {
@@ -669,6 +684,7 @@ export const updateActiveDisruptionId = activeDisruptionId => (dispatch) => {
 const geographySearchRoutes = searchBody => async (dispatch, getState) => {
     const routesSearchResult = await ccStatic.geoSearch(searchBody, 'routes');
     const allRoutes = getAllRoutes(getState());
+    const cachedShapes = getCachedShapes(getState());
     const enrichedRoutes = routesSearchResult.map(({ route_id }) => {
         const route = allRoutes[route_id];
         return {
@@ -681,12 +697,10 @@ const geographySearchRoutes = searchBody => async (dispatch, getState) => {
             valueKey: 'routeId',
             labelKey: 'routeShortName',
             type: SEARCH_RESULT_TYPE.ROUTE.type,
+            shapeWkt: cachedShapes[route.routeId],
         };
     });
-    const existingAffectedRoutes = getAffectedRoutes(getState());
-    const newAffectedRoutes = [...new Set(existingAffectedRoutes.concat(enrichedRoutes))];
-    dispatch(updateAffectedRoutesState(newAffectedRoutes));
-    dispatch(getRoutesByShortName(newAffectedRoutes));
+    dispatch(setMapDrawingEntities(enrichedRoutes));
 };
 
 const geographySearchStops = searchBody => async (dispatch, getState) => {
@@ -710,9 +724,7 @@ const geographySearchStops = searchBody => async (dispatch, getState) => {
             type: SEARCH_RESULT_TYPE.STOP.type,
         };
     });
-    const existingAffectedStops = getAffectedStops(getState());
-    const newAffectedStops = [...new Set(existingAffectedStops.concat(enrichedStops))];
-    dispatch(updateAffectedStopsState(newAffectedStops));
+    dispatch(setMapDrawingEntities(enrichedStops));
 };
 
 export const searchByDrawing = (incidentType, content) => async (dispatch) => {
@@ -849,3 +861,10 @@ export const updateIncident = (incident, isAddEffect = false) => async (dispatch
 
     return result;
 };
+
+export const updateSelectedEffect = selectedEffect => ({
+    type: ACTION_TYPE.UPDATE_SELECTED_EFFECT,
+    payload: {
+        selectedEffect,
+    },
+});

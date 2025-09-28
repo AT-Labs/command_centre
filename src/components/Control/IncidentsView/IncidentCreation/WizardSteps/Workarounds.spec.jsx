@@ -52,7 +52,7 @@ const setup = (customProps) => {
     Object.assign(props, customProps);
     return shallow(<Workarounds { ...props } />);
 };
-// TODO: FIX TESTS
+
 describe('<Workarounds />', () => {
     beforeEach(() => {
         wrapper = setup();
@@ -68,8 +68,8 @@ describe('<Workarounds />', () => {
         wrapper = setup({ editMode: EDIT_TYPE.CREATE });
         const footer = wrapper.find(Footer);
         footer.renderProp('onContinue')();
-        /* expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3);
-        expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(1); */
+        expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3);
+        expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(1);
         expect(componentPropsMock.onSubmit).toHaveBeenCalled();
     });
 
@@ -93,8 +93,8 @@ describe('<Workarounds />', () => {
         wrapper = setup({ editMode: EDIT_TYPE.ADD_EFFECT });
         const footer = wrapper.find(Footer);
         footer.renderProp('onBack')();
-        /* expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(0);
-        expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(1); */
+        expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(0);
+        expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(1);
         expect(componentPropsMock.toggleWorkaroundPanel).toHaveBeenCalledWith(false);
     });
 
@@ -109,8 +109,8 @@ describe('<Workarounds />', () => {
         wrapper = setup({ editMode: EDIT_TYPE.CREATE });
         const footer = wrapper.find(Footer);
         footer.prop('onContinue')();
-        /* expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3);
-        expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(1); */
+        expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3);
+        expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(1);
         expect(componentPropsMock.onSubmit).toHaveBeenCalled();
     });
 
@@ -122,7 +122,7 @@ describe('<Workarounds />', () => {
         });
         const footer = wrapper.find(Footer);
         footer.prop('onSubmitDraft')();
-        /* expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3); */
+        expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3);
         expect(onSubmitDraftSpy).toHaveBeenCalled();
     });
 

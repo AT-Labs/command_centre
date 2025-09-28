@@ -10,7 +10,7 @@ import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import { RRule } from 'rrule';
 import { SelectDetails } from './SelectDetails';
-import { STATUSES, DISRUPTION_TYPE, getDefaultSeverity } from '../../../../../types/disruptions-types';
+import { STATUSES, DISRUPTION_TYPE, DEFAULT_SEVERITY } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
@@ -34,12 +34,13 @@ const defaultIncidentData = {
     mode: '-',
     status: STATUSES.NOT_STARTED,
     header: '',
+    url: '',
     createNotification: false,
     recurrent: false,
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: getDefaultSeverity(true).value,
+    severity: DEFAULT_SEVERITY.value,
 
     notes: '',
     disruptions: [],
@@ -53,6 +54,7 @@ const filledIncidentData = {
     endDate: '28/06/2025',
     status: STATUSES.NOT_STARTED,
     header: 'Incident Test Title',
+    url: 'https://at.govt.nz',
     disruptionType: DISRUPTION_TYPE.ROUTES,
     severity: 'MINOR',
     cause: 'CONGESTION',
@@ -75,6 +77,7 @@ const filledRecurrentIncidentData = {
     endDate: '28/06/2025',
     status: STATUSES.NOT_STARTED,
     header: 'Incident Test Title',
+    url: 'https://at.govt.nz',
     disruptionType: DISRUPTION_TYPE.ROUTES,
     severity: 'MINOR',
     cause: 'CONGESTION',
@@ -103,10 +106,11 @@ const incidentForEdit = {
     cause: 'CONGESTION',
     startTime: '08:27',
     startDate: '22/06/2025',
-    endTime: '21:21',
-    endDate: '24/06/2025',
+    endTime: null,
+    endDate: '',
     status: STATUSES.NOT_STARTED,
     header: 'test incident n0827',
+    url: '',
     version: 1,
     recurrencePattern: null,
     duration: '',
@@ -151,6 +155,7 @@ const incidentForEdit = {
             description: null,
             createdBy: 'aqwe@propellerhead.co.nz',
             createdTime: '2025-06-21T20:27:33.201Z',
+            url: '',
             header: 'test incident n0827',
             feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
             uploadedFiles: null,
