@@ -679,7 +679,6 @@ const mockDisruption1 = {
     description: null,
     createdBy: 'aqwe@propellerhead.co.nz',
     createdTime: '2025-08-21T20:27:33.201Z',
-    url: '',
     header: 'test incident n0827',
     feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
     uploadedFiles: null,
@@ -815,7 +814,6 @@ const mockDisruption2 = {
     description: null,
     createdBy: 'aqwe@propellerhead.co.nz',
     createdTime: '2025-08-21T20:27:33.201Z',
-    url: '',
     header: 'test incident n0827',
     feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
     uploadedFiles: null,
@@ -868,7 +866,6 @@ const mockIncident = {
     endTime: null,
     status: 'in-progress',
     header: 'test incident n0827',
-    url: '',
     version: 1,
     recurrencePattern: null,
     duration: '',
@@ -914,6 +911,7 @@ describe('buildDisruptionSubmitBody', () => {
             ...mockDisruption1.affectedEntities.affectedStops.map(entity => omit(entity, ['shapeWkt']))],
             endTime: undefined,
             startTime: momentFromDateTime(moment('2025-08-21T20:27:00.000Z').format(DATE_FORMAT), '2025-08-21T20:27:00.000Z'),
+            url: '',
         };
         const expectedDisruption2 = {
             ...mockDisruption2,
@@ -937,10 +935,12 @@ describe('buildDisruptionSubmitBody', () => {
             ...mockDisruption2.affectedEntities.affectedStops.map(entity => omit(entity, ['shapeWkt']))],
             endTime: undefined,
             startTime: momentFromDateTime(moment('2025-08-24T20:27:00.000Z').format(DATE_FORMAT), '2025-08-24T20:27:00.000Z'),
+            url: '',
         };
         const expectedIncident = {
             ...mockIncident,
             disruptions: [{ ...expectedDisruption1 }, { ...expectedDisruption2 }],
+            url: '',
         };
         expect(buildIncidentSubmitBody(mockIncident, true)).toEqual(expectedIncident);
     });

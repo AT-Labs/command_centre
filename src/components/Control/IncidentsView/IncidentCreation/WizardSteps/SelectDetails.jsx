@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { isEmpty, some } from 'lodash-es';
@@ -9,7 +9,6 @@ import Flatpickr from 'react-flatpickr';
 import { BsArrowRepeat } from 'react-icons/bs';
 import { FaExclamationTriangle, FaRegCalendarAlt } from 'react-icons/fa';
 import { IconContext } from 'react-icons';
-import { isUrlValid } from '../../../../../utils/helpers';
 import { isDurationValid,
     isEndDateValid,
     isEndTimeValid,
@@ -30,7 +29,7 @@ import {
     setRequestToUpdateEditEffectState,
     setRequestedDisruptionKeyToUpdateEditEffect } from '../../../../../redux/actions/control/incidents';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
-import { SEVERITIES, STATUSES } from '../../../../../types/disruptions-types';
+import { getParentChildSeverityOptions, STATUSES } from '../../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
     TIME_FORMAT,
@@ -43,8 +42,6 @@ import {
     LABEL_SEVERITY,
     LABEL_START_DATE,
     LABEL_START_TIME,
-    LABEL_URL,
-    URL_MAX_LENGTH,
     LABEL_STATUS,
 } from '../../../../../constants/disruptions';
 import Footer from './Footer';
@@ -62,7 +59,7 @@ import { getEditMode, getDisruptionKeyToEditEffect, isEditEffectPanelOpen } from
 
 export const SelectDetails = (props) => {
     const iconContextValue = useMemo(() => ({ className: 'text-warning w-100 m-2' }), []);
-    const { startDate, startTime, endDate, endTime, cause, header, url, severity, modalOpenedTime, mode, status, disruptions, recurrent, duration, recurrencePattern } = props.data;
+    const { startDate, startTime, endDate, endTime, cause, header, severity, modalOpenedTime, mode, status, disruptions, recurrent, duration, recurrencePattern } = props.data;
     const [now] = useState(moment().second(0).millisecond(0));
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [activePeriods, setActivePeriods] = useState([]);
@@ -80,6 +77,12 @@ export const SelectDetails = (props) => {
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [filteredDisruptions, setFilteredDisruptions] = useState(disruptions || []);
     const maxActivePeriodsCount = 100;
+
+    const endTimeRef = useRef(endTime);
+    const recurrentRef = useRef(recurrent);
+
+    useEffect(() => { endTimeRef.current = endTime; }, [endTime]);
+    useEffect(() => { recurrentRef.current = recurrent; }, [recurrent]);
 
     const startTimeValid = () => isStartTimeValid(startDate, startTime, modalOpenedTime, recurrent);
 
@@ -183,8 +186,8 @@ export const SelectDetails = (props) => {
         props.onDataUpdate('startTime', selectedItem);
     };
 
-    const onChangeEndDate = (date, isRecurrent) => {
-        if (isRecurrent) {
+    const onChangeEndDate = (date) => {
+        if (recurrentRef.current) {
             if (date.length === 0) {
                 if (props.useDraftDisruptions) {
                     props.onDataUpdate('endDate', '');
@@ -199,11 +202,14 @@ export const SelectDetails = (props) => {
         } else {
             props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
             setIsEndDateDirty(false);
+            if (date.length && isEmpty(endTimeRef.current)) {
+                props.onDataUpdate('endTime', '23:59');
+            }
         }
     };
 
-    const onBlurEndDate = (date, isRecurrent) => {
-        if (isRecurrent) {
+    const onBlurEndDate = (date) => {
+        if (recurrentRef.current) {
             if (date.length === 0 && !props.useDraftDisruptions) {
                 setIsEndDateDirty(true);
             } else {
@@ -252,7 +258,6 @@ export const SelectDetails = (props) => {
     const isDateTimeValid = () => startTimeValid() && startDateValid() && endDateValid() && durationValid();
     const isViewAllDisabled = !isDateTimeValid() || isEmpty(recurrencePattern?.byweekday);
     const isSubmitDisabled = isRequiredPropsEmpty()
-        || !isUrlValid(url)
         || !startTimeValid()
         || !startDateValid()
         || !endTimeValid()
@@ -260,7 +265,6 @@ export const SelectDetails = (props) => {
         || !durationValid();
 
     const isSubmitDisabledForEdit = isRequiredPropsEmpty()
-        || !isUrlValid(url)
         || !startTimeValid()
         || !startDateValid()
         || !endTimeValid()
@@ -352,7 +356,6 @@ export const SelectDetails = (props) => {
     const openEditEffectPanel = (disruption) => {
         props.setRequestedDisruptionKeyToUpdateEditEffect(disruption.incidentNo);
         props.setRequestToUpdateEditEffectState(true);
-        props.onDisruptionSelected(disruption.key);
     };
 
     const impacts = useAlertEffects();
@@ -514,8 +517,8 @@ export const SelectDetails = (props) => {
                                 className={ `font-weight-normal cc-form-control form-control ${isEndDateDirty ? 'is-invalid' : ''}` }
                                 value={ endDate }
                                 options={ endDateDatePickerOptions }
-                                onChange={ date => onChangeEndDate(date, recurrent) }
-                                onOpen={ date => onBlurEndDate(date, recurrent) }
+                                onChange={ date => onChangeEndDate(date) }
+                                onOpen={ date => onBlurEndDate(date) }
                                 disabled={ isResolved() }
 
                             />
@@ -633,7 +636,7 @@ export const SelectDetails = (props) => {
                             id="disruption-creation__wizard-select-details__severity"
                             className=""
                             value={ severity }
-                            options={ SEVERITIES }
+                            options={ getParentChildSeverityOptions() }
                             label={ LABEL_SEVERITY }
                             invalid={ isSeverityDirty && !severityValid() }
                             feedback="Please select severity"
@@ -663,25 +666,6 @@ export const SelectDetails = (props) => {
                         </FormGroup>
                     </div>
                 )}
-                <div className="col-12 d-none">
-                    <FormGroup>
-                        <Label for="disruption-creation__wizard-select-details__url">
-                            <span className="font-size-md font-weight-bold">{ getOptionalLabel(LABEL_URL) }</span>
-                        </Label>
-                        <Input
-                            id="disruption-creation__wizard-select-details__url"
-                            className="w-100 border border-dark"
-                            type="url"
-                            maxLength={ URL_MAX_LENGTH }
-                            value={ url }
-                            placeholder="e.g. https://at.govt.nz"
-                            onChange={ event => props.onDataUpdate('url', event.target.value) }
-                            invalid={ !isUrlValid(url) }
-                            disabled={ isResolved() }
-                        />
-                        <FormFeedback>Please enter a valid URL (e.g. https://at.govt.nz)</FormFeedback>
-                    </FormGroup>
-                </div>
             </Form>
             { props.editMode === EDIT_TYPE.EDIT && (
                 <div className="ml-4 mr-4 ">
@@ -810,7 +794,6 @@ SelectDetails.propTypes = {
     isEffectValid: PropTypes.bool,
     isEffectForPublishValid: PropTypes.bool,
     onPublishUpdate: PropTypes.func,
-    onDisruptionSelected: PropTypes.func,
 };
 
 SelectDetails.defaultProps = {
@@ -830,7 +813,6 @@ SelectDetails.defaultProps = {
     isEffectValid: true,
     isEffectForPublishValid: true,
     onPublishUpdate: () => { },
-    onDisruptionSelected: () => { },
 };
 
 export default connect(state => ({
