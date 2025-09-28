@@ -46,7 +46,7 @@ import {
     isApplyChangesModalOpen,
     isPublishAndApplyChangesModalOpen,
 } from '../../../../../redux/selectors/control/incidents';
-import { STATUSES, DISRUPTION_TYPE, INCIDENTS_CREATION_STEPS, getDefaultSeverity, ALERT_TYPES } from '../../../../../types/disruptions-types';
+import { STATUSES, DISRUPTION_TYPE, INCIDENTS_CREATION_STEPS, getParentChildDefaultSeverity, ALERT_TYPES } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
 import {
     momentFromDateTime,
@@ -104,7 +104,7 @@ const INIT_STATE = {
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: getDefaultSeverity(true).value,
+    severity: getParentChildDefaultSeverity().value,
 
     notes: '',
     disruptions: [],

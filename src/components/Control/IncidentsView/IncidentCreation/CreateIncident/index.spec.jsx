@@ -5,7 +5,7 @@ import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import { updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { buildIncidentSubmitBody, momentFromDateTime } from '../../../../../utils/control/disruptions';
-import { STATUSES, DISRUPTION_TYPE, getDefaultSeverity } from '../../../../../types/disruptions-types';
+import { STATUSES, DISRUPTION_TYPE, getParentChildDefaultSeverity } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
 
@@ -51,7 +51,7 @@ const defaultIncidentData = {
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: getDefaultSeverity(true).value,
+    severity: getParentChildDefaultSeverity().value,
 
     notes: '',
     disruptions: [],

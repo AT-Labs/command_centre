@@ -14,7 +14,7 @@ import {
     getIncidentToEdit,
     getEditMode,
 } from '../../../../../redux/selectors/control/incidents';
-import { DISRUPTION_TYPE, STATUSES, getSeverityOptions, getDefaultSeverity } from '../../../../../types/disruptions-types';
+import { DISRUPTION_TYPE, STATUSES, getParentChildSeverityOptions, getParentChildDefaultSeverity } from '../../../../../types/disruptions-types';
 import {
     updateCurrentStep,
     getStopsByRoute,
@@ -79,7 +79,7 @@ const INIT_EFFECT_STATE = {
     },
     createNotification: false,
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: getDefaultSeverity(true).value,
+    severity: getParentChildDefaultSeverity().value,
     isSeverityDirty: false,
     recurrent: false,
     duration: '',
@@ -118,7 +118,7 @@ export const SelectEffects = (props) => {
             endTime: incidentEndTime || '',
             endDate: incidentEndDate || '',
             duration: incidentDuration || '',
-            severity: incidentSeverity || getDefaultSeverity(true).value,
+            severity: incidentSeverity || getParentChildDefaultSeverity().value,
             cause: incidentCause || DEFAULT_CAUSE.value,
             header: incidentHeader || '',
             key: uniqueId('DISR'),
@@ -484,7 +484,7 @@ export const SelectEffects = (props) => {
                                 id="disruption-creation__wizard-select-details__severity"
                                 className=""
                                 value={ disruption.severity }
-                                options={ getSeverityOptions(true) }
+                                options={ getParentChildSeverityOptions() }
                                 label={ LABEL_SEVERITY }
                                 invalid={ disruption.isSeverityDirty && !severityValid(disruption.key) }
                                 feedback="Please select severity"

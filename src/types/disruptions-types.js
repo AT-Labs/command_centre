@@ -149,15 +149,10 @@ export const WEEKDAYS = [
     'Su',
 ];
 
-export const getSeverityOptions = (useParentChildIncident) => {
-    if (useParentChildIncident) {
-        return [
-            UNKNOWN_SEVERITY,
-            ...SEVERITY_OPTIONS,
-            DEFAULT_SEVERITY,
-        ];
-    }
-    return SEVERITIES;
-};
+export const getParentChildSeverityOptions = () => [
+    UNKNOWN_SEVERITY,
+    ...SEVERITY_OPTIONS,
+    DEFAULT_SEVERITY,
+];
 
-export const getDefaultSeverity = useParentChildIncident => (useParentChildIncident ? UNKNOWN_SEVERITY : DEFAULT_SEVERITY);
+export const getParentChildDefaultSeverity = () => UNKNOWN_SEVERITY;

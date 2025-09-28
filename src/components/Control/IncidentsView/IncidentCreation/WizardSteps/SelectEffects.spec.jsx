@@ -8,7 +8,7 @@ import Footer from './Footer';
 import SelectEffectEntities from './SelectEffectEntities';
 import * as controlUtils from '../../../../../utils/control/alert-cause-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
-import { DISRUPTION_TYPE, getDefaultSeverity, STATUSES } from '../../../../../types/disruptions-types';
+import { DISRUPTION_TYPE, getParentChildDefaultSeverity, STATUSES } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
 
 let sandbox;
@@ -101,7 +101,7 @@ const INIT_INCIDENT_STATE = {
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: getDefaultSeverity(true).value,
+    severity: getParentChildDefaultSeverity().value,
 
     notes: '',
     disruptions: [],
@@ -175,7 +175,7 @@ describe('<SelectEffects />', () => {
         };
         wrapper = setup({ data });
         expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(DEFAULT_IMPACT.value);
-        expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe(getDefaultSeverity(true).value);
+        expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe(getParentChildDefaultSeverity().value);
         expect(wrapper.find('#disruption-creation__wizard-select-details__start-date').props().value).toBe('01/03/2022');
         expect(wrapper.find('#disruption-creation__wizard-select-details__end-date').props().value).toBe('');
         expect(wrapper.find('Input#disruption-creation__wizard-select-details__start-time').props().value).toMatch(/:12$/);
@@ -206,7 +206,7 @@ describe('<SelectEffects />', () => {
         };
         wrapper = setup({ data });
         expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(DEFAULT_IMPACT.value);
-        expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe(getDefaultSeverity(true).value);
+        expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe(getParentChildDefaultSeverity().value);
         expect(wrapper.find('#disruption-creation__wizard-select-details__start-date').props().value).toBe('01/03/2022');
         expect(wrapper.find('#disruption-creation__wizard-select-details__end-date').props().value).toBe('');
         expect(wrapper.find('Input#disruption-creation__wizard-select-details__start-time').props().value).toMatch(/:12$/);

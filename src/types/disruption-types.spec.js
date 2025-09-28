@@ -1,4 +1,4 @@
-import { ACTION_RESULT, ACTION_RESULT_TYPES, getSeverityOptions, getDefaultSeverity } from './disruptions-types';
+import { ACTION_RESULT, ACTION_RESULT_TYPES, getParentChildSeverityOptions, getParentChildDefaultSeverity, SEVERITIES, DEFAULT_SEVERITY } from './disruptions-types';
 
 describe('Disruption types', () => {
     describe('PUBLISH_DRAFT_SUCCESS', () => {
@@ -82,27 +82,27 @@ describe('Disruption types', () => {
     });
 
     describe('SEVERITIES', () => {
-        it('should return severities in valid order if useParentChildIncident true', () => {
-            const result = getSeverityOptions(true);
+        it('should return severities in valid order', () => {
+            const result = getParentChildSeverityOptions();
             expect(result.length).toEqual(7);
             expect(result[0].value).toEqual('UNKNOWN');
             expect(result[6].value).toEqual('');
         });
 
-        it('should return severities in valid order if useParentChildIncident false', () => {
-            const result = getSeverityOptions(false);
+        it('should return severities in valid order for original SEVERITIES', () => {
+            const result = SEVERITIES;
             expect(result.length).toEqual(7);
             expect(result[0].value).toEqual('');
             expect(result[6].value).toEqual('UNKNOWN');
         });
 
-        it('should return default severity if useParentChildIncident true', () => {
-            const result = getDefaultSeverity(true);
+        it('should return getParentChildSeverityOptions', () => {
+            const result = getParentChildDefaultSeverity();
             expect(result.value).toEqual('UNKNOWN');
         });
 
-        it('should return default severity if useParentChildIncident false', () => {
-            const result = getDefaultSeverity(false);
+        it('should return default severity', () => {
+            const result = DEFAULT_SEVERITY;
             expect(result.value).toEqual('');
         });
     });

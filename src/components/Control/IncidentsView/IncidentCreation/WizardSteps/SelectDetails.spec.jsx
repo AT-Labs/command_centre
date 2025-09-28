@@ -10,7 +10,7 @@ import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import { RRule } from 'rrule';
 import { SelectDetails } from './SelectDetails';
-import { STATUSES, DISRUPTION_TYPE, getDefaultSeverity } from '../../../../../types/disruptions-types';
+import { STATUSES, DISRUPTION_TYPE, getParentChildDefaultSeverity } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import { useAlertCauses, useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
@@ -39,7 +39,7 @@ const defaultIncidentData = {
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: getDefaultSeverity(true).value,
+    severity: getParentChildDefaultSeverity().value,
 
     notes: '',
     disruptions: [],

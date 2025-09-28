@@ -52,7 +52,7 @@ import {
     getRecurrenceText,
     parseRecurrencePattern,
     isActivePeriodsValid } from '../../../../../utils/recurrence';
-import { DISRUPTION_TYPE, getDefaultSeverity, STATUSES, getSeverityOptions } from '../../../../../types/disruptions-types';
+import { DISRUPTION_TYPE, getParentChildDefaultSeverity, STATUSES, getParentChildSeverityOptions } from '../../../../../types/disruptions-types';
 import SelectEffectEntities from '../WizardSteps/SelectEffectEntities';
 import WeekdayPicker from '../../../Common/WeekdayPicker/WeekdayPicker';
 import {
@@ -98,7 +98,7 @@ const INIT_EFFECT_STATE = {
     },
     createNotification: false,
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: getDefaultSeverity(true).value,
+    severity: getParentChildDefaultSeverity().value,
     recurrent: false,
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
@@ -836,7 +836,7 @@ export const EditEffectPanel = (props) => {
                                         id="disruption-creation__wizard-select-details__severity"
                                         className=""
                                         value={ disruption.severity }
-                                        options={ getSeverityOptions(true) }
+                                        options={ getParentChildSeverityOptions() }
                                         label={ LABEL_SEVERITY }
                                         invalid={ isSeverityDirty && !severityValid() && disruption.status !== STATUSES.DRAFT }
                                         feedback="Please select severity"

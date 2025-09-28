@@ -29,7 +29,7 @@ import {
     setRequestToUpdateEditEffectState,
     setRequestedDisruptionKeyToUpdateEditEffect } from '../../../../../redux/actions/control/incidents';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
-import { getSeverityOptions, STATUSES } from '../../../../../types/disruptions-types';
+import { getParentChildSeverityOptions, STATUSES } from '../../../../../types/disruptions-types';
 import {
     DATE_FORMAT,
     TIME_FORMAT,
@@ -636,7 +636,7 @@ export const SelectDetails = (props) => {
                             id="disruption-creation__wizard-select-details__severity"
                             className=""
                             value={ severity }
-                            options={ getSeverityOptions(true) }
+                            options={ getParentChildSeverityOptions() }
                             label={ LABEL_SEVERITY }
                             invalid={ isSeverityDirty && !severityValid() }
                             feedback="Please select severity"
