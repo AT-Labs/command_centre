@@ -2,11 +2,14 @@ import { shallow } from 'enzyme';
 import React from 'react';
 import sinon from 'sinon';
 import { withHooks } from 'jest-react-hooks-shallow';
+import { RRule } from 'rrule';
 import { SelectEffects } from './SelectEffects';
 import Footer from './Footer';
 import SelectEffectEntities from './SelectEffectEntities';
 import * as controlUtils from '../../../../../utils/control/alert-cause-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
+import { DISRUPTION_TYPE, getParentChildDefaultSeverity, STATUSES } from '../../../../../types/disruptions-types';
+import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
 
 let sandbox;
 let wrapper;
@@ -33,7 +36,6 @@ const mockDisruption = {
     mode: '-',
     status: 'not-started',
     header: 'Incident Title',
-    url: 'https://at.govt.nz',
     createNotification: false,
     recurrent: true,
     duration: '2',
@@ -69,7 +71,6 @@ const mockIncident = {
     mode: '-',
     status: 'not-started',
     header: 'Incident Title',
-    url: 'https://at.govt.nz',
     createNotification: false,
     recurrent: true,
     duration: '2',
@@ -82,6 +83,28 @@ const mockIncident = {
     severity: 'MINOR',
     disruptions: [{ ...mockDisruption }],
     modalOpenedTime: new Date('2022-03-01T05:59:00.000Z'),
+};
+
+const INIT_INCIDENT_STATE = {
+    startTime: '',
+    startDate: '',
+    endTime: '',
+    endDate: '',
+    cause: DEFAULT_CAUSE.value,
+    activePeriods: [],
+    mode: '-',
+    status: STATUSES.NOT_STARTED,
+    header: '',
+    description: '',
+    createNotification: false,
+    recurrent: false,
+    duration: '',
+    recurrencePattern: { freq: RRule.WEEKLY },
+    disruptionType: DISRUPTION_TYPE.ROUTES,
+    severity: getParentChildDefaultSeverity().value,
+
+    notes: '',
+    disruptions: [],
 };
 
 const componentPropsMock = {
@@ -105,6 +128,8 @@ const componentPropsMock = {
     onUpdateEntitiesValidation: jest.fn(),
     newIncidentEffect: {},
     updateNewIncidentEffect: jest.fn(),
+    clearAffectedRoutes: jest.fn(),
+    clearAffectedStops: jest.fn(),
 };
 controlUtils.useAlertEffects.mockReturnValue([impacts]);
 
@@ -143,6 +168,22 @@ describe('<SelectEffects />', () => {
         expect(wrapper.find('Input#disruption-creation__wizard-select-details__duration').props().value).toBe('2');
     });
 
+    it('Should render with default fields for not recurrent disruption if incident data is not valid', () => {
+        sandbox.useFakeTimers(new Date('2022-03-01T07:12:00.000Z'));
+        const data = {
+            ...INIT_INCIDENT_STATE,
+            recurrent: false,
+            disruptions: [],
+        };
+        wrapper = setup({ data });
+        expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(DEFAULT_IMPACT.value);
+        expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe(getParentChildDefaultSeverity().value);
+        expect(wrapper.find('#disruption-creation__wizard-select-details__start-date').props().value).toBe('01/03/2022');
+        expect(wrapper.find('#disruption-creation__wizard-select-details__end-date').props().value).toBe('');
+        expect(wrapper.find('Input#disruption-creation__wizard-select-details__start-time').props().value).toMatch(/:12$/);
+        expect(wrapper.find('Input#disruption-creation__wizard-select-details__end-time').props().value).toBe('');
+    });
+
     it('Should render with valid fields for not recurrent disruption', () => {
         const data = {
             ...mockIncident,
@@ -156,6 +197,22 @@ describe('<SelectEffects />', () => {
         expect(wrapper.find('#disruption-creation__wizard-select-details__end-date').props().value).toBe('10/03/2022');
         expect(wrapper.find('Input#disruption-creation__wizard-select-details__start-time').props().value).toBe('06:00');
         expect(wrapper.find('Input#disruption-creation__wizard-select-details__end-time').props().value).toBe('06:00');
+    });
+
+    it('Should render with default fields for recurrent disruption if incident data is not valid', () => {
+        sandbox.useFakeTimers(new Date('2022-03-01T07:12:00.000Z'));
+        const data = {
+            ...INIT_INCIDENT_STATE,
+            recurrent: true,
+            disruptions: [],
+        };
+        wrapper = setup({ data });
+        expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(DEFAULT_IMPACT.value);
+        expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe(getParentChildDefaultSeverity().value);
+        expect(wrapper.find('#disruption-creation__wizard-select-details__start-date').props().value).toBe('01/03/2022');
+        expect(wrapper.find('#disruption-creation__wizard-select-details__end-date').props().value).toBe('');
+        expect(wrapper.find('Input#disruption-creation__wizard-select-details__start-time').props().value).toMatch(/:12$/);
+        expect(wrapper.find('Input#disruption-creation__wizard-select-details__duration').props().value).toBe('');
     });
 
     it('Should render with valid init value for add effect mode', () => {
@@ -400,6 +457,41 @@ describe('<SelectEffects />', () => {
             wrapper = setup({ data });
             const footer = wrapper.find(Footer);
             footer.prop('onSubmitDraft')();
+            expect(componentPropsMock.onDataUpdate).toHaveBeenCalled();
+        });
+    });
+
+    describe('Finish button', () => {
+        let data;
+
+        beforeEach(() => {
+            data = {
+                ...mockIncident,
+                disruptions: [{ ...mockDisruption }],
+            };
+        });
+
+        it('Should be disabled when impact is empty', () => {
+            data.cause = '';
+            data.disruptions = [{ ...mockDisruption, impact: '' }];
+            wrapper = setup({ data });
+            const footer = wrapper.find(Footer);
+            expect(footer.prop('isAdditionalFinishButtonDisabled')).toEqual(true);
+        });
+
+        it('Should be enabled when all fields filled', () => {
+            data.disruptions = [{ ...mockDisruption }];
+            wrapper = setup({ data, isDetailsValid: true });
+            const footer = wrapper.find(Footer);
+            expect(footer.prop('isAdditionalFinishButtonDisabled')).toEqual(false);
+        });
+
+        it('Should fire step update when next button is clicked', () => {
+            data.recurrent = false;
+            data.disruptions = [{ ...mockDisruption, recurrent: false }];
+            wrapper = setup({ data });
+            const footer = wrapper.find(Footer);
+            footer.prop('onAdditionalFinishButtonClick')();
             expect(componentPropsMock.onDataUpdate).toHaveBeenCalled();
         });
     });

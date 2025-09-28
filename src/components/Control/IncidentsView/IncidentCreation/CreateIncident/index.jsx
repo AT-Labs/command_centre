@@ -23,6 +23,10 @@ import {
     setRequestToUpdateEditEffectState,
     setRequestedDisruptionKeyToUpdateEditEffect,
     updateEditMode,
+    toggleWorkaroundPanel,
+    updateDisruptionKeyToWorkaroundEdit,
+    setDisruptionForWorkaroundEdit,
+    toggleEditEffectPanel,
 } from '../../../../../redux/actions/control/incidents';
 import {
     getAffectedRoutes,
@@ -30,8 +34,6 @@ import {
     getIncidentAction,
     getIncidentStepCreation,
     getIncidentToEdit,
-    getRouteColors,
-    getShapes,
     getEditMode,
     isIncidentCancellationModalOpen,
     isIncidentCreationOpen,
@@ -42,8 +44,9 @@ import {
     isWorkaroundPanelOpen,
     isApplyChangesModalOpen,
     isPublishAndApplyChangesModalOpen,
+    getMapDrawingEntities,
 } from '../../../../../redux/selectors/control/incidents';
-import { STATUSES, DISRUPTION_TYPE, INCIDENTS_CREATION_STEPS, DEFAULT_SEVERITY, ALERT_TYPES } from '../../../../../types/disruptions-types';
+import { STATUSES, DISRUPTION_TYPE, INCIDENTS_CREATION_STEPS, getParentChildDefaultSeverity, ALERT_TYPES } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
 import {
     momentFromDateTime,
@@ -84,6 +87,7 @@ import WorkaroundPanel from '../WizardSteps/WorkaroundPanel';
 import EditEffectPanel from '../EditIncidentDetails/EditEffectPanel';
 import ApplyChangesModal from '../EditIncidentDetails/ApplyChangesModal';
 import PublishAndApplyChangesModal from '../EditIncidentDetails/PublishAndApplyChangesModal';
+import { getShapes, getRouteColors } from '../../../../../utils/control/incidents';
 
 const INIT_STATE = {
     startTime: '',
@@ -96,13 +100,12 @@ const INIT_STATE = {
     status: STATUSES.NOT_STARTED,
     header: '',
     description: '',
-    url: '',
     createNotification: false,
     recurrent: false,
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: DEFAULT_SEVERITY.value,
+    severity: getParentChildDefaultSeverity().value,
 
     notes: '',
     disruptions: [],
@@ -130,6 +133,9 @@ export class CreateIncident extends React.Component {
             isEffectForPublishValid: true,
             isEffectUpdated: false,
             newIncidentEffect: {},
+            selectedEffect: null,
+            effectToBeCleared: null,
+            disruptionToEdit: null,
         };
     }
 
@@ -245,6 +251,38 @@ export class CreateIncident extends React.Component {
 
         if (prevProps.incidentToEdit?.disruptions?.length !== this.props.incidentToEdit?.disruptions?.length) {
             this.drawAffectedEntity(); // for redraw affected entity after add effect
+        }
+
+        if (prevProps.mapDrawingEntities !== this.props.mapDrawingEntities) {
+            if (this.state.editMode === undefined && this.state.selectedEffect) {
+                const u = this.state.incidentData.disruptions.map(d => d.key === this.state.selectedEffect);
+                if (u.length > 0) {
+                    this.setState(prevState => ({
+                        incidentData: {
+                            ...prevState.incidentData,
+                            disruptions: prevState.incidentData.disruptions.map(d => (d.key === prevState.selectedEffect ? {
+                                ...d,
+                                affectedEntities: {
+                                    affectedRoutes: this.props.mapDrawingEntities.filter(e => e.type === 'route'),
+                                    affectedStops: this.props.mapDrawingEntities.filter(e => e.type === 'stop'),
+                                },
+                            } : d)),
+                        },
+                    }));
+                }
+            }
+
+            if (this.state.editMode === EDIT_TYPE.ADD_EFFECTS) {
+                this.setState(prevState => ({
+                    newIncidentEffect: {
+                        ...prevState.newIncidentEffect,
+                        affectedEntities: {
+                            affectedRoutes: this.props.mapDrawingEntities.filter(e => e.type === 'route'),
+                            affectedStops: this.props.mapDrawingEntities.filter(e => e.type === 'stop'),
+                        },
+                    },
+                }));
+            }
         }
     }
 
@@ -476,6 +514,7 @@ export class CreateIncident extends React.Component {
     closeEffectEditPanel = () => {
         this.props.setRequestedDisruptionKeyToUpdateEditEffect('');
         this.props.setRequestToUpdateEditEffectState(true);
+        this.setState({ selectedEffect: null });
     };
 
     updateNewIncidentEffect = (disruption) => {
@@ -486,6 +525,10 @@ export class CreateIncident extends React.Component {
         });
     };
 
+    updateSelectedEffect = (key) => {
+        this.setState({ selectedEffect: key });
+    };
+
     clearNewEffectToIncident = () => {
         this.setState({
             newIncidentEffect: {},
@@ -493,10 +536,14 @@ export class CreateIncident extends React.Component {
     };
 
     addNewEffectToIncident = () => {
+        this.props.setDisruptionForWorkaroundEdit({});
+        this.props.toggleWorkaroundPanel(false);
+        this.props.updateDisruptionKeyToWorkaroundEdit('');
         this.props.updateAffectedStopsState([]);
         this.props.updateAffectedRoutesState([]);
         this.props.updateEditMode(EDIT_TYPE.ADD_EFFECT);
         this.props.updateCurrentStep(2);
+        this.props.toggleEditEffectPanel(false);
     };
 
     renderSteps = () => {
@@ -536,6 +583,72 @@ export class CreateIncident extends React.Component {
         );
     };
 
+    getCurrentDisruption = () => {
+        const { editMode } = this.props;
+        const { selectedEffect, incidentData, disruptionToEdit, newIncidentEffect } = this.state;
+
+        if (editMode === EDIT_TYPE.CREATE && selectedEffect) {
+            return incidentData.disruptions.find(d => d.key === selectedEffect);
+        }
+        if (editMode === EDIT_TYPE.EDIT && disruptionToEdit) {
+            return disruptionToEdit;
+        }
+        if (editMode === EDIT_TYPE.ADD_EFFECT && !isEmpty(newIncidentEffect)) {
+            return newIncidentEffect;
+        }
+        return null;
+    };
+
+    getIncidentType = () => {
+        const disruption = this.getCurrentDisruption();
+        return disruption?.disruptionType || DISRUPTION_TYPE.ROUTES;
+    };
+
+    renderShapeLayer = () => {
+        const disruption = this.getCurrentDisruption();
+        if (!disruption?.affectedEntities) return null;
+
+        const { affectedRoutes, affectedStops } = disruption.affectedEntities;
+        const shapes = getShapes(affectedRoutes || [], affectedStops || []);
+        const routeColors = getRouteColors(affectedRoutes || [], affectedStops || []);
+
+        return <ShapeLayer shapes={ shapes } routeColors={ routeColors } />;
+    };
+
+    renderStopsMarker = () => {
+        const disruption = this.getCurrentDisruption();
+        if (!disruption?.affectedEntities) return null;
+
+        const { affectedRoutes, affectedStops } = disruption.affectedEntities;
+
+        const stops = uniqBy([...(affectedStops || []), ...(affectedRoutes || [])], 'stopCode')
+            .map(stop => itemToEntityTransformers[STOP.type](stop).data);
+
+        return (
+            <SelectedStopsMarker
+                stops={ stops }
+                size={ 28 }
+                tooltip
+                maximumStopsToDisplay={ 200 }
+            />
+        );
+    };
+
+    removeAffectedEntities = () => {
+        if (this.props.editMode === EDIT_TYPE.ADD_EFFECT && !isEmpty(this.state.newIncidentEffect)) {
+            this.setState(prevState => ({
+                newIncidentEffect: {
+                    ...prevState.newIncidentEffect,
+                    affectedEntities: {
+                        affectedRoutes: [],
+                        affectedStops: [],
+                    },
+                },
+            }));
+        }
+        this.setState(prevState => ({ effectToBeCleared: prevState.selectedEffect }));
+    };
+
     render() {
         const {
             incidentData,
@@ -546,7 +659,8 @@ export class CreateIncident extends React.Component {
             isEffectsRequiresToUpdate,
             isEffectValid,
             isEffectForPublishValid,
-            newIncidentEffect } = this.state;
+            newIncidentEffect,
+            isSetDetailsValid } = this.state;
         const renderMainHeading = () => {
             const titleByMode = {
                 [EDIT_TYPE.CREATE]: 'Create a new Disruption',
@@ -581,13 +695,23 @@ export class CreateIncident extends React.Component {
                                 {this.props.editMode !== EDIT_TYPE.ADD_EFFECT && (
                                     <SelectDetails
                                         onUpdateDetailsValidation={ this.onUpdateDetailsValidation }
-                                        onSubmitUpdate={ this.onSubmitUpdate } />
+                                        onSubmitUpdate={ this.onSubmitUpdate }
+                                        onDisruptionSelected={ key => this.setState({ selectedEffect: key }) }
+                                    />
                                 )}
                                 <SelectEffects
                                     onUpdateEntitiesValidation={ this.onUpdateEntitiesValidation }
                                     updateNewIncidentEffect={ this.updateNewIncidentEffect }
                                     newIncidentEffect={ newIncidentEffect }
-                                    onSubmitUpdate={ this.onSubmitUpdate } />
+                                    selectedEffect={ this.state.selectedEffect }
+                                    updateSelectedEffect={ this.updateSelectedEffect }
+                                    onSubmit={ this.onSubmit }
+                                    onSubmitUpdate={ this.onSubmitUpdate }
+                                    effectAddedHandler={ this.updateSelectedEffect }
+                                    effectToBeCleared={ this.state.effectToBeCleared }
+                                    effectCleared={ () => this.setState({ effectToBeCleared: null }) }
+                                    isDetailsValid={ isSetDetailsValid }
+                                />
                                 <Workarounds
                                     isFinishDisabled={ useDraftDisruptions ? this.isFinishButtonDisabled() : false }
                                     newIncidentEffect={ newIncidentEffect }
@@ -645,6 +769,7 @@ export class CreateIncident extends React.Component {
                                 updateIsEffectsRequiresToUpdateState={ () => this.setState({ isEffectsRequiresToUpdate: false }) }
                                 isEffectValid={ isEffectValid }
                                 isEffectForPublishValid={ isEffectForPublishValid }
+                                onDisruptionSelected={ key => this.setState({ selectedEffect: key }) }
                                 onPublishUpdate={ this.onPublishUpdate } />
                             <CustomModal
                                 className="disruption-creation__modal"
@@ -702,16 +827,16 @@ export class CreateIncident extends React.Component {
                         updateEffectValidationState={ valid => this.setState({ isEffectValid: valid }) }
                         updateIsEffectUpdatedState={ isUpdated => this.setState({ isEffectUpdated: isUpdated }) }
                         updateEffectValidationForPublishState={ valid => this.setState({ isEffectForPublishValid: valid }) }
+                        onDisruptionChange={ disruption => this.setState({ disruptionToEdit: disruption }) }
                     />
                 )}
                 <Map
                     shouldOffsetForSidePanel
                     boundsToFit={ this.props.boundsToFit }
                     isLoading={ this.props.isLoading }
+                    className={ `${this.props.isEditEffectPanelOpen ? 'edit-effect-panel-expanded' : ''} ${this.props.isWorkaroundPanelOpen && this.props.isEditEffectPanelOpen ? 'workaround-panel-expanded' : ''}` }
                 >
-                    <ShapeLayer
-                        shapes={ this.props.shapes }
-                        routeColors={ this.props.routeColors } />
+                    { this.renderShapeLayer() }
                     <StopsLayer
                         childStops={ this.props.activeStep === 2 ? this.props.childStops : undefined }
                         stopDetail={ this.props.stopDetail }
@@ -727,24 +852,28 @@ export class CreateIncident extends React.Component {
                                 labelKey: 'stopCode',
                                 type: SEARCH_RESULT_TYPE.STOP.type,
                             })));
-                        } } />
-                    <HighlightingLayer
-                        stopDetail={ this.props.stopDetail } />
-                    <SelectedStopsMarker
-                        stops={ uniqBy([...this.props.stops, ...this.props.routes], stop => stop.stopCode).map(stop => itemToEntityTransformers[STOP.type](stop).data) }
-                        size={ 28 }
-                        tooltip
-                        maximumStopsToDisplay={ 200 } />
+                        } }
+                    />
+                    <HighlightingLayer stopDetail={ this.props.stopDetail } />
+                    { this.renderStopsMarker() }
                     <DrawLayer
-                        disabled={ this.props.activeStep !== 2 }
-                        disruptionType={ incidentData.disruptionType }
+                        disabled={
+                            !(
+                                this.props.editMode === EDIT_TYPE.ADD_EFFECT
+                                || (this.props.editMode === EDIT_TYPE.EDIT && this.state.selectedEffect)
+                                || (this.props.editMode === EDIT_TYPE.CREATE && this.props.activeStep === 2)
+                            )
+                        }
+                        disruptionType={ this.getIncidentType() }
                         onDrawCreated={ shape => this.props.searchByDrawing(
-                            incidentData.disruptionType,
+                            this.getIncidentType(),
                             this.props.useGeoSearchRoutesByDisruptionPeriod && (incidentData.endTime || incidentData.recurrent) ? {
                                 ...shape,
                                 activePeriods: incidentData.activePeriods.length > 0 ? incidentData.activePeriods : generateDisruptionActivePeriods(incidentData),
                             } : shape,
-                        ) } />
+                        ) }
+                        onDrawDeleted={ () => this.removeAffectedEntities() }
+                    />
                 </Map>
                 <Button
                     className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
@@ -776,9 +905,7 @@ CreateIncident.propTypes = {
     activeStep: PropTypes.number,
     stops: PropTypes.array,
     routes: PropTypes.array,
-    shapes: PropTypes.array,
     editMode: PropTypes.string,
-    routeColors: PropTypes.array,
     updateIncident: PropTypes.func.isRequired,
     incidentToEdit: PropTypes.object,
     openCreateIncident: PropTypes.func.isRequired,
@@ -800,6 +927,11 @@ CreateIncident.propTypes = {
     isApplyChangesOpen: PropTypes.bool,
     updateEditMode: PropTypes.func.isRequired,
     isPublishAndApplyChangesOpen: PropTypes.bool,
+    toggleWorkaroundPanel: PropTypes.func.isRequired,
+    updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
+    setDisruptionForWorkaroundEdit: PropTypes.func.isRequired,
+    mapDrawingEntities: PropTypes.arrayOf(PropTypes.object).isRequired,
+    toggleEditEffectPanel: PropTypes.func.isRequired,
 };
 
 CreateIncident.defaultProps = {
@@ -808,9 +940,7 @@ CreateIncident.defaultProps = {
     activeStep: 1,
     stops: [],
     routes: [],
-    shapes: [],
     editMode: EDIT_TYPE.CREATE,
-    routeColors: [],
     incidentToEdit: {},
     isLoading: false,
     isEditEffectPanelOpen: false,
@@ -827,9 +957,7 @@ export default connect(state => ({
     activeStep: getIncidentStepCreation(state),
     stops: getAffectedStops(state),
     routes: getAffectedRoutes(state),
-    shapes: getShapes(state),
     editMode: getEditMode(state),
-    routeColors: getRouteColors(state),
     incidentToEdit: getIncidentToEdit(state),
     boundsToFit: getBoundsToFit(state),
     childStops: getChildStops(state),
@@ -842,6 +970,7 @@ export default connect(state => ({
     isWorkaroundPanelOpen: isWorkaroundPanelOpen(state),
     isApplyChangesOpen: isApplyChangesModalOpen(state),
     isPublishAndApplyChangesOpen: isPublishAndApplyChangesModalOpen(state),
+    mapDrawingEntities: getMapDrawingEntities(state),
 }), {
     createNewIncident,
     openCreateIncident,
@@ -856,4 +985,8 @@ export default connect(state => ({
     setRequestToUpdateEditEffectState,
     setRequestedDisruptionKeyToUpdateEditEffect,
     updateEditMode,
+    toggleWorkaroundPanel,
+    updateDisruptionKeyToWorkaroundEdit,
+    setDisruptionForWorkaroundEdit,
+    toggleEditEffectPanel,
 })(CreateIncident);
