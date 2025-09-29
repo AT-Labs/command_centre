@@ -131,6 +131,14 @@ export const SEVERITIES = [
     UNKNOWN_SEVERITY,
 ];
 
+export const getParentChildSeverityOptions = () => [
+    UNKNOWN_SEVERITY,
+    ...SEVERITY_OPTIONS,
+    DEFAULT_SEVERITY,
+];
+
+export const getParentChildDefaultSeverity = () => UNKNOWN_SEVERITY;
+
 export const PASSENGER_IMPACT_RANGE = {
     LOWER_THAN_500: '<500',
     BETWEEN_500_5000: '500 - 5,000',
@@ -148,11 +156,3 @@ export const WEEKDAYS = [
     'Sa',
     'Su',
 ];
-
-export const getParentChildSeverityOptions = () => [
-    UNKNOWN_SEVERITY,
-    ...SEVERITY_OPTIONS,
-    DEFAULT_SEVERITY,
-];
-
-export const getParentChildDefaultSeverity = () => UNKNOWN_SEVERITY;

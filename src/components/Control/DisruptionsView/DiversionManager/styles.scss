@@ -58,3 +58,34 @@
         height: calc(100vh - 109px);
     }
 }
+
+.side-panel-control-component-view.use-diversion-enabled {
+    & .side-panel {
+        z-index: 1002 !important;
+        position: relative !important;
+    }
+
+    .diversion-creation-container {
+        h2 {
+            margin-top: 1.5rem !important;
+            margin-bottom: 1.5rem !important;
+            font-size: 1.5rem !important;
+            font-weight: 600 !important;
+            color: #333 !important;
+        }
+    }
+
+    footer {
+        z-index: 1003 !important;
+    }
+
+    .map {
+        position: fixed !important;
+        top: 60px !important;
+        left: $side-panel-width-large !important;
+        width: calc(100vw - #{$side-panel-width-large}) !important;
+        height: calc(100vh - 60px) !important;
+        z-index: 1001 !important;
+        margin: 0 !important;
+    }
+}

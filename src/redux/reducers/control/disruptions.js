@@ -4,7 +4,6 @@ import ACTION_TYPE from '../../action-types';
 
 export const INIT_STATE = {
     activeDisruptionId: null,
-    shouldOpenDetailPanel: true,
     permissions: [],
     disruptions: [],
     cachedShapes: {},
@@ -156,8 +155,4 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_DISRUPTION_TO_EDIT]: handleDisruptionToEdit,
     [ACTION_TYPE.UPDATE_DISRUPTION_FILTERS]: handleUpdateDisruptionFilters,
     [ACTION_TYPE.UPDATE_DISRUPTION_DATAGRID_CONFIG]: handleDatagridConfig,
-    [ACTION_TYPE.SET_DISRUPTION_DETAIL_PANEL_OPEN_FLAG]: (state, { payload: { shouldOpenDetailPanel } }) => ({ 
-        ...state, 
-        shouldOpenDetailPanel
-    }),
 }, INIT_STATE);
