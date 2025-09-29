@@ -9,36 +9,6 @@ import { STATUSES, DISRUPTION_TYPE, getParentChildDefaultSeverity } from '../../
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
 
-// Mock Leaflet module
-jest.mock('leaflet', () => ({
-    drawLocal: {
-        edit: {
-            handlers: {
-                edit: {
-                    tooltip: {
-                        text: 'Drag the red dots to update the shape for the selected route variant.',
-                    },
-                },
-            },
-        },
-    },
-}));
-
-// Mock global L for leaflet-draw
-global.L = {
-    drawLocal: {
-        edit: {
-            handlers: {
-                edit: {
-                    tooltip: {
-                        text: 'Drag the red dots to update the shape for the selected route variant.',
-                    },
-                },
-            },
-        },
-    },
-};
-
 jest.mock('../../../../Common/Map/ShapeLayer/ShapeLayer', () => jest.fn());
 
 jest.mock('../../../../Common/Map/StopsLayer/StopsLayer', () => jest.fn());
@@ -48,8 +18,6 @@ jest.mock('../../../../Common/Map/HighlightingLayer/HighlightingLayer', () => je
 jest.mock('../../../../Common/Map/StopsLayer/SelectedStopsMarker', () => jest.fn());
 
 jest.mock('./DrawLayer', () => jest.fn());
-
-jest.mock('../../../../Common/Map/RouteShapeEditor/RouteShapeEditor', () => jest.fn());
 
 jest.mock('../../../../Common/CustomModal/CustomModal', () => jest.fn());
 
@@ -167,60 +135,6 @@ const incidentForEdit = {
 };
 
 const mockAction = { resultDisruptionId: 12345 };
-
-const createMockDisruption = (overrides = {}) => ({
-    disruptionId: 139537,
-    incidentNo: 'DISR139537',
-    mode: 'Bus',
-    affectedEntities: [],
-    impact: 'ESCALATOR_NOT_WORKING',
-    cause: 'CONGESTION',
-    startTime: '2025-08-21T20:27:00.000Z',
-    endTime: null,
-    status: 'in-progress',
-    lastUpdatedTime: '2025-08-21T20:27:33.201Z',
-    lastUpdatedBy: 'aqwe@propellerhead.co.nz',
-    description: null,
-    createdBy: 'aqwe@propellerhead.co.nz',
-    createdTime: '2025-08-21T20:27:33.201Z',
-    header: 'test incident n0827',
-    feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
-    uploadedFiles: null,
-    createNotification: false,
-    exemptAffectedTrips: null,
-    version: 1,
-    duration: '',
-    activePeriods: [{ startTime: 1755808020 }],
-    recurrencePattern: null,
-    recurrent: false,
-    workarounds: [],
-    notes: [],
-    severity: 'HEADLINE',
-    passengerCount: null,
-    incidentId: 139273,
-    incidentTitle: 'test incident n0827',
-    incidentDisruptionNo: 'CCD139273',
-    key: 'DISR139537',
-    ...overrides,
-});
-
-const createMockStopEntity = (stopId, stopCode, stopName) => ({
-    stopId,
-    stopName,
-    stopCode,
-    locationType: 1,
-    stopLat: -36.97766,
-    stopLon: 174.84925,
-    parentStation: null,
-    platformCode: null,
-    routeType: 2,
-    text: `${stopCode} - ${stopName}`,
-    category: { type: 'stop', icon: 'stop', label: 'Stops' },
-    icon: 'stop',
-    valueKey: 'stopCode',
-    labelKey: 'stopCode',
-    type: 'stop',
-});
 
 describe('CreateIncident component', () => {
     it('Should render a SidePanel component with a LoadingOverlay if isLoading is true', () => {
@@ -618,7 +532,7 @@ describe('CreateIncident component', () => {
             buildIncidentSubmitBody.mockReturnValue(expectedIncident);
             await wrapper.instance().onSubmitUpdate();
             expect(buildIncidentSubmitBody).toHaveBeenCalledWith(expect.objectContaining({ ...expectedIncident }), true);
-            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident);
+            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident, false);
         });
 
         it('Should update incident with data from editableDisruption and expectedWorkarounds', async () => {
@@ -741,18 +655,130 @@ describe('CreateIncident component', () => {
             buildIncidentSubmitBody.mockReturnValue(expectedIncident);
             await wrapper.instance().onSubmitUpdate();
             expect(buildIncidentSubmitBody).toHaveBeenCalledWith(expect.objectContaining({ ...expectedIncident }), true);
-            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident);
+            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident, false);
         });
 
         it('Should call drawAffectedEntity when disruptions length was changed', () => {
-            const newDisruption = createMockDisruption({
-                affectedEntities: [
-                    createMockStopEntity('100-56c57897', '100', 'Papatoetoe Train Station'),
-                    createMockStopEntity('101-9ef61446', '101', 'Otahuhu Train Station'),
-                    createMockStopEntity('102-a4eddeea', '102', 'Penrose Train Station'),
-                    createMockStopEntity('103-be3d2b7e', '103', 'Glen Innes Train Station'),
+            const newDisruption = {
+                disruptionId: 139537,
+                incidentNo: 'DISR139537',
+                mode: 'Bus',
+                affectedEntities: [{
+                    stopId: '100-56c57897',
+                    stopName: 'Papatoetoe Train Station',
+                    stopCode: '100',
+                    locationType: 1,
+                    stopLat: -36.97766,
+                    stopLon: 174.84925,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '100 - Papatoetoe Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+                {
+                    stopId: '101-9ef61446',
+                    stopName: 'Otahuhu Train Station',
+                    stopCode: '101',
+                    locationType: 1,
+                    stopLat: -36.94669,
+                    stopLon: 174.83321,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '101 - Otahuhu Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+                {
+                    stopId: '102-a4eddeea',
+                    stopName: 'Penrose Train Station',
+                    stopCode: '102',
+                    locationType: 1,
+                    stopLat: -36.91009,
+                    stopLon: 174.8157,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '102 - Penrose Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+                {
+                    stopId: '103-be3d2b7e',
+                    stopName: 'Glen Innes Train Station',
+                    stopCode: '103',
+                    locationType: 1,
+                    stopLat: -36.8788,
+                    stopLon: 174.85412,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '103 - Glen Innes Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                }],
+                impact: 'ESCALATOR_NOT_WORKING',
+                cause: 'CONGESTION',
+                startTime: '2025-08-21T20:27:00.000Z',
+                endTime: null,
+                status: 'in-progress',
+                lastUpdatedTime: '2025-08-21T20:27:33.201Z',
+                lastUpdatedBy: 'aqwe@propellerhead.co.nz',
+                description: null,
+                createdBy: 'aqwe@propellerhead.co.nz',
+                createdTime: '2025-08-21T20:27:33.201Z',
+                header: 'test incident n0827',
+                feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
+                uploadedFiles: null,
+                createNotification: false,
+                exemptAffectedTrips: null,
+                version: 1,
+                duration: '',
+                activePeriods: [
+                    {
+                        startTime: 1755808020,
+                    },
                 ],
-            });
+                recurrencePattern: null,
+                recurrent: false,
+                workarounds: [],
+                notes: [],
+                severity: 'HEADLINE',
+                passengerCount: null,
+                incidentId: 139273,
+                incidentTitle: 'test incident n0827',
+                incidentDisruptionNo: 'CCD139273',
+            };
 
             wrapper = shallow(
                 <CreateIncident
@@ -780,14 +806,127 @@ describe('CreateIncident component', () => {
         });
 
         it('Should call updateIncident on add new effect with additional disruption', async () => {
-            const newDisruption = createMockDisruption({
-                affectedEntities: [
-                    createMockStopEntity('100-56c57897', '100', 'Papatoetoe Train Station'),
-                    createMockStopEntity('101-9ef61446', '101', 'Otahuhu Train Station'),
-                    createMockStopEntity('102-a4eddeea', '102', 'Penrose Train Station'),
-                    createMockStopEntity('103-be3d2b7e', '103', 'Glen Innes Train Station'),
+            const newDisruption = {
+                disruptionId: 139537,
+                incidentNo: 'DISR139537',
+                mode: 'Bus',
+                affectedEntities: [{
+                    stopId: '100-56c57897',
+                    stopName: 'Papatoetoe Train Station',
+                    stopCode: '100',
+                    locationType: 1,
+                    stopLat: -36.97766,
+                    stopLon: 174.84925,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '100 - Papatoetoe Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+                {
+                    stopId: '101-9ef61446',
+                    stopName: 'Otahuhu Train Station',
+                    stopCode: '101',
+                    locationType: 1,
+                    stopLat: -36.94669,
+                    stopLon: 174.83321,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '101 - Otahuhu Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+                {
+                    stopId: '102-a4eddeea',
+                    stopName: 'Penrose Train Station',
+                    stopCode: '102',
+                    locationType: 1,
+                    stopLat: -36.91009,
+                    stopLon: 174.8157,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '102 - Penrose Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                },
+                {
+                    stopId: '103-be3d2b7e',
+                    stopName: 'Glen Innes Train Station',
+                    stopCode: '103',
+                    locationType: 1,
+                    stopLat: -36.8788,
+                    stopLon: 174.85412,
+                    parentStation: null,
+                    platformCode: null,
+                    routeType: 2,
+                    text: '103 - Glen Innes Train Station',
+                    category: {
+                        type: 'stop',
+                        icon: 'stop',
+                        label: 'Stops',
+                    },
+                    icon: 'stop',
+                    valueKey: 'stopCode',
+                    labelKey: 'stopCode',
+                    type: 'stop',
+                }],
+                impact: 'ESCALATOR_NOT_WORKING',
+                cause: 'CONGESTION',
+                startTime: '2025-08-21T20:27:00.000Z',
+                endTime: null,
+                status: 'in-progress',
+                lastUpdatedTime: '2025-08-21T20:27:33.201Z',
+                lastUpdatedBy: 'aqwe@propellerhead.co.nz',
+                description: null,
+                createdBy: 'aqwe@propellerhead.co.nz',
+                createdTime: '2025-08-21T20:27:33.201Z',
+                header: 'test incident n0827',
+                feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
+                uploadedFiles: null,
+                createNotification: false,
+                exemptAffectedTrips: null,
+                version: 1,
+                duration: '',
+                activePeriods: [
+                    {
+                        startTime: 1755808020,
+                    },
                 ],
-            });
+                recurrencePattern: null,
+                recurrent: false,
+                workarounds: [],
+                notes: [],
+                severity: 'HEADLINE',
+                passengerCount: null,
+                incidentId: 139273,
+                incidentTitle: 'test incident n0827',
+                incidentDisruptionNo: 'CCD139273',
+                key: 'DISR139537',
+            };
 
             wrapper = shallow(
                 <CreateIncident
@@ -848,6 +987,9 @@ describe('CreateIncident component', () => {
                 />,
             );
             await wrapper.instance().addNewEffectToIncident();
+            expect(mockSetDisruptionForWorkaroundEdit).toHaveBeenCalledWith({});
+            expect(mockToggleWorkaroundPanel).toHaveBeenCalledWith(false);
+            expect(mockUpdateDisruptionKeyToWorkaroundEdit).toHaveBeenCalledWith('');
             expect(mockUpdateAffectedStopsState).toHaveBeenCalledWith([]);
             expect(mockUpdateAffectedRoutesState).toHaveBeenCalledWith([]);
             expect(mockUpdateEditMode).toHaveBeenCalledWith(EDIT_TYPE.ADD_EFFECT);
@@ -855,7 +997,39 @@ describe('CreateIncident component', () => {
         });
 
         it('Should update newIncidentEffect value on updateNewIncidentEffect call', async () => {
-            const newDisruption = createMockDisruption();
+            const newDisruption = {
+                disruptionId: 139537,
+                incidentNo: 'DISR139537',
+                mode: 'Bus',
+                affectedEntities: [],
+                impact: 'ESCALATOR_NOT_WORKING',
+                cause: 'CONGESTION',
+                startTime: '2025-08-21T20:27:00.000Z',
+                endTime: null,
+                status: 'in-progress',
+                lastUpdatedTime: '2025-08-21T20:27:33.201Z',
+                lastUpdatedBy: 'aqwe@propellerhead.co.nz',
+                description: null,
+                createdBy: 'aqwe@propellerhead.co.nz',
+                createdTime: '2025-08-21T20:27:33.201Z',
+                header: 'test incident n0827',
+                feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
+                uploadedFiles: null,
+                createNotification: false,
+                exemptAffectedTrips: null,
+                version: 1,
+                duration: '',
+                recurrencePattern: null,
+                recurrent: false,
+                workarounds: [],
+                notes: [],
+                severity: 'HEADLINE',
+                passengerCount: null,
+                incidentId: 139273,
+                incidentTitle: 'test incident n0827',
+                incidentDisruptionNo: 'CCD139273',
+                key: 'DISR139537',
+            };
             wrapper = shallow(
                 <CreateIncident
                     updateCurrentStep={ mockUpdateCurrentStep }
@@ -877,8 +1051,40 @@ describe('CreateIncident component', () => {
             expect(wrapper.state('newIncidentEffect')).toEqual(newDisruption);
         });
 
-        it('Should clear newIncidentEffect on clearNewEffectToIncident call', async () => {
-            const newIncidentEffect = createMockDisruption();
+        it('Should update newIncidentEffect value on updateNewIncidentEffect call', async () => {
+            const newIncidentEffect = {
+                disruptionId: 139537,
+                incidentNo: 'DISR139537',
+                mode: 'Bus',
+                affectedEntities: [],
+                impact: 'ESCALATOR_NOT_WORKING',
+                cause: 'CONGESTION',
+                startTime: '2025-08-21T20:27:00.000Z',
+                endTime: null,
+                status: 'in-progress',
+                lastUpdatedTime: '2025-08-21T20:27:33.201Z',
+                lastUpdatedBy: 'aqwe@propellerhead.co.nz',
+                description: null,
+                createdBy: 'aqwe@propellerhead.co.nz',
+                createdTime: '2025-08-21T20:27:33.201Z',
+                header: 'test incident n0827',
+                feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
+                uploadedFiles: null,
+                createNotification: false,
+                exemptAffectedTrips: null,
+                version: 1,
+                duration: '',
+                recurrencePattern: null,
+                recurrent: false,
+                workarounds: [],
+                notes: [],
+                severity: 'HEADLINE',
+                passengerCount: null,
+                incidentId: 139273,
+                incidentTitle: 'test incident n0827',
+                incidentDisruptionNo: 'CCD139273',
+                key: 'DISR139537',
+            };
             wrapper = shallow(
                 <CreateIncident
                     updateCurrentStep={ mockUpdateCurrentStep }
@@ -899,7 +1105,9 @@ describe('CreateIncident component', () => {
 
             wrapper.setState(prevState => ({
                 ...prevState,
-                newIncidentEffect: { ...newIncidentEffect },
+                newIncidentEffect: {
+                    ...newIncidentEffect,
+                },
             }));
             await wrapper.instance().clearNewEffectToIncident();
             expect(wrapper.state('newIncidentEffect')).toEqual({});

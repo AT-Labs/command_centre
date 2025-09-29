@@ -740,8 +740,12 @@ export const clearActiveIncident = () => (dispatch) => {
     dispatch(setActiveIncident(null));
 };
 
-export const updateActiveIncident = activeIncidentId => (dispatch) => {
+export const updateActiveIncident = (activeIncidentId, shouldOpenDetailPanel = true) => (dispatch) => {
     dispatch(setActiveIncident(activeIncidentId));
+    dispatch({
+        type: ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG,
+        payload: { shouldOpenDetailPanel }
+    });
 };
 
 export const setIncidentToUpdate = (incidentId, incidentNo, requireToUpdateForm = false) => (dispatch) => {
@@ -812,7 +816,8 @@ export const setDisruptionForWorkaroundEdit = disruptionForWorkaroundEdit => (di
     });
 };
 
-export const updateIncident = incident => async (dispatch) => {
+export const updateIncident = (incident, isAddEffect = false) => async (dispatch) => {
+    dispatch(updateLoadingIncidentForEditState(true));
     const { incidentId, createNotification } = incident;
     dispatch(updateRequestingIncidentState(true, incidentId));
 
@@ -827,8 +832,17 @@ export const updateIncident = incident => async (dispatch) => {
     } catch (error) {
         dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
     } finally {
+        if (isAddEffect) {
+            dispatch(updateEditMode(EDIT_TYPE.EDIT));
+            dispatch(updateCurrentStep(1));
+            dispatch(setIncidentToUpdate(incidentId, undefined, true));
+        } else {
+            dispatch(deleteAffectedEntities());
+            dispatch(openCreateIncident(false));
+            dispatch(toggleIncidentModals('isApplyChangesOpen', false));
+            dispatch(updateLoadingIncidentForEditState(false));
+        }
         dispatch(updateRequestingIncidentState(false, incidentId));
-        dispatch(deleteAffectedEntities());
         dispatch(toggleWorkaroundPanel(false));
         dispatch(updateDisruptionKeyToWorkaroundEdit(''));
         dispatch(toggleEditEffectPanel(false));

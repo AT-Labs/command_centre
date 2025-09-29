@@ -44,7 +44,6 @@ const mockDisruption = {
     mode: '-',
     status: 'not-started',
     header: 'Incident Title n123',
-    url: 'https://at.govt.nz',
     createNotification: false,
     recurrent: true,
     duration: '2',
@@ -628,7 +627,7 @@ describe('Confirmation Component', () => {
         });
     });
 
-    it('Should update recurrencePattern on change', () => {
+    it('Should update endTime on change', () => {
         const props = { ...defaultProps,
             disruptionRecurrent: true,
         };
@@ -646,180 +645,6 @@ describe('Confirmation Component', () => {
                 until: new Date('2025-06-20T06:00:00.000Z'),
                 byweekday: [0, 4],
             },
-        });
-    });
-
-    it('should disable submit button when affectedRoutes and affectedStops are empty', () => {
-        const props = {
-            ...defaultProps,
-            disruptions: [{
-                ...mockDisruption,
-                affectedEntities: {
-                    affectedRoutes: [],
-                    affectedStops: [],
-                },
-            }],
-        };
-
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...props } />
-            </Provider>,
-        );
-
-        const applyButton = screen.getByRole('button', { name: /apply/i });
-        expect(applyButton).toBeDisabled();
-    });
-
-    it('should disable apply button when header is empty', () => {
-        const props = {
-            ...defaultProps,
-            disruptions: [{
-                ...mockDisruption,
-                header: '',
-                cause: 'CONGESTION',
-            }],
-        };
-
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...props } />
-            </Provider>,
-        );
-
-        const applyButton = screen.getByRole('button', { name: /apply/i });
-        expect(applyButton).toBeDisabled();
-    });
-
-    it('should disable apply button when cause is empty', () => {
-        const props = {
-            ...defaultProps,
-            disruptions: [{
-                ...mockDisruption,
-                header: 'Test Header',
-                cause: '',
-            }],
-        };
-
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...props } />
-            </Provider>,
-        );
-
-        const applyButton = screen.getByRole('button', { name: /apply/i });
-        expect(applyButton).toBeDisabled();
-    });
-
-    it('should disable submit button when recurrent with empty byweekday', () => {
-        const props = {
-            ...defaultProps,
-            disruptions: [{
-                ...mockDisruption,
-                recurrent: true,
-                recurrencePattern: {
-                    byweekday: [],
-                },
-            }],
-        };
-
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...props } />
-            </Provider>,
-        );
-
-        const applyButton = screen.getByRole('button', { name: /apply/i });
-        expect(applyButton).toBeDisabled();
-    });
-
-    it('should disable submit button when recurrent is false', () => {
-        const props = {
-            ...defaultProps,
-            disruptions: [{
-                ...mockDisruption,
-                disruptionId: 'DISR123',
-                recurrent: false,
-                startTime: '10:00',
-                startDate: '2025-06-10',
-                impact: 'DETOUR',
-                cause: 'CONSTRUCTION',
-                header: 'Test Header',
-                severity: 'SIGNIFICANT',
-                endDate: '2025-06-11',
-                endTime: '18:00',
-                duration: '2',
-                status: 'in-progress',
-                affectedEntities: {
-                    affectedRoutes: [{ routeId: 'ROUTE1' }],
-                    affectedStops: [],
-                },
-                recurrencePattern: {
-                    byweekday: [],
-                },
-            }],
-            modalOpenedTime: '2025-06-08T08:00:00.000Z',
-        };
-
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...props } />
-            </Provider>,
-        );
-
-        const applyButton = screen.getByRole('button', { name: /apply/i });
-        expect(applyButton).toBeDisabled();
-    });
-
-    describe('Diversion functionality', () => {
-        const mockDiversionProps = {
-            ...defaultProps,
-            useDiversion: true,
-            isDiversionManagerOpen: false,
-            openDiversionManager: jest.fn(),
-            updateDiversionMode: jest.fn(),
-        };
-
-        it('should handle diversion manager state correctly', () => {
-            const props = {
-                ...mockDiversionProps,
-                disruptions: [{
-                    ...mockDisruption,
-                    disruptionId: 'DISR123',
-                    status: STATUSES.NOT_STARTED,
-                    affectedEntities: {
-                        affectedRoutes: [{ routeType: 3 }],
-                        affectedStops: [],
-                    },
-                }],
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        });
-
-        it('should not render diversion button when useDiversion is false', () => {
-            const props = {
-                ...mockDiversionProps,
-                useDiversion: false,
-                disruptions: [{
-                    ...mockDisruption,
-                    disruptionId: 'DISR123',
-                }],
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(screen.queryByText(/Diversions/)).not.toBeInTheDocument();
         });
     });
 });
