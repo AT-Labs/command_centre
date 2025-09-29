@@ -35,8 +35,8 @@ const DiversionResultModal = props => (
                     </div>
                 </div>
             ) : (
-                <div className="row justify-content-between mt-3">
-                    <div className="col-7">
+                <div className="row justify-content-center mt-3">
+                    <div className="col-10">
                         <Button
                             className="btn btn-block cc-btn-secondary btn-block"
                             aria-label="Go back to disruption page"

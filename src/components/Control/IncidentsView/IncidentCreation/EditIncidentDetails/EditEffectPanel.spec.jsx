@@ -44,7 +44,6 @@ const mockDisruption = {
     mode: '-',
     status: 'not-started',
     header: 'Incident Title n123',
-    url: 'https://at.govt.nz',
     createNotification: false,
     recurrent: true,
     duration: '2',
