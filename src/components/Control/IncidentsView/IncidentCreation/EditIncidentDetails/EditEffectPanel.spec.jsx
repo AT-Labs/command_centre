@@ -628,6 +628,19 @@ describe('Confirmation Component', () => {
         });
     });
 
+    it('Should render EditEffectPanel without errors', () => {
+        const props = { ...defaultProps,
+            disruptions: [{ ...mockDisruption, recurrent: false, endTime: '' }],
+        };
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...props } />
+            </Provider>,
+        );
+
+        expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+    });
+
     it('Should update recurrencePattern on change', () => {
         const props = { ...defaultProps,
             disruptionRecurrent: true,

@@ -129,9 +129,13 @@ describe('Diversions Reducer', () => {
             };
 
             const result = diversionsReducer(initialState, action);
+            // eslint-disable-next-line no-unused-expressions
             expect(result.diversionsData[disruptionId]).to.be.undefined;
+            // eslint-disable-next-line no-unused-expressions
             expect(result.diversionsData[456]).to.deep.equal([{ id: '2' }]);
+            // eslint-disable-next-line no-unused-expressions
             expect(result.diversionsLoading[disruptionId]).to.be.undefined;
+            // eslint-disable-next-line no-unused-expressions
             expect(result.diversionsError[disruptionId]).to.be.undefined;
         });
 

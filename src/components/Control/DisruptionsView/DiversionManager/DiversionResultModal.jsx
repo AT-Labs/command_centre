@@ -27,7 +27,7 @@ const DiversionResultModal = props => (
                 <div className="row justify-content-center mt-3">
                     <div className="col-5">
                         <Button
-                            className="btn btn-block cc-btn-secondary"
+                            className="btn btn-block cc-btn-secondary btn-block"
                             aria-label="Return"
                             onClick={ () => props.onAction(ACTION_TYPE.RETURN_TO_DIVERSION) }>
                             Return
@@ -38,7 +38,7 @@ const DiversionResultModal = props => (
                 <div className="row justify-content-between mt-3">
                     <div className="col-7">
                         <Button
-                            className="btn btn-block cc-btn-secondary"
+                            className="btn btn-block cc-btn-secondary btn-block"
                             aria-label="Go back to disruption page"
                             onClick={ () => props.onAction(ACTION_TYPE.RETURN_TO_DISRUPTION) }>
                             Go back to disruption page
@@ -47,7 +47,7 @@ const DiversionResultModal = props => (
                     <div className="col-5">
                         { props.showNewDiversionButton && (
                             <Button
-                                className="btn btn-block cc-btn-primary"
+                                className="btn btn-block cc-btn-primary btn-block"
                                 aria-label="Add new diversion"
                                 onClick={ () => props.onAction(ACTION_TYPE.NEW_DIVERSION) }>
                                 Add new diversion

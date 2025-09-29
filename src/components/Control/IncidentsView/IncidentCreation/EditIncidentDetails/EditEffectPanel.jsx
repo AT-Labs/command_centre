@@ -37,7 +37,7 @@ import {
     HEADER_MAX_LENGTH,
     LABEL_STATUS,
     LABEL_DISRUPTION_NOTES,
-    DESCRIPTION_NOTE_MAX_LENGTH} from '../../../../../constants/disruptions';
+    DESCRIPTION_NOTE_MAX_LENGTH } from '../../../../../constants/disruptions';
 import {
     isEndDateValid,
     isEndTimeValid,
@@ -149,19 +149,14 @@ export const EditEffectPanel = (props) => {
     const [isLoaderProtected, setIsLoaderProtected] = useState(false);
     const isMounted = useRef(true);
 
-
     const initDisruptionData = () => {
         const disruptionToSet = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
-        if (disruptionToSet) {
-            setDisruption(disruptionToSet);
-            props.updateEditableDisruption(disruptionToSet);
-            setOriginalDisruption(disruptionToSet);
-            props.setDisruptionForWorkaroundEdit(disruptionToSet);
-            props.updateIsNotesRequiresToUpdateState();
-            setTimeout(() => setRequireMapUpdate(true), 0);
-        } else {
-            setDisruption({ ...INIT_EFFECT_STATE });
-        }
+        setDisruption(disruptionToSet);
+        props.updateEditableDisruption(disruptionToSet);
+        setOriginalDisruption(disruptionToSet);
+        props.setDisruptionForWorkaroundEdit(disruptionToSet);
+        props.updateIsNotesRequiresToUpdateState();
+        setTimeout(() => setRequireMapUpdate(true), 0);
     };
 
     useEffect(() => {
@@ -186,11 +181,8 @@ export const EditEffectPanel = (props) => {
     );
 
     const impactValid = () => !isEmpty(disruption.impact);
-
     const severityValid = () => !isEmpty(disruption.severity);
-
     const durationValid = () => isDurationValid(disruption.duration, disruptionRecurrent);
-
     const endTimeValid = () => isEndTimeValid(
         disruption.endDate,
         disruption.endTime,
@@ -259,7 +251,7 @@ export const EditEffectPanel = (props) => {
                     setIsEndDateDirty(true);
                 }
             } else {
-                updateDisruption({ endDate: moment(date[0]).format(DATE_FORMAT) });
+                updateDisruption({ endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '' });
                 setIsEndDateDirty(false);
             }
         } else {
@@ -635,7 +627,7 @@ export const EditEffectPanel = (props) => {
         }
     }, [disruption.startDate, disruption.startTime, disruption.endDate]);
 
-    const isApplyDisabled = disruption?.status === STATUSES.DRAFT ? isDraftSubmitDisabled : isSubmitDisabled;
+    const isApplyDisabled = disruption.status === STATUSES.DRAFT ? isDraftSubmitDisabled : isSubmitDisabled;
 
     const diversionsCount = localDiversions.length;
     const isAddDiversionEnabled = () => {
@@ -644,10 +636,20 @@ export const EditEffectPanel = (props) => {
         if (disruption.status === STATUSES.RESOLVED) {
             return false;
         }
-        const hasBusRoutes = disruption.affectedEntities?.affectedRoutes?.some(route => route.routeType === 3);
-        if (!hasBusRoutes) {
+
+        const routes = disruption.affectedEntities?.affectedRoutes || [];
+
+        if (routes.length === 0) {
             return false;
         }
+
+        const hasBusRoutes = routes.some(route => route.routeType === 3);
+        const hasOnlyTrainRoutes = routes.every(route => route.routeType === 2);
+
+        if (!hasBusRoutes || hasOnlyTrainRoutes) {
+            return false;
+        }
+
         const validStatuses = [STATUSES.NOT_STARTED, STATUSES.IN_PROGRESS, STATUSES.DRAFT];
         return validStatuses.includes(disruption.status);
     };
@@ -1294,7 +1296,6 @@ EditEffectPanel.propTypes = {
     isDiversionManagerOpen: PropTypes.bool,
     isDiversionManagerLoading: PropTypes.bool,
     editMode: PropTypes.string,
-    useParentChildIncident: PropTypes.bool,
     updateEffectValidationForPublishState: PropTypes.func.isRequired,
 };
 
@@ -1309,7 +1310,6 @@ EditEffectPanel.defaultProps = {
     isDiversionManagerOpen: false,
     isDiversionManagerLoading: false,
     editMode: '',
-    useParentChildIncident: false,
 };
 
 export default connect(state => ({

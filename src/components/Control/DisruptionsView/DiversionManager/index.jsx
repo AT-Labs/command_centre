@@ -66,7 +66,6 @@ const DiversionManager = (props) => {
     // We only support adding diversion to bus route at the moment.
     const isBusRoute = route => route.routeType === BUS_TYPE_ID;
     const [routeIds, setRouteIds] = useState([]);
-    
     // Recalculate routeIds when disruption changes
     useEffect(() => {
         const entities = getAffectedEntities(props.disruption);
@@ -252,6 +251,9 @@ const DiversionManager = (props) => {
         setAffectedStops([]);
         setDiversionShapeWkt(null);
         setModifiedBaseRouteVariant(null);
+        setSelectedOtherRouteVariants([]);
+        setBaseRouteVariantOnly(true);
+        fetchVariants();
     };
 
     // Buttons
@@ -293,6 +295,8 @@ const DiversionManager = (props) => {
     const handleResultAction = (action) => {
         props.resetDiversionResult();
         if (action === ACTION_TYPE.NEW_DIVERSION) {
+            reset();
+        } else if (action === ACTION_TYPE.RETURN_TO_DIVERSION) {
             reset();
         } else if (action === ACTION_TYPE.RETURN_TO_DISRUPTION) {
             if (props.onCancelled) {
