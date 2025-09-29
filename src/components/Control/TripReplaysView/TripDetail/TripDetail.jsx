@@ -26,7 +26,6 @@ import Icon from '../../../Common/Icon/Icon';
 import './TripDetail.scss';
 import { TripDetailIcon } from '../TripDetailIcon';
 import { useParentChildIncident } from '../../../../redux/selectors/appSettings';
-import { updateIncidentFilters as updateParentIncidentFilters } from '../../../../redux/actions/control/incidents';
 
 const renderDate = date => (date && moment(date).format('dddd, DD MMMM YYYY'));
 
@@ -50,7 +49,7 @@ const renderStartAndEndTime = (startTime, endTime) => {
 };
 
 function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, vehiclePositions, operationalEvents,
-    navigate, updateView, updateFilters, updateIncidentFilters, searchRoutes, searchResults, navigateToVehicleReplayTab }) {
+    navigate, updateView, updateFilters, searchRoutes, searchResults, navigateToVehicleReplayTab }) {
     const { routeShortName, tripHeadsign, tripSignOn, tripStart } = summary;
     const endTime = !isEmpty(stops)
         ? parseInt(get(stops[stops.length - 1], 'arrival.time', get(maxBy(vehiclePositions, 'timestamp'), 'timestamp')), 10)
@@ -106,12 +105,7 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
             selectedImpact: null,
         };
 
-        if (useParentChildIncident) {
-            updateIncidentFilters(filters);
-        } else {
-            updateFilters(filters);
-        }
-
+        updateFilters(filters);
         updateView(VIEW_TYPE.MAIN.CONTROL);
         navigate(useParentChildIncident ? VIEW_TYPE.CONTROL_DETAIL.INCIDENTS : VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS);
     }, [searchResults]);
@@ -192,7 +186,6 @@ TripDetail.propTypes = {
     updateView: PropTypes.func.isRequired,
     navigate: PropTypes.func.isRequired,
     updateFilters: PropTypes.func.isRequired,
-    updateIncidentFilters: PropTypes.func.isRequired,
     searchRoutes: PropTypes.func.isRequired,
     searchResults: PropTypes.object.isRequired,
     navigateToVehicleReplayTab: PropTypes.func.isRequired,
@@ -215,7 +208,6 @@ export default connect(state => ({
     useParentChildIncident: useParentChildIncident(state),
 }), {
     updateFilters: updateDisruptionFilters,
-    updateIncidentFilters: updateParentIncidentFilters,
     updateView: updateMainView,
     navigate: updateControlDetailView,
     searchRoutes: search,
