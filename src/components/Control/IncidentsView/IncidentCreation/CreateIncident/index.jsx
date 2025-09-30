@@ -55,6 +55,7 @@ import {
     toCamelCaseKeys,
     generateDisruptionActivePeriods,
     buildIncidentSubmitBody,
+    getStatusForEffect,
 } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
@@ -430,7 +431,7 @@ export class CreateIncident extends React.Component {
                 ...updatedDisruption,
                 {
                     ...newIncidentEffect,
-                    ...(incidentData.status === STATUSES.DRAFT ? { status: STATUSES.DRAFT } : { status: STATUSES.NOT_STARTED }),
+                    ...(incidentData.status === STATUSES.DRAFT ? { status: STATUSES.DRAFT } : getStatusForEffect(newIncidentEffect)),
                 }];
         }
 

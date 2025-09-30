@@ -185,6 +185,16 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
     };
 };
 
+export const getStatusForEffect = (disruption) => {
+    const now = moment();
+    const startTimeMoment = momentFromDateTime(disruption.startDate, disruption.startTime);
+
+    if (startTimeMoment < now) {
+        return { status: STATUSES.IN_PROGRESS };
+    }
+    return { status: STATUSES.NOT_STARTED };
+};
+
 const transformKeysToCamelCase = obj => transform(obj, (acc, value, key, target) => {
     const camelKey = isArray(target) ? key : camelCase(key);
     acc[camelKey] = isObject(value) ? transformKeysToCamelCase(value) : value;

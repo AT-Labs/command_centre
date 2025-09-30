@@ -19,6 +19,7 @@ import {
     buildIncidentSubmitBody,
     buildDisruptionsQuery,
     transformParentSourceIdNo,
+    getStatusForEffect,
 } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 import { STATUSES } from '../../types/disruptions-types';
@@ -1073,5 +1074,35 @@ describe('getMode', () => {
             ],
         };
         expect(buildIncidentSubmitBody(incident, false).mode).toEqual('');
+    });
+});
+
+describe('getStatusForEffect', () => {
+    const fakeTimeNow = new Date(2025, 5, 20, 12, 0, 0);
+    beforeEach(() => {
+        MockDate.set(fakeTimeNow);
+    });
+
+    afterEach(() => {
+        MockDate.reset();
+    });
+    it('Should return not started status if startTime has not passed yet', () => {
+        const expectedResult = { status: STATUSES.NOT_STARTED };
+        const disruption = {
+            ...mockDisruption1,
+            startDate: '20/06/2025',
+            startTime: '13:00',
+        };
+        expect(getStatusForEffect(disruption)).toEqual(expectedResult);
+    });
+
+    it('Should return in progress status if startTime has passed yet', () => {
+        const expectedResult = { status: STATUSES.IN_PROGRESS };
+        const disruption = {
+            ...mockDisruption1,
+            startDate: '20/06/2025',
+            startTime: '11:00',
+        };
+        expect(getStatusForEffect(disruption)).toEqual(expectedResult);
     });
 });

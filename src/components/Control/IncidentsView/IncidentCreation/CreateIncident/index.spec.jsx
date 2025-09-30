@@ -4,7 +4,7 @@ import { RRule } from 'rrule';
 import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import { updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
-import { buildIncidentSubmitBody, momentFromDateTime } from '../../../../../utils/control/disruptions';
+import { buildIncidentSubmitBody, momentFromDateTime, getStatusForEffect } from '../../../../../utils/control/disruptions';
 import { STATUSES, DISRUPTION_TYPE, getParentChildDefaultSeverity } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
@@ -34,6 +34,7 @@ jest.mock('../../../../../utils/control/disruptions', () => ({
     generateDisruptionActivePeriods: jest.fn().mockReturnValue(disruptionActivePeriodsMock),
     buildIncidentSubmitBody: jest.fn(),
     momentFromDateTime: jest.fn(),
+    getStatusForEffect: jest.fn(),
 }));
 
 const defaultIncidentData = {
@@ -806,6 +807,7 @@ describe('CreateIncident component', () => {
         });
 
         it('Should call updateIncident on add new effect with additional disruption', async () => {
+            getStatusForEffect.mockReturnValue({ status: STATUSES.IN_PROGRESS });
             const newDisruption = {
                 disruptionId: 139537,
                 incidentNo: 'DISR139537',
