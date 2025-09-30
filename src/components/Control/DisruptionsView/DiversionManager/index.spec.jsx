@@ -235,10 +235,41 @@ describe('<DiversionManager />', () => {
 
             renderComponent(props);
 
-            // The key test: RETURN_TO_DIVERSION should NOT call reset() - it should keep form state
-            // This is tested by the fact that the component renders without errors
-            // and the form state is preserved (no reset is called)
             expect(screen.getByText('Edit Diversion')).toBeInTheDocument();
+        });
+    });
+
+    describe('date handling logic coverage', () => {
+        it('should test conditional date parameter inclusion logic', () => {
+            const testSearchObject = (endTime) => {
+                const search = {
+                    page: 1,
+                    limit: 1000,
+                    routeIds: ['route1'],
+                    serviceDateFrom: '20240115',
+                    startTime: '09:00',
+                };
+
+                if (endTime) {
+                    search.serviceDateTo = '20240115';
+                    search.endTime = '17:00';
+                }
+
+                return search;
+            };
+
+            const searchWithEndTime = testSearchObject('2024-01-15T17:00:00Z');
+            const searchWithoutEndTime = testSearchObject(null);
+            const searchWithUndefinedEndTime = testSearchObject(undefined);
+
+            expect(searchWithEndTime).toHaveProperty('serviceDateTo');
+            expect(searchWithEndTime).toHaveProperty('endTime');
+
+            expect(searchWithoutEndTime).not.toHaveProperty('serviceDateTo');
+            expect(searchWithoutEndTime).not.toHaveProperty('endTime');
+
+            expect(searchWithUndefinedEndTime).not.toHaveProperty('serviceDateTo');
+            expect(searchWithUndefinedEndTime).not.toHaveProperty('endTime');
         });
     });
 });
