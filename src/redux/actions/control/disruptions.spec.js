@@ -734,36 +734,57 @@ describe('Disruptions actions', () => {
         expect(result).to.eql(undefined);
     });
 
-    it('should dispatch PUBLISH_DRAFT_ERROR if disruption has diversions but no endTime', async () => {
-        const dispatch = sinon.spy();
-        const disruption = {
-            disruptionId: '123',
-            endTime: null,
-        };
-        const diversions = [{ id: 'div1' }];
+    [
+        {
+            title: 'should dispatch error if disruption has diversions but no endTime',
+            disruption: { disruptionId: '123', endTime: null },
+            diversions: [{ id: 'div1' }],
+            expectedMessage: 'Disruption with diversion(s) require and End Date and Time to be published',
+        },
+        {
+            title: 'should dispatch error if disruption has diversions and endTime is undefined',
+            disruption: { disruptionId: '456' },
+            diversions: [{ id: 'div2' }],
+            expectedMessage: 'Disruption with diversion(s) require and End Date and Time to be published',
+        },
+        {
+            title: 'should not dispatch error if disruption has diversions and valid endTime',
+            disruption: { disruptionId: '789', endTime: '2025-10-01T12:00:00Z' },
+            diversions: [{ id: 'div3' }],
+            expectedMessage: null,
+        },
+    ].forEach(({ title, disruption, diversions, expectedMessage }) => {
+        it(title, async () => {
+            const dispatch = sinon.spy();
+            await publishDraftDisruption(disruption, diversions)(dispatch);
 
-        await publishDraftDisruption(disruption, diversions)(dispatch);
+            expect(dispatch).to.have.been.calledWithMatch({
+                type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_REQUESTING,
+            });
 
-        // Check that dispatch was called with requesting action
-        expect(dispatch).to.have.been.calledWithMatch({
-            type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_REQUESTING,
-        });
+            if (expectedMessage) {
+                expect(dispatch).to.have.been.calledWithMatch({
+                    type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
+                    payload: {
+                        resultMessage: sinon.match(expectedMessage),
+                    },
+                });
+            } else {
+                // Should not dispatch error result action
+                expect(dispatch).not.to.have.been.calledWithMatch({
+                    type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
+                    payload: {
+                        resultMessage: sinon.match('Disruption with diversion(s) require and End Date and Time to be published'),
+                    },
+                });
+            }
 
-        // Check that dispatch was called with the error result action
-        // This is where PUBLISH_DRAFT_ERROR is used and will create a Disruption Action Result with an error message
-        expect(dispatch).to.have.been.calledWithMatch({
-            type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
-            payload: {
-                resultMessage: sinon.match('Disruption with diversion(s) require and End Date and Time to be published'),
-            },
-        });
-
-        // Should also dispatch requesting state false at the end
-        expect(dispatch).to.have.been.calledWithMatch({
-            type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_REQUESTING,
-            payload: {
-                isRequesting: false,
-            },
+            expect(dispatch).to.have.been.calledWithMatch({
+                type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_REQUESTING,
+                payload: {
+                    isRequesting: false,
+                },
+            });
         });
     });
 
