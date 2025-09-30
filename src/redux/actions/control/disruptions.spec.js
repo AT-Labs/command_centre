@@ -18,7 +18,6 @@ import ACTION_TYPE from '../../action-types';
 import SEARCH_RESULT_TYPE from '../../../types/search-result-types';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
 import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
-import { ACTION_RESULT } from '../../../types/disruptions-types';
 
 chai.use(sinonChai);
 
@@ -732,91 +731,5 @@ describe('Disruptions actions', () => {
         });
 
         expect(result).to.eql(undefined);
-    });
-
-    it('should dispatch PUBLISH_DRAFT_ERROR if disruption has diversions but no endTime', async () => {
-        const dispatch = sinon.spy();
-        const disruption = {
-            disruptionId: '123',
-            endTime: null,
-        };
-        const diversions = [{ id: 'div1' }];
-
-        await publishDraftDisruption(disruption, diversions)(dispatch);
-
-        // Check that dispatch was called with requesting action
-        expect(dispatch).to.have.been.calledWithMatch({
-            type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_REQUESTING,
-        });
-
-        // Check that dispatch was called with the error result action
-        // This is where PUBLISH_DRAFT_ERROR is used and will create a Disruption Action Result with an error message
-        expect(dispatch).to.have.been.calledWithMatch({
-            type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
-            payload: {
-                resultMessage: sinon.match('Disruption with diversion(s) require and End Date and Time to be published'),
-            },
-        });
-
-        // Should also dispatch requesting state false at the end
-        expect(dispatch).to.have.been.calledWithMatch({
-            type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_REQUESTING,
-            payload: {
-                isRequesting: false,
-            },
-        });
-    });
-
-    it('should dispatch PUBLISH_DRAFT_ERROR with error code and message when updateDisruption throws', async () => {
-        const disruption = {
-            disruptionId: 'error-test',
-            endTime: '2025-09-24T12:00:00Z',
-        };
-        const diversions = [];
-
-        // Mock updateDisruption to throw error with code and message
-        const errorObj = { code: 'ERR_XYZ', message: 'Unit test error message' };
-        disruptionsMgtApi.updateDisruption.mockRejectedValue(errorObj);
-        disruptionsMgtApi.getDisruptions.mockResolvedValue({
-            disruptions: [disruption],
-            _links: { permissions: [] },
-        });
-
-        await store.dispatch(publishDraftDisruption(disruption, diversions));
-
-        // Find the error action in the dispatched actions
-        const errorAction = store.getActions().find(
-            a => a.type === ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
-        );
-
-        expect(errorAction).to.deep.include({
-            type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
-            payload: {
-                resultDisruptionId: 'error-test',
-                resultStatus: 'danger',
-                resultMessage: 'Unit test error message',
-                resultCreateNotification: undefined,
-                resultDisruptionVersion: undefined,
-            },
-        });
-    });
-});
-
-describe('PUBLISH_DRAFT_ERROR action', () => {
-    it('should handle empty code/message with default message', () => {
-        const errorAction = ACTION_RESULT.PUBLISH_DRAFT_ERROR();
-
-        expect(errorAction).to.deep.equal({
-            resultMessage: 'Failed to publish draft disruption',
-            resultStatus: 'danger',
-        });
-    });
-    it('should handle use message supplied if one exist', () => {
-        const errorAction = ACTION_RESULT.PUBLISH_DRAFT_ERROR(null, 'Blah');
-
-        expect(errorAction).to.deep.equal({
-            resultMessage: 'Blah',
-            resultStatus: 'danger',
-        });
     });
 });

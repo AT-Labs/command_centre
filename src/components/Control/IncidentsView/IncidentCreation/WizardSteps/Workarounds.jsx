@@ -22,8 +22,6 @@ export const Workarounds = (props) => {
     const [filteredDisruptions, setFilteredDisruptions] = useState(disruptions || []);
     const onContinue = () => {
         if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
-            props.onStepUpdate(3);
-            props.updateCurrentStep(1);
             props.onSubmit();
         } else {
             props.onSubmitUpdate();
@@ -32,7 +30,6 @@ export const Workarounds = (props) => {
 
     const onSaveDraft = () => {
         if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
-            props.onStepUpdate(3);
             props.onSubmitDraft();
         } else {
             props.onSubmitUpdate();

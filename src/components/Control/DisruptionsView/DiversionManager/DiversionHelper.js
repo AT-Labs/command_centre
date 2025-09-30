@@ -1,5 +1,3 @@
-import moment from 'moment-timezone';
-import dateTypes from '../../../../types/date-types';
 import { parseWKT, projectPointOnSegment, findProjectionOnPolyline, calculateDistance, mergeCoordinates, toWKT } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
 
 export const AffectedStopDistanceThreshold = 20;
@@ -227,28 +225,4 @@ export function removeDuplicatePoints(wkt, n = 3) {
         .map(coord => `${coord.lon} ${coord.lat}`)
         .join(',');
     return `LINESTRING(${newCoordsString})`;
-}
-
-export function createRouteVariantDateFilters(disruption) {
-    const SERVICE_DATE_FORMAT = 'YYYYMMDD';
-    const TIME_FORMAT_HHMM = 'HH:mm';
-    const start = moment(disruption.startTime).tz(dateTypes.TIME_ZONE);
-    const startDate = start.format(SERVICE_DATE_FORMAT);
-    const startTime = start.format(TIME_FORMAT_HHMM);
-
-    let end = null;
-    let endDate = null;
-    let endTime = null;
-    if (disruption.endTime) {
-        end = moment(disruption.endTime).tz(dateTypes.TIME_ZONE);
-        endDate = end.format(SERVICE_DATE_FORMAT);
-        endTime = end.format(TIME_FORMAT_HHMM);
-    }
-
-    return {
-        ...(startDate !== null && { serviceDateFrom: startDate }),
-        ...(startTime !== null && { startTime }),
-        ...(endDate !== null && { serviceDateTo: endDate }),
-        ...(endTime !== null && { endTime }),
-    };
 }

@@ -14,7 +14,7 @@ import {
     getIncidentToEdit,
     getEditMode,
 } from '../../../../../redux/selectors/control/incidents';
-import { DISRUPTION_TYPE, STATUSES, SEVERITIES, DEFAULT_SEVERITY } from '../../../../../types/disruptions-types';
+import { DISRUPTION_TYPE, STATUSES, getParentChildSeverityOptions, getParentChildDefaultSeverity } from '../../../../../types/disruptions-types';
 import {
     updateCurrentStep,
     getStopsByRoute,
@@ -79,7 +79,7 @@ const INIT_EFFECT_STATE = {
     },
     createNotification: false,
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: DEFAULT_SEVERITY.value,
+    severity: getParentChildDefaultSeverity().value,
     isSeverityDirty: false,
     recurrent: false,
     duration: '',
@@ -96,6 +96,7 @@ export const SelectEffects = (props) => {
         startDate: incidentStartDate,
         endTime: incidentEndTime,
         endDate: incidentEndDate,
+        duration: incidentDuration,
         severity: incidentSeverity,
         cause: incidentCause,
         header: incidentHeader,
@@ -116,7 +117,8 @@ export const SelectEffects = (props) => {
             startDate: incidentStartDate || now.format(DATE_FORMAT),
             endTime: incidentEndTime || '',
             endDate: incidentEndDate || '',
-            severity: incidentSeverity || DEFAULT_SEVERITY.value,
+            duration: incidentDuration || '',
+            severity: incidentSeverity || getParentChildDefaultSeverity().value,
             cause: incidentCause || DEFAULT_CAUSE.value,
             header: incidentHeader || '',
             key: uniqueId('DISR'),
@@ -302,8 +304,19 @@ export const SelectEffects = (props) => {
         updateDisruptionsState();
         setTimeout(() => {
             if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
-                props.onStepUpdate(3);
                 props.onSubmitDraft();
+            } else {
+                props.onSubmitUpdate();
+            }
+        }, 0); // to run it on next event loop
+    };
+
+    const onFinish = () => {
+        removeNotFoundFromStopGroups();
+        updateDisruptionsState();
+        setTimeout(() => {
+            if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
+                props.onSubmit();
             } else {
                 props.onSubmitUpdate();
             }
@@ -345,6 +358,7 @@ export const SelectEffects = (props) => {
                     ...recurrenceDates,
                 },
             }),
+            ...(updatedFields.endDate?.length && isEmpty(d.endTime) && !updatedFields.endTime && { endTime: '23:59' }),
         } : d)));
     };
 
@@ -470,7 +484,7 @@ export const SelectEffects = (props) => {
                                 id="disruption-creation__wizard-select-details__severity"
                                 className=""
                                 value={ disruption.severity }
-                                options={ SEVERITIES }
+                                options={ getParentChildSeverityOptions() }
                                 label={ LABEL_SEVERITY }
                                 invalid={ disruption.isSeverityDirty && !severityValid(disruption.key) }
                                 feedback="Please select severity"
@@ -662,6 +676,9 @@ export const SelectEffects = (props) => {
                 isDraftOrCreateMode={ props.data?.status === STATUSES.DRAFT || props.editMode !== EDIT_TYPE.ADD_EFFECT }
                 onSubmitDraft={ () => onSaveDraft() }
                 onBack={ props.editMode !== EDIT_TYPE.ADD_EFFECT ? onBack : undefined }
+                additionalFinishButton={ !(props.data?.status === STATUSES.DRAFT && props.editMode === EDIT_TYPE.ADD_EFFECT) }
+                isAdditionalFinishButtonDisabled={ props.editMode !== EDIT_TYPE.ADD_EFFECT ? (isSubmitDisabled || !props.isDetailsValid) : isSubmitDisabled }
+                onAdditionalFinishButtonClick={ () => onFinish() }
             />
             <CustomMuiDialog
                 title="Disruption Active Periods"
@@ -689,6 +706,8 @@ SelectEffects.propTypes = {
     editMode: PropTypes.string,
     updateNewIncidentEffect: PropTypes.func,
     newIncidentEffect: PropTypes.object,
+    onSubmit: PropTypes.func,
+    isDetailsValid: PropTypes.bool,
 };
 
 SelectEffects.defaultProps = {
@@ -700,6 +719,8 @@ SelectEffects.defaultProps = {
     editMode: EDIT_TYPE.CREATE,
     updateNewIncidentEffect: () => { },
     newIncidentEffect: {},
+    onSubmit: () => { },
+    isDetailsValid: false,
 };
 
 export default connect(state => ({

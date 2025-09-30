@@ -19,6 +19,7 @@ import {
     buildIncidentSubmitBody,
     buildDisruptionsQuery,
     transformParentSourceIdNo,
+    getStatusForEffect,
 } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 import { STATUSES } from '../../types/disruptions-types';
@@ -679,7 +680,6 @@ const mockDisruption1 = {
     description: null,
     createdBy: 'aqwe@propellerhead.co.nz',
     createdTime: '2025-08-21T20:27:33.201Z',
-    url: '',
     header: 'test incident n0827',
     feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
     uploadedFiles: null,
@@ -815,7 +815,6 @@ const mockDisruption2 = {
     description: null,
     createdBy: 'aqwe@propellerhead.co.nz',
     createdTime: '2025-08-21T20:27:33.201Z',
-    url: '',
     header: 'test incident n0827',
     feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
     uploadedFiles: null,
@@ -868,7 +867,6 @@ const mockIncident = {
     endTime: null,
     status: 'in-progress',
     header: 'test incident n0827',
-    url: '',
     version: 1,
     recurrencePattern: null,
     duration: '',
@@ -914,6 +912,7 @@ describe('buildDisruptionSubmitBody', () => {
             ...mockDisruption1.affectedEntities.affectedStops.map(entity => omit(entity, ['shapeWkt']))],
             endTime: undefined,
             startTime: momentFromDateTime(moment('2025-08-21T20:27:00.000Z').format(DATE_FORMAT), '2025-08-21T20:27:00.000Z'),
+            url: '',
         };
         const expectedDisruption2 = {
             ...mockDisruption2,
@@ -937,10 +936,12 @@ describe('buildDisruptionSubmitBody', () => {
             ...mockDisruption2.affectedEntities.affectedStops.map(entity => omit(entity, ['shapeWkt']))],
             endTime: undefined,
             startTime: momentFromDateTime(moment('2025-08-24T20:27:00.000Z').format(DATE_FORMAT), '2025-08-24T20:27:00.000Z'),
+            url: '',
         };
         const expectedIncident = {
             ...mockIncident,
             disruptions: [{ ...expectedDisruption1 }, { ...expectedDisruption2 }],
+            url: '',
         };
         expect(buildIncidentSubmitBody(mockIncident, true)).toEqual(expectedIncident);
     });
@@ -1073,5 +1074,35 @@ describe('getMode', () => {
             ],
         };
         expect(buildIncidentSubmitBody(incident, false).mode).toEqual('');
+    });
+});
+
+describe('getStatusForEffect', () => {
+    const fakeTimeNow = new Date(2025, 5, 20, 12, 0, 0);
+    beforeEach(() => {
+        MockDate.set(fakeTimeNow);
+    });
+
+    afterEach(() => {
+        MockDate.reset();
+    });
+    it('Should return not started status if startTime has not passed yet', () => {
+        const expectedResult = { status: STATUSES.NOT_STARTED };
+        const disruption = {
+            ...mockDisruption1,
+            startDate: '20/06/2025',
+            startTime: '13:00',
+        };
+        expect(getStatusForEffect(disruption)).toEqual(expectedResult);
+    });
+
+    it('Should return in progress status if startTime has passed yet', () => {
+        const expectedResult = { status: STATUSES.IN_PROGRESS };
+        const disruption = {
+            ...mockDisruption1,
+            startDate: '20/06/2025',
+            startTime: '11:00',
+        };
+        expect(getStatusForEffect(disruption)).toEqual(expectedResult);
     });
 });
