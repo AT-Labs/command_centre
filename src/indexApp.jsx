@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
+import { CaptureConsole } from '@sentry/integrations';
 
 import './utils/dateLocale';
 import App from './components/App/App';
@@ -25,6 +26,9 @@ if (REACT_APP_DISABLE_SENTRY !== 'true') {
         dsn: REACT_APP_SENTRY_DSN,
         normalizeDepth: 3,
         integrations: [
+            new CaptureConsole({
+                levels: ['error'],
+            }),
             new Sentry.BrowserTracing({
                 tracePropagationTargets: ['localhost', /^\//],
             }),
