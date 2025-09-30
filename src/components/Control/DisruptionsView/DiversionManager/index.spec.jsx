@@ -220,7 +220,7 @@ describe('<DiversionManager />', () => {
     describe('handleResultAction', () => {
         it('should handle ACTION_TYPE.RETURN_TO_DIVERSION by doing nothing (keep form state)', () => {
             const mockResetDiversionResult = jest.fn();
-            
+
             // Mock the selector to return error state
             const { getDiversionResultState } = jest.requireMock('../../../../redux/selectors/control/diversions');
             getDiversionResultState.mockReturnValue({

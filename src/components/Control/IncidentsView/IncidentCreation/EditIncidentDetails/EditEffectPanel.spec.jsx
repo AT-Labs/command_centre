@@ -902,5 +902,4 @@ describe('Confirmation Component', () => {
             expect(mockOnAffectedEntitiesUpdate).not.toHaveBeenCalled();
         });
     });
-
 });
