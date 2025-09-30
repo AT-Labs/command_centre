@@ -86,6 +86,9 @@ export const goToIncidentsView = (message, { setActiveIncident }) => (dispatch) 
     if (setActiveIncident) {
         dispatch(clearActiveIncident());
         dispatch(updateActiveIncident(message.incidentDisruptionNo));
+        if (message.disruptionId) {
+            dispatch(updateActiveDisruptionId(message.disruptionId));
+        }
     }
 };
 

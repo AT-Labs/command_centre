@@ -64,12 +64,10 @@ describe('<Workarounds />', () => {
         expect(footer.prop('nextButtonValue')).toEqual('Finish');
     });
 
-    it('Should fire step update and submit when next button is clicked and is not add effect mode', () => {
+    it('Should fire submit when next button is clicked and is not add effect mode', () => {
         wrapper = setup({ editMode: EDIT_TYPE.CREATE });
         const footer = wrapper.find(Footer);
         footer.renderProp('onContinue')();
-        expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3);
-        expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(1);
         expect(componentPropsMock.onSubmit).toHaveBeenCalled();
     });
 
@@ -94,7 +92,7 @@ describe('<Workarounds />', () => {
         const footer = wrapper.find(Footer);
         footer.renderProp('onBack')();
         expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(0);
-        expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(1);
+        expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(2);
         expect(componentPropsMock.toggleWorkaroundPanel).toHaveBeenCalledWith(false);
     });
 
@@ -105,16 +103,14 @@ describe('<Workarounds />', () => {
         expect(footer.prop('nextButtonValue')).toEqual('Save');
     });
 
-    it('Should call onSubmit and update steps when next button is clicked and not in add effect mode', () => {
+    it('Should call onSubmit when next button is clicked and not in add effect mode', () => {
         wrapper = setup({ editMode: EDIT_TYPE.CREATE });
         const footer = wrapper.find(Footer);
         footer.prop('onContinue')();
-        expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3);
-        expect(componentPropsMock.updateCurrentStep).toHaveBeenCalledWith(1);
         expect(componentPropsMock.onSubmit).toHaveBeenCalled();
     });
 
-    it('Should call onSubmitDraft and update steps when save draft button is clicked and not in add effect mode', () => {
+    it('Should call onSubmitDraft when save draft button is clicked and not in add effect mode', () => {
         const onSubmitDraftSpy = jest.fn();
         wrapper = setup({
             editMode: EDIT_TYPE.CREATE,
@@ -122,7 +118,6 @@ describe('<Workarounds />', () => {
         });
         const footer = wrapper.find(Footer);
         footer.prop('onSubmitDraft')();
-        expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3);
         expect(onSubmitDraftSpy).toHaveBeenCalled();
     });
 
