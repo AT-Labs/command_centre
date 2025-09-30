@@ -748,6 +748,12 @@ describe('Disruptions actions', () => {
             expectedMessage: 'Disruption with diversion(s) require and End Date and Time to be published',
         },
         {
+            title: 'should dispatch error if disruption has diversions and endTime property missing',
+            disruption: { disruptionId: '457' },
+            diversions: [{ id: 'div2' }],
+            expectedMessage: 'Disruption with diversion(s) require and End Date and Time to be published',
+        },
+        {
             title: 'should not dispatch error if disruption has diversions and valid endTime',
             disruption: { disruptionId: '789', endTime: '2025-10-01T12:00:00Z' },
             diversions: [{ id: 'div3' }],
@@ -769,6 +775,47 @@ describe('Disruptions actions', () => {
             disruption: { disruptionId: '789', endTime: '2025-10-01T12:00:00Z' },
             diversions: [],
             expectedMessage: null,
+        },
+        {
+            title: 'should not dispatch error if with endTime and diversions is undefined',
+            disruption: { disruptionId: '789', endTime: '2025-10-01T12:00:00Z' },
+            diversions: undefined,
+            expectedMessage: null,
+        },
+        {
+            title: 'should not dispatch error if with endTime and diversions is null',
+            disruption: { disruptionId: '789', endTime: '2025-10-01T12:00:00Z' },
+            diversions: null,
+            expectedMessage: null,
+        },
+        // Error object shapes for catch block
+        {
+            title: 'should dispatch error with code and message',
+            disruption: { disruptionId: 'err1', endTime: '2025-10-01T12:00:00Z' },
+            diversions: [],
+            errorObj: { code: 'ERR_XYZ', message: 'Unit test error message' },
+            expectedError: { code: 'ERR_XYZ', message: 'Unit test error message' },
+        },
+        {
+            title: 'should dispatch error with only code',
+            disruption: { disruptionId: 'err2', endTime: '2025-10-01T12:00:00Z' },
+            diversions: [],
+            errorObj: { code: 'ERR_ONLY' },
+            expectedError: { code: 'ERR_ONLY', message: 'Failed to publish draft disruption' },
+        },
+        {
+            title: 'should dispatch error with only message',
+            disruption: { disruptionId: 'err3', endTime: '2025-10-01T12:00:00Z' },
+            diversions: [],
+            errorObj: { message: 'Only message error' },
+            expectedError: { code: undefined, message: 'Only message error' },
+        },
+        {
+            title: 'should dispatch error with neither code nor message',
+            disruption: { disruptionId: 'err4', endTime: '2025-10-01T12:00:00Z' },
+            diversions: [],
+            errorObj: {},
+            expectedError: { code: undefined, message: 'Failed to publish draft disruption' },
         },
         {
             title: 'should not dispatch error if with endTime and diversions is empty array',
