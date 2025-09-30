@@ -5,12 +5,13 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
+import moment from 'moment-timezone';
 import DiversionManager from './index';
 import { BUS_TYPE_ID } from '../../../../types/vehicle-types';
 import { getAffectedEntities } from '../../../../utils/control/diversions';
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
+import dateTypes from '../../../../types/date-types';
 
-// Mock the dependencies
 jest.mock('../../../../utils/transmitters/trip-mgt-api', () => ({
     searchRouteVariants: jest.fn(),
 }));
@@ -39,12 +40,10 @@ jest.mock('../../../../redux/actions/control/diversions', () => ({
     resetDiversionResult: jest.fn(),
 }));
 
-// Mock the map component
 jest.mock('../../../Common/Map/RouteShapeEditor/RouteShapeEditor', () => function MockRouteShapeEditor() {
     return <div data-testid="route-shape-editor" />;
 });
 
-// Mock the modal components
 jest.mock('../../../Common/CustomModal/CustomModal', () => function MockCustomModal() {
     return <div data-testid="custom-modal" />;
 });
@@ -57,7 +56,6 @@ jest.mock('./DiversionResultModal', () => function MockDiversionResultModal() {
     return <div data-testid="diversion-result-modal" />;
 });
 
-// Mock the selector components
 jest.mock('./BaseRouteVariantSelector', () => function MockBaseRouteVariantSelector() {
     return <div data-testid="base-route-variant-selector" />;
 });
@@ -140,13 +138,10 @@ describe('<DiversionManager />', () => {
             onCancelled: jest.fn(),
         };
 
-        // Reset mocks
         jest.clearAllMocks();
 
-        // Mock getAffectedEntities to return the disruption's affectedEntities
         getAffectedEntities.mockImplementation(disruption => disruption?.affectedEntities || disruption?.affectedRoutes || []);
 
-        // Mock searchRouteVariants to return mock data
         searchRouteVariants.mockResolvedValue({
             routeVariants: mockRouteVariants,
         });
@@ -221,7 +216,6 @@ describe('<DiversionManager />', () => {
         it('should handle ACTION_TYPE.RETURN_TO_DIVERSION by doing nothing (keep form state)', () => {
             const mockResetDiversionResult = jest.fn();
 
-            // Mock the selector to return error state
             const { getDiversionResultState } = jest.requireMock('../../../../redux/selectors/control/diversions');
             getDiversionResultState.mockReturnValue({
                 isLoading: false,
@@ -240,36 +234,65 @@ describe('<DiversionManager />', () => {
     });
 
     describe('date handling logic coverage', () => {
-        it('should test conditional date parameter inclusion logic', () => {
-            const testSearchObject = (endTime) => {
+        it('should test endTime parsing and conditional formatting', () => {
+            const SERVICE_DATE_FORMAT = 'YYYYMMDD';
+            const TIME_FORMAT_HHMM = 'HH:mm';
+            const testEndTimeParsing = (disruptionEndTime) => {
+                const end = disruptionEndTime ? moment(disruptionEndTime).tz(dateTypes.TIME_ZONE) : null;
+                const endDate = end ? end.format(SERVICE_DATE_FORMAT) : null;
+                const endTime = end ? end.format(TIME_FORMAT_HHMM) : null;
+                return { end, endDate, endTime };
+            };
+
+            const resultWithEndTime = testEndTimeParsing('2024-01-15T17:00:00Z');
+            const resultWithoutEndTime = testEndTimeParsing(null);
+            const resultWithUndefinedEndTime = testEndTimeParsing(undefined);
+
+            expect(resultWithEndTime.end).not.toBeNull();
+            expect(resultWithEndTime.endDate).toBeDefined();
+            expect(resultWithEndTime.endTime).toBeDefined();
+
+            expect(resultWithoutEndTime.end).toBeNull();
+            expect(resultWithoutEndTime.endDate).toBeNull();
+            expect(resultWithoutEndTime.endTime).toBeNull();
+
+            expect(resultWithUndefinedEndTime.end).toBeNull();
+            expect(resultWithUndefinedEndTime.endDate).toBeNull();
+            expect(resultWithUndefinedEndTime.endTime).toBeNull();
+        });
+
+        it('should test conditional date parameter inclusion in search object', () => {
+            const testSearchObjectCreation = (startDate, startTime, endDate, endTime) => {
                 const search = {
                     page: 1,
                     limit: 1000,
                     routeIds: ['route1'],
-                    serviceDateFrom: '20240115',
-                    startTime: '09:00',
+                    ...(startDate && { serviceDateFrom: startDate }),
+                    ...(startTime && { startTime }),
+                    ...(endDate && { serviceDateTo: endDate }),
+                    ...(endTime && { endTime }),
                 };
-
-                if (endTime) {
-                    search.serviceDateTo = '20240115';
-                    search.endTime = '17:00';
-                }
-
                 return search;
             };
 
-            const searchWithEndTime = testSearchObject('2024-01-15T17:00:00Z');
-            const searchWithoutEndTime = testSearchObject(null);
-            const searchWithUndefinedEndTime = testSearchObject(undefined);
+            const searchWithAllDates = testSearchObjectCreation('20240115', '09:00', '20240115', '17:00');
+            const searchWithoutEndDates = testSearchObjectCreation('20240115', '09:00', null, null);
+            const searchWithPartialDates = testSearchObjectCreation('20240115', '09:00', '20240115', null);
 
-            expect(searchWithEndTime).toHaveProperty('serviceDateTo');
-            expect(searchWithEndTime).toHaveProperty('endTime');
+            expect(searchWithAllDates).toHaveProperty('serviceDateFrom', '20240115');
+            expect(searchWithAllDates).toHaveProperty('startTime', '09:00');
+            expect(searchWithAllDates).toHaveProperty('serviceDateTo', '20240115');
+            expect(searchWithAllDates).toHaveProperty('endTime', '17:00');
 
-            expect(searchWithoutEndTime).not.toHaveProperty('serviceDateTo');
-            expect(searchWithoutEndTime).not.toHaveProperty('endTime');
+            expect(searchWithoutEndDates).toHaveProperty('serviceDateFrom', '20240115');
+            expect(searchWithoutEndDates).toHaveProperty('startTime', '09:00');
+            expect(searchWithoutEndDates).not.toHaveProperty('serviceDateTo');
+            expect(searchWithoutEndDates).not.toHaveProperty('endTime');
 
-            expect(searchWithUndefinedEndTime).not.toHaveProperty('serviceDateTo');
-            expect(searchWithUndefinedEndTime).not.toHaveProperty('endTime');
+            expect(searchWithPartialDates).toHaveProperty('serviceDateFrom', '20240115');
+            expect(searchWithPartialDates).toHaveProperty('startTime', '09:00');
+            expect(searchWithPartialDates).toHaveProperty('serviceDateTo', '20240115');
+            expect(searchWithPartialDates).not.toHaveProperty('endTime');
         });
     });
 });
