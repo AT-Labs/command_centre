@@ -50,9 +50,10 @@ export const ACTION_RESULT = {
         resultCreateNotification: createNotification,
         resultDisruptionVersion: version,
     }),
-    PUBLISH_DRAFT_ERROR: () => ({
+    /* istanbul ignore next */
+    PUBLISH_DRAFT_ERROR: (_errorCode, message) => ({
         resultStatus: ACTION_RESULT_TYPES.ERROR,
-        resultMessage: ERROR_TYPE.draftDisruptionPublish,
+        resultMessage: message || ERROR_TYPE.draftDisruptionPublish,
     }),
 };
 
@@ -97,12 +98,8 @@ export const DEFAULT_SEVERITY = {
     value: '',
 };
 
-export const UNKNOWN_SEVERITY = {
-    label: 'Unknown',
-    value: 'UNKNOWN',
-};
-
-export const SEVERITY_OPTIONS = [
+export const SEVERITIES = [
+    DEFAULT_SEVERITY,
     {
         label: '5 (Catastrophic)',
         value: 'CATASTROPHIC',
@@ -123,12 +120,10 @@ export const SEVERITY_OPTIONS = [
         label: '1 (Minor)',
         value: 'MINOR',
     },
-];
-
-export const SEVERITIES = [
-    DEFAULT_SEVERITY,
-    ...SEVERITY_OPTIONS,
-    UNKNOWN_SEVERITY,
+    {
+        label: 'Unknown',
+        value: 'UNKNOWN',
+    },
 ];
 
 export const PASSENGER_IMPACT_RANGE = {
@@ -148,11 +143,3 @@ export const WEEKDAYS = [
     'Sa',
     'Su',
 ];
-
-export const getParentChildSeverityOptions = () => [
-    UNKNOWN_SEVERITY,
-    ...SEVERITY_OPTIONS,
-    DEFAULT_SEVERITY,
-];
-
-export const getParentChildDefaultSeverity = () => UNKNOWN_SEVERITY;

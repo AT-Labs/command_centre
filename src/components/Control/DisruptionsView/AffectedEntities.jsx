@@ -61,8 +61,8 @@ export const AffectedEntities = (props) => {
 
     // We only support adding diversion to bus route at the moment.
     const isBusRoute = route => route.routeType === 3;
-    const showAddDiversion = props.useDiversion && props.startTime && props.endTime && !isDisruptionResolved
-        && props.affectedEntities.filter(isBusRoute).length > 0;
+    const showAddDiversion = props.useDiversion && !isDisruptionResolved
+        && props.affectedEntities.some(isBusRoute);
 
     return (
         <section className={ `disruption__affected-entities ${props.heightSmall ? 'small' : ''} ${props.className}` }>
@@ -111,7 +111,7 @@ export const AffectedEntities = (props) => {
                                     )}
                                 </div>
                                 <div>
-                                    { props.useDiversion
+                                    {props.useDiversion && showAddDiversion
                                         && (
                                             <Button
                                                 className="btn cc-btn-link pr-0 font-weight-bold"
@@ -160,8 +160,6 @@ AffectedEntities.propTypes = {
     addDiversionAction: PropTypes.func,
     isEditDisabled: PropTypes.bool,
     affectedEntities: PropTypes.array.isRequired,
-    startTime: PropTypes.string,
-    endTime: PropTypes.string,
     stopGroups: PropTypes.object.isRequired,
     showHeader: PropTypes.bool,
     className: PropTypes.string,
@@ -188,8 +186,6 @@ AffectedEntities.defaultProps = {
     viewDiversionsAction: null,
     showViewPassengerImpactButton: false,
     viewPassengerImpactAction: null,
-    startTime: null,
-    endTime: null,
     diversions: [],
 };
 
