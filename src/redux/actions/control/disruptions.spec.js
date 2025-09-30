@@ -753,11 +753,11 @@ describe('Disruptions actions', () => {
             diversions: [{ id: 'div3' }],
             expectedMessage: null,
         },
-        // {
-        //     title: 'should not dispatch error if disruption undefined',
-        //     diversions: [{ id: 'div3' }],
-        //     expectedMessage: null,
-        // },
+        {
+            title: 'should not dispatch error if no endTime and no diversions',
+            disruption: { disruptionId: '789' },
+            expectedMessage: null,
+        },
 
     ].forEach(({ title, disruption, diversions, expectedMessage }) => {
         it(title, async () => {
