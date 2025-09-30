@@ -758,6 +758,13 @@ describe('Disruptions actions', () => {
             disruption: { disruptionId: '789' },
             expectedMessage: null,
         },
+        {
+            title: 'should not dispatch error if no endTime and diversions is empty array',
+            disruption: { disruptionId: '789' },
+            diversions: [],
+            expectedMessage: null,
+        },
+
 
     ].forEach(({ title, disruption, diversions, expectedMessage }) => {
         it(title, async () => {
