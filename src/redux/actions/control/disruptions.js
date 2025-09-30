@@ -30,15 +30,6 @@ const loadDisruptions = disruptions => ({
     },
 });
 
-export const updateActivePeriodsForSearch = activePeriods => ({
-    type: ACTION_TYPE.UPDATE_ACTIVE_PERIODS_FOR_SEARCH,
-    payload: { activePeriods },
-});
-
-export const refreshActivePeriodsForSearch = () => ({
-    type: ACTION_TYPE.REFRESH_ACTIVE_PERIODS_FOR_SEARCH,
-});
-
 const updateLoadingDisruptionsState = isLoading => ({
     type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_LOADING,
     payload: {
@@ -217,19 +208,29 @@ export const updateActiveDisruptionId = activeDisruptionId => (dispatch) => {
     dispatch(clearDisruptionActionResult());
 };
 
-export const publishDraftDisruption = disruption => async (dispatch) => {
+export const publishDraftDisruption = (disruption, diversions) => async (dispatch) => {
     let response;
     dispatch(updateRequestingDisruptionState(true, disruption.disruptionId));
     try {
-        response = await disruptionsMgtApi.updateDisruption(disruption);
-        dispatch(
-            updateRequestingDisruptionResult(
+        if (!disruption?.endTime && diversions?.length > 0) {
+            dispatch(updateRequestingDisruptionResult(
                 disruption.disruptionId,
-                ACTION_RESULT.PUBLISH_DRAFT_SUCCESS(response.incidentNo, response.version, response.createNotification),
-            ),
-        );
+                ACTION_RESULT.PUBLISH_DRAFT_ERROR(
+                    null,
+                    'Disruption with diversion(s) require and End Date and Time to be published. Please inform the End Date and End Time and try again.',
+                ),
+            ));
+        } else {
+            response = await disruptionsMgtApi.updateDisruption(disruption);
+            dispatch(
+                updateRequestingDisruptionResult(
+                    disruption.disruptionId,
+                    ACTION_RESULT.PUBLISH_DRAFT_SUCCESS(response.incidentNo, response.version, response.createNotification),
+                ),
+            );
+        }
     } catch (error) {
-        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.PUBLISH_DRAFT_ERROR(error.code)));
+        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.PUBLISH_DRAFT_ERROR(error.code, error.message || 'Failed to publish draft disruption')));
     } finally {
         dispatch(updateRequestingDisruptionState(false, disruption.disruptionId));
     }
@@ -272,7 +273,6 @@ export const createDisruption = disruption => async (dispatch, getState) => {
     }
 
     await dispatch(getDisruptions());
-    dispatch(refreshActivePeriodsForSearch());
 };
 
 export const getStopsByRoute = routes => async (dispatch, getState) => {
