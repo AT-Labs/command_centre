@@ -826,5 +826,4 @@ describe('Confirmation Component', () => {
             expect(screen.queryByText(/Diversions/)).not.toBeInTheDocument();
         });
     });
-
 });
