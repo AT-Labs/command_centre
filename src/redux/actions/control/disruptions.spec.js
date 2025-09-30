@@ -753,6 +753,12 @@ describe('Disruptions actions', () => {
             diversions: [{ id: 'div3' }],
             expectedMessage: null,
         },
+        // {
+        //     title: 'should not dispatch error if disruption undefined',
+        //     diversions: [{ id: 'div3' }],
+        //     expectedMessage: null,
+        // },
+
     ].forEach(({ title, disruption, diversions, expectedMessage }) => {
         it(title, async () => {
             const dispatch = sinon.spy();

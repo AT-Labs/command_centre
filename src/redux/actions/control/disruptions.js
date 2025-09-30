@@ -212,7 +212,7 @@ export const publishDraftDisruption = (disruption, diversions) => async (dispatc
     let response;
     dispatch(updateRequestingDisruptionState(true, disruption.disruptionId));
     try {
-        if (!disruption?.endTime && diversions?.length > 0) {
+        if (!disruption.endTime && diversions?.length > 0) {
             dispatch(updateRequestingDisruptionResult(
                 disruption.disruptionId,
                 ACTION_RESULT.PUBLISH_DRAFT_ERROR(
