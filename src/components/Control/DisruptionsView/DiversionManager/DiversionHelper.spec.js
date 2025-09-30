@@ -298,8 +298,6 @@ describe('createRouteVariantDateFilters', () => {
     });
 
     it('should return default object if startTime is missing', () => {
-        // jest.useFakeTimers();
-        // jest.setSystemTime(new Date('2023-09-24T08:30:00Z'));
         const disruption = {};
         const result = createRouteVariantDateFilters(disruption);
         expect(result).toEqual({

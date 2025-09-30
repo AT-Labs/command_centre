@@ -18,6 +18,7 @@ import ACTION_TYPE from '../../action-types';
 import SEARCH_RESULT_TYPE from '../../../types/search-result-types';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
 import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
+import { ACTION_RESULT } from '../../../types/disruptions-types';
 
 chai.use(sinonChai);
 
@@ -797,6 +798,17 @@ describe('Disruptions actions', () => {
                 resultCreateNotification: undefined,
                 resultDisruptionVersion: undefined,
             },
+        });
+    });
+});
+
+describe('PUBLISH_DRAFT_ERROR action', () => {
+    it('should handle empty code/message with default message', () => {
+        const errorAction = ACTION_RESULT.PUBLISH_DRAFT_ERROR();
+
+        expect(errorAction).to.deep.equal({
+            resultMessage: 'Failed to publish draft disruption',
+            resultStatus: 'danger',
         });
     });
 });
