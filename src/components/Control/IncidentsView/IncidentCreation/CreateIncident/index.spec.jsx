@@ -1001,7 +1001,10 @@ describe('CreateIncident component', () => {
                 incidentDisruptionNo: 'CCD139273',
                 key: 'DISR139537',
             };
-
+            const incident = {
+                ...incidentForEdit,
+                status: STATUSES.DRAFT,
+            };
             wrapper = shallow(
                 <CreateIncident
                     updateCurrentStep={ mockUpdateCurrentStep }
@@ -1009,7 +1012,7 @@ describe('CreateIncident component', () => {
                     openCreateIncident={ mockOpenCreateIncident }
                     toggleIncidentModals={ mockToggleIncidentModals }
                     action={ mockAction }
-                    incidentToEdit={ incidentForEdit }
+                    incidentToEdit={ incident }
                     editMode={ EDIT_TYPE.EDIT }
                     updateIncident={ mockUpdateIncident }
                     updateAffectedStopsState={ mockUpdateAffectedStopsState }
@@ -1037,6 +1040,7 @@ describe('CreateIncident component', () => {
             const callArgs = buildIncidentSubmitBody.mock.calls[0][0];
             expect(callArgs.disruptions).toHaveLength(2);
             expect(mockUpdateIncident).toHaveBeenCalled();
+            expect(wrapper.state('incidentData').status).toEqual(STATUSES.DRAFT);
         });
 
         it('Should update edit mode on addNewEffectToIncident call', async () => {
