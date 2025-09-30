@@ -765,7 +765,6 @@ describe('Disruptions actions', () => {
             expectedMessage: null,
         },
 
-
     ].forEach(({ title, disruption, diversions, expectedMessage }) => {
         it(title, async () => {
             const dispatch = sinon.spy();
