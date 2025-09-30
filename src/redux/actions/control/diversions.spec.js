@@ -175,5 +175,61 @@ describe('Diversions Actions', () => {
             expect(cachedResult).toEqual(cachedDiversions);
             expect(disruptionsMgtApi.getDiversion).not.toHaveBeenCalled();
         });
+
+        it('should try incidentId fallback when no diversions found', async () => {
+            const disruptionId = '123456';
+            const incidentId = '789012';
+            const mockDiversions = [{ id: '1' }];
+            const mockState = {
+                control: {
+                    diversions: {
+                        diversionsLoading: {},
+                        diversionsData: {},
+                    },
+                    incidents: {
+                        disruptions: [
+                            { disruptionId, incidentId },
+                        ],
+                    },
+                },
+            };
+
+            store = mockStore(mockState);
+            disruptionsMgtApi.getDiversion
+                .mockResolvedValueOnce([])
+                .mockResolvedValueOnce(mockDiversions);
+
+            const result = await store.dispatch(diversionsActions.fetchDiversions(disruptionId));
+            const actions = store.getActions();
+
+            expect(disruptionsMgtApi.getDiversion).toHaveBeenCalledTimes(2);
+            expect(disruptionsMgtApi.getDiversion).toHaveBeenNthCalledWith(1, disruptionId);
+            expect(disruptionsMgtApi.getDiversion).toHaveBeenNthCalledWith(2, incidentId);
+            expect(actions[1].payload.diversions).toEqual(mockDiversions);
+            expect(result).toEqual(mockDiversions);
+        });
+
+        it('should handle missing incidents state gracefully', async () => {
+            const disruptionId = '123456';
+            const mockState = {
+                control: {
+                    diversions: {
+                        diversionsLoading: {},
+                        diversionsData: {},
+                    },
+                },
+            };
+
+            store = mockStore(mockState);
+            disruptionsMgtApi.getDiversion.mockResolvedValue([]);
+
+            const result = await store.dispatch(diversionsActions.fetchDiversions(disruptionId));
+            const actions = store.getActions();
+
+            expect(disruptionsMgtApi.getDiversion).toHaveBeenCalledTimes(1);
+            expect(disruptionsMgtApi.getDiversion).toHaveBeenCalledWith(disruptionId);
+            expect(actions[1].payload.diversions).toEqual([]);
+            expect(result).toEqual([]);
+        });
     });
 });

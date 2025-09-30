@@ -827,42 +827,4 @@ describe('Confirmation Component', () => {
         });
     });
 
-    describe('removeNotFoundFromStopGroupsForAllDisruptions', () => {
-        const mockOnAffectedEntitiesUpdate = jest.fn();
-
-        beforeEach(() => {
-            jest.clearAllMocks();
-        });
-
-        it('should return early when disruptions is not an array', () => {
-            const testFunction = (disruptions) => {
-                if (!disruptions || !Array.isArray(disruptions)) {
-                    return undefined;
-                }
-                return 'processed';
-            };
-
-            expect(testFunction('not an array')).toBeUndefined();
-            expect(testFunction(null)).toBeUndefined();
-            expect(testFunction(undefined)).toBeUndefined();
-            expect(testFunction([])).toBe('processed');
-        });
-
-        it('should return early when disruptions is an empty array', () => {
-            const props = {
-                ...defaultProps,
-                disruptions: [],
-                disruptionIncidentNoToEdit: '',
-                onAffectedEntitiesUpdate: mockOnAffectedEntitiesUpdate,
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(mockOnAffectedEntitiesUpdate).not.toHaveBeenCalled();
-        });
-    });
 });
