@@ -811,4 +811,12 @@ describe('PUBLISH_DRAFT_ERROR action', () => {
             resultStatus: 'danger',
         });
     });
+    it('should handle use message supplied if one exist', () => {
+        const errorAction = ACTION_RESULT.PUBLISH_DRAFT_ERROR(null, 'Blah');
+
+        expect(errorAction).to.deep.equal({
+            resultMessage: 'Blah',
+            resultStatus: 'danger',
+        });
+    });
 });
