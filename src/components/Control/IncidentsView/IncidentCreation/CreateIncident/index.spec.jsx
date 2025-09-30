@@ -967,6 +967,78 @@ describe('CreateIncident component', () => {
             expect(mockUpdateIncident).toHaveBeenCalled();
         });
 
+        it('Should call updateIncident on add new effect with additional disruption for draft incident', async () => {
+            getStatusForEffect.mockReturnValue({ status: STATUSES.IN_PROGRESS });
+            const newDisruption = {
+                disruptionId: 139537,
+                incidentNo: 'DISR139537',
+                mode: '',
+                affectedEntities: [],
+                impact: 'ESCALATOR_NOT_WORKING',
+                cause: 'CONGESTION',
+                startTime: '2025-08-21T20:27:00.000Z',
+                endTime: null,
+                status: 'draft',
+                header: 'test incident n0827',
+                uploadedFiles: null,
+                createNotification: false,
+                exemptAffectedTrips: null,
+                version: 1,
+                duration: '',
+                activePeriods: [
+                    {
+                        startTime: 1755808020,
+                    },
+                ],
+                recurrencePattern: null,
+                recurrent: false,
+                workarounds: [],
+                notes: [],
+                severity: 'HEADLINE',
+                passengerCount: null,
+                incidentId: 139273,
+                incidentTitle: 'test draft n0827',
+                incidentDisruptionNo: 'CCD139273',
+                key: 'DISR139537',
+            };
+
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentForEdit }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    isEditEffectPanelOpen
+                />,
+            );
+            wrapper.setProps({ editMode: EDIT_TYPE.ADD_EFFECT });
+            wrapper.setState(prevState => ({
+                ...prevState,
+                newIncidentEffect: {
+                    ...newDisruption,
+                },
+            }));
+            momentFromDateTime.mockReturnValue(mockTimeForMoment);
+            buildIncidentSubmitBody.mockReturnValue({});
+            await wrapper.instance().onSubmitUpdate();
+            expect(buildIncidentSubmitBody).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    disruptions: expect.arrayContaining([expect.anything()]),
+                }),
+                true,
+            );
+            const callArgs = buildIncidentSubmitBody.mock.calls[0][0];
+            expect(callArgs.disruptions).toHaveLength(2);
+            expect(mockUpdateIncident).toHaveBeenCalled();
+        });
+
         it('Should update edit mode on addNewEffectToIncident call', async () => {
             wrapper = shallow(
                 <CreateIncident
