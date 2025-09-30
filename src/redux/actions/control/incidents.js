@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { isEmpty, uniqBy, each } from 'lodash-es';
+import { isEmpty, uniqBy, each, forEach } from 'lodash-es';
 
 import { ACTION_RESULT, DISRUPTION_TYPE, STATUSES } from '../../../types/disruptions-types';
 import ERROR_TYPE from '../../../types/error-types';
@@ -276,6 +276,14 @@ export const publishDraftIncident = incident => async (dispatch) => {
     return response;
 };
 
+export const clearAffectedRoutes = () => (dispatch) => {
+    dispatch(updateAffectedRoutesState([]));
+};
+
+export const clearAffectedStops = () => (dispatch) => {
+    dispatch(updateAffectedStopsState([]));
+};
+
 export const createNewIncident = incident => async (dispatch, getState) => {
     let response;
     const state = getState();
@@ -508,11 +516,9 @@ export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
 
             return [stopsWithShapes, affectedRoutesWithShapes];
         })
-        .then(() => {
-            dispatch(updateCachedShapesState(missingCacheShapes));
-            dispatch(updateAffectedRoutesState(affectedRoutesWithShapes));
-            dispatch(updateAffectedStopsState(stopsWithShapes));
-            dispatch(updateLoadingIncidentsState(false));
+        .then(async () => {
+            await dispatch(updateCachedShapesState(missingCacheShapes));
+            await dispatch(updateLoadingIncidentsState(false));
         })
         .catch((err) => {
             throw err;
@@ -604,6 +610,13 @@ export const setRequestToUpdateEditEffectState = requestToUpdateEditEffect => ({
     },
 });
 
+export const setMapDrawingEntities = mapDrawingEntities => ({
+    type: ACTION_TYPE.UPDATE_MAP_DRAWING_ENTITIES,
+    payload: {
+        mapDrawingEntities,
+    },
+});
+
 export const setRequestedDisruptionKeyToUpdateEditEffect = requestedDisruptionKeyToUpdateEditEffect => ({
     type: ACTION_TYPE.SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT,
     payload: {
@@ -683,10 +696,14 @@ const geographySearchRoutes = searchBody => async (dispatch, getState) => {
             type: SEARCH_RESULT_TYPE.ROUTE.type,
         };
     });
-    const existingAffectedRoutes = getAffectedRoutes(getState());
-    const newAffectedRoutes = [...new Set(existingAffectedRoutes.concat(enrichedRoutes))];
-    dispatch(updateAffectedRoutesState(newAffectedRoutes));
-    dispatch(getRoutesByShortName(newAffectedRoutes));
+    await dispatch(getRoutesByShortName(enrichedRoutes));
+
+    const cachedShapes = getCachedShapes(getState());
+    forEach(enrichedRoutes, (route) => {
+        Object.assign(route, { shapeWkt: cachedShapes[route.routeId] });
+    });
+
+    dispatch(setMapDrawingEntities(enrichedRoutes));
 };
 
 const geographySearchStops = searchBody => async (dispatch, getState) => {
@@ -710,9 +727,7 @@ const geographySearchStops = searchBody => async (dispatch, getState) => {
             type: SEARCH_RESULT_TYPE.STOP.type,
         };
     });
-    const existingAffectedStops = getAffectedStops(getState());
-    const newAffectedStops = [...new Set(existingAffectedStops.concat(enrichedStops))];
-    dispatch(updateAffectedStopsState(newAffectedStops));
+    dispatch(setMapDrawingEntities(enrichedStops));
 };
 
 export const searchByDrawing = (incidentType, content) => async (dispatch) => {
@@ -849,3 +864,10 @@ export const updateIncident = (incident, isAddEffect = false) => async (dispatch
 
     return result;
 };
+
+export const updateSelectedEffect = selectedEffect => ({
+    type: ACTION_TYPE.UPDATE_SELECTED_EFFECT,
+    payload: {
+        selectedEffect,
+    },
+});

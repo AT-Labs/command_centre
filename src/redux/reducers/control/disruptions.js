@@ -54,8 +54,6 @@ export const INIT_STATE = {
         filterModel: { items: [], linkOperator: 'and' },
         pinnedColumns: { right: ['__go_to_disruption_details__', '__go_to_notification__', '__detail_panel_toggle__'] },
     },
-    activePeriodsForSearch: [],
-    shouldRefreshActivePeriods: false,
 };
 
 const handleDisruptionsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });
@@ -157,13 +155,4 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_DISRUPTION_TO_EDIT]: handleDisruptionToEdit,
     [ACTION_TYPE.UPDATE_DISRUPTION_FILTERS]: handleUpdateDisruptionFilters,
     [ACTION_TYPE.UPDATE_DISRUPTION_DATAGRID_CONFIG]: handleDatagridConfig,
-    [ACTION_TYPE.UPDATE_ACTIVE_PERIODS_FOR_SEARCH]: (state, { payload: { activePeriods } }) => ({
-        ...state,
-        activePeriodsForSearch: activePeriods,
-        shouldRefreshActivePeriods: false,
-    }),
-    [ACTION_TYPE.REFRESH_ACTIVE_PERIODS_FOR_SEARCH]: state => ({
-        ...state,
-        shouldRefreshActivePeriods: true,
-    }),
 }, INIT_STATE);

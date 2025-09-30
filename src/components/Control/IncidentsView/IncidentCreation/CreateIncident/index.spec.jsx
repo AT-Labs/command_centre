@@ -17,13 +17,7 @@ jest.mock('../../../../Common/Map/HighlightingLayer/HighlightingLayer', () => je
 
 jest.mock('../../../../Common/Map/StopsLayer/SelectedStopsMarker', () => jest.fn());
 
-jest.mock('../../../../Common/Map/RouteShapeEditor/RouteShapeEditor', () => () => <div data-testid="route-shape-editor" />);
-
-jest.mock('react-leaflet-draw', () => ({
-    EditControl: () => <div data-testid="edit-control" />,
-}));
-
-jest.mock('./DrawLayer', () => () => <div data-testid="draw-layer" />);
+jest.mock('./DrawLayer', () => jest.fn());
 
 jest.mock('../../../../Common/CustomModal/CustomModal', () => jest.fn());
 
@@ -402,6 +396,7 @@ describe('CreateIncident component', () => {
         const mockSetDisruptionForWorkaroundEdit = jest.fn();
         const mockToggleWorkaroundPanel = jest.fn();
         const mockUpdateDisruptionKeyToWorkaroundEdit = jest.fn();
+        const mockToggleEditEffectPanel = jest.fn();
 
         beforeEach(() => {
             wrapper = shallow(
@@ -446,6 +441,7 @@ describe('CreateIncident component', () => {
                     updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
                     getRoutesByShortName={ mockGetRoutesByShortName }
                     isEditEffectPanelOpen
+                    toggleEditEffectPanel={ mockToggleEditEffectPanel }
                 />,
             );
             wrapper.setState({ isEffectUpdated: true });
@@ -990,6 +986,7 @@ describe('CreateIncident component', () => {
                     updateDisruptionKeyToWorkaroundEdit={ mockUpdateDisruptionKeyToWorkaroundEdit }
                     toggleWorkaroundPanel={ mockToggleWorkaroundPanel }
                     setDisruptionForWorkaroundEdit={ mockSetDisruptionForWorkaroundEdit }
+                    toggleEditEffectPanel={ mockToggleEditEffectPanel }
                 />,
             );
             await wrapper.instance().addNewEffectToIncident();

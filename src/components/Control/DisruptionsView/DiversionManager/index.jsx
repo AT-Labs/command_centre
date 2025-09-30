@@ -13,7 +13,6 @@ import ChangeSelectedRouteVariantModal from './ChangeSelectedRouteVariantModal';
 import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
 import { createDiversion, updateDiversion, resetDiversionResult } from '../../../../redux/actions/control/diversions';
 import { getDiversionResultState, getDiversionForEditing, getDiversionEditMode } from '../../../../redux/selectors/control/diversions';
-import { useDiversion } from '../../../../redux/selectors/appSettings';
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
 import { isAffectedStop, createAffectedStop,
     getUniqueStops, createModifiedRouteVariant, canMerge, hasDiversionModified, getUniqueAffectedStopIds,
@@ -22,7 +21,6 @@ import { mergeCoordinates, parseWKT, toWKT } from '../../../Common/Map/RouteShap
 import dateTypes from '../../../../types/date-types';
 import EDIT_TYPE from '../../../../types/edit-types';
 import { BUS_TYPE_ID } from '../../../../types/vehicle-types';
-import { getAffectedEntities } from '../../../../utils/control/diversions';
 import BaseRouteVariantSelector from './BaseRouteVariantSelector';
 import AdditionalRouteVariantSelector from './AdditionalRouteVariantSelector';
 import AffectedStops from './AffectedStops';
@@ -65,16 +63,9 @@ const DiversionManager = (props) => {
 
     // We only support adding diversion to bus route at the moment.
     const isBusRoute = route => route.routeType === BUS_TYPE_ID;
-    const [routeIds, setRouteIds] = useState([]);
-    // Recalculate routeIds when disruption changes
-    useEffect(() => {
-        const entities = getAffectedEntities(props.disruption);
-        const busEntities = entities.filter(isBusRoute);
-        const ids = entities.length > 0
-            ? [...new Set(busEntities.map(entity => entity.routeId))]
-            : [];
-        setRouteIds(ids);
-    }, [props.disruption]);
+    const [routeIds] = useState(props.disruption?.affectedEntities?.length > 0
+        ? [...new Set(props.disruption?.affectedEntities.filter(isBusRoute).map(entity => entity.routeId))]
+        : []);
 
     const initEditingMode = (routeVariants) => {
         // Select the base route in edit mode
@@ -110,22 +101,21 @@ const DiversionManager = (props) => {
 
     // Fetch available route variants to populate the dropdown lists
     const fetchVariants = debounce(async () => {
-        // Parse dates from API format (ISO strings)
         const start = moment(props.disruption.startTime).tz(dateTypes.TIME_ZONE);
-        const end = props.disruption.endTime ? moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE) : null;
+        const end = moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE);
         const startDate = start.format(SERVICE_DATE_FORMAT);
         const startTime = start.format(TIME_FORMAT_HHMM);
-        const endDate = end ? end.format(SERVICE_DATE_FORMAT) : null;
-        const endTime = end ? end.format(TIME_FORMAT_HHMM) : null;
+        const endDate = end.format(SERVICE_DATE_FORMAT);
+        const endTime = end.format(TIME_FORMAT_HHMM);
         try {
             const search = {
                 page: 1,
                 limit: 1000,
                 routeIds,
-                ...(startDate && { serviceDateFrom: startDate }),
-                ...(startTime && { startTime }),
-                ...(endDate && { serviceDateTo: endDate }),
-                ...(endTime && { endTime }),
+                ...(startDate !== null && { serviceDateFrom: startDate }),
+                ...(startTime !== null && { startTime }),
+                ...(endDate !== null && { serviceDateTo: endDate }),
+                ...(endTime !== null && { endTime }),
             };
             let { routeVariants } = await searchRouteVariants(search);
             if (routeVariants?.length > 0) {
@@ -145,7 +135,7 @@ const DiversionManager = (props) => {
                 // Restore state for editing mode
                 initEditingMode(routeVariants);
             }
-        } catch (error) {
+        } catch {
             setRouteVariantsList([]);
         }
     }, debounceDelay);
@@ -251,9 +241,6 @@ const DiversionManager = (props) => {
         setAffectedStops([]);
         setDiversionShapeWkt(null);
         setModifiedBaseRouteVariant(null);
-        setSelectedOtherRouteVariants([]);
-        setBaseRouteVariantOnly(true);
-        fetchVariants();
     };
 
     // Buttons
@@ -295,8 +282,6 @@ const DiversionManager = (props) => {
     const handleResultAction = (action) => {
         props.resetDiversionResult();
         if (action === ACTION_TYPE.NEW_DIVERSION) {
-            reset();
-        } else if (action === ACTION_TYPE.RETURN_TO_DIVERSION) {
             reset();
         } else if (action === ACTION_TYPE.RETURN_TO_DISRUPTION) {
             if (props.onCancelled) {
@@ -359,10 +344,8 @@ const DiversionManager = (props) => {
         );
     };
 
-    const containerClassName = `side-panel-control-component-view d-flex${props.useDiversion ? ' use-diversion-enabled' : ''}`;
-
     return (
-        <div className={ containerClassName }>
+        <div className="side-panel-control-component-view d-flex">
             <SidePanel
                 isOpen
                 isActive
@@ -467,7 +450,6 @@ DiversionManager.propTypes = {
     onCancelled: PropTypes.func,
     resultState: PropTypes.object,
     diversion: PropTypes.object,
-    useDiversion: PropTypes.bool.isRequired,
 };
 
 DiversionManager.defaultProps = {
@@ -485,5 +467,4 @@ export default connect(state => ({
     editMode: getDiversionEditMode(state),
     resultState: getDiversionResultState(state),
     diversion: getDiversionForEditing(state),
-    useDiversion: useDiversion(state),
 }), { createDiversion, updateDiversion, resetDiversionResult })(DiversionManager);

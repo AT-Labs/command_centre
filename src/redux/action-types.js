@@ -226,8 +226,6 @@ export default {
     UPDATE_CONTROL_ACTIVE_DISRUPTION_ID: 'update-control-active-disruption-id',
     UPDATE_DISRUPTIONS_REVERSE_GEOCODE_LOADING_STATE: 'update-disruptions-reverse-geocode-loading-state',
     UPDATE_DISRUPTIONS_ROUTES_LOADING_STATE: 'update-disruptions-routes-loading-state',
-    UPDATE_ACTIVE_PERIODS_FOR_SEARCH: 'update-active-periods-for-search',
-    REFRESH_ACTIVE_PERIODS_FOR_SEARCH: 'refresh-active-periods-for-search',
     UPDATE_SELECTED_ROUTES: 'update-selected-routes',
     SHOW_SELECTED_ROUTES: 'show-selected-routes',
     COPY_DISRUPTION: 'copy-disruptions',
@@ -252,10 +250,6 @@ export default {
     OPEN_DIVERSION_MANAGER: 'open-diversion-manager',
     ADD_DIVERSION: 'add-diversion',
     UPDATE_DIVERSION_RESULT_STATE: 'update-diversion-result-state',
-    FETCH_DIVERSIONS_START: 'fetch-diversions-start',
-    FETCH_DIVERSIONS_SUCCESS: 'fetch-diversions-success',
-    FETCH_DIVERSIONS_ERROR: 'fetch-diversions-error',
-    CLEAR_DIVERSIONS_CACHE: 'clear-diversions-cache',
 
     // Incidents
     FETCH_CONTROL_INCIDENTS_DISRUPTIONS: 'fetch-control-incidents-disruptions',
@@ -302,6 +296,7 @@ export default {
     SET_DISRUPTION_FOR_WORKAROUND_EDIT: 'set-disruption-for-workaround-edit',
     SET_REQUEST_TO_UPDATE_EDIT_EFFECT: 'set-request-to-update-edit-effect',
     SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT: 'set-requested-disruption-key-to-update-edit-effect',
+    UPDATE_MAP_DRAWING_ENTITIES: 'update-map-drawing-entities',
     // UPDATE_INCIDENT_DIVERSION_EDIT_MODE: 'update-incident-diversion-edit-mode',
     // OPEN_INCIDENT_CREATE_DIVERSION: 'open-incident-create-diversion',
     // ADD_INCIDENT_DIVERSION: 'add-incident-diversion',

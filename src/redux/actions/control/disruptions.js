@@ -30,15 +30,6 @@ const loadDisruptions = disruptions => ({
     },
 });
 
-export const updateActivePeriodsForSearch = activePeriods => ({
-    type: ACTION_TYPE.UPDATE_ACTIVE_PERIODS_FOR_SEARCH,
-    payload: { activePeriods },
-});
-
-export const refreshActivePeriodsForSearch = () => ({
-    type: ACTION_TYPE.REFRESH_ACTIVE_PERIODS_FOR_SEARCH,
-});
-
 const updateLoadingDisruptionsState = isLoading => ({
     type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTIONS_LOADING,
     payload: {
@@ -272,7 +263,6 @@ export const createDisruption = disruption => async (dispatch, getState) => {
     }
 
     await dispatch(getDisruptions());
-    dispatch(refreshActivePeriodsForSearch());
 };
 
 export const getStopsByRoute = routes => async (dispatch, getState) => {
