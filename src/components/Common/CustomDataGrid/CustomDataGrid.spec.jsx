@@ -5,6 +5,8 @@ import { mount } from 'enzyme';
 
 import CustomDataGrid from './CustomDataGrid';
 
+jest.useFakeTimers();
+
 let wrapper;
 
 const cache = createCache({ key: 'default' });
@@ -37,6 +39,13 @@ const setup = (customProps) => {
 };
 
 describe('<CustomDataGrid />', () => {
+    afterEach(() => {
+        jest.clearAllTimers();
+        if (wrapper) {
+            wrapper.unmount();
+        }
+    });
+
     it('Should render', () => expect(setup().exists()).toEqual(true));
 
     describe('Check View', () => {

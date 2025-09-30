@@ -41,7 +41,6 @@ const defaultState = {
         description: '1',
         createdBy: 'yuchun.yang@propellerhead.co.nz',
         createdTime: '2022-08-03T23:17:15.171Z',
-        url: '',
         header: '1',
         feedEntityId: 'f1e3946c-1530-406a-a1b7-c432653e9825',
         uploadedFiles: null,
