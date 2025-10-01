@@ -5,6 +5,8 @@ import {
     createUpdateHandler,
     createStopsAndRoutesHandlers,
     createStateUpdater,
+    disruptionsStateUpdater,
+    incidentsStateUpdater,
 } from './mergeStateData';
 
 describe('mergeStateData', () => {
@@ -175,5 +177,21 @@ describe('createStateUpdater', () => {
                 loading: false,
             },
         });
+    });
+});
+
+describe('exported state updaters', () => {
+    it('should export disruptionsStateUpdater', () => {
+        expect(disruptionsStateUpdater).to.have.property('updateStopsByRoute');
+        expect(disruptionsStateUpdater).to.have.property('updateRoutesByStop');
+        expect(disruptionsStateUpdater.updateStopsByRoute).to.be.a('function');
+        expect(disruptionsStateUpdater.updateRoutesByStop).to.be.a('function');
+    });
+
+    it('should export incidentsStateUpdater', () => {
+        expect(incidentsStateUpdater).to.have.property('updateStopsByRoute');
+        expect(incidentsStateUpdater).to.have.property('updateRoutesByStop');
+        expect(incidentsStateUpdater.updateStopsByRoute).to.be.a('function');
+        expect(incidentsStateUpdater.updateRoutesByStop).to.be.a('function');
     });
 });

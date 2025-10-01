@@ -34,3 +34,6 @@ export const createStateUpdater = statePath => ({
     updateStopsByRoute: createStopsByRouteUpdater(statePath),
     updateRoutesByStop: createRoutesByStopUpdater(statePath),
 });
+
+export const disruptionsStateUpdater = createStateUpdater('control.disruptions');
+export const incidentsStateUpdater = createStateUpdater('control.incidents');
