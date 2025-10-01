@@ -20,6 +20,8 @@ export const createStopsAndRoutesHandlers = () => ({
     handleUpdateRoutesByStop: createUpdateHandler('routesByStop', 'isLoadingRoutesByStop'),
 });
 
+export const { handleUpdateStopsByRoute, handleUpdateRoutesByStop } = createStopsAndRoutesHandlers();
+
 function createStopsByRouteUpdater(statePath) {
     return (dispatch, getState, stopsByRoute, updateStopsByRoute) => updateStateWithMergedData(dispatch, getState, statePath, 'stopsByRoute', stopsByRoute, updateStopsByRoute);
 }

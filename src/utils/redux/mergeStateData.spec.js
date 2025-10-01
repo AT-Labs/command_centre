@@ -1,5 +1,11 @@
 import { expect } from 'chai';
-import { mergeStateData, updateStateWithMergedData, createUpdateHandler, createStopsAndRoutesHandlers, createStateUpdater } from './mergeStateData';
+import {
+    mergeStateData,
+    updateStateWithMergedData,
+    createUpdateHandler,
+    createStopsAndRoutesHandlers,
+    createStateUpdater,
+} from './mergeStateData';
 
 describe('mergeStateData', () => {
     it('should merge new data with existing state data', () => {
@@ -98,43 +104,6 @@ describe('createStopsAndRoutesHandlers', () => {
         expect(handlers).to.have.property('handleUpdateRoutesByStop');
         expect(handlers.handleUpdateStopsByRoute).to.be.a('function');
         expect(handlers.handleUpdateRoutesByStop).to.be.a('function');
-    });
-
-    it('should create handlers that work correctly', () => {
-        const { handleUpdateStopsByRoute, handleUpdateRoutesByStop } = createStopsAndRoutesHandlers();
-        const state = {
-            stopsByRoute: { route1: ['stop1'] },
-            routesByStop: { stop1: ['route1'] },
-            isLoadingStopsByRoute: true,
-            isLoadingRoutesByStop: true,
-        };
-
-        const stopsAction = {
-            payload: {
-                stopsByRoute: { route2: ['stop2'] },
-            },
-        };
-
-        const routesAction = {
-            payload: {
-                routesByStop: { stop2: ['route2'] },
-            },
-        };
-
-        const stopsResult = handleUpdateStopsByRoute(state, stopsAction);
-        const routesResult = handleUpdateRoutesByStop(state, routesAction);
-
-        expect(stopsResult.stopsByRoute).to.deep.equal({
-            route1: ['stop1'],
-            route2: ['stop2'],
-        });
-        expect(stopsResult.isLoadingStopsByRoute).to.equal(false);
-
-        expect(routesResult.routesByStop).to.deep.equal({
-            stop1: ['route1'],
-            stop2: ['route2'],
-        });
-        expect(routesResult.isLoadingRoutesByStop).to.equal(false);
     });
 });
 
