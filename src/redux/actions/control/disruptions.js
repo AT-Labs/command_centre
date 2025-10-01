@@ -22,7 +22,6 @@ import {
 import { getAllRoutes } from '../../selectors/static/routes';
 import { getAllStops } from '../../selectors/static/stops';
 import EDIT_TYPE from '../../../types/edit-types';
-import { disruptionsStateUpdater } from '../../../utils/redux/mergeStateData';
 
 const loadDisruptions = disruptions => ({
     type: ACTION_TYPE.FETCH_CONTROL_DISRUPTIONS,
@@ -209,19 +208,29 @@ export const updateActiveDisruptionId = activeDisruptionId => (dispatch) => {
     dispatch(clearDisruptionActionResult());
 };
 
-export const publishDraftDisruption = disruption => async (dispatch) => {
+export const publishDraftDisruption = (disruption, diversions) => async (dispatch) => {
     let response;
     dispatch(updateRequestingDisruptionState(true, disruption.disruptionId));
     try {
-        response = await disruptionsMgtApi.updateDisruption(disruption);
-        dispatch(
-            updateRequestingDisruptionResult(
+        if (!disruption.endTime && diversions?.length > 0) {
+            dispatch(updateRequestingDisruptionResult(
                 disruption.disruptionId,
-                ACTION_RESULT.PUBLISH_DRAFT_SUCCESS(response.incidentNo, response.version, response.createNotification),
-            ),
-        );
+                ACTION_RESULT.PUBLISH_DRAFT_ERROR(
+                    null,
+                    'Disruption with diversion(s) require and End Date and Time to be published. Please inform the End Date and End Time and try again.',
+                ),
+            ));
+        } else {
+            response = await disruptionsMgtApi.updateDisruption(disruption);
+            dispatch(
+                updateRequestingDisruptionResult(
+                    disruption.disruptionId,
+                    ACTION_RESULT.PUBLISH_DRAFT_SUCCESS(response.incidentNo, response.version, response.createNotification),
+                ),
+            );
+        }
     } catch (error) {
-        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.PUBLISH_DRAFT_ERROR(error.code)));
+        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.PUBLISH_DRAFT_ERROR(error.code, error.message || 'Failed to publish draft disruption')));
     } finally {
         dispatch(updateRequestingDisruptionState(false, disruption.disruptionId));
     }
@@ -298,7 +307,7 @@ export const getStopsByRoute = routes => async (dispatch, getState) => {
             })
             .finally(() => {
                 dispatch(updateCachedRoutesToStops(missingCacheRoutesToStops));
-                disruptionsStateUpdater.updateStopsByRoute(dispatch, getState, stopsByRoute, updateStopsByRoute);
+                dispatch(updateStopsByRoute(stopsByRoute, false));
             });
     }
     return dispatch(updateLoadingStopsByRoute(false));
@@ -357,7 +366,7 @@ export const getRoutesByStop = stops => async (dispatch, getState) => {
                 });
                 dispatch(updateCachedShapesState(missingCacheShapes));
                 dispatch(updateCachedStopsToRoutes(missingCacheStopsToRoutes));
-                disruptionsStateUpdater.updateRoutesByStop(dispatch, getState, routesByStop, updateRoutesByStop);
+                dispatch(updateRoutesByStop(routesByStop, false));
             });
     }
     return dispatch(updateLoadingRoutesByStop(false));

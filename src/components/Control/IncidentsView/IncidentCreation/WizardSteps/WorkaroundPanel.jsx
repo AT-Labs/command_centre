@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useState, useRef } from 'react';
-import { Paper, Stack, CircularProgress } from '@mui/material';
-import { Button } from 'reactstrap';
+import { Button, Paper, Stack, CircularProgress } from '@mui/material';
 import { connect } from 'react-redux';
 import { getEditMode,
     isWorkaroundPanelOpen,
@@ -54,7 +53,6 @@ export const WorkaroundPanel = (props) => {
         props.toggleWorkaroundPanel(false);
         props.updateDisruptionKeyToWorkaroundEdit('');
     };
-
     return (
         <div className={ `workaround-panel ${props.editMode === EDIT_TYPE.EDIT ? 'edit-flow-workaround-panel' : ''} ${props.isWorkaroundPanelOpen ? '' : 'pointer-event-none'}` }>
             {props.isWorkaroundPanelOpen && (
