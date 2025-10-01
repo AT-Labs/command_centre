@@ -39,7 +39,7 @@ export const StopsByRouteMultiSelect = (props) => {
     };
     const toggleExpandedRoute = (route) => {
         toggleExpandedItem(route.routeId, expandedRoutes, setExpandedRoutes);
-        if (!loadedStopsByRoute.some(item => item.routeId === route.routeId) && !props.findStopsByRoute[route.routeId]) {
+        if (!loadedStopsByRoute.find(item => item.routeId === route.routeId) && !props.findStopsByRoute[route.routeId]) {
             setLoadedStopsByRoute([...loadedStopsByRoute, route]);
         }
     };

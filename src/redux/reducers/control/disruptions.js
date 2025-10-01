@@ -1,7 +1,7 @@
 import { handleActions } from 'redux-actions';
 import EDIT_TYPE from '../../../types/edit-types';
 import ACTION_TYPE from '../../action-types';
-import { mergeStateData } from '../../../utils/redux/mergeStateData';
+import { createUpdateHandler } from '../../../utils/redux/mergeStateData';
 
 export const INIT_STATE = {
     activeDisruptionId: null,
@@ -107,9 +107,9 @@ const handleDisruptionModal = (state, { payload: { type, isOpen } }) => ({
 });
 const handleUpdateCurrentStep = (state, { payload: { activeStep } }) => ({ ...state, activeStep });
 
-const handleUpdateStopsByRoute = (state, { payload: { stopsByRoute } }) => mergeStateData(state, 'stopsByRoute', stopsByRoute, 'isLoadingStopsByRoute');
+const handleUpdateStopsByRoute = createUpdateHandler('stopsByRoute', 'isLoadingStopsByRoute');
 
-const handleUpdateRoutesByStop = (state, { payload: { routesByStop } }) => mergeStateData(state, 'routesByStop', routesByStop, 'isLoadingRoutesByStop');
+const handleUpdateRoutesByStop = createUpdateHandler('routesByStop', 'isLoadingRoutesByStop');
 const handleAffectedEntities = (state, { payload: {
     showSelectedRoutes,
     affectedEntities,
