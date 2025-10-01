@@ -4,8 +4,8 @@ import { RRule } from 'rrule';
 import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import { updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
-import { buildIncidentSubmitBody, momentFromDateTime } from '../../../../../utils/control/disruptions';
-import { STATUSES, DISRUPTION_TYPE, DEFAULT_SEVERITY } from '../../../../../types/disruptions-types';
+import { buildIncidentSubmitBody, momentFromDateTime, getStatusForEffect } from '../../../../../utils/control/disruptions';
+import { STATUSES, DISRUPTION_TYPE, getParentChildDefaultSeverity } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
 
@@ -34,6 +34,7 @@ jest.mock('../../../../../utils/control/disruptions', () => ({
     generateDisruptionActivePeriods: jest.fn().mockReturnValue(disruptionActivePeriodsMock),
     buildIncidentSubmitBody: jest.fn(),
     momentFromDateTime: jest.fn(),
+    getStatusForEffect: jest.fn(),
 }));
 
 const defaultIncidentData = {
@@ -46,13 +47,12 @@ const defaultIncidentData = {
     mode: '-',
     status: STATUSES.NOT_STARTED,
     header: '',
-    url: '',
     createNotification: false,
     recurrent: false,
     duration: '',
     recurrencePattern: { freq: RRule.WEEKLY },
     disruptionType: DISRUPTION_TYPE.ROUTES,
-    severity: DEFAULT_SEVERITY.value,
+    severity: getParentChildDefaultSeverity().value,
 
     notes: '',
     disruptions: [],
@@ -67,7 +67,6 @@ const incidentForEdit = {
     endTime: null,
     status: 'in-progress',
     header: 'test incident n0827',
-    url: '',
     version: 1,
     recurrencePattern: null,
     duration: '',
@@ -106,7 +105,6 @@ const incidentForEdit = {
             description: null,
             createdBy: 'aqwe@propellerhead.co.nz',
             createdTime: '2025-08-21T20:27:33.201Z',
-            url: '',
             header: 'test incident n0827',
             feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
             uploadedFiles: null,
@@ -396,6 +394,9 @@ describe('CreateIncident component', () => {
         const mockUpdateAffectedRoutesState = jest.fn();
         const mockGetRoutesByShortName = jest.fn();
         const mockUpdateEditMode = jest.fn();
+        const mockSetDisruptionForWorkaroundEdit = jest.fn();
+        const mockToggleWorkaroundPanel = jest.fn();
+        const mockUpdateDisruptionKeyToWorkaroundEdit = jest.fn();
 
         beforeEach(() => {
             wrapper = shallow(
@@ -479,7 +480,6 @@ describe('CreateIncident component', () => {
                 description: null,
                 createdBy: 'aqwe@propellerhead.co.nz',
                 createdTime: '2025-08-21T20:27:33.201Z',
-                url: '',
                 header: 'test incident n0827',
                 feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
                 uploadedFiles: null,
@@ -514,7 +514,6 @@ describe('CreateIncident component', () => {
                 status: 'in-progress',
                 header: 'test incident n0827',
                 description: '',
-                url: '',
                 createNotification: false,
                 recurrent: false,
                 duration: '',
@@ -596,7 +595,6 @@ describe('CreateIncident component', () => {
                 description: null,
                 createdBy: 'aqwe@propellerhead.co.nz',
                 createdTime: '2025-08-21T20:27:33.201Z',
-                url: '',
                 header: 'test incident n0827',
                 feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
                 uploadedFiles: null,
@@ -631,7 +629,6 @@ describe('CreateIncident component', () => {
                 status: 'in-progress',
                 header: 'test incident n0827',
                 description: '',
-                url: '',
                 createNotification: false,
                 recurrent: false,
                 duration: '',
@@ -761,7 +758,6 @@ describe('CreateIncident component', () => {
                 description: null,
                 createdBy: 'aqwe@propellerhead.co.nz',
                 createdTime: '2025-08-21T20:27:33.201Z',
-                url: '',
                 header: 'test incident n0827',
                 feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
                 uploadedFiles: null,
@@ -811,6 +807,7 @@ describe('CreateIncident component', () => {
         });
 
         it('Should call updateIncident on add new effect with additional disruption', async () => {
+            getStatusForEffect.mockReturnValue({ status: STATUSES.IN_PROGRESS });
             const newDisruption = {
                 disruptionId: 139537,
                 incidentNo: 'DISR139537',
@@ -909,7 +906,6 @@ describe('CreateIncident component', () => {
                 description: null,
                 createdBy: 'aqwe@propellerhead.co.nz',
                 createdTime: '2025-08-21T20:27:33.201Z',
-                url: '',
                 header: 'test incident n0827',
                 feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
                 uploadedFiles: null,
@@ -971,6 +967,82 @@ describe('CreateIncident component', () => {
             expect(mockUpdateIncident).toHaveBeenCalled();
         });
 
+        it('Should call updateIncident on add new effect with additional disruption for draft incident', async () => {
+            getStatusForEffect.mockReturnValue({ status: STATUSES.IN_PROGRESS });
+            const newDisruption = {
+                disruptionId: 139537,
+                incidentNo: 'DISR139537',
+                mode: '',
+                affectedEntities: [],
+                impact: 'ESCALATOR_NOT_WORKING',
+                cause: 'CONGESTION',
+                startTime: '2025-08-21T20:27:00.000Z',
+                endTime: null,
+                status: 'draft',
+                header: 'test incident n0827',
+                uploadedFiles: null,
+                createNotification: false,
+                exemptAffectedTrips: null,
+                version: 1,
+                duration: '',
+                activePeriods: [
+                    {
+                        startTime: 1755808020,
+                    },
+                ],
+                recurrencePattern: null,
+                recurrent: false,
+                workarounds: [],
+                notes: [],
+                severity: 'HEADLINE',
+                passengerCount: null,
+                incidentId: 139273,
+                incidentTitle: 'test draft n0827',
+                incidentDisruptionNo: 'CCD139273',
+                key: 'DISR139537',
+            };
+            const incident = {
+                ...incidentForEdit,
+                status: STATUSES.DRAFT,
+            };
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incident }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    isEditEffectPanelOpen
+                />,
+            );
+            wrapper.setProps({ editMode: EDIT_TYPE.ADD_EFFECT });
+            wrapper.setState(prevState => ({
+                ...prevState,
+                newIncidentEffect: {
+                    ...newDisruption,
+                },
+            }));
+            momentFromDateTime.mockReturnValue(mockTimeForMoment);
+            buildIncidentSubmitBody.mockReturnValue({});
+            await wrapper.instance().onSubmitUpdate();
+            expect(buildIncidentSubmitBody).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    disruptions: expect.arrayContaining([expect.anything()]),
+                }),
+                true,
+            );
+            const callArgs = buildIncidentSubmitBody.mock.calls[0][0];
+            expect(callArgs.disruptions).toHaveLength(2);
+            expect(mockUpdateIncident).toHaveBeenCalled();
+            expect(wrapper.state('incidentData').status).toEqual(STATUSES.DRAFT);
+        });
+
         it('Should update edit mode on addNewEffectToIncident call', async () => {
             wrapper = shallow(
                 <CreateIncident
@@ -987,9 +1059,15 @@ describe('CreateIncident component', () => {
                     getRoutesByShortName={ mockGetRoutesByShortName }
                     updateEditMode={ mockUpdateEditMode }
                     isEditEffectPanelOpen
+                    updateDisruptionKeyToWorkaroundEdit={ mockUpdateDisruptionKeyToWorkaroundEdit }
+                    toggleWorkaroundPanel={ mockToggleWorkaroundPanel }
+                    setDisruptionForWorkaroundEdit={ mockSetDisruptionForWorkaroundEdit }
                 />,
             );
             await wrapper.instance().addNewEffectToIncident();
+            expect(mockSetDisruptionForWorkaroundEdit).toHaveBeenCalledWith({});
+            expect(mockToggleWorkaroundPanel).toHaveBeenCalledWith(false);
+            expect(mockUpdateDisruptionKeyToWorkaroundEdit).toHaveBeenCalledWith('');
             expect(mockUpdateAffectedStopsState).toHaveBeenCalledWith([]);
             expect(mockUpdateAffectedRoutesState).toHaveBeenCalledWith([]);
             expect(mockUpdateEditMode).toHaveBeenCalledWith(EDIT_TYPE.ADD_EFFECT);
@@ -1012,7 +1090,6 @@ describe('CreateIncident component', () => {
                 description: null,
                 createdBy: 'aqwe@propellerhead.co.nz',
                 createdTime: '2025-08-21T20:27:33.201Z',
-                url: '',
                 header: 'test incident n0827',
                 feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
                 uploadedFiles: null,
@@ -1068,7 +1145,6 @@ describe('CreateIncident component', () => {
                 description: null,
                 createdBy: 'aqwe@propellerhead.co.nz',
                 createdTime: '2025-08-21T20:27:33.201Z',
-                url: '',
                 header: 'test incident n0827',
                 feedEntityId: 'eacda2bb-baf4-44dc-9b11-bd2c15021ff1',
                 uploadedFiles: null,

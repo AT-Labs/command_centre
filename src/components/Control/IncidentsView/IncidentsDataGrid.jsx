@@ -25,8 +25,8 @@ import {
     getIncidentsLoadingState,
     getIncidentsWithDisruptions,
     getIncidentsDatagridConfig,
-    getActiveDisruptionId,
 } from '../../../redux/selectors/control/incidents';
+import { getActiveDisruptionId } from '../../../redux/selectors/control/disruptions';
 import { goToNotificationsView } from '../../../redux/actions/control/link';
 import { useViewDisruptionDetailsPage } from '../../../redux/selectors/appSettings';
 import { STATUSES } from '../../../types/disruptions-types';
@@ -118,7 +118,7 @@ export const IncidentsDataGrid = (props) => {
 
     const getIncidentsButton = incident => (
         [
-            <Tooltip title="Open & Edit Incident" placement="top-end" key={ uniqueId(incident.incidentId) }>
+            <Tooltip title="Open & Edit Disruption" placement="top-end" key={ uniqueId(incident.incidentId) }>
                 <IconButton aria-label="open-edit-incident"
                     onClick={ () => {
                         props.setIncidentToUpdate(incident.incidentId, incident.incidentNo);
@@ -266,6 +266,35 @@ export const IncidentsDataGrid = (props) => {
 
     const incidentWithPath = addPath(props.mergedIncidentsAndDisruptions);
 
+    const { activeIncident } = props;
+    const activeIncidentId = activeIncident ? getRowId(activeIncident) : null;
+
+    const activeDisruptionCompositeId = React.useMemo(() => {
+        if (!props.activeDisruptionId) return null;
+        const disruptionRow = incidentWithPath.find(row => row.disruptionId === props.activeDisruptionId);
+        return disruptionRow ? getRowId(disruptionRow) : null;
+    }, [props.activeDisruptionId, incidentWithPath]);
+
+    const initialState = activeIncidentId ? {
+        treeData: {
+            expansion: {
+                [activeIncidentId]: true,
+            },
+        },
+    } : {};
+
+    React.useEffect(() => {
+        if (!activeIncidentId || !props.clearActiveIncident) {
+            return undefined;
+        }
+
+        const timer = setTimeout(() => {
+            props.clearActiveIncident();
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [activeIncidentId, props.clearActiveIncident]);
+
     return (
         <div>
             <CustomDataGrid
@@ -281,8 +310,10 @@ export const IncidentsDataGrid = (props) => {
                 loading={ props.isLoading }
                 getRowClassName={ params => (params.row.disruptionId ? 'incidents-custom-data-grid-child-row' : 'incidents-custom-data-grid-parent-row') }
                 calculateDetailPanelHeight={ props.useViewDisruptionDetailsPage ? () => 400 : calculateDetailPanelHeight }
-                expandedDetailPanels={ props.activeDisruptionId ? [props.activeDisruptionId] : null }
+                expandedDetailPanels={ activeDisruptionCompositeId ? [activeDisruptionCompositeId] : null }
                 onRowExpanded={ ids => updateActiveDisruption(ids) }
+                initialState={ initialState }
+                autoExpandActiveIncident={ activeIncidentId }
             />
         </div>
     );
@@ -292,6 +323,7 @@ IncidentsDataGrid.propTypes = {
     datagridConfig: PropTypes.object.isRequired,
     mergedIncidentsAndDisruptions: PropTypes.array,
     activeDisruptionId: PropTypes.number,
+    activeIncident: PropTypes.object,
     updateActiveDisruptionId: PropTypes.func.isRequired,
     updateCopyDisruptionState: PropTypes.func.isRequired,
     isLoading: PropTypes.bool.isRequired,
@@ -300,11 +332,13 @@ IncidentsDataGrid.propTypes = {
     updateIncidentsDatagridConfig: PropTypes.func.isRequired,
     goToNotificationsView: PropTypes.func.isRequired,
     useViewDisruptionDetailsPage: PropTypes.bool.isRequired,
+    clearActiveIncident: PropTypes.func.isRequired,
 };
 
 IncidentsDataGrid.defaultProps = {
     mergedIncidentsAndDisruptions: [],
     activeDisruptionId: null,
+    activeIncident: null,
 };
 
 export default connect(

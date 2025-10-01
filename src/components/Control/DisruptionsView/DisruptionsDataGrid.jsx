@@ -312,6 +312,7 @@ export const DisruptionsDataGrid = (props) => {
                 calculateDetailPanelHeight={ props.useViewDisruptionDetailsPage ? () => 400 : calculateDetailPanelHeight }
                 expandedDetailPanels={ props.activeDisruptionId ? [props.activeDisruptionId] : null }
                 onRowExpanded={ ids => updateActiveDisruption(ids) }
+                autoExpandActiveIncident={ props.activeDisruptionId }
             />
         </div>
     );
