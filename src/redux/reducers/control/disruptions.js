@@ -105,8 +105,14 @@ const handleDisruptionModal = (state, { payload: { type, isOpen } }) => ({
     [type]: isOpen,
 });
 const handleUpdateCurrentStep = (state, { payload: { activeStep } }) => ({ ...state, activeStep });
-const handleUpdateStopsByRoute = (state, { payload: { stopsByRoute, isLoadingStopsByRoute } }) => ({ ...state, stopsByRoute, isLoadingStopsByRoute });
-const handleUpdateRoutesByStop = (state, { payload: { routesByStop, isLoadingRoutesByStop } }) => ({ ...state, routesByStop, isLoadingRoutesByStop });
+const handleUpdateStopsByRoute = (state, { payload: { stopsByRoute, isLoadingStopsByRoute } }) => {
+    const mergedStopsByRoute = { ...state.stopsByRoute, ...stopsByRoute };
+    return { ...state, stopsByRoute: mergedStopsByRoute, isLoadingStopsByRoute };
+};
+const handleUpdateRoutesByStop = (state, { payload: { routesByStop, isLoadingRoutesByStop } }) => {
+    const mergedRoutesByStop = { ...state.routesByStop, ...routesByStop };
+    return { ...state, routesByStop: mergedRoutesByStop, isLoadingRoutesByStop };
+};
 const handleAffectedEntities = (state, { payload: {
     showSelectedRoutes,
     affectedEntities,

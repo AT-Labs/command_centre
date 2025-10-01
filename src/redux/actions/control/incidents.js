@@ -343,7 +343,9 @@ export const getStopsByRoute = routes => async (dispatch, getState) => {
             })
             .finally(() => {
                 dispatch(updateCachedRoutesToStops(missingCacheRoutesToStops));
-                dispatch(updateStopsByRoute(stopsByRoute, false));
+                const currentState = getState();
+                const allStopsByRoute = { ...currentState.control.incidents.stopsByRoute, ...stopsByRoute };
+                dispatch(updateStopsByRoute(allStopsByRoute, false));
             });
     }
     return dispatch(updateLoadingStopsByRoute(false));
@@ -402,7 +404,9 @@ export const getRoutesByStop = stops => async (dispatch, getState) => {
                 });
                 dispatch(updateCachedShapesState(missingCacheShapes));
                 dispatch(updateCachedStopsToRoutes(missingCacheStopsToRoutes));
-                dispatch(updateRoutesByStop(routesByStop, false));
+                const currentState = getState();
+                const allRoutesByStop = { ...currentState.control.incidents.routesByStop, ...routesByStop };
+                dispatch(updateRoutesByStop(allRoutesByStop, false));
             });
     }
     return dispatch(updateLoadingRoutesByStop(false));

@@ -55,7 +55,6 @@ import {
     toCamelCaseKeys,
     generateDisruptionActivePeriods,
     buildIncidentSubmitBody,
-    getStatusForEffect,
 } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
@@ -431,7 +430,7 @@ export class CreateIncident extends React.Component {
                 ...updatedDisruption,
                 {
                     ...newIncidentEffect,
-                    ...(incidentData.status === STATUSES.DRAFT ? { status: STATUSES.DRAFT } : getStatusForEffect(newIncidentEffect)),
+                    ...(incidentData.status === STATUSES.DRAFT ? { status: STATUSES.DRAFT } : { status: STATUSES.NOT_STARTED }),
                 }];
         }
 
@@ -633,10 +632,9 @@ export class CreateIncident extends React.Component {
                                         <div className="add-effect-button-wrapper pr-4">
                                             <button
                                                 type="button"
-                                                className={ `add-effect-button ${this.props.incidentToEdit.status === STATUSES.RESOLVED ? 'disabled' : ''}` }
-                                                onClick={ () => this.addNewEffectToIncident() }
-                                                disabled={ this.props.incidentToEdit.status === STATUSES.RESOLVED }>
-                                                <AiOutlinePlusCircle size={ 36 } color={ this.props.incidentToEdit.status === STATUSES.RESOLVED ? '#e9ecef' : '#399CDB' } />
+                                                className="add-effect-button"
+                                                onClick={ () => this.addNewEffectToIncident() }>
+                                                <AiOutlinePlusCircle size={ 36 } color="#399CDB" />
                                                 {' '}
                                                 Add effect
                                             </button>
