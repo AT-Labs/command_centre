@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { mergeStateData, updateStateWithMergedData, createUpdateHandler } from './mergeStateData';
+import { mergeStateData, updateStateWithMergedData, createUpdateHandler, createStopsAndRoutesHandlers, createStateUpdater } from './mergeStateData';
 
 describe('mergeStateData', () => {
     it('should merge new data with existing state data', () => {
@@ -87,5 +87,124 @@ describe('createUpdateHandler', () => {
             route2: ['stop3', 'stop4'],
         });
         expect(result.isLoadingStopsByRoute).to.equal(false);
+    });
+});
+
+describe('createStopsAndRoutesHandlers', () => {
+    it('should create both stops and routes handlers', () => {
+        const handlers = createStopsAndRoutesHandlers();
+
+        expect(handlers).to.have.property('handleUpdateStopsByRoute');
+        expect(handlers).to.have.property('handleUpdateRoutesByStop');
+        expect(handlers.handleUpdateStopsByRoute).to.be.a('function');
+        expect(handlers.handleUpdateRoutesByStop).to.be.a('function');
+    });
+
+    it('should create handlers that work correctly', () => {
+        const { handleUpdateStopsByRoute, handleUpdateRoutesByStop } = createStopsAndRoutesHandlers();
+        const state = {
+            stopsByRoute: { route1: ['stop1'] },
+            routesByStop: { stop1: ['route1'] },
+            isLoadingStopsByRoute: true,
+            isLoadingRoutesByStop: true,
+        };
+
+        const stopsAction = {
+            payload: {
+                stopsByRoute: { route2: ['stop2'] },
+            },
+        };
+
+        const routesAction = {
+            payload: {
+                routesByStop: { stop2: ['route2'] },
+            },
+        };
+
+        const stopsResult = handleUpdateStopsByRoute(state, stopsAction);
+        const routesResult = handleUpdateRoutesByStop(state, routesAction);
+
+        expect(stopsResult.stopsByRoute).to.deep.equal({
+            route1: ['stop1'],
+            route2: ['stop2'],
+        });
+        expect(stopsResult.isLoadingStopsByRoute).to.equal(false);
+
+        expect(routesResult.routesByStop).to.deep.equal({
+            stop1: ['route1'],
+            stop2: ['route2'],
+        });
+        expect(routesResult.isLoadingRoutesByStop).to.equal(false);
+    });
+});
+
+describe('createStateUpdater', () => {
+    it('should create state updater with correct methods', () => {
+        const stateUpdater = createStateUpdater('control.disruptions');
+
+        expect(stateUpdater).to.have.property('updateStopsByRoute');
+        expect(stateUpdater).to.have.property('updateRoutesByStop');
+        expect(stateUpdater.updateStopsByRoute).to.be.a('function');
+        expect(stateUpdater.updateRoutesByStop).to.be.a('function');
+    });
+
+    it('should create updater that works correctly for stopsByRoute', () => {
+        const stateUpdater = createStateUpdater('control.disruptions');
+        let dispatchedAction = null;
+        const mockDispatch = (action) => {
+            dispatchedAction = action;
+        };
+        const mockGetState = () => ({
+            control: {
+                disruptions: {
+                    stopsByRoute: { route1: ['stop1', 'stop2'] },
+                },
+            },
+        });
+        const newData = { route2: ['stop3', 'stop4'] };
+        const mockUpdateAction = (data, loading) => ({ type: 'UPDATE_STOPS_BY_ROUTE', payload: { data, loading } });
+
+        stateUpdater.updateStopsByRoute(mockDispatch, mockGetState, newData, mockUpdateAction);
+
+        expect(dispatchedAction).to.deep.equal({
+            type: 'UPDATE_STOPS_BY_ROUTE',
+            payload: {
+                data: {
+                    route1: ['stop1', 'stop2'],
+                    route2: ['stop3', 'stop4'],
+                },
+                loading: false,
+            },
+        });
+    });
+
+    it('should create updater that works correctly for routesByStop', () => {
+        const stateUpdater = createStateUpdater('control.incidents');
+        let dispatchedAction = null;
+        const mockDispatch = (action) => {
+            dispatchedAction = action;
+        };
+        const mockGetState = () => ({
+            control: {
+                incidents: {
+                    routesByStop: { stop1: ['route1'] },
+                },
+            },
+        });
+        const newData = { stop2: ['route2'] };
+        const mockUpdateAction = (data, loading) => ({ type: 'UPDATE_ROUTES_BY_STOP', payload: { data, loading } });
+
+        stateUpdater.updateRoutesByStop(mockDispatch, mockGetState, newData, mockUpdateAction);
+
+        expect(dispatchedAction).to.deep.equal({
+            type: 'UPDATE_ROUTES_BY_STOP',
+            payload: {
+                data: {
+                    stop1: ['route1'],
+                    stop2: ['route2'],
+                },
+                loading: false,
+            },
+        });
     });
 });

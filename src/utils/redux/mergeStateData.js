@@ -14,3 +14,21 @@ export const createUpdateHandler = (dataKey, loadingKey) => (state, { payload })
     const data = payload[dataKey];
     return mergeStateData(state, dataKey, data, loadingKey);
 };
+
+export const createStopsAndRoutesHandlers = () => ({
+    handleUpdateStopsByRoute: createUpdateHandler('stopsByRoute', 'isLoadingStopsByRoute'),
+    handleUpdateRoutesByStop: createUpdateHandler('routesByStop', 'isLoadingRoutesByStop'),
+});
+
+function createStopsByRouteUpdater(statePath) {
+    return (dispatch, getState, stopsByRoute, updateStopsByRoute) => updateStateWithMergedData(dispatch, getState, statePath, 'stopsByRoute', stopsByRoute, updateStopsByRoute);
+}
+
+function createRoutesByStopUpdater(statePath) {
+    return (dispatch, getState, routesByStop, updateRoutesByStop) => updateStateWithMergedData(dispatch, getState, statePath, 'routesByStop', routesByStop, updateRoutesByStop);
+}
+
+export const createStateUpdater = statePath => ({
+    updateStopsByRoute: createStopsByRouteUpdater(statePath),
+    updateRoutesByStop: createRoutesByStopUpdater(statePath),
+});

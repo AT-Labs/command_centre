@@ -22,7 +22,9 @@ import {
 import { getAllRoutes } from '../../selectors/static/routes';
 import { getAllStops } from '../../selectors/static/stops';
 import EDIT_TYPE from '../../../types/edit-types';
-import { updateStateWithMergedData } from '../../../utils/redux/mergeStateData';
+import { createStateUpdater } from '../../../utils/redux/mergeStateData';
+
+const stateUpdater = createStateUpdater('control.incidents');
 
 export const updateIncidentsSortingParams = sortingParams => ({
     type: ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_SORTING_PARAMS,
@@ -344,7 +346,7 @@ export const getStopsByRoute = routes => async (dispatch, getState) => {
             })
             .finally(() => {
                 dispatch(updateCachedRoutesToStops(missingCacheRoutesToStops));
-                updateStateWithMergedData(dispatch, getState, 'control.incidents', 'stopsByRoute', stopsByRoute, updateStopsByRoute);
+                stateUpdater.updateStopsByRoute(dispatch, getState, stopsByRoute, updateStopsByRoute);
             });
     }
     return dispatch(updateLoadingStopsByRoute(false));
@@ -403,7 +405,7 @@ export const getRoutesByStop = stops => async (dispatch, getState) => {
                 });
                 dispatch(updateCachedShapesState(missingCacheShapes));
                 dispatch(updateCachedStopsToRoutes(missingCacheStopsToRoutes));
-                updateStateWithMergedData(dispatch, getState, 'control.incidents', 'routesByStop', routesByStop, updateRoutesByStop);
+                stateUpdater.updateRoutesByStop(dispatch, getState, routesByStop, updateRoutesByStop);
             });
     }
     return dispatch(updateLoadingRoutesByStop(false));
