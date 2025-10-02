@@ -11,8 +11,9 @@ import RouteShapeEditor from '../../../Common/Map/RouteShapeEditor/RouteShapeEdi
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import ChangeSelectedRouteVariantModal from './ChangeSelectedRouteVariantModal';
 import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
-import { createDiversion, updateDiversion, resetDiversionResult } from '../../../../redux/actions/control/diversions';
+import { createDiversion, updateDiversion, resetDiversionResult, setDiversionManagerReady } from '../../../../redux/actions/control/diversions';
 import { getDiversionResultState, getDiversionForEditing, getDiversionEditMode } from '../../../../redux/selectors/control/diversions';
+import { useDiversion } from '../../../../redux/selectors/appSettings';
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
 import { isAffectedStop, createAffectedStop,
     getUniqueStops, createModifiedRouteVariant, canMerge, hasDiversionModified, getUniqueAffectedStopIds,
@@ -49,7 +50,7 @@ const DiversionManager = (props) => {
     const [selectedOtherRouteVariants, setSelectedOtherRouteVariants] = useState([]); // Also hold the updated shape. It is not the final payload.
 
     // Shared diversion shape
-    const [diversionShapeWkt, setDiversionShapeWkt] = useState(isEditingMode ? props.diversion.diversionShapeWkt : null);
+    const [diversionShapeWkt, setDiversionShapeWkt] = useState(isEditingMode && props.diversion ? props.diversion.diversionShapeWkt : null);
 
     // Updated base route variant
     const [modifiedBaseRouteVariant, setModifiedBaseRouteVariant] = useState();
@@ -102,20 +103,20 @@ const DiversionManager = (props) => {
     // Fetch available route variants to populate the dropdown lists
     const fetchVariants = debounce(async () => {
         const start = moment(props.disruption.startTime).tz(dateTypes.TIME_ZONE);
-        const end = moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE);
+        const end = props.disruption.endTime ? moment(props.disruption.endTime).tz(dateTypes.TIME_ZONE) : null;
         const startDate = start.format(SERVICE_DATE_FORMAT);
         const startTime = start.format(TIME_FORMAT_HHMM);
-        const endDate = end.format(SERVICE_DATE_FORMAT);
-        const endTime = end.format(TIME_FORMAT_HHMM);
+        const endDate = end ? end.format(SERVICE_DATE_FORMAT) : null;
+        const endTime = end ? end.format(TIME_FORMAT_HHMM) : null;
         try {
             const search = {
                 page: 1,
                 limit: 1000,
                 routeIds,
-                ...(startDate !== null && { serviceDateFrom: startDate }),
-                ...(startTime !== null && { startTime }),
-                ...(endDate !== null && { serviceDateTo: endDate }),
-                ...(endTime !== null && { endTime }),
+                ...(startDate && { serviceDateFrom: startDate }),
+                ...(startTime && { startTime }),
+                ...(endDate && { serviceDateTo: endDate }),
+                ...(endTime && { endTime }),
             };
             let { routeVariants } = await searchRouteVariants(search);
             if (routeVariants?.length > 0) {
@@ -202,7 +203,7 @@ const DiversionManager = (props) => {
             const isModified = hasDiversionModified({
                 isEditingMode,
                 diversionShapeWkt,
-                originalDiversionShapeWkt: props.diversion.diversionShapeWkt,
+                originalDiversionShapeWkt: props.diversion ? props.diversion.diversionShapeWkt : null,
                 selectedOtherRouteVariants,
                 editingDiversions,
             });
@@ -216,6 +217,12 @@ const DiversionManager = (props) => {
             fetchVariants();
         }
     }, [routeIds]);
+
+    // Set manager ready flag when component mounts
+    useEffect(() => {
+        props.setDiversionManagerReady(true);
+        return () => props.setDiversionManagerReady(false);
+    }, []);
 
     // Handel the shape updated events triggered by the shape editor
     const onShapeUpdated = (updatedDiversionShape, updatedRouteVariantShape) => {
@@ -241,6 +248,9 @@ const DiversionManager = (props) => {
         setAffectedStops([]);
         setDiversionShapeWkt(null);
         setModifiedBaseRouteVariant(null);
+        setSelectedOtherRouteVariants([]);
+        setBaseRouteVariantOnly(true);
+        fetchVariants();
     };
 
     // Buttons
@@ -283,6 +293,8 @@ const DiversionManager = (props) => {
         props.resetDiversionResult();
         if (action === ACTION_TYPE.NEW_DIVERSION) {
             reset();
+        } else if (action === ACTION_TYPE.RETURN_TO_DIVERSION) {
+            // Do nothing - keep the form state
         } else if (action === ACTION_TYPE.RETURN_TO_DISRUPTION) {
             if (props.onCancelled) {
                 props.onCancelled();
@@ -344,8 +356,10 @@ const DiversionManager = (props) => {
         );
     };
 
+    const containerClassName = `side-panel-control-component-view d-flex${props.useDiversion ? ' use-diversion-enabled' : ''}`;
+
     return (
-        <div className="side-panel-control-component-view d-flex">
+        <div className={ containerClassName }>
             <SidePanel
                 isOpen
                 isActive
@@ -446,10 +460,12 @@ DiversionManager.propTypes = {
     createDiversion: PropTypes.func.isRequired,
     updateDiversion: PropTypes.func.isRequired,
     resetDiversionResult: PropTypes.func.isRequired,
+    setDiversionManagerReady: PropTypes.func.isRequired,
     disruption: PropTypes.object,
     onCancelled: PropTypes.func,
     resultState: PropTypes.object,
     diversion: PropTypes.object,
+    useDiversion: PropTypes.bool.isRequired,
 };
 
 DiversionManager.defaultProps = {
@@ -467,4 +483,5 @@ export default connect(state => ({
     editMode: getDiversionEditMode(state),
     resultState: getDiversionResultState(state),
     diversion: getDiversionForEditing(state),
-}), { createDiversion, updateDiversion, resetDiversionResult })(DiversionManager);
+    useDiversion: useDiversion(state),
+}), { createDiversion, updateDiversion, resetDiversionResult, setDiversionManagerReady })(DiversionManager);
