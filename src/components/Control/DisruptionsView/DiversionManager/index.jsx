@@ -11,7 +11,7 @@ import RouteShapeEditor from '../../../Common/Map/RouteShapeEditor/RouteShapeEdi
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import ChangeSelectedRouteVariantModal from './ChangeSelectedRouteVariantModal';
 import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
-import { createDiversion, updateDiversion, resetDiversionResult } from '../../../../redux/actions/control/diversions';
+import { createDiversion, updateDiversion, resetDiversionResult, setDiversionManagerReady } from '../../../../redux/actions/control/diversions';
 import { getDiversionResultState, getDiversionForEditing, getDiversionEditMode } from '../../../../redux/selectors/control/diversions';
 import { useDiversion } from '../../../../redux/selectors/appSettings';
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
@@ -225,6 +225,12 @@ const DiversionManager = (props) => {
             fetchVariants();
         }
     }, [routeIds]);
+
+    // Set manager ready flag when component mounts
+    useEffect(() => {
+        props.setDiversionManagerReady(true);
+        return () => props.setDiversionManagerReady(false);
+    }, []);
 
     // Handel the shape updated events triggered by the shape editor
     const onShapeUpdated = (updatedDiversionShape, updatedRouteVariantShape) => {
@@ -462,6 +468,7 @@ DiversionManager.propTypes = {
     createDiversion: PropTypes.func.isRequired,
     updateDiversion: PropTypes.func.isRequired,
     resetDiversionResult: PropTypes.func.isRequired,
+    setDiversionManagerReady: PropTypes.func.isRequired,
     disruption: PropTypes.object,
     onCancelled: PropTypes.func,
     resultState: PropTypes.object,
@@ -485,4 +492,4 @@ export default connect(state => ({
     resultState: getDiversionResultState(state),
     diversion: getDiversionForEditing(state),
     useDiversion: useDiversion(state),
-}), { createDiversion, updateDiversion, resetDiversionResult })(DiversionManager);
+}), { createDiversion, updateDiversion, resetDiversionResult, setDiversionManagerReady })(DiversionManager);

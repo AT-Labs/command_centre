@@ -136,6 +136,7 @@ describe('<DiversionManager />', () => {
         mockProps = {
             disruption: mockDisruption,
             onCancelled: jest.fn(),
+            setDiversionManagerReady: jest.fn(),
         };
 
         jest.clearAllMocks();

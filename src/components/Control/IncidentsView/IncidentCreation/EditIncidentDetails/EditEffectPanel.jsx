@@ -86,7 +86,7 @@ import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import './EditEffectPanel.scss';
 import AddNoteModal from './AddNoteModal';
 import { useDisruptionNotePopup, useDiversion, useParentChildIncident } from '../../../../../redux/selectors/appSettings';
-import { getIsDiversionManagerOpen, getIsDiversionManagerLoading, getDiversionEditMode } from '../../../../../redux/selectors/control/diversions';
+import { getIsDiversionManagerOpen, getIsDiversionManagerLoading, getIsDiversionManagerReady } from '../../../../../redux/selectors/control/diversions';
 import { ViewDiversionDetailModal } from '../../../DisruptionsView/DisruptionDetail/ViewDiversionDetailModal';
 import { openDiversionManager, updateDiversionMode, updateDiversionToEdit } from '../../../../../redux/actions/control/diversions';
 import EDIT_TYPE from '../../../../../types/edit-types';
@@ -708,44 +708,10 @@ export const EditEffectPanel = (props) => {
     }, [props.isDiversionManagerOpen, props.isDiversionManagerLoading]);
 
     useEffect(() => {
-        if (props.isDiversionManagerOpen) {
-            const checkForModeReady = () => {
-                const diversionManagerElement = document.querySelector('.side-panel-control-component-view');
-
-                if (!diversionManagerElement || diversionManagerElement.offsetHeight === 0) {
-                    return false;
-                }
-
-                const hasContainer = diversionManagerElement.querySelector('.diversion-creation-container');
-                const hasFormElements = diversionManagerElement.querySelector('form, .form-group, input, select, button');
-
-                if (hasContainer && hasFormElements) {
-                    setIsLoaderProtected(false);
-                    return true;
-                }
-
-                return false;
-            };
-
-            if (!checkForModeReady()) {
-                const modeObserver = new MutationObserver(() => {
-                    if (checkForModeReady()) {
-                        modeObserver.disconnect();
-                    }
-                });
-
-                modeObserver.observe(document.body, {
-                    childList: true,
-                    subtree: true,
-                    attributes: true,
-                    attributeFilter: ['class', 'style'],
-                });
-
-                return () => modeObserver.disconnect();
-            }
+        if (props.isDiversionManagerOpen && props.isDiversionManagerReady) {
+            setIsLoaderProtected(false);
         }
-        return undefined;
-    }, [props.isDiversionManagerOpen, props.editMode]);
+    }, [props.isDiversionManagerOpen, props.isDiversionManagerReady]);
 
     useEffect(() => {
         if (isLoaderProtected) {
@@ -1288,7 +1254,7 @@ EditEffectPanel.propTypes = {
     updateDiversionToEdit: PropTypes.func.isRequired,
     isDiversionManagerOpen: PropTypes.bool,
     isDiversionManagerLoading: PropTypes.bool,
-    editMode: PropTypes.string,
+    isDiversionManagerReady: PropTypes.bool,
     updateEffectValidationForPublishState: PropTypes.func.isRequired,
 };
 
@@ -1302,7 +1268,7 @@ EditEffectPanel.defaultProps = {
     useDiversion: false,
     isDiversionManagerOpen: false,
     isDiversionManagerLoading: false,
-    editMode: '',
+    isDiversionManagerReady: false,
 };
 
 export default connect(state => ({
@@ -1316,7 +1282,7 @@ export default connect(state => ({
     useDiversion: useDiversion(state),
     isDiversionManagerOpen: getIsDiversionManagerOpen(state),
     isDiversionManagerLoading: getIsDiversionManagerLoading(state),
-    editMode: getDiversionEditMode(state),
+    isDiversionManagerReady: getIsDiversionManagerReady(state),
     isDataLoading: isDataLoading(state),
     useParentChildIncident: useParentChildIncident(state),
 }), {

@@ -250,6 +250,7 @@ export default {
     UPDATE_DIVERSION_EDIT_MODE: 'update-diversion-edit-mode',
     UPDATE_DIVERSION_TO_EDIT: 'update-diversion-to-edit',
     OPEN_DIVERSION_MANAGER: 'open-diversion-manager',
+    SET_DIVERSION_MANAGER_READY: 'set-diversion-manager-ready',
     ADD_DIVERSION: 'add-diversion',
     UPDATE_DIVERSION_RESULT_STATE: 'update-diversion-result-state',
     FETCH_DIVERSIONS_START: 'fetch-diversions-start',
