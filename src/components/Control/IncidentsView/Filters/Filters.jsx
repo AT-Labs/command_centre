@@ -69,7 +69,6 @@ Filters.defaultProps = {
     selectedEntity: {},
     selectedStartDate: null,
     selectedEndDate: null,
-
 };
 
 export default connect(state => ({

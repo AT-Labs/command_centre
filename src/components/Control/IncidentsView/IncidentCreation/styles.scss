@@ -99,10 +99,14 @@
 
             .add-effect-button {
                 float: right;
-                color: #399CDB;
+                color: $at-shore;
                 border: 0 !important;
                 background-color: transparent !important;
                 font-weight: bold;
+            }
+
+            .disabled {
+                color: $at-bk-gray !important;
             }
         }
 
