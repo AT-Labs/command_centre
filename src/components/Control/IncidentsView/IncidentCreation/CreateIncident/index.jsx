@@ -200,7 +200,7 @@ export class CreateIncident extends React.Component {
                 ...(requireToUpdateForm && { severity: incidentData.severity }),
                 ...(requireToUpdateForm
                     ? { modalOpenedTime: incidentData.modalOpenedTime }
-                    : ({ modalOpenedTime: (earliestStartTime ? moment(earliestStartTime) : moment()).second(0).millisecond(0) })),
+                    : ({ modalOpenedTime: (earliestStartTime || moment()).second(0).millisecond(0) })),
                 disruptions: [...updatedDisruptions],
             },
         });
