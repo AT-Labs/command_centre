@@ -880,6 +880,61 @@ const mockIncident = {
     createdBy: 'aqwe@propellerhead.co.nz',
 };
 
+const mockRecurrentDisruption1 = {
+    ...mockDisruption1,
+    startDate: '03/10/2025',
+    startTime: '16:25',
+    endDate: '12/10/2025',
+    endTime: '',
+    duration: '3',
+    recurrencePattern: {
+        byweekday: [2, 4, 6],
+        dtstart: '2025-10-02T16:23:00.000Z',
+        freq: 2,
+        until: '2025-10-11T16:23:00.000Z',
+    },
+};
+
+const mockRecurrentDisruption2 = {
+    ...mockDisruption2,
+    startDate: '01/10/2025',
+    startTime: '16:23',
+    endDate: '10/10/2025',
+    endTime: '',
+    duration: '2',
+    recurrencePattern: {
+        byweekday: [3, 4],
+        dtstart: '2025-10-03T16:25:00.000Z',
+        freq: 2,
+        until: '2025-10-10T16:25:00.000Z',
+    },
+};
+
+const mockRecurrentIncident = {
+    incidentId: 139273,
+    mode: 'Bus, Train',
+    cause: 'CONGESTION',
+    startDate: '03/10/2025',
+    startTime: moment([2025, 9, 3, 16, 23, 0, 0]),
+    endTime: '', // moment([2025, 9, 10, 21, 23, 0, 0]),
+    endDate: '10/10/2025',
+    status: 'in-progress',
+    header: 'test incident n0827',
+    version: 1,
+    recurrencePattern: {
+        byweekday: [2],
+        dtstart: '2025-10-03T16:23:00.000Z',
+        freq: 2,
+        until: '2025-10-10T16:23:00.000Z',
+    },
+    duration: '1',
+    recurrent: true,
+    source: 'UI',
+    notes: [],
+    severity: 'HEADLINE',
+    disruptions: [{ ...mockRecurrentDisruption1 }, { ...mockRecurrentDisruption2 }],
+};
+
 describe('buildDisruptionSubmitBody', () => {
     beforeEach(() => {
         MockDate.set(fakeNow);
@@ -1073,5 +1128,17 @@ describe('getMode', () => {
             ],
         };
         expect(buildIncidentSubmitBody(incident, false).mode).toEqual('');
+    });
+
+    it('Should build correct body for recurrent incident', () => {
+        const incident = {
+            ...mockRecurrentIncident,
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.duration).toEqual('3');
+        expect(result.recurrencePattern.byweekday.length).toEqual(4);
+        expect(result.recurrencePattern.byweekday).toEqual([2, 3, 4, 6]);
+        expect(result.recurrencePattern.dtstart).toEqual(momentFromDateTime(mockRecurrentDisruption2.startDate, mockRecurrentDisruption2.startTime).tz('UTC', true).toDate());
+        expect(result.recurrencePattern.until).toEqual(momentFromDateTime(mockRecurrentDisruption1.endDate, mockRecurrentDisruption2.startTime).tz('UTC', true).toDate());
     });
 });
