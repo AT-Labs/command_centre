@@ -1141,4 +1141,33 @@ describe('getMode', () => {
         expect(result.recurrencePattern.dtstart).toEqual(momentFromDateTime(mockRecurrentDisruption2.startDate, mockRecurrentDisruption2.startTime).tz('UTC', true).toDate());
         expect(result.recurrencePattern.until).toEqual(momentFromDateTime(mockRecurrentDisruption1.endDate, mockRecurrentDisruption2.startTime).tz('UTC', true).toDate());
     });
+
+    it('Should stay with earliest startTime and undefined endTime', () => {
+        const incident = {
+            ...mockIncident,
+            startTime: moment('2025-08-10T20:27:00.000Z'),
+            endTime: null,
+            endDate: '',
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime).toEqual(moment('2025-08-10T20:27:00.000Z'));
+        expect(result.endTime).toEqual(null);
+    });
+
+    it('Should update endTime to the latest from disruptions', () => {
+        const incident = {
+            ...mockIncident,
+            endTime: moment('2025-10-10T12:00:00.000Z'),
+            endDate: '10/10/2025',
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    endDate: '12/12:2025',
+                    endTime: '12:12',
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.endTime).toEqual(momentFromDateTime('12/12:2025', '12:12'));
+    });
 });
