@@ -159,6 +159,44 @@ export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentSt
     };
 };
 
+export const getRecurrenceDates = (startDate, startTime, endDate) => {
+    const recurrenceDates = {};
+    if (startDate && startTime) {
+        recurrenceDates.dtstart = momentFromDateTime(startDate, startTime).tz('UTC', true).toDate();
+    }
+    if (endDate && startTime) {
+        recurrenceDates.until = momentFromDateTime(endDate, startTime).tz('UTC', true).toDate();
+    }
+    return recurrenceDates;
+};
+
+const getRecurrentPatterForIncident = (incident) => {
+    const byweekday = [...new Set([...incident.disruptions.flatMap(d => d.recurrencePattern.byweekday), ...incident.recurrencePattern.byweekday])].sort((a, b) => a - b);
+    const recurrenceDates = getRecurrenceDates(incident.startTime.format(DATE_FORMAT), incident.startTime.format(TIME_FORMAT), incident.endDate);
+    return {
+        byweekday,
+        freq: incident.recurrencePattern.freq,
+        ...recurrenceDates,
+    };
+};
+
+const calculateValuesForRecurrentIncident = (incident) => {
+    const endDates = [
+        ...incident.disruptions
+            .map(disruption => moment(disruption.endDate, DATE_FORMAT, true))
+            .filter(m => m.isValid()),
+        moment(incident.endDate, DATE_FORMAT, true),
+    ].filter(m => m.isValid());
+    const endDate = moment.max(endDates).format(DATE_FORMAT);
+    const durations = [...incident.disruptions.flatMap(d => d.duration), ...incident.duration];
+    const duration = String(Math.max(...durations.map(Number)));
+    return {
+        endDate,
+        recurrencePattern: getRecurrentPatterForIncident({ ...incident, endDate }),
+        duration,
+    };
+};
+
 export const buildIncidentSubmitBody = (incident, isEditMode) => {
     const modes = incident.disruptions.flatMap(disruption => getMode(disruption));
     const disruptions = incident.disruptions.flatMap(disruption => buildDisruptionSubmitBody(
@@ -169,19 +207,29 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
         isEditMode,
         incident.endTime,
     ));
-    const earliestStartTime = moment.min(disruptions.map(disruption => disruption.startTime));
-    const endTimes = disruptions.map(disruption => disruption.endTime).filter(endTime => endTime != null);
-    const latestEndTime = endTimes.length > 0 ? moment.max(endTimes) : null;
     const allResolved = disruptions.every(disruption => disruption.status === STATUSES.RESOLVED);
-
-    return {
+    const updatedIncident = {
         ...incident,
         mode: uniq(modes).join(', '),
         disruptions,
         ...(allResolved && { status: STATUSES.RESOLVED }),
-        ...(earliestStartTime.isBefore(incident.startTime) && { startTime: earliestStartTime }),
-        ...(latestEndTime && incident.endTime && (latestEndTime.isAfter(incident.endTime) || (incident.status !== STATUSES.RESOLVED && allResolved)) && { endTime: latestEndTime }),
         url: '',
+    };
+    const earliestStartTime = moment.min(disruptions.map(disruption => disruption.startTime));
+
+    if (earliestStartTime.isBefore(incident.startTime)) {
+        updatedIncident.startTime = earliestStartTime;
+    }
+
+    const endTimes = disruptions.map(disruption => disruption.endTime).filter(endTime => endTime != null);
+    const latestEndTime = endTimes.length > 0 ? moment.max(endTimes) : null;
+    if (latestEndTime && !incident.recurrent && incident.endTime
+        && (latestEndTime.isAfter(incident.endTime) || (incident.status !== STATUSES.RESOLVED && allResolved))) {
+        updatedIncident.endTime = latestEndTime;
+    }
+    return {
+        ...updatedIncident,
+        ...(incident.recurrent && calculateValuesForRecurrentIncident(updatedIncident)),
     };
 };
 
@@ -212,17 +260,6 @@ export const transformParentSourceIdNo = (id) => {
     if (!id) return null;
 
     return `CCD${id.toString().padStart(6, '0')}`;
-};
-
-export const getRecurrenceDates = (startDate, startTime, endDate) => {
-    const recurrenceDates = {};
-    if (startDate && startTime) {
-        recurrenceDates.dtstart = momentFromDateTime(startDate, startTime).tz('UTC', true).toDate();
-    }
-    if (endDate && startTime) {
-        recurrenceDates.until = momentFromDateTime(endDate, startTime).tz('UTC', true).toDate();
-    }
-    return recurrenceDates;
 };
 
 export const recurrenceRadioOptions = isRecurrent => ({

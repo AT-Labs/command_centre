@@ -148,6 +148,24 @@ export class CreateIncident extends React.Component {
         const { startTime, endTime, disruptions } = incidentToEdit;
         const routes = disruptions.map(disruption => disruption.affectedEntities.type === 'route').flat();
         const disruptionType = routes.length > 0 ? DISRUPTION_TYPE.ROUTES : DISRUPTION_TYPE.STOPS;
+
+        const disruptionStartTimes = disruptions
+            .map(disruption => disruption.startTime)
+            .filter(Boolean)
+            .map(time => moment(time))
+            .filter(m => m.isValid());
+
+        if (incidentToEdit?.startTime) {
+            const startTimeMoment = moment(incidentToEdit.startTime);
+            if (startTimeMoment.isValid()) {
+                disruptionStartTimes.push(startTimeMoment);
+            }
+        }
+
+        const earliestStartTime = disruptionStartTimes.length > 0
+            ? moment.min(disruptionStartTimes)
+            : null;
+
         const updatedDisruptions = disruptions.map((disruption) => {
             const type = disruption.affectedEntities.some(entity => entity.type === 'route') ? DISRUPTION_TYPE.ROUTES : DISRUPTION_TYPE.STOPS;
             const entities = disruption.affectedEntities ?? [];
@@ -183,7 +201,7 @@ export class CreateIncident extends React.Component {
                 ...(requireToUpdateForm && { severity: incidentData.severity }),
                 ...(requireToUpdateForm
                     ? { modalOpenedTime: incidentData.modalOpenedTime }
-                    : ({ modalOpenedTime: (startTime ? moment(startTime) : moment()).second(0).millisecond(0) })),
+                    : ({ modalOpenedTime: (earliestStartTime || moment()).second(0).millisecond(0) })),
                 disruptions: [...updatedDisruptions],
             },
         });
