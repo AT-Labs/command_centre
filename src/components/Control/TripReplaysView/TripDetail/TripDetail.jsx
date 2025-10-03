@@ -25,7 +25,8 @@ import { updateDisruptionFilters } from '../../../../redux/actions/control/disru
 import Icon from '../../../Common/Icon/Icon';
 import './TripDetail.scss';
 import { TripDetailIcon } from '../TripDetailIcon';
-import { useParentChildIncident } from '../../../../redux/selectors/appSettings';
+import { useParentChildIncident as getParentChildFeatureFlag } from '../../../../redux/selectors/appSettings';
+import { updateIncidentFilters as updateParentIncidentFilters } from '../../../../redux/actions/control/incidents';
 
 const renderDate = date => (date && moment(date).format('dddd, DD MMMM YYYY'));
 
@@ -49,7 +50,7 @@ const renderStartAndEndTime = (startTime, endTime) => {
 };
 
 function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave, handleMouseClick, vehiclePositions, operationalEvents,
-    navigate, updateView, updateFilters, searchRoutes, searchResults, navigateToVehicleReplayTab }) {
+    navigate, updateView, updateFilters, updateIncidentFilters, useParentChildIncident, searchRoutes, searchResults, navigateToVehicleReplayTab }) {
     const { routeShortName, tripHeadsign, tripSignOn, tripStart } = summary;
     const endTime = !isEmpty(stops)
         ? parseInt(get(stops[stops.length - 1], 'arrival.time', get(maxBy(vehiclePositions, 'timestamp'), 'timestamp')), 10)
@@ -105,7 +106,12 @@ function TripDetail({ summary, stops, status, handleMouseEnter, handleMouseLeave
             selectedImpact: null,
         };
 
-        updateFilters(filters);
+        if (useParentChildIncident) {
+            updateIncidentFilters(filters);
+        } else {
+            updateFilters(filters);
+        }
+
         updateView(VIEW_TYPE.MAIN.CONTROL);
         navigate(useParentChildIncident ? VIEW_TYPE.CONTROL_DETAIL.INCIDENTS : VIEW_TYPE.CONTROL_DETAIL.DISRUPTIONS);
     }, [searchResults]);
@@ -186,9 +192,11 @@ TripDetail.propTypes = {
     updateView: PropTypes.func.isRequired,
     navigate: PropTypes.func.isRequired,
     updateFilters: PropTypes.func.isRequired,
+    updateIncidentFilters: PropTypes.func.isRequired,
     searchRoutes: PropTypes.func.isRequired,
     searchResults: PropTypes.object.isRequired,
     navigateToVehicleReplayTab: PropTypes.func.isRequired,
+    useParentChildIncident: PropTypes.bool,
 };
 
 TripDetail.defaultProps = {
@@ -196,6 +204,7 @@ TripDetail.defaultProps = {
     vehiclePositions: [],
     status: null,
     operationalEvents: [],
+    useParentChildIncident: false,
 };
 
 export default connect(state => ({
@@ -205,9 +214,10 @@ export default connect(state => ({
     status: getTripStatus(state),
     vehiclePositions: getVehiclePositions(state),
     searchResults: getSearchResults(state),
-    useParentChildIncident: useParentChildIncident(state),
+    useParentChildIncident: getParentChildFeatureFlag(state),
 }), {
     updateFilters: updateDisruptionFilters,
+    updateIncidentFilters: updateParentIncidentFilters,
     updateView: updateMainView,
     navigate: updateControlDetailView,
     searchRoutes: search,

@@ -17,7 +17,9 @@ export const RoutesByStopMultiSelect = (props) => {
 
     // loadedRoutesByStop are updated when a stop is expanded - this triggers a JIT fetch of all routes for the stops
     useEffect(() => {
-        props.getRoutesByStop(loadedRoutesByStop);
+        if (loadedRoutesByStop.length > 0) {
+            props.getRoutesByStop(loadedRoutesByStop);
+        }
     }, [loadedRoutesByStop]);
 
     const affectedSingleStops = affectedStops.filter(entity => !entity.groupId);
