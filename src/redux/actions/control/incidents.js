@@ -30,15 +30,6 @@ export const updateIncidentsSortingParams = sortingParams => ({
     },
 });
 
-export const updateActivePeriodsForSearch = activePeriods => ({
-    type: ACTION_TYPE.UPDATE_ACTIVE_PERIODS_FOR_SEARCH,
-    payload: { activePeriods },
-});
-
-export const refreshActivePeriodsForSearch = () => ({
-    type: ACTION_TYPE.REFRESH_ACTIVE_PERIODS_FOR_SEARCH,
-});
-
 const loadIncidentsDisruptions = disruptions => ({
     type: ACTION_TYPE.FETCH_CONTROL_INCIDENTS_DISRUPTIONS,
     payload: {
@@ -318,7 +309,6 @@ export const createNewIncident = incident => async (dispatch, getState) => {
     }
 
     await dispatch(getDisruptionsAndIncidents());
-    dispatch(refreshActivePeriodsForSearch());
 };
 
 export const getStopsByRoute = routes => async (dispatch, getState) => {
@@ -750,8 +740,12 @@ export const clearActiveIncident = () => (dispatch) => {
     dispatch(setActiveIncident(null));
 };
 
-export const updateActiveIncident = activeIncidentId => (dispatch) => {
+export const updateActiveIncident = (activeIncidentId, shouldOpenDetailPanel = true) => (dispatch) => {
     dispatch(setActiveIncident(activeIncidentId));
+    dispatch({
+        type: ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG,
+        payload: { shouldOpenDetailPanel }
+    });
 };
 
 export const setIncidentToUpdate = (incidentId, incidentNo, requireToUpdateForm = false) => (dispatch) => {

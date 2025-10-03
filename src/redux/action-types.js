@@ -226,8 +226,6 @@ export default {
     UPDATE_CONTROL_ACTIVE_DISRUPTION_ID: 'update-control-active-disruption-id',
     UPDATE_DISRUPTIONS_REVERSE_GEOCODE_LOADING_STATE: 'update-disruptions-reverse-geocode-loading-state',
     UPDATE_DISRUPTIONS_ROUTES_LOADING_STATE: 'update-disruptions-routes-loading-state',
-    UPDATE_ACTIVE_PERIODS_FOR_SEARCH: 'update-active-periods-for-search',
-    REFRESH_ACTIVE_PERIODS_FOR_SEARCH: 'refresh-active-periods-for-search',
     UPDATE_SELECTED_ROUTES: 'update-selected-routes',
     SHOW_SELECTED_ROUTES: 'show-selected-routes',
     COPY_DISRUPTION: 'copy-disruptions',
@@ -250,13 +248,8 @@ export default {
     UPDATE_DIVERSION_EDIT_MODE: 'update-diversion-edit-mode',
     UPDATE_DIVERSION_TO_EDIT: 'update-diversion-to-edit',
     OPEN_DIVERSION_MANAGER: 'open-diversion-manager',
-    SET_DIVERSION_MANAGER_READY: 'set-diversion-manager-ready',
     ADD_DIVERSION: 'add-diversion',
     UPDATE_DIVERSION_RESULT_STATE: 'update-diversion-result-state',
-    FETCH_DIVERSIONS_START: 'fetch-diversions-start',
-    FETCH_DIVERSIONS_SUCCESS: 'fetch-diversions-success',
-    FETCH_DIVERSIONS_ERROR: 'fetch-diversions-error',
-    CLEAR_DIVERSIONS_CACHE: 'clear-diversions-cache',
 
     // Incidents
     FETCH_CONTROL_INCIDENTS_DISRUPTIONS: 'fetch-control-incidents-disruptions',
@@ -370,4 +363,7 @@ export default {
     FETCH_CONTROL_BUS_PRIORITY_THRESHOLDS: 'fetch-control-bus-priority-thresholds',
     UPDATE_CONTROL_BUS_PRIORITY_THRESHOLDS_DATAGRID_CONFIG: 'update-control-bus-priority-thresholds-datagrid-config',
     UPDATE_CONTROL_BUS_PRIORITY_PERMISSIONS: 'update-control-bus-priority-permissions',
+    // Detail panel control
+    SET_DETAIL_PANEL_OPEN_FLAG: 'set-detail-panel-open-flag',
+    SET_DISRUPTION_DETAIL_PANEL_OPEN_FLAG: 'set-disruption-detail-panel-open-flag',
 };
