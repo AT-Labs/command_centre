@@ -194,69 +194,58 @@ export const CustomDataGrid = (props) => {
     }, [props.expandedDetailPanels, props.dataSource, props.shouldOpenDetailPanel, isInitialLoad, getExpandedPanels, addToExpandedPanels, setExpandedPanels]);
 
     const handleAutoExpandIncident = useCallback(() => {
-        const targetRowId = props.autoExpandActiveIncident;
+        const {
+            autoExpandActiveIncident: targetRowId,
+            disruptionToOpen,
+            shouldOpenDetailPanel,
+            treeData,
+            scrollToParent,
+        } = props;
         if (!targetRowId || !apiRef.current) return;
 
-        const { disruptionToOpen } = props;
+        const openAndScrollTo = (rowId) => {
+            if (shouldOpenDetailPanel) {
+                addToExpandedPanels([rowId]);
+            }
+            displaySelectedDetail([rowId], false, shouldOpenDetailPanel);
+        };
+
         if (disruptionToOpen) {
             if (targetRowId && targetRowId !== disruptionToOpen) {
                 apiRef.current.setRowChildrenExpansion(targetRowId, true);
-                setTimeout(() => {
-                    if (props.shouldOpenDetailPanel) {
-                        addToExpandedPanels([disruptionToOpen]);
-                        displaySelectedDetail([disruptionToOpen], false, true);
-                    } else {
-                        displaySelectedDetail([disruptionToOpen], false, false);
-                    }
-                }, 100);
-            } else if (props.shouldOpenDetailPanel) {
-                addToExpandedPanels([disruptionToOpen]);
-                displaySelectedDetail([disruptionToOpen], false, true);
-            } else {
-                displaySelectedDetail([disruptionToOpen], false, false);
             }
+
+            openAndScrollTo(disruptionToOpen);
             return;
         }
 
-        const openAndScrollTo = (rowId) => {
-            if (props.shouldOpenDetailPanel) {
-                addToExpandedPanels([rowId]);
-                displaySelectedDetail([rowId], false, true);
-            } else {
-                displaySelectedDetail([rowId], false, false);
-            }
-        };
-
-        if (!props.treeData) {
+        if (!treeData) {
             openAndScrollTo(targetRowId);
             return;
         }
 
         apiRef.current.setRowChildrenExpansion(targetRowId, true);
 
-        setTimeout(() => {
-            const visibleRowIds = getVisibleRowIds();
-            if (props.scrollToParent) {
-                openAndScrollTo(targetRowId);
-            } else {
-                const isTargetAlreadyChild = visibleRowIds.some(rowId => String(targetRowId).startsWith(String(rowId))
-                    && rowId !== targetRowId
-                    && String(targetRowId).length > String(rowId).length);
+        const visibleRowIds = getVisibleRowIds();
+        if (scrollToParent) {
+            openAndScrollTo(targetRowId);
+            return;
+        }
 
-                if (isTargetAlreadyChild) {
-                    openAndScrollTo(targetRowId);
-                } else {
-                    const childRowId = findChildRowId(targetRowId, visibleRowIds);
-                    openAndScrollTo(childRowId || targetRowId);
-                }
-            }
-        }, 100);
+        const isTargetAlreadyChild = visibleRowIds.some(rowId => String(targetRowId).startsWith(String(rowId))
+            && rowId !== targetRowId
+            && String(targetRowId).length > String(rowId).length);
+
+        const rowToOpen = isTargetAlreadyChild
+            ? targetRowId
+            : findChildRowId(targetRowId, visibleRowIds) || targetRowId;
+
+        openAndScrollTo(rowToOpen);
     }, [
         props.autoExpandActiveIncident,
         props.treeData,
         props.shouldOpenDetailPanel,
         props.scrollToParent,
-        props.expandedDetailPanels,
         addToExpandedPanels,
         getVisibleRowIds,
         findChildRowId,
