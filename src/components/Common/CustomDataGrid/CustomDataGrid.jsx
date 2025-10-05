@@ -209,7 +209,6 @@ export const CustomDataGrid = (props) => {
                         displaySelectedDetail([disruptionToOpen], false, false);
                     }
                 }, 100);
-                return;
             } else {
                 if (props.shouldOpenDetailPanel) {
                     addToExpandedPanels([disruptionToOpen]);
@@ -217,8 +216,8 @@ export const CustomDataGrid = (props) => {
                 } else {
                     displaySelectedDetail([disruptionToOpen], false, false);
                 }
-                return;
             }
+            return;
         }
 
         const openAndScrollTo = (rowId) => {
