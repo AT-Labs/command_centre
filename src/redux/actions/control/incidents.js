@@ -22,7 +22,6 @@ import {
 import { getAllRoutes } from '../../selectors/static/routes';
 import { getAllStops } from '../../selectors/static/stops';
 import EDIT_TYPE from '../../../types/edit-types';
-import { incidentsStateUpdater } from '../../../utils/redux/mergeStateData';
 
 export const updateIncidentsSortingParams = sortingParams => ({
     type: ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_SORTING_PARAMS,
@@ -344,7 +343,7 @@ export const getStopsByRoute = routes => async (dispatch, getState) => {
             })
             .finally(() => {
                 dispatch(updateCachedRoutesToStops(missingCacheRoutesToStops));
-                incidentsStateUpdater.updateStopsByRoute(dispatch, getState, stopsByRoute, updateStopsByRoute);
+                dispatch(updateStopsByRoute(stopsByRoute, false));
             });
     }
     return dispatch(updateLoadingStopsByRoute(false));
@@ -403,7 +402,7 @@ export const getRoutesByStop = stops => async (dispatch, getState) => {
                 });
                 dispatch(updateCachedShapesState(missingCacheShapes));
                 dispatch(updateCachedStopsToRoutes(missingCacheStopsToRoutes));
-                incidentsStateUpdater.updateRoutesByStop(dispatch, getState, routesByStop, updateRoutesByStop);
+                dispatch(updateRoutesByStop(routesByStop, false));
             });
     }
     return dispatch(updateLoadingRoutesByStop(false));
@@ -741,8 +740,12 @@ export const clearActiveIncident = () => (dispatch) => {
     dispatch(setActiveIncident(null));
 };
 
-export const updateActiveIncident = activeIncidentId => (dispatch) => {
+export const updateActiveIncident = (activeIncidentId, shouldOpenDetailPanel = true) => (dispatch) => {
     dispatch(setActiveIncident(activeIncidentId));
+    dispatch({
+        type: ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG,
+        payload: { shouldOpenDetailPanel },
+    });
 };
 
 export const setIncidentToUpdate = (incidentId, incidentNo, requireToUpdateForm = false) => (dispatch) => {

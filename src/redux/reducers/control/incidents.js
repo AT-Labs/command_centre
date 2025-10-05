@@ -1,11 +1,12 @@
 import { handleActions } from 'redux-actions';
 import EDIT_TYPE from '../../../types/edit-types';
 import ACTION_TYPE from '../../action-types';
-import { handleUpdateStopsByRoute, handleUpdateRoutesByStop } from '../../../utils/redux/mergeStateData';
 
 export const INIT_STATE = {
     activeIncidentId: null,
     activeDisruptionId: null,
+    shouldOpenDetailPanel: true,
+    scrollToParent: false,
     permissions: [],
     disruptions: [],
     incidents: [],
@@ -127,6 +128,8 @@ const handleIncidentModal = (state, { payload: { type, isOpen } }) => ({
     [type]: isOpen,
 });
 const handleUpdateCurrentStep = (state, { payload: { activeStep } }) => ({ ...state, activeStep });
+const handleUpdateStopsByRoute = (state, { payload: { stopsByRoute, isLoadingStopsByRoute } }) => ({ ...state, stopsByRoute, isLoadingStopsByRoute });
+const handleUpdateRoutesByStop = (state, { payload: { routesByStop, isLoadingRoutesByStop } }) => ({ ...state, routesByStop, isLoadingRoutesByStop });
 const handleAffectedEntities = (state, { payload: {
     showSelectedRoutes,
     affectedEntities,
@@ -210,4 +213,9 @@ export default handleActions({
     [ACTION_TYPE.SET_DISRUPTION_FOR_WORKAROUND_EDIT]: handleDisruptionForWorkaroundEdit,
     [ACTION_TYPE.SET_REQUEST_TO_UPDATE_EDIT_EFFECT]: handleRequestToUpdateEditEffect,
     [ACTION_TYPE.SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT]: handleUpdateDisruptionKeyToUpdateEditEffect,
+    [ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG]: (state, { payload: { shouldOpenDetailPanel, scrollToParent } }) => ({
+        ...state,
+        shouldOpenDetailPanel,
+        scrollToParent: scrollToParent || false,
+    }),
 }, INIT_STATE);
