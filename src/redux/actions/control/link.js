@@ -79,7 +79,7 @@ export const goToDisruptionsView = (message, { setActiveDisruption }) => (dispat
     if (setActiveDisruption) dispatch(updateActiveDisruptionId(message.incidentId));
 };
 
-export const goToIncidentsView = (message, { setActiveIncident, openDetailPanel = true, scrollToParent = false }) => (dispatch) => {
+export const goToIncidentsView = (message, { setActiveIncident }) => (dispatch) => {
     dispatch(updateMainView(VIEW_TYPE.MAIN.CONTROL));
     dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.INCIDENTS));
 
@@ -89,10 +89,6 @@ export const goToIncidentsView = (message, { setActiveIncident, openDetailPanel 
         if (message.disruptionId) {
             dispatch(updateActiveDisruptionId(message.disruptionId));
         }
-        dispatch({
-            type: ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG,
-            payload: { shouldOpenDetailPanel: openDetailPanel, scrollToParent }
-        });
     }
 };
 
