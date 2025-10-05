@@ -209,13 +209,11 @@ export const CustomDataGrid = (props) => {
                         displaySelectedDetail([disruptionToOpen], false, false);
                     }
                 }, 100);
+            } else if (props.shouldOpenDetailPanel) {
+                addToExpandedPanels([disruptionToOpen]);
+                displaySelectedDetail([disruptionToOpen], false, true);
             } else {
-                if (props.shouldOpenDetailPanel) {
-                    addToExpandedPanels([disruptionToOpen]);
-                    displaySelectedDetail([disruptionToOpen], false, true);
-                } else {
-                    displaySelectedDetail([disruptionToOpen], false, false);
-                }
+                displaySelectedDetail([disruptionToOpen], false, false);
             }
             return;
         }
