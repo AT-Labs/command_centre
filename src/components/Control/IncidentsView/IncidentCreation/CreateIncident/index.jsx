@@ -55,7 +55,6 @@ import {
     toCamelCaseKeys,
     generateDisruptionActivePeriods,
     buildIncidentSubmitBody,
-    getStatusForEffect,
 } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
@@ -148,24 +147,6 @@ export class CreateIncident extends React.Component {
         const { startTime, endTime, disruptions } = incidentToEdit;
         const routes = disruptions.map(disruption => disruption.affectedEntities.type === 'route').flat();
         const disruptionType = routes.length > 0 ? DISRUPTION_TYPE.ROUTES : DISRUPTION_TYPE.STOPS;
-
-        const disruptionStartTimes = disruptions
-            .map(disruption => disruption.startTime)
-            .filter(Boolean)
-            .map(time => moment(time))
-            .filter(m => m.isValid());
-
-        if (incidentToEdit?.startTime) {
-            const startTimeMoment = moment(incidentToEdit.startTime);
-            if (startTimeMoment.isValid()) {
-                disruptionStartTimes.push(startTimeMoment);
-            }
-        }
-
-        const earliestStartTime = disruptionStartTimes.length > 0
-            ? moment.min(disruptionStartTimes)
-            : null;
-
         const updatedDisruptions = disruptions.map((disruption) => {
             const type = disruption.affectedEntities.some(entity => entity.type === 'route') ? DISRUPTION_TYPE.ROUTES : DISRUPTION_TYPE.STOPS;
             const entities = disruption.affectedEntities ?? [];
@@ -201,7 +182,7 @@ export class CreateIncident extends React.Component {
                 ...(requireToUpdateForm && { severity: incidentData.severity }),
                 ...(requireToUpdateForm
                     ? { modalOpenedTime: incidentData.modalOpenedTime }
-                    : ({ modalOpenedTime: (earliestStartTime || moment()).second(0).millisecond(0) })),
+                    : ({ modalOpenedTime: (startTime ? moment(startTime) : moment()).second(0).millisecond(0) })),
                 disruptions: [...updatedDisruptions],
             },
         });
@@ -449,7 +430,7 @@ export class CreateIncident extends React.Component {
                 ...updatedDisruption,
                 {
                     ...newIncidentEffect,
-                    ...(incidentData.status === STATUSES.DRAFT ? { status: STATUSES.DRAFT } : getStatusForEffect(newIncidentEffect)),
+                    ...(incidentData.status === STATUSES.DRAFT ? { status: STATUSES.DRAFT } : { status: STATUSES.NOT_STARTED }),
                 }];
         }
 
@@ -651,10 +632,9 @@ export class CreateIncident extends React.Component {
                                         <div className="add-effect-button-wrapper pr-4">
                                             <button
                                                 type="button"
-                                                className={ `add-effect-button ${this.props.incidentToEdit.status === STATUSES.RESOLVED ? 'disabled' : ''}` }
-                                                onClick={ () => this.addNewEffectToIncident() }
-                                                disabled={ this.props.incidentToEdit.status === STATUSES.RESOLVED }>
-                                                <AiOutlinePlusCircle size={ 36 } color={ this.props.incidentToEdit.status === STATUSES.RESOLVED ? '#e9ecef' : '#399CDB' } />
+                                                className="add-effect-button"
+                                                onClick={ () => this.addNewEffectToIncident() }>
+                                                <AiOutlinePlusCircle size={ 36 } color="#399CDB" />
                                                 {' '}
                                                 Add effect
                                             </button>

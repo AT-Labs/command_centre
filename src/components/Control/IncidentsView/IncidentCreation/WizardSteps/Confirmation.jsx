@@ -88,7 +88,7 @@ const Confirmation = (props) => {
                                 props.updateIncidentsSortingParams({});
                                 if (!props.isModalOpen && resultIncidentId) {
                                     props.clearActiveIncident();
-                                    setTimeout(() => props.updateActiveIncident(resultIncidentId, false), 0);
+                                    setTimeout(() => props.updateActiveIncident(resultIncidentId), 0);
                                 }
                             } }>
                             { resultIncidentId ? getDisruptionDetailsButtonLabel() : 'Close' }
