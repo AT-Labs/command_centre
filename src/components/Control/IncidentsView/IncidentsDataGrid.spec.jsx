@@ -28,6 +28,7 @@ const mockIncident = {
     endTime: null,
     status: 'not-started',
     header: 'test rec incident n1327',
+    url: '',
     version: 1,
     duration: '3',
     recurrent: true,
@@ -66,6 +67,7 @@ const mockDisruption = {
     description: null,
     createdBy: 'artem.batulev@propellerhead.co.nz',
     createdTime: '2025-07-21T01:28:20.655Z',
+    url: '',
     header: 'test rec incident n1327',
     feedEntityId: 'f0f4a2aa-08a6-4f88-95c7-349923942f70',
     uploadedFiles: null,
@@ -196,7 +198,7 @@ describe('IncidentDataGrid Component', () => {
         expect(parentRows.length).toBe(0);
     });
 
-    it('opens the calls function with correct data when "Open & Edit Disruption" button is clicked for parent row', async () => {
+    it('opens the calls function with correct data when "Open & Edit Incident" button is clicked for parent row', async () => {
         const setIncidentToUpdate = jest.fn();
         const updateEditMode = jest.fn();
         render(
@@ -217,7 +219,7 @@ describe('IncidentDataGrid Component', () => {
         expect(setIncidentToUpdate).toHaveBeenCalledWith(138772, undefined);
     });
 
-    it('opens the calls function with correct data when "Open & Edit Disruption" button is clicked for child row', async () => {
+    it('opens the calls function with correct data when "Open & Edit Incident" button is clicked for child row', async () => {
         const setIncidentToUpdate = jest.fn();
         const updateEditMode = jest.fn();
         render(

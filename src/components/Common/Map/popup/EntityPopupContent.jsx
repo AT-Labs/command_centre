@@ -18,11 +18,9 @@ export const EntityPopupContent = ({
     causes,
     impacts,
     goToDisruptionEditPage,
-    goToIncidentEditPage,
     onExpandPopup,
     onCollapsePopup,
     isExpanded,
-    useParentChildIncident,
 }) => {
     const dispatch = useDispatch();
     const currentDetailKey = useSelector(getViewDetailKey);
@@ -94,8 +92,6 @@ export const EntityPopupContent = ({
                     impacts={ impacts }
                     causes={ causes }
                     goToDisruptionEditPage={ goToDisruptionEditPage }
-                    goToIncidentEditPage={ goToIncidentEditPage }
-                    useParentChildIncident={ useParentChildIncident }
                 />
             </div>
         );
@@ -126,17 +122,13 @@ EntityPopupContent.propTypes = {
     causes: PropTypes.array,
     impacts: PropTypes.array,
     goToDisruptionEditPage: PropTypes.func,
-    goToIncidentEditPage: PropTypes.func,
     onExpandPopup: PropTypes.func.isRequired,
     onCollapsePopup: PropTypes.func.isRequired,
     isExpanded: PropTypes.bool.isRequired,
-    useParentChildIncident: PropTypes.bool,
 };
 
 EntityPopupContent.defaultProps = {
     causes: [],
     impacts: [],
     goToDisruptionEditPage: () => {},
-    goToIncidentEditPage: () => {},
-    useParentChildIncident: false,
 };

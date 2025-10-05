@@ -11,7 +11,7 @@ import './DisruptionLayer.scss';
 import DisruptionMarker from './DisruptionMarker';
 
 export const DisruptionLayer = (props) => {
-    const { stops, disruptions, useParentChildIncident, goToDisruptionEditPage, goToIncidentEditPage, impacts, causes } = props;
+    const { stops, disruptions, goToDisruptionEditPage, impacts, causes } = props;
     const polylineGroupRef = useRef();
 
     const getCoordinates = stop => [stop.stopLat, stop.stopLon];
@@ -40,9 +40,7 @@ export const DisruptionLayer = (props) => {
                             stopCode={ stop.stopCode }
                             causes={ causes }
                             impacts={ impacts }
-                            useParentChildIncident={ useParentChildIncident }
                             goToDisruptionEditPage={ goToDisruptionEditPage }
-                            goToIncidentEditPage={ goToIncidentEditPage }
                         />
                     </Popup>
                 </DisruptionMarker>
@@ -70,8 +68,6 @@ DisruptionLayer.propTypes = {
     impacts: PropTypes.array,
     causes: PropTypes.array,
     goToDisruptionEditPage: PropTypes.func,
-    goToIncidentEditPage: PropTypes.func,
-    useParentChildIncident: PropTypes.bool,
 };
 
 DisruptionLayer.defaultProps = {
@@ -80,6 +76,4 @@ DisruptionLayer.defaultProps = {
     impacts: [],
     causes: [],
     goToDisruptionEditPage: {},
-    goToIncidentEditPage: {},
-    useParentChildIncident: false,
 };

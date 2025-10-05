@@ -1,16 +1,20 @@
-import configureMockStore from 'redux-mock-store';
-import thunk from 'redux-thunk';
-import sinon from 'sinon';
-import chai, { expect } from 'chai';
-import sinonChai from 'sinon-chai';
-import MockDate from 'mockdate';
+import configureMockStore from "redux-mock-store";
+import thunk from "redux-thunk";
+import sinon from "sinon";
+import chai, { expect } from "chai";
+import sinonChai from "sinon-chai";
+import MockDate from "mockdate";
 
-import { goToBlocksView, goToDisruptionEditPage, goToDisruptionsView, goToIncidentEditPage, goToIncidentsView, goToRoutesView, } from './link';
-import * as tripMgtApi from '../../../utils/transmitters/trip-mgt-api';
-import ACTION_TYPE from '../../action-types';
-import VIEW_TYPE from '../../../types/view-types';
-import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
-import { actions } from '@storybook/addon-actions';
+import {
+    goToRoutesView,
+    goToBlocksView,
+    goToDisruptionsView,
+    goToDisruptionEditPage,
+    goToIncidentsView,
+} from "./link";
+import * as tripMgtApi from "../../../utils/transmitters/trip-mgt-api";
+import ACTION_TYPE from "../../action-types";
+import VIEW_TYPE from "../../../types/view-types";
 
 chai.use(sinonChai);
 
@@ -517,64 +521,6 @@ describe("Link actions", () => {
                 { setActiveIncident: false }
             )
         );
-        expect(store.getActions()).to.eql(expectedActions);
-    });
-
-    it("goToIncidentEditPage", (done) => {
-        const incidentToEdit = {
-            incidentId: 139273,
-            incidentNo: 'DISR139535',
-        };
-        const message = { incidentId: "139828", incidentNo: "DISR139535" };
-
-        const fakeGetIncident = sandbox.fake.resolves({ ...incidentToEdit, _links: [] });
-        sandbox.stub(disruptionsMgtApi, "getIncident").callsFake(fakeGetIncident);
-        const expectedActions = [
-            {
-                type: ACTION_TYPE.UPDATE_INCIDENT_EDIT_MODE,
-                payload: { editMode: "EDIT" },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_INCIDENT_CURRENT_STEP,
-                payload: { activeStep: 1 },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
-                payload: { isIncidentForEditLoading: true },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_INCIDENT_TO_EDIT,
-                payload: { incidentToEdit },
-            },
-            {
-                type: ACTION_TYPE.OPEN_CREATE_INCIDENTS,
-                payload: { isCreateEnabled: true },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_EFFECT_REQUIRES_TO_UPDATE_NOTES,
-                payload: { isRequiresToUpdateNotes: true },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_EDIT_EFFECT,
-                payload: { disruptionKeyToEditEffect: "DISR139535" },
-            },
-            {
-                type: ACTION_TYPE.SET_EDIT_EFFECT_PANEL_STATUS,
-                payload: { isEditEffectPanelOpen: true },
-            },
-            {
-                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
-                payload: { isIncidentForEditLoading: false },
-            },
-        ];
-        try{
-            store.dispatch(goToIncidentEditPage(message));
-            done();
-        }
-        catch(error){
-            done(error);
-        }
-
         expect(store.getActions()).to.eql(expectedActions);
     });
 });
