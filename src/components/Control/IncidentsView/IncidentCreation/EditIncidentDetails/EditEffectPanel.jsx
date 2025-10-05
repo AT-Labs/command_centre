@@ -184,17 +184,17 @@ export const EditEffectPanel = (props) => {
     const endDateDatePickerOptions = () => getDatePickerOptions(disruption.startDate || moment().second(0).millisecond(0));
 
     const updateDisruption = (updatedFields) => {
-        let recurrenceDates;
-        let parsedRecurrencePattern;
-        if (updatedFields?.startDate || updatedFields?.startTime || updatedFields?.endDate || updatedFields?.recurrent) {
-            recurrenceDates = getRecurrenceDates(
-                updatedFields.startDate || disruption.startDate,
-                updatedFields.startTime || disruption.startTime,
-                updatedFields.endDate || disruption.endDate,
-            );
-            parsedRecurrencePattern = disruption.recurrent ? parseRecurrencePattern(disruption.recurrencePattern) : { freq: RRule.WEEKLY };
-        }
         setDisruption((prev) => {
+            let recurrenceDates;
+            let parsedRecurrencePattern;
+            if (updatedFields?.startDate || updatedFields?.startTime || updatedFields?.endDate || updatedFields?.recurrent) {
+                recurrenceDates = getRecurrenceDates(
+                    updatedFields.startDate || prev.startDate,
+                    updatedFields.startTime || prev.startTime,
+                    updatedFields.endDate || prev.endDate,
+                );
+                parsedRecurrencePattern = prev.recurrent ? parseRecurrencePattern(prev.recurrencePattern) : { freq: RRule.WEEKLY };
+            }
             const updatedDisruption = {
                 ...prev,
                 ...updatedFields,
@@ -690,7 +690,7 @@ export const EditEffectPanel = (props) => {
                                     <Label for="disruption-creation__wizard-select-details__start-date">
                                         <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
                                     </Label>
-                                    <div className={ `${isResolved() ? 'background-color-for-disabled-fields' : ''}` }>
+                                    <div className={ `${isResolved() || disruptionRecurrent ? 'background-color-for-disabled-fields' : ''}` }>
                                         <Flatpickr
                                             data-testid="start-date_date-picker"
                                             key="start-date"
@@ -700,7 +700,7 @@ export const EditEffectPanel = (props) => {
                                             options={ datePickerOptions }
                                             placeholder="Select date"
                                             onChange={ date => onChangeStartDate(date) }
-                                            disabled={ isResolved() } />
+                                            disabled={ isResolved() || disruptionRecurrent } />
                                     </div>
                                     {!isStartDateDirty && (
                                         <FaRegCalendarAlt
@@ -755,7 +755,7 @@ export const EditEffectPanel = (props) => {
                                             setIsStartTimeDirty(true);
                                         } }
                                         invalid={ (disruption.status === STATUSES.DRAFT ? (isStartTimeDirty && !startTimeValid()) : !startTimeValid()) }
-                                        disabled={ isResolved() }
+                                        disabled={ isResolved() || disruptionRecurrent }
                                     />
                                     <FormFeedback>Not valid values</FormFeedback>
                                 </FormGroup>

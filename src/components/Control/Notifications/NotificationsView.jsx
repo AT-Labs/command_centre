@@ -60,14 +60,14 @@ export const NotificationsView = (props) => {
                     <Button
                         aria-label="go-to-incidents"
                         variant="text"
-                        onClick={() => {
+                        onClick={ () => {
                             props.goToIncidentsView({
                                 incidentDisruptionNo: parentSourceId,
                                 disruptionId: incidentId,
                             }, { setActiveIncident: true, openDetailPanel: false, scrollToParent: true });
-                        }}
+                        } }
                     >
-                        {transformParentSourceIdNo(parentSourceId)}
+                        { transformParentSourceIdNo(parentSourceId) }
                     </Button>
                 ),
             }, {

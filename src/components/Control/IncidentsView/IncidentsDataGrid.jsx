@@ -318,7 +318,7 @@ export const IncidentsDataGrid = (props) => {
                 autoExpandActiveIncident={ activeIncidentId }
                 shouldOpenDetailPanel={ props.shouldOpenDetailPanel }
                 scrollToParent={ props.scrollToParent }
-                multipleDetailPanelOpen={ true }
+                multipleDetailPanelOpen
                 disruptionToOpen={ props.scrollToParent ? null : activeDisruptionCompositeId }
             />
         </div>
