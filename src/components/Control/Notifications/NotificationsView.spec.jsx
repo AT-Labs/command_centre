@@ -225,7 +225,9 @@ describe('<NotificationsView />', () => {
                 };
 
                 const renderedCell = parentSourceIdColumn.renderCell({ row: mockRow });
-                expect(renderedCell).toBe('P67890');
+                expect(renderedCell.type).toBe(Button);
+                expect(renderedCell.props.children).toBe('P67890');
+                expect(renderedCell.props['aria-label']).toBe('go-to-incidents');
             });
 
             test('should call goToIncidentsView when sourceId (effect) button is clicked', () => {
@@ -253,7 +255,7 @@ describe('<NotificationsView />', () => {
 
                 renderedCell.props.onClick();
                 expect(mockGoToIncidentsView).toHaveBeenCalledWith(
-                    { incidentDisruptionNo: 67890 },
+                    { incidentDisruptionNo: 67890, disruptionId: 12345 },
                     { setActiveIncident: true },
                 );
             });

@@ -99,10 +99,14 @@
 
             .add-effect-button {
                 float: right;
-                color: #399CDB;
+                color: $at-shore;
                 border: 0 !important;
                 background-color: transparent !important;
                 font-weight: bold;
+            }
+
+            .disabled {
+                color: $at-bk-gray !important;
             }
         }
 
@@ -132,10 +136,6 @@
         .incident-footer-min-height {
             min-height: 89px;
         }
-    }
-
-    .disruption-creation__sidepanel {
-        background-color: $very-light-blue;
     }
 
     .disruption-creation-close-disruptions {
@@ -254,7 +254,10 @@
     }
 }
 
-.disruption-creation__container {
+.disruption-creation__container,
+.disruption-edit__container {
+    height: auto;
+    box-sizing: border-box;
     background-color: #FFF;
 
     & .border-primary {
@@ -267,10 +270,6 @@
         padding-left: 25px;
         padding-right: 25px;
     }
-}
-
-.disruption-edit__container {
-    background-color: #FFF;
 }
 
 .disruption-creation__steps {
