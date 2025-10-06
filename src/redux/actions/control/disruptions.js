@@ -198,11 +198,7 @@ export const clearDisruptionActionResult = () => ({
     },
 });
 
-export const updateActiveDisruptionId = (activeDisruptionId, shouldOpenDetailPanel = true) => (dispatch) => {
-    dispatch({
-        type: ACTION_TYPE.SET_DISRUPTION_DETAIL_PANEL_OPEN_FLAG,
-        payload: { shouldOpenDetailPanel },
-    });
+export const updateActiveDisruptionId = activeDisruptionId => (dispatch) => {
     dispatch({
         type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_DISRUPTION_ID,
         payload: {

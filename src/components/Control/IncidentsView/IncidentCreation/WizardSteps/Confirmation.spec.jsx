@@ -152,7 +152,7 @@ describe('Confirmation Component', () => {
         expect(updateIncidentsSortingParams).toHaveBeenCalledWith({});
         expect(clearActiveIncident).toHaveBeenCalledWith();
         jest.advanceTimersByTime(100);
-        expect(updateActiveIncident).toHaveBeenCalledWith('123', false);
+        expect(updateActiveIncident).toHaveBeenCalledWith('123');
     });
 
     it('Close modal on click on View notifications button', () => {
