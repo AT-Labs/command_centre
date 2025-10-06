@@ -740,8 +740,12 @@ export const clearActiveIncident = () => (dispatch) => {
     dispatch(setActiveIncident(null));
 };
 
-export const updateActiveIncident = activeIncidentId => (dispatch) => {
+export const updateActiveIncident = (activeIncidentId, shouldOpenDetailPanel = true) => (dispatch) => {
     dispatch(setActiveIncident(activeIncidentId));
+    dispatch({
+        type: ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG,
+        payload: { shouldOpenDetailPanel },
+    });
 };
 
 export const setIncidentToUpdate = (incidentId, incidentNo, requireToUpdateForm = false) => (dispatch) => {
