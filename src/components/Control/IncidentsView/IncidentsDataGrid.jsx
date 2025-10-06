@@ -25,6 +25,8 @@ import {
     getIncidentsLoadingState,
     getIncidentsWithDisruptions,
     getIncidentsDatagridConfig,
+    getShouldOpenDetailPanel,
+    getScrollToParent,
 } from '../../../redux/selectors/control/incidents';
 import { getActiveDisruptionId } from '../../../redux/selectors/control/disruptions';
 import { goToNotificationsView } from '../../../redux/actions/control/link';
@@ -91,7 +93,7 @@ export const IncidentsDataGrid = (props) => {
         if (!impact || impact.length === 0) {
             return '';
         }
-        const arrImpacts = impact.slice(',');
+        const arrImpacts = impact.split(',');
         const readableImpacts = impacts.filter(imp => arrImpacts.includes(imp.value)).map(imp => imp.label)
             .filter(str => str !== '' && str !== null && str !== undefined);
         return readableImpacts.join(', ');
@@ -233,14 +235,14 @@ export const IncidentsDataGrid = (props) => {
         [],
     );
 
-    const updateActiveDisruption = (ids) => {
+    const updateActiveDisruption = React.useCallback((ids) => {
         if (ids?.length > 0) {
             props.updateActiveDisruptionId(ids[0]);
         } else {
             props.updateActiveDisruptionId(null);
         }
         props.updateCopyDisruptionState(false);
-    };
+    }, [props.updateActiveDisruptionId, props.updateCopyDisruptionState]);
 
     const calculateDetailPanelHeight = row => (row.recurrent ? 1080 : 1000);
 
@@ -275,13 +277,17 @@ export const IncidentsDataGrid = (props) => {
         return disruptionRow ? getRowId(disruptionRow) : null;
     }, [props.activeDisruptionId, incidentWithPath]);
 
-    const initialState = activeIncidentId ? {
-        treeData: {
-            expansion: {
-                [activeIncidentId]: true,
+    const initialState = React.useMemo(() => {
+        if (!activeIncidentId) return {};
+        
+        return {
+            treeData: {
+                expansion: {
+                    [activeIncidentId]: true,
+                },
             },
-        },
-    } : {};
+        };
+    }, [activeIncidentId]);
 
     React.useEffect(() => {
         if (!activeIncidentId || !props.clearActiveIncident) {
@@ -310,10 +316,13 @@ export const IncidentsDataGrid = (props) => {
                 loading={ props.isLoading }
                 getRowClassName={ params => (params.row.disruptionId ? 'incidents-custom-data-grid-child-row' : 'incidents-custom-data-grid-parent-row') }
                 calculateDetailPanelHeight={ props.useViewDisruptionDetailsPage ? () => 400 : calculateDetailPanelHeight }
-                expandedDetailPanels={ activeDisruptionCompositeId ? [activeDisruptionCompositeId] : null }
+                expandedDetailPanels={ null }
                 onRowExpanded={ ids => updateActiveDisruption(ids) }
                 initialState={ initialState }
                 autoExpandActiveIncident={ activeIncidentId }
+                shouldOpenDetailPanel={ props.shouldOpenDetailPanel }
+                scrollToParent={ props.scrollToParent }
+                disruptionToOpen={ props.scrollToParent ? null : activeDisruptionCompositeId }
             />
         </div>
     );
@@ -333,12 +342,16 @@ IncidentsDataGrid.propTypes = {
     goToNotificationsView: PropTypes.func.isRequired,
     useViewDisruptionDetailsPage: PropTypes.bool.isRequired,
     clearActiveIncident: PropTypes.func.isRequired,
+    shouldOpenDetailPanel: PropTypes.bool,
+    scrollToParent: PropTypes.bool,
 };
 
 IncidentsDataGrid.defaultProps = {
     mergedIncidentsAndDisruptions: [],
     activeDisruptionId: null,
     activeIncident: null,
+    shouldOpenDetailPanel: true,
+    scrollToParent: false,
 };
 
 export default connect(
@@ -349,6 +362,8 @@ export default connect(
         isLoading: getIncidentsLoadingState(state),
         useViewDisruptionDetailsPage: useViewDisruptionDetailsPage(state),
         mergedIncidentsAndDisruptions: getIncidentsWithDisruptions(state),
+        shouldOpenDetailPanel: getShouldOpenDetailPanel(state),
+        scrollToParent: getScrollToParent(state),
     }),
     {
         updateActiveDisruptionId,
