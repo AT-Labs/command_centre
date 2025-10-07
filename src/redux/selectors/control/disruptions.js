@@ -137,3 +137,4 @@ export const getFilteredDisruptions = createSelector(
 );
 
 export const getDisruptionsDatagridConfig = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'datagridConfig'));
+export const getShouldOpenDisruptionDetailPanel = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'shouldOpenDetailPanel', true));
