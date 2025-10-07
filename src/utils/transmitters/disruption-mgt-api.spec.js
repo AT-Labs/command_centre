@@ -60,4 +60,18 @@ describe('getDisruptionsByFilters', () => {
 
         await expect(getDisruptionsByFilters(filters)).rejects.toThrow('Network error');
     });
+
+    it('should call fetchWithAuthHeader with correct URL and empty filters', async () => {
+        fetchWithAuthHeader.mockResolvedValue({});
+        jsonResponseHandling.mockResolvedValue(mockResponse);
+
+        const result = await getDisruptionsByFilters({}, {});
+
+        expect(fetchWithAuthHeader).toHaveBeenCalledWith(
+            `${process.env.REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions?includeDraft=false`,
+            { method: HTTP_TYPES.GET, signal: undefined },
+        );
+        expect(jsonResponseHandling).toHaveBeenCalled();
+        expect(result).toEqual(mockResponse);
+    });
 });

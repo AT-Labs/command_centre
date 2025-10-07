@@ -1041,4 +1041,57 @@ describe('Incidents Actions', () => {
 
         expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
     });
+
+    it('loadIncidentAndRedirectToEdit requireToUpdateForm true should dispatch the correct actions on success ', async () => {
+        disruptionsMgtApi.getIncident.mockResolvedValue(mockIncidentForEdit);
+
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
+                payload: { isIncidentForEditLoading: true },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_INCIDENT_TO_EDIT,
+                payload: { incidentToEdit: mockIncidentForEdit },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_EFFECT_REQUIRES_TO_UPDATE_NOTES,
+                payload: {
+                    isRequiresToUpdateNotes: true,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_EDIT_EFFECT,
+                payload: { disruptionKeyToEditEffect: mockIncidentForEdit.disruptions[0].incidentNo },
+            },
+            {
+                type: ACTION_TYPE.SET_EDIT_EFFECT_PANEL_STATUS,
+                payload: { isEditEffectPanelOpen: true },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_MAIN_VIEW,
+                payload: {
+                    activeMainView: VIEW_TYPE.MAIN.CONTROL,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW,
+                payload: {
+                    activeControlDetailView: VIEW_TYPE.CONTROL_DETAIL.INCIDENTS,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
+                payload: { isIncidentForEditLoading: false },
+            },
+        ];
+
+        await store.dispatch(loadIncidentAndRedirectToEdit(
+            mockIncidentForEdit.incidentId,
+            mockIncidentForEdit.disruptions[0].incidentNo,
+            true,
+        ));
+
+        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+    });
 });
