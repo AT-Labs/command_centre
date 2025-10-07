@@ -225,9 +225,7 @@ describe('<NotificationsView />', () => {
                 };
 
                 const renderedCell = parentSourceIdColumn.renderCell({ row: mockRow });
-                expect(renderedCell.type).toBe(Button);
-                expect(renderedCell.props.children).toBe('P67890');
-                expect(renderedCell.props['aria-label']).toBe('go-to-incidents');
+                expect(renderedCell).toBe('P67890');
             });
 
             test('should call goToIncidentsView when sourceId (effect) button is clicked', () => {
