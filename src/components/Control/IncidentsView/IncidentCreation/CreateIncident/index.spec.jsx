@@ -1,6 +1,5 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import { uniqBy } from 'lodash-es';
 import { RRule } from 'rrule';
 import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
@@ -36,10 +35,6 @@ jest.mock('../../../../../utils/control/disruptions', () => ({
     buildIncidentSubmitBody: jest.fn(),
     momentFromDateTime: jest.fn(),
     getStatusForEffect: jest.fn(),
-    itemToEntityTransformers: {
-        stop: jest.fn(stop => ({ data: stop })),
-        route: jest.fn(route => ({ data: route })),
-    },
 }));
 
 const defaultIncidentData = {
@@ -1334,61 +1329,6 @@ describe('CreateIncident component', () => {
             await wrapper.instance().onPublishIncidentUpdate();
             expect(wrapper.state('incidentData').status).toEqual(STATUSES.NOT_STARTED);
             expect(mockToggleIncidentModals).toHaveBeenCalledWith('isPublishAndApplyChangesOpen', false);
-        });
-    });
-
-    describe('Stops and routes deduplication', () => {
-        it('Should deduplicate stops and routes by stopCode', () => {
-            const stopsAndRoutes = [
-                { stopCode: '100', stopId: 'stop-100', type: 'stop' },
-                { stopCode: '101', stopId: 'stop-101', type: 'stop' },
-                { stopCode: '100', routeId: 'route-100', type: 'route' },
-                { stopCode: '102', stopId: 'stop-102', type: 'stop' },
-                { stopCode: '101', routeId: 'route-101', type: 'route' },
-            ];
-
-            const uniqueItems = uniqBy(stopsAndRoutes, item => item.stopCode);
-
-            expect(uniqueItems).toHaveLength(3);
-            expect(uniqueItems).toEqual([
-                { stopCode: '100', stopId: 'stop-100', type: 'stop' },
-                { stopCode: '101', stopId: 'stop-101', type: 'stop' },
-                { stopCode: '102', stopId: 'stop-102', type: 'stop' },
-            ]);
-        });
-
-        it('Should combine stops and routes before deduplication', () => {
-            const stops = [
-                { stopCode: '100', stopId: 'stop-100', type: 'stop' },
-                { stopCode: '101', stopId: 'stop-101', type: 'stop' },
-            ];
-
-            const routes = [
-                { stopCode: '100', routeId: 'route-100', type: 'route' },
-                { stopCode: '102', routeId: 'route-102', type: 'route' },
-            ];
-
-            const combined = [...stops, ...routes];
-            const uniqueItems = uniqBy(combined, item => item.stopCode);
-
-            expect(uniqueItems).toHaveLength(3);
-            expect(uniqueItems[0].stopCode).toEqual('100');
-            expect(uniqueItems[0].type).toEqual('stop');
-            expect(uniqueItems[1].stopCode).toEqual('101');
-            expect(uniqueItems[2].stopCode).toEqual('102');
-        });
-
-        it('Should keep first occurrence when deduplicating by stopCode', () => {
-            const items = [
-                { stopCode: '100', name: 'First', type: 'stop' },
-                { stopCode: '100', name: 'Second', type: 'route' },
-                { stopCode: '100', name: 'Third', type: 'stop' },
-            ];
-
-            const uniqueItems = uniqBy(items, item => item.stopCode);
-
-            expect(uniqueItems).toHaveLength(1);
-            expect(uniqueItems[0].name).toEqual('First');
         });
     });
 });
