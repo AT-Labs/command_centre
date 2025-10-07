@@ -160,9 +160,9 @@ export const CustomDataGrid = (props) => {
     }, []);
 
     const displaySelectedDetail = useCallback((rowsToSelect, overridePageIdx = false, shouldSetSelectedRows = true) => {
-        const parentRow = props.disruptionToOpen !== null ? props.activeIncidentId : rowsToSelect[0];
+        const parentRow = props.disruptionToOpen === null ? rowsToSelect[0] : props.activeIncidentId;
         const allParentRowIds = getAllParentRowIds();
-        const idx = allParentRowIds.findIndex(rowId => rowId === parentRow);
+        const idx = allParentRowIds.indexOf(parentRow);
         const pageIdx = calculatePageIdx(idx);
         if (shouldSetSelectedRows && props.shouldOpenDetailPanel) {
             setTimeout(() => setSelectedRows(rowsToSelect));
