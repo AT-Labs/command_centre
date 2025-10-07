@@ -352,6 +352,10 @@ describe("Link actions", () => {
                 },
             },
             {
+                type: ACTION_TYPE.SET_DISRUPTION_DETAIL_PANEL_OPEN_FLAG,
+                payload: { shouldOpenDetailPanel: true },
+            },
+            {
                 type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_DISRUPTION_ID,
                 payload: {
                     activeDisruptionId: message.incidentId,
@@ -398,6 +402,10 @@ describe("Link actions", () => {
                 payload: {
                     activeControlEntityId: message.disruptionId,
                 },
+            },
+            {
+                type: ACTION_TYPE.SET_DISRUPTION_DETAIL_PANEL_OPEN_FLAG,
+                payload: { shouldOpenDetailPanel: true },
             },
             {
                 type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_DISRUPTION_ID,
@@ -487,6 +495,14 @@ describe("Link actions", () => {
                 payload: {
                     activeIncidentId: incidentDisruptionNo,
                 },
+            },
+            {
+                type: ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG,
+                payload: { shouldOpenDetailPanel: true },
+            },
+            {
+                type: ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG,
+                payload: { shouldOpenDetailPanel: true, scrollToParent: false },
             },
         ];
         store.dispatch(
