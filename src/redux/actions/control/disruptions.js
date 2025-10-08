@@ -217,7 +217,7 @@ export const publishDraftDisruption = (disruption, diversions) => async (dispatc
                 disruption.disruptionId,
                 ACTION_RESULT.PUBLISH_DRAFT_ERROR(
                     null,
-                    'Disruption with diversion(s) require and End Date and End Time to be published. Please inform the End Date and End Time and try again.',
+                    'Disruption with diversion(s) require an End Date and End Time to be published. Please inform the End Date and End Time and try again.',
                 ),
             ));
         } else {
