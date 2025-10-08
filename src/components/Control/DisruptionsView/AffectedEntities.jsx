@@ -100,8 +100,7 @@ export const AffectedEntities = (props) => {
                                     </div>
                                 )}
                                 <div>
-                                    { showAddDiversion
-                                    && (
+                                    { showAddDiversion && (
                                         <Button
                                             className="btn cc-btn-link pr-0 font-weight-bold"
                                             id="edit-routes-and-stops-btn"
@@ -112,19 +111,18 @@ export const AffectedEntities = (props) => {
                                     )}
                                 </div>
                                 <div>
-                                    { showEditDiversion
-                                        && (
-                                            <Button
-                                                className="btn cc-btn-link pr-0 font-weight-bold"
-                                                id="view-and-edit-diversions-btn"
-                                                onClick={ props.viewDiversionsAction }
-                                            >
-                                                View & edit diversions (
-                                                {diversions.length}
-                                                )
-                                                <MdEast size={ 20 } color="black" className="ml-1" />
-                                            </Button>
-                                        )}
+                                    { showEditDiversion && (
+                                        <Button
+                                            className="btn cc-btn-link pr-0 font-weight-bold"
+                                            id="view-and-edit-diversions-btn"
+                                            onClick={ props.viewDiversionsAction }
+                                        >
+                                            View & edit diversions (
+                                            {diversions.length}
+                                            )
+                                            <MdEast size={ 20 } color="black" className="ml-1" />
+                                        </Button>
+                                    )}
                                 </div>
                                 { props.showViewPassengerImpactButton && (
                                     <div>
