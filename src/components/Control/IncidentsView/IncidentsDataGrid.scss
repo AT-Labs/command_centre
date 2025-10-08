@@ -51,3 +51,7 @@ form.magnify {
         visibility: hidden;
     }
 }
+
+.MuiDataGrid-columnsPanel > *:first-child {
+    display: none;
+}

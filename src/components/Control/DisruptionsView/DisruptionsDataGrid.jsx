@@ -22,7 +22,7 @@ import {
 import { dateTimeFormat } from '../../../utils/dateUtils';
 import { SEVERITIES, DEFAULT_SEVERITY, STATUSES, PASSENGER_IMPACT_RANGE } from '../../../types/disruptions-types';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../types/disruption-cause-and-effect';
-import { getActiveDisruptionId, getDisruptionsDatagridConfig, getShouldOpenDisruptionDetailPanel } from '../../../redux/selectors/control/disruptions';
+import { getActiveDisruptionId, getDisruptionsDatagridConfig } from '../../../redux/selectors/control/disruptions';
 import { updateDisruptionsDatagridConfig, updateActiveDisruptionId, updateCopyDisruptionState } from '../../../redux/actions/control/disruptions';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
 
@@ -310,9 +310,9 @@ export const DisruptionsDataGrid = (props) => {
                 getDetailPanelContent={ getDetailPanelContent }
                 getRowId={ row => row.disruptionId }
                 calculateDetailPanelHeight={ props.useViewDisruptionDetailsPage ? () => 400 : calculateDetailPanelHeight }
-                expandedDetailPanels={ (props.activeDisruptionId) ? [props.activeDisruptionId] : null }
+                expandedDetailPanels={ props.activeDisruptionId ? [props.activeDisruptionId] : null }
                 onRowExpanded={ ids => updateActiveDisruption(ids) }
-                activeIncidentId={ props.activeDisruptionId }
+                autoExpandActiveIncident={ props.activeDisruptionId }
             />
         </div>
     );

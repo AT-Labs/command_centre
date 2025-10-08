@@ -56,6 +56,13 @@
 
         .map {
             margin-left: $side-panel-width-large;
+            &.edit-effect-panel-expanded {
+                margin-left: calc(#{$side-panel-width-large} * 2);
+            }
+
+            &.workaround-panel-expanded {
+                margin-left: calc(#{$side-panel-width-large} * 3);
+            }
         }
 
         select {
@@ -99,14 +106,10 @@
 
             .add-effect-button {
                 float: right;
-                color: $at-shore;
+                color: #399CDB;
                 border: 0 !important;
                 background-color: transparent !important;
                 font-weight: bold;
-            }
-
-            .disabled {
-                color: $at-bk-gray !important;
             }
         }
 

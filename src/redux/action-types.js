@@ -263,6 +263,7 @@ export default {
     UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING: 'update-control-incident-action-requesting',
     UPDATE_CONTROL_INCIDENT_ACTION_RESULT: 'update-control-incident-action-result',
     UPDATE_CONTROL_ACTIVE_INCIDENT_ID: 'update-control-active-incident-id',
+    UPDATE_CONTROL_ACTIVE_INCIDENT_DISRUPTION_ID: 'update-control-active-incident-disruption-id',
     UPDATE_CONTROL_ACTIVE_INCIDENT: 'update-control-active-incident',
     UPDATE_CONTROL_SET_ALL_INCIDENTS: 'update-control-set-all-incidents',
     UPDATE_CONTROL_SET_ALL_INCIDENTS_DISRUPTIONS: 'update-control-set-all-incidents-disruptions',
@@ -296,6 +297,7 @@ export default {
     SET_DISRUPTION_FOR_WORKAROUND_EDIT: 'set-disruption-for-workaround-edit',
     SET_REQUEST_TO_UPDATE_EDIT_EFFECT: 'set-request-to-update-edit-effect',
     SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT: 'set-requested-disruption-key-to-update-edit-effect',
+    UPDATE_MAP_DRAWING_ENTITIES: 'update-map-drawing-entities',
     // UPDATE_INCIDENT_DIVERSION_EDIT_MODE: 'update-incident-diversion-edit-mode',
     // OPEN_INCIDENT_CREATE_DIVERSION: 'open-incident-create-diversion',
     // ADD_INCIDENT_DIVERSION: 'add-incident-diversion',
@@ -363,7 +365,4 @@ export default {
     FETCH_CONTROL_BUS_PRIORITY_THRESHOLDS: 'fetch-control-bus-priority-thresholds',
     UPDATE_CONTROL_BUS_PRIORITY_THRESHOLDS_DATAGRID_CONFIG: 'update-control-bus-priority-thresholds-datagrid-config',
     UPDATE_CONTROL_BUS_PRIORITY_PERMISSIONS: 'update-control-bus-priority-permissions',
-    // Detail panel control
-    SET_DETAIL_PANEL_OPEN_FLAG: 'set-detail-panel-open-flag',
-    SET_DISRUPTION_DETAIL_PANEL_OPEN_FLAG: 'set-disruption-detail-panel-open-flag',
 };
