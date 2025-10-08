@@ -488,6 +488,14 @@ describe("Link actions", () => {
                     activeIncidentId: incidentDisruptionNo,
                 },
             },
+            {
+                type: ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG,
+                payload: { },
+            },
+            {
+                type: ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG,
+                payload: { scrollToParent: false },
+            },
         ];
         store.dispatch(
             goToIncidentsView(
