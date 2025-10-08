@@ -1,11 +1,10 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useState, useRef } from 'react';
-import { Paper, Stack, Button as MuiButton } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Paper, Stack } from '@mui/material';
 import { isEmpty, sortBy, some, isEqual } from 'lodash-es';
 import { Form, FormFeedback, FormGroup, Input, Label, Button } from 'reactstrap';
 import { connect } from 'react-redux';
 import { FaRegCalendarAlt } from 'react-icons/fa';
-import { GiDetour } from 'react-icons/gi';
 import Flatpickr from 'react-flatpickr';
 import { RRule } from 'rrule';
 import moment from 'moment';
@@ -21,7 +20,6 @@ import { isEditEffectPanelOpen,
     getRequestedDisruptionKeyToUpdateEditEffect,
     isCancellationEffectModalOpen,
 } from '../../../../../redux/selectors/control/incidents';
-import { isLoading as isDataLoading } from '../../../../../redux/selectors/activity';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
 import {
     LABEL_CUSTOMER_IMPACT,
@@ -72,7 +70,6 @@ import {
     toggleIncidentModals,
     setRequestedDisruptionKeyToUpdateEditEffect,
 } from '../../../../../redux/actions/control/incidents';
-import { updateDataLoading } from '../../../../../redux/actions/activity';
 import { useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../../types/disruption-cause-and-effect';
@@ -85,17 +82,10 @@ import CancellationEffectModal from './CancellationEffectModal';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import './EditEffectPanel.scss';
 import AddNoteModal from './AddNoteModal';
-import { useDisruptionNotePopup, useDiversion } from '../../../../../redux/selectors/appSettings';
-import { getIsDiversionManagerOpen, getIsDiversionManagerLoading, getIsDiversionManagerReady } from '../../../../../redux/selectors/control/diversions';
-import { ViewDiversionDetailModal } from '../../../DisruptionsView/DisruptionDetail/ViewDiversionDetailModal';
-import { openDiversionManager, updateDiversionMode, updateDiversionToEdit } from '../../../../../redux/actions/control/diversions';
-import EDIT_TYPE from '../../../../../types/edit-types';
-import DiversionManager from '../../../DisruptionsView/DiversionManager';
-import { getDisruption as getDisruptionAPI, getDiversion as getDiversionAPI } from '../../../../../utils/transmitters/disruption-mgt-api';
+import { useDisruptionNotePopup } from '../../../../../redux/selectors/appSettings';
 
 const INIT_EFFECT_STATE = {
     key: '',
-    disruptionId: '',
     startTime: '',
     startDate: '',
     endTime: '',
@@ -140,15 +130,6 @@ export const EditEffectPanel = (props) => {
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
     const [disruptionsDetailsModalOpen, setDisruptionsDetailsModalOpen] = useState(false);
 
-    const [isDiversionMenuOpen, setIsDiversionMenuOpen] = useState(false);
-    const [isViewDiversionsModalOpen, setIsViewDiversionsModalOpen] = useState(false);
-    const [fetchedDisruption, setFetchedDisruption] = useState(null);
-    const [isLoadingDisruption, setIsLoadingDisruption] = useState(false);
-    const [localDiversions, setLocalDiversions] = useState([]);
-    const [shouldRefetchDiversions, setShouldRefetchDiversions] = useState(false);
-    const [isLoaderProtected, setIsLoaderProtected] = useState(false);
-    const isMounted = useRef(true);
-
     const initDisruptionData = () => {
         const disruptionToSet = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
         setDisruption(disruptionToSet);
@@ -182,6 +163,7 @@ export const EditEffectPanel = (props) => {
 
     const impactValid = () => !isEmpty(disruption.impact);
     const severityValid = () => !isEmpty(disruption.severity);
+
     const durationValid = () => isDurationValid(disruption.duration, disruptionRecurrent);
     const endTimeValid = () => isEndTimeValid(
         disruption.endDate,
@@ -189,7 +171,6 @@ export const EditEffectPanel = (props) => {
         disruption.startDate,
         disruption.startTime,
     );
-
     const endDateValid = () => isEndDateValid(disruption.endDate, disruption.startDate, disruptionRecurrent);
 
     const startDateValid = () => isStartDateValid(disruption.startDate, moment(modalOpenedTime), disruptionRecurrent);
@@ -435,8 +416,7 @@ export const EditEffectPanel = (props) => {
         return isPropsEmpty || isEndTimeRequiredAndEmpty || isWeekdayRequiredAndEmpty;
     };
 
-    const affectedEntitySelected = () => disruption.affectedEntities?.affectedRoutes?.length > 0
-        || disruption.affectedEntities?.affectedStops?.length > 0;
+    const affectedEntitySelected = () => disruption.affectedEntities.affectedRoutes.length > 0 || disruption.affectedEntities.affectedStops.length > 0;
     const isRequiredDraftPropsEmpty = () => some([disruption.header, disruption.cause], isEmpty);
 
     const isSubmitDisabled = isRequiredPropsEmpty()
@@ -488,15 +468,10 @@ export const EditEffectPanel = (props) => {
     };
 
     const removeNotFoundFromStopGroupsForAllDisruptions = () => {
-        if (!disruptions || !Array.isArray(disruptions)) {
-            return;
-        }
         disruptions.forEach((d) => {
-            if (Array.isArray(d?.affectedEntities?.affectedStops)) {
-                const filterStops = d.affectedEntities.affectedStops.filter(stop => stop.stopCode !== 'Not Found');
-                if (filterStops.length !== d.affectedEntities.affectedStops.length) {
-                    onAffectedEntitiesUpdate(d.key, 'affectedStops', filterStops);
-                }
+            const filterStops = d.affectedEntities.affectedStops.filter(stop => stop.stopCode !== 'Not Found');
+            if (filterStops.length !== d.affectedEntities.affectedStops.length) {
+                onAffectedEntitiesUpdate(d.key, 'affectedStops', filterStops);
             }
         });
     };
@@ -622,44 +597,6 @@ export const EditEffectPanel = (props) => {
 
     const isApplyDisabled = disruption.status === STATUSES.DRAFT ? isDraftSubmitDisabled : isSubmitDisabled;
 
-    const diversionsCount = localDiversions.length;
-    const isAddDiversionEnabled = () => {
-        if (!disruption?.disruptionId) return false;
-
-        if (disruption.status === STATUSES.RESOLVED) {
-            return false;
-        }
-
-        const routes = disruption.affectedEntities?.affectedRoutes || [];
-
-        if (routes.length === 0) {
-            return false;
-        }
-
-        const hasBusRoutes = routes.some(route => route.routeType === 3);
-        const hasOnlyTrainRoutes = routes.every(route => route.routeType === 2);
-
-        if (!hasBusRoutes || hasOnlyTrainRoutes) {
-            return false;
-        }
-
-        const validStatuses = [STATUSES.NOT_STARTED, STATUSES.IN_PROGRESS, STATUSES.DRAFT];
-        return validStatuses.includes(disruption.status);
-    };
-    const handleViewDiversions = () => {
-        setIsViewDiversionsModalOpen(true);
-    };
-    const handleAddDiversion = () => {
-        if (!props.isDiversionManagerOpen) {
-            props.updateDiversionMode(EDIT_TYPE.CREATE);
-            props.openDiversionManager(true);
-        }
-    };
-
-    const handleMenuClick = () => {
-        setIsDiversionMenuOpen(!isDiversionMenuOpen);
-    };
-
     useEffect(() => {
         props.updateEffectValidationState(!isApplyDisabled);
     }, [isApplyDisabled]);
@@ -672,107 +609,6 @@ export const EditEffectPanel = (props) => {
         props.updateIsEffectUpdatedState(isValuesChanged);
     }, [isValuesChanged]);
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (isDiversionMenuOpen && !event.target.closest('[data-diversion-menu]')) {
-                setIsDiversionMenuOpen(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [isDiversionMenuOpen]);
-
-    useEffect(() => {
-        const fetchDisruptionForDiversion = async () => {
-            if (props.isDiversionManagerOpen && disruption?.disruptionId && !fetchedDisruption) {
-                setIsLoadingDisruption(true);
-                const disruptionData = await getDisruptionAPI(disruption.disruptionId);
-                setFetchedDisruption(disruptionData);
-                setIsLoadingDisruption(false);
-            }
-        };
-
-        fetchDisruptionForDiversion();
-    }, [props.isDiversionManagerOpen, disruption?.disruptionId, fetchedDisruption]);
-
-    useEffect(() => {
-        if (props.isDiversionManagerOpen) {
-            setIsLoaderProtected(true);
-        } else {
-            setFetchedDisruption(null);
-            setIsLoaderProtected(props.isDiversionManagerLoading);
-        }
-    }, [props.isDiversionManagerOpen, props.isDiversionManagerLoading]);
-
-    useEffect(() => {
-        if (props.isDiversionManagerOpen && props.isDiversionManagerReady) {
-            setIsLoaderProtected(false);
-        }
-    }, [props.isDiversionManagerOpen, props.isDiversionManagerReady]);
-
-    useEffect(() => {
-        document.body.classList.toggle('diversion-loading', isLoaderProtected);
-
-        return () => {
-            document.body.classList.remove('diversion-loading');
-        };
-    }, [isLoaderProtected]);
-
-    useEffect(() => {
-        if (props.isDiversionManagerOpen && (!disruption?.disruptionId || disruption?.disruptionId === '')) {
-            props.openDiversionManager(false);
-        }
-    }, [props.isDiversionManagerOpen, disruption?.disruptionId]);
-
-    useEffect(() => {
-        const fetchDiversions = async () => {
-            if (!disruption?.disruptionId) {
-                setLocalDiversions([]);
-                return;
-            }
-
-            const data = await getDiversionAPI(disruption?.disruptionId);
-            setLocalDiversions(data || []);
-        };
-        fetchDiversions();
-    }, [disruption?.disruptionId, shouldRefetchDiversions]);
-
-    useEffect(() => () => {
-        document.body.classList.remove('diversion-loading');
-        isMounted.current = false;
-        setDisruption({ ...INIT_EFFECT_STATE });
-        setLocalDiversions([]);
-        setIsLoadingDisruption(false);
-        setIsLoaderProtected(false);
-    }, []);
-
-    if (!disruption || !disruptions || disruptions.length === 0) {
-        return null;
-    }
-
-    if (props.useDiversion && props.isDiversionManagerOpen) {
-        if (isLoadingDisruption) {
-            return <div>Loading...</div>;
-        }
-
-        if (fetchedDisruption) {
-            return (
-                <DiversionManager
-                    disruption={ fetchedDisruption }
-                    onCancelled={ () => {
-                        props.openDiversionManager(false);
-                        setShouldRefetchDiversions(prev => !prev);
-                    } }
-                />
-            );
-        }
-
-        return <div>Failed to load disruption data.</div>;
-    }
-
     return (
         <div className={ `edit-effect-panel ${!props.isEditEffectPanelOpen ? 'pointer-event-none' : ''}` }>
             { props.isEditEffectPanelOpen && (
@@ -780,63 +616,19 @@ export const EditEffectPanel = (props) => {
                     <div className="edit-effect-panel-body">
                         <div className="label-with-icon">
                             <h2 className="pl-4 pr-4 pt-4">{ `Edit details of Effect ${disruption.incidentNo}` }</h2>
-                            <div style={ { display: 'flex', alignItems: 'center', gap: '10px' } }>
-                                {props.useDiversion && (
-                                    <div style={ { position: 'relative' } } data-diversion-menu>
-                                        <MuiButton
-                                            className="diversion-button-custom"
-                                            onClick={ handleMenuClick }
-                                            variant="contained"
-                                        >
-                                            <span>
-                                                Diversions(
-                                                { diversionsCount }
-                                                )
-                                            </span>
-                                            <GiDetour size="26" />
-                                        </MuiButton>
-                                        {isDiversionMenuOpen && (
-                                            <div className="diversion-menu">
-                                                <MuiButton
-                                                    fullWidth
-                                                    disabled={ !isAddDiversionEnabled() }
-                                                    onClick={ () => {
-                                                        handleAddDiversion();
-                                                        setIsDiversionMenuOpen(false);
-                                                    } }
-                                                    variant="text"
-                                                    sx={ { justifyContent: 'flex-start' } }
-                                                >
-                                                    Add Diversion
-                                                </MuiButton>
-                                                <MuiButton
-                                                    fullWidth
-                                                    onClick={ () => {
-                                                        handleViewDiversions();
-                                                        setIsDiversionMenuOpen(false);
-                                                    } }
-                                                    variant="text"
-                                                    sx={ { justifyContent: 'flex-start' } }
-                                                >
-                                                    View & Edit Diversions
-                                                </MuiButton>
-                                            </div>
-                                        )}
-                                    </div>
+                            {' '}
+                            { props.isWorkaroundPanelOpen
+                                && (
+                                    <KeyboardDoubleArrowLeftIcon onClick={ closeWorkaroundPanel }
+                                        className="collapse-icon"
+                                        style={ { color: '#399CDB', fontSize: '48px' } } />
                                 )}
-                                { props.isWorkaroundPanelOpen
-                                    && (
-                                        <KeyboardDoubleArrowLeftIcon onClick={ closeWorkaroundPanel }
-                                            className="collapse-icon"
-                                            style={ { color: '#399CDB', fontSize: '48px' } } />
-                                    )}
-                                { !props.isWorkaroundPanelOpen
-                                    && (
-                                        <KeyboardDoubleArrowRightIcon onClick={ openWorkaroundPanel }
-                                            className="collapse-icon"
-                                            style={ { color: '#399CDB', fontSize: '48px' } } />
-                                    )}
-                            </div>
+                            { !props.isWorkaroundPanelOpen
+                                && (
+                                    <KeyboardDoubleArrowRightIcon onClick={ openWorkaroundPanel }
+                                        className="collapse-icon"
+                                        style={ { color: '#399CDB', fontSize: '48px' } } />
+                                )}
                         </div>
                         <Form key="form" className="row my-3 p-4 incident-effect">
                             <div className="col-12">
@@ -1015,11 +807,9 @@ export const EditEffectPanel = (props) => {
                                         />
                                     </div>
                                     <div className="col-6 pb-3 text-center">
-                                        <Button
-                                            disabled={ isViewAllDisabled() }
+                                        <Button disabled={ isViewAllDisabled() }
                                             className="showActivePeriods btn btn-secondary lh-1"
-                                            onClick={ () => displayActivePeriods() }
-                                        >
+                                            onClick={ () => displayActivePeriods() }>
                                             View All
                                         </Button>
                                     </div>
@@ -1091,8 +881,7 @@ export const EditEffectPanel = (props) => {
                                     <div className="flex-justify-content-end">
                                         <Button
                                             className="add-note-button cc-btn-secondary"
-                                            onClick={ () => onAddNote(disruption.note) }
-                                        >
+                                            onClick={ () => onAddNote(disruption.note) }>
                                             Add note
                                         </Button>
                                     </div>
@@ -1135,12 +924,11 @@ export const EditEffectPanel = (props) => {
                             </div>
                         </Form>
                     </div>
-                    <footer className="row m-0 justify-content-end p-2 position-fixed incident-footer-min-height">
+                    <footer className="row m-0 justify-content-end p-4 position-fixed incident-footer-min-height">
                         <div className="col-4">
                             <Button
                                 className="btn cc-btn-primary btn-block save-workaround"
-                                onClick={ () => setDisruptionsDetailsModalOpen(true) }
-                            >
+                                onClick={ () => setDisruptionsDetailsModalOpen(true) }>
                                 Preview & Share
                             </Button>
                         </div>
@@ -1148,8 +936,7 @@ export const EditEffectPanel = (props) => {
                             <Button
                                 disabled={ isApplyDisabled }
                                 className="btn cc-btn-primary btn-block save-workaround"
-                                onClick={ () => shareToEmailHandler() }
-                            >
+                                onClick={ () => shareToEmailHandler() }>
                                 Share to email
                             </Button>
                         </div>
@@ -1157,8 +944,7 @@ export const EditEffectPanel = (props) => {
                             <Button
                                 disabled={ isApplyDisabled }
                                 className="btn cc-btn-primary btn-block save-workaround"
-                                onClick={ () => onSubmit() }
-                            >
+                                onClick={ () => onSubmit() }>
                                 Apply
                             </Button>
                         </div>
@@ -1191,20 +977,6 @@ export const EditEffectPanel = (props) => {
                 isModalOpen={ props.isCancellationEffectOpen }>
                 <CancellationEffectModal discardChanges={ () => discardEffectChanges() } />
             </CustomModal>
-            {props.useDiversion && (
-                <ViewDiversionDetailModal
-                    disruption={ disruption }
-                    onClose={ () => setIsViewDiversionsModalOpen(false) }
-                    onEditDiversion={ (diversion) => {
-                        props.updateDiversionMode(EDIT_TYPE.EDIT);
-                        props.updateDiversionToEdit(diversion);
-                        props.openDiversionManager(true);
-                    } }
-                    isOpen={ isViewDiversionsModalOpen }
-                    setShouldRefetchDiversions={ setShouldRefetchDiversions }
-                    diversions={ localDiversions }
-                />
-            )}
         </div>
     );
 };
@@ -1242,13 +1014,6 @@ EditEffectPanel.propTypes = {
     updateEffectValidationState: PropTypes.func.isRequired,
     updateIsEffectUpdatedState: PropTypes.func.isRequired,
     useDisruptionNotePopup: PropTypes.bool,
-    useDiversion: PropTypes.bool,
-    openDiversionManager: PropTypes.func.isRequired,
-    updateDiversionMode: PropTypes.func.isRequired,
-    updateDiversionToEdit: PropTypes.func.isRequired,
-    isDiversionManagerOpen: PropTypes.bool,
-    isDiversionManagerLoading: PropTypes.bool,
-    isDiversionManagerReady: PropTypes.bool,
     updateEffectValidationForPublishState: PropTypes.func.isRequired,
 };
 
@@ -1259,10 +1024,6 @@ EditEffectPanel.defaultProps = {
     workaroundsToSync: [],
     isCancellationEffectOpen: false,
     useDisruptionNotePopup: false,
-    useDiversion: false,
-    isDiversionManagerOpen: false,
-    isDiversionManagerLoading: false,
-    isDiversionManagerReady: false,
 };
 
 export default connect(state => ({
@@ -1273,11 +1034,6 @@ export default connect(state => ({
     newDisruptionKey: getRequestedDisruptionKeyToUpdateEditEffect(state),
     isCancellationEffectOpen: isCancellationEffectModalOpen(state),
     useDisruptionNotePopup: useDisruptionNotePopup(state),
-    useDiversion: useDiversion(state),
-    isDiversionManagerOpen: getIsDiversionManagerOpen(state),
-    isDiversionManagerLoading: getIsDiversionManagerLoading(state),
-    isDiversionManagerReady: getIsDiversionManagerReady(state),
-    isDataLoading: isDataLoading(state),
 }), {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
@@ -1292,8 +1048,4 @@ export default connect(state => ({
     setRequestToUpdateEditEffectState,
     toggleIncidentModals,
     setRequestedDisruptionKeyToUpdateEditEffect,
-    openDiversionManager,
-    updateDiversionMode,
-    updateDiversionToEdit,
-    updateDataLoading,
 })(EditEffectPanel);
