@@ -73,6 +73,8 @@ export const INIT_STATE = {
     isCancellationEffectOpen: false,
     isApplyChangesOpen: false,
     isPublishAndApplyChangesOpen: false,
+    activePeriodsForSearch: [],
+    shouldRefreshActivePeriods: false,
 };
 
 const handleIncidentsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });
@@ -211,4 +213,13 @@ export default handleActions({
     [ACTION_TYPE.SET_DISRUPTION_FOR_WORKAROUND_EDIT]: handleDisruptionForWorkaroundEdit,
     [ACTION_TYPE.SET_REQUEST_TO_UPDATE_EDIT_EFFECT]: handleRequestToUpdateEditEffect,
     [ACTION_TYPE.SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT]: handleUpdateDisruptionKeyToUpdateEditEffect,
+    [ACTION_TYPE.UPDATE_ACTIVE_PERIODS_FOR_SEARCH]: (state, { payload: { activePeriods } }) => ({
+        ...state,
+        activePeriodsForSearch: activePeriods,
+        shouldRefreshActivePeriods: false,
+    }),
+    [ACTION_TYPE.REFRESH_ACTIVE_PERIODS_FOR_SEARCH]: state => ({
+        ...state,
+        shouldRefreshActivePeriods: true,
+    }),
 }, INIT_STATE);
