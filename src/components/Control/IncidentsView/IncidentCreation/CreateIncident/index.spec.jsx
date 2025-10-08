@@ -4,7 +4,7 @@ import { RRule } from 'rrule';
 import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import { updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
-import { buildIncidentSubmitBody, momentFromDateTime } from '../../../../../utils/control/disruptions';
+import { buildIncidentSubmitBody, momentFromDateTime, getStatusForEffect } from '../../../../../utils/control/disruptions';
 import { STATUSES, DISRUPTION_TYPE, getParentChildDefaultSeverity } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
@@ -34,6 +34,7 @@ jest.mock('../../../../../utils/control/disruptions', () => ({
     generateDisruptionActivePeriods: jest.fn().mockReturnValue(disruptionActivePeriodsMock),
     buildIncidentSubmitBody: jest.fn(),
     momentFromDateTime: jest.fn(),
+    getStatusForEffect: jest.fn(),
 }));
 
 const defaultIncidentData = {
@@ -396,7 +397,6 @@ describe('CreateIncident component', () => {
         const mockSetDisruptionForWorkaroundEdit = jest.fn();
         const mockToggleWorkaroundPanel = jest.fn();
         const mockUpdateDisruptionKeyToWorkaroundEdit = jest.fn();
-        const mockToggleEditEffectPanel = jest.fn();
 
         beforeEach(() => {
             wrapper = shallow(
@@ -441,7 +441,6 @@ describe('CreateIncident component', () => {
                     updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
                     getRoutesByShortName={ mockGetRoutesByShortName }
                     isEditEffectPanelOpen
-                    toggleEditEffectPanel={ mockToggleEditEffectPanel }
                 />,
             );
             wrapper.setState({ isEffectUpdated: true });
@@ -808,6 +807,7 @@ describe('CreateIncident component', () => {
         });
 
         it('Should call updateIncident on add new effect with additional disruption', async () => {
+            getStatusForEffect.mockReturnValue({ status: STATUSES.IN_PROGRESS });
             const newDisruption = {
                 disruptionId: 139537,
                 incidentNo: 'DISR139537',
@@ -967,6 +967,82 @@ describe('CreateIncident component', () => {
             expect(mockUpdateIncident).toHaveBeenCalled();
         });
 
+        it('Should call updateIncident on add new effect with additional disruption for draft incident', async () => {
+            getStatusForEffect.mockReturnValue({ status: STATUSES.IN_PROGRESS });
+            const newDisruption = {
+                disruptionId: 139537,
+                incidentNo: 'DISR139537',
+                mode: '',
+                affectedEntities: [],
+                impact: 'ESCALATOR_NOT_WORKING',
+                cause: 'CONGESTION',
+                startTime: '2025-08-21T20:27:00.000Z',
+                endTime: null,
+                status: 'draft',
+                header: 'test incident n0827',
+                uploadedFiles: null,
+                createNotification: false,
+                exemptAffectedTrips: null,
+                version: 1,
+                duration: '',
+                activePeriods: [
+                    {
+                        startTime: 1755808020,
+                    },
+                ],
+                recurrencePattern: null,
+                recurrent: false,
+                workarounds: [],
+                notes: [],
+                severity: 'HEADLINE',
+                passengerCount: null,
+                incidentId: 139273,
+                incidentTitle: 'test draft n0827',
+                incidentDisruptionNo: 'CCD139273',
+                key: 'DISR139537',
+            };
+            const incident = {
+                ...incidentForEdit,
+                status: STATUSES.DRAFT,
+            };
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incident }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    isEditEffectPanelOpen
+                />,
+            );
+            wrapper.setProps({ editMode: EDIT_TYPE.ADD_EFFECT });
+            wrapper.setState(prevState => ({
+                ...prevState,
+                newIncidentEffect: {
+                    ...newDisruption,
+                },
+            }));
+            momentFromDateTime.mockReturnValue(mockTimeForMoment);
+            buildIncidentSubmitBody.mockReturnValue({});
+            await wrapper.instance().onSubmitUpdate();
+            expect(buildIncidentSubmitBody).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    disruptions: expect.arrayContaining([expect.anything()]),
+                }),
+                true,
+            );
+            const callArgs = buildIncidentSubmitBody.mock.calls[0][0];
+            expect(callArgs.disruptions).toHaveLength(2);
+            expect(mockUpdateIncident).toHaveBeenCalled();
+            expect(wrapper.state('incidentData').status).toEqual(STATUSES.DRAFT);
+        });
+
         it('Should update edit mode on addNewEffectToIncident call', async () => {
             wrapper = shallow(
                 <CreateIncident
@@ -986,7 +1062,6 @@ describe('CreateIncident component', () => {
                     updateDisruptionKeyToWorkaroundEdit={ mockUpdateDisruptionKeyToWorkaroundEdit }
                     toggleWorkaroundPanel={ mockToggleWorkaroundPanel }
                     setDisruptionForWorkaroundEdit={ mockSetDisruptionForWorkaroundEdit }
-                    toggleEditEffectPanel={ mockToggleEditEffectPanel }
                 />,
             );
             await wrapper.instance().addNewEffectToIncident();
@@ -997,6 +1072,60 @@ describe('CreateIncident component', () => {
             expect(mockUpdateAffectedRoutesState).toHaveBeenCalledWith([]);
             expect(mockUpdateEditMode).toHaveBeenCalledWith(EDIT_TYPE.ADD_EFFECT);
             expect(mockUpdateCurrentStep).toHaveBeenCalledWith(2);
+        });
+
+        it('Add effect button should not be disabled if incident not resolved', async () => {
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentForEdit }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateEditMode={ mockUpdateEditMode }
+                    isEditEffectPanelOpen
+                    updateDisruptionKeyToWorkaroundEdit={ mockUpdateDisruptionKeyToWorkaroundEdit }
+                    toggleWorkaroundPanel={ mockToggleWorkaroundPanel }
+                    setDisruptionForWorkaroundEdit={ mockSetDisruptionForWorkaroundEdit }
+                />,
+            );
+            const button = wrapper.find('button.add-effect-button');
+            expect(button.prop('disabled')).toBe(false);
+        });
+
+        it('Add effect button should be disabled if incident resolved', async () => {
+            const incident = {
+                ...incidentForEdit,
+                status: STATUSES.RESOLVED,
+            };
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incident }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateEditMode={ mockUpdateEditMode }
+                    isEditEffectPanelOpen
+                    updateDisruptionKeyToWorkaroundEdit={ mockUpdateDisruptionKeyToWorkaroundEdit }
+                    toggleWorkaroundPanel={ mockToggleWorkaroundPanel }
+                    setDisruptionForWorkaroundEdit={ mockSetDisruptionForWorkaroundEdit }
+                />,
+            );
+            const button = wrapper.find('button.add-effect-button');
+            expect(button.prop('disabled')).toBe(true);
         });
 
         it('Should update newIncidentEffect value on updateNewIncidentEffect call', async () => {

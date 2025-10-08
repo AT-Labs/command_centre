@@ -74,7 +74,7 @@ export const Map = (props) => {
             { props.isLoading && <Loader className="position-fixed" />}
             <LeafletProvider value="">
                 <LeafletMap
-                    className={ `map flex-grow-1 ${props.className}` }
+                    className="map flex-grow-1"
                     center={ props.center }
                     zoom={ props.zoom }
                     preferCanvas
@@ -112,7 +112,6 @@ Map.propTypes = {
     sidePanelWidthPX: PropTypes.number,
     tabIndexOverride: PropTypes.number,
     onViewChanged: PropTypes.func,
-    className: PropTypes.string,
 };
 
 Map.defaultProps = {
@@ -125,5 +124,4 @@ Map.defaultProps = {
     sidePanelWidthPX: SIDE_PANEL_WIDTH_PX,
     tabIndexOverride: -1,
     onViewChanged: undefined,
-    className: '',
 };

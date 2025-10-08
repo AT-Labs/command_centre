@@ -53,13 +53,13 @@ export const NotificationsView = (props) => {
         ...(props.useNotificationEffectColumn ? [
             {
                 field: 'parentSourceId',
-                headerName: '#DISRUPTION',
+                headerName: 'DISRUPTION#',
                 flex: 1,
                 filterOperators: ParentSourceIdDataGridOperator,
                 renderCell: ({ row: { source: { parentIdentifier: parentSourceId } } }) => transformParentSourceIdNo(parentSourceId),
             }, {
                 field: 'sourceId',
-                headerName: '#EFFECT',
+                headerName: 'EFFECT#',
                 flex: 1,
                 filterOperators: sourceIdDataGridOperator,
                 renderCell: ({ row: { source: { identifier: incidentId, parentIdentifier: causeId } } }) => (
@@ -80,7 +80,7 @@ export const NotificationsView = (props) => {
             }] : [
             {
                 field: 'sourceId',
-                headerName: '#DISRUPTION',
+                headerName: 'DISRUPTION#',
                 flex: 1,
                 filterOperators: sourceIdDataGridOperator,
                 ...(props.useDisruptionsNotificationsDirectLink ? {
