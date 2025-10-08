@@ -198,11 +198,7 @@ export const clearDisruptionActionResult = () => ({
     },
 });
 
-export const updateActiveDisruptionId = (activeDisruptionId, shouldOpenDetailPanel = true) => (dispatch) => {
-    dispatch({
-        type: ACTION_TYPE.SET_DISRUPTION_DETAIL_PANEL_OPEN_FLAG,
-        payload: { shouldOpenDetailPanel },
-    });
+export const updateActiveDisruptionId = activeDisruptionId => (dispatch) => {
     dispatch({
         type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_DISRUPTION_ID,
         payload: {
@@ -212,19 +208,29 @@ export const updateActiveDisruptionId = (activeDisruptionId, shouldOpenDetailPan
     dispatch(clearDisruptionActionResult());
 };
 
-export const publishDraftDisruption = disruption => async (dispatch) => {
+export const publishDraftDisruption = (disruption, diversions) => async (dispatch) => {
     let response;
     dispatch(updateRequestingDisruptionState(true, disruption.disruptionId));
     try {
-        response = await disruptionsMgtApi.updateDisruption(disruption);
-        dispatch(
-            updateRequestingDisruptionResult(
+        if (!disruption.endTime && diversions?.length > 0) {
+            dispatch(updateRequestingDisruptionResult(
                 disruption.disruptionId,
-                ACTION_RESULT.PUBLISH_DRAFT_SUCCESS(response.incidentNo, response.version, response.createNotification),
-            ),
-        );
+                ACTION_RESULT.PUBLISH_DRAFT_ERROR(
+                    null,
+                    'Disruption with diversion(s) require and End Date and End Time to be published. Please inform the End Date and End Time and try again.',
+                ),
+            ));
+        } else {
+            response = await disruptionsMgtApi.updateDisruption(disruption);
+            dispatch(
+                updateRequestingDisruptionResult(
+                    disruption.disruptionId,
+                    ACTION_RESULT.PUBLISH_DRAFT_SUCCESS(response.incidentNo, response.version, response.createNotification),
+                ),
+            );
+        }
     } catch (error) {
-        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.PUBLISH_DRAFT_ERROR(error.code)));
+        dispatch(updateRequestingDisruptionResult(disruption.disruptionId, ACTION_RESULT.PUBLISH_DRAFT_ERROR(error.code, error.message || 'Failed to publish draft disruption')));
     } finally {
         dispatch(updateRequestingDisruptionState(false, disruption.disruptionId));
     }
