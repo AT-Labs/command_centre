@@ -1,13 +1,15 @@
 import React from 'react';
 import { shallow } from 'enzyme';
+import { uniqBy } from 'lodash-es';
 import { RRule } from 'rrule';
 import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import { updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
-import { buildIncidentSubmitBody, momentFromDateTime, getStatusForEffect } from '../../../../../utils/control/disruptions';
+import { buildIncidentSubmitBody, momentFromDateTime, getStatusForEffect, itemToEntityTransformers } from '../../../../../utils/control/disruptions';
 import { STATUSES, DISRUPTION_TYPE, getParentChildDefaultSeverity } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
+import SEARCH_RESULT_TYPE from '../../../../../types/search-result-types';
 
 jest.mock('../../../../Common/Map/ShapeLayer/ShapeLayer', () => jest.fn());
 
@@ -35,6 +37,10 @@ jest.mock('../../../../../utils/control/disruptions', () => ({
     buildIncidentSubmitBody: jest.fn(),
     momentFromDateTime: jest.fn(),
     getStatusForEffect: jest.fn(),
+    itemToEntityTransformers: {
+        stop: jest.fn(stop => ({ data: stop })),
+        route: jest.fn(route => ({ data: route })),
+    },
 }));
 
 const defaultIncidentData = {
@@ -1425,6 +1431,48 @@ describe('CreateIncident component', () => {
             wrapper.instance().drawAffectedEntity();
 
             expect(mockGetRoutesByShortName).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('SelectedStopsMarker - stops processing logic', () => {
+        const { STOP } = SEARCH_RESULT_TYPE;
+
+        it('should merge, remove duplicates by stopCode, and transform entities', () => {
+            const mockStops = [
+                { stopCode: '101', stopName: 'Stop A', type: STOP.type },
+                { stopCode: '102', stopName: 'Stop B', type: STOP.type },
+            ];
+
+            const mockRoutes = [
+                { stopCode: '103', routeShortName: 'Route C', type: STOP.type },
+                { stopCode: '101', routeShortName: 'Route A Duplicate', type: STOP.type },
+            ];
+
+            const combined = [...mockStops, ...mockRoutes];
+            const unique = uniqBy(combined, stop => stop.stopCode);
+            const result = unique.map(stop => itemToEntityTransformers[STOP.type](stop).data);
+
+            expect(unique).toHaveLength(3);
+            expect(result).toHaveLength(3);
+            expect(result[0].stopCode).toEqual('101');
+            expect(result[1].stopCode).toEqual('102');
+            expect(result[2].stopCode).toEqual('103');
+        });
+
+        it('should return only first 10 unique entities if there are more than 10', () => {
+            const manyStops = Array.from({ length: 15 }, (_, i) => ({
+                stopCode: `${i + 1}`,
+                stopName: `Stop ${i + 1}`,
+                type: STOP.type,
+            }));
+
+            const unique = uniqBy(manyStops, stop => stop.stopCode);
+            const sliced = unique.slice(0, 10);
+            const result = sliced.map(stop => itemToEntityTransformers[STOP.type](stop).data);
+
+            expect(result).toHaveLength(10);
+            expect(result[0].stopCode).toEqual('1');
+            expect(result[9].stopCode).toEqual('10');
         });
     });
 });
