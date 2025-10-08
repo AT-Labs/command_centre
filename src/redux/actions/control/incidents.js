@@ -489,8 +489,7 @@ export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
         missingCacheRoutes.push(route);
     });
 
-    const uniqueRoutesByShortName = uniqBy(missingCacheRoutes, 'routeShortName');
-    return Promise.all(uniqueRoutesByShortName.map(route => ccStatic.getRoutesByShortName(route.routeShortName)))
+    return Promise.all(missingCacheRoutes.map(route => ccStatic.getRoutesByShortName(route.routeShortName)))
         .then((routes) => {
             each(routes.flat(), ({ route_id, trips }) => {
                 if (trips && trips.length > 0 && trips[0].shape_wkt) {

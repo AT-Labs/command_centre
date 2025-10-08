@@ -254,7 +254,7 @@ export class CreateIncident extends React.Component {
             this.props.updateAffectedRoutesState(routesToDraw);
 
             if (routesToDraw.length > 0) {
-                this.props.getRoutesByShortName(routesToDraw.slice(0, 10));
+                this.props.getRoutesByShortName(routesToDraw);
             }
         }
     }
@@ -758,11 +758,7 @@ export class CreateIncident extends React.Component {
                     <HighlightingLayer
                         stopDetail={ this.props.stopDetail } />
                     <SelectedStopsMarker
-                        stops={
-                            uniqBy([...this.props.stops, ...this.props.routes], stop => stop.stopCode)
-                                .slice(0, 10)
-                                .map(stop => itemToEntityTransformers[STOP.type](stop).data)
-                        }
+                        stops={ uniqBy([...this.props.stops, ...this.props.routes], stop => stop.stopCode).map(stop => itemToEntityTransformers[STOP.type](stop).data) }
                         size={ 28 }
                         tooltip
                         maximumStopsToDisplay={ 200 } />
