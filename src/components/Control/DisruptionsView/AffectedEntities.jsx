@@ -61,9 +61,8 @@ export const AffectedEntities = (props) => {
 
     // We only support adding diversion to bus route at the moment.
     const isBusRoute = route => route.routeType === 3;
-
-    const showEditDiversion = props.useDiversion && props.affectedEntities.some(isBusRoute);
-    const showAddDiversion = props.useDiversion && showEditDiversion && !isDisruptionResolved;
+    const showAddDiversion = props.useDiversion && props.startTime && props.endTime && !isDisruptionResolved
+        && props.affectedEntities.filter(isBusRoute).length > 0;
 
     return (
         <section className={ `disruption__affected-entities ${props.heightSmall ? 'small' : ''} ${props.className}` }>
@@ -100,7 +99,8 @@ export const AffectedEntities = (props) => {
                                     </div>
                                 )}
                                 <div>
-                                    { showAddDiversion && (
+                                    { showAddDiversion
+                                    && (
                                         <Button
                                             className="btn cc-btn-link pr-0 font-weight-bold"
                                             id="edit-routes-and-stops-btn"
@@ -111,18 +111,19 @@ export const AffectedEntities = (props) => {
                                     )}
                                 </div>
                                 <div>
-                                    { showEditDiversion && (
-                                        <Button
-                                            className="btn cc-btn-link pr-0 font-weight-bold"
-                                            id="view-and-edit-diversions-btn"
-                                            onClick={ props.viewDiversionsAction }
-                                        >
-                                            View & edit diversions (
-                                            {diversions.length}
-                                            )
-                                            <MdEast size={ 20 } color="black" className="ml-1" />
-                                        </Button>
-                                    )}
+                                    { props.useDiversion
+                                        && (
+                                            <Button
+                                                className="btn cc-btn-link pr-0 font-weight-bold"
+                                                id="view-and-edit-diversions-btn"
+                                                onClick={ props.viewDiversionsAction }
+                                            >
+                                                View & edit diversions (
+                                                {diversions.length}
+                                                )
+                                                <MdEast size={ 20 } color="black" className="ml-1" />
+                                            </Button>
+                                        )}
                                 </div>
                                 { props.showViewPassengerImpactButton && (
                                     <div>
@@ -159,6 +160,8 @@ AffectedEntities.propTypes = {
     addDiversionAction: PropTypes.func,
     isEditDisabled: PropTypes.bool,
     affectedEntities: PropTypes.array.isRequired,
+    startTime: PropTypes.string,
+    endTime: PropTypes.string,
     stopGroups: PropTypes.object.isRequired,
     showHeader: PropTypes.bool,
     className: PropTypes.string,
@@ -185,6 +188,8 @@ AffectedEntities.defaultProps = {
     viewDiversionsAction: null,
     showViewPassengerImpactButton: false,
     viewPassengerImpactAction: null,
+    startTime: null,
+    endTime: null,
     diversions: [],
 };
 

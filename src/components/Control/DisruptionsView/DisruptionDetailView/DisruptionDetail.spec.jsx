@@ -41,6 +41,7 @@ const componentPropsMock = {
 };
 
 const stop = { stopId: '105-474861ff', stopCode: '105' };
+
 const baseDisruption = {
     startTime: '2022-03-09T06:00:00.000Z',
     endTime: '2022-04-20T03:00:00.000Z',
@@ -343,12 +344,10 @@ describe('<DisruptionDetailView />', () => {
     describe('ViewDiversionModal', () => {
         it('should call open and then close on the diversion modal', () => {
             useDiversion.mockReturnValue(true);
-            const newBaseDisruption = { ...baseDisruption };
-            newBaseDisruption.affectedEntities.push({ routeType: 3 });
             wrapper = setup(
                 {
                     disruption: {
-                        ...newBaseDisruption,
+                        ...baseDisruption,
                     },
                 },
             );
@@ -360,7 +359,7 @@ describe('<DisruptionDetailView />', () => {
             closeDiversions.simulate('click');
 
             expect(wrapper.find(ViewDiversionDetailModal).exists()).to.be.true; // eslint-disable-line
-            expect(wrapper.find('button').at(3).text()).to.equal('View & edit diversions (0)');
+            expect(wrapper.find('button').at(2).text()).to.equal("View & edit diversions (0)"); // eslint-disable-line
         });
     });
 });

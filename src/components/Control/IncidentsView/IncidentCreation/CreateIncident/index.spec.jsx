@@ -1331,4 +1331,100 @@ describe('CreateIncident component', () => {
             expect(mockToggleIncidentModals).toHaveBeenCalledWith('isPublishAndApplyChangesOpen', false);
         });
     });
+
+    describe('drawAffectedEntity - route limiting', () => {
+        const mockGetRoutesByShortName = jest.fn();
+        const mockUpdateAffectedStopsState = jest.fn();
+        const mockUpdateAffectedRoutesState = jest.fn();
+
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('Should call getRoutesByShortName with first 10 routes if more than 10 are provided', () => {
+            const routes = Array.from({ length: 12 }, (_, i) => ({
+                routeId: `route-${i + 1}`,
+                routeShortName: `ROUTE${i + 1}`,
+                type: 'route',
+            }));
+
+            const incidentToEdit = {
+                disruptions: [{
+                    affectedEntities: routes,
+                }],
+            };
+
+            const wrapper = shallow(
+                <CreateIncident
+                    action={ mockAction }
+                    updateCurrentStep={ updateCurrentStep }
+                    incidentToEdit={ incidentToEdit }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                />,
+            );
+
+            wrapper.instance().drawAffectedEntity();
+
+            expect(mockGetRoutesByShortName).toHaveBeenCalledTimes(1);
+            const calledWith = mockGetRoutesByShortName.mock.calls[0][0];
+            expect(calledWith).toHaveLength(10);
+            expect(calledWith[0].routeId).toEqual('route-1');
+            expect(calledWith[9].routeId).toEqual('route-10');
+        });
+
+        it('Should call getRoutesByShortName with all routes if fewer than 10 are provided', () => {
+            const routes = [
+                { routeId: 'route-A', routeShortName: 'ROUTEA', type: 'route' },
+                { routeId: 'route-B', routeShortName: 'ROUTEB', type: 'route' },
+                { routeId: 'route-C', routeShortName: 'ROUTEC', type: 'route' },
+            ];
+
+            const incidentToEdit = {
+                disruptions: [{
+                    affectedEntities: routes,
+                }],
+            };
+
+            const wrapper = shallow(
+                <CreateIncident
+                    action={ mockAction }
+                    updateCurrentStep={ updateCurrentStep }
+                    incidentToEdit={ incidentToEdit }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                />,
+            );
+
+            wrapper.instance().drawAffectedEntity();
+
+            expect(mockGetRoutesByShortName).toHaveBeenCalledTimes(1);
+            expect(mockGetRoutesByShortName).toHaveBeenCalledWith(routes);
+        });
+
+        it('Should not call getRoutesByShortName if routesToDraw is empty', () => {
+            const incidentToEdit = {
+                disruptions: [{
+                    affectedEntities: [],
+                }],
+            };
+
+            const wrapper = shallow(
+                <CreateIncident
+                    action={ mockAction }
+                    updateCurrentStep={ updateCurrentStep }
+                    incidentToEdit={ incidentToEdit }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                />,
+            );
+
+            wrapper.instance().drawAffectedEntity();
+
+            expect(mockGetRoutesByShortName).not.toHaveBeenCalled();
+        });
+    });
 });
