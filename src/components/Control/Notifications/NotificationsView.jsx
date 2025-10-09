@@ -62,7 +62,7 @@ export const NotificationsView = (props) => {
                 headerName: '#EFFECT',
                 flex: 1,
                 filterOperators: sourceIdDataGridOperator,
-                renderCell: ({ row: { source: { identifier: incidentId, parentIdentifier: causeId } } }) => (
+                renderCell: ({ row: { source: { identifier: incidentId } } }) => (
                     <Button
                         aria-label="go-to-disruptions-effect"
                         variant="text"
