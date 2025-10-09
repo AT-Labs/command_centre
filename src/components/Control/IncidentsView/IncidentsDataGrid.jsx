@@ -31,16 +31,14 @@ import { useViewDisruptionDetailsPage } from '../../../redux/selectors/appSettin
 import { STATUSES } from '../../../types/disruptions-types';
 import { dateTimeFormat } from '../../../utils/dateUtils';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
-import { useAlertCauses, useAlertEffects } from '../../../utils/control/alert-cause-effect';
+import { useAlertEffects } from '../../../utils/control/alert-cause-effect';
 import EDIT_TYPE from '../../../types/edit-types';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
-import { DEFAULT_CAUSE } from '../../../types/disruption-cause-and-effect';
 
 import './IncidentsDataGrid.scss';
 
 export const IncidentsDataGrid = (props) => {
     const impacts = useAlertEffects();
-    const causes = useAlertCauses();
 
     const getStatusIcon = (value) => {
         if (!value) {
@@ -136,7 +134,7 @@ export const IncidentsDataGrid = (props) => {
     const INCIDENT_COLUMNS = [
         {
             field: 'incidentDisruptionNo',
-            headerName: 'DISRUPTION#',
+            headerName: '#DISRUPTION',
             width: 130,
             type: 'string',
             renderCell: RenderCellExpand,
@@ -150,7 +148,7 @@ export const IncidentsDataGrid = (props) => {
         },
         {
             field: 'incidentNo',
-            headerName: 'EFFECT#',
+            headerName: '#EFFECT',
             width: 150,
             renderCell: params => getDisruptionLabel(params.row),
             filterOperators: sourceIdDataGridOperator,
@@ -178,14 +176,6 @@ export const IncidentsDataGrid = (props) => {
             type: 'singleSelect',
             valueGetter: params => getReadableImpact(params.row.impact),
             valueOptions: impacts.slice(1, impacts.length).map(impact => impact.label),
-        },
-        {
-            field: 'cause',
-            headerName: 'CAUSE',
-            width: 200,
-            type: 'singleSelect',
-            valueGetter: params => (causes.find(cause => cause.value === params.value) || DEFAULT_CAUSE).label,
-            valueOptions: causes.slice(1, causes.length).map(cause => cause.label),
         },
         {
             field: 'startTime',

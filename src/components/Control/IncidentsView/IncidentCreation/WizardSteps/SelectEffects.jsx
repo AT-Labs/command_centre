@@ -48,7 +48,9 @@ import {
     LABEL_START_TIME,
     LABEL_SEVERITY,
     LABEL_DURATION_HOURS,
-    TIME_FORMAT } from '../../../../../constants/disruptions';
+    TIME_FORMAT,
+    LABEL_HEADER,
+    HEADER_MAX_LENGTH } from '../../../../../constants/disruptions';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 
 import { useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
@@ -153,6 +155,7 @@ export const SelectEffects = (props) => {
     const [activePeriods, setActivePeriods] = useState([]);
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
+    const titleValid = key => !isEmpty(disruptions.find(d => d.key === key).header);
     const impactValid = key => !isEmpty(disruptions.find(d => d.key === key).impact);
 
     const getDisruptionByKey = key => disruptions.find(d => d.key === key);
@@ -540,6 +543,24 @@ export const SelectEffects = (props) => {
                                 </FormGroup>
                             </div>
                         )}
+                        <div className="col-12">
+                            <FormGroup>
+                                <Label for="disruption-creation__wizard-select-details__header">
+                                    <span className="font-size-md font-weight-bold">{LABEL_HEADER}</span>
+                                </Label>
+                                <Input
+                                    id="disruption-creation__wizard-select-details__header"
+                                    className="w-100 border border-dark"
+                                    placeholder="Title of the message"
+                                    maxLength={ HEADER_MAX_LENGTH }
+                                    onChange={ event => updateDisruption(disruption.key, { header: event.target.value, isTitleDirty: true }) }
+                                    onBlur={ event => updateDisruption(disruption.key, { header: event.target.value, isTitleDirty: true }) }
+                                    value={ disruption.header }
+                                    invalid={ disruption.isTitleDirty && !titleValid(disruption.key) }
+                                />
+                                <FormFeedback>Please enter disruption title</FormFeedback>
+                            </FormGroup>
+                        </div>
                         <div className="col-6">
                             <FormGroup>
                                 <DisruptionDetailSelect
