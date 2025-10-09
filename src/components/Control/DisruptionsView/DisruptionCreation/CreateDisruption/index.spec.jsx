@@ -16,7 +16,7 @@ jest.mock('../../../../Common/Map/HighlightingLayer/HighlightingLayer', () => je
 
 jest.mock('../../../../Common/Map/StopsLayer/SelectedStopsMarker', () => jest.fn());
 
-jest.mock('./DrawLayer', () => () => <div data-testid="draw-layer" />);
+jest.mock('./DrawLayer', () => jest.fn());
 
 jest.mock('../../../../Common/CustomModal/CustomModal', () => jest.fn());
 

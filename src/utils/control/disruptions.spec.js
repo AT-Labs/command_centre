@@ -1171,6 +1171,30 @@ describe('getMode', () => {
         const result = buildIncidentSubmitBody(incident, false);
         expect(result.endTime).toEqual(momentFromDateTime('12/12:2025', '12:12'));
     });
+
+    it('Should recalculate recurrence pattern for disruption', () => {
+        const incident = {
+            ...mockRecurrentIncident,
+            recurrent: true,
+            endTime: moment('2025-10-10T12:00:00.000Z'),
+            endDate: '10/10/2025',
+            disruptions: [
+                {
+                    ...mockDisruption1, 
+                    startDate: '10/10/2025',
+                    endDate: '12/12/2025',
+                    duration: '2',
+                    recurrencePattern: {
+                        byweekday: [2, 4, 6],
+                        freq: 2,
+                    },
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.disruptions[0].recurrencePattern.until).toBeDefined();
+        expect(result.disruptions[0].recurrencePattern.dtstart).toBeDefined();
+    });
 });
 
 describe('getStatusForEffect', () => {
