@@ -36,12 +36,16 @@ const disruptionActivePeriodsMock = [
 const mockTimeForMoment = new Date('2025-08-21T20:27:00.000Z');
 const mockTimeForModalOpenedTime = new Date('2025-06-19T06:00:00.000Z');
 
-jest.mock('../../../../../utils/control/disruptions', () => ({
-    generateDisruptionActivePeriods: jest.fn().mockReturnValue(disruptionActivePeriodsMock),
-    buildIncidentSubmitBody: jest.fn(),
-    momentFromDateTime: jest.fn(),
-    getStatusForEffect: jest.fn(),
-}));
+jest.mock('../../../../../utils/control/disruptions', () => {
+    const actual = jest.requireActual('../../../../../utils/control/disruptions');
+    return {
+        ...actual,
+        generateDisruptionActivePeriods: jest.fn().mockReturnValue(disruptionActivePeriodsMock),
+        buildIncidentSubmitBody: jest.fn(),
+        momentFromDateTime: jest.fn(),
+        getStatusForEffect: jest.fn(),
+    };
+});
 
 const defaultIncidentData = {
     startTime: '',
@@ -403,6 +407,7 @@ describe('CreateIncident component', () => {
         const mockSetDisruptionForWorkaroundEdit = jest.fn();
         const mockToggleWorkaroundPanel = jest.fn();
         const mockUpdateDisruptionKeyToWorkaroundEdit = jest.fn();
+        const mockToggleEditEffectPanel = jest.fn();
 
         beforeEach(() => {
             wrapper = shallow(
@@ -447,6 +452,7 @@ describe('CreateIncident component', () => {
                     updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
                     getRoutesByShortName={ mockGetRoutesByShortName }
                     isEditEffectPanelOpen
+                    toggleEditEffectPanel={ mockToggleEditEffectPanel }
                 />,
             );
             wrapper.setState({ isEffectUpdated: true });
@@ -1068,6 +1074,7 @@ describe('CreateIncident component', () => {
                     updateDisruptionKeyToWorkaroundEdit={ mockUpdateDisruptionKeyToWorkaroundEdit }
                     toggleWorkaroundPanel={ mockToggleWorkaroundPanel }
                     setDisruptionForWorkaroundEdit={ mockSetDisruptionForWorkaroundEdit }
+                    toggleEditEffectPanel={ mockToggleEditEffectPanel }
                 />,
             );
             await wrapper.instance().addNewEffectToIncident();
@@ -1330,6 +1337,7 @@ describe('CreateIncident component', () => {
                     getRoutesByShortName={ mockGetRoutesByShortName }
                     updateEditMode={ mockUpdateEditMode }
                     isEditEffectPanelOpen
+                    cachedShapes={ {} }
                 />,
             );
             await wrapper.instance().onPublishIncidentUpdate();

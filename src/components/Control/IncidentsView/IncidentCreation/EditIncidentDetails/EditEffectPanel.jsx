@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Paper, Stack, Button as MuiButton } from '@mui/material';
-import { isEmpty, sortBy, some, isEqual } from 'lodash-es';
+import { isEmpty, sortBy, some, isEqual, uniqBy } from 'lodash-es';
 import { Form, FormFeedback, FormGroup, Input, Label, Button } from 'reactstrap';
 import { connect } from 'react-redux';
 import { FaRegCalendarAlt } from 'react-icons/fa';
@@ -20,6 +20,7 @@ import { isEditEffectPanelOpen,
     isEditEffectUpdateRequested,
     getRequestedDisruptionKeyToUpdateEditEffect,
     isCancellationEffectModalOpen,
+    getMapDrawingEntities,
 } from '../../../../../redux/selectors/control/incidents';
 import { isLoading as isDataLoading } from '../../../../../redux/selectors/activity';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
@@ -120,7 +121,7 @@ const INIT_EFFECT_STATE = {
     status: STATUSES.NOT_STARTED,
 };
 
-export const EditEffectPanel = (props) => {
+export const EditEffectPanel = (props, ref) => {
     const { disruptions, disruptionIncidentNoToEdit, disruptionRecurrent, modalOpenedTime } = props;
     const [disruption, setDisruption] = useState({ ...INIT_EFFECT_STATE });
     const [originalDisruption, setOriginalDisruption] = useState({ ...INIT_EFFECT_STATE });
@@ -168,10 +169,51 @@ export const EditEffectPanel = (props) => {
     }, []);
 
     useEffect(() => {
+        props.onDisruptionChange(disruption);
+    }, [disruption]);
+
+    useEffect(() => {
         if (props.disruptions && disruptionIncidentNoToEdit && !props.isNotesRequiresToUpdate) {
             initDisruptionData();
         }
     }, [props.disruptions]);
+
+    useEffect(() => {
+        if (props.mapDrawingEntities && props.mapDrawingEntities.length > 0) {
+            const newRoutes = props.mapDrawingEntities.filter(e => e.type === 'route');
+            const newStops = props.mapDrawingEntities.filter(e => e.type === 'stop');
+
+            const mergedRoutes = uniqBy(
+                [...disruption.affectedEntities.affectedRoutes, ...newRoutes],
+                'routeId',
+            );
+
+            const mergedStops = uniqBy(
+                [...disruption.affectedEntities.affectedStops, ...newStops],
+                'stopId',
+            );
+
+            setDisruption({
+                ...disruption,
+                affectedEntities: {
+                    affectedRoutes: mergedRoutes,
+                    affectedStops: mergedStops,
+                },
+            });
+        }
+    }, [props.mapDrawingEntities]);
+
+    useImperativeHandle(ref, () => ({
+        deleteAffectedEntities() {
+            setDisruption({
+                ...disruption,
+                affectedEntities: {
+                    affectedRoutes: [],
+                    affectedStops: [],
+                },
+            });
+        },
+    }));
 
     const startTimeValid = () => isStartTimeValid(
         disruption.startDate,
@@ -1250,6 +1292,8 @@ EditEffectPanel.propTypes = {
     isDiversionManagerLoading: PropTypes.bool,
     isDiversionManagerReady: PropTypes.bool,
     updateEffectValidationForPublishState: PropTypes.func.isRequired,
+    mapDrawingEntities: PropTypes.arrayOf(PropTypes.object).isRequired,
+    onDisruptionChange: PropTypes.func,
 };
 
 EditEffectPanel.defaultProps = {
@@ -1263,6 +1307,7 @@ EditEffectPanel.defaultProps = {
     isDiversionManagerOpen: false,
     isDiversionManagerLoading: false,
     isDiversionManagerReady: false,
+    onDisruptionChange: () => {},
 };
 
 export default connect(state => ({
@@ -1278,6 +1323,7 @@ export default connect(state => ({
     isDiversionManagerLoading: getIsDiversionManagerLoading(state),
     isDiversionManagerReady: getIsDiversionManagerReady(state),
     isDataLoading: isDataLoading(state),
+    mapDrawingEntities: getMapDrawingEntities(state),
 }), {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
@@ -1296,4 +1342,4 @@ export default connect(state => ({
     updateDiversionMode,
     updateDiversionToEdit,
     updateDataLoading,
-})(EditEffectPanel);
+}, null, { forwardRef: true })(forwardRef(EditEffectPanel));
