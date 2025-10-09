@@ -114,7 +114,7 @@ describe('<NotificationsView />', () => {
 
     describe('useNotificationEffectColumn behavior', () => {
         describe('when useNotificationEffectColumn is false', () => {
-            test('should render single sourceId column with #DISRUPTION header', () => {
+            test('should render single sourceId column with DISRUPTION# header', () => {
                 const wrapper = setup({ useNotificationEffectColumn: false });
                 const columns = wrapper.find(CustomDataGrid).prop('columns');
 
@@ -122,7 +122,7 @@ describe('<NotificationsView />', () => {
                 const parentSourceIdColumns = columns.filter(col => col.field === 'parentSourceId');
 
                 expect(sourceIdColumns).toHaveLength(1);
-                expect(sourceIdColumns[0].headerName).toEqual('#DISRUPTION');
+                expect(sourceIdColumns[0].headerName).toEqual('DISRUPTION#');
                 expect(parentSourceIdColumns).toHaveLength(0);
                 expect(columns).toHaveLength(10);
             });
@@ -185,9 +185,9 @@ describe('<NotificationsView />', () => {
                 const parentSourceIdColumns = columns.filter(col => col.field === 'parentSourceId');
 
                 expect(parentSourceIdColumns).toHaveLength(1);
-                expect(parentSourceIdColumns[0].headerName).toEqual('#DISRUPTION');
+                expect(parentSourceIdColumns[0].headerName).toEqual('DISRUPTION#');
                 expect(sourceIdColumns).toHaveLength(1);
-                expect(sourceIdColumns[0].headerName).toEqual('#EFFECT');
+                expect(sourceIdColumns[0].headerName).toEqual('EFFECT#');
                 expect(columns).toHaveLength(11);
             });
 
@@ -196,18 +196,18 @@ describe('<NotificationsView />', () => {
                 const columns = wrapper.find(CustomDataGrid).prop('columns');
                 const parentSourceIdColumn = columns.find(col => col.field === 'parentSourceId');
 
-                expect(parentSourceIdColumn.headerName).toEqual('#DISRUPTION');
+                expect(parentSourceIdColumn.headerName).toEqual('DISRUPTION#');
                 expect(parentSourceIdColumn.flex).toEqual(1);
                 expect(parentSourceIdColumn.renderCell).toBeDefined();
                 expect(parentSourceIdColumn.filterOperators).toBeDefined();
             });
 
-            test('should configure sourceId column as #EFFECT with renderCell', () => {
+            test('should configure sourceId column as EFFECT# with renderCell', () => {
                 const wrapper = setup({ useNotificationEffectColumn: true });
                 const columns = wrapper.find(CustomDataGrid).prop('columns');
                 const sourceIdColumn = columns.find(col => col.field === 'sourceId');
 
-                expect(sourceIdColumn.headerName).toEqual('#EFFECT');
+                expect(sourceIdColumn.headerName).toEqual('EFFECT#');
                 expect(sourceIdColumn.renderCell).toBeDefined();
                 expect(sourceIdColumn.valueGetter).toBeDefined();
             });
@@ -285,8 +285,8 @@ describe('<NotificationsView />', () => {
                 const sourceIdWithEffect = columnsWithEffect.find(col => col.field === 'sourceId');
 
                 expect(sourceIdWithoutEffect.headerName).not.toEqual(sourceIdWithEffect.headerName);
-                expect(sourceIdWithoutEffect.headerName).toEqual('#DISRUPTION');
-                expect(sourceIdWithEffect.headerName).toEqual('#EFFECT');
+                expect(sourceIdWithoutEffect.headerName).toEqual('DISRUPTION#');
+                expect(sourceIdWithEffect.headerName).toEqual('EFFECT#');
             });
 
             test('should only have parentSourceId column when effect mode is enabled', () => {

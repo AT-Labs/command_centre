@@ -528,7 +528,7 @@ export const EditEffectPanel = (props, ref) => {
             props.updateAffectedRoutesState(routes);
 
             if (routes.length > 0) {
-                props.getRoutesByShortName(routes.slice(0, 10));
+                props.getRoutesByShortName(routes);
             }
         } else {
             setRequireMapUpdate(true);
@@ -552,7 +552,7 @@ export const EditEffectPanel = (props, ref) => {
             props.updateAffectedRoutesState(routes);
 
             if (routes.length > 0) {
-                props.getRoutesByShortName(routes.slice(0, 10));
+                props.getRoutesByShortName(routes);
             }
             setRequireMapUpdate(false);
         }
