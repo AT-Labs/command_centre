@@ -212,7 +212,7 @@ export const getActiveIncident = createSelector(getIncidentsState, (incidentsSta
     const activeIncidentId = result(incidentsState, 'activeIncidentId');
     const activeDisruptionId = result(incidentsState, 'activeDisruptionId');
     if (activeIncidentId) {
-        return find(incidents, ({ incidentId }) => activeIncidentId && incidentId === activeIncidentId);
+        return find(incidents, ({ incidentId }) => incidentId === activeIncidentId);
     }
     if (activeDisruptionId) {
         return find(incidents, row => row.disruptions?.includes(activeDisruptionId));

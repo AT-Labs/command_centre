@@ -487,13 +487,16 @@ export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
     let stopsWithShapes = [];
     let affectedRoutesWithShapes = [];
 
-    map(currentRoutes, route => ({ ...route, routeColor: allRoutes[route.routeId]?.route_color })).forEach((route) => {
-        if (cachedShapes[route.routeId]) {
-            routesWithShapes.push({ ...route, shapeWkt: cachedShapes[route.routeId] });
-            return;
-        }
-        missingCacheRoutes.push(route);
-    });
+    forEach(
+        map(currentRoutes, route => ({ ...route, routeColor: allRoutes[route.routeId]?.route_color })),
+        (route) => {
+            if (cachedShapes[route.routeId]) {
+                routesWithShapes.push({ ...route, shapeWkt: cachedShapes[route.routeId] });
+                return;
+            }
+            missingCacheRoutes.push(route);
+        },
+    );
 
     return Promise.all(missingCacheRoutes.map(route => ccStatic.getRoutesByShortName(route.routeShortName)))
         .then((routes) => {
@@ -791,7 +794,7 @@ export const setIncidentToUpdate = (incidentId, incidentNo, requireToUpdateForm 
         const enrichedIncidentData = enrichIncidentWithShapes(incidentData, getCachedShapes(getState()));
 
         dispatch(updateIncidentToEdit(enrichedIncidentData));
-    } catch (error) {
+    } catch {
         dispatch(setBannerError(ERROR_TYPE.fetchIncident));
     } finally {
         dispatch(updateLoadingIncidentForEditState(false));

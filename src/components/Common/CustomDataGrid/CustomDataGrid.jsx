@@ -142,7 +142,7 @@ export const CustomDataGrid = (props) => {
     }, []);
 
     const displaySelectedDetail = (rowsToSelect, overridePageIdx = false) => {
-        const idx = apiRef.current.getAllRowIds()?.filter(rowId => typeof rowId === 'number').findIndex(rowId => rowId === rowsToSelect[0]);
+        const idx = apiRef.current.getAllRowIds()?.filter(rowId => typeof rowId === 'number').indexOf(rowId => rowId === rowsToSelect[0]);
         const pageIdx = calculatePageIdx(idx);
 
         setTimeout(() => setSelectedRows(rowsToSelect));
