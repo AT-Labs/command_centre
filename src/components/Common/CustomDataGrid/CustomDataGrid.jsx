@@ -115,13 +115,6 @@ export const CustomDataGrid = (props) => {
             && rowId !== targetRowId
             && String(targetRowId).length > String(rowId).length), []);
 
-    const getAllParentRowIds = useCallback(() => {
-        if (!apiRef.current) return [];
-
-        const allRowIds = apiRef.current.getSortedRowIds();
-        return allRowIds.filter(rowId => typeof rowId === 'number');
-    }, []);
-
     const scrollToRow = useCallback((targetRowId) => {
         if (!apiRef.current) return;
 
@@ -158,8 +151,7 @@ export const CustomDataGrid = (props) => {
 
     const displaySelectedDetail = useCallback((rowsToSelect, overridePageIdx = false) => {
         const parentRow = props.disruptionToOpen === null ? rowsToSelect[0] : props.activeIncidentId;
-        const allParentRowIds = getAllParentRowIds();
-        const idx = allParentRowIds.indexOf(parentRow);
+        const idx = apiRef.current.getAllRowIds()?.filter(rowId => typeof rowId === 'number').indexOf(parentRow);
         const pageIdx = calculatePageIdx(idx);
         setTimeout(() => setSelectedRows(rowsToSelect));
 
@@ -173,7 +165,6 @@ export const CustomDataGrid = (props) => {
         scrollToRow,
         setSelectedRows,
         calculatePageIdx,
-        getAllParentRowIds,
         props.serverSideData,
         props.dataSource,
         props.getRowId,
