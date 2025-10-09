@@ -22,8 +22,6 @@ import {
 import { getAllRoutes } from '../../selectors/static/routes';
 import { getAllStops } from '../../selectors/static/stops';
 import EDIT_TYPE from '../../../types/edit-types';
-import { updateControlDetailView, updateMainView } from '../navigation';
-import VIEW_TYPE from '../../../types/view-types';
 
 export const updateIncidentsSortingParams = sortingParams => ({
     type: ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_SORTING_PARAMS,
@@ -811,34 +809,6 @@ export const setIncidentToUpdate = (incidentId, incidentNo, requireToUpdateForm 
             dispatch(toggleEditEffectPanel(true));
         }
     }
-};
-
-export const loadIncidentAndRedirectToEdit = (incidentId, incidentNo, requireToUpdateForm = false) => (dispatch) => {
-    dispatch(updateLoadingIncidentForEditState(true));
-    return disruptionsMgtApi.getIncident(incidentId)
-        .then((response) => {
-            const { _links, ...incidentData } = response;
-            dispatch(updateIncidentToEdit(incidentData));
-            setTimeout(() => {
-                dispatch(openCreateIncident(true));
-            }, 0);
-            if (requireToUpdateForm) {
-                dispatch(updateRequiresToUpdateNotesState(true));
-            }
-            if (incidentNo) {
-                dispatch(updateDisruptionKeyToEditEffect(incidentNo));
-                dispatch(toggleEditEffectPanel(true));
-            }
-            dispatch(updateMainView(VIEW_TYPE.MAIN.CONTROL));
-            dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.INCIDENTS));
-        })
-        .catch(() => {
-            const errorMessage = ERROR_TYPE.fetchIncident;
-            dispatch(setBannerError(errorMessage));
-        })
-        .finally(() => {
-            dispatch(updateLoadingIncidentForEditState(false));
-        });
 };
 
 export const setIncidentLoaderState = isIncidentForEditLoading => (dispatch) => {

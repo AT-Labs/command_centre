@@ -115,22 +115,7 @@ const filterWorkaroundsByAffectedEntity = (workarounds, affectedRoutes, affected
     return false;
 });
 
-export const getRecurrenceDates = (startDate, startTime, endDate) => {
-    const recurrenceDates = {};
-    if (startDate && startTime) {
-        recurrenceDates.dtstart = momentFromDateTime(startDate, startTime).tz('UTC', true).toDate();
-    }
-    if (endDate && startTime) {
-        recurrenceDates.until = momentFromDateTime(endDate, startTime).tz('UTC', true).toDate();
-    }
-    return recurrenceDates;
-};
-
-export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCause, isEditMode, incidentEndTimeMoment, incidentRecurrent) => {
-    let recurrenceDates;
-    if (incidentRecurrent) {
-        recurrenceDates = getRecurrenceDates(disruption.startDate, disruption.startTime, disruption.endDate);
-    }
+export const buildDisruptionSubmitBody = (disruption, incidentHeader, incidentStatus, incidentCause, isEditMode, incidentEndTimeMoment) => {
     const startDate = disruption.startDate ? disruption.startDate : moment(disruption.startTime).format(DATE_FORMAT);
     const startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
     let endTimeMoment;
@@ -161,6 +146,7 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
     const isStatusBecomeResolved = incidentStatus === STATUSES.RESOLVED && disruption.status !== STATUSES.RESOLVED;
     return {
         ...disruption,
+        ...(isEditMode ? { } : { header: incidentHeader }),
         ...(isEditMode ? { } : { status: incidentStatus }),
         ...(isEditMode ? { } : { cause: incidentCause }),
         endTime: endTimeMoment,
@@ -170,14 +156,18 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
         ...(isStatusBecomeResolved && incidentEndTimeMoment ? { status: STATUSES.RESOLVED, endTime: incidentEndTimeMoment } : { }),
         workarounds,
         url: '',
-        recurrent: incidentRecurrent,
-        ...(incidentRecurrent && {
-            recurrencePattern: {
-                ...disruption.recurrencePattern,
-                ...recurrenceDates,
-            },
-        }),
     };
+};
+
+export const getRecurrenceDates = (startDate, startTime, endDate) => {
+    const recurrenceDates = {};
+    if (startDate && startTime) {
+        recurrenceDates.dtstart = momentFromDateTime(startDate, startTime).tz('UTC', true).toDate();
+    }
+    if (endDate && startTime) {
+        recurrenceDates.until = momentFromDateTime(endDate, startTime).tz('UTC', true).toDate();
+    }
+    return recurrenceDates;
 };
 
 const getRecurrentPatterForIncident = (incident) => {
@@ -211,11 +201,11 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
     const modes = incident.disruptions.flatMap(disruption => getMode(disruption));
     const disruptions = incident.disruptions.flatMap(disruption => buildDisruptionSubmitBody(
         disruption,
+        incident.header,
         incident.status,
         incident.cause,
         isEditMode,
         incident.endTime,
-        incident.recurrent,
     ));
     const allResolved = disruptions.every(disruption => disruption.status === STATUSES.RESOLVED);
     const updatedIncident = {
