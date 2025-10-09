@@ -25,7 +25,6 @@ import {
     getIncidentsLoadingState,
     getIncidentsWithDisruptions,
     getIncidentsDatagridConfig,
-    getScrollToParent,
 } from '../../../redux/selectors/control/incidents';
 import { getActiveDisruptionId } from '../../../redux/selectors/control/disruptions';
 import { goToNotificationsView } from '../../../redux/actions/control/link';
@@ -92,7 +91,7 @@ export const IncidentsDataGrid = (props) => {
         if (!impact || impact.length === 0) {
             return '';
         }
-        const arrImpacts = impact.split(',');
+        const arrImpacts = impact.slice(',');
         const readableImpacts = impacts.filter(imp => arrImpacts.includes(imp.value)).map(imp => imp.label)
             .filter(str => str !== '' && str !== null && str !== undefined);
         return readableImpacts.join(', ');
@@ -234,14 +233,14 @@ export const IncidentsDataGrid = (props) => {
         [],
     );
 
-    const updateActiveDisruption = React.useCallback((ids) => {
+    const updateActiveDisruption = (ids) => {
         if (ids?.length > 0) {
             props.updateActiveDisruptionId(ids[0]);
         } else {
             props.updateActiveDisruptionId(null);
         }
         props.updateCopyDisruptionState(false);
-    }, [props.updateActiveDisruptionId, props.updateCopyDisruptionState]);
+    };
 
     const calculateDetailPanelHeight = row => (row.recurrent ? 1080 : 1000);
 
@@ -276,17 +275,13 @@ export const IncidentsDataGrid = (props) => {
         return disruptionRow ? getRowId(disruptionRow) : null;
     }, [props.activeDisruptionId, incidentWithPath]);
 
-    const initialState = React.useMemo(() => {
-        if (!activeIncidentId) return {};
-
-        return {
-            treeData: {
-                expansion: {
-                    [activeIncidentId]: true,
-                },
+    const initialState = activeIncidentId ? {
+        treeData: {
+            expansion: {
+                [activeIncidentId]: true,
             },
-        };
-    }, [activeIncidentId]);
+        },
+    } : {};
 
     React.useEffect(() => {
         if (!activeIncidentId || !props.clearActiveIncident) {
@@ -315,12 +310,10 @@ export const IncidentsDataGrid = (props) => {
                 loading={ props.isLoading }
                 getRowClassName={ params => (params.row.disruptionId ? 'incidents-custom-data-grid-child-row' : 'incidents-custom-data-grid-parent-row') }
                 calculateDetailPanelHeight={ props.useViewDisruptionDetailsPage ? () => 400 : calculateDetailPanelHeight }
-                expandedDetailPanels={ null }
+                expandedDetailPanels={ activeDisruptionCompositeId ? [activeDisruptionCompositeId] : null }
                 onRowExpanded={ ids => updateActiveDisruption(ids) }
                 initialState={ initialState }
-                activeIncidentId={ activeIncidentId }
-                scrollToParent={ props.scrollToParent }
-                disruptionToOpen={ props.scrollToParent ? null : activeDisruptionCompositeId }
+                autoExpandActiveIncident={ activeIncidentId }
             />
         </div>
     );
@@ -329,7 +322,7 @@ export const IncidentsDataGrid = (props) => {
 IncidentsDataGrid.propTypes = {
     datagridConfig: PropTypes.object.isRequired,
     mergedIncidentsAndDisruptions: PropTypes.array,
-    activeDisruptionId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    activeDisruptionId: PropTypes.number,
     activeIncident: PropTypes.object,
     updateActiveDisruptionId: PropTypes.func.isRequired,
     updateCopyDisruptionState: PropTypes.func.isRequired,
@@ -340,14 +333,12 @@ IncidentsDataGrid.propTypes = {
     goToNotificationsView: PropTypes.func.isRequired,
     useViewDisruptionDetailsPage: PropTypes.bool.isRequired,
     clearActiveIncident: PropTypes.func.isRequired,
-    scrollToParent: PropTypes.bool,
 };
 
 IncidentsDataGrid.defaultProps = {
     mergedIncidentsAndDisruptions: [],
     activeDisruptionId: null,
     activeIncident: null,
-    scrollToParent: false,
 };
 
 export default connect(
@@ -358,7 +349,6 @@ export default connect(
         isLoading: getIncidentsLoadingState(state),
         useViewDisruptionDetailsPage: useViewDisruptionDetailsPage(state),
         mergedIncidentsAndDisruptions: getIncidentsWithDisruptions(state),
-        scrollToParent: getScrollToParent(state),
     }),
     {
         updateActiveDisruptionId,
