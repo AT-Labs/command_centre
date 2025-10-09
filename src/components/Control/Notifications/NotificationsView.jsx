@@ -67,7 +67,10 @@ export const NotificationsView = (props) => {
                         aria-label="go-to-disruptions-effect"
                         variant="text"
                         onClick={ () => {
-                            props.goToIncidentsView({ disruptionId: incidentId }, { setActiveIncident: true });
+                            props.goToIncidentsView({
+                                incidentDisruptionNo: causeId,
+                                disruptionId: incidentId,
+                            }, { setActiveIncident: true });
                         } }>
                         {transformIncidentNo(incidentId)}
                     </Button>

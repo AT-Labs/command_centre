@@ -253,7 +253,7 @@ describe('<NotificationsView />', () => {
 
                 renderedCell.props.onClick();
                 expect(mockGoToIncidentsView).toHaveBeenCalledWith(
-                    { disruptionId: 12345 },
+                    { incidentDisruptionNo: 67890, disruptionId: 12345 },
                     { setActiveIncident: true },
                 );
             });
