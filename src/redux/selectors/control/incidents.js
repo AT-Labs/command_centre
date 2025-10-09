@@ -15,6 +15,7 @@ export const getIncidentsLoadingState = createSelector(getIncidentsState, incide
 export const getIncidentsLoadingStopsByRouteState = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isLoadingStopsByRoute'));
 export const getIncidentsLoadingRoutesByStopState = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isLoadingRoutesByStop'));
 export const getIncidentForEditLoadingState = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isIncidentForEditLoading'));
+export const getSkipDetailPanel = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'skipDetailPanel', false));
 
 export const getSelectedEntityFilter = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'filters.selectedEntity'));
 export const getSelectedStatusFilter = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'filters.selectedStatus'));

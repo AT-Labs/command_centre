@@ -25,6 +25,7 @@ import {
     getIncidentsLoadingState,
     getIncidentsWithDisruptions,
     getIncidentsDatagridConfig,
+    getSkipDetailPanel,
 } from '../../../redux/selectors/control/incidents';
 import { getActiveDisruptionId } from '../../../redux/selectors/control/disruptions';
 import { goToNotificationsView } from '../../../redux/actions/control/link';
@@ -233,14 +234,14 @@ export const IncidentsDataGrid = (props) => {
         [],
     );
 
-    const updateActiveDisruption = (ids) => {
+    const updateActiveDisruption = React.useCallback((ids) => {
         if (ids?.length > 0) {
             props.updateActiveDisruptionId(ids[0]);
         } else {
             props.updateActiveDisruptionId(null);
         }
         props.updateCopyDisruptionState(false);
-    };
+    }, [props.updateActiveDisruptionId, props.updateCopyDisruptionState]);
 
     const calculateDetailPanelHeight = row => (row.recurrent ? 1080 : 1000);
 
@@ -267,7 +268,7 @@ export const IncidentsDataGrid = (props) => {
     const incidentWithPath = addPath(props.mergedIncidentsAndDisruptions);
 
     const { activeIncident } = props;
-    const activeIncidentId = activeIncident ? getRowId(activeIncident) : null;
+    const activeIncidentId = activeIncident ? activeIncident.incidentId : null;
 
     const activeDisruptionCompositeId = React.useMemo(() => {
         if (!props.activeDisruptionId) return null;
@@ -275,13 +276,17 @@ export const IncidentsDataGrid = (props) => {
         return disruptionRow ? getRowId(disruptionRow) : null;
     }, [props.activeDisruptionId, incidentWithPath]);
 
-    const initialState = activeIncidentId ? {
-        treeData: {
-            expansion: {
-                [activeIncidentId]: true,
+    const initialState = React.useMemo(() => {
+        if (!activeIncidentId) return {};
+
+        return {
+            treeData: {
+                expansion: {
+                    [activeIncidentId]: true,
+                },
             },
-        },
-    } : {};
+        };
+    }, [activeIncidentId]);
 
     React.useEffect(() => {
         if (!activeIncidentId || !props.clearActiveIncident) {
@@ -310,10 +315,11 @@ export const IncidentsDataGrid = (props) => {
                 loading={ props.isLoading }
                 getRowClassName={ params => (params.row.disruptionId ? 'incidents-custom-data-grid-child-row' : 'incidents-custom-data-grid-parent-row') }
                 calculateDetailPanelHeight={ props.useViewDisruptionDetailsPage ? () => 400 : calculateDetailPanelHeight }
-                expandedDetailPanels={ activeDisruptionCompositeId ? [activeDisruptionCompositeId] : null }
+                expandedDetailPanels={ null }
                 onRowExpanded={ ids => updateActiveDisruption(ids) }
                 initialState={ initialState }
-                autoExpandActiveIncident={ activeIncidentId }
+                activeIncidentId={ activeIncidentId }
+                disruptionToOpen={ props.skipDetailPanel ? null : props.activeDisruptionId }
             />
         </div>
     );
@@ -322,7 +328,7 @@ export const IncidentsDataGrid = (props) => {
 IncidentsDataGrid.propTypes = {
     datagridConfig: PropTypes.object.isRequired,
     mergedIncidentsAndDisruptions: PropTypes.array,
-    activeDisruptionId: PropTypes.number,
+    activeDisruptionId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     activeIncident: PropTypes.object,
     updateActiveDisruptionId: PropTypes.func.isRequired,
     updateCopyDisruptionState: PropTypes.func.isRequired,
@@ -333,12 +339,14 @@ IncidentsDataGrid.propTypes = {
     goToNotificationsView: PropTypes.func.isRequired,
     useViewDisruptionDetailsPage: PropTypes.bool.isRequired,
     clearActiveIncident: PropTypes.func.isRequired,
+    skipDetailPanel: PropTypes.bool,
 };
 
 IncidentsDataGrid.defaultProps = {
     mergedIncidentsAndDisruptions: [],
     activeDisruptionId: null,
     activeIncident: null,
+    skipDetailPanel: false,
 };
 
 export default connect(
@@ -349,6 +357,7 @@ export default connect(
         isLoading: getIncidentsLoadingState(state),
         useViewDisruptionDetailsPage: useViewDisruptionDetailsPage(state),
         mergedIncidentsAndDisruptions: getIncidentsWithDisruptions(state),
+        skipDetailPanel: getSkipDetailPanel(state),
     }),
     {
         updateActiveDisruptionId,

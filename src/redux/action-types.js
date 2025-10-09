@@ -248,7 +248,6 @@ export default {
     UPDATE_DIVERSION_EDIT_MODE: 'update-diversion-edit-mode',
     UPDATE_DIVERSION_TO_EDIT: 'update-diversion-to-edit',
     OPEN_DIVERSION_MANAGER: 'open-diversion-manager',
-    SET_DIVERSION_MANAGER_READY: 'set-diversion-manager-ready',
     ADD_DIVERSION: 'add-diversion',
     UPDATE_DIVERSION_RESULT_STATE: 'update-diversion-result-state',
 
@@ -364,4 +363,6 @@ export default {
     FETCH_CONTROL_BUS_PRIORITY_THRESHOLDS: 'fetch-control-bus-priority-thresholds',
     UPDATE_CONTROL_BUS_PRIORITY_THRESHOLDS_DATAGRID_CONFIG: 'update-control-bus-priority-thresholds-datagrid-config',
     UPDATE_CONTROL_BUS_PRIORITY_PERMISSIONS: 'update-control-bus-priority-permissions',
+    // Detail panel control
+    SET_DETAIL_PANEL_OPEN_FLAG: 'set-detail-panel-open-flag',
 };
