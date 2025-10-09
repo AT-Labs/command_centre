@@ -25,7 +25,7 @@ import {
     getIncidentsLoadingState,
     getIncidentsWithDisruptions,
     getIncidentsDatagridConfig,
-    getScrollToParent,
+    getSkipDetailPanel,
 } from '../../../redux/selectors/control/incidents';
 import { getActiveDisruptionId } from '../../../redux/selectors/control/disruptions';
 import { goToNotificationsView } from '../../../redux/actions/control/link';
@@ -92,7 +92,7 @@ export const IncidentsDataGrid = (props) => {
         if (!impact || impact.length === 0) {
             return '';
         }
-        const arrImpacts = impact.split(',');
+        const arrImpacts = impact.slice(',');
         const readableImpacts = impacts.filter(imp => arrImpacts.includes(imp.value)).map(imp => imp.label)
             .filter(str => str !== '' && str !== null && str !== undefined);
         return readableImpacts.join(', ');
@@ -319,7 +319,7 @@ export const IncidentsDataGrid = (props) => {
                 onRowExpanded={ ids => updateActiveDisruption(ids) }
                 initialState={ initialState }
                 activeIncidentId={ activeIncidentId }
-                disruptionToOpen={ props.scrollToParent ? null : activeDisruptionCompositeId }
+                disruptionToOpen={ props.skipDetailPanel ? null : activeDisruptionCompositeId }
             />
         </div>
     );
@@ -339,14 +339,14 @@ IncidentsDataGrid.propTypes = {
     goToNotificationsView: PropTypes.func.isRequired,
     useViewDisruptionDetailsPage: PropTypes.bool.isRequired,
     clearActiveIncident: PropTypes.func.isRequired,
-    scrollToParent: PropTypes.bool,
+    skipDetailPanel: PropTypes.bool,
 };
 
 IncidentsDataGrid.defaultProps = {
     mergedIncidentsAndDisruptions: [],
     activeDisruptionId: null,
     activeIncident: null,
-    scrollToParent: false,
+    skipDetailPanel: false,
 };
 
 export default connect(
@@ -357,7 +357,7 @@ export default connect(
         isLoading: getIncidentsLoadingState(state),
         useViewDisruptionDetailsPage: useViewDisruptionDetailsPage(state),
         mergedIncidentsAndDisruptions: getIncidentsWithDisruptions(state),
-        scrollToParent: getScrollToParent(state),
+        skipDetailPanel: getSkipDetailPanel(state),
     }),
     {
         updateActiveDisruptionId,

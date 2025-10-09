@@ -5,7 +5,7 @@ import ACTION_TYPE from '../../action-types';
 export const INIT_STATE = {
     activeIncidentId: null,
     activeDisruptionId: null,
-    scrollToParent: false,
+    skipDetailPanel: false,
     permissions: [],
     disruptions: [],
     incidents: [],
@@ -212,8 +212,8 @@ export default handleActions({
     [ACTION_TYPE.SET_DISRUPTION_FOR_WORKAROUND_EDIT]: handleDisruptionForWorkaroundEdit,
     [ACTION_TYPE.SET_REQUEST_TO_UPDATE_EDIT_EFFECT]: handleRequestToUpdateEditEffect,
     [ACTION_TYPE.SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT]: handleUpdateDisruptionKeyToUpdateEditEffect,
-    [ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG]: (state, { payload: { scrollToParent } }) => ({
+    [ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG]: (state, { payload: { skipDetailPanel } }) => ({
         ...state,
-        scrollToParent: scrollToParent || false,
+        skipDetailPanel: skipDetailPanel || false,
     }),
 }, INIT_STATE);

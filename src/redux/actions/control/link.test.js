@@ -490,7 +490,7 @@ describe("Link actions", () => {
             },
             {
                 type: ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG,
-                payload: { scrollToParent: false },
+                payload: { skipDetailPanel: false },
             },
         ];
         store.dispatch(

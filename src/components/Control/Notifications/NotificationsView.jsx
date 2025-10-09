@@ -64,7 +64,7 @@ export const NotificationsView = (props) => {
                             props.goToIncidentsView({
                                 incidentDisruptionNo: parentSourceId,
                                 disruptionId: incidentId,
-                            }, { setActiveIncident: true, scrollToParent: true });
+                            }, { setActiveIncident: true, skipDetailPanel: true });
                         } }
                     >
                         { transformParentSourceIdNo(parentSourceId) }
