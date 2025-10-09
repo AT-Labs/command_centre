@@ -761,12 +761,8 @@ describe('Incidents Actions', () => {
 
     it('dispatches correct actions on setIncidentToUpdate success', async () => {
         disruptionsMgtApi.getIncident.mockResolvedValue(mockIncidentForEdit);
-        ccStatic.getRoutesByShortName.mockResolvedValue([]);
         await store.dispatch(actions.setIncidentToUpdate(139273, false));
         const dispatched = store.getActions();
-
-        expect(ccStatic.getRoutesByShortName).toHaveBeenCalledWith('101');
-        expect(ccStatic.getRoutesByShortName).toHaveBeenCalledWith('105');
 
         expect(dispatched).toEqual(expect.arrayContaining([
             {
@@ -798,8 +794,7 @@ describe('Incidents Actions', () => {
 
     it('dispatches correct actions on setIncidentToUpdate success with require to update form', async () => {
         disruptionsMgtApi.getIncident.mockResolvedValue(mockIncidentForEdit);
-        ccStatic.getRoutesByShortName.mockResolvedValue([]);
-        await store.dispatch(actions.setIncidentToUpdate(139273, 524565, true));
+        await store.dispatch(actions.setIncidentToUpdate(139273, true));
         const dispatched = store.getActions();
 
         expect(dispatched).toEqual(expect.arrayContaining([
@@ -830,7 +825,7 @@ describe('Incidents Actions', () => {
             {
                 type: 'update-disruption-key-to-edit-effect',
                 payload: {
-                    disruptionKeyToEditEffect: 524565,
+                    disruptionKeyToEditEffect: true,
                 },
             },
             {

@@ -356,7 +356,6 @@ export const SelectDetails = (props) => {
     const openEditEffectPanel = (disruption) => {
         props.setRequestedDisruptionKeyToUpdateEditEffect(disruption.incidentNo);
         props.setRequestToUpdateEditEffectState(true);
-        props.onDisruptionSelected(disruption.key);
     };
 
     const impacts = useAlertEffects();
@@ -795,7 +794,6 @@ SelectDetails.propTypes = {
     isEffectValid: PropTypes.bool,
     isEffectForPublishValid: PropTypes.bool,
     onPublishUpdate: PropTypes.func,
-    onDisruptionSelected: PropTypes.func,
 };
 
 SelectDetails.defaultProps = {
@@ -815,7 +813,6 @@ SelectDetails.defaultProps = {
     isEffectValid: true,
     isEffectForPublishValid: true,
     onPublishUpdate: () => { },
-    onDisruptionSelected: () => { },
 };
 
 export default connect(state => ({

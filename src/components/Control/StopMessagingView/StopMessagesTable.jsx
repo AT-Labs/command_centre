@@ -8,8 +8,7 @@ import Stops from './Stops';
 import SortButton from '../Common/SortButton/SortButton';
 import ControlTable from '../Common/ControlTable/ControlTable';
 import { getExpiredMessageRowClassName } from '../../../utils/helpers';
-import { goToDisruptionsView, goToIncidentsView } from '../../../redux/actions/control/link';
-import { useParentChildIncident } from '../../../redux/selectors/appSettings';
+import { goToDisruptionsView } from '../../../redux/actions/control/link';
 
 const dateFormat = 'DD/MM/YY HH:mm';
 
@@ -21,18 +20,10 @@ export const StopMessagesTable = (props) => {
         return stopMessagesSortingParams && stopMessagesSortingParams.sortBy === key ? stopMessagesSortingParams.order : null;
     };
 
-    const navigateToIncident = (stopMessage) => {
-        if (props.useParentChildIncident) {
-            props.goToIncidentsView({ disruptionId: stopMessage.incidentId }, { setActiveIncident: true });
-            return;
-        }
-        props.goToDisruptionsView(stopMessage.incidentNo, { setActiveIncident: true });
-    };
-
     const showDisruption = (stopMessage) => {
         if (!stopMessage.incidentNo) return null;
         return (
-            <button type="button" className="btn btn-link text-info" onClick={ () => navigateToIncident(stopMessage) }>
+            <button type="button" className="btn btn-link text-info" onClick={ () => props.goToDisruptionsView(stopMessage, { setActiveDisruption: true }) }>
                 {stopMessage.incidentNo}
             </button>
         );
@@ -130,17 +121,6 @@ StopMessagesTable.propTypes = {
     renderActionsButtons: PropTypes.func.isRequired,
     updateStopMessagesSortingParams: PropTypes.func.isRequired,
     goToDisruptionsView: PropTypes.func.isRequired,
-    goToIncidentsView: PropTypes.func.isRequired,
-    useParentChildIncident: PropTypes.bool.isRequired,
 };
 
-export default connect(
-    state => ({
-        useParentChildIncident: useParentChildIncident(state),
-    }),
-    {
-        updateStopMessagesSortingParams,
-        goToDisruptionsView,
-        goToIncidentsView,
-    },
-)(StopMessagesTable);
+export default connect(null, { updateStopMessagesSortingParams, goToDisruptionsView })(StopMessagesTable);

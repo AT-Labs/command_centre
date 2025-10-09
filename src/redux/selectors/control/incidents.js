@@ -210,14 +210,7 @@ export const getDiversionEditMode = createSelector(getIncidentsState, incidentsS
 export const getActiveIncident = createSelector(getIncidentsState, (incidentsState) => {
     const incidents = result(incidentsState, 'incidents');
     const activeIncidentId = result(incidentsState, 'activeIncidentId');
-    const activeDisruptionId = result(incidentsState, 'activeDisruptionId');
-    if (activeIncidentId) {
-        return find(incidents, ({ incidentId }) => incidentId === activeIncidentId);
-    }
-    if (activeDisruptionId) {
-        return find(incidents, row => row.disruptions?.includes(activeDisruptionId));
-    }
-    return null;
+    return find(incidents, ({ incidentId }) => activeIncidentId && incidentId === activeIncidentId);
 });
 
 export const getSortedIncidents = createSelector(
@@ -240,4 +233,3 @@ export const getRequestedDisruptionKeyToUpdateEditEffect = createSelector(getInc
 export const isCancellationEffectModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isCancellationEffectOpen'));
 export const isApplyChangesModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isApplyChangesOpen'));
 export const isPublishAndApplyChangesModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isPublishAndApplyChangesOpen'));
-export const getMapDrawingEntities = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'mapDrawingEntities'));
