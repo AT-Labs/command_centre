@@ -28,10 +28,6 @@ export const CustomDataGrid = (props) => {
         apiRef.current?.setExpandedDetailPanels?.(panels);
     }, []);
 
-    const findChildRowId = useCallback((targetRowId, visibleRowIds) => visibleRowIds.find(rowId => String(rowId).startsWith(String(targetRowId))
-        && rowId !== targetRowId
-        && String(rowId).length > String(targetRowId).length), []);
-
     const CustomToolbar = toolbarProps => (
         <GridToolbarContainer { ...toolbarProps }>
             { props.showStandardToolbarButtons && (
@@ -146,7 +142,7 @@ export const CustomDataGrid = (props) => {
     }, []);
 
     const displaySelectedDetail = (rowsToSelect, overridePageIdx = false) => {
-        const idx = apiRef.current.getSortedRowIds().findIndex(rowId => rowId === rowsToSelect[0]);
+        const idx = apiRef.current.getAllRowIds()?.filter(rowId => typeof rowId === 'number').indexOf(rowId => rowId === rowsToSelect[0]);
         const pageIdx = calculatePageIdx(idx);
 
         setTimeout(() => setSelectedRows(rowsToSelect));
@@ -205,12 +201,16 @@ export const CustomDataGrid = (props) => {
 
         apiRef.current.setRowChildrenExpansion(targetRowId, true);
 
-        setTimeout(() => {
-            const visibleRowIds = getVisibleRowIds();
-            const childRowId = findChildRowId(targetRowId, visibleRowIds);
-            openAndScrollTo(childRowId || targetRowId);
-        }, 100);
-    }, [props.autoExpandActiveIncident, props.treeData, addToExpandedPanels, getVisibleRowIds, findChildRowId]);
+        if (props.autoExpandSubChild) {
+            setTimeout(() => {
+                const visibleRowIds = getVisibleRowIds();
+                const key = `${targetRowId}${props.autoExpandSubChild}`;
+                if (targetRowId && visibleRowIds.includes(targetRowId)) {
+                    openAndScrollTo(key);
+                }
+            }, 100);
+        }
+    }, [props.autoExpandActiveIncident, props.treeData, addToExpandedPanels, getVisibleRowIds]);
 
     useEffect(() => {
         if (!apiRef.current) return;
@@ -385,6 +385,7 @@ CustomDataGrid.propTypes = {
     editComplete: PropTypes.func,
     initialState: PropTypes.object,
     autoExpandActiveIncident: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    autoExpandSubChild: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 CustomDataGrid.defaultProps = {
@@ -423,6 +424,7 @@ CustomDataGrid.defaultProps = {
     editComplete: () => null,
     initialState: {},
     autoExpandActiveIncident: null,
+    autoExpandSubChild: null,
 };
 
 export default CustomDataGrid;
