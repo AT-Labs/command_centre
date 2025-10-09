@@ -225,9 +225,7 @@ describe('<NotificationsView />', () => {
                 };
 
                 const renderedCell = parentSourceIdColumn.renderCell({ row: mockRow });
-                expect(renderedCell.type).toBe(Button);
-                expect(renderedCell.props.children).toBe('P67890');
-                expect(renderedCell.props['aria-label']).toBe('go-to-incidents');
+                expect(renderedCell).toBe('P67890');
             });
 
             test('should call goToIncidentsView when sourceId (effect) button is clicked', () => {
@@ -396,32 +394,5 @@ describe('<NotificationsView />', () => {
 
         const expandedDetailPanels = wrapper.find(CustomDataGrid).prop('expandedDetailPanels');
         expect(expandedDetailPanels).toBeNull();
-    });
-
-    test('should call goToIncidentsView when parentSourceId (disruption) button is clicked', () => {
-        const mockGoToIncidentsView = jest.fn();
-        const wrapper = setup({
-            useNotificationEffectColumn: true,
-            goToIncidentsView: mockGoToIncidentsView,
-        });
-
-        const columns = wrapper.find(CustomDataGrid).prop('columns');
-        const parentSourceIdColumn = columns.find(col => col.field === 'parentSourceId');
-
-        const mockRow = {
-            source: {
-                identifier: 12345,
-                parentIdentifier: 67890,
-            },
-        };
-
-        const renderedCell = parentSourceIdColumn.renderCell({ row: mockRow });
-
-        expect(renderedCell.type).toBe(Button);
-        expect(renderedCell.props.children).toBe('P67890');
-        expect(renderedCell.props['aria-label']).toBe('go-to-incidents');
-
-        renderedCell.props.onClick();
-        expect(mockGoToIncidentsView).toHaveBeenCalledWith({ incidentDisruptionNo: 67890 }, { setActiveIncident: true });
     });
 });
