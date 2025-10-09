@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FaPaperclip } from 'react-icons/fa';
 import { RiMailCheckLine, RiDraftLine } from 'react-icons/ri';
 import { BsArrowRepeat, BsPencilSquare, BsAlarm, BsFillChatTextFill } from 'react-icons/bs';
@@ -9,7 +9,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { uniqueId } from 'lodash-es';
 import moment from 'moment';
-import './IncidentsDataGrid.scss';
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
 import MinimizeDisruptionDetail from '../DisruptionsView/DisruptionDetailView/MinimizeDisruptionDetail';
 import { clearActiveIncident,
@@ -25,9 +24,8 @@ import {
     getIncidentsLoadingState,
     getIncidentsWithDisruptions,
     getIncidentsDatagridConfig,
-    getSkipDetailPanel,
+    getActiveDisruptionId,
 } from '../../../redux/selectors/control/incidents';
-import { getActiveDisruptionId } from '../../../redux/selectors/control/disruptions';
 import { goToNotificationsView } from '../../../redux/actions/control/link';
 import { useViewDisruptionDetailsPage } from '../../../redux/selectors/appSettings';
 import { STATUSES } from '../../../types/disruptions-types';
@@ -36,6 +34,8 @@ import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
 import { useAlertEffects } from '../../../utils/control/alert-cause-effect';
 import EDIT_TYPE from '../../../types/edit-types';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
+
+import './IncidentsDataGrid.scss';
 
 export const IncidentsDataGrid = (props) => {
     const impacts = useAlertEffects();
@@ -234,14 +234,14 @@ export const IncidentsDataGrid = (props) => {
         [],
     );
 
-    const updateActiveDisruption = React.useCallback((ids) => {
+    const updateActiveDisruption = (ids) => {
         if (ids?.length > 0) {
             props.updateActiveDisruptionId(ids[0]);
         } else {
             props.updateActiveDisruptionId(null);
         }
         props.updateCopyDisruptionState(false);
-    }, [props.updateActiveDisruptionId, props.updateCopyDisruptionState]);
+    };
 
     const calculateDetailPanelHeight = row => (row.recurrent ? 1080 : 1000);
 
@@ -276,19 +276,15 @@ export const IncidentsDataGrid = (props) => {
         return disruptionRow ? getRowId(disruptionRow) : null;
     }, [props.activeDisruptionId, incidentWithPath]);
 
-    const initialState = React.useMemo(() => {
-        if (!activeIncidentId) return {};
-
-        return {
-            treeData: {
-                expansion: {
-                    [activeIncidentId]: true,
-                },
+    const initialState = activeIncidentId ? {
+        treeData: {
+            expansion: {
+                [activeIncidentId]: true,
             },
-        };
-    }, [activeIncidentId]);
+        },
+    } : {};
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (!activeIncidentId || !props.clearActiveIncident) {
             return undefined;
         }
@@ -299,6 +295,14 @@ export const IncidentsDataGrid = (props) => {
 
         return () => clearTimeout(timer);
     }, [activeIncidentId, props.clearActiveIncident]);
+
+    useEffect(() => {
+        document.body.classList.add('incidents-datagrid-visible');
+
+        return () => {
+            document.body.classList.remove('incidents-datagrid-visible');
+        };
+    }, []);
 
     return (
         <div>
@@ -315,11 +319,11 @@ export const IncidentsDataGrid = (props) => {
                 loading={ props.isLoading }
                 getRowClassName={ params => (params.row.disruptionId ? 'incidents-custom-data-grid-child-row' : 'incidents-custom-data-grid-parent-row') }
                 calculateDetailPanelHeight={ props.useViewDisruptionDetailsPage ? () => 400 : calculateDetailPanelHeight }
-                expandedDetailPanels={ null }
+                expandedDetailPanels={ activeDisruptionCompositeId ? [activeDisruptionCompositeId] : null }
                 onRowExpanded={ ids => updateActiveDisruption(ids) }
                 initialState={ initialState }
-                activeIncidentId={ activeIncidentId }
-                disruptionToOpen={ props.skipDetailPanel ? null : props.activeDisruptionId }
+                autoExpandActiveIncident={ activeIncidentId }
+                autoExpandSubChild={ props.activeDisruptionId ? props.activeDisruptionId : null }
             />
         </div>
     );
@@ -328,7 +332,7 @@ export const IncidentsDataGrid = (props) => {
 IncidentsDataGrid.propTypes = {
     datagridConfig: PropTypes.object.isRequired,
     mergedIncidentsAndDisruptions: PropTypes.array,
-    activeDisruptionId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    activeDisruptionId: PropTypes.number,
     activeIncident: PropTypes.object,
     updateActiveDisruptionId: PropTypes.func.isRequired,
     updateCopyDisruptionState: PropTypes.func.isRequired,
@@ -339,14 +343,12 @@ IncidentsDataGrid.propTypes = {
     goToNotificationsView: PropTypes.func.isRequired,
     useViewDisruptionDetailsPage: PropTypes.bool.isRequired,
     clearActiveIncident: PropTypes.func.isRequired,
-    skipDetailPanel: PropTypes.bool,
 };
 
 IncidentsDataGrid.defaultProps = {
     mergedIncidentsAndDisruptions: [],
     activeDisruptionId: null,
     activeIncident: null,
-    skipDetailPanel: false,
 };
 
 export default connect(
@@ -357,7 +359,6 @@ export default connect(
         isLoading: getIncidentsLoadingState(state),
         useViewDisruptionDetailsPage: useViewDisruptionDetailsPage(state),
         mergedIncidentsAndDisruptions: getIncidentsWithDisruptions(state),
-        skipDetailPanel: getSkipDetailPanel(state),
     }),
     {
         updateActiveDisruptionId,

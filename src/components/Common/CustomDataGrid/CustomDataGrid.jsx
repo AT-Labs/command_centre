@@ -28,10 +28,6 @@ export const CustomDataGrid = (props) => {
         apiRef.current?.setExpandedDetailPanels?.(panels);
     }, []);
 
-    const findChildRowId = useCallback((targetRowId, visibleRowIds) => visibleRowIds.find(rowId => String(rowId).startsWith(String(targetRowId))
-        && rowId !== targetRowId
-        && String(rowId).length > String(targetRowId).length), []);
-
     const CustomToolbar = toolbarProps => (
         <GridToolbarContainer { ...toolbarProps }>
             { props.showStandardToolbarButtons && (
@@ -97,7 +93,7 @@ export const CustomDataGrid = (props) => {
     };
     const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-    const calculatePageIdx = useCallback(rowIdx => Math.floor(rowIdx / props.datagridConfig.pageSize), [props.datagridConfig.pageSize]);
+    const calculatePageIdx = rowIdx => Math.floor(rowIdx / props.datagridConfig.pageSize);
 
     const getVisibleRowIds = useCallback(() => {
         if (!apiRef.current) return [];
@@ -110,10 +106,6 @@ export const CustomDataGrid = (props) => {
 
         return apiRef.current.getSortedRowIds();
     }, []);
-
-    const isChildRow = useCallback((targetRowId, allRowIds) => allRowIds.some(rowId => String(targetRowId).startsWith(String(rowId))
-            && rowId !== targetRowId
-            && String(targetRowId).length > String(rowId).length), []);
 
     const scrollToRow = useCallback((targetRowId) => {
         if (!apiRef.current) return;
@@ -149,10 +141,10 @@ export const CustomDataGrid = (props) => {
         }
     }, []);
 
-    const displaySelectedDetail = useCallback((rowsToSelect, overridePageIdx = false) => {
-        const parentRow = props.disruptionToOpen === null ? rowsToSelect[0] : props.activeIncidentId;
-        const idx = apiRef.current.getAllRowIds()?.filter(rowId => typeof rowId === 'number').indexOf(parentRow);
+    const displaySelectedDetail = (rowsToSelect, overridePageIdx = false) => {
+        const idx = apiRef.current.getAllRowIds()?.filter(rowId => typeof rowId === 'number').findIndex(rowId => rowId === rowsToSelect[0]);
         const pageIdx = calculatePageIdx(idx);
+
         setTimeout(() => setSelectedRows(rowsToSelect));
 
         if (overridePageIdx || pageIdx !== props.datagridConfig.page) {
@@ -160,15 +152,7 @@ export const CustomDataGrid = (props) => {
         }
 
         setTimeout(() => scrollToRow(rowsToSelect[0]));
-    }, [
-        props.datagridConfig.page,
-        scrollToRow,
-        setSelectedRows,
-        calculatePageIdx,
-        props.serverSideData,
-        props.dataSource,
-        props.getRowId,
-    ]);
+    };
 
     useEffect(() => {
         if (props.stopEditing && currentCellEditParams) {
@@ -187,56 +171,49 @@ export const CustomDataGrid = (props) => {
 
         if (!hasExpanded || !apiRef.current) return;
 
-        setExpandedPanels(expandedPanels);
-
         if (isInitialLoad && props.dataSource.length > 0) {
+            setExpandedPanels(expandedPanels);
             setIsInitialLoad(false);
+            return;
         }
-    }, [props.expandedDetailPanels, props.dataSource, isInitialLoad, setExpandedPanels]);
+
+        const currentlyExpanded = getExpandedPanels();
+        const newPanels = expandedPanels.filter(panel => !currentlyExpanded.includes(panel));
+
+        if (newPanels.length > 0) {
+            addToExpandedPanels(newPanels);
+        }
+    }, [props.expandedDetailPanels, props.dataSource, isInitialLoad, getExpandedPanels, addToExpandedPanels, setExpandedPanels]);
 
     const handleAutoExpandIncident = useCallback(() => {
-        const {
-            activeIncidentId: targetRowId,
-            disruptionToOpen,
-        } = props;
+        const targetRowId = props.autoExpandActiveIncident;
         if (!targetRowId || !apiRef.current) return;
 
         const openAndScrollTo = (rowId) => {
             addToExpandedPanels([rowId]);
-            displaySelectedDetail([rowId], false);
+            displaySelectedDetail([rowId]);
         };
 
-        if (disruptionToOpen) {
-            const key = `${targetRowId}${disruptionToOpen}`;
-            if (targetRowId && targetRowId !== key) {
-                apiRef.current.setRowChildrenExpansion(targetRowId, true);
-            }
-
-            openAndScrollTo(key);
+        if (!props.treeData) {
+            openAndScrollTo(targetRowId);
             return;
         }
 
         apiRef.current.setRowChildrenExpansion(targetRowId, true);
 
-        const visibleRowIds = getVisibleRowIds();
-
-        const isTargetAlreadyChild = isChildRow(targetRowId, visibleRowIds);
-
-        const rowToOpen = isTargetAlreadyChild
-            ? targetRowId
-            : findChildRowId(targetRowId, visibleRowIds) || targetRowId;
-
-        openAndScrollTo(rowToOpen);
-    }, [
-        props.activeIncidentId,
-        addToExpandedPanels,
-        getVisibleRowIds,
-        findChildRowId,
-        isChildRow,
-    ]);
+        if (props.autoExpandSubChild) {
+            setTimeout(() => {
+                const visibleRowIds = getVisibleRowIds();
+                const key = `${targetRowId}${props.autoExpandSubChild}`;
+                if (targetRowId && visibleRowIds.includes(targetRowId)) {
+                    openAndScrollTo(key);
+                }
+            }, 100);
+        }
+    }, [props.autoExpandActiveIncident, props.treeData, addToExpandedPanels, getVisibleRowIds]);
 
     useEffect(() => {
-        if (!apiRef.current || !props.activeIncidentId) return;
+        if (!apiRef.current) return;
 
         const executeExpansion = () => {
             handleDetailPanelExpansion();
@@ -247,7 +224,7 @@ export const CustomDataGrid = (props) => {
     }, [
         handleDetailPanelExpansion,
         handleAutoExpandIncident,
-        props.activeIncidentId,
+        props.autoExpandActiveIncident,
     ]);
 
     useEffect(() => {
@@ -294,7 +271,7 @@ export const CustomDataGrid = (props) => {
         sortingMode: 'server',
     } : {});
 
-    const expandedRowIdsChanged = useCallback((ids) => {
+    const expandedRowIdsChanged = (ids) => {
         let updatedIds = ids;
 
         if (!props.multipleDetailPanelOpen) {
@@ -308,7 +285,7 @@ export const CustomDataGrid = (props) => {
 
         setSelectedRows(updatedIds);
         props.onRowExpanded(updatedIds);
-    }, [props.multipleDetailPanelOpen, props.onRowExpanded, setSelectedRows]);
+    };
 
     return (
         <div className={ `customDataGrid ${props.gridClassNames}` }>
@@ -407,8 +384,8 @@ CustomDataGrid.propTypes = {
     stopEditing: PropTypes.bool,
     editComplete: PropTypes.func,
     initialState: PropTypes.object,
-    activeIncidentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    disruptionToOpen: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    autoExpandActiveIncident: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    autoExpandSubChild: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 CustomDataGrid.defaultProps = {
@@ -446,8 +423,8 @@ CustomDataGrid.defaultProps = {
     stopEditing: false,
     editComplete: () => null,
     initialState: {},
-    activeIncidentId: null,
-    disruptionToOpen: null,
+    autoExpandActiveIncident: null,
+    autoExpandSubChild: null,
 };
 
 export default CustomDataGrid;
