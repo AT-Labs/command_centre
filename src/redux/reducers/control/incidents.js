@@ -5,7 +5,6 @@ import ACTION_TYPE from '../../action-types';
 export const INIT_STATE = {
     activeIncidentId: null,
     activeDisruptionId: null,
-    skipDetailPanel: false,
     permissions: [],
     disruptions: [],
     incidents: [],
@@ -74,6 +73,7 @@ export const INIT_STATE = {
     isCancellationEffectOpen: false,
     isApplyChangesOpen: false,
     isPublishAndApplyChangesOpen: false,
+    mapDrawingEntities: null,
 };
 
 const handleIncidentsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });
@@ -83,6 +83,7 @@ const handleIncidentForEditLoadingUpdate = (state, { payload: { isIncidentForEdi
 const handleIncidentsReverseGeocodeLoadingUpdate = (state, { payload: { isIncidentsReverseGeocodeLoading } }) => ({ ...state, isIncidentsReverseGeocodeLoading });
 const handleIncidentsRoutesLoadingUpdate = (state, { payload: { isIncidentsRoutesLoading } }) => ({ ...state, isIncidentsRoutesLoading });
 const handleUpdateActiveIncidentId = (state, { payload: { activeIncidentId } }) => ({ ...state, activeIncidentId });
+const handleUpdateActiveIncidentDisruptionId = (state, { payload: { activeDisruptionId } }) => ({ ...state, activeDisruptionId });
 const handleIncidentsDisruptionsUpdate = (state, { payload: { disruptions } }) => ({ ...state, disruptions });
 const handleIncidentsUpdate = (state, { payload: { incidents } }) => ({ ...state, incidents });
 const handleIncidentsPermissionsUpdate = (state, { payload: { permissions } }) => ({ ...state, permissions });
@@ -105,6 +106,8 @@ const handleIncidentActionResultUpdate = (state, { payload: { resultIncidentId, 
         resultDisruptionVersion,
     },
 });
+
+const handleMapDrawingEntities = (state, { payload: { mapDrawingEntities } }) => ({ ...state, mapDrawingEntities });
 
 const handleCopyIncidentsUpdate = (state, { payload: { isCopied } }) => ({
     ...state,
@@ -171,6 +174,7 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_INCIDENTS_REVERSE_GEOCODE_LOADING_STATE]: handleIncidentsReverseGeocodeLoadingUpdate,
     [ACTION_TYPE.UPDATE_INCIDENTS_ROUTES_LOADING_STATE]: handleIncidentsRoutesLoadingUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_ACTIVE_INCIDENT_ID]: handleUpdateActiveIncidentId,
+    [ACTION_TYPE.UPDATE_CONTROL_ACTIVE_INCIDENT_DISRUPTION_ID]: handleUpdateActiveIncidentDisruptionId,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_LOADING]: handleIncidentsLoadingUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_LOADING_STOPS_BY_ROUTE]: handleIncidentsLoadingStopsByRouteUpdate,
     [ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_LOADING_ROUTES_BY_STOP]: handleIncidentsLoadingRoutesByStopUpdate,
@@ -212,8 +216,5 @@ export default handleActions({
     [ACTION_TYPE.SET_DISRUPTION_FOR_WORKAROUND_EDIT]: handleDisruptionForWorkaroundEdit,
     [ACTION_TYPE.SET_REQUEST_TO_UPDATE_EDIT_EFFECT]: handleRequestToUpdateEditEffect,
     [ACTION_TYPE.SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT]: handleUpdateDisruptionKeyToUpdateEditEffect,
-    [ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG]: (state, { payload: { skipDetailPanel } }) => ({
-        ...state,
-        skipDetailPanel: skipDetailPanel || false,
-    }),
+    [ACTION_TYPE.UPDATE_MAP_DRAWING_ENTITIES]: handleMapDrawingEntities,
 }, INIT_STATE);

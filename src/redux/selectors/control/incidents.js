@@ -15,7 +15,6 @@ export const getIncidentsLoadingState = createSelector(getIncidentsState, incide
 export const getIncidentsLoadingStopsByRouteState = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isLoadingStopsByRoute'));
 export const getIncidentsLoadingRoutesByStopState = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isLoadingRoutesByStop'));
 export const getIncidentForEditLoadingState = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isIncidentForEditLoading'));
-export const getSkipDetailPanel = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'skipDetailPanel', false));
 
 export const getSelectedEntityFilter = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'filters.selectedEntity'));
 export const getSelectedStatusFilter = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'filters.selectedStatus'));
@@ -211,7 +210,14 @@ export const getDiversionEditMode = createSelector(getIncidentsState, incidentsS
 export const getActiveIncident = createSelector(getIncidentsState, (incidentsState) => {
     const incidents = result(incidentsState, 'incidents');
     const activeIncidentId = result(incidentsState, 'activeIncidentId');
-    return find(incidents, ({ incidentId }) => activeIncidentId && incidentId === activeIncidentId);
+    const activeDisruptionId = result(incidentsState, 'activeDisruptionId');
+    if (activeIncidentId) {
+        return find(incidents, ({ incidentId }) => activeIncidentId && incidentId === activeIncidentId);
+    }
+    if (activeDisruptionId) {
+        return find(incidents, row => row.disruptions?.includes(activeDisruptionId));
+    }
+    return null;
 });
 
 export const getSortedIncidents = createSelector(
@@ -234,3 +240,4 @@ export const getRequestedDisruptionKeyToUpdateEditEffect = createSelector(getInc
 export const isCancellationEffectModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isCancellationEffectOpen'));
 export const isApplyChangesModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isApplyChangesOpen'));
 export const isPublishAndApplyChangesModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isPublishAndApplyChangesOpen'));
+export const getMapDrawingEntities = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'mapDrawingEntities'));

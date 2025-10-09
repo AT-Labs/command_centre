@@ -9,3 +9,7 @@
         z-index: $zindex-fixed;
     }
 }
+
+.incidents-datagrid-visible .MuiDataGrid-columnsPanel > *:first-child {
+    display: none;
+}

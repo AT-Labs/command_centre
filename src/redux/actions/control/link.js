@@ -10,7 +10,7 @@ import { parseStartAndDateTime } from './alerts';
 import { updateRoutesTripsDatagridConfig } from '../datagrid';
 
 import { updateActiveDisruptionId } from './disruptions';
-import { updateActiveIncident, clearActiveIncident } from './incidents';
+import { updateActiveIncident, clearActiveIncident, updateActiveDisruptionId as updateActiveIncidentDisruptionId } from './incidents';
 
 export const goToRoutesView = (trip, filters) => (dispatch) => {
     const {
@@ -79,20 +79,18 @@ export const goToDisruptionsView = (message, { setActiveDisruption }) => (dispat
     if (setActiveDisruption) dispatch(updateActiveDisruptionId(message.incidentId));
 };
 
-export const goToIncidentsView = (message, { setActiveIncident, skipDetailPanel = false }) => (dispatch) => {
+export const goToIncidentsView = (message, { setActiveIncident }) => (dispatch) => {
     dispatch(updateMainView(VIEW_TYPE.MAIN.CONTROL));
     dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.INCIDENTS));
 
     if (setActiveIncident) {
         dispatch(clearActiveIncident());
-        dispatch(updateActiveIncident(message.incidentDisruptionNo));
-        if (message.disruptionId) {
-            dispatch(updateActiveDisruptionId(message.disruptionId));
+        if (message.incidentDisruptionNo) {
+            dispatch(updateActiveIncident(message.incidentDisruptionNo));
         }
-        dispatch({
-            type: ACTION_TYPE.SET_DETAIL_PANEL_OPEN_FLAG,
-            payload: { skipDetailPanel },
-        });
+        if (message.disruptionId) {
+            dispatch(updateActiveIncidentDisruptionId(message.disruptionId));
+        }
     }
 };
 
