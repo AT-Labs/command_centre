@@ -16,7 +16,7 @@ import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import Loader from '../../Loader/Loader';
 
 const DisruptionDetails = (props) => {
-    const { disruptions, causes, impacts, stopCode, stopName, goToIncidentEditPage, goToDisruptionEditPage, useParentChildIncident } = props;
+    const { disruptions, causes, impacts, goToDisruptionEditPage, stopCode, stopName } = props;
     const [index, setIndex] = useState(0);
     const [fetchedRoutes, setFetchedRoutes] = useState('-');
     const [loadingRoutes, setLoadingRoutes] = useState(false);
@@ -27,14 +27,6 @@ const DisruptionDetails = (props) => {
             .filter(entity => entity?.stopCode === stopCode && entity?.routeShortName)
             .map(entity => entity.routeShortName.trim());
         return routes.length ? [...new Set(routes)].join(', ') : null;
-    };
-
-    const handleGoToEditPage = (disruption) => {
-        if (useParentChildIncident) {
-            goToIncidentEditPage({ incidentId: disruption.incidentId, incidentNo: disruption.incidentNo });
-        } else {
-            goToDisruptionEditPage({ disruptionId: disruption.disruptionId }, { setActiveDisruption: true });
-        }
     };
 
     useEffect(() => {
@@ -96,7 +88,10 @@ const DisruptionDetails = (props) => {
                 <div className="row">
                     <p>
                         <Button
-                            onClick={ () => handleGoToEditPage(currentDisruption) }
+                            onClick={ () => goToDisruptionEditPage(
+                                { disruptionId: currentDisruption.disruptionId },
+                                { setActiveDisruption: true },
+                            ) }
                             style={ {
                                 color: 'black',
                                 textDecoration: 'underline',
@@ -205,8 +200,6 @@ DisruptionDetails.propTypes = {
     causes: PropTypes.array,
     impacts: PropTypes.array,
     goToDisruptionEditPage: PropTypes.func,
-    goToIncidentEditPage: PropTypes.func,
-    useParentChildIncident: PropTypes.bool,
 };
 
 DisruptionDetails.defaultProps = {
@@ -215,9 +208,7 @@ DisruptionDetails.defaultProps = {
     stopName: '',
     causes: [],
     impacts: [],
-    goToDisruptionEditPage: () => {},
-    goToIncidentEditPage: () => {},
-    useParentChildIncident: false,
+    goToDisruptionEditPage: undefined,
 };
 
 export default DisruptionDetails;
