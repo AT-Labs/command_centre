@@ -27,12 +27,6 @@ const DrawLayer = (props) => {
         drawingRef.current.leafletElement.clearLayers();
     }, [props.disruptionType]);
 
-    useEffect(() => {
-        if (props.disabled) {
-            drawingRef.current.leafletElement.clearLayers();
-        }
-    }, [props.disabled]);
-
     const removeFirstDrawing = () => {
         const layers = drawingRef.current.leafletElement.getLayers();
         if (layers.length > 1) {
