@@ -56,7 +56,19 @@ export const NotificationsView = (props) => {
                 headerName: '#DISRUPTION',
                 flex: 1,
                 filterOperators: ParentSourceIdDataGridOperator,
-                renderCell: ({ row: { source: { parentIdentifier: parentSourceId } } }) => transformParentSourceIdNo(parentSourceId),
+                renderCell: ({ row: { source: { parentIdentifier: parentSourceId } } }) => (
+                    <Button
+                        aria-label="go-to-incidents"
+                        variant="text"
+                        onClick={ () => {
+                            props.goToIncidentsView({
+                                incidentDisruptionNo: parentSourceId,
+                            }, { setActiveIncident: true });
+                        } }
+                    >
+                        { transformParentSourceIdNo(parentSourceId) }
+                    </Button>
+                ),
             }, {
                 field: 'sourceId',
                 headerName: '#EFFECT',
