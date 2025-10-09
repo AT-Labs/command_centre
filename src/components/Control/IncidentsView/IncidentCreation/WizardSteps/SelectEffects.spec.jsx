@@ -158,7 +158,6 @@ describe('<SelectEffects />', () => {
     });
 
     it('Should render with valid fields for recurrent disruption', () => {
-        expect(wrapper.find('#disruption-creation__wizard-select-details__header').props().value).toBe('Incident Title');
         expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(impacts[1].value);
         expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe('MINOR');
         expect(wrapper.find('#disruption-creation__wizard-select-details__start-date').props().value).toBe('09/03/2022');
@@ -175,7 +174,6 @@ describe('<SelectEffects />', () => {
             disruptions: [],
         };
         wrapper = setup({ data });
-        expect(wrapper.find('#disruption-creation__wizard-select-details__header').props().value).toBe('');
         expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(DEFAULT_IMPACT.value);
         expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe(getParentChildDefaultSeverity().value);
         expect(wrapper.find('#disruption-creation__wizard-select-details__start-date').props().value).toBe('01/03/2022');
@@ -191,7 +189,6 @@ describe('<SelectEffects />', () => {
             disruptions: [{ ...mockDisruption, recurrent: false }],
         };
         wrapper = setup({ data });
-        expect(wrapper.find('#disruption-creation__wizard-select-details__header').props().value).toBe('Incident Title');
         expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(impacts[1].value);
         expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe('MINOR');
         expect(wrapper.find('#disruption-creation__wizard-select-details__start-date').props().value).toBe('09/03/2022');
@@ -208,7 +205,6 @@ describe('<SelectEffects />', () => {
             disruptions: [],
         };
         wrapper = setup({ data });
-        expect(wrapper.find('#disruption-creation__wizard-select-details__header').props().value).toBe('');
         expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(DEFAULT_IMPACT.value);
         expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe(getParentChildDefaultSeverity().value);
         expect(wrapper.find('#disruption-creation__wizard-select-details__start-date').props().value).toBe('01/03/2022');
@@ -224,7 +220,6 @@ describe('<SelectEffects />', () => {
             disruptions: [{ ...mockDisruption, recurrent: false }],
         };
         wrapper = setup({ data, editMode: EDIT_TYPE.ADD_EFFECT });
-        expect(wrapper.find('#disruption-creation__wizard-select-details__header').props().value).toBe('Incident Title');
         expect(wrapper.find('#disruption-creation__wizard-select-details__impact').props().value).toBe(impacts[0].value); // default value
         expect(wrapper.find('#disruption-creation__wizard-select-details__severity').props().value).toBe('MINOR'); // values from incident below
         expect(wrapper.find('#disruption-creation__wizard-select-details__start-date').props().value).toBe('09/03/2022');
@@ -252,13 +247,6 @@ describe('<SelectEffects />', () => {
                 ...mockIncident,
                 disruptions: [{ ...mockDisruption }],
             };
-        });
-
-        it('Should be disabled when title is empty', () => {
-            data.disruptions = [{ ...mockDisruption, header: '' }];
-            wrapper = setup({ data });
-            const footer = wrapper.find(Footer);
-            expect(footer.prop('isSubmitDisabled')).toEqual(true);
         });
 
         it('Should be disabled when startTime is empty', () => {

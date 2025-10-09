@@ -363,4 +363,6 @@ export default {
     FETCH_CONTROL_BUS_PRIORITY_THRESHOLDS: 'fetch-control-bus-priority-thresholds',
     UPDATE_CONTROL_BUS_PRIORITY_THRESHOLDS_DATAGRID_CONFIG: 'update-control-bus-priority-thresholds-datagrid-config',
     UPDATE_CONTROL_BUS_PRIORITY_PERMISSIONS: 'update-control-bus-priority-permissions',
+    // Detail panel control
+    SET_DETAIL_PANEL_OPEN_FLAG: 'set-detail-panel-open-flag',
 };
