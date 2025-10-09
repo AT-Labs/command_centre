@@ -1180,7 +1180,7 @@ describe('getMode', () => {
             endDate: '10/10/2025',
             disruptions: [
                 {
-                    ...mockDisruption1, 
+                    ...mockDisruption1,
                     startDate: '10/10/2025',
                     endDate: '12/12/2025',
                     duration: '2',
