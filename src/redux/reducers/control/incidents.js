@@ -1,6 +1,7 @@
 import { handleActions } from 'redux-actions';
 import EDIT_TYPE from '../../../types/edit-types';
 import ACTION_TYPE from '../../action-types';
+import { handleUpdateStopsByRoute, handleUpdateRoutesByStop } from '../../../utils/redux/mergeStateData';
 
 export const INIT_STATE = {
     activeIncidentId: null,
@@ -130,8 +131,6 @@ const handleIncidentModal = (state, { payload: { type, isOpen } }) => ({
     [type]: isOpen,
 });
 const handleUpdateCurrentStep = (state, { payload: { activeStep } }) => ({ ...state, activeStep });
-const handleUpdateStopsByRoute = (state, { payload: { stopsByRoute, isLoadingStopsByRoute } }) => ({ ...state, stopsByRoute, isLoadingStopsByRoute });
-const handleUpdateRoutesByStop = (state, { payload: { routesByStop, isLoadingRoutesByStop } }) => ({ ...state, routesByStop, isLoadingRoutesByStop });
 const handleAffectedEntities = (state, { payload: {
     showSelectedRoutes,
     affectedEntities,

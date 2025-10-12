@@ -19,7 +19,9 @@ export const StopsByRouteMultiSelect = (props) => {
 
     // loadedStopsByRoute are updated when a route is expanded - this triggers a JIT fetch of all stops for the routes
     useEffect(() => {
-        props.getStopsByRoute(loadedStopsByRoute);
+        if (loadedStopsByRoute.length > 0) {
+            props.getStopsByRoute(loadedStopsByRoute);
+        }
     }, [loadedStopsByRoute]);
 
     const isRouteActive = route => !!expandedRoutes[route.routeId];
@@ -37,7 +39,7 @@ export const StopsByRouteMultiSelect = (props) => {
     };
     const toggleExpandedRoute = (route) => {
         toggleExpandedItem(route.routeId, expandedRoutes, setExpandedRoutes);
-        if (!loadedStopsByRoute.find(item => item.routeId === route.routeId)) {
+        if (!loadedStopsByRoute.some(item => item.routeId === route.routeId) && !props.findStopsByRoute[route.routeId]) {
             setLoadedStopsByRoute([...loadedStopsByRoute, route]);
         }
     };
