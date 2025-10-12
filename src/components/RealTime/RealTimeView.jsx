@@ -82,7 +82,7 @@ import {
     useNewRealtimeMapFilters,
     useRouteAlertsLayer,
     useCarsRoadworksLayer,
-    useStopBasedDisruptionsLayer, useStopBasedDisruptionsSearch, useParentChildIncident,
+    useStopBasedDisruptionsLayer, useStopBasedDisruptionsSearch,
 } from '../../redux/selectors/appSettings';
 import { haversineDistance } from '../../utils/map-helpers';
 import {
@@ -134,7 +134,7 @@ import {
     updateUrlFromDisruptionsLayer,
 } from './TrafficFilters/DisruptionFilter';
 import { DisruptionLayer } from '../Common/Map/TrafficLayer/DisruptionLayer';
-import { goToDisruptionEditPage, goToIncidentEditPage } from '../../redux/actions/control/link';
+import { goToDisruptionEditPage } from '../../redux/actions/control/link';
 import { useAlertCauses, useAlertEffects } from '../../utils/control/alert-cause-effect';
 import SelectedStopsDisruptionsMarker from '../Common/Map/StopsLayer/SelectedStopsDisruptionsMarker';
 
@@ -146,7 +146,6 @@ function RealTimeView(props) {
     const [disruptions, setDisruptions] = useState([]);
     const [disruptionStops, setDisruptionStops] = useState([]);
     const abortControllerRef = useRef(null);
-    const refreshDisruptionsIntervalRef = useRef(null);
     const yesterdayTodayTomorrowFilter = props.selectedRoadworksFilters?.find(item => item.id === 'Yesterday-Today-Tomorrow');
 
     const causesArray = useAlertCauses();
@@ -192,25 +191,20 @@ function RealTimeView(props) {
         props.useNewRealtimeMapFilters && props.selectedDisruptionFilters.length > 0)
         || (props.useStopBasedDisruptionsLayer && props.selectedDisruptionFilters.length > 0);
 
-    const fetchDisruptionsData = async (signal) => {
+    const fetchDisruptionsData = async () => {
         const filters = {
             onlyWithStops: true,
             statuses: mapFiltersToStatuses(props.selectedDisruptionFilters),
         };
-
         try {
-            const data = await disruptionApi.getDisruptionsByFilters(filters, { signal });
-            if (signal.aborted) return;
+            const data = await disruptionApi.getDisruptionsByFilters(filters);
             setDisruptions(prev => (isEqual(prev, data.disruptions) ? prev : data.disruptions));
 
             const newStops = getDisruptionsUniqueStops(data.disruptions);
-            if (signal.aborted) return;
             setDisruptionStops(prev => (isEqual(prev, newStops) ? prev : newStops));
-        } catch (error) {
-            if (error.name !== 'AbortError') {
-                setDisruptions([]);
-                setDisruptionStops([]);
-            }
+        } catch {
+            setDisruptions([]);
+            setDisruptionStops([]);
         }
     };
 
@@ -249,13 +243,11 @@ function RealTimeView(props) {
     }, [props.showIncidents, props.selectedIncidentFilters]);
 
     useEffect(() => {
-        const controller = new AbortController();
-
+        let refreshDisruptionsInterval;
         if (shouldFetchDisruptionData()) {
-            fetchDisruptionsData(controller.signal);
-
-            refreshDisruptionsIntervalRef.current = setInterval(() => {
-                fetchDisruptionsData(controller.signal);
+            fetchDisruptionsData();
+            refreshDisruptionsInterval = setInterval(() => {
+                fetchDisruptionsData();
             }, DISRUPTIONS_REFRESH_INTERVAL);
         } else {
             setDisruptions([]);
@@ -263,8 +255,7 @@ function RealTimeView(props) {
         }
 
         return () => {
-            clearInterval(refreshDisruptionsIntervalRef.current);
-            controller.abort();
+            clearInterval(refreshDisruptionsInterval);
         };
     }, [props.showDisruptions, props.selectedDisruptionFilters]);
 
@@ -695,11 +686,9 @@ function RealTimeView(props) {
                         <DisruptionLayer
                             disruptions={ disruptions }
                             stops={ disruptionStops }
+                            goToDisruptionEditPage={ props.goToDisruptionEditPage }
                             impacts={ impactsArray }
                             causes={ causesArray }
-                            useParentChildIncident={ props.useParentChildIncident }
-                            goToDisruptionEditPage={ props.goToDisruptionEditPage }
-                            goToIncidentEditPage={ props.goToIncidentEditPage }
                         />
                     )}
                     <SelectedAddressMarker address={ props.selectedAddress } />
@@ -732,8 +721,6 @@ function RealTimeView(props) {
                             causes={ causesArray }
                             impacts={ impactsArray }
                             goToDisruptionEditPage={ props.goToDisruptionEditPage }
-                            goToIncidentEditPage={ props.goToIncidentEditPage }
-                            useParentChildIncident={ props.useParentChildIncident }
                             size={ 26 }
                             popup
                         />
@@ -848,15 +835,12 @@ RealTimeView.propTypes = {
     updateSelectedCars: PropTypes.func.isRequired,
     updateSelectedTmpImpacts: PropTypes.func.isRequired,
     goToDisruptionEditPage: PropTypes.func.isRequired,
-    goToIncidentEditPage: PropTypes.func.isRequired,
-    useParentChildIncident: PropTypes.bool,
 };
 
 RealTimeView.defaultProps = {
     vehiclePosition: undefined,
     routeType: null,
     selectedAgencyIds: null,
-    useParentChildIncident: false,
 };
 
 export default connect(
@@ -911,7 +895,6 @@ export default connect(
         showDisruptions: getShowDisruptions(state),
         agencies: getAgencies(state),
         selectedCars: getSelectedCars(state),
-        useParentChildIncident: useParentChildIncident(state),
     }),
     {
         addressSelected,
@@ -937,6 +920,5 @@ export default connect(
         updateSelectedTmpImpacts,
         updateShowDisruptions,
         goToDisruptionEditPage,
-        goToIncidentEditPage,
     },
 )(RealTimeView);

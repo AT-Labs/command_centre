@@ -65,8 +65,6 @@ const SelectedStopsDisruptionsMarker = (props) => {
                     causes={ props.causes }
                     impacts={ props.impacts }
                     goToDisruptionEditPage={ props.goToDisruptionEditPage }
-                    goToIncidentEditPage={ props.goToIncidentEditPage }
-                    useParentChildIncident={ props.useParentChildIncident }
                     onExpandPopup={ () => handleExpandDisruptionsDetails(stop.stop_id) }
                     onCollapsePopup={ () => handleCollapseDisruptionsDetails(stop.stop_id) }
                     isExpanded={ isExpanded }
@@ -114,10 +112,8 @@ SelectedStopsDisruptionsMarker.propTypes = {
     maximumStopsToDisplay: PropTypes.number,
     tabIndexOverride: PropTypes.number,
     goToDisruptionEditPage: PropTypes.func,
-    goToIncidentEditPage: PropTypes.func,
     impacts: PropTypes.array,
     causes: PropTypes.array,
-    useParentChildIncident: PropTypes.bool,
 };
 
 SelectedStopsDisruptionsMarker.defaultProps = {
@@ -126,8 +122,6 @@ SelectedStopsDisruptionsMarker.defaultProps = {
     maximumStopsToDisplay: 0,
     tabIndexOverride: 0,
     goToDisruptionEditPage: () => {},
-    goToIncidentEditPage: () => {},
-    useParentChildIncident: false,
     impacts: [],
     causes: [],
 };

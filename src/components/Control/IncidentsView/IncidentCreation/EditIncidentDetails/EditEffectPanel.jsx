@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Paper, Stack } from '@mui/material';
-import { isEmpty, sortBy, some, isEqual, uniqBy } from 'lodash-es';
+import { isEmpty, sortBy, some, isEqual } from 'lodash-es';
 import { Form, FormFeedback, FormGroup, Input, Label, Button } from 'reactstrap';
 import { connect } from 'react-redux';
 import { FaRegCalendarAlt } from 'react-icons/fa';
@@ -19,7 +19,6 @@ import { isEditEffectPanelOpen,
     isEditEffectUpdateRequested,
     getRequestedDisruptionKeyToUpdateEditEffect,
     isCancellationEffectModalOpen,
-    getMapDrawingEntities,
 } from '../../../../../redux/selectors/control/incidents';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
 import {
@@ -111,7 +110,7 @@ const INIT_EFFECT_STATE = {
     status: STATUSES.NOT_STARTED,
 };
 
-export const EditEffectPanel = (props, ref) => {
+export const EditEffectPanel = (props) => {
     const { disruptions, disruptionIncidentNoToEdit, disruptionRecurrent, modalOpenedTime } = props;
     const [disruption, setDisruption] = useState({ ...INIT_EFFECT_STATE });
     const [originalDisruption, setOriginalDisruption] = useState({ ...INIT_EFFECT_STATE });
@@ -150,51 +149,10 @@ export const EditEffectPanel = (props, ref) => {
     }, []);
 
     useEffect(() => {
-        props.onDisruptionChange(disruption);
-    }, [disruption]);
-
-    useEffect(() => {
         if (props.disruptions && disruptionIncidentNoToEdit && !props.isNotesRequiresToUpdate) {
             initDisruptionData();
         }
     }, [props.disruptions]);
-
-    useEffect(() => {
-        if (props.mapDrawingEntities && props.mapDrawingEntities.length > 0) {
-            const newRoutes = props.mapDrawingEntities.filter(e => e.type === 'route');
-            const newStops = props.mapDrawingEntities.filter(e => e.type === 'stop');
-
-            const mergedRoutes = uniqBy(
-                [...disruption.affectedEntities.affectedRoutes, ...newRoutes],
-                'routeId',
-            );
-
-            const mergedStops = uniqBy(
-                [...disruption.affectedEntities.affectedStops, ...newStops],
-                'stopId',
-            );
-
-            setDisruption({
-                ...disruption,
-                affectedEntities: {
-                    affectedRoutes: mergedRoutes,
-                    affectedStops: mergedStops,
-                },
-            });
-        }
-    }, [props.mapDrawingEntities]);
-
-    useImperativeHandle(ref, () => ({
-        deleteAffectedEntities() {
-            setDisruption({
-                ...disruption,
-                affectedEntities: {
-                    affectedRoutes: [],
-                    affectedStops: [],
-                },
-            });
-        },
-    }));
 
     const startTimeValid = () => isStartTimeValid(
         disruption.startDate,
@@ -226,17 +184,17 @@ export const EditEffectPanel = (props, ref) => {
     const endDateDatePickerOptions = () => getDatePickerOptions(disruption.startDate || moment().second(0).millisecond(0));
 
     const updateDisruption = (updatedFields) => {
+        let recurrenceDates;
+        let parsedRecurrencePattern;
+        if (updatedFields?.startDate || updatedFields?.startTime || updatedFields?.endDate || updatedFields?.recurrent) {
+            recurrenceDates = getRecurrenceDates(
+                updatedFields.startDate || disruption.startDate,
+                updatedFields.startTime || disruption.startTime,
+                updatedFields.endDate || disruption.endDate,
+            );
+            parsedRecurrencePattern = disruption.recurrent ? parseRecurrencePattern(disruption.recurrencePattern) : { freq: RRule.WEEKLY };
+        }
         setDisruption((prev) => {
-            let recurrenceDates;
-            let parsedRecurrencePattern;
-            if (updatedFields?.startDate || updatedFields?.startTime || updatedFields?.endDate || updatedFields?.recurrent) {
-                recurrenceDates = getRecurrenceDates(
-                    updatedFields.startDate || prev.startDate,
-                    updatedFields.startTime || prev.startTime,
-                    updatedFields.endDate || prev.endDate,
-                );
-                parsedRecurrencePattern = prev.recurrent ? parseRecurrencePattern(prev.recurrencePattern) : { freq: RRule.WEEKLY };
-            }
             const updatedDisruption = {
                 ...prev,
                 ...updatedFields,
@@ -732,7 +690,7 @@ export const EditEffectPanel = (props, ref) => {
                                     <Label for="disruption-creation__wizard-select-details__start-date">
                                         <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
                                     </Label>
-                                    <div className={ `${isResolved() || disruptionRecurrent ? 'background-color-for-disabled-fields' : ''}` }>
+                                    <div className={ `${isResolved() ? 'background-color-for-disabled-fields' : ''}` }>
                                         <Flatpickr
                                             data-testid="start-date_date-picker"
                                             key="start-date"
@@ -742,7 +700,7 @@ export const EditEffectPanel = (props, ref) => {
                                             options={ datePickerOptions }
                                             placeholder="Select date"
                                             onChange={ date => onChangeStartDate(date) }
-                                            disabled={ isResolved() || disruptionRecurrent } />
+                                            disabled={ isResolved() } />
                                     </div>
                                     {!isStartDateDirty && (
                                         <FaRegCalendarAlt
@@ -797,7 +755,7 @@ export const EditEffectPanel = (props, ref) => {
                                             setIsStartTimeDirty(true);
                                         } }
                                         invalid={ (disruption.status === STATUSES.DRAFT ? (isStartTimeDirty && !startTimeValid()) : !startTimeValid()) }
-                                        disabled={ isResolved() || disruptionRecurrent }
+                                        disabled={ isResolved() }
                                     />
                                     <FormFeedback>Not valid values</FormFeedback>
                                 </FormGroup>
@@ -1057,8 +1015,6 @@ EditEffectPanel.propTypes = {
     updateIsEffectUpdatedState: PropTypes.func.isRequired,
     useDisruptionNotePopup: PropTypes.bool,
     updateEffectValidationForPublishState: PropTypes.func.isRequired,
-    mapDrawingEntities: PropTypes.arrayOf(PropTypes.object).isRequired,
-    onDisruptionChange: PropTypes.func,
 };
 
 EditEffectPanel.defaultProps = {
@@ -1068,7 +1024,6 @@ EditEffectPanel.defaultProps = {
     workaroundsToSync: [],
     isCancellationEffectOpen: false,
     useDisruptionNotePopup: false,
-    onDisruptionChange: () => {},
 };
 
 export default connect(state => ({
@@ -1079,7 +1034,6 @@ export default connect(state => ({
     newDisruptionKey: getRequestedDisruptionKeyToUpdateEditEffect(state),
     isCancellationEffectOpen: isCancellationEffectModalOpen(state),
     useDisruptionNotePopup: useDisruptionNotePopup(state),
-    mapDrawingEntities: getMapDrawingEntities(state),
 }), {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
@@ -1094,4 +1048,4 @@ export default connect(state => ({
     setRequestToUpdateEditEffectState,
     toggleIncidentModals,
     setRequestedDisruptionKeyToUpdateEditEffect,
-}, null, { forwardRef: true })(forwardRef(EditEffectPanel));
+})(EditEffectPanel);
