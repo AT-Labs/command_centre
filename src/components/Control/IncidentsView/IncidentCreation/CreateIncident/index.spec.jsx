@@ -17,7 +17,13 @@ jest.mock('../../../../Common/Map/HighlightingLayer/HighlightingLayer', () => je
 
 jest.mock('../../../../Common/Map/StopsLayer/SelectedStopsMarker', () => jest.fn());
 
-jest.mock('./DrawLayer', () => jest.fn());
+jest.mock('../../../../Common/Map/RouteShapeEditor/RouteShapeEditor', () => () => <div data-testid="route-shape-editor" />);
+
+jest.mock('react-leaflet-draw', () => ({
+    EditControl: () => <div data-testid="edit-control" />,
+}));
+
+jest.mock('./DrawLayer', () => () => <div data-testid="draw-layer" />);
 
 jest.mock('../../../../Common/CustomModal/CustomModal', () => jest.fn());
 

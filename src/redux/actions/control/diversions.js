@@ -10,6 +10,13 @@ export const openDiversionManager = isDiversionManagerOpen => (dispatch) => {
     });
 };
 
+export const setDiversionManagerReady = isDiversionManagerReady => ({
+    type: ACTION_TYPE.SET_DIVERSION_MANAGER_READY,
+    payload: {
+        isDiversionManagerReady,
+    },
+});
+
 export const updateDiversionMode = editMode => ({
     type: ACTION_TYPE.UPDATE_DIVERSION_EDIT_MODE,
     payload: {
