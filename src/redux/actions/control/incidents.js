@@ -22,7 +22,6 @@ import {
 import { getAllRoutes } from '../../selectors/static/routes';
 import { getAllStops } from '../../selectors/static/stops';
 import EDIT_TYPE from '../../../types/edit-types';
-import { incidentsStateUpdater } from '../../../utils/redux/mergeStateData';
 import { updateControlDetailView, updateMainView } from '../navigation';
 import VIEW_TYPE from '../../../types/view-types';
 
@@ -354,7 +353,7 @@ export const getStopsByRoute = routes => async (dispatch, getState) => {
             })
             .finally(() => {
                 dispatch(updateCachedRoutesToStops(missingCacheRoutesToStops));
-                incidentsStateUpdater.updateStopsByRoute(dispatch, getState, stopsByRoute, updateStopsByRoute);
+                dispatch(updateStopsByRoute(stopsByRoute, false));
             });
     }
     return dispatch(updateLoadingStopsByRoute(false));
@@ -413,7 +412,7 @@ export const getRoutesByStop = stops => async (dispatch, getState) => {
                 });
                 dispatch(updateCachedShapesState(missingCacheShapes));
                 dispatch(updateCachedStopsToRoutes(missingCacheStopsToRoutes));
-                incidentsStateUpdater.updateRoutesByStop(dispatch, getState, routesByStop, updateRoutesByStop);
+                dispatch(updateRoutesByStop(routesByStop, false));
             });
     }
     return dispatch(updateLoadingRoutesByStop(false));

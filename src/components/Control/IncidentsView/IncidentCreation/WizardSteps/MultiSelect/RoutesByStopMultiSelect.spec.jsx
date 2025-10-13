@@ -17,10 +17,6 @@ const defaultState = {
     loadedRoutesByStop: [],
     setLoadedRoutesByStop: jest.fn(),
     updateAffectedStopsState: jest.fn(),
-    getRoutesByStop: jest.fn(),
-    updateAffectedStops: jest.fn(),
-    removeAction: jest.fn(),
-    isDisabled: false,
 };
 
 const stops = [
