@@ -692,6 +692,7 @@ export const SelectDetails = (props) => {
                                         onClick={ () => openEditEffectPanel(disruption) }>
                                         <strong>{disruption.incidentNo}</strong>
                                     </Button>
+                                    <p className="p-lr12-tb6 m-0">{disruption.header}</p>
                                     <p className="p-lr12-tb6 m-0">
                                         {getImpactLabel(disruption.impact)}
                                     </p>
