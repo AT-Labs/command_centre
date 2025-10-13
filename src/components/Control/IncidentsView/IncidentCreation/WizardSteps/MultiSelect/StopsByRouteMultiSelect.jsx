@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { uniqBy, isEmpty } from 'lodash-es';
@@ -15,12 +15,6 @@ export const StopsByRouteMultiSelect = (props) => {
 
     const [expandedRoutes, setExpandedRoutes] = useState({});
     const [expandedRouteDirections, setExpandedRouteDirections] = useState({});
-    const [loadedStopsByRoute, setLoadedStopsByRoute] = useState([]);
-
-    // loadedStopsByRoute are updated when a route is expanded - this triggers a JIT fetch of all stops for the routes
-    useEffect(() => {
-        props.getStopsByRoute(loadedStopsByRoute);
-    }, [loadedStopsByRoute]);
 
     const isRouteActive = route => !!expandedRoutes[route.routeId];
     const isRouteDirectionActive = (route, direction) => !!expandedRouteDirections[`${route.routeId}-${direction}`];
@@ -37,8 +31,8 @@ export const StopsByRouteMultiSelect = (props) => {
     };
     const toggleExpandedRoute = (route) => {
         toggleExpandedItem(route.routeId, expandedRoutes, setExpandedRoutes);
-        if (!loadedStopsByRoute.find(item => item.routeId === route.routeId)) {
-            setLoadedStopsByRoute([...loadedStopsByRoute, route]);
+        if (!props.findStopsByRoute[route.routeId]) {
+            props.getStopsByRoute([route]);
         }
     };
     const toggleExpandedRouteDirection = (route, direction) => toggleExpandedItem(`${route.routeId}-${direction}`, expandedRouteDirections, setExpandedRouteDirections);
