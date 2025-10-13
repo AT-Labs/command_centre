@@ -39,7 +39,7 @@ export const getCachedRoutesToStops = createSelector(getDisruptionsState, disrup
 export const getCachedStopsToRoutes = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'cachedStopsToRoutes'));
 
 export const getStopsByRoute = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'stopsByRoute'));
-export const getRoutesByStop = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'routesByStop'));
+export const getRoutesByStopData = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'routesByStop'));
 export const isEditEnabled = createSelector(getDisruptionsState, disruptionsState => disruptionsState.editMode === EDIT_TYPE.EDIT);
 export const getEditMode = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'editMode'));
 export const getSourceIncidentNo = createSelector(getDisruptionsState, disruptionsState => result(disruptionsState, 'sourceIncidentNo'));

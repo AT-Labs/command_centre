@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { uniqBy, isEmpty, sortBy, groupBy } from 'lodash-es';
@@ -6,19 +6,13 @@ import { ExpandableList } from '../../../../../Common/Expandable';
 import { EntityCheckbox } from '../EntityCheckbox';
 import Loader from '../../../../../Common/Loader/Loader';
 import { filterOnlyStopParams } from '../../../../../../utils/control/disruptions';
-import { getRoutesByStop as findRoutesByStop } from '../../../../../../redux/selectors/control/disruptions';
+import { getRoutesByStopData as findRoutesByStop } from '../../../../../../redux/selectors/control/disruptions';
 import { getRoutesByStop } from '../../../../../../redux/actions/control/disruptions';
 
 export const RoutesByStopMultiSelect = (props) => {
     const { className, removeAction, affectedStops } = props;
 
     const [expandedStops, setExpandedStops] = useState({});
-    const [loadedRoutesByStop, setLoadedRoutesByStop] = useState([]);
-
-    // loadedRoutesByStop are updated when a stop is expanded - this triggers a JIT fetch of all routes for the stops
-    useEffect(() => {
-        props.getRoutesByStop(loadedRoutesByStop);
-    }, [loadedRoutesByStop]);
 
     const affectedSingleStops = affectedStops.filter(entity => !entity.groupId);
     const stopGroupStops = affectedStops.filter(entity => !!entity.groupId);
@@ -36,8 +30,8 @@ export const RoutesByStopMultiSelect = (props) => {
             setExpandedStops(currentItems);
         }
 
-        if (!loadedRoutesByStop.find(item => item.stopCode === stop.stopCode)) {
-            setLoadedRoutesByStop([...loadedRoutesByStop, stop]);
+        if (!props.findRoutesByStop[stop.stopCode]) {
+            props.getRoutesByStop([stop]);
         }
     };
 
