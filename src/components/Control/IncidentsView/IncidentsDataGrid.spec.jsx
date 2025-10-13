@@ -145,11 +145,11 @@ describe('IncidentDataGrid Component', () => {
             </Provider>,
         );
 
-        expect(screen.getByText('#DISRUPTION')).toBeInTheDocument();
+        expect(screen.getByText('DISRUPTION#')).toBeInTheDocument();
         expect(screen.getByText('DISRUPTION TITLE')).toBeInTheDocument();
         expect(screen.getByText('ROUTES')).toBeInTheDocument();
         expect(screen.getByText('STOPS')).toBeInTheDocument();
-        expect(screen.getByText('#EFFECT')).toBeInTheDocument();
+        expect(screen.getByText('EFFECT#')).toBeInTheDocument();
     });
 
     it('renders the correct number of parent and child rows based on incidents prop', async () => {

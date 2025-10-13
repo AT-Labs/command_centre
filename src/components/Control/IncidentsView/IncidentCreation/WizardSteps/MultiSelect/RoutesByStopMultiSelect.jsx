@@ -13,12 +13,6 @@ export const RoutesByStopMultiSelect = (props) => {
     const { className, removeAction, affectedStops } = props;
 
     const [expandedStops, setExpandedStops] = useState({});
-    const [loadedRoutesByStop, setLoadedRoutesByStop] = useState([]);
-
-    // loadedRoutesByStop are updated when a stop is expanded - this triggers a JIT fetch of all routes for the stops
-    useEffect(() => {
-        props.getRoutesByStop(loadedRoutesByStop);
-    }, [loadedRoutesByStop]);
 
     const affectedSingleStops = affectedStops.filter(entity => !entity.groupId);
     const stopGroupStops = affectedStops.filter(entity => !!entity.groupId);
@@ -36,8 +30,8 @@ export const RoutesByStopMultiSelect = (props) => {
             setExpandedStops(currentItems);
         }
 
-        if (!loadedRoutesByStop.find(item => item.stopCode === stop.stopCode)) {
-            setLoadedRoutesByStop([...loadedRoutesByStop, stop]);
+        if (!props.findRoutesByStop[stop.stopCode]) {
+            props.getRoutesByStop([stop]);
         }
     };
 
@@ -106,7 +100,7 @@ export const RoutesByStopMultiSelect = (props) => {
     const renderRoutesByStop = (stop) => {
         const routesByStop = props.findRoutesByStop[stop.stopCode];
 
-        if (!routesByStop) {
+        if (!routesByStop|| routesByStop === "undefined") {
             return [(<li key="-1"><Loader className="loader-disruptions loader-disruptions-list" /></li>)];
         }
 
