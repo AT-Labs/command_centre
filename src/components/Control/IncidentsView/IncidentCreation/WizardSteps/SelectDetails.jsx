@@ -687,6 +687,7 @@ export const SelectDetails = (props) => {
                         {filteredDisruptions.map(disruption => (
                             <li key={ disruption.key } className={ `disruption-effect-item ${props.disruptionIncidentNoToEdit === disruption.incidentNo ? 'active' : ''}` }>
                                 <div>
+                                    <p className="p-lr12-tb6 m-0">{disruption.header}</p>
                                     <Button
                                         className="btn cc-btn-link p-lr12-tb6 m-0"
                                         onClick={ () => openEditEffectPanel(disruption) }>
