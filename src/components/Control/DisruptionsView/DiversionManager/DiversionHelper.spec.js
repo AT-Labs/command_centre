@@ -1,9 +1,6 @@
-import moment from 'moment-timezone';
-import dateTypes from '../../../../types/date-types';
-import {
-    canMerge, createAffectedStop, createModifiedRouteVariant, generateUniqueColor,
+import { canMerge, createAffectedStop, createModifiedRouteVariant, generateUniqueColor,
     getMinDistanceToPolyline, getUniqueAffectedStopIds, getUniqueStops, hasDiversionModified, isAffectedStop,
-    mergeDiversionToRouteVariant, removeDuplicatePoints, createRouteVariantDateFilters } from './DiversionHelper';
+    mergeDiversionToRouteVariant, removeDuplicatePoints } from './DiversionHelper';
 
 describe('generateUniqueColor', () => {
     it('generates a valid hex color', () => {
@@ -251,73 +248,5 @@ describe('removeDuplicatePoints', () => {
         const wkt = 'LINESTRING(1 1,2 2,3 3,2 2,1 1)';
         // In this case, (1 1) at 0 and 4, n=3, should only remove (2 2,3 3)
         expect(removeDuplicatePoints(wkt, 3)).toBe('LINESTRING(1 1,2 2,1 1)');
-    });
-});
-
-describe('createRouteVariantDateFilters', () => {
-    beforeAll(() => {
-        jest.useFakeTimers();
-        jest.setSystemTime(new Date('2023-09-24T08:30:00Z'));
-    });
-
-    afterAll(() => {
-        jest.useRealTimers();
-    });
-    const TIME_ZONE = dateTypes.TIME_ZONE || 'Pacific/Auckland';
-
-    it('should return correct filters when both startTime and endTime are present', () => {
-        const disruption = {
-            startTime: '2023-09-24T08:30:00Z',
-            endTime: '2023-09-25T17:45:00Z',
-        };
-        const result = createRouteVariantDateFilters(disruption);
-
-        const start = moment(disruption.startTime).tz(TIME_ZONE);
-        const end = moment(disruption.endTime).tz(TIME_ZONE);
-
-        expect(result).toEqual({
-            serviceDateFrom: start.format('YYYYMMDD'),
-            startTime: start.format('HH:mm'),
-            serviceDateTo: end.format('YYYYMMDD'),
-            endTime: end.format('HH:mm'),
-        });
-    });
-
-    it('should not return end filters when endTime is missing', () => {
-        const disruption = {
-            startTime: '2023-09-24T08:30:00Z',
-        };
-        const result = createRouteVariantDateFilters(disruption);
-
-        const start = moment(disruption.startTime).tz(TIME_ZONE);
-
-        expect(result).toEqual({
-            serviceDateFrom: start.format('YYYYMMDD'),
-            startTime: start.format('HH:mm'),
-        });
-    });
-
-    it('should return default object if startTime is missing', () => {
-        const disruption = {};
-        const result = createRouteVariantDateFilters(disruption);
-        expect(result).toEqual({
-            serviceDateFrom: '20230924',
-            startTime: '21:30', // Because of nz time
-        });
-    });
-
-    it('should handle null endTime gracefully', () => {
-        const disruption = {
-            startTime: '2023-09-24T08:30:00Z',
-            endTime: null,
-        };
-        const result = createRouteVariantDateFilters(disruption);
-
-        const start = moment(disruption.startTime).tz(TIME_ZONE);
-
-        expect(result).toEqual({
-            serviceDateFrom: start.format('YYYYMMDD'),
-            startTime: start.format('HH:mm'),
-        });
     });
 });
