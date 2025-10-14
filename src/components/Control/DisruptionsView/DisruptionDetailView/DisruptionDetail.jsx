@@ -10,7 +10,7 @@ import { BsArrowRepeat } from 'react-icons/bs';
 import Flatpickr from 'react-flatpickr';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
-import { STATUSES, SEVERITIES } from '../../../../types/disruptions-types';
+import { STATUSES, getSeverityOptions } from '../../../../types/disruptions-types';
 import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
 import {
     DATE_FORMAT,
@@ -96,7 +96,7 @@ import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import { ShapeLayer } from '../../../Common/Map/ShapeLayer/ShapeLayer';
 import { SelectedStopsMarker } from '../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import { DisruptionPassengerImpactGridModal } from '../DisruptionDetail/DisruptionPassengerImpactGridModal';
-import { useDraftDisruptions, usePassengerImpact } from '../../../../redux/selectors/appSettings';
+import { useDraftDisruptions, usePassengerImpact, useParentChildIncident } from '../../../../redux/selectors/appSettings';
 import { updateActiveControlEntityId } from '../../../../redux/actions/navigation';
 import { shareToEmail } from '../../../../utils/control/disruption-sharing';
 import { reportError } from '../../../../redux/actions/activity';
@@ -265,7 +265,6 @@ const DisruptionDetailView = (props) => {
         setDescriptionNote('');
         const { notes: disruptionNotes } = disruption;
         if (disruptionNotes.length > 0) {
-            // NOSONAR: Node 14 does not support .at(-1), so we use [length - 1]. Should change this when we upgrade to Node 16+
             setLastNote(disruptionNotes[disruptionNotes.length - 1]);
         }
     }, [disruption.lastUpdatedTime, lastNote]);
@@ -321,7 +320,7 @@ const DisruptionDetailView = (props) => {
         if (status === STATUSES.DRAFT && props.useDraftDisruptions) {
             return false;
         }
-        return status === STATUSES.RESOLVED || (recurrent && disruption.status !== STATUSES.NOT_STARTED);
+        return status === STATUSES.RESOLVED || (recurrent && disruption.status !== STATUSES.NOT_STARTED && disruption.status !== STATUSES.DRAFT);
     };
 
     const startTimeValid = () => {
@@ -577,7 +576,7 @@ const DisruptionDetailView = (props) => {
             ...setDisruption(),
             status: STATUSES.NOT_STARTED,
         };
-        await props.actions.publishDraftDisruption(updatedDisruption, diversions);
+        await props.actions.publishDraftDisruption(updatedDisruption);
     };
 
     return (
@@ -590,6 +589,8 @@ const DisruptionDetailView = (props) => {
                         addDiversionAction={ addDiversion }
                         isEditDisabled={ isRequesting || isLoading || isResolved() || isReadOnlyMode }
                         affectedEntities={ disruption.affectedEntities }
+                        startTime={ disruption.startTime }
+                        endTime={ disruption.endTime }
                         showViewWorkaroundsButton
                         viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                         showViewPassengerImpactButton={ props.usePassengerImpact }
@@ -787,7 +788,7 @@ const DisruptionDetailView = (props) => {
                                     <DisruptionDetailSelect
                                         id="disruption-detail__severity"
                                         value={ severity }
-                                        options={ SEVERITIES }
+                                        options={ getSeverityOptions(props.useParentChildIncident) }
                                         label={ LABEL_SEVERITY }
                                         onChange={ setSeverity }
                                         disabled={ isResolved() || isReadOnlyMode }
@@ -933,14 +934,13 @@ const DisruptionDetailView = (props) => {
                                 isLoading={ isLoading }
                             >
                                 <ShapeLayer
-                                    shapes={ isLoading ? [] : props.shapes }
-                                    routeColors={ isLoading ? [] : props.routeColors } />
+                                    shapes={ !isLoading ? props.shapes : [] }
+                                    routeColors={ !isLoading ? props.routeColors : [] } />
                                 <SelectedStopsMarker
                                     stops={
-                                        isLoading
-                                            ? []
-                                            : disruption.affectedEntities.filter(entity => entity.stopCode).slice(0, 10).map(stop => itemToEntityTransformers[STOP.type](stop).data)
-
+                                        !isLoading
+                                            ? disruption.affectedEntities.filter(entity => entity.stopCode).slice(0, 10).map(stop => itemToEntityTransformers[STOP.type](stop).data)
+                                            : []
                                     }
                                     size={ 28 }
                                     tooltip
@@ -1000,6 +1000,7 @@ DisruptionDetailView.propTypes = {
     boundsToFit: PropTypes.array.isRequired,
     usePassengerImpact: PropTypes.bool.isRequired,
     useDraftDisruptions: PropTypes.bool.isRequired,
+    useParentChildIncident: PropTypes.bool.isRequired,
     isReadOnlyMode: PropTypes.bool,
     actions: PropTypes.objectOf(PropTypes.func).isRequired,
 };
@@ -1043,4 +1044,5 @@ export default connect(state => ({
     usePassengerImpact: usePassengerImpact(state),
     isRequesting: getDisruptionAction(state)?.isRequesting,
     useDraftDisruptions: useDraftDisruptions(state),
+    useParentChildIncident: useParentChildIncident(state),
 }), mapDispatchToProps)(DisruptionDetailView);

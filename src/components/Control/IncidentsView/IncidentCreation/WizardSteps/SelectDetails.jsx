@@ -485,7 +485,7 @@ export const SelectDetails = (props) => {
                         <Label for="disruption-creation__wizard-select-details__start-date">
                             <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
                         </Label>
-                        <div className={ `${isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT) ? 'background-color-for-disabled-fields' : ''}` }>
+                        <div className={ `${isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT && status !== STATUSES.DRAFT) ? 'background-color-for-disabled-fields' : ''}` }>
                             <Flatpickr
                                 data-testid="start-date_date-picker"
                                 id="disruption-creation__wizard-select-details__start-date"
@@ -494,7 +494,7 @@ export const SelectDetails = (props) => {
                                 options={ datePickerOptions }
                                 placeholder="Select date"
                                 onChange={ date => onChangeStartDate(date) }
-                                disabled={ isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT) } />
+                                disabled={ isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT && status !== STATUSES.DRAFT) } />
                         </div>
                         {!isStartDateDirty && (
                             <FaRegCalendarAlt
@@ -545,7 +545,7 @@ export const SelectDetails = (props) => {
                             value={ startTime }
                             onChange={ event => onChangeStartTime(event.target.value) }
                             invalid={ (props.useDraftDisruptions ? (isStartTimeDirty && !startTimeValid()) : !startTimeValid()) }
-                            disabled={ isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT) }
+                            disabled={ isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT && status !== STATUSES.DRAFT) }
                         />
                         <FormFeedback>Not valid values</FormFeedback>
                     </FormGroup>
@@ -687,7 +687,6 @@ export const SelectDetails = (props) => {
                         {filteredDisruptions.map(disruption => (
                             <li key={ disruption.key } className={ `disruption-effect-item ${props.disruptionIncidentNoToEdit === disruption.incidentNo ? 'active' : ''}` }>
                                 <div>
-                                    <p className="p-lr12-tb6 m-0">{disruption.header}</p>
                                     <Button
                                         className="btn cc-btn-link p-lr12-tb6 m-0"
                                         onClick={ () => openEditEffectPanel(disruption) }>

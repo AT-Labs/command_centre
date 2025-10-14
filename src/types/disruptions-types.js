@@ -156,3 +156,10 @@ export const getParentChildSeverityOptions = () => [
 ];
 
 export const getParentChildDefaultSeverity = () => UNKNOWN_SEVERITY;
+
+export const getSeverityOptions = (useParentChildIncident) => {
+    if (useParentChildIncident) {
+        return getParentChildSeverityOptions();
+    }
+    return SEVERITIES;
+};
