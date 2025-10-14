@@ -522,9 +522,7 @@ export const SelectEffects = (props) => {
                         }
                     } }
                     onKeyDown={ (e) => {
-                        if (
-                            (e.key === 'Enter' || e.key === ' ') && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target.isContentEditable)
-                        ) {
+                        if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             if (props.selectedEffect !== disruption.key) {
                                 props.updateSelectedEffect(disruption.key);
