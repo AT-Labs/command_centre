@@ -10,7 +10,7 @@ import { BsArrowRepeat } from 'react-icons/bs';
 import Flatpickr from 'react-flatpickr';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
-import { STATUSES, getParentChildSeverityOptions } from '../../../../types/disruptions-types';
+import { STATUSES, SEVERITIES } from '../../../../types/disruptions-types';
 import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
 import {
     DATE_FORMAT,
@@ -789,7 +789,7 @@ const DisruptionDetailView = (props) => {
                                     <DisruptionDetailSelect
                                         id="disruption-detail__severity"
                                         value={ severity }
-                                        options={ getParentChildSeverityOptions() }
+                                        options={ SEVERITIES }
                                         label={ LABEL_SEVERITY }
                                         onChange={ setSeverity }
                                         disabled={ isResolved() || isReadOnlyMode }
