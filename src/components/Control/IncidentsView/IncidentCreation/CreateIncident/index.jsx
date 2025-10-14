@@ -261,7 +261,7 @@ export class CreateIncident extends React.Component {
             this.props.updateAffectedRoutesState(routesToDraw);
 
             if (routesToDraw.length > 0) {
-                this.props.getRoutesByShortName(routesToDraw);
+                this.props.getRoutesByShortName(routesToDraw.slice(0, 10));
             }
         }
     }
@@ -688,7 +688,9 @@ export class CreateIncident extends React.Component {
             const stops = [];
             incidentData.disruptions.forEach((disruption) => {
                 const { affectedRoutes, affectedStops } = disruption.affectedEntities;
-                const r = uniqBy([...(affectedStops || []), ...(affectedRoutes || [])], 'stopCode').map(stop => itemToEntityTransformers[STOP.type](stop).data);
+                const r = uniqBy([...(affectedStops || []), ...(affectedRoutes || [])], 'stopCode')
+                    .slice(0, 10)
+                    .map(stop => itemToEntityTransformers[STOP.type](stop).data);
                 stops.push(...r);
             });
             return (
@@ -707,6 +709,7 @@ export class CreateIncident extends React.Component {
         const { affectedRoutes, affectedStops } = disruption.affectedEntities;
 
         const stops = uniqBy([...(affectedStops || []), ...(affectedRoutes || [])], 'stopCode')
+            .slice(0, 10)
             .map(stop => itemToEntityTransformers[STOP.type](stop).data);
 
         return (
