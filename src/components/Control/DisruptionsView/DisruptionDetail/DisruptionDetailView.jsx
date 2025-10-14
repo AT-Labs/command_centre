@@ -9,7 +9,7 @@ import { BsArrowRepeat } from 'react-icons/bs';
 import Flatpickr from 'react-flatpickr';
 import CustomMuiDialog from '../../../Common/CustomMuiDialog/CustomMuiDialog';
 import ActivePeriods from '../../../Common/ActivePeriods/ActivePeriods';
-import { STATUSES, getSeverityOptions } from '../../../../types/disruptions-types';
+import { STATUSES, getParentChildSeverityOptions } from '../../../../types/disruptions-types';
 import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
 import {
     DATE_FORMAT,
@@ -81,7 +81,7 @@ import SEARCH_RESULT_TYPE from '../../../../types/search-result-types';
 import { ShapeLayer } from '../../../Common/Map/ShapeLayer/ShapeLayer';
 import { SelectedStopsMarker } from '../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import { DisruptionPassengerImpactGridModal } from './DisruptionPassengerImpactGridModal';
-import { usePassengerImpact, useParentChildIncident } from '../../../../redux/selectors/appSettings';
+import { usePassengerImpact } from '../../../../redux/selectors/appSettings';
 
 const { STOP } = SEARCH_RESULT_TYPE;
 
@@ -616,7 +616,7 @@ const DisruptionDetailView = (props) => {
                                 <DisruptionDetailSelect
                                     id="disruption-detail__severity"
                                     value={ severity }
-                                    options={ getSeverityOptions(props.useParentChildIncident) }
+                                    options={ getParentChildSeverityOptions() }
                                     label={ LABEL_SEVERITY }
                                     onChange={ setSeverity }
                                     disabled={ isResolved() }
@@ -792,7 +792,6 @@ DisruptionDetailView.propTypes = {
     className: PropTypes.string,
     boundsToFit: PropTypes.array.isRequired,
     usePassengerImpact: PropTypes.bool.isRequired,
-    useParentChildIncident: PropTypes.bool.isRequired,
 };
 
 DisruptionDetailView.defaultProps = {
@@ -811,7 +810,6 @@ export default connect(state => ({
     stops: getAffectedStops(state),
     boundsToFit: getBoundsToFit(state),
     usePassengerImpact: usePassengerImpact(state),
-    useParentChildIncident: useParentChildIncident(state),
 }), {
     getRoutesByShortName,
     openCreateDisruption,
