@@ -248,6 +248,7 @@ export default {
     UPDATE_DIVERSION_EDIT_MODE: 'update-diversion-edit-mode',
     UPDATE_DIVERSION_TO_EDIT: 'update-diversion-to-edit',
     OPEN_DIVERSION_MANAGER: 'open-diversion-manager',
+    SET_DIVERSION_MANAGER_READY: 'set-diversion-manager-ready',
     ADD_DIVERSION: 'add-diversion',
     UPDATE_DIVERSION_RESULT_STATE: 'update-diversion-result-state',
 
@@ -263,6 +264,7 @@ export default {
     UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING: 'update-control-incident-action-requesting',
     UPDATE_CONTROL_INCIDENT_ACTION_RESULT: 'update-control-incident-action-result',
     UPDATE_CONTROL_ACTIVE_INCIDENT_ID: 'update-control-active-incident-id',
+    UPDATE_CONTROL_ACTIVE_INCIDENT_DISRUPTION_ID: 'update-control-active-incident-disruption-id',
     UPDATE_CONTROL_ACTIVE_INCIDENT: 'update-control-active-incident',
     UPDATE_CONTROL_SET_ALL_INCIDENTS: 'update-control-set-all-incidents',
     UPDATE_CONTROL_SET_ALL_INCIDENTS_DISRUPTIONS: 'update-control-set-all-incidents-disruptions',
@@ -296,6 +298,7 @@ export default {
     SET_DISRUPTION_FOR_WORKAROUND_EDIT: 'set-disruption-for-workaround-edit',
     SET_REQUEST_TO_UPDATE_EDIT_EFFECT: 'set-request-to-update-edit-effect',
     SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT: 'set-requested-disruption-key-to-update-edit-effect',
+    UPDATE_MAP_DRAWING_ENTITIES: 'update-map-drawing-entities',
     // UPDATE_INCIDENT_DIVERSION_EDIT_MODE: 'update-incident-diversion-edit-mode',
     // OPEN_INCIDENT_CREATE_DIVERSION: 'open-incident-create-diversion',
     // ADD_INCIDENT_DIVERSION: 'add-incident-diversion',
