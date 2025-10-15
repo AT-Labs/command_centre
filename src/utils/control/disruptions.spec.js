@@ -889,7 +889,7 @@ const mockRecurrentDisruption1 = {
     endTime: '',
     duration: '3',
     recurrencePattern: {
-        byweekday: [2, 4, 6, null],
+        byweekday: [2, 4, 6],
         dtstart: '2025-10-02T16:23:00.000Z',
         freq: 2,
         until: '2025-10-11T16:23:00.000Z',
@@ -923,7 +923,7 @@ const mockRecurrentIncident = {
     header: 'test incident n0827',
     version: 1,
     recurrencePattern: {
-        byweekday: [2, null],
+        byweekday: [2],
         dtstart: '2025-10-03T16:23:00.000Z',
         freq: 2,
         until: '2025-10-10T16:23:00.000Z',
@@ -1194,6 +1194,31 @@ describe('getMode', () => {
         const result = buildIncidentSubmitBody(incident, false);
         expect(result.disruptions[0].recurrencePattern.until).toBeDefined();
         expect(result.disruptions[0].recurrencePattern.dtstart).toBeDefined();
+    });
+
+    it('Should make not started effect resolved when disruption become resolved', () => {
+        const incident = {
+            ...mockIncident,
+            endTime: moment('2025-10-10T12:00:00.000Z'),
+            endDate: '10/10/2025',
+            status: STATUSES.RESOLVED,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    status: STATUSES.NOT_STARTED,
+                    startDate: '11/11/2025',
+                    endDate: '12/12/2025',
+                    endTime: '23:59',
+                },
+                {
+                    ...mockDisruption2,
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.disruptions[0].status).toEqual(STATUSES.RESOLVED);
+        expect(result.disruptions[0].startTime).toEqual(incident.endTime);
+        expect(result.disruptions[0].endTime).toEqual(incident.endTime);
     });
 });
 

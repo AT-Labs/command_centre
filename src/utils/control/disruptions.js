@@ -132,7 +132,7 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
         recurrenceDates = getRecurrenceDates(disruption.startDate, disruption.startTime, disruption.endDate);
     }
     const startDate = disruption.startDate ? disruption.startDate : moment(disruption.startTime).format(DATE_FORMAT);
-    const startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
+    let startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
     let endTimeMoment;
     if (!isEmpty(disruption.endDate) && !isEmpty(disruption.endTime)) {
         endTimeMoment = momentFromDateTime(disruption.endDate, disruption.endTime);
@@ -159,6 +159,9 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
 
     const workarounds = disruption.workarounds?.length > 0 ? filterWorkaroundsByAffectedEntity(disruption.workarounds, routesToRequest, stopsToRequest) : disruption.workarounds;
     const isStatusBecomeResolved = incidentStatus === STATUSES.RESOLVED && disruption.status !== STATUSES.RESOLVED;
+    if (disruption.status === STATUSES.NOT_STARTED && isStatusBecomeResolved) {
+        startTimeMoment = incidentEndTimeMoment;
+    }
     return {
         ...disruption,
         ...(isEditMode ? { } : { status: incidentStatus }),
@@ -181,8 +184,7 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
 };
 
 const getRecurrentPatterForIncident = (incident) => {
-    const byweekday = [...new Set([...incident.disruptions.flatMap(d => d.recurrencePattern.byweekday), ...incident.recurrencePattern.byweekday])]
-        .filter(x => x != null).sort((a, b) => a - b);
+    const byweekday = [...new Set([...incident.disruptions.flatMap(d => d.recurrencePattern.byweekday), ...incident.recurrencePattern.byweekday])].sort((a, b) => a - b);
     const recurrenceDates = getRecurrenceDates(incident.startTime.format(DATE_FORMAT), incident.startTime.format(TIME_FORMAT), incident.endDate);
     return {
         byweekday,
