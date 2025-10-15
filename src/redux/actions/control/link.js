@@ -10,15 +10,7 @@ import { parseStartAndDateTime } from './alerts';
 import { updateRoutesTripsDatagridConfig } from '../datagrid';
 
 import { updateActiveDisruptionId } from './disruptions';
-import EDIT_TYPE from '../../../types/edit-types';
-import {
-    updateActiveIncident,
-    clearActiveIncident,
-    updateActiveDisruptionId as updateActiveIncidentDisruptionId,
-    updateEditMode,
-    updateCurrentStep,
-    loadIncidentAndRedirectToEdit,
-} from './incidents';
+import { updateActiveIncident, clearActiveIncident } from './incidents';
 
 export const goToRoutesView = (trip, filters) => (dispatch) => {
     const {
@@ -93,19 +85,11 @@ export const goToIncidentsView = (message, { setActiveIncident }) => (dispatch) 
 
     if (setActiveIncident) {
         dispatch(clearActiveIncident());
-        if (message.incidentDisruptionNo) {
-            dispatch(updateActiveIncident(message.incidentDisruptionNo));
-        }
+        dispatch(updateActiveIncident(message.incidentDisruptionNo));
         if (message.disruptionId) {
-            dispatch(updateActiveIncidentDisruptionId(message.disruptionId));
+            dispatch(updateActiveDisruptionId(message.disruptionId));
         }
     }
-};
-
-export const goToIncidentEditPage = message => (dispatch) => {
-    dispatch(updateEditMode(EDIT_TYPE.EDIT));
-    dispatch(updateCurrentStep(1));
-    dispatch(loadIncidentAndRedirectToEdit(message.incidentId, message.incidentNo, false));
 };
 
 export const goToDisruptionEditPage = (message, { setActiveDisruption }) => (dispatch) => {

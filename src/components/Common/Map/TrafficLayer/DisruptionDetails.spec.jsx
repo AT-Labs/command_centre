@@ -22,8 +22,6 @@ const mockDisruptions = [
         severity: 'HEADLINE',
         cause: 'CONGESTION',
         impact: 'BUS_STOP_CLOSED',
-        incidentNo: 'DISR000001',
-        incidentId: 111,
         recurrent: false,
         notes: [{
             id: '53b16796-381f-49da-a14e-8aaaf2dea4ac',
@@ -83,7 +81,6 @@ const mockImpacts = [
 ];
 
 const mockGoToDisruptionEditPage = jest.fn();
-const mockGoToIncidentEditPage = jest.fn();
 
 const componentPropsMock = {
     disruptions: mockDisruptions,
@@ -92,8 +89,6 @@ const componentPropsMock = {
     causes: mockCauses,
     impacts: mockImpacts,
     goToDisruptionEditPage: mockGoToDisruptionEditPage,
-    goToIncidentEditPage: mockGoToIncidentEditPage,
-    useParentChildIncident: false,
 };
 
 const setup = (customProps) => {
@@ -161,20 +156,6 @@ describe('DisruptionDetails Component', () => {
         expect(mockGoToDisruptionEditPage).toHaveBeenCalledWith(
             { disruptionId: 1 },
             { setActiveDisruption: true },
-        );
-    });
-
-    it('calls goToIncidentEditPage when the button is clicked', () => {
-        wrapper = setup({ ...componentPropsMock, useParentChildIncident: true });
-        const button = wrapper.find(Button).at(0);
-        expect(button.exists()).toBe(true);
-
-        act(() => {
-            button.simulate('click');
-        });
-
-        expect(mockGoToIncidentEditPage).toHaveBeenCalledWith(
-            { incidentId: 111, incidentNo: 'DISR000001' },
         );
     });
 

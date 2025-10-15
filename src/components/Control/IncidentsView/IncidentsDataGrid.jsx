@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { FaPaperclip } from 'react-icons/fa';
 import { RiMailCheckLine, RiDraftLine } from 'react-icons/ri';
 import { BsArrowRepeat, BsPencilSquare, BsAlarm, BsFillChatTextFill } from 'react-icons/bs';
@@ -9,6 +9,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { uniqueId } from 'lodash-es';
 import moment from 'moment';
+import './IncidentsDataGrid.scss';
 import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
 import MinimizeDisruptionDetail from '../DisruptionsView/DisruptionDetailView/MinimizeDisruptionDetail';
 import { clearActiveIncident,
@@ -24,23 +25,19 @@ import {
     getIncidentsLoadingState,
     getIncidentsWithDisruptions,
     getIncidentsDatagridConfig,
-    getActiveDisruptionId,
 } from '../../../redux/selectors/control/incidents';
+import { getActiveDisruptionId } from '../../../redux/selectors/control/disruptions';
 import { goToNotificationsView } from '../../../redux/actions/control/link';
 import { useViewDisruptionDetailsPage } from '../../../redux/selectors/appSettings';
 import { STATUSES } from '../../../types/disruptions-types';
 import { dateTimeFormat } from '../../../utils/dateUtils';
 import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
-import { useAlertCauses, useAlertEffects } from '../../../utils/control/alert-cause-effect';
+import { useAlertEffects } from '../../../utils/control/alert-cause-effect';
 import EDIT_TYPE from '../../../types/edit-types';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
-import { DEFAULT_CAUSE } from '../../../types/disruption-cause-and-effect';
-
-import './IncidentsDataGrid.scss';
 
 export const IncidentsDataGrid = (props) => {
     const impacts = useAlertEffects();
-    const causes = useAlertCauses();
 
     const getStatusIcon = (value) => {
         if (!value) {
@@ -136,7 +133,7 @@ export const IncidentsDataGrid = (props) => {
     const INCIDENT_COLUMNS = [
         {
             field: 'incidentDisruptionNo',
-            headerName: 'DISRUPTION#',
+            headerName: '#DISRUPTION',
             width: 130,
             type: 'string',
             renderCell: RenderCellExpand,
@@ -150,7 +147,7 @@ export const IncidentsDataGrid = (props) => {
         },
         {
             field: 'incidentNo',
-            headerName: 'EFFECT#',
+            headerName: '#EFFECT',
             width: 150,
             renderCell: params => getDisruptionLabel(params.row),
             filterOperators: sourceIdDataGridOperator,
@@ -178,14 +175,6 @@ export const IncidentsDataGrid = (props) => {
             type: 'singleSelect',
             valueGetter: params => getReadableImpact(params.row.impact),
             valueOptions: impacts.slice(1, impacts.length).map(impact => impact.label),
-        },
-        {
-            field: 'cause',
-            headerName: 'CAUSE',
-            width: 200,
-            type: 'singleSelect',
-            valueGetter: params => (causes.find(cause => cause.value === params.value) || DEFAULT_CAUSE).label,
-            valueOptions: causes.slice(1, causes.length).map(cause => cause.label),
         },
         {
             field: 'startTime',
@@ -278,7 +267,7 @@ export const IncidentsDataGrid = (props) => {
     const incidentWithPath = addPath(props.mergedIncidentsAndDisruptions);
 
     const { activeIncident } = props;
-    const activeIncidentId = activeIncident ? activeIncident.incidentId : null;
+    const activeIncidentId = activeIncident ? getRowId(activeIncident) : null;
 
     const activeDisruptionCompositeId = React.useMemo(() => {
         if (!props.activeDisruptionId) return null;
@@ -294,7 +283,7 @@ export const IncidentsDataGrid = (props) => {
         },
     } : {};
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (!activeIncidentId || !props.clearActiveIncident) {
             return undefined;
         }
@@ -305,14 +294,6 @@ export const IncidentsDataGrid = (props) => {
 
         return () => clearTimeout(timer);
     }, [activeIncidentId, props.clearActiveIncident]);
-
-    useEffect(() => {
-        document.body.classList.add('incidents-datagrid-visible');
-
-        return () => {
-            document.body.classList.remove('incidents-datagrid-visible');
-        };
-    }, []);
 
     return (
         <div>
@@ -333,7 +314,6 @@ export const IncidentsDataGrid = (props) => {
                 onRowExpanded={ ids => updateActiveDisruption(ids) }
                 initialState={ initialState }
                 autoExpandActiveIncident={ activeIncidentId }
-                autoExpandSubChild={ props.activeDisruptionId ? props.activeDisruptionId : null }
             />
         </div>
     );
