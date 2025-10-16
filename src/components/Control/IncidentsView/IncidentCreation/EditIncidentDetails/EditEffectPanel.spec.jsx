@@ -1063,5 +1063,25 @@ describe('Confirmation Component', () => {
 
             expect(screen.queryByText(/exceeds the maximum limit/i)).not.toBeInTheDocument();
         });
+
+        it('should show alert modal when entities exceed 200 limit', () => {
+            const disruption = createDisruptionWithEntities(150, 100);
+            const { getByText } = render(
+                <Provider store={ store }>
+                    <EditEffectPanel
+                        { ...defaultProps }
+                        disruptions={ [disruption] }
+                        isEditEffectPanelOpen
+                        disruptionIncidentNoToEdit="DISR123"
+                        findRoutesByStop={ createFindRoutesByStop(100) }
+                    />
+                </Provider>,
+            );
+
+            const applyButton = getByText('Apply');
+            fireEvent.click(applyButton);
+
+            expect(screen.getByText(/exceeds the maximum limit/i)).toBeInTheDocument();
+        });
     });
 });

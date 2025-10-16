@@ -1463,5 +1463,33 @@ describe('CreateIncident component', () => {
             wrapper.instance().onSubmit();
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
         });
+
+        it('should show alert modal when entities exceed 200 limit', () => {
+            const disruption = createDisruptionWithEntities(150, 100);
+            const incidentData = {
+                ...defaultIncidentData,
+                disruptions: [disruption],
+            };
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentData }
+                    editMode={ EDIT_TYPE.CREATE }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateEditMode={ mockUpdateEditMode }
+                />,
+            );
+
+            wrapper.instance().onSubmit();
+            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(true);
+            expect(wrapper.find('IncidentLimitModal').prop('totalEntities')).toBe(250);
+        });
     });
 });
