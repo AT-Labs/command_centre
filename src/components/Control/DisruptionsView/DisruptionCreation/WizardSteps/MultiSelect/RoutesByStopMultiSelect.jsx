@@ -6,7 +6,7 @@ import { ExpandableList } from '../../../../../Common/Expandable';
 import { EntityCheckbox } from '../EntityCheckbox';
 import Loader from '../../../../../Common/Loader/Loader';
 import { filterOnlyStopParams } from '../../../../../../utils/control/disruptions';
-import { getAffectedStops, getRoutesByStop as findRoutesByStop } from '../../../../../../redux/selectors/control/disruptions';
+import { getAffectedStops, getRoutesByStopData as findRoutesByStop } from '../../../../../../redux/selectors/control/disruptions';
 import { getRoutesByStop, updateAffectedStopsState } from '../../../../../../redux/actions/control/disruptions';
 
 export const RoutesByStopMultiSelect = (props) => {

@@ -184,8 +184,7 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
 };
 
 const getRecurrentPatterForIncident = (incident) => {
-    const byweekday = [...new Set([...incident.disruptions.flatMap(d => d.recurrencePattern.byweekday), ...incident.recurrencePattern.byweekday])]
-        .filter(x => x != null).sort((a, b) => a - b);
+    const byweekday = [...new Set([...incident.disruptions.flatMap(d => d.recurrencePattern.byweekday), ...incident.recurrencePattern.byweekday])].sort((a, b) => a - b);
     const recurrenceDates = getRecurrenceDates(incident.startTime.format(DATE_FORMAT), incident.startTime.format(TIME_FORMAT), incident.endDate);
     return {
         byweekday,

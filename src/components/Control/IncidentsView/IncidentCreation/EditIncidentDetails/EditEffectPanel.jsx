@@ -940,7 +940,7 @@ export const EditEffectPanel = (props, ref) => {
                                     <Label for="disruption-creation__wizard-select-details__start-date">
                                         <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
                                     </Label>
-                                    <div className={ `${isResolved() || (disruptionRecurrent && disruption.status !== STATUSES.DRAFT) ? 'background-color-for-disabled-fields' : ''}` }>
+                                    <div className={ `${isResolved() || disruptionRecurrent ? 'background-color-for-disabled-fields' : ''}` }>
                                         <Flatpickr
                                             data-testid="start-date_date-picker"
                                             key="start-date"
@@ -950,7 +950,7 @@ export const EditEffectPanel = (props, ref) => {
                                             options={ datePickerOptions }
                                             placeholder="Select date"
                                             onChange={ date => onChangeStartDate(date) }
-                                            disabled={ isResolved() || (disruptionRecurrent && disruption.status !== STATUSES.DRAFT) } />
+                                            disabled={ isResolved() || disruptionRecurrent } />
                                     </div>
                                     {!isStartDateDirty && (
                                         <FaRegCalendarAlt
@@ -1005,7 +1005,7 @@ export const EditEffectPanel = (props, ref) => {
                                             setIsStartTimeDirty(true);
                                         } }
                                         invalid={ (disruption.status === STATUSES.DRAFT ? (isStartTimeDirty && !startTimeValid()) : !startTimeValid()) }
-                                        disabled={ isResolved() || (disruptionRecurrent && disruption.status !== STATUSES.DRAFT) }
+                                        disabled={ isResolved() || disruptionRecurrent }
                                     />
                                     <FormFeedback>Not valid values</FormFeedback>
                                 </FormGroup>
