@@ -9,20 +9,6 @@ import Flatpickr from 'react-flatpickr';
 import moment from 'moment';
 import { RRule } from 'rrule';
 import { BsArrowRepeat } from 'react-icons/bs';
-import IncidentLimitModal from '../../Modals/IncidentLimitModal';
-import { MAX_NUMBER_OF_ENTITIES,
-    LABEL_CUSTOMER_IMPACT,
-    LABEL_START_DATE,
-    DATE_FORMAT,
-    LABEL_END_DATE,
-    LABEL_END_TIME,
-    LABEL_START_TIME,
-    LABEL_SEVERITY,
-    LABEL_DURATION_HOURS,
-    TIME_FORMAT,
-    LABEL_HEADER,
-    HEADER_MAX_LENGTH } from '../../../../../constants/disruptions.js';
-import { getEntityCounts, generateSelectedText } from '../../../../../utils/control/incidents';
 import {
     getStopsByRoute as findStopsByRoute,
     getIncidentToEdit,
@@ -53,6 +39,18 @@ import {
 } from '../../../../../utils/control/disruptions';
 import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
+import {
+    LABEL_CUSTOMER_IMPACT,
+    LABEL_START_DATE,
+    DATE_FORMAT,
+    LABEL_END_DATE,
+    LABEL_END_TIME,
+    LABEL_START_TIME,
+    LABEL_SEVERITY,
+    LABEL_DURATION_HOURS,
+    TIME_FORMAT,
+    LABEL_HEADER,
+    HEADER_MAX_LENGTH } from '../../../../../constants/disruptions';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 
 import { useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
@@ -157,8 +155,6 @@ export const SelectEffects = (props) => {
     const [activePeriods, setActivePeriods] = useState([]);
     const [activePeriodsModalOpen, setActivePeriodsModalOpen] = useState(false);
     const [requireMapUpdate, setRequireMapUpdate] = useState(false);
-    const [totalEntities, setTotalEntities] = useState(0);
-    const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
     const titleValid = key => !isEmpty(disruptions.find(d => d.key === key).header);
     const impactValid = key => !isEmpty(disruptions.find(d => d.key === key).impact);
 
@@ -226,8 +222,7 @@ export const SelectEffects = (props) => {
 
     const affectedEntitySelected = (key) => {
         const disruption = getDisruptionByKey(key);
-        const { entitiesCount } = getEntityCounts(disruption);
-        return entitiesCount > 0;
+        return disruption.affectedEntities.affectedRoutes.length > 0 || disruption.affectedEntities.affectedStops.length > 0;
     };
 
     const affectedEntitySelectedForAllDisruptions = () => disruptions.every(disruption => affectedEntitySelected(disruption.key));
@@ -360,26 +355,7 @@ export const SelectEffects = (props) => {
         }
     }, [props.effectToBeCleared]);
 
-    const validateEntityLimit = () => {
-        const exceededDisruption = disruptions.find((disruption) => {
-            const { entitiesCount } = getEntityCounts(disruption);
-            return entitiesCount > MAX_NUMBER_OF_ENTITIES;
-        });
-
-        if (exceededDisruption) {
-            const { entitiesCount } = getEntityCounts(exceededDisruption);
-            setTotalEntities(entitiesCount);
-            setIsAlertModalOpen(true);
-            return false;
-        }
-        return true;
-    };
-
     const onSaveDraft = () => {
-        if (!validateEntityLimit()) {
-            return;
-        }
-
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
         setTimeout(() => {
@@ -392,10 +368,6 @@ export const SelectEffects = (props) => {
     };
 
     const onFinish = () => {
-        if (!validateEntityLimit()) {
-            return;
-        }
-
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
         setTimeout(() => {
@@ -408,10 +380,6 @@ export const SelectEffects = (props) => {
     };
 
     const onContinue = () => {
-        if (!validateEntityLimit()) {
-            return;
-        }
-
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
         if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
@@ -538,19 +506,6 @@ export const SelectEffects = (props) => {
     };
 
     const impacts = useAlertEffects();
-
-    const itemsSelectedText = () => {
-        const exceededDisruption = disruptions.find((disruption) => {
-            const { entitiesCount } = getEntityCounts(disruption);
-            return entitiesCount > MAX_NUMBER_OF_ENTITIES;
-        });
-
-        if (exceededDisruption) {
-            const { routesCount, stopsCount } = getEntityCounts(exceededDisruption);
-            return generateSelectedText(routesCount, stopsCount);
-        }
-        return '';
-    };
 
     return (
         <div className="select_disruption">
@@ -831,13 +786,6 @@ export const SelectEffects = (props) => {
                 isOpen={ activePeriodsModalOpen }>
                 <ActivePeriods activePeriods={ activePeriods } />
             </CustomMuiDialog>
-            <IncidentLimitModal
-                isOpen={ isAlertModalOpen }
-                onClose={ () => setIsAlertModalOpen(false) }
-                totalEntities={ totalEntities }
-                itemsSelectedText={ itemsSelectedText() }
-                maxLimit={ MAX_NUMBER_OF_ENTITIES }
-            />
         </div>
     );
 };

@@ -42,30 +42,3 @@ export function getRouteColors(affectedRoutes, affectedStops) {
 
     return [];
 }
-
-export const getEntityCounts = (disruption) => {
-    if (!disruption?.affectedEntities) {
-        return { routesCount: 0, stopsCount: 0, entitiesCount: 0 };
-    }
-
-    const routesCount = disruption.affectedEntities.affectedRoutes?.length || 0;
-    const stopsCount = disruption.affectedEntities.affectedStops?.length || 0;
-    const entitiesCount = routesCount + stopsCount;
-
-    return { routesCount, stopsCount, entitiesCount };
-};
-
-export const generateSelectedText = (routesCount, stopsCount) => {
-    let selectedText = '';
-    if (routesCount > 0) {
-        selectedText = 'routes';
-    }
-    if (stopsCount > 0) {
-        if (selectedText.length > 0) {
-            selectedText += ' and stops';
-        } else {
-            selectedText = 'stops';
-        }
-    }
-    return selectedText;
-};

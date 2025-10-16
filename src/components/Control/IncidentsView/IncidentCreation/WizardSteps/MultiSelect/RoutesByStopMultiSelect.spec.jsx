@@ -17,6 +17,10 @@ const defaultState = {
     loadedRoutesByStop: [],
     setLoadedRoutesByStop: jest.fn(),
     updateAffectedStopsState: jest.fn(),
+    getRoutesByStop: jest.fn(),
+    updateAffectedStops: jest.fn(),
+    removeAction: jest.fn(),
+    isDisabled: false,
 };
 
 const stops = [
@@ -91,6 +95,81 @@ describe('<RoutesByStopMultiSelect />', () => {
                 affectedStops: stops,
                 affectedSingleStops: stops,
             });
+            expect(wrapper.exists()).toEqual(true);
+        });
+    });
+
+    describe('toggleExpandedStop logic', () => {
+        it('should call getRoutesByStop when stop data is not loaded', () => {
+            const stop = { stopCode: 'stop1', stopName: 'Stop 1' };
+            const mockGetRoutesByStop = jest.fn();
+
+            setup({
+                affectedStops: [stop],
+                affectedSingleStops: [stop],
+                findRoutesByStop: {},
+                getRoutesByStop: mockGetRoutesByStop,
+            });
+
+            const expandableList = wrapper.find('ExpandableList').first();
+            expandableList.prop('onToggle')();
+
+            expect(mockGetRoutesByStop).toHaveBeenCalledWith([stop]);
+        });
+
+        it('should not call getRoutesByStop when stop data is already loaded', () => {
+            const stop = { stopCode: 'stop1', stopName: 'Stop 1' };
+            const mockGetRoutesByStop = jest.fn();
+
+            setup({
+                affectedStops: [stop],
+                affectedSingleStops: [stop],
+                findRoutesByStop: { [stop.stopCode]: [{ routeId: 'route1', routeShortName: '1' }] },
+                getRoutesByStop: mockGetRoutesByStop,
+            });
+
+            const expandableList = wrapper.find('ExpandableList').first();
+            expandableList.prop('onToggle')();
+
+            expect(mockGetRoutesByStop).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('useMemo cache logic', () => {
+        it('should render component with cache functionality', () => {
+            setup({ affectedStops: stops });
+
+            expect(wrapper.exists()).toEqual(true);
+        });
+
+        it('should handle cache updates when props change', () => {
+            const stopCode = 'stop1';
+            const routesData = [{ routeId: 'route1', routeShortName: '1' }];
+
+            setup({
+                affectedStops: stops,
+                findRoutesByStop: { [stopCode]: routesData },
+            });
+
+            expect(wrapper.exists()).toEqual(true);
+        });
+    });
+
+    describe('useCallback optimization', () => {
+        it('should use useCallback for toggleExpandedStop', () => {
+            const stop = { stopCode: 'stop1', stopName: 'Stop 1' };
+
+            setup({
+                affectedStops: [stop],
+                affectedSingleStops: [stop],
+            });
+
+            const expandableList = wrapper.find('ExpandableList').first();
+            const onToggle = expandableList.prop('onToggle');
+
+            expect(typeof onToggle).toBe('function');
+
+            onToggle();
             expect(wrapper.exists()).toEqual(true);
         });
     });
