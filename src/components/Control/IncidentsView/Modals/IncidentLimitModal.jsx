@@ -13,7 +13,6 @@ const IncidentLimitModal = ({
     maxLimit,
 }) => {
     const iconContextValue = useMemo(() => ({ className: 'text-warning w-100 m-2' }), []);
-    
     return (
         <CustomModal
             title="Log a Disruption"
