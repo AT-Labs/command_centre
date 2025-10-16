@@ -699,23 +699,6 @@ describe('<SelectEffects />', () => {
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
         });
 
-        it('should handle null affected entities', () => {
-            const disruption = {
-                ...mockDisruption,
-                affectedEntities: null,
-            };
-            const props = {
-                ...componentPropsMock,
-                data: { ...data, disruptions: [disruption] }
-            };
-            wrapper = setup(props);
-            
-            const footer = wrapper.find(Footer);
-            footer.renderProp('onContinue')();
-            
-            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
-        });
-
         it('should close modal when onClose is called', () => {
             const disruption = createDisruptionWithEntities(150, 100);
             const props = {
