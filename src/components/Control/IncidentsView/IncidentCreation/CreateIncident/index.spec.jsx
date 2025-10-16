@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow, mount } from 'enzyme';
 import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
+import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import { RRule } from 'rrule';
 import { CreateIncident } from './index';
@@ -1473,24 +1473,22 @@ describe('CreateIncident component', () => {
                 ...defaultIncidentData,
                 disruptions: [disruption],
             };
-            
-            const store = configureStore({
-                reducer: {
-                    control: {
-                        incidents: {
-                            routesByStop: (() => {
-                                const routesByStop = {};
-                                for (let i = 0; i < 200; i++) {
-                                    routesByStop[`STOP${i}`] = [];
-                                }
-                                return routesByStop;
-                            })(),
-                        },
+
+            const mockStore = configureStore([thunk]);
+            const store = mockStore({
+                control: {
+                    incidents: {
+                        routesByStop: (() => {
+                            const routesByStop = {};
+                            for (let i = 0; i < 200; i++) {
+                                routesByStop[`STOP${i}`] = [];
+                            }
+                            return routesByStop;
+                        })(),
                     },
                 },
-                middleware: [thunk],
             });
-            
+
             wrapper = mount(
                 <Provider store={ store }>
                     <CreateIncident

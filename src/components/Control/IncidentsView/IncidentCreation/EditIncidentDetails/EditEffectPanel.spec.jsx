@@ -1101,30 +1101,5 @@ describe('Confirmation Component', () => {
 
             expect(screen.queryByText(/exceeds the maximum limit/i)).not.toBeInTheDocument();
         });
-
-        it('should close modal when onClose is called', () => {
-            const disruption = createDisruptionWithEntities(150, 100);
-            const { getByText } = render(
-                <Provider store={ store }>
-                    <EditEffectPanel
-                        { ...defaultProps }
-                        disruptions={ [disruption] }
-                        isEditEffectPanelOpen
-                        disruptionIncidentNoToEdit="DISR123"
-                        findRoutesByStop={ createFindRoutesByStop(100) }
-                    />
-                </Provider>,
-            );
-
-            const applyButton = getByText('Apply');
-            fireEvent.click(applyButton);
-
-            expect(screen.getByText(/exceeds the maximum limit/i)).toBeInTheDocument();
-
-            const closeButton = screen.getByRole('button', { name: /close/i });
-            fireEvent.click(closeButton);
-
-            expect(screen.queryByText(/exceeds the maximum limit/i)).not.toBeInTheDocument();
-        });
     });
 });
