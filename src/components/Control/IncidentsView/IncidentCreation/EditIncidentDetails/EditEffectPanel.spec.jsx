@@ -1013,6 +1013,14 @@ describe('Confirmation Component', () => {
             },
         });
 
+        const createFindRoutesByStop = (stopsCount) => {
+            const findRoutesByStop = {};
+            for (let i = 0; i < stopsCount; i++) {
+                findRoutesByStop[`STOP${i}`] = [];
+            }
+            return findRoutesByStop;
+        };
+
         it('should show alert modal when entities exceed 200 limit on workaround panel open', () => {
             const disruption = createDisruptionWithEntities(150, 100);
             const { getByText } = render(
@@ -1022,6 +1030,7 @@ describe('Confirmation Component', () => {
                         disruptions={ [disruption] }
                         isEditEffectPanelOpen
                         disruptionIncidentNoToEdit="DISR123"
+                        findRoutesByStop={ createFindRoutesByStop(100) }
                     />
                 </Provider>,
             );
@@ -1041,6 +1050,7 @@ describe('Confirmation Component', () => {
                         disruptions={ [disruption] }
                         isEditEffectPanelOpen
                         disruptionIncidentNoToEdit="DISR123"
+                        findRoutesByStop={ createFindRoutesByStop(50) }
                     />
                 </Provider>,
             );
@@ -1060,6 +1070,7 @@ describe('Confirmation Component', () => {
                         disruptions={ [disruption] }
                         isEditEffectPanelOpen
                         disruptionIncidentNoToEdit="DISR123"
+                        findRoutesByStop={ createFindRoutesByStop(100) }
                     />
                 </Provider>,
             );
@@ -1079,6 +1090,7 @@ describe('Confirmation Component', () => {
                         disruptions={ [disruption] }
                         isEditEffectPanelOpen
                         disruptionIncidentNoToEdit="DISR123"
+                        findRoutesByStop={ createFindRoutesByStop(50) }
                     />
                 </Provider>,
             );
@@ -1104,6 +1116,7 @@ describe('Confirmation Component', () => {
                         disruptions={ [disruption] }
                         isEditEffectPanelOpen
                         disruptionIncidentNoToEdit="DISR123"
+                        findRoutesByStop={ {} }
                     />
                 </Provider>,
             );
@@ -1126,6 +1139,7 @@ describe('Confirmation Component', () => {
                         disruptions={ [disruption] }
                         isEditEffectPanelOpen
                         disruptionIncidentNoToEdit="DISR123"
+                        findRoutesByStop={ {} }
                     />
                 </Provider>,
             );
@@ -1145,6 +1159,7 @@ describe('Confirmation Component', () => {
                         disruptions={ [disruption] }
                         isEditEffectPanelOpen
                         disruptionIncidentNoToEdit="DISR123"
+                        findRoutesByStop={ {} }
                     />
                 </Provider>,
             );

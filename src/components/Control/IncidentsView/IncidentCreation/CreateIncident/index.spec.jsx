@@ -1347,6 +1347,17 @@ describe('CreateIncident component', () => {
     });
 
     describe('Entity Limit Validation', () => {
+        let wrapper;
+        const mockUpdateCurrentStep = jest.fn();
+        const mockCreateNewIncident = jest.fn();
+        const mockOpenCreateIncident = jest.fn();
+        const mockToggleIncidentModals = jest.fn();
+        const mockUpdateIncident = jest.fn();
+        const mockUpdateAffectedStopsState = jest.fn();
+        const mockUpdateAffectedRoutesState = jest.fn();
+        const mockGetRoutesByShortName = jest.fn();
+        const mockUpdateEditMode = jest.fn();
+
         const createDisruptionWithEntities = (routesCount, stopsCount) => ({
             key: 'DISR123',
             impact: 'CANCELLATIONS',
