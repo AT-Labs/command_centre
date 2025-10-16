@@ -1417,21 +1417,24 @@ describe('CreateIncident component', () => {
                 ...defaultIncidentData,
                 disruptions: [disruption],
             };
+            const theme = createTheme();
             wrapper = shallow(
-                <CreateIncident
-                    updateCurrentStep={ mockUpdateCurrentStep }
-                    createNewIncident={ mockCreateNewIncident }
-                    openCreateIncident={ mockOpenCreateIncident }
-                    toggleIncidentModals={ mockToggleIncidentModals }
-                    action={ mockAction }
-                    incidentToEdit={ incidentData }
-                    editMode={ EDIT_TYPE.CREATE }
-                    updateIncident={ mockUpdateIncident }
-                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
-                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
-                    getRoutesByShortName={ mockGetRoutesByShortName }
-                    updateEditMode={ mockUpdateEditMode }
-                />,
+                <ThemeProvider theme={ theme }>
+                    <CreateIncident
+                        updateCurrentStep={ mockUpdateCurrentStep }
+                        createNewIncident={ mockCreateNewIncident }
+                        openCreateIncident={ mockOpenCreateIncident }
+                        toggleIncidentModals={ mockToggleIncidentModals }
+                        action={ mockAction }
+                        incidentToEdit={ incidentData }
+                        editMode={ EDIT_TYPE.CREATE }
+                        updateIncident={ mockUpdateIncident }
+                        updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                        updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                        getRoutesByShortName={ mockGetRoutesByShortName }
+                        updateEditMode={ mockUpdateEditMode }
+                    />
+                </ThemeProvider>,
             );
 
             wrapper.instance().onSubmit();
@@ -1447,21 +1450,24 @@ describe('CreateIncident component', () => {
                 ...defaultIncidentData,
                 disruptions: [disruption],
             };
+            const theme = createTheme();
             wrapper = shallow(
-                <CreateIncident
-                    updateCurrentStep={ mockUpdateCurrentStep }
-                    createNewIncident={ mockCreateNewIncident }
-                    openCreateIncident={ mockOpenCreateIncident }
-                    toggleIncidentModals={ mockToggleIncidentModals }
-                    action={ mockAction }
-                    incidentToEdit={ incidentData }
-                    editMode={ EDIT_TYPE.CREATE }
-                    updateIncident={ mockUpdateIncident }
-                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
-                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
-                    getRoutesByShortName={ mockGetRoutesByShortName }
-                    updateEditMode={ mockUpdateEditMode }
-                />,
+                <ThemeProvider theme={ theme }>
+                    <CreateIncident
+                        updateCurrentStep={ mockUpdateCurrentStep }
+                        createNewIncident={ mockCreateNewIncident }
+                        openCreateIncident={ mockOpenCreateIncident }
+                        toggleIncidentModals={ mockToggleIncidentModals }
+                        action={ mockAction }
+                        incidentToEdit={ incidentData }
+                        editMode={ EDIT_TYPE.CREATE }
+                        updateIncident={ mockUpdateIncident }
+                        updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                        updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                        getRoutesByShortName={ mockGetRoutesByShortName }
+                        updateEditMode={ mockUpdateEditMode }
+                    />
+                </ThemeProvider>,
             );
 
             wrapper.instance().onSubmit();

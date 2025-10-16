@@ -1034,6 +1034,7 @@ describe('Confirmation Component', () => {
                 byweekday: [0],
             },
             severity: 'MINOR',
+            notes: [],
             affectedEntities: {
                 affectedRoutes: Array(routesCount).fill().map((_, i) => ({
                     category: { type: 'route', icon: '', label: 'Routes' },
