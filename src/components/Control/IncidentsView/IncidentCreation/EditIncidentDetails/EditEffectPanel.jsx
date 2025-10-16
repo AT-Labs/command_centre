@@ -14,7 +14,17 @@ import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 import HistoryIcon from '@mui/icons-material/History';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
-import { MAX_NUMBER_OF_ENTITIES,
+import { isEditEffectPanelOpen,
+    getDisruptionKeyToEditEffect,
+    isWorkaroundPanelOpen,
+    isEditEffectUpdateRequested,
+    getRequestedDisruptionKeyToUpdateEditEffect,
+    isCancellationEffectModalOpen,
+    getMapDrawingEntities,
+} from '../../../../../redux/selectors/control/incidents';
+import { isLoading as isDataLoading } from '../../../../../redux/selectors/activity';
+import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
+import {
     LABEL_CUSTOMER_IMPACT,
     LABEL_START_DATE,
     DATE_FORMAT,
@@ -28,19 +38,7 @@ import { MAX_NUMBER_OF_ENTITIES,
     HEADER_MAX_LENGTH,
     LABEL_STATUS,
     LABEL_DISRUPTION_NOTES,
-    DESCRIPTION_NOTE_MAX_LENGTH } from '../../../../../constants/disruptions.js';
-import { getEntityCounts, generateSelectedText } from '../../../../../utils/control/incidents';
-import IncidentLimitModal from '../../Modals/IncidentLimitModal.jsx';
-import { isEditEffectPanelOpen,
-    getDisruptionKeyToEditEffect,
-    isWorkaroundPanelOpen,
-    isEditEffectUpdateRequested,
-    getRequestedDisruptionKeyToUpdateEditEffect,
-    isCancellationEffectModalOpen,
-    getMapDrawingEntities,
-} from '../../../../../redux/selectors/control/incidents';
-import { isLoading as isDataLoading } from '../../../../../redux/selectors/activity';
-import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
+    DESCRIPTION_NOTE_MAX_LENGTH } from '../../../../../constants/disruptions';
 import {
     isEndDateValid,
     isEndTimeValid,
@@ -151,8 +149,6 @@ export const EditEffectPanel = (props, ref) => {
     const [shouldRefetchDiversions, setShouldRefetchDiversions] = useState(false);
     const [isLoaderProtected, setIsLoaderProtected] = useState(false);
     const isMounted = useRef(true);
-    const [totalEntities, setTotalEntities] = useState(0);
-    const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
 
     const initDisruptionData = () => {
         const disruptionToSet = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
@@ -469,15 +465,6 @@ export const EditEffectPanel = (props, ref) => {
     };
 
     const openWorkaroundPanel = () => {
-        if (disruption?.affectedEntities) {
-            const { entitiesCount } = getEntityCounts(disruption);
-            if (entitiesCount > MAX_NUMBER_OF_ENTITIES) {
-                setTotalEntities(entitiesCount);
-                setIsAlertModalOpen(true);
-                return;
-            }
-        }
-
         props.setDisruptionForWorkaroundEdit(disruption);
         props.updateDisruptionKeyToWorkaroundEdit(props.disruptionIncidentNoToEdit);
         props.toggleWorkaroundPanel(true);
@@ -524,21 +511,7 @@ export const EditEffectPanel = (props, ref) => {
         updateDisruption({ note: '' });
     };
 
-    const validateEntityLimit = () => {
-        const { entitiesCount } = getEntityCounts(disruption);
-        if (entitiesCount > MAX_NUMBER_OF_ENTITIES) {
-            setTotalEntities(entitiesCount);
-            setIsAlertModalOpen(true);
-            return false;
-        }
-        return true;
-    };
-
     const onSubmit = () => {
-        if (!validateEntityLimit()) {
-            return;
-        }
-
         props.applyDisruptionChanges(disruption);
         props.toggleEditEffectPanel(false);
         props.updateDisruptionKeyToEditEffect('');
@@ -841,11 +814,6 @@ export const EditEffectPanel = (props, ref) => {
 
         return <div>Failed to load disruption data.</div>;
     }
-
-    const itemsSelectedText = () => {
-        const { routesCount, stopsCount } = getEntityCounts(disruption);
-        return generateSelectedText(routesCount, stopsCount);
-    };
 
     return (
         <div className={ `edit-effect-panel ${!props.isEditEffectPanelOpen ? 'pointer-event-none' : ''}` }>
@@ -1279,13 +1247,6 @@ export const EditEffectPanel = (props, ref) => {
                     diversions={ localDiversions }
                 />
             )}
-            <IncidentLimitModal
-                isOpen={ isAlertModalOpen }
-                onClose={ () => setIsAlertModalOpen(false) }
-                totalEntities={ totalEntities }
-                itemsSelectedText={ itemsSelectedText() }
-                maxLimit={ MAX_NUMBER_OF_ENTITIES }
-            />
         </div>
     );
 };

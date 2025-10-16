@@ -16,6 +16,7 @@ import {
     getCachedShapes,
     getCachedRoutesToStops,
     getCachedStopsToRoutes,
+    getRoutesByStop as getRoutesByStopSelector,
     getSourceIncidentNo,
     getEditMode,
 } from '../../selectors/control/disruptions';
@@ -320,8 +321,9 @@ export const getRoutesByStop = stops => async (dispatch, getState) => {
         const allRoutes = getAllRoutes(state);
         const cachedShapes = getCachedShapes(state);
         const cachedStopsToRoutes = getCachedStopsToRoutes(state);
+        const existingRoutesByStop = getRoutesByStopSelector(state);
 
-        const routesByStop = {};
+        const routesByStop = { ...existingRoutesByStop };
 
         const missingStops = [];
         const missingCacheShapes = {};
