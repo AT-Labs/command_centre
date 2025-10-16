@@ -611,13 +611,13 @@ describe('<SelectEffects />', () => {
             const disruption = createDisruptionWithEntities(150, 100);
             const props = {
                 ...componentPropsMock,
-                data: { ...data, disruptions: [disruption] }
+                data: { ...data, disruptions: [disruption] },
             };
             wrapper = setup(props);
-            
+
             const footer = wrapper.find(Footer);
             footer.renderProp('onContinue')();
-            
+
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(true);
             expect(wrapper.find('IncidentLimitModal').prop('totalEntities')).toBe(250);
         });
@@ -626,13 +626,13 @@ describe('<SelectEffects />', () => {
             const disruption = createDisruptionWithEntities(100, 50);
             const props = {
                 ...componentPropsMock,
-                data: { ...data, disruptions: [disruption] }
+                data: { ...data, disruptions: [disruption] },
             };
             wrapper = setup(props);
-            
+
             const footer = wrapper.find(Footer);
             footer.renderProp('onContinue')();
-            
+
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
         });
 
@@ -640,13 +640,13 @@ describe('<SelectEffects />', () => {
             const disruption = createDisruptionWithEntities(100, 100);
             const props = {
                 ...componentPropsMock,
-                data: { ...data, disruptions: [disruption] }
+                data: { ...data, disruptions: [disruption] },
             };
             wrapper = setup(props);
-            
+
             const footer = wrapper.find(Footer);
             footer.renderProp('onContinue')();
-            
+
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
         });
 
@@ -654,13 +654,13 @@ describe('<SelectEffects />', () => {
             const disruption = createDisruptionWithEntities(150, 100);
             const props = {
                 ...componentPropsMock,
-                data: { ...data, disruptions: [disruption] }
+                data: { ...data, disruptions: [disruption] },
             };
             wrapper = setup(props);
-            
+
             const footer = wrapper.find(Footer);
             footer.renderProp('onAdditionalFinishButtonClick')();
-            
+
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(true);
             expect(wrapper.find('IncidentLimitModal').prop('totalEntities')).toBe(250);
         });
@@ -669,13 +669,13 @@ describe('<SelectEffects />', () => {
             const disruption = createDisruptionWithEntities(100, 50);
             const props = {
                 ...componentPropsMock,
-                data: { ...data, disruptions: [disruption] }
+                data: { ...data, disruptions: [disruption] },
             };
             wrapper = setup(props);
-            
+
             const footer = wrapper.find(Footer);
             footer.renderProp('onAdditionalFinishButtonClick')();
-            
+
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
         });
 
@@ -689,13 +689,13 @@ describe('<SelectEffects />', () => {
             };
             const props = {
                 ...componentPropsMock,
-                data: { ...data, disruptions: [disruption] }
+                data: { ...data, disruptions: [disruption] },
             };
             wrapper = setup(props);
-            
+
             const footer = wrapper.find(Footer);
             footer.renderProp('onContinue')();
-            
+
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
         });
 
@@ -703,18 +703,18 @@ describe('<SelectEffects />', () => {
             const disruption = createDisruptionWithEntities(150, 100);
             const props = {
                 ...componentPropsMock,
-                data: { ...data, disruptions: [disruption] }
+                data: { ...data, disruptions: [disruption] },
             };
             wrapper = setup(props);
-            
+
             const footer = wrapper.find(Footer);
             footer.renderProp('onContinue')();
-            
+
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(true);
-            
+
             const modal = wrapper.find('IncidentLimitModal');
             modal.prop('onClose')();
-            
+
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
         });
     });
