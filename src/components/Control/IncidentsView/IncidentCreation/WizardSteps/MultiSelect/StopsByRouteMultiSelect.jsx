@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { uniqBy, isEmpty } from 'lodash-es';
@@ -15,23 +15,17 @@ export const StopsByRouteMultiSelect = (props) => {
 
     const [expandedRoutes, setExpandedRoutes] = useState({});
     const [expandedRouteDirections, setExpandedRouteDirections] = useState({});
+    const [loadedStopsByRoute, setLoadedStopsByRoute] = useState([]);
 
-    const stopsByRouteCache = useMemo(() => ({}), []);
-
+    // loadedStopsByRoute are updated when a route is expanded - this triggers a JIT fetch of all stops for the routes
     useEffect(() => {
-        if (props.findStopsByRoute) {
-            Object.keys(props.findStopsByRoute).forEach((routeId) => {
-                if (props.findStopsByRoute[routeId] && !stopsByRouteCache[routeId]) {
-                    stopsByRouteCache[routeId] = props.findStopsByRoute[routeId];
-                }
-            });
-        }
-    }, [props.findStopsByRoute, stopsByRouteCache]);
+        props.getStopsByRoute(loadedStopsByRoute);
+    }, [loadedStopsByRoute]);
 
     const isRouteActive = route => !!expandedRoutes[route.routeId];
     const isRouteDirectionActive = (route, direction) => !!expandedRouteDirections[`${route.routeId}-${direction}`];
 
-    const toggleExpandedItem = useCallback((itemIdToToggle, expandedItems, setExpandedItems) => {
+    const toggleExpandedItem = (itemIdToToggle, expandedItems, setExpandedItems) => {
         const currentItems = { ...expandedItems };
         if (!expandedItems[itemIdToToggle]) {
             currentItems[itemIdToToggle] = true;
@@ -40,20 +34,18 @@ export const StopsByRouteMultiSelect = (props) => {
             delete currentItems[itemIdToToggle];
             setExpandedItems(currentItems);
         }
-    }, []);
-
-    const toggleExpandedRoute = useCallback((route) => {
+    };
+    const toggleExpandedRoute = (route) => {
         toggleExpandedItem(route.routeId, expandedRoutes, setExpandedRoutes);
-
-        if (!stopsByRouteCache[route.routeId] && !props.findStopsByRoute[route.routeId]) {
-            props.getStopsByRoute([route]);
+        if (!loadedStopsByRoute.find(item => item.routeId === route.routeId)) {
+            setLoadedStopsByRoute([...loadedStopsByRoute, route]);
         }
-    }, [expandedRoutes, stopsByRouteCache, props.findStopsByRoute, props.getStopsByRoute, toggleExpandedItem]);
-    const toggleExpandedRouteDirection = useCallback((route, direction) => toggleExpandedItem(`${route.routeId}-${direction}`, expandedRouteDirections, setExpandedRouteDirections), [expandedRouteDirections, toggleExpandedItem]);
+    };
+    const toggleExpandedRouteDirection = (route, direction) => toggleExpandedItem(`${route.routeId}-${direction}`, expandedRouteDirections, setExpandedRouteDirections);
 
     const createStopWithRoute = (stop, route) => ({ ...route, ...stop });
 
-    const toggleStopsByRoute = useCallback((route, stop, isChecked) => {
+    const toggleStopsByRoute = (route, stop, isChecked) => {
         let updatedRoutes = affectedRoutes;
         const routeList = updatedRoutes.filter(updatedRoute => updatedRoute.routeId === route.routeId);
 
@@ -82,9 +74,9 @@ export const StopsByRouteMultiSelect = (props) => {
             }
         }
         props.updateAffectedRoutes([...updatedRoutes]);
-    }, [affectedRoutes, props.updateAffectedRoutes, createStopWithRoute, filterOnlyRouteParams]);
+    };
 
-    const toggleAllStopsByRouteDirection = useCallback((route, direction, stopsByRouteDirection, isChecked) => {
+    const toggleAllStopsByRouteDirection = (route, direction, stopsByRouteDirection, isChecked) => {
         let updatedRoutes = affectedRoutes;
         const routeList = updatedRoutes.filter(updatedRoute => updatedRoute.routeId === route.routeId);
         const routeWithoutStop = filterOnlyRouteParams(route);
@@ -108,10 +100,10 @@ export const StopsByRouteMultiSelect = (props) => {
         }
 
         props.updateAffectedRoutes(updatedRoutes);
-    }, [affectedRoutes, props.updateAffectedRoutes, createStopWithRoute, filterOnlyRouteParams]);
+    };
 
-    const renderStopsCheckboxByRouteDirection = useCallback((route, direction) => {
-        const stopsByRoute = stopsByRouteCache[route.routeId] || props.findStopsByRoute[route.routeId];
+    const renderStopsCheckboxByRouteDirection = (route, direction) => {
+        const stopsByRoute = props.findStopsByRoute[route.routeId];
 
         const stopsByRouteDirection = stopsByRoute.filter(stop => `${stop.directionId}` === `${direction}`);
 
@@ -194,9 +186,9 @@ export const StopsByRouteMultiSelect = (props) => {
         }
 
         return groupedStopsByRouteDirectionHTML;
-    }, [stopsByRouteCache, props.findStopsByRoute, affectedRoutes, props.isDisabled, toggleStopsByRoute, toggleAllStopsByRouteDirection, groupStopsByRouteElementByParentStation]);
+    };
 
-    const renderStopsByRouteDirection = useCallback((route, direction) => {
+    const renderStopsByRouteDirection = (route, direction) => {
         const directionText = DIRECTIONS[direction];
 
         return (
@@ -212,10 +204,10 @@ export const StopsByRouteMultiSelect = (props) => {
                 { renderStopsCheckboxByRouteDirection(route, direction) }
             </ExpandableList>
         );
-    }, [isRouteDirectionActive, toggleExpandedRouteDirection, props.isDisabled, renderStopsCheckboxByRouteDirection]);
+    };
 
-    const renderStopsByRoute = useCallback((route) => {
-        const stopsByRoute = stopsByRouteCache[route.routeId] || props.findStopsByRoute[route.routeId];
+    const renderStopsByRoute = (route) => {
+        const stopsByRoute = props.findStopsByRoute[route.routeId];
 
         if (!stopsByRoute) {
             return [(<li key="-1"><Loader className="loader-disruptions loader-disruptions-list" /></li>)];
@@ -228,7 +220,7 @@ export const StopsByRouteMultiSelect = (props) => {
         return Object.keys(DIRECTIONS)
             .filter(direction => stopsByRoute.some(stop => `${stop.directionId}` === `${direction}`))
             .map(direction => renderStopsByRouteDirection(route, direction));
-    }, [stopsByRouteCache, props.findStopsByRoute, renderStopsByRouteDirection]);
+    };
 
     return (
         uniqBy(affectedRoutes, route => route.routeId).map(route => (

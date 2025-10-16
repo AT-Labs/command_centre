@@ -321,7 +321,7 @@ const DisruptionDetailView = (props) => {
         if (status === STATUSES.DRAFT && props.useDraftDisruptions) {
             return false;
         }
-        return status === STATUSES.RESOLVED || (recurrent && disruption.status !== STATUSES.NOT_STARTED);
+        return status === STATUSES.RESOLVED || (recurrent && disruption.status !== STATUSES.NOT_STARTED && disruption.status !== STATUSES.DRAFT);
     };
 
     const startTimeValid = () => {
@@ -577,7 +577,7 @@ const DisruptionDetailView = (props) => {
             ...setDisruption(),
             status: STATUSES.NOT_STARTED,
         };
-        await props.actions.publishDraftDisruption(updatedDisruption, diversions);
+        await props.actions.publishDraftDisruption(updatedDisruption);
     };
 
     return (
@@ -590,6 +590,8 @@ const DisruptionDetailView = (props) => {
                         addDiversionAction={ addDiversion }
                         isEditDisabled={ isRequesting || isLoading || isResolved() || isReadOnlyMode }
                         affectedEntities={ disruption.affectedEntities }
+                        startTime={ disruption.startTime }
+                        endTime={ disruption.endTime }
                         showViewWorkaroundsButton
                         viewWorkaroundsAction={ () => setIsViewWorkaroundsModalOpen(true) }
                         showViewPassengerImpactButton={ props.usePassengerImpact }
@@ -940,7 +942,6 @@ const DisruptionDetailView = (props) => {
                                         isLoading
                                             ? []
                                             : disruption.affectedEntities.filter(entity => entity.stopCode).slice(0, 10).map(stop => itemToEntityTransformers[STOP.type](stop).data)
-
                                     }
                                     size={ 28 }
                                     tooltip
