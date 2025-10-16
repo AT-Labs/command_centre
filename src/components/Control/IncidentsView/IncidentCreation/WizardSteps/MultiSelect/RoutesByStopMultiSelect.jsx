@@ -6,8 +6,8 @@ import { ExpandableList } from '../../../../../Common/Expandable';
 import { EntityCheckbox } from '../EntityCheckbox';
 import Loader from '../../../../../Common/Loader/Loader';
 import { filterOnlyStopParams } from '../../../../../../utils/control/disruptions';
-import { getRoutesByStopData as findRoutesByStop } from '../../../../../../redux/selectors/control/disruptions';
-import { getRoutesByStop } from '../../../../../../redux/actions/control/disruptions';
+import { getRoutesByStop as findRoutesByStop } from '../../../../../../redux/selectors/control/incidents';
+import { getRoutesByStop } from '../../../../../../redux/actions/control/incidents';
 
 export const RoutesByStopMultiSelect = (props) => {
     const { className, removeAction, affectedStops } = props;
@@ -17,11 +17,13 @@ export const RoutesByStopMultiSelect = (props) => {
     const routesByStopCache = useMemo(() => ({}), []);
 
     useEffect(() => {
-        Object.keys(props.findRoutesByStop).forEach(stopCode => {
-            if (props.findRoutesByStop[stopCode] && !routesByStopCache[stopCode]) {
-                routesByStopCache[stopCode] = props.findRoutesByStop[stopCode];
-            }
-        });
+        if (props.findRoutesByStop) {
+            Object.keys(props.findRoutesByStop).forEach((stopCode) => {
+                if (props.findRoutesByStop[stopCode] && !routesByStopCache[stopCode]) {
+                    routesByStopCache[stopCode] = props.findRoutesByStop[stopCode];
+                }
+            });
+        }
     }, [props.findRoutesByStop, routesByStopCache]);
 
     const affectedSingleStops = affectedStops.filter(entity => !entity.groupId);

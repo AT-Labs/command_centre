@@ -19,11 +19,13 @@ export const StopsByRouteMultiSelect = (props) => {
     const stopsByRouteCache = useMemo(() => ({}), []);
 
     useEffect(() => {
-        Object.keys(props.findStopsByRoute).forEach(routeId => {
-            if (props.findStopsByRoute[routeId] && !stopsByRouteCache[routeId]) {
-                stopsByRouteCache[routeId] = props.findStopsByRoute[routeId];
-            }
-        });
+        if (props.findStopsByRoute) {
+            Object.keys(props.findStopsByRoute).forEach((routeId) => {
+                if (props.findStopsByRoute[routeId] && !stopsByRouteCache[routeId]) {
+                    stopsByRouteCache[routeId] = props.findStopsByRoute[routeId];
+                }
+            });
+        }
     }, [props.findStopsByRoute, stopsByRouteCache]);
 
     const isRouteActive = route => !!expandedRoutes[route.routeId];
@@ -42,7 +44,7 @@ export const StopsByRouteMultiSelect = (props) => {
 
     const toggleExpandedRoute = useCallback((route) => {
         toggleExpandedItem(route.routeId, expandedRoutes, setExpandedRoutes);
-        
+
         if (!stopsByRouteCache[route.routeId] && !props.findStopsByRoute[route.routeId]) {
             props.getStopsByRoute([route]);
         }
