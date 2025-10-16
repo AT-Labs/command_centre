@@ -889,7 +889,7 @@ const mockRecurrentDisruption1 = {
     endTime: '',
     duration: '3',
     recurrencePattern: {
-        byweekday: [2, 4, 6],
+        byweekday: [2, 4, 6, null],
         dtstart: '2025-10-02T16:23:00.000Z',
         freq: 2,
         until: '2025-10-11T16:23:00.000Z',
@@ -923,7 +923,7 @@ const mockRecurrentIncident = {
     header: 'test incident n0827',
     version: 1,
     recurrencePattern: {
-        byweekday: [2],
+        byweekday: [2, null],
         dtstart: '2025-10-03T16:23:00.000Z',
         freq: 2,
         until: '2025-10-10T16:23:00.000Z',
