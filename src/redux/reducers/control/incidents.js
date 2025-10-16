@@ -123,8 +123,6 @@ const handleUpdateAffectedEntities = (state, { payload }) => ({ ...state, affect
 const handleUpdateCachedShapes = (state, { payload }) => ({ ...state, cachedShapes: { ...state.cachedShapes, ...payload.shapes } });
 const handleUpdateCachedRoutesToStops = (state, { payload }) => ({ ...state, cachedRoutesToStops: { ...state.cachedRoutesToStops, ...payload.routesToStops } });
 const handleUpdateCachedStopsToRoutes = (state, { payload }) => ({ ...state, cachedStopsToRoutes: { ...state.cachedStopsToRoutes, ...payload.stopsToRoutes } });
-const handleUpdateStopsByRoute = (state, { payload: { stopsByRoute, isLoadingStopsByRoute } }) => ({ ...state, stopsByRoute, isLoadingStopsByRoute });
-const handleUpdateRoutesByStop = (state, { payload: { routesByStop, isLoadingRoutesByStop } }) => ({ ...state, routesByStop, isLoadingRoutesByStop });
 
 const handleShowRoutes = (state, { payload: { showSelectedRoutes } }) => ({ ...state, showSelectedRoutes });
 const handleIncidentModal = (state, { payload: { type, isOpen } }) => ({
@@ -132,6 +130,8 @@ const handleIncidentModal = (state, { payload: { type, isOpen } }) => ({
     [type]: isOpen,
 });
 const handleUpdateCurrentStep = (state, { payload: { activeStep } }) => ({ ...state, activeStep });
+const handleUpdateStopsByRoute = (state, { payload: { stopsByRoute, isLoadingStopsByRoute } }) => ({ ...state, stopsByRoute, isLoadingStopsByRoute });
+const handleUpdateRoutesByStop = (state, { payload: { routesByStop, isLoadingRoutesByStop } }) => ({ ...state, routesByStop, isLoadingRoutesByStop });
 const handleAffectedEntities = (state, { payload: {
     showSelectedRoutes,
     affectedEntities,

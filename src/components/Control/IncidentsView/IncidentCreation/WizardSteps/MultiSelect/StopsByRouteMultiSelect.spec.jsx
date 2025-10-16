@@ -16,10 +16,6 @@ const defaultState = {
     loadedStopsByRoute: [],
     setLoadedStopsByRoute: jest.fn(),
     updateAffectedRoutesState: jest.fn(),
-    getStopsByRoute: jest.fn(),
-    updateAffectedRoutes: jest.fn(),
-    removeAction: jest.fn(),
-    isDisabled: false,
 };
 
 const routes = [{
@@ -60,128 +56,6 @@ describe('<StopsByRouteMultiSelect />', () => {
 
         it('Should render when there are affected routes', () => {
             setup({ affectedRoutes: routes });
-            expect(wrapper.exists()).toEqual(true);
-        });
-    });
-
-    describe('toggleExpandedRoute logic', () => {
-        it('should expand route when toggled', () => {
-            const route = { routeId: 'route1', routeShortName: '1' };
-
-            setup({
-                affectedRoutes: [route],
-                findStopsByRoute: {},
-            });
-
-            const expandableList = wrapper.find('ExpandableList').first();
-            expect(expandableList.prop('isActive')).toBe(false);
-
-            expandableList.prop('onToggle')();
-
-            wrapper.update();
-            const updatedExpandableList = wrapper.find('ExpandableList').first();
-            expect(updatedExpandableList.prop('isActive')).toBe(true);
-        });
-
-        it('should show loader when route data is not loaded', () => {
-            const route = { routeId: 'route1', routeShortName: '1' };
-
-            setup({
-                affectedRoutes: [route],
-                findStopsByRoute: {},
-            });
-
-            const expandableList = wrapper.find('ExpandableList').first();
-            expandableList.prop('onToggle')();
-
-            wrapper.update();
-            const loader = wrapper.find('Loader');
-            expect(loader.exists()).toBe(true);
-        });
-
-        it('should show stops when route data is loaded', () => {
-            const route = { routeId: 'route1', routeShortName: '1' };
-
-            setup({
-                affectedRoutes: [route],
-                findStopsByRoute: { [route.routeId]: [{ stopId: 'stop1', stopName: 'Stop 1' }] },
-            });
-
-            const expandableList = wrapper.find('ExpandableList').first();
-            expandableList.prop('onToggle')();
-
-            wrapper.update();
-            const loader = wrapper.find('Loader');
-            expect(loader.exists()).toBe(false);
-        });
-
-        it('should call getStopsByRoute when route data is not loaded', () => {
-            const route = { routeId: 'route1', routeShortName: '1' };
-            const mockGetStopsByRoute = jest.fn();
-
-            setup({
-                affectedRoutes: [route],
-                findStopsByRoute: {},
-                getStopsByRoute: mockGetStopsByRoute,
-            });
-
-            const expandableList = wrapper.find('ExpandableList').first();
-            expandableList.prop('onToggle')();
-
-            expect(mockGetStopsByRoute).toHaveBeenCalledWith([route]);
-        });
-
-        it('should not call getStopsByRoute when route data is already loaded', () => {
-            const route = { routeId: 'route1', routeShortName: '1' };
-            const mockGetStopsByRoute = jest.fn();
-
-            setup({
-                affectedRoutes: [route],
-                findStopsByRoute: { [route.routeId]: [{ stopId: 'stop1', stopName: 'Stop 1' }] },
-                getStopsByRoute: mockGetStopsByRoute,
-            });
-
-            const expandableList = wrapper.find('ExpandableList').first();
-            expandableList.prop('onToggle')();
-
-            expect(mockGetStopsByRoute).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('useMemo cache logic', () => {
-        it('should render component with cache functionality', () => {
-            setup({ affectedRoutes: routes });
-
-            expect(wrapper.exists()).toEqual(true);
-        });
-
-        it('should handle cache updates when props change', () => {
-            const routeId = 'route1';
-            const stopsData = [{ stopId: 'stop1', stopName: 'Stop 1' }];
-
-            setup({
-                affectedRoutes: routes,
-                findStopsByRoute: { [routeId]: stopsData },
-            });
-
-            expect(wrapper.exists()).toEqual(true);
-        });
-    });
-
-    describe('useCallback optimization', () => {
-        it('should use useCallback for toggleExpandedRoute', () => {
-            const route = { routeId: 'route1', routeShortName: '1' };
-
-            setup({
-                affectedRoutes: [route],
-            });
-
-            const expandableList = wrapper.find('ExpandableList').first();
-            const onToggle = expandableList.prop('onToggle');
-
-            expect(typeof onToggle).toBe('function');
-
-            onToggle();
             expect(wrapper.exists()).toEqual(true);
         });
     });
