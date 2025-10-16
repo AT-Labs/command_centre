@@ -3,6 +3,7 @@ import { shallow, mount } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { RRule } from 'rrule';
 import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
@@ -1489,22 +1490,26 @@ describe('CreateIncident component', () => {
                 },
             });
             
+            const theme = createTheme();
+            
             wrapper = mount(
                 <Provider store={ store }>
-                    <CreateIncident
-                        updateCurrentStep={ mockUpdateCurrentStep }
-                        createNewIncident={ mockCreateNewIncident }
-                        openCreateIncident={ mockOpenCreateIncident }
-                        toggleIncidentModals={ mockToggleIncidentModals }
-                        action={ mockAction }
-                        incidentToEdit={ incidentData }
-                        editMode={ EDIT_TYPE.CREATE }
-                        updateIncident={ mockUpdateIncident }
-                        updateAffectedStopsState={ mockUpdateAffectedStopsState }
-                        updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
-                        getRoutesByShortName={ mockGetRoutesByShortName }
-                        updateEditMode={ mockUpdateEditMode }
-                    />
+                    <ThemeProvider theme={ theme }>
+                        <CreateIncident
+                            updateCurrentStep={ mockUpdateCurrentStep }
+                            createNewIncident={ mockCreateNewIncident }
+                            openCreateIncident={ mockOpenCreateIncident }
+                            toggleIncidentModals={ mockToggleIncidentModals }
+                            action={ mockAction }
+                            incidentToEdit={ incidentData }
+                            editMode={ EDIT_TYPE.CREATE }
+                            updateIncident={ mockUpdateIncident }
+                            updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                            updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                            getRoutesByShortName={ mockGetRoutesByShortName }
+                            updateEditMode={ mockUpdateEditMode }
+                        />
+                    </ThemeProvider>
                 </Provider>,
             );
 

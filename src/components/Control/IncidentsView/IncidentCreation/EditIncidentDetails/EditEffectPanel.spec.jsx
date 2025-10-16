@@ -1014,6 +1014,7 @@ describe('Confirmation Component', () => {
     describe('Entity Limit Validation', () => {
         const createDisruptionWithEntities = (routesCount, stopsCount) => ({
             key: 'DISR123',
+            incidentNo: 'DISR123',
             impact: 'CANCELLATIONS',
             startTime: '06:00',
             startDate: '10/06/2025',
