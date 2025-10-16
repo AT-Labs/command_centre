@@ -3,7 +3,6 @@ export const DESCRIPTION_MAX_LENGTH = 5000;
 export const DESCRIPTION_NOTE_MAX_LENGTH = 5000;
 export const HEADER_MAX_LENGTH = 150;
 export const URL_MAX_LENGTH = 250;
-export const MAX_NUMBER_OF_ENTITIES = 200;
 export const TIME_FORMAT = 'HH:mm';
 export const DATE_FORMAT = 'DD/MM/YYYY';
 export const DATE_TIME_FORMAT = 'DD/MM/YYYY HH:mm';

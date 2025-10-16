@@ -139,7 +139,6 @@ describe('Confirmation Component', () => {
         updateIsEffectUpdatedState: jest.fn(),
         updateEffectValidationForPublishState: jest.fn(),
         onDisruptionChange: jest.fn(),
-        findRoutesByStop: {},
     };
 
     beforeEach(() => {
@@ -217,19 +216,7 @@ describe('Confirmation Component', () => {
                         requestedDisruptionKeyToUpdateEditEffect: '',
                         isCancellationEffectOpen: false,
                         stopsByRoute: {},
-                        routesByStop: (() => {
-                            const routesByStop = {};
-                            for (let i = 0; i < 200; i++) {
-                                routesByStop[`STOP${i}`] = [
-                                    {
-                                        routeId: `ROUTE-${i}`,
-                                        routeShortName: `ROUTE${i}`,
-                                        routeType: 2,
-                                    }
-                                ];
-                            }
-                            return routesByStop;
-                        })(),
+                        routesByStop: {},
                         cachedStopsToRoutes: {},
                         cachedRoutesToStops: {},
                     },
@@ -238,15 +225,6 @@ describe('Confirmation Component', () => {
                         isStopGroupsLoading: false,
                     },
                 },
-            disruptions: {
-              routesByStop: (() => {
-                const routesByStop = {};
-                for (let i = 0; i < 200; i++) {
-                  routesByStop[`STOP${i}`] = [];
-                }
-                return routesByStop;
-              })(),
-            },
             static: {
                 stops: [],
                 routes: [],
@@ -1007,200 +985,6 @@ describe('Confirmation Component', () => {
             fireEvent.click(viewButton);
 
             expect(queryByText('View & Edit Diversions')).not.toBeInTheDocument();
-        });
-    });
-
-    describe('Entity Limit Validation', () => {
-        const createDisruptionWithEntities = (routesCount, stopsCount) => ({
-            ...mockDisruption,
-            affectedEntities: {
-                affectedRoutes: Array(routesCount).fill().map((_, i) => ({
-                    category: { type: 'route', icon: '', label: 'Routes' },
-                    labelKey: 'routeShortName',
-                    routeId: `ROUTE-${i}`,
-                    routeShortName: `ROUTE${i}`,
-                    routeType: 2,
-                    text: `ROUTE${i}`,
-                    type: 'route',
-                    valueKey: 'routeId',
-                })),
-                affectedStops: Array(stopsCount).fill().map((_, i) => ({
-                    category: { type: 'stop', icon: '', label: 'Stops' },
-                    labelKey: 'stopCode',
-                    stopCode: `STOP${i}`,
-                    stopName: `Stop ${i}`,
-                    type: 'stop',
-                    valueKey: 'stopCode',
-                })),
-            },
-        });
-
-        const createFindRoutesByStop = (stopsCount) => {
-            const findRoutesByStop = {};
-            for (let i = 0; i < stopsCount; i++) {
-                findRoutesByStop[`STOP${i}`] = [
-                    {
-                        routeId: `ROUTE-${i}`,
-                        routeShortName: `ROUTE${i}`,
-                        routeType: 2,
-                    }
-                ];
-            }
-            return findRoutesByStop;
-        };
-
-        it('should show alert modal when entities exceed 200 limit on workaround panel open', () => {
-            const disruption = createDisruptionWithEntities(150, 100);
-            const { getByText } = render(
-                <Provider store={ store }>
-                    <EditEffectPanel
-                        { ...defaultProps }
-                        disruptions={ [disruption] }
-                        isEditEffectPanelOpen
-                        disruptionIncidentNoToEdit="DISR123"
-                        findRoutesByStop={ createFindRoutesByStop(100) }
-                    />
-                </Provider>,
-            );
-
-            const workaroundButton = getByText('Workarounds');
-            fireEvent.click(workaroundButton);
-
-            expect(screen.getByText(/exceeds the maximum limit/i)).toBeInTheDocument();
-        });
-
-        it('should not show alert modal when entities are within 200 limit on workaround panel open', () => {
-            const disruption = createDisruptionWithEntities(100, 50);
-            const { getByText } = render(
-                <Provider store={ store }>
-                    <EditEffectPanel
-                        { ...defaultProps }
-                        disruptions={ [disruption] }
-                        isEditEffectPanelOpen
-                        disruptionIncidentNoToEdit="DISR123"
-                        findRoutesByStop={ createFindRoutesByStop(50) }
-                    />
-                </Provider>,
-            );
-
-            const workaroundButton = getByText('Workarounds');
-            fireEvent.click(workaroundButton);
-
-            expect(screen.queryByText(/exceeds the maximum limit/i)).not.toBeInTheDocument();
-        });
-
-        it('should show alert modal when entities exceed 200 limit on apply', () => {
-            const disruption = createDisruptionWithEntities(150, 100);
-            const { getByText } = render(
-                <Provider store={ store }>
-                    <EditEffectPanel
-                        { ...defaultProps }
-                        disruptions={ [disruption] }
-                        isEditEffectPanelOpen
-                        disruptionIncidentNoToEdit="DISR123"
-                        findRoutesByStop={ createFindRoutesByStop(100) }
-                    />
-                </Provider>,
-            );
-
-            const applyButton = getByText('Apply');
-            fireEvent.click(applyButton);
-
-            expect(screen.getByText(/exceeds the maximum limit/i)).toBeInTheDocument();
-        });
-
-        it('should not show alert modal when entities are within 200 limit on apply', () => {
-            const disruption = createDisruptionWithEntities(100, 50);
-            const { getByText } = render(
-                <Provider store={ store }>
-                    <EditEffectPanel
-                        { ...defaultProps }
-                        disruptions={ [disruption] }
-                        isEditEffectPanelOpen
-                        disruptionIncidentNoToEdit="DISR123"
-                        findRoutesByStop={ createFindRoutesByStop(50) }
-                    />
-                </Provider>,
-            );
-
-            const applyButton = getByText('Apply');
-            fireEvent.click(applyButton);
-
-            expect(screen.queryByText(/exceeds the maximum limit/i)).not.toBeInTheDocument();
-        });
-
-        it('should handle empty affected entities', () => {
-            const disruption = {
-                ...mockDisruption,
-                affectedEntities: {
-                    affectedRoutes: [],
-                    affectedStops: [],
-                },
-            };
-            const { getByText } = render(
-                <Provider store={ store }>
-                    <EditEffectPanel
-                        { ...defaultProps }
-                        disruptions={ [disruption] }
-                        isEditEffectPanelOpen
-                        disruptionIncidentNoToEdit="DISR123"
-                        findRoutesByStop={ {} }
-                    />
-                </Provider>,
-            );
-
-            const applyButton = getByText('Apply');
-            fireEvent.click(applyButton);
-
-            expect(screen.queryByText(/exceeds the maximum limit/i)).not.toBeInTheDocument();
-        });
-
-        it('should handle null affected entities', () => {
-            const disruption = {
-                ...mockDisruption,
-                affectedEntities: null,
-            };
-            const { getByText } = render(
-                <Provider store={ store }>
-                    <EditEffectPanel
-                        { ...defaultProps }
-                        disruptions={ [disruption] }
-                        isEditEffectPanelOpen
-                        disruptionIncidentNoToEdit="DISR123"
-                        findRoutesByStop={ {} }
-                    />
-                </Provider>,
-            );
-
-            const applyButton = getByText('Apply');
-            fireEvent.click(applyButton);
-
-            expect(screen.queryByText(/exceeds the maximum limit/i)).not.toBeInTheDocument();
-        });
-
-        it('should close modal when onClose is called', () => {
-            const disruption = createDisruptionWithEntities(150, 100);
-            const { getByText } = render(
-                <Provider store={ store }>
-                    <EditEffectPanel
-                        { ...defaultProps }
-                        disruptions={ [disruption] }
-                        isEditEffectPanelOpen
-                        disruptionIncidentNoToEdit="DISR123"
-                        findRoutesByStop={ createFindRoutesByStop(100) }
-                    />
-                </Provider>,
-            );
-
-            const applyButton = getByText('Apply');
-            fireEvent.click(applyButton);
-
-            expect(screen.getByText(/exceeds the maximum limit/i)).toBeInTheDocument();
-
-            const closeButton = screen.getByRole('button', { name: /close/i });
-            fireEvent.click(closeButton);
-
-            expect(screen.queryByText(/exceeds the maximum limit/i)).not.toBeInTheDocument();
         });
     });
 });
