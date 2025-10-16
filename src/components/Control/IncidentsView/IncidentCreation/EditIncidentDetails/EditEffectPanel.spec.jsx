@@ -1012,6 +1012,49 @@ describe('Confirmation Component', () => {
     });
 
     describe('Entity Limit Validation', () => {
+        const createDisruptionWithEntities = (routesCount, stopsCount) => ({
+            key: 'DISR123',
+            impact: 'CANCELLATIONS',
+            startTime: '06:00',
+            startDate: '10/06/2025',
+            endTime: '09:00',
+            endDate: '20/06/2025',
+            cause: 'CONGESTION',
+            mode: '-',
+            status: 'not-started',
+            header: 'Incident Title',
+            createNotification: false,
+            recurrent: true,
+            duration: '2',
+            recurrencePattern: {
+                freq: 2,
+                dtstart: new Date('2025-06-10T06:00:00.000Z'),
+                until: new Date('2025-06-20T09:00:00.000Z'),
+                byweekday: [0],
+            },
+            severity: 'MINOR',
+            affectedEntities: {
+                affectedRoutes: Array(routesCount).fill().map((_, i) => ({
+                    category: { type: 'route', icon: '', label: 'Routes' },
+                    labelKey: 'routeShortName',
+                    routeId: `ROUTE-${i}`,
+                    routeShortName: `ROUTE${i}`,
+                    routeType: 2,
+                    text: `ROUTE${i}`,
+                    type: 'route',
+                    valueKey: 'routeId',
+                })),
+                affectedStops: Array(stopsCount).fill().map((_, i) => ({
+                    category: { type: 'stop', icon: '', label: 'Stops' },
+                    labelKey: 'stopCode',
+                    stopCode: `STOP${i}`,
+                    stopName: `Stop ${i}`,
+                    type: 'stop',
+                    valueKey: 'stopCode',
+                })),
+            },
+        });
+
         it('should handle empty affected entities', () => {
             const disruption = {
                 ...mockDisruption,
