@@ -1,5 +1,8 @@
 import React from 'react';
 import { shallow, mount } from 'enzyme';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import thunk from 'redux-thunk';
 import { RRule } from 'rrule';
 import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
@@ -1470,21 +1473,41 @@ describe('CreateIncident component', () => {
                 ...defaultIncidentData,
                 disruptions: [disruption],
             };
+            
+            const store = configureStore({
+                reducer: {
+                    control: {
+                        incidents: {
+                            routesByStop: (() => {
+                                const routesByStop = {};
+                                for (let i = 0; i < 200; i++) {
+                                    routesByStop[`STOP${i}`] = [];
+                                }
+                                return routesByStop;
+                            })(),
+                        },
+                    },
+                },
+                middleware: [thunk],
+            });
+            
             wrapper = mount(
-                <CreateIncident
-                    updateCurrentStep={ mockUpdateCurrentStep }
-                    createNewIncident={ mockCreateNewIncident }
-                    openCreateIncident={ mockOpenCreateIncident }
-                    toggleIncidentModals={ mockToggleIncidentModals }
-                    action={ mockAction }
-                    incidentToEdit={ incidentData }
-                    editMode={ EDIT_TYPE.CREATE }
-                    updateIncident={ mockUpdateIncident }
-                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
-                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
-                    getRoutesByShortName={ mockGetRoutesByShortName }
-                    updateEditMode={ mockUpdateEditMode }
-                />,
+                <Provider store={ store }>
+                    <CreateIncident
+                        updateCurrentStep={ mockUpdateCurrentStep }
+                        createNewIncident={ mockCreateNewIncident }
+                        openCreateIncident={ mockOpenCreateIncident }
+                        toggleIncidentModals={ mockToggleIncidentModals }
+                        action={ mockAction }
+                        incidentToEdit={ incidentData }
+                        editMode={ EDIT_TYPE.CREATE }
+                        updateIncident={ mockUpdateIncident }
+                        updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                        updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                        getRoutesByShortName={ mockGetRoutesByShortName }
+                        updateEditMode={ mockUpdateEditMode }
+                    />
+                </Provider>,
             );
 
             wrapper.instance().onSubmit();
