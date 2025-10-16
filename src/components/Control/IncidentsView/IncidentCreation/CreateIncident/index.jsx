@@ -8,8 +8,7 @@ import { connect } from 'react-redux';
 import { Button } from 'reactstrap';
 import { RRule } from 'rrule';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
-import { DATE_FORMAT, TIME_FORMAT, MAX_NUMBER_OF_ENTITIES } from '../../../../../constants/disruptions';
-import { getEntityCounts, generateSelectedText, getShapes, getRouteColors } from '../../../../../utils/control/incidents';
+import { DATE_FORMAT, TIME_FORMAT } from '../../../../../constants/disruptions';
 import {
     createNewIncident,
     openCreateIncident,
@@ -61,7 +60,6 @@ import {
     getStatusForEffect,
 } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
-import IncidentLimitModal from '../../Modals/IncidentLimitModal';
 import '../../../../Common/OffCanvasLayout/OffCanvasLayout.scss';
 import SidePanel from '../../../../Common/OffCanvasLayout/SidePanel/SidePanel';
 import Wizard from '../../../../Common/wizard/Wizard';
@@ -92,6 +90,7 @@ import WorkaroundPanel from '../WizardSteps/WorkaroundPanel';
 import EditEffectPanel from '../EditIncidentDetails/EditEffectPanel';
 import ApplyChangesModal from '../EditIncidentDetails/ApplyChangesModal';
 import PublishAndApplyChangesModal from '../EditIncidentDetails/PublishAndApplyChangesModal';
+import { getShapes, getRouteColors } from '../../../../../utils/control/incidents';
 
 const INIT_STATE = {
     startTime: '',
@@ -138,8 +137,6 @@ export class CreateIncident extends React.Component {
             isEffectUpdated: false,
             newIncidentEffect: {},
             selectedEffect: null,
-            isAlertModalOpen: false,
-            totalEntities: 0,
             effectToBeCleared: null,
             disruptionToEdit: null,
         };
@@ -393,13 +390,8 @@ export class CreateIncident extends React.Component {
     };
 
     onSubmit = async () => {
-        const { incidentData } = this.state;
-
-        if (!this.validateEntityLimits(incidentData.disruptions)) {
-            return;
-        }
-
         this.toggleModal('Confirmation', true);
+        const { incidentData } = this.state;
 
         const startDate = incidentData.startDate ? incidentData.startDate : moment(incidentData.startTime).format(DATE_FORMAT);
         const startTimeMoment = momentFromDateTime(startDate, incidentData.startTime);
@@ -421,10 +413,6 @@ export class CreateIncident extends React.Component {
     onSubmitDraft = async () => {
         this.props.updateCurrentStep(1);
         const { incidentData } = this.state;
-
-        if (!this.validateEntityLimits(incidentData.disruptions)) {
-            return;
-        }
         const startDate = incidentData.startDate ? incidentData.startDate : moment(incidentData.startTime).format(DATE_FORMAT);
         const startTimeMoment = momentFromDateTime(startDate, incidentData.startTime);
         let endTimeMoment;
@@ -480,31 +468,7 @@ export class CreateIncident extends React.Component {
         this.props.toggleIncidentModals('isConfirmationOpen', true);
     };
 
-    validateEntityLimits = (disruptions) => {
-        const disruptionList = Array.isArray(disruptions) ? disruptions : [disruptions];
-
-        const hasExceededLimit = disruptionList.some((disruption) => {
-            if (disruption?.affectedEntities) {
-                const { entitiesCount } = getEntityCounts(disruption);
-                if (entitiesCount > MAX_NUMBER_OF_ENTITIES) {
-                    this.setState({
-                        totalEntities: entitiesCount,
-                        isAlertModalOpen: true,
-                    });
-                    return true;
-                }
-            }
-            return false;
-        });
-
-        return !hasExceededLimit;
-    };
-
     onSubmitUpdate = async () => {
-        if (!this.validateEntityLimits(this.state.disruptionToEdit)) {
-            return;
-        }
-
         const { isEffectUpdated } = this.state;
         if (isEffectUpdated && this.props.isEditEffectPanelOpen) {
             this.props.toggleIncidentModals('isApplyChangesOpen', true);
@@ -777,14 +741,6 @@ export class CreateIncident extends React.Component {
         this.setState(prevState => ({ effectToBeCleared: prevState.selectedEffect }));
     };
 
-    itemsSelectedText = () => {
-        const { disruptionToEdit } = this.state;
-        if (!disruptionToEdit) return '';
-
-        const { routesCount, stopsCount } = getEntityCounts(disruptionToEdit);
-        return generateSelectedText(routesCount, stopsCount);
-    };
-
     render() {
         const {
             incidentData,
@@ -1026,13 +982,6 @@ export class CreateIncident extends React.Component {
                         onClose={ () => this.setState({ showAlert: false }) }
                     />
                 )}
-                <IncidentLimitModal
-                    isOpen={ this.state.isAlertModalOpen }
-                    onClose={ () => this.setState({ isAlertModalOpen: false }) }
-                    totalEntities={ this.state.totalEntities }
-                    itemsSelectedText={ this.itemsSelectedText() }
-                    maxLimit={ MAX_NUMBER_OF_ENTITIES }
-                />
             </div>
         );
     }
