@@ -14,10 +14,8 @@ export const RoutesByStopMultiSelect = (props) => {
 
     const [expandedStops, setExpandedStops] = useState({});
 
-    // Кэш для маршрутов по остановкам
     const routesByStopCache = useMemo(() => ({}), []);
 
-    // Обновляем кэш при изменении данных в Redux store
     useEffect(() => {
         Object.keys(props.findRoutesByStop).forEach(stopCode => {
             if (props.findRoutesByStop[stopCode] && !routesByStopCache[stopCode]) {
@@ -42,7 +40,6 @@ export const RoutesByStopMultiSelect = (props) => {
             setExpandedStops(currentItems);
         }
 
-        // Проверяем кэш и Redux store
         if (!routesByStopCache[stop.stopCode] && !props.findRoutesByStop[stop.stopCode]) {
             props.getRoutesByStop([stop]);
         }
@@ -111,7 +108,6 @@ export const RoutesByStopMultiSelect = (props) => {
     }, [affectedStops, saveStopsState, createRouteWithStop, filterOnlyStopParams]);
 
     const renderRoutesByStop = useCallback((stop) => {
-        // Сначала проверяем кэш, затем Redux store
         const routesByStop = routesByStopCache[stop.stopCode] || props.findRoutesByStop[stop.stopCode];
 
         if (!routesByStop) {

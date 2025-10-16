@@ -16,10 +16,8 @@ export const StopsByRouteMultiSelect = (props) => {
     const [expandedRoutes, setExpandedRoutes] = useState({});
     const [expandedRouteDirections, setExpandedRouteDirections] = useState({});
 
-    // Кэш для остановок по маршрутам
     const stopsByRouteCache = useMemo(() => ({}), []);
 
-    // Обновляем кэш при изменении данных в Redux store
     useEffect(() => {
         Object.keys(props.findStopsByRoute).forEach(routeId => {
             if (props.findStopsByRoute[routeId] && !stopsByRouteCache[routeId]) {
@@ -45,7 +43,6 @@ export const StopsByRouteMultiSelect = (props) => {
     const toggleExpandedRoute = useCallback((route) => {
         toggleExpandedItem(route.routeId, expandedRoutes, setExpandedRoutes);
         
-        // Проверяем кэш и Redux store
         if (!stopsByRouteCache[route.routeId] && !props.findStopsByRoute[route.routeId]) {
             props.getStopsByRoute([route]);
         }
@@ -112,7 +109,6 @@ export const StopsByRouteMultiSelect = (props) => {
     }, [affectedRoutes, props.updateAffectedRoutes, createStopWithRoute, filterOnlyRouteParams]);
 
     const renderStopsCheckboxByRouteDirection = useCallback((route, direction) => {
-        // Сначала проверяем кэш, затем Redux store
         const stopsByRoute = stopsByRouteCache[route.routeId] || props.findStopsByRoute[route.routeId];
 
         const stopsByRouteDirection = stopsByRoute.filter(stop => `${stop.directionId}` === `${direction}`);
@@ -217,7 +213,6 @@ export const StopsByRouteMultiSelect = (props) => {
     }, [isRouteDirectionActive, toggleExpandedRouteDirection, props.isDisabled, renderStopsCheckboxByRouteDirection]);
 
     const renderStopsByRoute = useCallback((route) => {
-        // Сначала проверяем кэш, затем Redux store
         const stopsByRoute = stopsByRouteCache[route.routeId] || props.findStopsByRoute[route.routeId];
 
         if (!stopsByRoute) {
