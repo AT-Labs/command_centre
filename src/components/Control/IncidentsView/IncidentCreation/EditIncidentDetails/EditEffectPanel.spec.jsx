@@ -1012,44 +1012,6 @@ describe('Confirmation Component', () => {
     });
 
     describe('Entity Limit Validation', () => {
-        const createDisruptionWithEntities = (routesCount, stopsCount) => ({
-            ...mockDisruption,
-            affectedEntities: {
-                affectedRoutes: Array(routesCount).fill().map((_, i) => ({
-                    category: { type: 'route', icon: '', label: 'Routes' },
-                    labelKey: 'routeShortName',
-                    routeId: `ROUTE-${i}`,
-                    routeShortName: `ROUTE${i}`,
-                    routeType: 2,
-                    text: `ROUTE${i}`,
-                    type: 'route',
-                    valueKey: 'routeId',
-                })),
-                affectedStops: Array(stopsCount).fill().map((_, i) => ({
-                    category: { type: 'stop', icon: '', label: 'Stops' },
-                    labelKey: 'stopCode',
-                    stopCode: `STOP${i}`,
-                    stopName: `Stop ${i}`,
-                    type: 'stop',
-                    valueKey: 'stopCode',
-                })),
-            },
-        });
-
-        const createFindRoutesByStop = (stopsCount) => {
-            const findRoutesByStop = {};
-            for (let i = 0; i < stopsCount; i++) {
-                findRoutesByStop[`STOP${i}`] = [
-                    {
-                        routeId: `ROUTE-${i}`,
-                        routeShortName: `ROUTE${i}`,
-                        routeType: 2,
-                    },
-                ];
-            }
-            return findRoutesByStop;
-        };
-
         it('should handle empty affected entities', () => {
             const disruption = {
                 ...mockDisruption,

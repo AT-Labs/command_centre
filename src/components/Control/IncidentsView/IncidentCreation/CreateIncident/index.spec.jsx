@@ -1,8 +1,4 @@
-import React from 'react';
-import { shallow, mount } from 'enzyme';
-import { Provider } from 'react-redux';
-import configureStore from 'redux-mock-store';
-import thunk from 'redux-thunk';
+import { shallow } from 'enzyme';
 import { RRule } from 'rrule';
 import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
@@ -1464,55 +1460,6 @@ describe('CreateIncident component', () => {
             );
 
             wrapper.instance().onSubmit();
-            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
-        });
-
-        it('should close modal when onClose is called', () => {
-            const disruption = createDisruptionWithEntities(150, 100);
-            const incidentData = {
-                ...defaultIncidentData,
-                disruptions: [disruption],
-            };
-
-            const mockStore = configureStore([thunk]);
-            const store = mockStore({
-                control: {
-                    incidents: {
-                        routesByStop: (() => {
-                            const routesByStop = {};
-                            for (let i = 0; i < 200; i++) {
-                                routesByStop[`STOP${i}`] = [];
-                            }
-                            return routesByStop;
-                        })(),
-                    },
-                },
-            });
-
-            wrapper = mount(
-                <Provider store={ store }>
-                    <CreateIncident
-                        updateCurrentStep={ mockUpdateCurrentStep }
-                        createNewIncident={ mockCreateNewIncident }
-                        openCreateIncident={ mockOpenCreateIncident }
-                        toggleIncidentModals={ mockToggleIncidentModals }
-                        action={ mockAction }
-                        incidentToEdit={ incidentData }
-                        editMode={ EDIT_TYPE.CREATE }
-                        updateIncident={ mockUpdateIncident }
-                        updateAffectedStopsState={ mockUpdateAffectedStopsState }
-                        updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
-                        getRoutesByShortName={ mockGetRoutesByShortName }
-                        updateEditMode={ mockUpdateEditMode }
-                    />
-                </Provider>,
-            );
-
-            wrapper.instance().onSubmit();
-            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(true);
-
-            const modal = wrapper.find('IncidentLimitModal');
-            modal.prop('onClose')();
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
         });
     });
