@@ -1,5 +1,4 @@
 import { getEntityCounts, generateSelectedText } from './incidents';
-import { MAX_NUMBER_OF_ENTITIES } from '../../constants/disruptions';
 
 describe('getEntityCounts', () => {
     it('should return zero counts for null disruption', () => {
@@ -7,7 +6,7 @@ describe('getEntityCounts', () => {
         expect(result).toEqual({
             routesCount: 0,
             stopsCount: 0,
-            entitiesCount: 0
+            entitiesCount: 0,
         });
     });
 
@@ -16,7 +15,7 @@ describe('getEntityCounts', () => {
         expect(result).toEqual({
             routesCount: 0,
             stopsCount: 0,
-            entitiesCount: 0
+            entitiesCount: 0,
         });
     });
 
@@ -26,7 +25,7 @@ describe('getEntityCounts', () => {
         expect(result).toEqual({
             routesCount: 0,
             stopsCount: 0,
-            entitiesCount: 0
+            entitiesCount: 0,
         });
     });
 
@@ -36,7 +35,7 @@ describe('getEntityCounts', () => {
         expect(result).toEqual({
             routesCount: 0,
             stopsCount: 0,
-            entitiesCount: 0
+            entitiesCount: 0,
         });
     });
 
@@ -45,20 +44,20 @@ describe('getEntityCounts', () => {
             affectedEntities: {
                 affectedRoutes: [
                     { id: 'route1', shortName: '1' },
-                    { id: 'route2', shortName: '2' }
+                    { id: 'route2', shortName: '2' },
                 ],
                 affectedStops: [
                     { id: 'stop1', stopCode: '1001' },
                     { id: 'stop2', stopCode: '1002' },
-                    { id: 'stop3', stopCode: '1003' }
-                ]
-            }
+                    { id: 'stop3', stopCode: '1003' },
+                ],
+            },
         };
         const result = getEntityCounts(disruption);
         expect(result).toEqual({
             routesCount: 2,
             stopsCount: 3,
-            entitiesCount: 5
+            entitiesCount: 5,
         });
     });
 
@@ -66,14 +65,14 @@ describe('getEntityCounts', () => {
         const disruption = {
             affectedEntities: {
                 affectedRoutes: [],
-                affectedStops: []
-            }
+                affectedStops: [],
+            },
         };
         const result = getEntityCounts(disruption);
         expect(result).toEqual({
             routesCount: 0,
             stopsCount: 0,
-            entitiesCount: 0
+            entitiesCount: 0,
         });
     });
 
@@ -81,14 +80,14 @@ describe('getEntityCounts', () => {
         const disruption = {
             affectedEntities: {
                 affectedRoutes: undefined,
-                affectedStops: undefined
-            }
+                affectedStops: undefined,
+            },
         };
         const result = getEntityCounts(disruption);
         expect(result).toEqual({
             routesCount: 0,
             stopsCount: 0,
-            entitiesCount: 0
+            entitiesCount: 0,
         });
     });
 
@@ -97,16 +96,16 @@ describe('getEntityCounts', () => {
             affectedEntities: {
                 affectedRoutes: [
                     { id: 'route1', shortName: '1' },
-                    { id: 'route2', shortName: '2' }
+                    { id: 'route2', shortName: '2' },
                 ],
-                affectedStops: []
-            }
+                affectedStops: [],
+            },
         };
         const result = getEntityCounts(disruption);
         expect(result).toEqual({
             routesCount: 2,
             stopsCount: 0,
-            entitiesCount: 2
+            entitiesCount: 2,
         });
     });
 
@@ -116,15 +115,15 @@ describe('getEntityCounts', () => {
                 affectedRoutes: [],
                 affectedStops: [
                     { id: 'stop1', stopCode: '1001' },
-                    { id: 'stop2', stopCode: '1002' }
-                ]
-            }
+                    { id: 'stop2', stopCode: '1002' },
+                ],
+            },
         };
         const result = getEntityCounts(disruption);
         expect(result).toEqual({
             routesCount: 0,
             stopsCount: 2,
-            entitiesCount: 2
+            entitiesCount: 2,
         });
     });
 });
