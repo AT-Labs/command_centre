@@ -1417,27 +1417,37 @@ describe('CreateIncident component', () => {
                 ...defaultIncidentData,
                 disruptions: [disruption],
             };
+            const mockStore = configureStore([thunk]);
+            const store = mockStore({
+                control: {
+                    incidents: {
+                        routesByStop: {},
+                    },
+                },
+            });
             const theme = createTheme();
-            wrapper = shallow(
-                <ThemeProvider theme={ theme }>
-                    <CreateIncident
-                        updateCurrentStep={ mockUpdateCurrentStep }
-                        createNewIncident={ mockCreateNewIncident }
-                        openCreateIncident={ mockOpenCreateIncident }
-                        toggleIncidentModals={ mockToggleIncidentModals }
-                        action={ mockAction }
-                        incidentToEdit={ incidentData }
-                        editMode={ EDIT_TYPE.CREATE }
-                        updateIncident={ mockUpdateIncident }
-                        updateAffectedStopsState={ mockUpdateAffectedStopsState }
-                        updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
-                        getRoutesByShortName={ mockGetRoutesByShortName }
-                        updateEditMode={ mockUpdateEditMode }
-                    />
-                </ThemeProvider>,
+            wrapper = mount(
+                <Provider store={ store }>
+                    <ThemeProvider theme={ theme }>
+                        <CreateIncident
+                            updateCurrentStep={ mockUpdateCurrentStep }
+                            createNewIncident={ mockCreateNewIncident }
+                            openCreateIncident={ mockOpenCreateIncident }
+                            toggleIncidentModals={ mockToggleIncidentModals }
+                            action={ mockAction }
+                            incidentToEdit={ incidentData }
+                            editMode={ EDIT_TYPE.CREATE }
+                            updateIncident={ mockUpdateIncident }
+                            updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                            updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                            getRoutesByShortName={ mockGetRoutesByShortName }
+                            updateEditMode={ mockUpdateEditMode }
+                        />
+                    </ThemeProvider>
+                </Provider>,
             );
 
-            wrapper.instance().onSubmit();
+            wrapper.find('CreateIncident').instance().onSubmit();
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
         });
 
@@ -1450,27 +1460,37 @@ describe('CreateIncident component', () => {
                 ...defaultIncidentData,
                 disruptions: [disruption],
             };
+            const mockStore = configureStore([thunk]);
+            const store = mockStore({
+                control: {
+                    incidents: {
+                        routesByStop: {},
+                    },
+                },
+            });
             const theme = createTheme();
-            wrapper = shallow(
-                <ThemeProvider theme={ theme }>
-                    <CreateIncident
-                        updateCurrentStep={ mockUpdateCurrentStep }
-                        createNewIncident={ mockCreateNewIncident }
-                        openCreateIncident={ mockOpenCreateIncident }
-                        toggleIncidentModals={ mockToggleIncidentModals }
-                        action={ mockAction }
-                        incidentToEdit={ incidentData }
-                        editMode={ EDIT_TYPE.CREATE }
-                        updateIncident={ mockUpdateIncident }
-                        updateAffectedStopsState={ mockUpdateAffectedStopsState }
-                        updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
-                        getRoutesByShortName={ mockGetRoutesByShortName }
-                        updateEditMode={ mockUpdateEditMode }
-                    />
-                </ThemeProvider>,
+            wrapper = mount(
+                <Provider store={ store }>
+                    <ThemeProvider theme={ theme }>
+                        <CreateIncident
+                            updateCurrentStep={ mockUpdateCurrentStep }
+                            createNewIncident={ mockCreateNewIncident }
+                            openCreateIncident={ mockOpenCreateIncident }
+                            toggleIncidentModals={ mockToggleIncidentModals }
+                            action={ mockAction }
+                            incidentToEdit={ incidentData }
+                            editMode={ EDIT_TYPE.CREATE }
+                            updateIncident={ mockUpdateIncident }
+                            updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                            updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                            getRoutesByShortName={ mockGetRoutesByShortName }
+                            updateEditMode={ mockUpdateEditMode }
+                        />
+                    </ThemeProvider>
+                </Provider>,
             );
 
-            wrapper.instance().onSubmit();
+            wrapper.find('CreateIncident').instance().onSubmit();
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
         });
 
