@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { uniqBy, isEmpty, sortBy, groupBy } from 'lodash-es';
@@ -13,18 +13,12 @@ export const RoutesByStopMultiSelect = (props) => {
     const { className, removeAction, affectedStops } = props;
 
     const [expandedStops, setExpandedStops] = useState({});
+    const [loadedRoutesByStop, setLoadedRoutesByStop] = useState([]);
 
-    const routesByStopCache = useMemo(() => ({}), []);
-
+    // loadedRoutesByStop are updated when a stop is expanded - this triggers a JIT fetch of all routes for the stops
     useEffect(() => {
-        if (props.findRoutesByStop) {
-            Object.keys(props.findRoutesByStop).forEach((stopCode) => {
-                if (props.findRoutesByStop[stopCode] && !routesByStopCache[stopCode]) {
-                    routesByStopCache[stopCode] = props.findRoutesByStop[stopCode];
-                }
-            });
-        }
-    }, [props.findRoutesByStop, routesByStopCache]);
+        props.getRoutesByStop(loadedRoutesByStop);
+    }, [loadedRoutesByStop]);
 
     const affectedSingleStops = affectedStops.filter(entity => !entity.groupId);
     const stopGroupStops = affectedStops.filter(entity => !!entity.groupId);
@@ -32,7 +26,7 @@ export const RoutesByStopMultiSelect = (props) => {
 
     const isStopActive = stop => !!expandedStops[stop.stopCode];
 
-    const toggleExpandedStop = useCallback((stop) => {
+    const toggleExpandedStop = (stop) => {
         const currentItems = { ...expandedStops };
         if (!expandedStops[stop.stopCode]) {
             currentItems[stop.stopCode] = true;
@@ -42,10 +36,10 @@ export const RoutesByStopMultiSelect = (props) => {
             setExpandedStops(currentItems);
         }
 
-        if (!routesByStopCache[stop.stopCode] && !props.findRoutesByStop[stop.stopCode]) {
-            props.getRoutesByStop([stop]);
+        if (!loadedRoutesByStop.find(item => item.stopCode === stop.stopCode)) {
+            setLoadedRoutesByStop([...loadedRoutesByStop, stop]);
         }
-    }, [expandedStops, routesByStopCache, props.findRoutesByStop, props.getRoutesByStop]);
+    };
 
     const saveStopsState = stops => props.updateAffectedStops(sortBy(stops, sortedStop => sortedStop.stopCode));
 
@@ -53,7 +47,7 @@ export const RoutesByStopMultiSelect = (props) => {
 
     const createRouteWithStop = (stop, route) => ({ ...stop, ...route });
 
-    const toggleRoutesByStop = useCallback((stop, route, isChecked) => {
+    const toggleRoutesByStop = (stop, route, isChecked) => {
         let updatedStops = affectedSingleStops;
         const stopList = updatedStops.filter(updatedStop => updatedStop.stopCode === stop.stopCode);
 
@@ -83,9 +77,9 @@ export const RoutesByStopMultiSelect = (props) => {
             }
         }
         saveStopsState([...flattenStopGroups(affectedStopGroups), ...updatedStops]);
-    }, [affectedSingleStops, affectedStopGroups, saveStopsState, flattenStopGroups, createRouteWithStop]);
+    };
 
-    const toggleAllRoutesByStop = useCallback((stop, routesByStop, isChecked) => {
+    const toggleAllRoutesByStop = (stop, routesByStop, isChecked) => {
         let updatedStops = affectedStops;
         const stopList = updatedStops.filter(updatedStop => updatedStop.stopCode === stop.stopCode);
         const stopWithoutRoute = filterOnlyStopParams(stop);
@@ -107,10 +101,10 @@ export const RoutesByStopMultiSelect = (props) => {
         }
 
         saveStopsState(sortBy(updatedStops, sortedStop => sortedStop.stopCode));
-    }, [affectedStops, saveStopsState, createRouteWithStop, filterOnlyStopParams]);
+    };
 
-    const renderRoutesByStop = useCallback((stop) => {
-        const routesByStop = routesByStopCache[stop.stopCode] || (props.findRoutesByStop && props.findRoutesByStop[stop.stopCode]);
+    const renderRoutesByStop = (stop) => {
+        const routesByStop = props.findRoutesByStop[stop.stopCode];
 
         if (!routesByStop) {
             return [(<li key="-1"><Loader className="loader-disruptions loader-disruptions-list" /></li>)];
@@ -152,7 +146,7 @@ export const RoutesByStopMultiSelect = (props) => {
         }
 
         return [routesByStopHTML];
-    }, [routesByStopCache, props.findRoutesByStop, affectedSingleStops, props.isDisabled, toggleRoutesByStop, toggleAllRoutesByStop]);
+    };
 
     return (
         uniqBy(affectedSingleStops, stop => stop.stopCode).map(stop => (

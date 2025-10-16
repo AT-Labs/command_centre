@@ -17,10 +17,6 @@ const defaultState = {
     loadedRoutesByStop: [],
     setLoadedRoutesByStop: jest.fn(),
     updateAffectedStopsState: jest.fn(),
-    getRoutesByStop: jest.fn(),
-    updateAffectedStops: jest.fn(),
-    removeAction: jest.fn(),
-    isDisabled: false,
 };
 
 const stops = [
@@ -95,113 +91,6 @@ describe('<RoutesByStopMultiSelect />', () => {
                 affectedStops: stops,
                 affectedSingleStops: stops,
             });
-            expect(wrapper.exists()).toEqual(true);
-        });
-    });
-
-    describe('toggleExpandedStop logic', () => {
-        it('should call getRoutesByStop when stop data is not loaded', () => {
-            const stop = { stopCode: 'stop1', stopName: 'Stop 1' };
-            const mockGetRoutesByStop = jest.fn();
-
-            setup({
-                affectedStops: [stop],
-                affectedSingleStops: [stop],
-                findRoutesByStop: {},
-                getRoutesByStop: mockGetRoutesByStop,
-            });
-
-            const expandableList = wrapper.find('ExpandableList').first();
-            expandableList.prop('onToggle')();
-
-            expect(mockGetRoutesByStop).toHaveBeenCalledWith([stop]);
-        });
-
-        it('should not call getRoutesByStop when stop data is already loaded', () => {
-            const stop = { stopCode: 'stop1', stopName: 'Stop 1' };
-            const mockGetRoutesByStop = jest.fn();
-
-            setup({
-                affectedStops: [stop],
-                affectedSingleStops: [stop],
-                findRoutesByStop: { [stop.stopCode]: [{ routeId: 'route1', routeShortName: '1' }] },
-                getRoutesByStop: mockGetRoutesByStop,
-            });
-
-            const expandableList = wrapper.find('ExpandableList').first();
-            expandableList.prop('onToggle')();
-
-            expect(mockGetRoutesByStop).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('useMemo cache logic', () => {
-        it('should copy routesByStop data to cache when data exists and not already cached', () => {
-            const mockRoutesByStop = {
-                stop1: [{ routeId: 'route1', routeShortName: '1' }],
-                stop2: [{ routeId: 'route2', routeShortName: '2' }],
-            };
-
-            setup({
-                affectedStops: stops,
-                findRoutesByStop: mockRoutesByStop,
-            });
-
-            expect(wrapper.exists()).toEqual(true);
-        });
-
-        it('should not copy routesByStop data when already cached', () => {
-            const mockRoutesByStop = {
-                stop1: [{ routeId: 'route1', routeShortName: '1' }],
-                stop2: [{ routeId: 'route2', routeShortName: '2' }],
-            };
-
-            setup({
-                affectedStops: stops,
-                findRoutesByStop: mockRoutesByStop,
-            });
-
-            expect(wrapper.exists()).toEqual(true);
-        });
-
-        it('should not copy routesByStop data when data does not exist', () => {
-            const mockRoutesByStop = {
-                stop1: null,
-                stop2: undefined,
-            };
-
-            setup({
-                affectedStops: stops,
-                findRoutesByStop: mockRoutesByStop,
-            });
-
-            expect(wrapper.exists()).toEqual(true);
-        });
-
-        it('should handle empty routesByStop data', () => {
-            setup({
-                affectedStops: stops,
-                findRoutesByStop: {},
-            });
-
-            expect(wrapper.exists()).toEqual(true);
-        });
-
-        it('should handle null findRoutesByStop prop', () => {
-            setup({
-                affectedStops: stops,
-                findRoutesByStop: null,
-            });
-
-            expect(wrapper.exists()).toEqual(true);
-        });
-
-        it('should handle undefined findRoutesByStop prop', () => {
-            setup({
-                affectedStops: stops,
-                findRoutesByStop: undefined,
-            });
-
             expect(wrapper.exists()).toEqual(true);
         });
     });
