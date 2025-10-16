@@ -1,3 +1,4 @@
+import React from 'react';
 import { shallow } from 'enzyme';
 import { RRule } from 'rrule';
 import { CreateIncident } from './index';
