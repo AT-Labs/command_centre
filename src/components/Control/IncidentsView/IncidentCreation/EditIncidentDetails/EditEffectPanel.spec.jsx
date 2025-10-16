@@ -1055,6 +1055,20 @@ describe('Confirmation Component', () => {
             },
         });
 
+        const createFindRoutesByStop = (stopsCount) => {
+            const findRoutesByStop = {};
+            for (let i = 0; i < stopsCount; i++) {
+                findRoutesByStop[`STOP${i}`] = [
+                    {
+                        routeId: `ROUTE-${i}`,
+                        routeShortName: `ROUTE${i}`,
+                        routeType: 2,
+                    },
+                ];
+            }
+            return findRoutesByStop;
+        };
+
         it('should handle empty affected entities', () => {
             const disruption = {
                 ...mockDisruption,
