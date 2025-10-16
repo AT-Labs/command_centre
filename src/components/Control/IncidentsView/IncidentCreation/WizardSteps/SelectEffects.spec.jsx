@@ -572,4 +572,167 @@ describe('<SelectEffects />', () => {
             });
         });
     });
+
+    describe('Entity Limit Validation', () => {
+        let data;
+
+        beforeEach(() => {
+            data = {
+                ...mockIncident,
+                disruptions: [{ ...mockDisruption }],
+            };
+        });
+
+        const createDisruptionWithEntities = (routesCount, stopsCount) => ({
+            ...mockDisruption,
+            affectedEntities: {
+                affectedRoutes: Array(routesCount).fill().map((_, i) => ({
+                    category: { type: 'route', icon: '', label: 'Routes' },
+                    labelKey: 'routeShortName',
+                    routeId: `ROUTE-${i}`,
+                    routeShortName: `ROUTE${i}`,
+                    routeType: 2,
+                    text: `ROUTE${i}`,
+                    type: 'route',
+                    valueKey: 'routeId',
+                })),
+                affectedStops: Array(stopsCount).fill().map((_, i) => ({
+                    category: { type: 'stop', icon: '', label: 'Stops' },
+                    labelKey: 'stopCode',
+                    stopCode: `STOP${i}`,
+                    stopName: `Stop ${i}`,
+                    type: 'stop',
+                    valueKey: 'stopCode',
+                })),
+            },
+        });
+
+        it('should show alert modal when entities exceed 200 limit', () => {
+            const disruption = createDisruptionWithEntities(150, 100);
+            const props = {
+                ...componentPropsMock,
+                data: { ...data, disruptions: [disruption] }
+            };
+            wrapper = setup(props);
+            
+            const footer = wrapper.find(Footer);
+            footer.renderProp('onContinue')();
+            
+            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(true);
+            expect(wrapper.find('IncidentLimitModal').prop('totalEntities')).toBe(250);
+        });
+
+        it('should not show alert modal when entities are within 200 limit', () => {
+            const disruption = createDisruptionWithEntities(100, 50);
+            const props = {
+                ...componentPropsMock,
+                data: { ...data, disruptions: [disruption] }
+            };
+            wrapper = setup(props);
+            
+            const footer = wrapper.find(Footer);
+            footer.renderProp('onContinue')();
+            
+            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
+        });
+
+        it('should show alert modal when entities are exactly 200', () => {
+            const disruption = createDisruptionWithEntities(100, 100);
+            const props = {
+                ...componentPropsMock,
+                data: { ...data, disruptions: [disruption] }
+            };
+            wrapper = setup(props);
+            
+            const footer = wrapper.find(Footer);
+            footer.renderProp('onContinue')();
+            
+            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
+        });
+
+        it('should show alert modal when entities exceed 200 limit on finish', () => {
+            const disruption = createDisruptionWithEntities(150, 100);
+            const props = {
+                ...componentPropsMock,
+                data: { ...data, disruptions: [disruption] }
+            };
+            wrapper = setup(props);
+            
+            const footer = wrapper.find(Footer);
+            footer.renderProp('onAdditionalFinishButtonClick')();
+            
+            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(true);
+            expect(wrapper.find('IncidentLimitModal').prop('totalEntities')).toBe(250);
+        });
+
+        it('should not show alert modal when entities are within 200 limit on finish', () => {
+            const disruption = createDisruptionWithEntities(100, 50);
+            const props = {
+                ...componentPropsMock,
+                data: { ...data, disruptions: [disruption] }
+            };
+            wrapper = setup(props);
+            
+            const footer = wrapper.find(Footer);
+            footer.renderProp('onAdditionalFinishButtonClick')();
+            
+            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
+        });
+
+        it('should handle empty affected entities', () => {
+            const disruption = {
+                ...mockDisruption,
+                affectedEntities: {
+                    affectedRoutes: [],
+                    affectedStops: [],
+                },
+            };
+            const props = {
+                ...componentPropsMock,
+                data: { ...data, disruptions: [disruption] }
+            };
+            wrapper = setup(props);
+            
+            const footer = wrapper.find(Footer);
+            footer.renderProp('onContinue')();
+            
+            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
+        });
+
+        it('should handle null affected entities', () => {
+            const disruption = {
+                ...mockDisruption,
+                affectedEntities: null,
+            };
+            const props = {
+                ...componentPropsMock,
+                data: { ...data, disruptions: [disruption] }
+            };
+            wrapper = setup(props);
+            
+            const footer = wrapper.find(Footer);
+            footer.renderProp('onContinue')();
+            
+            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
+        });
+
+        it('should close modal when onClose is called', () => {
+            const disruption = createDisruptionWithEntities(150, 100);
+            const props = {
+                ...componentPropsMock,
+                data: { ...data, disruptions: [disruption] }
+            };
+            wrapper = setup(props);
+            
+            const footer = wrapper.find(Footer);
+            footer.renderProp('onContinue')();
+            
+            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(true);
+            
+            const modal = wrapper.find('IncidentLimitModal');
+            modal.prop('onClose')();
+            
+            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
+        });
+    });
 });
