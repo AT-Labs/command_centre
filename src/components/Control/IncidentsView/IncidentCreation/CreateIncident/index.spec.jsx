@@ -5,6 +5,7 @@ import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import { updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { buildIncidentSubmitBody, momentFromDateTime, getStatusForEffect } from '../../../../../utils/control/disruptions';
+import { getEntityCounts } from '../../../../../utils/control/incidents';
 import { STATUSES, DISRUPTION_TYPE, getParentChildDefaultSeverity } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
@@ -1343,6 +1344,142 @@ describe('CreateIncident component', () => {
             await wrapper.instance().onPublishIncidentUpdate();
             expect(wrapper.state('incidentData').status).toEqual(STATUSES.NOT_STARTED);
             expect(mockToggleIncidentModals).toHaveBeenCalledWith('isPublishAndApplyChangesOpen', false);
+        });
+    });
+
+    describe('validateEntityLimits', () => {
+        let wrapper;
+        const mockUpdateCurrentStep = jest.fn();
+        const mockCreateNewIncident = jest.fn();
+        const mockOpenCreateIncident = jest.fn();
+        const mockToggleIncidentModals = jest.fn();
+
+        beforeEach(() => {
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                />,
+            );
+        });
+
+        afterEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('should return true when no disruptions exceed entity limit', () => {
+            const disruptions = [
+                {
+                    affectedEntities: {
+                        affectedRoutes: [{ routeId: '1' }],
+                        affectedStops: [{ stopId: '1' }],
+                    },
+                },
+            ];
+
+            // Mock getEntityCounts to return within limit
+            jest.spyOn({ getEntityCounts }, 'getEntityCounts')
+                .mockReturnValue({
+                    routesCount: 1,
+                    stopsCount: 1,
+                    entitiesCount: 2, // Less than MAX_NUMBER_OF_ENTITIES
+                });
+
+            const result = wrapper.instance().validateEntityLimits(disruptions);
+            expect(result).toBe(true);
+            expect(wrapper.state('isAlertModalOpen')).toBe(false);
+        });
+
+        it('should handle single disruption (not array)', () => {
+            const disruption = {
+                affectedEntities: {
+                    affectedRoutes: [{ routeId: '1' }],
+                    affectedStops: [{ stopId: '1' }],
+                },
+            };
+
+            // Mock getEntityCounts to return within limit
+            jest.spyOn({ getEntityCounts }, 'getEntityCounts')
+                .mockReturnValue({
+                    routesCount: 1,
+                    stopsCount: 1,
+                    entitiesCount: 2, // Less than MAX_NUMBER_OF_ENTITIES
+                });
+
+            const result = wrapper.instance().validateEntityLimits(disruption);
+            expect(result).toBe(true);
+        });
+
+        it('should handle disruptions without affectedEntities', () => {
+            const disruptions = [
+                { disruptionId: '1' },
+                { disruptionId: '2' },
+            ];
+
+            const result = wrapper.instance().validateEntityLimits(disruptions);
+            expect(result).toBe(true);
+        });
+    });
+
+    describe('IncidentLimitModal', () => {
+        let wrapper;
+        const mockUpdateCurrentStep = jest.fn();
+        const mockCreateNewIncident = jest.fn();
+        const mockOpenCreateIncident = jest.fn();
+        const mockToggleIncidentModals = jest.fn();
+
+        beforeEach(() => {
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                />,
+            );
+        });
+
+        afterEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('should render IncidentLimitModal when isAlertModalOpen is true', () => {
+            wrapper.setState({
+                isAlertModalOpen: true,
+                totalEntities: 10,
+            });
+
+            const modal = wrapper.find('IncidentLimitModal');
+            expect(modal).toHaveLength(1);
+            expect(modal.prop('isOpen')).toBe(true);
+            expect(modal.prop('totalEntities')).toBe(10);
+        });
+
+        it('should not render IncidentLimitModal when isAlertModalOpen is false', () => {
+            wrapper.setState({
+                isAlertModalOpen: false,
+            });
+
+            const modal = wrapper.find('IncidentLimitModal');
+            expect(modal).toHaveLength(1);
+            expect(modal.prop('isOpen')).toBe(false);
+        });
+
+        it('should call onClose when modal close is triggered', () => {
+            wrapper.setState({
+                isAlertModalOpen: true,
+            });
+
+            const modal = wrapper.find('IncidentLimitModal');
+            const onClose = modal.prop('onClose');
+
+            onClose();
+
+            expect(wrapper.state('isAlertModalOpen')).toBe(false);
         });
     });
 });
