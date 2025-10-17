@@ -686,15 +686,17 @@ export const SelectDetails = (props) => {
                         </div>
                         {filteredDisruptions.map(disruption => (
                             <li key={ disruption.key } className={ `disruption-effect-item ${props.disruptionIncidentNoToEdit === disruption.incidentNo ? 'active' : ''}` }>
-                                <p className="p-lr12-tb6 m-0 bold-text">{disruption.header}</p>
-                                <Button
-                                    className="btn cc-btn-link p-lr12-tb6 m-0 effect-link-btn"
-                                    onClick={ () => openEditEffectPanel(disruption) }>
-                                    <strong>{disruption.incidentNo}</strong>
-                                </Button>
-                                <p className="p-lr12-tb6 m-0">
-                                    {getImpactLabel(disruption.impact)}
-                                </p>
+                                <div>
+                                    <p className="p-lr12-tb6 m-0">{disruption.header}</p>
+                                    <Button
+                                        className="btn cc-btn-link p-lr12-tb6 m-0"
+                                        onClick={ () => openEditEffectPanel(disruption) }>
+                                        <strong>{disruption.incidentNo}</strong>
+                                    </Button>
+                                    <p className="p-lr12-tb6 m-0">
+                                        {getImpactLabel(disruption.impact)}
+                                    </p>
+                                </div>
                                 {disruption.affectedEntities.affectedRoutes && disruption.affectedEntities.affectedRoutes.length > 0 && (
                                     disruption.affectedEntities.affectedRoutes.filter((item, index, self) => index
                                     === self.findIndex(i => i.routeShortName === item.routeShortName))

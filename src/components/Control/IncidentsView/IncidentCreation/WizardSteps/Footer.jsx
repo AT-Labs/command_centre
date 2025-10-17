@@ -19,6 +19,7 @@ export const Footer = (props) => {
             <div className={ getColumnClassName() }>
                 { props.onBack && (
                     <Button
+                        /* className="btn cc-btn-link" */
                         className={ `btn cc-btn-link ${props.additionalFinishButton ? 'p-1' : ''}` }
                         onClick={ props.onBack }>
                         Go back
