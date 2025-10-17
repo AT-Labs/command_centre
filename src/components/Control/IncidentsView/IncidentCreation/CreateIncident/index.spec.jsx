@@ -1480,45 +1480,24 @@ describe('CreateIncident component', () => {
                 disruptions: [disruption],
             };
 
-            const mockStore = configureStore([thunk]);
-            const store = mockStore({
-                control: {
-                    incidents: {
-                        routesByStop: (() => {
-                            const routesByStop = {};
-                            for (let i = 0; i < 200; i++) {
-                                routesByStop[`STOP${i}`] = [];
-                            }
-                            return routesByStop;
-                        })(),
-                    },
-                },
-            });
-
-            wrapper = mount(
-                <Provider store={ store }>
-                    <CacheProvider value={ emotionCache }>
-                        <ThemeProvider theme={ theme }>
-                            <CreateIncident
-                                updateCurrentStep={ mockUpdateCurrentStep }
-                                createNewIncident={ mockCreateNewIncident }
-                                openCreateIncident={ mockOpenCreateIncident }
-                                toggleIncidentModals={ mockToggleIncidentModals }
-                                action={ mockAction }
-                                incidentToEdit={ incidentData }
-                                editMode={ EDIT_TYPE.CREATE }
-                                updateIncident={ mockUpdateIncident }
-                                updateAffectedStopsState={ mockUpdateAffectedStopsState }
-                                updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
-                                getRoutesByShortName={ mockGetRoutesByShortName }
-                                updateEditMode={ mockUpdateEditMode }
-                            />
-                        </ThemeProvider>
-                    </CacheProvider>
-                </Provider>,
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentData }
+                    editMode={ EDIT_TYPE.CREATE }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateEditMode={ mockUpdateEditMode }
+                />,
             );
 
-            wrapper.find('CreateIncident').instance().onSubmit();
+            wrapper.instance().onSubmit();
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(true);
             expect(wrapper.find('IncidentLimitModal').prop('totalEntities')).toBe(250);
         });
