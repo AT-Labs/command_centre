@@ -6,10 +6,10 @@
 }
 
 .leaflet-editing-icon {
-    margin-left: -2px !important;
-    margin-top: -2px !important;
-    height: .5rem !important;
-    width: .5rem !important;
+    margin-left: -5px !important;
+    margin-top: -5px !important;
+    height: .9rem !important;
+    width: .9rem !important;
     background-color: #DF332A !important;
     border-radius: 50% !important;
     display: inline-block !important;
@@ -23,4 +23,15 @@
     display: flex;
     gap: 10px;
     pointer-events: auto;
+}
+
+.route-shape-editor-bottom-right-panel {
+    position: absolute;
+    bottom: 20px;
+    right: 10px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, .95);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+    width: 300px;
 }

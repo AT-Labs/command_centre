@@ -265,7 +265,6 @@ const DisruptionDetailView = (props) => {
         setDescriptionNote('');
         const { notes: disruptionNotes } = disruption;
         if (disruptionNotes.length > 0) {
-            // NOSONAR: Node 14 does not support .at(-1), so we use [length - 1]. Should change this when we upgrade to Node 16+
             setLastNote(disruptionNotes[disruptionNotes.length - 1]);
         }
     }, [disruption.lastUpdatedTime, lastNote]);
@@ -321,7 +320,7 @@ const DisruptionDetailView = (props) => {
         if (status === STATUSES.DRAFT && props.useDraftDisruptions) {
             return false;
         }
-        return status === STATUSES.RESOLVED || (recurrent && disruption.status !== STATUSES.NOT_STARTED && disruption.status !== STATUSES.DRAFT);
+        return status === STATUSES.RESOLVED || (recurrent && disruption.status !== STATUSES.NOT_STARTED);
     };
 
     const startTimeValid = () => {
@@ -935,13 +934,13 @@ const DisruptionDetailView = (props) => {
                                 isLoading={ isLoading }
                             >
                                 <ShapeLayer
-                                    shapes={ isLoading ? [] : props.shapes }
-                                    routeColors={ isLoading ? [] : props.routeColors } />
+                                    shapes={ !isLoading ? props.shapes : [] }
+                                    routeColors={ !isLoading ? props.routeColors : [] } />
                                 <SelectedStopsMarker
                                     stops={
-                                        isLoading
-                                            ? []
-                                            : disruption.affectedEntities.filter(entity => entity.stopCode).slice(0, 10).map(stop => itemToEntityTransformers[STOP.type](stop).data)
+                                        !isLoading
+                                            ? disruption.affectedEntities.filter(entity => entity.stopCode).slice(0, 10).map(stop => itemToEntityTransformers[STOP.type](stop).data)
+                                            : []
                                     }
                                     size={ 28 }
                                     tooltip

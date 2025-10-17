@@ -4,8 +4,7 @@ import { RRule } from 'rrule';
 import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import { updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
-import { buildIncidentSubmitBody, momentFromDateTime, getStatusForEffect } from '../../../../../utils/control/disruptions';
-import { getEntityCounts } from '../../../../../utils/control/incidents';
+import { buildIncidentSubmitBody, momentFromDateTime } from '../../../../../utils/control/disruptions';
 import { STATUSES, DISRUPTION_TYPE, getParentChildDefaultSeverity } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
@@ -18,13 +17,7 @@ jest.mock('../../../../Common/Map/HighlightingLayer/HighlightingLayer', () => je
 
 jest.mock('../../../../Common/Map/StopsLayer/SelectedStopsMarker', () => jest.fn());
 
-jest.mock('../../../../Common/Map/RouteShapeEditor/RouteShapeEditor', () => () => <div data-testid="route-shape-editor" />);
-
-jest.mock('react-leaflet-draw', () => ({
-    EditControl: () => <div data-testid="edit-control" />,
-}));
-
-jest.mock('./DrawLayer', () => () => <div data-testid="draw-layer" />);
+jest.mock('./DrawLayer', () => jest.fn());
 
 jest.mock('../../../../Common/CustomModal/CustomModal', () => jest.fn());
 
@@ -37,16 +30,11 @@ const disruptionActivePeriodsMock = [
 const mockTimeForMoment = new Date('2025-08-21T20:27:00.000Z');
 const mockTimeForModalOpenedTime = new Date('2025-06-19T06:00:00.000Z');
 
-jest.mock('../../../../../utils/control/disruptions', () => {
-    const actual = jest.requireActual('../../../../../utils/control/disruptions');
-    return {
-        ...actual,
-        generateDisruptionActivePeriods: jest.fn().mockReturnValue(disruptionActivePeriodsMock),
-        buildIncidentSubmitBody: jest.fn(),
-        momentFromDateTime: jest.fn(),
-        getStatusForEffect: jest.fn(),
-    };
-});
+jest.mock('../../../../../utils/control/disruptions', () => ({
+    generateDisruptionActivePeriods: jest.fn().mockReturnValue(disruptionActivePeriodsMock),
+    buildIncidentSubmitBody: jest.fn(),
+    momentFromDateTime: jest.fn(),
+}));
 
 const defaultIncidentData = {
     startTime: '',
@@ -408,7 +396,6 @@ describe('CreateIncident component', () => {
         const mockSetDisruptionForWorkaroundEdit = jest.fn();
         const mockToggleWorkaroundPanel = jest.fn();
         const mockUpdateDisruptionKeyToWorkaroundEdit = jest.fn();
-        const mockToggleEditEffectPanel = jest.fn();
 
         beforeEach(() => {
             wrapper = shallow(
@@ -453,7 +440,6 @@ describe('CreateIncident component', () => {
                     updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
                     getRoutesByShortName={ mockGetRoutesByShortName }
                     isEditEffectPanelOpen
-                    toggleEditEffectPanel={ mockToggleEditEffectPanel }
                 />,
             );
             wrapper.setState({ isEffectUpdated: true });
@@ -820,7 +806,6 @@ describe('CreateIncident component', () => {
         });
 
         it('Should call updateIncident on add new effect with additional disruption', async () => {
-            getStatusForEffect.mockReturnValue({ status: STATUSES.IN_PROGRESS });
             const newDisruption = {
                 disruptionId: 139537,
                 incidentNo: 'DISR139537',
@@ -980,82 +965,6 @@ describe('CreateIncident component', () => {
             expect(mockUpdateIncident).toHaveBeenCalled();
         });
 
-        it('Should call updateIncident on add new effect with additional disruption for draft incident', async () => {
-            getStatusForEffect.mockReturnValue({ status: STATUSES.IN_PROGRESS });
-            const newDisruption = {
-                disruptionId: 139537,
-                incidentNo: 'DISR139537',
-                mode: '',
-                affectedEntities: [],
-                impact: 'ESCALATOR_NOT_WORKING',
-                cause: 'CONGESTION',
-                startTime: '2025-08-21T20:27:00.000Z',
-                endTime: null,
-                status: 'draft',
-                header: 'test incident n0827',
-                uploadedFiles: null,
-                createNotification: false,
-                exemptAffectedTrips: null,
-                version: 1,
-                duration: '',
-                activePeriods: [
-                    {
-                        startTime: 1755808020,
-                    },
-                ],
-                recurrencePattern: null,
-                recurrent: false,
-                workarounds: [],
-                notes: [],
-                severity: 'HEADLINE',
-                passengerCount: null,
-                incidentId: 139273,
-                incidentTitle: 'test draft n0827',
-                incidentDisruptionNo: 'CCD139273',
-                key: 'DISR139537',
-            };
-            const incident = {
-                ...incidentForEdit,
-                status: STATUSES.DRAFT,
-            };
-            wrapper = shallow(
-                <CreateIncident
-                    updateCurrentStep={ mockUpdateCurrentStep }
-                    createNewIncident={ mockCreateNewIncident }
-                    openCreateIncident={ mockOpenCreateIncident }
-                    toggleIncidentModals={ mockToggleIncidentModals }
-                    action={ mockAction }
-                    incidentToEdit={ incident }
-                    editMode={ EDIT_TYPE.EDIT }
-                    updateIncident={ mockUpdateIncident }
-                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
-                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
-                    getRoutesByShortName={ mockGetRoutesByShortName }
-                    isEditEffectPanelOpen
-                />,
-            );
-            wrapper.setProps({ editMode: EDIT_TYPE.ADD_EFFECT });
-            wrapper.setState(prevState => ({
-                ...prevState,
-                newIncidentEffect: {
-                    ...newDisruption,
-                },
-            }));
-            momentFromDateTime.mockReturnValue(mockTimeForMoment);
-            buildIncidentSubmitBody.mockReturnValue({});
-            await wrapper.instance().onSubmitUpdate();
-            expect(buildIncidentSubmitBody).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    disruptions: expect.arrayContaining([expect.anything()]),
-                }),
-                true,
-            );
-            const callArgs = buildIncidentSubmitBody.mock.calls[0][0];
-            expect(callArgs.disruptions).toHaveLength(2);
-            expect(mockUpdateIncident).toHaveBeenCalled();
-            expect(wrapper.state('incidentData').status).toEqual(STATUSES.DRAFT);
-        });
-
         it('Should update edit mode on addNewEffectToIncident call', async () => {
             wrapper = shallow(
                 <CreateIncident
@@ -1075,7 +984,6 @@ describe('CreateIncident component', () => {
                     updateDisruptionKeyToWorkaroundEdit={ mockUpdateDisruptionKeyToWorkaroundEdit }
                     toggleWorkaroundPanel={ mockToggleWorkaroundPanel }
                     setDisruptionForWorkaroundEdit={ mockSetDisruptionForWorkaroundEdit }
-                    toggleEditEffectPanel={ mockToggleEditEffectPanel }
                 />,
             );
             await wrapper.instance().addNewEffectToIncident();
@@ -1086,60 +994,6 @@ describe('CreateIncident component', () => {
             expect(mockUpdateAffectedRoutesState).toHaveBeenCalledWith([]);
             expect(mockUpdateEditMode).toHaveBeenCalledWith(EDIT_TYPE.ADD_EFFECT);
             expect(mockUpdateCurrentStep).toHaveBeenCalledWith(2);
-        });
-
-        it('Add effect button should not be disabled if incident not resolved', async () => {
-            wrapper = shallow(
-                <CreateIncident
-                    updateCurrentStep={ mockUpdateCurrentStep }
-                    createNewIncident={ mockCreateNewIncident }
-                    openCreateIncident={ mockOpenCreateIncident }
-                    toggleIncidentModals={ mockToggleIncidentModals }
-                    action={ mockAction }
-                    incidentToEdit={ incidentForEdit }
-                    editMode={ EDIT_TYPE.EDIT }
-                    updateIncident={ mockUpdateIncident }
-                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
-                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
-                    getRoutesByShortName={ mockGetRoutesByShortName }
-                    updateEditMode={ mockUpdateEditMode }
-                    isEditEffectPanelOpen
-                    updateDisruptionKeyToWorkaroundEdit={ mockUpdateDisruptionKeyToWorkaroundEdit }
-                    toggleWorkaroundPanel={ mockToggleWorkaroundPanel }
-                    setDisruptionForWorkaroundEdit={ mockSetDisruptionForWorkaroundEdit }
-                />,
-            );
-            const button = wrapper.find('button.add-effect-button');
-            expect(button.prop('disabled')).toBe(false);
-        });
-
-        it('Add effect button should be disabled if incident resolved', async () => {
-            const incident = {
-                ...incidentForEdit,
-                status: STATUSES.RESOLVED,
-            };
-            wrapper = shallow(
-                <CreateIncident
-                    updateCurrentStep={ mockUpdateCurrentStep }
-                    createNewIncident={ mockCreateNewIncident }
-                    openCreateIncident={ mockOpenCreateIncident }
-                    toggleIncidentModals={ mockToggleIncidentModals }
-                    action={ mockAction }
-                    incidentToEdit={ incident }
-                    editMode={ EDIT_TYPE.EDIT }
-                    updateIncident={ mockUpdateIncident }
-                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
-                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
-                    getRoutesByShortName={ mockGetRoutesByShortName }
-                    updateEditMode={ mockUpdateEditMode }
-                    isEditEffectPanelOpen
-                    updateDisruptionKeyToWorkaroundEdit={ mockUpdateDisruptionKeyToWorkaroundEdit }
-                    toggleWorkaroundPanel={ mockToggleWorkaroundPanel }
-                    setDisruptionForWorkaroundEdit={ mockSetDisruptionForWorkaroundEdit }
-                />,
-            );
-            const button = wrapper.find('button.add-effect-button');
-            expect(button.prop('disabled')).toBe(true);
         });
 
         it('Should update newIncidentEffect value on updateNewIncidentEffect call', async () => {
@@ -1338,148 +1192,11 @@ describe('CreateIncident component', () => {
                     getRoutesByShortName={ mockGetRoutesByShortName }
                     updateEditMode={ mockUpdateEditMode }
                     isEditEffectPanelOpen
-                    cachedShapes={ {} }
                 />,
             );
             await wrapper.instance().onPublishIncidentUpdate();
             expect(wrapper.state('incidentData').status).toEqual(STATUSES.NOT_STARTED);
             expect(mockToggleIncidentModals).toHaveBeenCalledWith('isPublishAndApplyChangesOpen', false);
-        });
-    });
-
-    describe('validateEntityLimits', () => {
-        let wrapper;
-        const mockUpdateCurrentStep = jest.fn();
-        const mockCreateNewIncident = jest.fn();
-        const mockOpenCreateIncident = jest.fn();
-        const mockToggleIncidentModals = jest.fn();
-
-        beforeEach(() => {
-            wrapper = shallow(
-                <CreateIncident
-                    updateCurrentStep={ mockUpdateCurrentStep }
-                    createNewIncident={ mockCreateNewIncident }
-                    openCreateIncident={ mockOpenCreateIncident }
-                    toggleIncidentModals={ mockToggleIncidentModals }
-                    action={ mockAction }
-                />,
-            );
-        });
-
-        afterEach(() => {
-            jest.clearAllMocks();
-        });
-
-        it('should return true when no disruptions exceed entity limit', () => {
-            const disruptions = [
-                {
-                    affectedEntities: {
-                        affectedRoutes: [{ routeId: '1' }],
-                        affectedStops: [{ stopId: '1' }],
-                    },
-                },
-            ];
-
-            // Mock getEntityCounts to return within limit
-            jest.spyOn({ getEntityCounts }, 'getEntityCounts')
-                .mockReturnValue({
-                    routesCount: 1,
-                    stopsCount: 1,
-                    entitiesCount: 2, // Less than MAX_NUMBER_OF_ENTITIES
-                });
-
-            const result = wrapper.instance().validateEntityLimits(disruptions);
-            expect(result).toBe(true);
-            expect(wrapper.state('isAlertModalOpen')).toBe(false);
-        });
-
-        it('should handle single disruption (not array)', () => {
-            const disruption = {
-                affectedEntities: {
-                    affectedRoutes: [{ routeId: '1' }],
-                    affectedStops: [{ stopId: '1' }],
-                },
-            };
-
-            // Mock getEntityCounts to return within limit
-            jest.spyOn({ getEntityCounts }, 'getEntityCounts')
-                .mockReturnValue({
-                    routesCount: 1,
-                    stopsCount: 1,
-                    entitiesCount: 2, // Less than MAX_NUMBER_OF_ENTITIES
-                });
-
-            const result = wrapper.instance().validateEntityLimits(disruption);
-            expect(result).toBe(true);
-        });
-
-        it('should handle disruptions without affectedEntities', () => {
-            const disruptions = [
-                { disruptionId: '1' },
-                { disruptionId: '2' },
-            ];
-
-            const result = wrapper.instance().validateEntityLimits(disruptions);
-            expect(result).toBe(true);
-        });
-    });
-
-    describe('IncidentLimitModal', () => {
-        let wrapper;
-        const mockUpdateCurrentStep = jest.fn();
-        const mockCreateNewIncident = jest.fn();
-        const mockOpenCreateIncident = jest.fn();
-        const mockToggleIncidentModals = jest.fn();
-
-        beforeEach(() => {
-            wrapper = shallow(
-                <CreateIncident
-                    updateCurrentStep={ mockUpdateCurrentStep }
-                    createNewIncident={ mockCreateNewIncident }
-                    openCreateIncident={ mockOpenCreateIncident }
-                    toggleIncidentModals={ mockToggleIncidentModals }
-                    action={ mockAction }
-                />,
-            );
-        });
-
-        afterEach(() => {
-            jest.clearAllMocks();
-        });
-
-        it('should render IncidentLimitModal when isAlertModalOpen is true', () => {
-            wrapper.setState({
-                isAlertModalOpen: true,
-                totalEntities: 10,
-            });
-
-            const modal = wrapper.find('IncidentLimitModal');
-            expect(modal).toHaveLength(1);
-            expect(modal.prop('isOpen')).toBe(true);
-            expect(modal.prop('totalEntities')).toBe(10);
-        });
-
-        it('should not render IncidentLimitModal when isAlertModalOpen is false', () => {
-            wrapper.setState({
-                isAlertModalOpen: false,
-            });
-
-            const modal = wrapper.find('IncidentLimitModal');
-            expect(modal).toHaveLength(1);
-            expect(modal.prop('isOpen')).toBe(false);
-        });
-
-        it('should call onClose when modal close is triggered', () => {
-            wrapper.setState({
-                isAlertModalOpen: true,
-            });
-
-            const modal = wrapper.find('IncidentLimitModal');
-            const onClose = modal.prop('onClose');
-
-            onClose();
-
-            expect(wrapper.state('isAlertModalOpen')).toBe(false);
         });
     });
 });
