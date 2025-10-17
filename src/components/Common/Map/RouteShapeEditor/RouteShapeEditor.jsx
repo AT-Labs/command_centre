@@ -44,6 +44,8 @@ const RouteShapeEditor = (props) => {
     // TomTom
     const [tomtomPolyline, setTomtomPolyline] = useState([]);
     const [tomtomInstructions, setTomtomInstructions] = useState([]);
+    const [showWarning, setShowWarning] = useState(false);
+    const [mergedTomTom, setMergedTomTom] = useState(false);
 
     const onEdited = (e) => {
         // Leaflet Draw's internal event listeners can get duplicated.
@@ -79,6 +81,7 @@ const RouteShapeEditor = (props) => {
             setUpdatedCoords([]); // This means there is no updated shape
             setTomtomPolyline([]); // Reset TomTom polyline
             setTomtomInstructions([]); // Reset TomTom instructions
+            setShowWarning(false);
         } else {
             setUpdatedCoords(previousEntry.polyline);
             setTomtomPolyline(previousEntry.tomtomPolyline || []);
@@ -105,6 +108,7 @@ const RouteShapeEditor = (props) => {
             setTomtomPolyline([]); // Clear TomTom polyline after merging
             setFeatureGroupKey(k => k + 1); // Force remount FeatureGroup Editor
             props.onDirectionsUpdated({ pending: false });
+            setMergedTomTom(true);
         }
     };
 
@@ -159,6 +163,7 @@ const RouteShapeEditor = (props) => {
         if (diversionPolyline.length > 1) {
             // TomTom requires at least 2 points to calculate a route
             const { routePoints, maneuvers } = await fetchTomTomShape(diversionPolyline);
+            setMergedTomTom(false);
             if (routePoints.length > 0) {
                 // When we get the route points from TomTom
                 setTomtomPolyline(routePoints);
@@ -223,8 +228,7 @@ const RouteShapeEditor = (props) => {
             const difference = findDifferences(originalCoords, editedCoords);
             if (difference.length > 1) {
                 setUpdatedCoords(editedCoords);
-            } else {
-                setTomtomInstructions([]);
+                setShowWarning(mergedTomTom);
             }
         }
     }, [editedCoords]);
@@ -277,6 +281,12 @@ const RouteShapeEditor = (props) => {
                         Auto-generate detour
                     </button>
                     <button onClick={ mergeTomTom } type="button" disabled={ tomtomPolyline.length < 2 }>Apply auto-generation</button>
+                </div>
+            )}
+            { showWarning && (
+                <div className="route-shape-editor-warning">
+                    The written directions are not automatically updated when manual detour is applied.
+                    Please review the written directions information.
                 </div>
             )}
             { tomtomInstructions.length > 0 && (
