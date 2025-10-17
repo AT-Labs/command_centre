@@ -1139,7 +1139,6 @@ describe('Confirmation Component', () => {
                         disruptions={ [disruption] }
                         isEditEffectPanelOpen
                         disruptionIncidentNoToEdit="DISR123"
-                        findRoutesByStop={ createFindRoutesByStop(100) }
                     />
                 </Provider>,
             );
