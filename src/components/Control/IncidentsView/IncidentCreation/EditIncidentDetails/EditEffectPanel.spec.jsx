@@ -138,7 +138,7 @@ describe('Confirmation Component', () => {
         updateEffectValidationState: jest.fn(),
         updateIsEffectUpdatedState: jest.fn(),
         updateEffectValidationForPublishState: jest.fn(),
-        onDisruptionChange: jest.fn(),   
+        onDisruptionChange: jest.fn(),
     };
 
     beforeEach(() => {
@@ -485,7 +485,7 @@ describe('Confirmation Component', () => {
         );
 
         expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        expect(screen.getByText('Disruption Title')).toBeInTheDocument();
+        expect(screen.getByText('Effect Title')).toBeInTheDocument();
         expect(screen.getByText('Start Time')).toBeInTheDocument();
         expect(screen.getByText('Start Date')).toBeInTheDocument();
         expect(screen.getByText('End Date')).toBeInTheDocument();
