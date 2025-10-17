@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { connect } from 'react-redux';
 import { filter, isEmpty, sortBy, forOwn, omitBy, pickBy, groupBy } from 'lodash-es';
 import PropTypes from 'prop-types';
+import { IconContext } from 'react-icons';
+import { FaExclamationTriangle } from 'react-icons/fa';
 import {
     getIncidentsLoadingStopsByRouteState,
     getIncidentsLoadingRoutesByStopState,
@@ -20,8 +22,7 @@ import { getSearchResults } from '../../../../../redux/selectors/search';
 import { getAllStops } from '../../../../../redux/selectors/static/stops';
 import { getStopGroupsIncludingDeleted } from '../../../../../redux/selectors/control/dataManagement/stopGroups';
 import { getStopGroupName } from '../../../../../utils/control/dataManagement';
-import IncidentLimitModal from '../../Modals/IncidentLimitModal.jsx';
-import { MAX_NUMBER_OF_ENTITIES } from '../../../../../constants/disruptions.js';
+import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import RadioButtons from '../../../../Common/RadioButtons/RadioButtons';
 import ConfirmationModal from '../../../Common/ConfirmationModal/ConfirmationModal';
 import { confirmationModalTypes } from '../../types';
@@ -36,6 +37,7 @@ import {
 } from '../../../../../utils/control/disruptions';
 
 export const SelectEffectEntities = (props) => {
+    const iconContextValue = useMemo(() => ({ className: 'text-warning w-100 m-2' }), []);
     const { affectedEntities, disruptionType, disruptionKey } = props;
     const { ROUTE, STOP, STOP_GROUP } = SEARCH_RESULT_TYPE;
     const { NONE, CHANGE_DISRUPTION_TYPE, REMOVE_SELECTED_ENTITY, RESET_SELECTED_ENTITIES } = confirmationModalTypes;
@@ -50,6 +52,7 @@ export const SelectEffectEntities = (props) => {
     const [totalEntities, setTotalEntities] = useState(0);
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
     const [confirmationModalType, setConfirmationModalType] = useState(NONE);
+    const maxNumberOfEntities = 200;
 
     const entityPropsWaitToRemoveInitState = { entity: undefined, entityType: undefined };
     const [entityPropsWaitToRemove, setEntityPropsWaitToRemove] = useState(entityPropsWaitToRemoveInitState);
@@ -414,13 +417,21 @@ export const SelectEffectEntities = (props) => {
                     />
                 </ul>
             </div>
-            <IncidentLimitModal
-                isOpen={ isAlertModalOpen }
+            <CustomModal
+                title="Log a Disruption"
+                okButton={ {
+                    label: 'OK',
+                    onClick: () => setIsAlertModalOpen(false),
+                    isDisabled: false,
+                    className: 'test',
+                } }
                 onClose={ () => setIsAlertModalOpen(false) }
-                totalEntities={ totalEntities }
-                itemsSelectedText={ itemsSelectedText() }
-                maxLimit={ MAX_NUMBER_OF_ENTITIES }
-            />
+                isModalOpen={ isAlertModalOpen }>
+                <IconContext.Provider value={ iconContextValue }>
+                    <FaExclamationTriangle size={ 40 } />
+                </IconContext.Provider>
+                <p className="font-weight-light text-center mb-0">{`${totalEntities} ${itemsSelectedText()} have been selected. Please reduce the selection to less than the maximum allowed of ${maxNumberOfEntities}`}</p>
+            </CustomModal>
             <ConfirmationModal
                 title={ activeConfirmationModalProps.title }
                 message={ activeConfirmationModalProps.message }

@@ -139,7 +139,6 @@ describe('Confirmation Component', () => {
         updateIsEffectUpdatedState: jest.fn(),
         updateEffectValidationForPublishState: jest.fn(),
         onDisruptionChange: jest.fn(),
-        findRoutesByStop: {},
     };
 
     beforeEach(() => {
@@ -217,19 +216,7 @@ describe('Confirmation Component', () => {
                         requestedDisruptionKeyToUpdateEditEffect: '',
                         isCancellationEffectOpen: false,
                         stopsByRoute: {},
-                        routesByStop: (() => {
-                            const routesByStop = {};
-                            for (let i = 0; i < 200; i++) {
-                                routesByStop[`STOP${i}`] = [
-                                    {
-                                        routeId: `ROUTE-${i}`,
-                                        routeShortName: `ROUTE${i}`,
-                                        routeType: 2,
-                                    },
-                                ];
-                            }
-                            return routesByStop;
-                        })(),
+                        routesByStop: {},
                         cachedStopsToRoutes: {},
                         cachedRoutesToStops: {},
                     },
@@ -238,21 +225,6 @@ describe('Confirmation Component', () => {
                         isStopGroupsLoading: false,
                     },
                 },
-            disruptions: {
-                routesByStop: (() => {
-                    const routesByStop = {};
-                    for (let i = 0; i < 200; i++) {
-                        routesByStop[`STOP${i}`] = [
-                            {
-                                routeId: `ROUTE-${i}`,
-                                routeShortName: `ROUTE${i}`,
-                                routeType: 2,
-                            },
-                        ];
-                    }
-                    return routesByStop;
-                })(),
-            },
             static: {
                 stops: [],
                 routes: [],
@@ -513,7 +485,7 @@ describe('Confirmation Component', () => {
         );
 
         expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-        expect(screen.getByText('Disruption Title')).toBeInTheDocument();
+        expect(screen.getByText('Effect Title')).toBeInTheDocument();
         expect(screen.getByText('Start Time')).toBeInTheDocument();
         expect(screen.getByText('Start Date')).toBeInTheDocument();
         expect(screen.getByText('End Date')).toBeInTheDocument();
@@ -955,7 +927,6 @@ describe('Confirmation Component', () => {
                         disruptionIncidentNoToEdit="DISR123"
                         useDiversion
                         isDiversionManagerOpen={ false }
-                        findRoutesByStop={ {} }
                     />
                 </Provider>,
             );
@@ -1014,139 +985,6 @@ describe('Confirmation Component', () => {
             fireEvent.click(viewButton);
 
             expect(queryByText('View & Edit Diversions')).not.toBeInTheDocument();
-        });
-    });
-
-    describe('Entity Limit Validation', () => {
-        const createDisruptionWithEntities = (routesCount, stopsCount) => ({
-            key: 'DISR123',
-            incidentNo: 'DISR123',
-            impact: 'CANCELLATIONS',
-            startTime: '06:00',
-            startDate: '10/06/2025',
-            endTime: '09:00',
-            endDate: '20/06/2025',
-            cause: 'CONGESTION',
-            mode: '-',
-            status: 'not-started',
-            header: 'Incident Title',
-            createNotification: false,
-            recurrent: true,
-            duration: '2',
-            recurrencePattern: {
-                freq: 2,
-                dtstart: new Date('2025-06-10T06:00:00.000Z'),
-                until: new Date('2025-06-20T09:00:00.000Z'),
-                byweekday: [0],
-            },
-            severity: 'MINOR',
-            disruptionType: 'Routes',
-            notes: [],
-            affectedEntities: {
-                affectedRoutes: Array(routesCount).fill().map((_, i) => ({
-                    category: { type: 'route', icon: '', label: 'Routes' },
-                    labelKey: 'routeShortName',
-                    routeId: `ROUTE-${i}`,
-                    routeShortName: `ROUTE${i}`,
-                    routeType: 2,
-                    text: `ROUTE${i}`,
-                    type: 'route',
-                    valueKey: 'routeId',
-                })),
-                affectedStops: Array(stopsCount).fill().map((_, i) => ({
-                    category: { type: 'stop', icon: '', label: 'Stops' },
-                    labelKey: 'stopCode',
-                    stopCode: `STOP${i}`,
-                    stopName: `Stop ${i}`,
-                    type: 'stop',
-                    valueKey: 'stopCode',
-                })),
-            },
-        });
-
-        const createFindRoutesByStop = (stopsCount) => {
-            const findRoutesByStop = {};
-            for (let i = 0; i < stopsCount; i++) {
-                findRoutesByStop[`STOP${i}`] = [
-                    {
-                        routeId: `ROUTE-${i}`,
-                        routeShortName: `ROUTE${i}`,
-                        routeType: 2,
-                    },
-                ];
-            }
-            return findRoutesByStop;
-        };
-
-        it('should handle empty affected entities', () => {
-            const disruption = {
-                ...mockDisruption,
-                affectedEntities: {
-                    affectedRoutes: [],
-                    affectedStops: [],
-                },
-            };
-            const { getByText } = render(
-                <Provider store={ store }>
-                    <EditEffectPanel
-                        { ...defaultProps }
-                        disruptions={ [disruption] }
-                        isEditEffectPanelOpen
-                        disruptionIncidentNoToEdit="DISR123"
-                        findRoutesByStop={ {} }
-                    />
-                </Provider>,
-            );
-
-            const applyButton = getByText('Apply');
-            fireEvent.click(applyButton);
-
-            expect(screen.queryByText(/exceeds the maximum limit/i)).not.toBeInTheDocument();
-        });
-
-        it('should handle null affected entities', () => {
-            const disruption = {
-                ...mockDisruption,
-                affectedEntities: {
-                    affectedRoutes: [],
-                    affectedStops: [],
-                },
-            };
-            const { getByText } = render(
-                <Provider store={ store }>
-                    <EditEffectPanel
-                        { ...defaultProps }
-                        disruptions={ [disruption] }
-                        isEditEffectPanelOpen
-                        disruptionIncidentNoToEdit="DISR123"
-                        findRoutesByStop={ {} }
-                    />
-                </Provider>,
-            );
-
-            const applyButton = getByText('Apply');
-            fireEvent.click(applyButton);
-
-            expect(screen.queryByText(/exceeds the maximum limit/i)).not.toBeInTheDocument();
-        });
-
-        it('should show alert modal when entities exceed 200 limit', () => {
-            const disruption = createDisruptionWithEntities(150, 100);
-            const { getByText } = render(
-                <Provider store={ store }>
-                    <EditEffectPanel
-                        { ...defaultProps }
-                        disruptions={ [disruption] }
-                        isEditEffectPanelOpen
-                        disruptionIncidentNoToEdit="DISR123"
-                    />
-                </Provider>,
-            );
-
-            const applyButton = getByText('Apply');
-            fireEvent.click(applyButton);
-
-            expect(screen.getByText(/exceeds the maximum limit/i)).toBeInTheDocument();
         });
     });
 });
