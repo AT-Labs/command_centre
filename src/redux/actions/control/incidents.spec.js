@@ -7,6 +7,8 @@ import EDIT_TYPE from '../../../types/edit-types';
 import ACTION_TYPE from '../../action-types';
 import ERROR_TYPE from '../../../types/error-types';
 import { STATUSES } from '../../../types/disruptions-types';
+import VIEW_TYPE from '../../../types/view-types';
+import { loadIncidentAndRedirectToEdit } from './incidents';
 
 const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
@@ -761,8 +763,12 @@ describe('Incidents Actions', () => {
 
     it('dispatches correct actions on setIncidentToUpdate success', async () => {
         disruptionsMgtApi.getIncident.mockResolvedValue(mockIncidentForEdit);
+        ccStatic.getRoutesByShortName.mockResolvedValue([]);
         await store.dispatch(actions.setIncidentToUpdate(139273, false));
         const dispatched = store.getActions();
+
+        expect(ccStatic.getRoutesByShortName).toHaveBeenCalledWith('101');
+        expect(ccStatic.getRoutesByShortName).toHaveBeenCalledWith('105');
 
         expect(dispatched).toEqual(expect.arrayContaining([
             {
@@ -794,7 +800,8 @@ describe('Incidents Actions', () => {
 
     it('dispatches correct actions on setIncidentToUpdate success with require to update form', async () => {
         disruptionsMgtApi.getIncident.mockResolvedValue(mockIncidentForEdit);
-        await store.dispatch(actions.setIncidentToUpdate(139273, true));
+        ccStatic.getRoutesByShortName.mockResolvedValue([]);
+        await store.dispatch(actions.setIncidentToUpdate(139273, 524565, true));
         const dispatched = store.getActions();
 
         expect(dispatched).toEqual(expect.arrayContaining([
@@ -825,7 +832,7 @@ describe('Incidents Actions', () => {
             {
                 type: 'update-disruption-key-to-edit-effect',
                 payload: {
-                    disruptionKeyToEditEffect: true,
+                    disruptionKeyToEditEffect: 524565,
                 },
             },
             {
@@ -960,5 +967,136 @@ describe('Incidents Actions', () => {
                 },
             },
         ]));
+    });
+
+    it('loadIncidentAndRedirectToEdit should dispatch the correct actions on success', async () => {
+        disruptionsMgtApi.getIncident.mockResolvedValue(mockIncidentForEdit);
+
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
+                payload: { isIncidentForEditLoading: true },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_INCIDENT_TO_EDIT,
+                payload: { incidentToEdit: mockIncidentForEdit },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_EDIT_EFFECT,
+                payload: { disruptionKeyToEditEffect: mockIncidentForEdit.disruptions[0].incidentNo },
+            },
+            {
+                type: ACTION_TYPE.SET_EDIT_EFFECT_PANEL_STATUS,
+                payload: { isEditEffectPanelOpen: true },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_MAIN_VIEW,
+                payload: {
+                    activeMainView: VIEW_TYPE.MAIN.CONTROL,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW,
+                payload: {
+                    activeControlDetailView: VIEW_TYPE.CONTROL_DETAIL.INCIDENTS,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
+                payload: { isIncidentForEditLoading: false },
+            },
+        ];
+
+        await store.dispatch(loadIncidentAndRedirectToEdit(
+            mockIncidentForEdit.incidentId,
+            mockIncidentForEdit.disruptions[0].incidentNo,
+            false,
+        ));
+
+        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+    });
+
+    it('loadIncidentAndRedirectToEdit should dispatch with error', async () => {
+        disruptionsMgtApi.getIncident.mockRejectedValue((new Error('Not found')));
+
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
+                payload: { isIncidentForEditLoading: true },
+            },
+            {
+                type: 'set-modal-error',
+                payload: {
+                    error: 'Failed to load incident data',
+                },
+            },
+            {
+                type: 'update-control-incident-for-edit-loading',
+                payload: {
+                    isIncidentForEditLoading: false,
+                },
+            },
+        ];
+
+        await store.dispatch(loadIncidentAndRedirectToEdit(
+            mockIncidentForEdit.incidentId,
+            mockIncidentForEdit.disruptions[0].incidentNo,
+            false,
+        ));
+
+        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+    });
+
+    it('loadIncidentAndRedirectToEdit requireToUpdateForm true should dispatch the correct actions on success ', async () => {
+        disruptionsMgtApi.getIncident.mockResolvedValue(mockIncidentForEdit);
+
+        const expectedActions = [
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
+                payload: { isIncidentForEditLoading: true },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_INCIDENT_TO_EDIT,
+                payload: { incidentToEdit: mockIncidentForEdit },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_EFFECT_REQUIRES_TO_UPDATE_NOTES,
+                payload: {
+                    isRequiresToUpdateNotes: true,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_DISRUPTION_KEY_TO_EDIT_EFFECT,
+                payload: { disruptionKeyToEditEffect: mockIncidentForEdit.disruptions[0].incidentNo },
+            },
+            {
+                type: ACTION_TYPE.SET_EDIT_EFFECT_PANEL_STATUS,
+                payload: { isEditEffectPanelOpen: true },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_MAIN_VIEW,
+                payload: {
+                    activeMainView: VIEW_TYPE.MAIN.CONTROL,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW,
+                payload: {
+                    activeControlDetailView: VIEW_TYPE.CONTROL_DETAIL.INCIDENTS,
+                },
+            },
+            {
+                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING,
+                payload: { isIncidentForEditLoading: false },
+            },
+        ];
+
+        await store.dispatch(loadIncidentAndRedirectToEdit(
+            mockIncidentForEdit.incidentId,
+            mockIncidentForEdit.disruptions[0].incidentNo,
+            true,
+        ));
+
+        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
     });
 });

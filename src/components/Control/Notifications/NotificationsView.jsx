@@ -53,24 +53,33 @@ export const NotificationsView = (props) => {
         ...(props.useNotificationEffectColumn ? [
             {
                 field: 'parentSourceId',
-                headerName: '#DISRUPTION',
+                headerName: 'DISRUPTION#',
                 flex: 1,
                 filterOperators: ParentSourceIdDataGridOperator,
-                renderCell: ({ row: { source: { parentIdentifier: parentSourceId } } }) => transformParentSourceIdNo(parentSourceId),
+                renderCell: ({ row: { source: { parentIdentifier: parentSourceId } } }) => (
+                    <Button
+                        aria-label="go-to-incidents"
+                        variant="text"
+                        onClick={ () => {
+                            props.goToIncidentsView({
+                                incidentDisruptionNo: parentSourceId,
+                            }, { setActiveIncident: true });
+                        } }
+                    >
+                        { transformParentSourceIdNo(parentSourceId) }
+                    </Button>
+                ),
             }, {
                 field: 'sourceId',
-                headerName: '#EFFECT',
+                headerName: 'EFFECT#',
                 flex: 1,
                 filterOperators: sourceIdDataGridOperator,
-                renderCell: ({ row: { source: { identifier: incidentId, parentIdentifier: causeId } } }) => (
+                renderCell: ({ row: { source: { identifier: incidentId } } }) => (
                     <Button
                         aria-label="go-to-disruptions-effect"
                         variant="text"
                         onClick={ () => {
-                            props.goToIncidentsView({
-                                incidentDisruptionNo: causeId,
-                                disruptionId: incidentId,
-                            }, { setActiveIncident: true });
+                            props.goToIncidentsView({ disruptionId: incidentId }, { setActiveIncident: true });
                         } }>
                         {transformIncidentNo(incidentId)}
                     </Button>
@@ -80,7 +89,7 @@ export const NotificationsView = (props) => {
             }] : [
             {
                 field: 'sourceId',
-                headerName: '#DISRUPTION',
+                headerName: 'DISRUPTION#',
                 flex: 1,
                 filterOperators: sourceIdDataGridOperator,
                 ...(props.useDisruptionsNotificationsDirectLink ? {

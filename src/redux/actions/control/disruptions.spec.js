@@ -18,6 +18,7 @@ import ACTION_TYPE from '../../action-types';
 import SEARCH_RESULT_TYPE from '../../../types/search-result-types';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
 import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
+import { ACTION_RESULT } from '../../../types/disruptions-types';
 
 chai.use(sinonChai);
 
@@ -731,5 +732,172 @@ describe('Disruptions actions', () => {
         });
 
         expect(result).to.eql(undefined);
+    });
+
+    [
+        {
+            title: 'should dispatch error if disruption has diversions but no endTime',
+            disruption: { disruptionId: '123', endTime: null },
+            diversions: [{ id: 'div1' }],
+            expectedMessage: 'Disruption with diversion(s) require an End Date and End Time to be published',
+        },
+        {
+            title: 'should dispatch error if disruption has diversions and endTime is undefined',
+            disruption: { disruptionId: '456' },
+            diversions: [{ id: 'div2' }],
+            expectedMessage: 'Disruption with diversion(s) require an End Date and End Time to be published. Please inform the End Date and End Time and try again.',
+        },
+        {
+            title: 'should dispatch error if disruption has diversions and endTime property missing',
+            disruption: { disruptionId: '457' },
+            diversions: [{ id: 'div2' }],
+            expectedMessage: 'Disruption with diversion(s) require an End Date and End Time to be published. Please inform the End Date and End Time and try again.',
+        },
+        {
+            title: 'should not dispatch error if disruption has diversions and valid endTime',
+            disruption: { disruptionId: '789', endTime: '2025-10-01T12:00:00Z' },
+            diversions: [{ id: 'div3' }],
+            expectedMessage: null,
+        },
+        {
+            title: 'should not dispatch error if no endTime and no diversions',
+            disruption: { disruptionId: '789' },
+            expectedMessage: null,
+        },
+        {
+            title: 'should not dispatch error if with endTime and diversions is empty array',
+            disruption: { disruptionId: '789', endTime: '2025-10-01T12:00:00Z' },
+            diversions: [],
+            expectedMessage: null,
+        },
+        // ...existing code...
+        {
+            title: 'should not dispatch error if with endTime and diversions is null',
+            disruption: { disruptionId: '789', endTime: '2025-10-01T12:00:00Z' },
+            diversions: null,
+            expectedMessage: null,
+        },
+        // Error object shapes for catch block
+        {
+            title: 'should dispatch error with code and message',
+            disruption: { disruptionId: 'err1', endTime: '2025-10-01T12:00:00Z' },
+            diversions: [],
+            errorObj: { code: 'ERR_XYZ', message: 'Unit test error message' },
+            expectedError: { code: 'ERR_XYZ', message: 'Unit test error message' },
+        },
+        {
+            title: 'should dispatch error with only code',
+            disruption: { disruptionId: 'err2', endTime: '2025-10-01T12:00:00Z' },
+            diversions: [],
+            errorObj: { code: 'ERR_ONLY' },
+            expectedError: { code: 'ERR_ONLY', message: 'Failed to publish draft disruption' },
+        },
+        {
+            title: 'should dispatch error with only message',
+            disruption: { disruptionId: 'err3', endTime: '2025-10-01T12:00:00Z' },
+            diversions: [],
+            errorObj: { message: 'Only message error' },
+            expectedError: { code: undefined, message: 'Only message error' },
+        },
+        {
+            title: 'should dispatch error with neither code nor message',
+            disruption: { disruptionId: 'err4', endTime: '2025-10-01T12:00:00Z' },
+            diversions: [],
+            errorObj: {},
+            expectedError: { code: undefined, message: 'Failed to publish draft disruption' },
+        },
+        {
+            title: 'should not dispatch error if with endTime and diversions is empty array',
+            disruption: { disruptionId: '789', endTime: '2025-10-01T12:00:00Z' },
+            diversions: [],
+            expectedMessage: null,
+        },
+
+    ].forEach(({ title, disruption, diversions, expectedMessage }) => {
+        it(title, async () => {
+            const dispatch = sinon.spy();
+            await publishDraftDisruption(disruption, diversions)(dispatch);
+
+            expect(dispatch).to.have.been.calledWithMatch({
+                type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_REQUESTING,
+            });
+
+            if (expectedMessage) {
+                expect(dispatch).to.have.been.calledWithMatch({
+                    type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
+                    payload: {
+                        resultMessage: sinon.match(expectedMessage),
+                    },
+                });
+            } else {
+                // Should not dispatch error result action
+                expect(dispatch).not.to.have.been.calledWithMatch({
+                    type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
+                    payload: {
+                        resultMessage: sinon.match('Disruption with diversion(s) require an End Date and End Time to be published'),
+                    },
+                });
+            }
+
+            expect(dispatch).to.have.been.calledWithMatch({
+                type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_REQUESTING,
+                payload: {
+                    isRequesting: false,
+                },
+            });
+        });
+    });
+
+    it('should dispatch PUBLISH_DRAFT_ERROR with error code and message when updateDisruption throws', async () => {
+        const disruption = {
+            disruptionId: 'error-test',
+            endTime: '2025-09-24T12:00:00Z',
+        };
+        const diversions = [];
+
+        // Mock updateDisruption to throw error with code and message
+        const errorObj = { code: 'ERR_XYZ', message: 'Unit test error message' };
+        disruptionsMgtApi.updateDisruption.mockRejectedValue(errorObj);
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({
+            disruptions: [disruption],
+            _links: { permissions: [] },
+        });
+
+        await store.dispatch(publishDraftDisruption(disruption, diversions));
+
+        // Find the error action in the dispatched actions
+        const errorAction = store.getActions().find(
+            a => a.type === ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
+        );
+
+        expect(errorAction).to.deep.include({
+            type: ACTION_TYPE.UPDATE_CONTROL_DISRUPTION_ACTION_RESULT,
+            payload: {
+                resultDisruptionId: 'error-test',
+                resultStatus: 'danger',
+                resultMessage: 'Unit test error message',
+                resultCreateNotification: undefined,
+                resultDisruptionVersion: undefined,
+            },
+        });
+    });
+});
+
+describe('PUBLISH_DRAFT_ERROR action', () => {
+    it('should handle empty code/message with default message', () => {
+        const errorAction = ACTION_RESULT.PUBLISH_DRAFT_ERROR();
+
+        expect(errorAction).to.deep.equal({
+            resultMessage: 'Failed to publish draft disruption',
+            resultStatus: 'danger',
+        });
+    });
+    it('should handle use message supplied if one exist', () => {
+        const errorAction = ACTION_RESULT.PUBLISH_DRAFT_ERROR(null, 'Blah');
+
+        expect(errorAction).to.deep.equal({
+            resultMessage: 'Blah',
+            resultStatus: 'danger',
+        });
     });
 });

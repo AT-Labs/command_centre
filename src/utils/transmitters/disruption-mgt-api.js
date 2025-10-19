@@ -136,11 +136,11 @@ export const updateDiversion = (diversion) => {
     ).then(response => jsonResponseHandling(response));
 };
 
-export const getDisruptionsByFilters = (filters) => {
+export const getDisruptionsByFilters = (filters, { signal } = {}) => {
     const query = buildDisruptionsQuery(filters);
     const url = `${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions${query}`;
 
-    return fetchWithAuthHeader(url, { method: GET })
+    return fetchWithAuthHeader(url, { method: GET, signal })
         .then(response => jsonResponseHandling(response));
 };
 

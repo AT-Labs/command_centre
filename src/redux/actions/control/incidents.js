@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { isEmpty, uniqBy, each } from 'lodash-es';
+import { isEmpty, uniqBy, each, forEach, map } from 'lodash-es';
 
 import { ACTION_RESULT, DISRUPTION_TYPE, STATUSES } from '../../../types/disruptions-types';
 import ERROR_TYPE from '../../../types/error-types';
@@ -22,6 +22,8 @@ import {
 import { getAllRoutes } from '../../selectors/static/routes';
 import { getAllStops } from '../../selectors/static/stops';
 import EDIT_TYPE from '../../../types/edit-types';
+import { updateControlDetailView, updateMainView } from '../navigation';
+import VIEW_TYPE from '../../../types/view-types';
 
 export const updateIncidentsSortingParams = sortingParams => ({
     type: ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_SORTING_PARAMS,
@@ -276,6 +278,14 @@ export const publishDraftIncident = incident => async (dispatch) => {
     return response;
 };
 
+export const clearAffectedRoutes = () => (dispatch) => {
+    dispatch(updateAffectedRoutesState([]));
+};
+
+export const clearAffectedStops = () => (dispatch) => {
+    dispatch(updateAffectedStopsState([]));
+};
+
 export const createNewIncident = incident => async (dispatch, getState) => {
     let response;
     const state = getState();
@@ -451,7 +461,7 @@ export const deleteAffectedEntities = () => (dispatch) => {
     });
 };
 
-export const addShapesToEntities = (entities, routesWithShapes) => entities.map((entity) => {
+export const addShapesToEntities = (entities, routesWithShapes) => entities?.map((entity) => {
     const mappedEntity = { ...entity };
     if (mappedEntity.routeId) {
         const route = routesWithShapes.find(routeWithShapes => entity.routeId === routeWithShapes.routeId);
@@ -479,17 +489,19 @@ export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
     let stopsWithShapes = [];
     let affectedRoutesWithShapes = [];
 
-    currentRoutes.map(route => (
-        { ...route, routeColor: allRoutes[route.routeId]?.route_color }
-    )).forEach((route) => {
-        if (cachedShapes[route.routeId]) {
-            routesWithShapes.push({ ...route, shapeWkt: cachedShapes[route.routeId] });
-            return;
-        }
-        missingCacheRoutes.push(route);
-    });
+    forEach(
+        map(currentRoutes, route => ({ ...route, routeColor: allRoutes[route.routeId]?.route_color })),
+        (route) => {
+            if (cachedShapes[route.routeId]) {
+                routesWithShapes.push({ ...route, shapeWkt: cachedShapes[route.routeId] });
+                return;
+            }
+            missingCacheRoutes.push(route);
+        },
+    );
 
-    return Promise.all(missingCacheRoutes.map(route => ccStatic.getRoutesByShortName(route.routeShortName)))
+    const uniqueRoutesByShortName = uniqBy(missingCacheRoutes, 'routeShortName');
+    return Promise.all(uniqueRoutesByShortName.map(route => ccStatic.getRoutesByShortName(route.routeShortName)))
         .then((routes) => {
             each(routes.flat(), ({ route_id, trips }) => {
                 if (trips && trips.length > 0 && trips[0].shape_wkt) {
@@ -508,11 +520,9 @@ export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
 
             return [stopsWithShapes, affectedRoutesWithShapes];
         })
-        .then(() => {
-            dispatch(updateCachedShapesState(missingCacheShapes));
-            dispatch(updateAffectedRoutesState(affectedRoutesWithShapes));
-            dispatch(updateAffectedStopsState(stopsWithShapes));
-            dispatch(updateLoadingIncidentsState(false));
+        .then(async () => {
+            await dispatch(updateCachedShapesState(missingCacheShapes));
+            await dispatch(updateLoadingIncidentsState(false));
         })
         .catch((err) => {
             throw err;
@@ -604,6 +614,13 @@ export const setRequestToUpdateEditEffectState = requestToUpdateEditEffect => ({
     },
 });
 
+export const setMapDrawingEntities = mapDrawingEntities => ({
+    type: ACTION_TYPE.UPDATE_MAP_DRAWING_ENTITIES,
+    payload: {
+        mapDrawingEntities,
+    },
+});
+
 export const setRequestedDisruptionKeyToUpdateEditEffect = requestedDisruptionKeyToUpdateEditEffect => ({
     type: ACTION_TYPE.SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT,
     payload: {
@@ -658,7 +675,7 @@ export const clearDisruptionActionResult = () => ({
 
 export const updateActiveDisruptionId = activeDisruptionId => (dispatch) => {
     dispatch({
-        type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_DISRUPTION_ID,
+        type: ACTION_TYPE.UPDATE_CONTROL_ACTIVE_INCIDENT_DISRUPTION_ID,
         payload: {
             activeDisruptionId,
         },
@@ -683,10 +700,14 @@ const geographySearchRoutes = searchBody => async (dispatch, getState) => {
             type: SEARCH_RESULT_TYPE.ROUTE.type,
         };
     });
-    const existingAffectedRoutes = getAffectedRoutes(getState());
-    const newAffectedRoutes = [...new Set(existingAffectedRoutes.concat(enrichedRoutes))];
-    dispatch(updateAffectedRoutesState(newAffectedRoutes));
-    dispatch(getRoutesByShortName(newAffectedRoutes));
+    await dispatch(getRoutesByShortName(enrichedRoutes));
+
+    const cachedShapes = getCachedShapes(getState());
+    forEach(enrichedRoutes, (route) => {
+        Object.assign(route, { shapeWkt: cachedShapes[route.routeId] });
+    });
+
+    dispatch(setMapDrawingEntities(enrichedRoutes));
 };
 
 const geographySearchStops = searchBody => async (dispatch, getState) => {
@@ -710,9 +731,7 @@ const geographySearchStops = searchBody => async (dispatch, getState) => {
             type: SEARCH_RESULT_TYPE.STOP.type,
         };
     });
-    const existingAffectedStops = getAffectedStops(getState());
-    const newAffectedStops = [...new Set(existingAffectedStops.concat(enrichedStops))];
-    dispatch(updateAffectedStopsState(newAffectedStops));
+    dispatch(setMapDrawingEntities(enrichedStops));
 };
 
 export const searchByDrawing = (incidentType, content) => async (dispatch) => {
@@ -744,20 +763,66 @@ export const updateActiveIncident = activeIncidentId => (dispatch) => {
     dispatch(setActiveIncident(activeIncidentId));
 };
 
-export const setIncidentToUpdate = (incidentId, incidentNo, requireToUpdateForm = false) => (dispatch) => {
+const extractRouteEntities = (disruptions) => {
+    const routes = [];
+    forEach(disruptions, (disruption) => {
+        const routeEntities = disruption.affectedEntities.filter(
+            entity => entity.type === 'route',
+        );
+        routes.push(...routeEntities);
+    });
+    return routes;
+};
+
+const enrichIncidentWithShapes = (incidentData, cachedShapes) => {
+    forEach(incidentData.disruptions, (disruption) => {
+        forEach(disruption.affectedEntities, (entity) => {
+            if (entity.type === 'route' && cachedShapes[entity.routeId]) {
+                Object.assign(entity, { shapeWkt: cachedShapes[entity.routeId] });
+            }
+        });
+    });
+
+    return incidentData;
+};
+
+export const setIncidentToUpdate = (incidentId, incidentNo, requireToUpdateForm = false) => async (dispatch, getState) => {
+    dispatch(updateLoadingIncidentForEditState(true));
+    try {
+        const response = await disruptionsMgtApi.getIncident(incidentId);
+        const { _links, ...incidentData } = response;
+        const routeEntities = extractRouteEntities(incidentData.disruptions);
+        await dispatch(getRoutesByShortName(routeEntities));
+
+        const enrichedIncidentData = enrichIncidentWithShapes(incidentData, getCachedShapes(getState()));
+
+        dispatch(updateIncidentToEdit(enrichedIncidentData));
+    } catch {
+        dispatch(setBannerError(ERROR_TYPE.fetchIncident));
+    } finally {
+        dispatch(updateLoadingIncidentForEditState(false));
+        dispatch(openCreateIncident(true));
+
+        if (requireToUpdateForm) {
+            dispatch(updateRequiresToUpdateNotesState(true));
+        }
+
+        if (incidentNo) {
+            dispatch(updateDisruptionKeyToEditEffect(incidentNo));
+            dispatch(toggleEditEffectPanel(true));
+        }
+    }
+};
+
+export const loadIncidentAndRedirectToEdit = (incidentId, incidentNo, requireToUpdateForm = false) => (dispatch) => {
     dispatch(updateLoadingIncidentForEditState(true));
     return disruptionsMgtApi.getIncident(incidentId)
         .then((response) => {
             const { _links, ...incidentData } = response;
             dispatch(updateIncidentToEdit(incidentData));
-        })
-        .catch(() => {
-            const errorMessage = ERROR_TYPE.fetchIncident;
-            dispatch(setBannerError(errorMessage));
-        })
-        .finally(() => {
-            dispatch(updateLoadingIncidentForEditState(false));
-            dispatch(openCreateIncident(true));
+            setTimeout(() => {
+                dispatch(openCreateIncident(true));
+            }, 0);
             if (requireToUpdateForm) {
                 dispatch(updateRequiresToUpdateNotesState(true));
             }
@@ -765,6 +830,15 @@ export const setIncidentToUpdate = (incidentId, incidentNo, requireToUpdateForm 
                 dispatch(updateDisruptionKeyToEditEffect(incidentNo));
                 dispatch(toggleEditEffectPanel(true));
             }
+            dispatch(updateMainView(VIEW_TYPE.MAIN.CONTROL));
+            dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.INCIDENTS));
+        })
+        .catch(() => {
+            const errorMessage = ERROR_TYPE.fetchIncident;
+            dispatch(setBannerError(errorMessage));
+        })
+        .finally(() => {
+            dispatch(updateLoadingIncidentForEditState(false));
         });
 };
 
@@ -849,3 +923,10 @@ export const updateIncident = (incident, isAddEffect = false) => async (dispatch
 
     return result;
 };
+
+export const updateSelectedEffect = selectedEffect => ({
+    type: ACTION_TYPE.UPDATE_SELECTED_EFFECT,
+    payload: {
+        selectedEffect,
+    },
+});
