@@ -64,7 +64,7 @@ export function App(props) {
             props.getBuses(),
             props.getFerries(),
             props.setCache(),
-            props.getStops(),
+            props.getStops(undefined, true),
         ]).then(() => {
             props.updateUserProfile(getAuthUser());
             props.fetchBlocksViewPermission();
@@ -90,6 +90,15 @@ export function App(props) {
             props.startPollingSiteStatus();
         });
         props.getApplicationSettings();
+
+        // set up polling stops every 5 minutes
+        const intervalMs = 300000; // 5 min
+        const intervalId = setInterval(() => {
+            props.getStops(undefined, true);
+        }, intervalMs);
+
+        // cleanup
+        return () => clearInterval(intervalId);
     }, []);
 
     return (
