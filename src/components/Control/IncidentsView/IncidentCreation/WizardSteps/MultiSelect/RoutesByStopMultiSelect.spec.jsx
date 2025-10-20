@@ -17,6 +17,10 @@ const defaultState = {
     loadedRoutesByStop: [],
     setLoadedRoutesByStop: jest.fn(),
     updateAffectedStopsState: jest.fn(),
+    getRoutesByStop: jest.fn(),
+    updateAffectedStops: jest.fn(),
+    removeAction: jest.fn(),
+    isDisabled: false,
 };
 
 const stops = [
@@ -94,4 +98,41 @@ describe('<RoutesByStopMultiSelect />', () => {
             expect(wrapper.exists()).toEqual(true);
         });
     });
+
+    describe('toggleExpandedStop logic', () => {
+        it('should call getRoutesByStop when stop data is not loaded', () => {
+            const stop = { stopCode: 'stop1', stopName: 'Stop 1' };
+            const mockGetRoutesByStop = jest.fn();
+
+            setup({
+                affectedStops: [stop],
+                affectedSingleStops: [stop],
+                findRoutesByStop: {},
+                getRoutesByStop: mockGetRoutesByStop,
+            });
+
+            const expandableList = wrapper.find('ExpandableList').first();
+            expandableList.prop('onToggle')();
+
+            expect(mockGetRoutesByStop).toHaveBeenCalledWith([stop]);
+        });
+
+        it('should not call getRoutesByStop when stop data is already loaded', () => {
+            const stop = { stopCode: 'stop1', stopName: 'Stop 1' };
+            const mockGetRoutesByStop = jest.fn();
+
+            setup({
+                affectedStops: [stop],
+                affectedSingleStops: [stop],
+                findRoutesByStop: { [stop.stopCode]: [{ routeId: 'route1', routeShortName: '1' }] },
+                getRoutesByStop: mockGetRoutesByStop,
+            });
+
+            const expandableList = wrapper.find('ExpandableList').first();
+            expandableList.prop('onToggle')();
+
+            expect(mockGetRoutesByStop).not.toHaveBeenCalled();
+        });
+    });
+
 });
