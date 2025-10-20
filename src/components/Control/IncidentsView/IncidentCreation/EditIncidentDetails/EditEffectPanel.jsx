@@ -34,7 +34,7 @@ import {
     LABEL_START_TIME,
     LABEL_SEVERITY,
     LABEL_DURATION_HOURS,
-    LABEL_EFFECT_HEADER,
+    LABEL_HEADER,
     HEADER_MAX_LENGTH,
     LABEL_STATUS,
     LABEL_DISRUPTION_NOTES,
@@ -884,7 +884,7 @@ export const EditEffectPanel = (props, ref) => {
                             <div className="col-12">
                                 <FormGroup>
                                     <Label for="disruption-creation__wizard-select-details__header">
-                                        <span className="font-size-md font-weight-bold">{LABEL_EFFECT_HEADER}</span>
+                                        <span className="font-size-md font-weight-bold">{LABEL_HEADER}</span>
                                     </Label>
                                     <Input
                                         id="disruption-creation__wizard-select-details__header"
@@ -897,7 +897,7 @@ export const EditEffectPanel = (props, ref) => {
                                         invalid={ isTitleDirty && !titleValid() }
                                         disabled={ isResolved() }
                                     />
-                                    <FormFeedback>Please enter effect title</FormFeedback>
+                                    <FormFeedback>Please enter disruption title</FormFeedback>
                                 </FormGroup>
                             </div>
                             <div className="col-6">

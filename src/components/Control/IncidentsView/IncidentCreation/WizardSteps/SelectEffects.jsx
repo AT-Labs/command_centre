@@ -49,7 +49,7 @@ import {
     LABEL_SEVERITY,
     LABEL_DURATION_HOURS,
     TIME_FORMAT,
-    LABEL_EFFECT_HEADER,
+    LABEL_HEADER,
     HEADER_MAX_LENGTH } from '../../../../../constants/disruptions';
 import { getDatePickerOptions } from '../../../../../utils/dateUtils';
 
@@ -548,7 +548,7 @@ export const SelectEffects = (props) => {
                         <div className="col-12">
                             <FormGroup>
                                 <Label for="disruption-creation__wizard-select-details__header">
-                                    <span className="font-size-md font-weight-bold">{LABEL_EFFECT_HEADER}</span>
+                                    <span className="font-size-md font-weight-bold">{LABEL_HEADER}</span>
                                 </Label>
                                 <Input
                                     id="disruption-creation__wizard-select-details__header"
@@ -560,7 +560,7 @@ export const SelectEffects = (props) => {
                                     value={ disruption.header }
                                     invalid={ disruption.isTitleDirty && !titleValid(disruption.key) }
                                 />
-                                <FormFeedback>Please enter effect title</FormFeedback>
+                                <FormFeedback>Please enter disruption title</FormFeedback>
                             </FormGroup>
                         </div>
                         <div className="col-6">

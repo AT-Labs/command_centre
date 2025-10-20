@@ -1,32 +1,44 @@
 import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-import moment from 'moment';
 import { connect } from 'react-redux';
-import { Box, IconButton } from '@mui/material';
+import { Box } from '@mui/material';
 import { getGridSingleSelectOperators, getGridStringOperators, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid-pro';
 import { lowerCase, get, words, upperFirst, map, isEqual } from 'lodash-es';
+import moment from 'moment';
 import { FaCheckCircle, FaEyeSlash } from 'react-icons/fa';
 import { GiDetour } from 'react-icons/gi';
 
+import TripView from './TripView';
 import { IS_LOGIN_NOT_REQUIRED } from '../../../auth';
 import { isTripCancelPermitted } from '../../../utils/user-permissions';
 import { getActiveRoute } from '../../../redux/selectors/control/routes/routes';
 import { getActiveRouteVariant } from '../../../redux/selectors/control/routes/routeVariants';
 import { getServiceDate } from '../../../redux/selectors/control/serviceDate';
+import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
 import { formatTripDelay, isTripAdded, dateOperators, markStopsAsFirstOrLast, IsOnHoldTrip } from '../../../utils/control/routes';
 import { getTripInstanceId, getTripTimeDisplay, getTimePickerOptions } from '../../../utils/helpers';
 import { mergeDatagridColumns } from '../../../utils/datagrid';
-import { selectSingleTrip, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances } from '../../../redux/actions/control/routes/trip-instances';
+import TripIcon from '../Common/Trip/TripIcon';
+import TripDelay from '../Common/Trip/TripDelay';
+import {
+    selectSingleTrip, selectTrips, selectAllTrips, filterTripInstances, updateActiveTripInstances,
+} from '../../../redux/actions/control/routes/trip-instances';
 import { TripSubIconType } from './Types';
-import { getAllTripInstancesList, getSelectedTripsKeys, getTotalTripInstancesCount, getActiveTripInstance } from '../../../redux/selectors/control/routes/trip-instances';
+import {
+    getAllTripInstancesList,
+    getSelectedTripsKeys,
+    getTotalTripInstancesCount,
+    getActiveTripInstance,
+} from '../../../redux/selectors/control/routes/trip-instances';
+import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
+import './TripsDataGrid.scss';
 import { getAgencies } from '../../../redux/selectors/control/agencies';
 import { CustomSelectionHeader } from './CustomSelectionHeader';
 import { getAllStops } from '../../../redux/selectors/static/stops';
 import { StopSearchDataGridOperators } from '../Common/DataGrid/OmniSearchDataGridOperator';
 import { getAllocations, getVehicleAllocationLabelByTrip } from '../../../redux/selectors/control/blocks';
 import {
-    useDiversion, useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences,
-    useHoldTrip, useTripOperationNotes, useTripCancellationCause, useParentChildIncident,
+    useDiversion, useAddTrip, useHideTrip, useRoutesTripsFilterCollapse, useRoutesTripsPreferences, useHoldTrip, useTripOperationNotes, useTripCancellationCause,
 } from '../../../redux/selectors/appSettings';
 import { getUserPreferences } from '../../../utils/transmitters/command-centre-config-api';
 import { updateRoutesTripsDatagridConfig, updateDefaultRoutesTripsDatagridConfig } from '../../../redux/actions/datagrid';
@@ -35,22 +47,9 @@ import { mergeRouteFilters } from '../../../redux/actions/control/routes/filters
 import { LABEL_DISRUPTION } from '../../../constants/disruptions';
 import { transformIncidentNo } from '../../../utils/control/disruptions';
 import { sourceIdDataGridOperator } from '../Notifications/sourceIdDataGridOperator';
+import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
 import { useAlertCauses } from '../../../utils/control/alert-cause-effect';
 import { DIRECTIONS } from '../DisruptionsView/types';
-import { setIncidentToUpdate, updateEditMode, getDisruptionsAndIncidents } from '../../../redux/actions/control/incidents';
-import { getAllIncidents } from '../../../redux/selectors/control/incidents';
-import { updateControlDetailView, updateMainView } from '../../../redux/actions/navigation';
-
-import VIEW_TYPE from '../../../types/view-types';
-import EDIT_TYPE from '../../../types/edit-types';
-import RenderCellExpand from '../Alerts/RenderCellExpand/RenderCellExpand';
-import TRIP_STATUS_TYPES from '../../../types/trip-status-types';
-import TripView from './TripView';
-import TripIcon from '../Common/Trip/TripIcon';
-import TripDelay from '../Common/Trip/TripDelay';
-import CustomDataGrid from '../../Common/CustomDataGrid/CustomDataGrid';
-
-import './TripsDataGrid.scss';
 
 export const renderDisruptionIdCell = ({ row }) => {
     const formattedDisruptionId = transformIncidentNo(row.disruptionId);
@@ -158,34 +157,6 @@ export const TripsDataGrid = (props) => {
         );
     };
 
-    const allIncidentsRef = useRef(props.allIncidents);
-
-    useEffect(() => {
-        allIncidentsRef.current = props.allIncidents;
-    }, [props.allIncidents]);
-
-    const renderParentIncidentCell = ({ row }) => {
-        const formattedDisruptionId = transformIncidentNo(row.disruptionId);
-        if (formattedDisruptionId) {
-            return (
-                <IconButton disableRipple
-                    color="primary"
-                    onClick={ () => {
-                        const incident = allIncidentsRef.current.find(inc => inc.disruptions?.includes(row.disruptionId));
-                        if (incident) {
-                            props.updateMainView(VIEW_TYPE.MAIN.CONTROL);
-                            props.updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.INCIDENTS);
-                            props.setIncidentToUpdate(incident.incidentId, formattedDisruptionId);
-                            props.updateEditMode(EDIT_TYPE.EDIT);
-                        }
-                    } }>
-                    <span className="font-size-md">{formattedDisruptionId}</span>
-                </IconButton>
-            );
-        }
-        return undefined;
-    };
-
     const GRID_COLUMNS = [
         {
             ...GRID_CHECKBOX_SELECTION_COL_DEF,
@@ -255,7 +226,7 @@ export const TripsDataGrid = (props) => {
                 headerName: LABEL_DISRUPTION,
                 width: 200,
                 hide: false,
-                renderCell: props.useParentChildIncident ? renderParentIncidentCell : renderDisruptionIdCell,
+                renderCell: renderDisruptionIdCell,
                 filterOperators: sourceIdDataGridOperator,
             },
 
@@ -562,9 +533,6 @@ export const TripsDataGrid = (props) => {
                     setIsSavedDatagridConfigReady(true);
                 });
         }
-        if (props.useDiversion && props.useParentChildIncident) {
-            props.getDisruptionsAndIncidents();
-        }
     }, []);
 
     const updateDatagridConfigHandler = (config) => {
@@ -632,19 +600,11 @@ TripsDataGrid.propTypes = {
     useHoldTrip: PropTypes.bool.isRequired,
     useTripOperationNotes: PropTypes.bool.isRequired,
     useTripCancellationCause: PropTypes.bool.isRequired,
-    useParentChildIncident: PropTypes.bool.isRequired,
-    setIncidentToUpdate: PropTypes.func.isRequired,
-    updateEditMode: PropTypes.func.isRequired,
-    getDisruptionsAndIncidents: PropTypes.func.isRequired,
-    allIncidents: PropTypes.array,
-    updateMainView: PropTypes.func.isRequired,
-    updateControlDetailView: PropTypes.func.isRequired,
 };
 
 TripsDataGrid.defaultProps = {
     activeTripInstance: [],
     gridClassNames: 'grid-height',
-    allIncidents: [],
 };
 
 export default connect(
@@ -668,8 +628,6 @@ export default connect(
         useHoldTrip: useHoldTrip(state),
         useTripOperationNotes: useTripOperationNotes(state),
         useTripCancellationCause: useTripCancellationCause(state),
-        useParentChildIncident: useParentChildIncident(state),
-        allIncidents: getAllIncidents(state),
     }),
     {
         selectSingleTrip,
@@ -680,10 +638,5 @@ export default connect(
         updateRoutesTripsDatagridConfig,
         updateDefaultRoutesTripsDatagridConfig,
         mergeRouteFilters,
-        setIncidentToUpdate,
-        updateEditMode,
-        getDisruptionsAndIncidents,
-        updateMainView,
-        updateControlDetailView,
     },
 )(TripsDataGrid);
