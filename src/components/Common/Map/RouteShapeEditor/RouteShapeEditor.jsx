@@ -82,10 +82,13 @@ const RouteShapeEditor = (props) => {
             setTomtomPolyline([]); // Reset TomTom polyline
             setTomtomInstructions([]); // Reset TomTom instructions
             setShowWarning(false);
+            setMergedTomTom(false);
         } else {
             setUpdatedCoords(previousEntry.polyline);
             setTomtomPolyline(previousEntry.tomtomPolyline || []);
             setTomtomInstructions(previousEntry.tomtomInstructions || []);
+            setShowWarning(previousEntry.showWarning);
+            setMergedTomTom(previousEntry.mergedTomTom || false);
         }
         setFeatureGroupKey(k => k + 1);
     };
@@ -97,7 +100,8 @@ const RouteShapeEditor = (props) => {
         setTomtomInstructions([]);
         setUpdatedCoords([]);
         setShowWarning(false);
-        setUndoStack([{ name: 'Initial', polyline: originalCoords }]);
+        setMergedTomTom(false);
+        setUndoStack([{ name: 'Initial', polyline: originalCoords, showWarning: false }]);
         setFeatureGroupKey(k => k + 1); // Force remount FeatureGroup Editor
     };
 
@@ -110,6 +114,7 @@ const RouteShapeEditor = (props) => {
             setFeatureGroupKey(k => k + 1); // Force remount FeatureGroup Editor
             props.onDirectionsUpdated({ pending: false });
             setMergedTomTom(true);
+            setShowWarning(false);
         }
     };
 
@@ -174,6 +179,7 @@ const RouteShapeEditor = (props) => {
                 // When we don't get any route points from TomTom
                 setTomtomPolyline([]);
                 setTomtomInstructions([]);
+                setShowWarning(false);
             }
         }
     };
@@ -183,6 +189,7 @@ const RouteShapeEditor = (props) => {
         if (editingAction) {
             // Add the current state to the undo stack
             setUndoStack(prevStack => [...prevStack, editingAction]);
+            console.log('Recorded editing action:', editingAction);
         }
     }, [editingAction]);
 
@@ -191,7 +198,6 @@ const RouteShapeEditor = (props) => {
             const initialCoords = parseWKT(props.initialShape);
             setEditablePolyline(initialCoords);
             setUpdatedCoords(parseWKT(props.initialShape));
-            setUndoStack([{ name: 'Initial', polyline: initialCoords }]);
         } else {
             setEditablePolyline(originalCoords);
             setUndoStack([{ name: 'Initial', polyline: originalCoords }]);
@@ -199,8 +205,9 @@ const RouteShapeEditor = (props) => {
     }, [originalCoords, props.initialShape]);
 
     useEffect(() => {
-        if (props.initialDirections) {
+        if (props.initialDirections?.length > 0) {
             setTomtomInstructions(props.initialDirections);
+            setMergedTomTom(true);
         }
     }, [props.initialDirections]);
 
@@ -246,6 +253,8 @@ const RouteShapeEditor = (props) => {
                 polyline: updatedCoords,
                 tomtomPolyline,
                 tomtomInstructions,
+                mergedTomTom,
+                showWarning,
             };
             setEditingAction(newSnapshotAction);
             props.onShapeUpdated(toWKT(difference), toWKT(updatedCoords), tomtomInstructions);
