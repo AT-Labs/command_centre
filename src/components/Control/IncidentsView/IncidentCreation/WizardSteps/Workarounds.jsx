@@ -117,8 +117,9 @@ export const Workarounds = (props) => {
                     </div>
                     {filteredDisruptions.map(disruption => (
                         <li key={ disruption.key } className={ `disruption-effect-item ${props.disruptionKeyToEdit === disruption.key ? 'active' : ''}` }>
+                            <p className="p-lr12-tb6 m-0 bold-text">{disruption.header}</p>
                             <Button
-                                className="btn cc-btn-link p-lr12-tb6 m-0"
+                                className="btn cc-btn-link p-lr12-tb6 m-0 effect-link-btn"
                                 onClick={ () => openWorkaroundPanel(disruption) }>
                                 <strong>{getImpactLabel(disruption.impact)}</strong>
                             </Button>
