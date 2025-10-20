@@ -21,6 +21,7 @@ export const LABEL_STATUS = 'Status';
 export const LABEL_DISRUPTION = 'Disruption';
 export const LABEL_CUSTOMER_IMPACT = 'Effect';
 export const LABEL_HEADER = 'Disruption Title';
+export const LABEL_EFFECT_HEADER = 'Effect Title';
 export const LABEL_DESCRIPTION = 'Description';
 export const LABEL_URL = 'URL';
 export const LABEL_CREATED_BY = 'Created By';
