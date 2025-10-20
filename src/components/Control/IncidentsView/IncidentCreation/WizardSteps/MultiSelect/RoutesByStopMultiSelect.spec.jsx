@@ -134,5 +134,4 @@ describe('<RoutesByStopMultiSelect />', () => {
             expect(mockGetRoutesByStop).not.toHaveBeenCalled();
         });
     });
-
 });
