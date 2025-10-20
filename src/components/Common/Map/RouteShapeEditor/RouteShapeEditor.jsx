@@ -96,6 +96,7 @@ const RouteShapeEditor = (props) => {
         setTomtomPolyline([]);
         setTomtomInstructions([]);
         setUpdatedCoords([]);
+        setShowWarning(false);
         setUndoStack([{ name: 'Initial', polyline: originalCoords }]);
         setFeatureGroupKey(k => k + 1); // Force remount FeatureGroup Editor
     };
