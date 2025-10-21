@@ -20,6 +20,7 @@ import { MAX_NUMBER_OF_ENTITIES,
     LABEL_SEVERITY,
     LABEL_DURATION_HOURS,
     TIME_FORMAT,
+    LABEL_EFFECT_HEADER,
     HEADER_MAX_LENGTH } from '../../../../../constants/disruptions.js';
 import { getEntityCounts, generateSelectedText } from '../../../../../utils/control/incidents';
 import {
