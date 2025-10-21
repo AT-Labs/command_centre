@@ -74,6 +74,7 @@ import {
     setRequestToUpdateEditEffectState,
     toggleIncidentModals,
     setRequestedDisruptionKeyToUpdateEditEffect,
+    clearMapDrawingEntities,
 } from '../../../../../redux/actions/control/incidents';
 import { updateDataLoading } from '../../../../../redux/actions/activity';
 import { useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
@@ -544,6 +545,7 @@ export const EditEffectPanel = (props, ref) => {
         props.updateDisruptionKeyToEditEffect('');
         props.setDisruptionForWorkaroundEdit({});
         closeWorkaroundPanel();
+        props.clearMapDrawingEntities();
     };
 
     const handleAddNoteModalClose = (note) => {
@@ -627,7 +629,7 @@ export const EditEffectPanel = (props, ref) => {
     }, [props.isNotesRequiresToUpdate]);
 
     useEffect(() => {
-        if (disruptionIncidentNoToEdit && props.isWorkaroundsRequiresToUpdate && props.workaroundsToSync.length > 0) {
+        if (disruptionIncidentNoToEdit && props.isWorkaroundsRequiresToUpdate && Array.isArray(props.workaroundsToSync)) {
             updateDisruption({ workarounds: props.workaroundsToSync });
             props.updateIsWorkaroundsRequiresToUpdateState();
         }
@@ -649,6 +651,7 @@ export const EditEffectPanel = (props, ref) => {
         props.setRequestedDisruptionKeyToUpdateEditEffect('');
         props.setRequestToUpdateEditEffectState(false);
         props.toggleIncidentModals('isCancellationEffectOpen', false);
+        props.clearMapDrawingEntities();
     };
 
     useEffect(() => {
@@ -1209,7 +1212,7 @@ export const EditEffectPanel = (props, ref) => {
                             </div>
                         </Form>
                     </div>
-                    <footer className="row m-0 justify-content-end p-2 position-fixed incident-footer-min-height">
+                    <footer className="row m-0 justify-content-end p-4 position-fixed incident-footer-min-height">
                         <div className="col-4">
                             <Button
                                 className="btn cc-btn-primary btn-block save-workaround"
@@ -1331,8 +1334,9 @@ EditEffectPanel.propTypes = {
     isDiversionManagerLoading: PropTypes.bool,
     isDiversionManagerReady: PropTypes.bool,
     updateEffectValidationForPublishState: PropTypes.func.isRequired,
-    mapDrawingEntities: PropTypes.arrayOf(PropTypes.object).isRequired,
+    mapDrawingEntities: PropTypes.array.isRequired,
     onDisruptionChange: PropTypes.func,
+    clearMapDrawingEntities: PropTypes.func.isRequired,
 };
 
 EditEffectPanel.defaultProps = {
@@ -1381,4 +1385,5 @@ export default connect(state => ({
     updateDiversionMode,
     updateDiversionToEdit,
     updateDataLoading,
+    clearMapDrawingEntities,
 }, null, { forwardRef: true })(forwardRef(EditEffectPanel));

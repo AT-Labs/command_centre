@@ -621,6 +621,13 @@ export const setMapDrawingEntities = mapDrawingEntities => ({
     },
 });
 
+export const clearMapDrawingEntities = () => ({
+    type: ACTION_TYPE.UPDATE_MAP_DRAWING_ENTITIES,
+    payload: {
+        mapDrawingEntities: [],
+    },
+});
+
 export const setRequestedDisruptionKeyToUpdateEditEffect = requestedDisruptionKeyToUpdateEditEffect => ({
     type: ACTION_TYPE.SET_REQUESTED_DISRUPTION_KEY_TO_UPDATE_EDIT_EFFECT,
     payload: {
@@ -706,8 +713,9 @@ const geographySearchRoutes = searchBody => async (dispatch, getState) => {
     forEach(enrichedRoutes, (route) => {
         Object.assign(route, { shapeWkt: cachedShapes[route.routeId] });
     });
-
-    dispatch(setMapDrawingEntities(enrichedRoutes));
+    if (enrichedRoutes && enrichedRoutes.length > 0) {
+        dispatch(setMapDrawingEntities(enrichedRoutes));
+    }
 };
 
 const geographySearchStops = searchBody => async (dispatch, getState) => {
@@ -731,7 +739,9 @@ const geographySearchStops = searchBody => async (dispatch, getState) => {
             type: SEARCH_RESULT_TYPE.STOP.type,
         };
     });
-    dispatch(setMapDrawingEntities(enrichedStops));
+    if (enrichedStops && enrichedStops.length > 0) {
+        dispatch(setMapDrawingEntities(enrichedStops));
+    }
 };
 
 export const searchByDrawing = (incidentType, content) => async (dispatch) => {
