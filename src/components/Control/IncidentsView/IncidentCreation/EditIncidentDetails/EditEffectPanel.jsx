@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Paper, Stack, Button as MuiButton } from '@mui/material';
-import { isEmpty, sortBy, some, isEqual, uniqBy } from 'lodash-es';
+import { isEmpty, sortBy, some, isEqual, uniqBy, omit } from 'lodash-es';
 import { Form, FormFeedback, FormGroup, Input, Label, Button } from 'reactstrap';
 import { connect } from 'react-redux';
 import { FaRegCalendarAlt } from 'react-icons/fa';
@@ -514,10 +514,13 @@ export const EditEffectPanel = (props, ref) => {
         if (!isEmpty(originalDisruption.endDate) && !isEmpty(originalDisruption.endTime)) {
             endTimeMoment = momentFromDateTime(originalDisruption.endDate, originalDisruption.endTime);
         }
+        const affectedEntities = [...originalDisruption.affectedEntities.affectedRoutes,
+            ...originalDisruption.affectedEntities.affectedStops]
+            .map(entity => omit(entity, ['shapeWkt']));
         const updatedDisruption = {
             ...originalDisruption,
             notes: [...originalDisruption.notes, { description: note }],
-            affectedEntities: [...originalDisruption.affectedEntities.affectedRoutes, ...originalDisruption.affectedEntities.affectedStops],
+            affectedEntities,
             endTime: endTimeMoment,
             startTime: startTimeMoment,
         };
