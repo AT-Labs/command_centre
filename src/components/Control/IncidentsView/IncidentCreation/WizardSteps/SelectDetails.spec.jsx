@@ -689,6 +689,155 @@ describe('SelectDetails Component', () => {
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endTime', '11:12');
         });
 
+        it('Should preserve startDate and startTime for recurrent disruption when changing from not-started to resolved (empty endDate/endTime)', () => {
+            const props = {
+                ...defaultProps,
+                editMode: EDIT_TYPE.EDIT,
+                data: {
+                    ...incidentForEdit,
+                    status: STATUSES.NOT_STARTED,
+                    recurrent: true,
+                    startDate: '25/06/2025',
+                    startTime: '10:30',
+                    endDate: '',
+                    endTime: '',
+                    recurrencePattern: { byweekday: [1, 2, 3] },
+                    disruptions: [{
+                        ...incidentForEdit.disruptions[0],
+                        recurrencePattern: { byweekday: [1, 2, 3] },
+                    }],
+                },
+            };
+            render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+            const input = document.getElementById('disruption-detail__status');
+            fireEvent.change(input, { target: { value: STATUSES.RESOLVED } });
+
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(4);
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startDate', '25/06/2025');
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startTime', '10:30');
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', expect.any(String));
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endTime', expect.any(String));
+        });
+
+        it('Should preserve startDate and startTime for recurrent disruption when changing from not-started to resolved (existing endDate/endTime)', () => {
+            const props = {
+                ...defaultProps,
+                editMode: EDIT_TYPE.EDIT,
+                data: {
+                    ...incidentForEdit,
+                    status: STATUSES.NOT_STARTED,
+                    recurrent: true,
+                    startDate: '25/06/2025',
+                    startTime: '10:30',
+                    endDate: '30/06/2025',
+                    endTime: '18:00',
+                    recurrencePattern: { byweekday: [1, 2, 3] },
+                    disruptions: [{
+                        ...incidentForEdit.disruptions[0],
+                        recurrencePattern: { byweekday: [1, 2, 3] },
+                    }],
+                },
+            };
+            render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+            const input = document.getElementById('disruption-detail__status');
+            fireEvent.change(input, { target: { value: STATUSES.RESOLVED } });
+
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(2);
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startDate', '25/06/2025');
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startTime', '10:30');
+        });
+
+        it('Should update all dates for non-recurrent disruption when changing from not-started to resolved', () => {
+            const props = {
+                ...defaultProps,
+                editMode: EDIT_TYPE.EDIT,
+                data: {
+                    ...incidentForEdit,
+                    status: STATUSES.NOT_STARTED,
+                    recurrent: false,
+                    startDate: '25/06/2025',
+                    startTime: '10:30',
+                    endDate: '',
+                    endTime: '',
+                },
+            };
+            render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+            const input = document.getElementById('disruption-detail__status');
+            fireEvent.change(input, { target: { value: STATUSES.RESOLVED } });
+
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(4);
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startDate', expect.any(String));
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startTime', expect.any(String));
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', expect.any(String));
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endTime', expect.any(String));
+        });
+
+        it('Should reset dates when changing from not-started to not-started', () => {
+            const props = {
+                ...defaultProps,
+                editMode: EDIT_TYPE.EDIT,
+                data: {
+                    ...incidentForEdit,
+                    status: STATUSES.NOT_STARTED,
+                    startDate: '25/06/2025',
+                    startTime: '10:30',
+                    endDate: '30/06/2025',
+                    endTime: '18:00',
+                },
+            };
+            render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+            const input = document.getElementById('disruption-detail__status');
+            fireEvent.change(input, { target: { value: STATUSES.NOT_STARTED } });
+
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(4);
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startDate', expect.any(String));
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startTime', expect.any(String));
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '');
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endTime', '');
+        });
+
+        it('Should set endDate and endTime when changing from in-progress to resolved', () => {
+            const props = {
+                ...defaultProps,
+                editMode: EDIT_TYPE.EDIT,
+                data: {
+                    ...incidentForEdit,
+                    status: STATUSES.IN_PROGRESS,
+                    startDate: '25/06/2025',
+                    startTime: '10:30',
+                    endDate: '',
+                    endTime: '',
+                },
+            };
+            render(
+                <Provider store={ store }>
+                    <SelectDetails { ...props } />
+                </Provider>,
+            );
+            const input = document.getElementById('disruption-detail__status');
+            fireEvent.change(input, { target: { value: STATUSES.RESOLVED } });
+
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(3);
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', expect.any(String));
+            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endTime', expect.any(String));
+        });
+
         // can't reach because of options for status selector do not provide possibility to change not-started -> in-progress
         /* it('Should update startDate and startTime when change status from not-started to in-progress', () => {
             const props = {
