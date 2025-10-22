@@ -131,6 +131,7 @@ const componentPropsMock = {
     clearAffectedRoutes: jest.fn(),
     clearAffectedStops: jest.fn(),
     mapDrawingEntities: [],
+    clearMapDrawingEntities: jest.fn(),
 };
 controlUtils.useAlertEffects.mockReturnValue([impacts]);
 
