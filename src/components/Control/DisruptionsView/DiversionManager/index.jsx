@@ -13,7 +13,7 @@ import CreateDiversionWithoutMergeModal from './CreateDiversionWithoutMergeModal
 import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
 import { createDiversion, updateDiversion, resetDiversionResult, setDiversionManagerReady } from '../../../../redux/actions/control/diversions';
 import { getDiversionResultState, getDiversionForEditing, getDiversionEditMode } from '../../../../redux/selectors/control/diversions';
-import { useDiversion } from '../../../../redux/selectors/appSettings';
+import { useDiversion, useTomTomDirections } from '../../../../redux/selectors/appSettings';
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
 import { isAffectedStop, createAffectedStop,
     getUniqueStops, createModifiedRouteVariant, canMerge, hasDiversionModified, getUniqueAffectedStopIds,
@@ -442,6 +442,7 @@ const DiversionManager = (props) => {
                 onShapeUpdated={ onShapeUpdated }
                 onDirectionsUpdated={ ({ pending }) => setHasPendingMerge(pending) }
                 visible={ isBaseRouteVariantVisible }
+                useTomTomDirections={ props.useTomTomDirections }
                 className="map" />
             <CustomModal
                 className="change-selected-route-variant-modal"
@@ -493,6 +494,7 @@ DiversionManager.propTypes = {
     resultState: PropTypes.object,
     diversion: PropTypes.object,
     useDiversion: PropTypes.bool.isRequired,
+    useTomTomDirections: PropTypes.bool.isRequired,
 };
 
 DiversionManager.defaultProps = {
@@ -511,4 +513,5 @@ export default connect(state => ({
     resultState: getDiversionResultState(state),
     diversion: getDiversionForEditing(state),
     useDiversion: useDiversion(state),
+    useTomTomDirections: useTomTomDirections(state),
 }), { createDiversion, updateDiversion, resetDiversionResult, setDiversionManagerReady })(DiversionManager);
