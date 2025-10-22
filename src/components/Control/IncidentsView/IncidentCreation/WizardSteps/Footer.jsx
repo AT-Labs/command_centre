@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
+import { clearMapDrawingEntities } from '../../../../../redux/actions/control/incidents';
 
 export const Footer = (props) => {
     const getColumnClassName = () => {
@@ -29,6 +30,7 @@ export const Footer = (props) => {
                 <Button
                     className={ (props.useDraftDisruptions && props.isDraftOrCreateMode) ? 'btn cc-btn-secondary btn-block' : 'btn cc-btn-secondary btn-block pl-0' }
                     onClick={ () => {
+                        props.clearMapDrawingEntities();
                         props.toggleIncidentModals('isCancellationOpen', true);
                     } }>
                     Cancel
@@ -80,6 +82,7 @@ Footer.propTypes = {
     additionalFinishButton: PropTypes.bool,
     isAdditionalFinishButtonDisabled: PropTypes.bool,
     onAdditionalFinishButtonClick: PropTypes.func,
+    clearMapDrawingEntities: PropTypes.func.isRequired,
 };
 
 Footer.defaultProps = {
@@ -100,5 +103,6 @@ export default connect(
         useDraftDisruptions: useDraftDisruptions(state),
     }),
     {
+        clearMapDrawingEntities,
     },
 )(Footer);
