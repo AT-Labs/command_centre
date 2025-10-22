@@ -43,7 +43,7 @@ const mockDisruption = {
         freq: 2,
         dtstart: new Date('2022-03-09T06:00:00.000Z'),
         until: new Date('2022-03-10T06:00:00.000Z'),
-        byweekday: [0],
+        byweekday: [3, 4],
     },
     severity: 'MINOR',
     affectedEntities: {
@@ -78,7 +78,7 @@ const mockIncident = {
         freq: 2,
         dtstart: new Date('2022-03-09T06:00:00.000Z'),
         until: new Date('2022-03-10T06:00:00.000Z'),
-        byweekday: [0],
+        byweekday: [3, 4],
     },
     severity: 'MINOR',
     disruptions: [{ ...mockDisruption }],
@@ -130,6 +130,7 @@ const componentPropsMock = {
     updateNewIncidentEffect: jest.fn(),
     clearAffectedRoutes: jest.fn(),
     clearAffectedStops: jest.fn(),
+    mapDrawingEntities: [],
 };
 controlUtils.useAlertEffects.mockReturnValue([impacts]);
 

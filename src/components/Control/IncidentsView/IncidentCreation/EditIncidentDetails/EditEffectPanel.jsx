@@ -219,17 +219,12 @@ export const EditEffectPanel = (props, ref) => {
         },
     }));
 
-    const startTimeValid = () => {
-        if (disruption.status === STATUSES.RESOLVED && disruptionRecurrent) {
-            return disruption.startTime !== '24:00' && moment(disruption.startTime, TIME_FORMAT, true).isValid();
-        }
-        return isStartTimeValid(
-            disruption.startDate,
-            disruption.startTime,
-            moment(modalOpenedTime),
-            disruptionRecurrent,
-        );
-    };
+    const startTimeValid = () => isStartTimeValid(
+        disruption.startDate,
+        disruption.startTime,
+        moment(modalOpenedTime),
+        disruptionRecurrent,
+    );
 
     const impactValid = () => !isEmpty(disruption.impact);
     const severityValid = () => !isEmpty(disruption.severity);
@@ -505,7 +500,8 @@ export const EditEffectPanel = (props, ref) => {
         || !endTimeValid()
         || !endDateValid()
         || !durationValid()
-        || !affectedEntitySelected();
+        || !affectedEntitySelected()
+        || (disruptionRecurrent && !activePeriodsValidV2());
     const isDraftSubmitDisabled = isRequiredDraftPropsEmpty();
 
     const impacts = useAlertEffects();
@@ -694,19 +690,7 @@ export const EditEffectPanel = (props, ref) => {
         }
     }, [disruption.startDate, disruption.startTime, disruption.endDate]);
 
-    const isApplyDisabled = (() => {
-        if (disruption.status === STATUSES.DRAFT) {
-            return isDraftSubmitDisabled;
-        }
-
-        if ((disruption.status === STATUSES.NOT_STARTED || disruption.status === STATUSES.RESOLVED) && disruptionRecurrent) {
-            return some([disruption.impact, disruption.cause, disruption.header, disruption.severity], isEmpty)
-                || (disruption.recurrent && isEmpty(disruption.recurrencePattern.byweekday))
-                || !affectedEntitySelected();
-        }
-
-        return isSubmitDisabled;
-    })();
+    const isApplyDisabled = disruption.status === STATUSES.DRAFT ? isDraftSubmitDisabled : isSubmitDisabled;
 
     const diversionsCount = localDiversions.length;
     const isAddDiversionEnabled = () => {
@@ -989,7 +973,7 @@ export const EditEffectPanel = (props, ref) => {
                                     <Label for="disruption-creation__wizard-select-details__start-date">
                                         <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
                                     </Label>
-                                    <div className={ `${isResolved() || (disruptionRecurrent && disruption.status !== STATUSES.DRAFT && disruption.status !== STATUSES.NOT_STARTED) ? 'background-color-for-disabled-fields' : ''}` }>
+                                    <div className={ `${isResolved() || (disruptionRecurrent && disruption.status !== STATUSES.DRAFT) ? 'background-color-for-disabled-fields' : ''}` }>
                                         <Flatpickr
                                             data-testid="start-date_date-picker"
                                             key="start-date"
@@ -999,8 +983,7 @@ export const EditEffectPanel = (props, ref) => {
                                             options={ datePickerOptions }
                                             placeholder="Select date"
                                             onChange={ date => onChangeStartDate(date) }
-                                            disabled={ isResolved() || (disruptionRecurrent && disruption.status !== STATUSES.DRAFT && disruption.status !== STATUSES.NOT_STARTED) }
-                                        />
+                                            disabled={ isResolved() || (disruptionRecurrent && disruption.status !== STATUSES.DRAFT) } />
                                     </div>
                                     {!isStartDateDirty && (
                                         <FaRegCalendarAlt
@@ -1055,7 +1038,7 @@ export const EditEffectPanel = (props, ref) => {
                                             setIsStartTimeDirty(true);
                                         } }
                                         invalid={ (disruption.status === STATUSES.DRAFT ? (isStartTimeDirty && !startTimeValid()) : !startTimeValid()) }
-                                        disabled={ isResolved() || (disruptionRecurrent && disruption.status !== STATUSES.DRAFT && disruption.status !== STATUSES.NOT_STARTED) }
+                                        disabled={ isResolved() || (disruptionRecurrent && disruption.status !== STATUSES.DRAFT) }
                                     />
                                     <FormFeedback>Not valid values</FormFeedback>
                                 </FormGroup>
