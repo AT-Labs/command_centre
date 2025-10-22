@@ -278,49 +278,24 @@ export class CreateIncident extends React.Component {
             this.drawAffectedEntity(); // for redraw affected entity after add effect
         }
 
-        if (prevProps.mapDrawingEntities !== this.props.mapDrawingEntities) {
-            if (this.state.editMode === undefined && this.state.selectedEffect) {
-                const u = this.state.incidentData.disruptions.map(d => d.key === this.state.selectedEffect);
-                if (u.length > 0) {
-                    this.setState(prevState => ({
-                        incidentData: {
-                            ...prevState.incidentData,
-                            disruptions: prevState.incidentData.disruptions.map(d => (d.key === prevState.selectedEffect ? {
-                                ...d,
-                                affectedEntities: {
-                                    affectedRoutes: uniqBy([
-                                        ...(d.affectedEntities?.affectedRoutes || []),
-                                        ...this.props.mapDrawingEntities.filter(e => e.type === 'route'),
-                                    ], 'routeId'),
-                                    affectedStops: uniqBy([
-                                        ...(d.affectedEntities?.affectedStops || []),
-                                        ...this.props.mapDrawingEntities.filter(e => e.type === 'stop'),
-                                    ], 'stopCode'),
-                                },
-                            } : d)),
-                        },
-                    }));
-                }
-            }
-
-            if (this.state.editMode === EDIT_TYPE.ADD_EFFECTS) {
-                this.setState(prevState => ({
-                    newIncidentEffect: {
-                        ...prevState.newIncidentEffect,
-                        affectedEntities: {
-                            affectedRoutes: uniqBy([
-                                ...(prevState.newIncidentEffect.affectedEntities?.affectedRoutes || []),
-                                ...this.props.mapDrawingEntities.filter(e => e.type === 'route'),
-                            ], 'routeId'),
-                            affectedStops: uniqBy([
-                                ...(prevState.newIncidentEffect.affectedEntities?.affectedStops || []),
-                                ...this.props.mapDrawingEntities.filter(e => e.type === 'stop'),
-                            ], 'stopCode'),
-                        },
+        if (this.props.mapDrawingEntities && prevProps.mapDrawingEntities !== this.props.mapDrawingEntities && this.props.editMode === EDIT_TYPE.ADD_EFFECTS) {
+            this.setState(prevState => ({
+                newIncidentEffect: {
+                    ...prevState.newIncidentEffect,
+                    affectedEntities: {
+                        affectedRoutes: uniqBy([
+                            ...(prevState.newIncidentEffect.affectedEntities?.affectedRoutes || []),
+                            ...this.props.mapDrawingEntities.filter(e => e.type === 'route'),
+                        ], 'routeId'),
+                        affectedStops: uniqBy([
+                            ...(prevState.newIncidentEffect.affectedEntities?.affectedStops || []),
+                            ...this.props.mapDrawingEntities.filter(e => e.type === 'stop'),
+                        ], 'stopCode'),
                     },
-                }));
-            }
+                },
+            }));
         }
+
         if (prevProps.disruptionIncidentNoToEdit !== this.props.disruptionIncidentNoToEdit && this.props.editMode === EDIT_TYPE.EDIT) {
             this.setState({
                 selectedEffect: this.props.disruptionIncidentNoToEdit,
@@ -994,7 +969,7 @@ export class CreateIncident extends React.Component {
                     <DrawLayer
                         disabled={
                             !(
-                                this.props.editMode === EDIT_TYPE.ADD_EFFECT
+                                (this.props.editMode === EDIT_TYPE.ADD_EFFECT && this.props.activeStep === 2)
                                 || (this.props.editMode === EDIT_TYPE.EDIT && this.state.selectedEffect)
                                 || (this.props.editMode === EDIT_TYPE.CREATE && this.props.activeStep === 2)
                             )
@@ -1072,7 +1047,7 @@ CreateIncident.propTypes = {
     toggleWorkaroundPanel: PropTypes.func.isRequired,
     updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
     setDisruptionForWorkaroundEdit: PropTypes.func.isRequired,
-    mapDrawingEntities: PropTypes.arrayOf(PropTypes.object).isRequired,
+    mapDrawingEntities: PropTypes.array.isRequired,
     toggleEditEffectPanel: PropTypes.func.isRequired,
     disruptionIncidentNoToEdit: PropTypes.string,
     cachedShapes: PropTypes.arrayOf(PropTypes.object).isRequired,
