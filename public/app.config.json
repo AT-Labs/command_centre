@@ -35,6 +35,7 @@
     "useDraftDisruptions": "false",
     "useDisruptionDraftEmailSharing": "false",
     "useDiversion": "false",
+    "useTomTomDirections": "false",
     "useHideSkippedStop": "false",
     "useHoldTrip": "false",
     "useStopBasedDisruptionsLayer": "false",

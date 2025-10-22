@@ -150,23 +150,13 @@ export const SelectDetails = (props) => {
         disruption => affectedEntitySelected(disruption.incidentNo),
     );
 
-    const activePeriodsValidForAllDisruptions = () => disruptionsForPublishValidation.every(
-        (disruption) => {
-            if (disruption.recurrent) {
-                return isActivePeriodsValid(disruption.recurrencePattern, disruption.duration, maxActivePeriodsCount);
-            }
-            return true;
-        },
-    );
-
     const isPublishDisabled = isRequiredDisruptionPropsEmpty()
         || !startTimeValidForAllDisruptions()
         || !startDateValidForAllDisruptions()
         || !endTimeValidForAllDisruptions()
         || !endDateValidForAllDisruptions()
         || !durationValidForAllDisruptions()
-        || !affectedEntitySelectedForAllDisruptions()
-        || !activePeriodsValidForAllDisruptions();
+        || !affectedEntitySelectedForAllDisruptions();
 
     const onBlurTitle = () => {
         setIsTitleDirty(true);
@@ -282,8 +272,7 @@ export const SelectDetails = (props) => {
         || !durationValid()
         || (!props.isEffectValid && props.isEditEffectPanelOpen)
         || (status === STATUSES.DRAFT && isPublishDisabled)
-        || (status === STATUSES.DRAFT && !props.isEffectForPublishValid && props.isEditEffectPanelOpen)
-        || (recurrent && !activePeriodsValidV2());
+        || (status === STATUSES.DRAFT && !props.isEffectForPublishValid && props.isEditEffectPanelOpen);
 
     const isDraftSubmitDisabled = isRequiredDraftPropsEmpty();
 
@@ -343,27 +332,13 @@ export const SelectDetails = (props) => {
 
     const setDisruptionStatus = (selectedStatus) => {
         if (status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.RESOLVED) {
-            if (recurrent) {
-                props.onDataUpdate('startDate', startDate);
-                props.onDataUpdate('startTime', startTime);
-                if (!endDate || !endTime) {
-                    props.onDataUpdate('endDate', moment().format(DATE_FORMAT));
-                    props.onDataUpdate('endTime', moment().format(TIME_FORMAT));
-                }
-            } else {
-                props.onDataUpdate('startDate', moment().format(DATE_FORMAT));
-                props.onDataUpdate('startTime', moment().format(TIME_FORMAT));
-                props.onDataUpdate('endDate', moment().format(DATE_FORMAT));
-                props.onDataUpdate('endTime', moment().format(TIME_FORMAT));
-            }
+            props.onDataUpdate('startDate', moment().format(DATE_FORMAT));
+            props.onDataUpdate('startTime', moment().format(TIME_FORMAT));
+            props.onDataUpdate('endDate', moment().format(DATE_FORMAT));
+            props.onDataUpdate('endTime', moment().format(TIME_FORMAT));
         } else if (status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.IN_PROGRESS) {
-            if (recurrent) {
-                props.onDataUpdate('startDate', startDate);
-                props.onDataUpdate('startTime', startTime);
-            } else {
-                props.onDataUpdate('startDate', moment().format(DATE_FORMAT));
-                props.onDataUpdate('startTime', moment().format(TIME_FORMAT));
-            }
+            props.onDataUpdate('startDate', moment().format(DATE_FORMAT));
+            props.onDataUpdate('startTime', moment().format(TIME_FORMAT));
         } else if (status === STATUSES.NOT_STARTED && selectedStatus === STATUSES.NOT_STARTED) {
             props.onDataUpdate('startDate', moment(startTime).format(DATE_FORMAT));
             props.onDataUpdate('startTime', moment(startTime).format(TIME_FORMAT));
@@ -510,7 +485,7 @@ export const SelectDetails = (props) => {
                         <Label for="disruption-creation__wizard-select-details__start-date">
                             <span className="font-size-md font-weight-bold">{LABEL_START_DATE}</span>
                         </Label>
-                        <div className={ `${isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT && status !== STATUSES.DRAFT && status !== STATUSES.NOT_STARTED) ? 'background-color-for-disabled-fields' : ''}` }>
+                        <div className={ `${isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT && status !== STATUSES.DRAFT) ? 'background-color-for-disabled-fields' : ''}` }>
                             <Flatpickr
                                 data-testid="start-date_date-picker"
                                 id="disruption-creation__wizard-select-details__start-date"
@@ -519,7 +494,7 @@ export const SelectDetails = (props) => {
                                 options={ datePickerOptions }
                                 placeholder="Select date"
                                 onChange={ date => onChangeStartDate(date) }
-                                disabled={ isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT && status !== STATUSES.DRAFT && status !== STATUSES.NOT_STARTED) } />
+                                disabled={ isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT && status !== STATUSES.DRAFT) } />
                         </div>
                         {!isStartDateDirty && (
                             <FaRegCalendarAlt
@@ -570,7 +545,7 @@ export const SelectDetails = (props) => {
                             value={ startTime }
                             onChange={ event => onChangeStartTime(event.target.value) }
                             invalid={ (props.useDraftDisruptions ? (isStartTimeDirty && !startTimeValid()) : !startTimeValid()) }
-                            disabled={ isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT && status !== STATUSES.DRAFT && status !== STATUSES.NOT_STARTED) }
+                            disabled={ isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT && status !== STATUSES.DRAFT) }
                         />
                         <FormFeedback>Not valid values</FormFeedback>
                     </FormGroup>

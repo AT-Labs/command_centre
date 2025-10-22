@@ -21,7 +21,7 @@ export const WorkaroundsForm = forwardRef((props, ref) => {
     }));
 
     const updateWorkaroundsInDisruption = (workaroundsForCheckedType) => {
-        setWorkarounds(workaroundsForCheckedType || []);
+        setWorkarounds(workaroundsForCheckedType);
     };
 
     const cancelForm = () => {

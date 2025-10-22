@@ -29,12 +29,12 @@ const Cancellation = (props) => {
             props.openCreateIncident(false);
             props.deleteAffectedEntities();
             props.toggleIncidentModals('isCancellationOpen', false);
+            props.toggleWorkaroundPanel(false);
+            props.updateDisruptionKeyToWorkaroundEdit('');
             props.toggleEditEffectPanel(false);
             props.updateDisruptionKeyToEditEffect('');
+            props.setDisruptionForWorkaroundEdit({});
         }
-        props.toggleWorkaroundPanel(false);
-        props.updateDisruptionKeyToWorkaroundEdit('');
-        props.setDisruptionForWorkaroundEdit({});
     };
     return (
 
