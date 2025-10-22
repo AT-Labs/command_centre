@@ -48,7 +48,7 @@ const RouteShapeEditor = (props) => {
     // TomTom
     const [tomtomPolyline, setTomtomPolyline] = useState([]);
     const [tomtomInstructions, setTomtomInstructions] = useState([]);
-    const [showWarning, setShowWarning] = useState(false);
+    const [showTomTomWarning, setShowTomTomWarning] = useState(false);
     const [mergedTomTom, setMergedTomTom] = useState(false);
 
     const onEdited = (e) => {
@@ -74,6 +74,14 @@ const RouteShapeEditor = (props) => {
         });
     };
 
+    // Reset temporary TomTom data
+    const resetTomTom = () => {
+        setTomtomPolyline([]);
+        setTomtomInstructions(props.initialDirections || []);
+        setShowTomTomWarning(false);
+        setMergedTomTom(false);
+    };
+
     // Undo handler
     const handleUndo = () => {
         // Undo stack should have at least 2 entries (Initial + New) to revert to a previous state
@@ -83,26 +91,15 @@ const RouteShapeEditor = (props) => {
         setEditablePolyline(previousEntry.polyline);
         if (previousEntry.polyline === originalCoords) {
             setUpdatedCoords([]); // This means there is no updated shape
-            setTomtomPolyline([]); // Reset TomTom polyline
-            setTomtomInstructions([]); // Reset TomTom instructions
-            setShowWarning(false);
-            setMergedTomTom(false);
+            resetTomTom();
         } else {
             setUpdatedCoords(previousEntry.polyline);
             setTomtomPolyline(previousEntry.tomtomPolyline || []);
             setTomtomInstructions(previousEntry.tomtomInstructions || []);
-            setShowWarning(previousEntry.showWarning);
+            setShowTomTomWarning(previousEntry.showWarning);
             setMergedTomTom(previousEntry.mergedTomTom || false);
         }
         setFeatureGroupKey(k => k + 1);
-    };
-
-    // Reset TomTom data
-    const resetTomTom = () => {
-        setTomtomPolyline([]);
-        setTomtomInstructions([]);
-        setShowWarning(false);
-        setMergedTomTom(false);
     };
 
     // Reset handler
@@ -123,7 +120,7 @@ const RouteShapeEditor = (props) => {
             setFeatureGroupKey(k => k + 1); // Force remount FeatureGroup Editor
             props.onDirectionsUpdated({ pending: false });
             setMergedTomTom(true);
-            setShowWarning(false);
+            setShowTomTomWarning(false);
         }
     };
 
@@ -194,6 +191,23 @@ const RouteShapeEditor = (props) => {
         }
     };
 
+    const renderStopMarker = (stop, highlightedStops) => {
+        const isHighlighted = highlightedStops.includes(stop.stopId);
+        if (!stop.stopLat) return null;
+        return (
+            <IconMarker
+                key={ stop.stopId }
+                location={ [stop.stopLat, stop.stopLon] }
+                imageName={ isHighlighted ? 'bus-stop-red' : 'bus-stop' }
+                size={ 24 }
+            >
+                <Tooltip>
+                    {`${stop.stopCode} - ${stop.stopName}`}
+                </Tooltip>
+            </IconMarker>
+        );
+    };
+
     // Record the last editing action to the undo stack
     useEffect(() => {
         if (editingAction) {
@@ -246,7 +260,7 @@ const RouteShapeEditor = (props) => {
             const difference = findDifferences(originalCoords, editedCoords);
             if (difference.length > 1) {
                 setUpdatedCoords(editedCoords);
-                setShowWarning(mergedTomTom);
+                setShowTomTomWarning(mergedTomTom);
             }
         }
     }, [editedCoords]);
@@ -264,7 +278,7 @@ const RouteShapeEditor = (props) => {
                 tomtomPolyline,
                 tomtomInstructions,
                 mergedTomTom,
-                showWarning,
+                showWarning: showTomTomWarning,
             };
             setEditingAction(newSnapshotAction);
             props.onShapeUpdated(toWKT(difference), toWKT(updatedCoords), tomtomInstructions);
@@ -307,7 +321,7 @@ const RouteShapeEditor = (props) => {
                     )}
                 </div>
             )}
-            { showWarning && (
+            { showTomTomWarning && (
                 <div className="route-shape-editor-warning">
                     The written directions are not automatically updated when manual detour is applied.
                     Please review the written directions information.
@@ -333,22 +347,7 @@ const RouteShapeEditor = (props) => {
                 />
                 {!isEditing && props.routeVariant?.stops?.length > 0 && (
                     <FeatureGroup>
-                        {getAllUniqueStops().map((stop) => {
-                            const isHighlighted = props.highlightedStops.includes(stop.stopId);
-                            const marker = stop.stopLat ? (
-                                <IconMarker
-                                    key={ stop.stopId }
-                                    location={ [stop.stopLat, stop.stopLon] }
-                                    imageName={ isHighlighted ? 'bus-stop-red' : 'bus-stop' }
-                                    size={ 24 }
-                                >
-                                    <Tooltip>
-                                        {`${stop.stopCode} - ${stop.stopName}`}
-                                    </Tooltip>
-                                </IconMarker>
-                            ) : null;
-                            return marker;
-                        })}
+                        {getAllUniqueStops().map(stop => renderStopMarker(stop, props.highlightedStops))}
                     </FeatureGroup>
                 )}
                 {!isEditing && (
