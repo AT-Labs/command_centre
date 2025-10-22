@@ -73,7 +73,7 @@ export const INIT_STATE = {
     isCancellationEffectOpen: false,
     isApplyChangesOpen: false,
     isPublishAndApplyChangesOpen: false,
-    mapDrawingEntities: [],
+    mapDrawingEntities: null,
 };
 
 const handleIncidentsLoadingUpdate = (state, { payload: { isLoading } }) => ({ ...state, isLoading });

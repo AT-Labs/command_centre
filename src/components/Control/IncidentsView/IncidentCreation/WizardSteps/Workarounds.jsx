@@ -45,8 +45,6 @@ export const Workarounds = (props) => {
             props.updateCurrentStep(2);
         }
         props.toggleWorkaroundPanel(false);
-        props.updateDisruptionKeyToWorkaroundEdit('');
-        props.setDisruptionForWorkaroundEdit({});
     };
 
     const openWorkaroundPanel = (disruption) => {

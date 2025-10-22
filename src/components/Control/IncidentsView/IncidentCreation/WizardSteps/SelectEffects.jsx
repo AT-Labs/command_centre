@@ -39,7 +39,6 @@ import {
     toggleIncidentModals,
     clearAffectedRoutes,
     clearAffectedStops,
-    clearMapDrawingEntities,
 } from '../../../../../redux/actions/control/incidents';
 import Footer from './Footer';
 import { search } from '../../../../../redux/actions/search';
@@ -383,7 +382,6 @@ export const SelectEffects = (props) => {
 
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
-        props.clearMapDrawingEntities();
         setTimeout(() => {
             if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
                 props.onSubmitDraft();
@@ -400,7 +398,6 @@ export const SelectEffects = (props) => {
 
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
-        props.clearMapDrawingEntities();
         setTimeout(() => {
             if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
                 props.onSubmit();
@@ -417,7 +414,6 @@ export const SelectEffects = (props) => {
 
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
-        props.clearMapDrawingEntities();
         if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
             props.onUpdateEntitiesValidation(!isSubmitDisabled && activePeriodsValidForAllDisruptionsV2());
             props.onStepUpdate(2);
@@ -485,7 +481,6 @@ export const SelectEffects = (props) => {
         updateDisruptionsState();
         props.onStepUpdate(0);
         props.updateCurrentStep(1);
-        props.clearMapDrawingEntities();
     };
 
     const onChangeStartDate = (key, date) => {
@@ -865,7 +860,7 @@ SelectEffects.propTypes = {
     newIncidentEffect: PropTypes.object,
     selectedEffect: PropTypes.string,
     updateSelectedEffect: PropTypes.func,
-    mapDrawingEntities: PropTypes.array.isRequired,
+    mapDrawingEntities: PropTypes.arrayOf(PropTypes.object).isRequired,
     effectAddedHandler: PropTypes.func,
     effectToBeCleared: PropTypes.string,
     effectCleared: PropTypes.func,
@@ -873,7 +868,6 @@ SelectEffects.propTypes = {
     clearAffectedStops: PropTypes.func.isRequired,
     onSubmit: PropTypes.func,
     isDetailsValid: PropTypes.bool,
-    clearMapDrawingEntities: PropTypes.func.isRequired,
 };
 
 SelectEffects.defaultProps = {
@@ -911,5 +905,4 @@ export default connect(state => ({
     search,
     clearAffectedRoutes,
     clearAffectedStops,
-    clearMapDrawingEntities,
 })(SelectEffects);

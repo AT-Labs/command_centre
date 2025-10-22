@@ -150,23 +150,13 @@ export const SelectDetails = (props) => {
         disruption => affectedEntitySelected(disruption.incidentNo),
     );
 
-    const activePeriodsValidForAllDisruptions = () => disruptionsForPublishValidation.every(
-        (disruption) => {
-            if (disruption.recurrent) {
-                return isActivePeriodsValid(disruption.recurrencePattern, disruption.duration, maxActivePeriodsCount);
-            }
-            return true;
-        },
-    );
-
     const isPublishDisabled = isRequiredDisruptionPropsEmpty()
         || !startTimeValidForAllDisruptions()
         || !startDateValidForAllDisruptions()
         || !endTimeValidForAllDisruptions()
         || !endDateValidForAllDisruptions()
         || !durationValidForAllDisruptions()
-        || !affectedEntitySelectedForAllDisruptions()
-        || !activePeriodsValidForAllDisruptions();
+        || !affectedEntitySelectedForAllDisruptions();
 
     const onBlurTitle = () => {
         setIsTitleDirty(true);
@@ -282,8 +272,7 @@ export const SelectDetails = (props) => {
         || !durationValid()
         || (!props.isEffectValid && props.isEditEffectPanelOpen)
         || (status === STATUSES.DRAFT && isPublishDisabled)
-        || (status === STATUSES.DRAFT && !props.isEffectForPublishValid && props.isEditEffectPanelOpen)
-        || (recurrent && !activePeriodsValidV2());
+        || (status === STATUSES.DRAFT && !props.isEffectForPublishValid && props.isEditEffectPanelOpen);
 
     const isDraftSubmitDisabled = isRequiredDraftPropsEmpty();
 
