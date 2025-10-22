@@ -2,12 +2,32 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 
+// You can use a Unicode warning icon or an SVG/icon library
+const WarningIcon = () => (
+    <span
+        style={ {
+            color: '#FFA500',
+            fontSize: '3.5em',
+            verticalAlign: 'middle',
+        } }
+        aria-label="Warning"
+        role="img"
+    >
+        ⚠️
+    </span>
+);
+
 const CreateDiversionWithoutMergeModal = (props) => {
     const description = 'The automatic generated detour has not been saved.'
         + ' To save the auto-generated detour please click "Apply auto-generation" in the map before proceeding with diversion creation or modification.'
         + ' Do you wish to create or update the diversion and discard the automatic generated detour?';
     return (
         <div className="add-diversion__create-diversion-without-merge-modal">
+            <div className="row">
+                <div className="col text-center">
+                    <WarningIcon />
+                </div>
+            </div>
             <div className="row">
                 <div className="col text-center">
                     <div>
