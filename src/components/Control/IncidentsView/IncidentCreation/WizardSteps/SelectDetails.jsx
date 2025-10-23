@@ -714,7 +714,11 @@ export const SelectDetails = (props) => {
                                 <Button
                                     className="btn cc-btn-link p-lr12-tb6 m-0 effect-link-btn"
                                     onClick={ () => openEditEffectPanel(disruption) }>
-                                    <strong>{disruption.header} – {disruption.incidentNo}</strong>
+                                    <strong>
+                                        {disruption.header}
+                                        {' – '}
+                                        {disruption.incidentNo}
+                                    </strong>
                                 </Button>
                                 <p className="p-lr12-tb6 m-0">
                                     {getImpactLabel(disruption.impact)}
