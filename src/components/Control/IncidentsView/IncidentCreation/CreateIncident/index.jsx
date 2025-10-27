@@ -59,6 +59,7 @@ import {
     generateDisruptionActivePeriods,
     buildIncidentSubmitBody,
     getStatusForEffect,
+    transformParentSourceIdNo,
 } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import IncidentLimitModal from '../../Modals/IncidentLimitModal';
@@ -775,8 +776,8 @@ export class CreateIncident extends React.Component {
         const renderMainHeading = () => {
             const titleByMode = {
                 [EDIT_TYPE.CREATE]: 'Create a new Disruption',
-                [EDIT_TYPE.EDIT]: `Disruption #CCD${this.props.incidentToEdit.incidentId}`,
-                [EDIT_TYPE.ADD_EFFECT]: `Add Effect on Disruption #CCD${this.props.incidentToEdit.incidentId}`,
+                [EDIT_TYPE.EDIT]: `Disruption #${transformParentSourceIdNo(this.props.incidentToEdit.incidentId)}`,
+                [EDIT_TYPE.ADD_EFFECT]: `Add Effect on Disruption #${transformParentSourceIdNo(this.props.incidentToEdit.incidentId)}`,
             };
             if (this.props.editMode === EDIT_TYPE.ADD_EFFECT) {
                 return this.props.activeStep === 2 && <h2 className="pl-4 pr-4 pt-4">{titleByMode[this.props.editMode]}</h2>;

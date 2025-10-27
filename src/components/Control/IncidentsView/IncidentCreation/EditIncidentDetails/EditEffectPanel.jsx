@@ -875,7 +875,7 @@ export const EditEffectPanel = (props, ref) => {
         <div className={ `edit-effect-panel ${!props.isEditEffectPanelOpen ? 'pointer-event-none' : ''}` }>
             { props.isEditEffectPanelOpen && (
                 <Paper component={ Stack } direction="column" justifyContent="center" className="mui-paper">
-                    <div className="edit-effect-panel-body">
+                    <div className="edit-effect-panel-body effect-background-color">
                         <div className="label-with-icon">
                             <h2 className="pl-4 pr-4 pt-4">{ `Edit details of Effect ${disruption.incidentNo}` }</h2>
                             <div style={ { display: 'flex', alignItems: 'center', gap: '10px' } }>
@@ -944,7 +944,7 @@ export const EditEffectPanel = (props, ref) => {
                                     </Label>
                                     <Input
                                         id="disruption-creation__wizard-select-details__header"
-                                        className="w-100 border border-dark"
+                                        className="w-100 border border-dark effect-background-color"
                                         placeholder="Title of the message"
                                         maxLength={ HEADER_MAX_LENGTH }
                                         onChange={ event => updateDisruption({ header: event.target.value }) }
@@ -1055,7 +1055,7 @@ export const EditEffectPanel = (props, ref) => {
                                     <Input
                                         data-testid="start-time_input"
                                         id="disruption-creation__wizard-select-details__start-time"
-                                        className="border border-dark"
+                                        className="border border-dark effect-background-color"
                                         value={ disruption.startTime }
                                         onChange={ (event) => {
                                             updateDisruption({ startTime: event.target.value });
@@ -1074,7 +1074,7 @@ export const EditEffectPanel = (props, ref) => {
                                         <Input
                                             data-testid="end-time_input"
                                             id="disruption-creation__wizard-select-details__end-time"
-                                            className="border border-dark"
+                                            className="border border-dark effect-background-color"
                                             value={ disruption.endTime }
                                             onChange={ event => updateDisruption({ endTime: event.target.value }) }
                                             invalid={ !endTimeValid() }
@@ -1090,7 +1090,7 @@ export const EditEffectPanel = (props, ref) => {
                                         </Label>
                                         <Input
                                             id="disruption-creation__wizard-select-details__duration"
-                                            className="border border-dark"
+                                            className="border border-dark effect-background-color"
                                             value={ disruption.duration }
                                             onChange={ event => updateDisruption({ duration: event.target.value }) }
                                             invalid={ isDurationDirty && !durationValid() }
@@ -1175,7 +1175,7 @@ export const EditEffectPanel = (props, ref) => {
                                         <HistoryIcon style={ { color: '#399CDB', cursor: 'pointer' } } onClick={ () => setHistoryNotesModalOpen(true) } />
                                     </div>
                                     <Input id="disruption-detail__notes"
-                                        className="textarea-no-resize border border-dark"
+                                        className="textarea-no-resize border border-dark effect-background-color"
                                         type="textarea"
                                         value={ disruption.note }
                                         onChange={ e => updateDisruption({ note: e.currentTarget.value }) }
@@ -1189,7 +1189,7 @@ export const EditEffectPanel = (props, ref) => {
                                     )}
                                     <div className="flex-justify-content-end">
                                         <Button
-                                            className="add-note-button cc-btn-secondary"
+                                            className="add-note-button cc-btn-secondary effect-background-color"
                                             onClick={ () => onAddNote(disruption.note) }
                                         >
                                             Add note
@@ -1222,7 +1222,7 @@ export const EditEffectPanel = (props, ref) => {
                                     <span className="pl-2">Draft Stop Message</span>
                                 </FormGroup>
                             </div>
-                            <div className="disruption-display-block">
+                            <div className={ `${isResolved() ? 'disruption-display-block resolved-effect' : 'disruption-display-block'}` }>
                                 <SelectEffectEntities
                                     disruptionKey={ disruption.key }
                                     affectedEntities={ disruption.affectedEntities }
@@ -1234,7 +1234,7 @@ export const EditEffectPanel = (props, ref) => {
                             </div>
                         </Form>
                     </div>
-                    <footer className="row m-0 justify-content-end p-4 position-fixed incident-footer-min-height">
+                    <footer className="row m-0 justify-content-end p-4 position-fixed incident-footer-min-height effect-background-color">
                         <div className="col-4">
                             <Button
                                 className="btn cc-btn-primary btn-block save-workaround"
