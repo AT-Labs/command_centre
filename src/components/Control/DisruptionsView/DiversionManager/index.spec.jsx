@@ -17,6 +17,7 @@ jest.mock('../../../../utils/transmitters/trip-mgt-api', () => ({
 
 jest.mock('../../../../redux/selectors/appSettings', () => ({
     useDiversion: () => true,
+    useTomTomDirections: () => true,
 }));
 
 jest.mock('../../../../redux/selectors/control/diversions', () => ({
