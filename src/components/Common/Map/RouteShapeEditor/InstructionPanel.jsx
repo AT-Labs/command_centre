@@ -53,13 +53,16 @@ const InstructionPanel = ({ instructions }) => {
                 </Tooltip>
             </div>
             <div ref={ textRef } className="instructions-content">
-                {instructions.map((inst, index) => {
+                {instructions.map((inst) => {
                     const street = inst.nextRoadInfo?.streetName?.text || '';
                     const symbol = maneuverToSymbol(inst.maneuver);
                     const text = maneuverToText(inst.maneuver, street);
 
+                    // Use a unique property from inst as key, fallback to JSON string if necessary
+                    const key = inst.id || `${inst.maneuver}-${street}`;
+
                     return (
-                        <div key={ index } style={ { borderBottom: '1px solid #ccc', padding: '10px' } }>
+                        <div key={ key } style={ { borderBottom: '1px solid #ccc', padding: '10px' } }>
                             {symbol ? (
                                 <div style={ { fontWeight: 'bold' } }>
                                     {symbol}

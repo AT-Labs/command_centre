@@ -292,7 +292,7 @@ const RouteShapeEditor = (props) => {
     // This is needed because the LeafletMap component does not expose a direct way to create panes before layers are added
     // Make sure the diversion shape is always on top of the route shape
     useEffect(() => {
-        if (mapRef.current && mapRef.current.leafletElement) {
+        if (mapRef?.current?.leafletElement) {
             const map = mapRef.current.leafletElement;
             // Make sure markerPane is above everything else (Red Dots)
             if (map.getPane('markerPane')) {

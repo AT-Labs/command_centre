@@ -11,13 +11,12 @@ const CreateDiversionWithoutMergeModal = (props) => {
         <div className="add-diversion__create-diversion-without-merge-modal">
             <div className="row">
                 <div className="col text-center">
-                    <span
+                    <img
                         className="modal-tomtom-warning-icon"
-                        aria-label="Warning"
-                        role="img"
-                    >
-                        ⚠️
-                    </span>
+                        src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>⚠️</text></svg>"
+                        alt="Warning"
+                        style={ { width: '2em', height: '2em' } }
+                    />
                 </div>
             </div>
             <div className="row">
