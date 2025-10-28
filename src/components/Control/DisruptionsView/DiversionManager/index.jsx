@@ -37,7 +37,7 @@ const DiversionManager = (props) => {
     const [routeVariantsList, setRouteVariantsList] = useState([]);
     const [selectedBaseRouteVariant, setSelectedBaseRouteVariant] = useState(null);
     const [initialBaseRouteShape, setInitialBaseRouteShape] = useState(null);
-    const [initialDirections, setInitialDirections] = useState(isEditingMode && props.diversion.directions ? props.diversion.directions : []);
+    const [initialDirections, setInitialDirections] = useState(isEditingMode && props.diversion?.directions ? props.diversion?.directions : []);
     const [isBaseRouteVariantVisible, setIsBaseRouteVariantVisible] = useState(true);
     const [tempSelectedBaseRouteVariant, setTempSelectedBaseRouteVariant] = useState(); // Save temporarily for confirmation modal
     const [isChangeVariantModalOpen, setIsChangeVariantModalOpen] = useState(false);
@@ -75,7 +75,7 @@ const DiversionManager = (props) => {
         // Select the base route in edit mode
         const baseRouteVariantId = props.diversion.diversionRouteVariants[0].routeVariantId;
         const baseRouteVariant = routeVariants.find(rv => rv.routeVariantId === baseRouteVariantId);
-        if (props.diversion.directions && props.diversion.directions.length > 0) {
+        if (props.diversion?.directions?.length > 0) {
             setDirections(props.diversion.directions);
         }
         if (baseRouteVariant) {
@@ -85,7 +85,7 @@ const DiversionManager = (props) => {
                 parseWKT(props.diversion.diversionShapeWkt),
             ) : [];
             setInitialBaseRouteShape(toWKT(initialCoordinates));
-            if (isEditingMode && props.diversion.directions) {
+            if (isEditingMode && props.diversion?.directions) {
                 setInitialDirections(props.diversion.directions);
                 setDirections(props.diversion.directions);
             }

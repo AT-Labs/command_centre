@@ -160,6 +160,7 @@ describe('<DiversionManager />', () => {
 
             const mockDiversion = {
                 diversionShapeWkt: 'LINESTRING(0 0, 1 1)',
+                directions: [],
             };
 
             renderComponent({ diversion: mockDiversion });
