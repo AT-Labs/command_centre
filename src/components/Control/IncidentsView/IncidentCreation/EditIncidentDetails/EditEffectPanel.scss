@@ -53,23 +53,6 @@
                 color: #2176AE;
             }
         }
-
-        .react-select__value-container {
-            border-width: 1px;
-            border-radius: 4px;
-        }
-
-        .react-select__value-container,
-        .selection-item-header,
-        .bg-white {
-            background-color: #F0FAFF !important;
-        }
-
-        .resolved-effect {
-            .react-select__value-container {
-                background-color: #E9ECEF !important;
-            }
-        }
     }
 
     & .handler-wrap {

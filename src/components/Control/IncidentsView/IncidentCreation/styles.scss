@@ -87,12 +87,12 @@
             background: transparent;
             border-radius: 0;
             border: none;
-            border-bottom: 2px solid rgb(206, 212, 219);
+            border-bottom: 1px solid rgb(206, 212, 219);
         }
 
         .workaround-search-input:focus {
             border: none;
-            border-bottom: 2px solid rgb(206, 212, 219);
+            border-bottom: 1px solid rgb(206, 212, 219);
             box-shadow: none;
         }
 
@@ -469,12 +469,6 @@ button.continue {
 .disruption-workarounds-effects {
     background-color: rgb(242, 243, 245);
 
-    .disruption-effect-item {
-        border-radius: 0;
-        border: none;
-        border-bottom: 2px solid rgb(206, 212, 219);
-    }
-
     .disruption-effect-item.active {
         background-color: rgb(206, 212, 219);
     }
@@ -482,19 +476,4 @@ button.continue {
 
 .pointer-event-none {
     pointer-events: none;
-}
-
-.effect-background-color {
-    background-color: #F0FAFF !important;
-}
-
-.effect-background-color:disabled {
-    background-color: #E9ECEF !important;
-}
-
-.effect-summary-item {
-    background: transparent;
-    border-radius: 0;
-    border: none;
-    border-bottom: 2px solid rgb(206, 212, 219);
 }

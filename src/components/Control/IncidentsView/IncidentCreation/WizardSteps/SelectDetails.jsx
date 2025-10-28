@@ -695,7 +695,7 @@ export const SelectDetails = (props) => {
             </Form>
             { props.editMode === EDIT_TYPE.EDIT && (
                 <div className="ml-4 mr-4 ">
-                    <ul className="pl-0">
+                    <ul className="pl-0 disruption-workarounds-effects">
                         <div>
                             <Label for="disruption-creation__wizard-select-details__header" className="p-lr12-tb6">
                                 <span className="font-size-md font-weight-bold">Effects</span>
@@ -710,7 +710,7 @@ export const SelectDetails = (props) => {
                             />
                         </div>
                         {filteredDisruptions.map(disruption => (
-                            <li key={ disruption.key } className={ `effect-summary-item ${props.disruptionIncidentNoToEdit === disruption.incidentNo ? 'effect-background-color' : ''}` }>
+                            <li key={ disruption.key } className={ `disruption-effect-item ${props.disruptionIncidentNoToEdit === disruption.incidentNo ? 'active' : ''}` }>
                                 <p className="p-lr12-tb6 m-0 bold-text">{disruption.header}</p>
                                 <Button
                                     className="btn cc-btn-link p-lr12-tb6 m-0 effect-link-btn"
