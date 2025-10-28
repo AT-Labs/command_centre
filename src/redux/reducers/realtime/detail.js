@@ -254,5 +254,4 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_STOP_VEHICLE_PREDICATE]: handleUpdateStopVehiclePredicate,
     [ACTION_TYPE.REMOVE_SELECTED_SEARCH_RESULT]: handleRemoveSelectedSearchResult,
     [ACTION_TYPE.CLEAR_SELECTED_SEARCH_RESULT]: handleClearSelectedSearchResult,
-    [ACTION_TYPE.FETCH_VEHICLES_REALTIME]: handleVehiclesUpdate,
 }, INIT_STATE);
