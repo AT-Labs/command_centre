@@ -29,7 +29,7 @@ import { MAX_NUMBER_OF_ENTITIES,
     LABEL_STATUS,
     LABEL_DISRUPTION_NOTES,
     DESCRIPTION_NOTE_MAX_LENGTH } from '../../../../../constants/disruptions.js';
-import { getEntityCounts, generateSelectedText } from '../../../../../utils/control/incidents';
+import { getEntityCounts, generateSelectedText, mergeExistingAndDrawnEntities } from '../../../../../utils/control/incidents';
 import IncidentLimitModal from '../../Modals/IncidentLimitModal.jsx';
 import { isEditEffectPanelOpen,
     getDisruptionKeyToEditEffect,
@@ -184,26 +184,10 @@ export const EditEffectPanel = (props, ref) => {
     }, [props.disruptions]);
 
     useEffect(() => {
-        if (props.mapDrawingEntities && props.mapDrawingEntities.length > 0) {
-            const newRoutes = props.mapDrawingEntities.filter(e => e.type === 'route');
-            const newStops = props.mapDrawingEntities.filter(e => e.type === 'stop');
-
-            const mergedRoutes = uniqBy(
-                [...disruption.affectedEntities.affectedRoutes, ...newRoutes],
-                'routeId',
-            );
-
-            const mergedStops = uniqBy(
-                [...disruption.affectedEntities.affectedStops, ...newStops],
-                'stopId',
-            );
-
+        if (Array.isArray(props.mapDrawingEntities) && props.mapDrawingEntities.length > 0) {
             setDisruption({
                 ...disruption,
-                affectedEntities: {
-                    affectedRoutes: mergedRoutes,
-                    affectedStops: mergedStops,
-                },
+                affectedEntities: mergeExistingAndDrawnEntities(disruption.affectedEntities, props.mapDrawingEntities),
             });
         }
     }, [props.mapDrawingEntities]);
@@ -554,7 +538,9 @@ export const EditEffectPanel = (props, ref) => {
         props.updateDisruptionKeyToEditEffect('');
         props.setDisruptionForWorkaroundEdit({});
         closeWorkaroundPanel();
-        props.clearMapDrawingEntities();
+        if (props.mapDrawingEntities.length > 0) {
+            props.clearMapDrawingEntities();
+        }
     };
 
     const handleAddNoteModalClose = (note) => {
@@ -660,7 +646,9 @@ export const EditEffectPanel = (props, ref) => {
         props.setRequestedDisruptionKeyToUpdateEditEffect('');
         props.setRequestToUpdateEditEffectState(false);
         props.toggleIncidentModals('isCancellationEffectOpen', false);
-        props.clearMapDrawingEntities();
+        if (props.mapDrawingEntities.length > 0) {
+            props.clearMapDrawingEntities();
+        }
     };
 
     useEffect(() => {

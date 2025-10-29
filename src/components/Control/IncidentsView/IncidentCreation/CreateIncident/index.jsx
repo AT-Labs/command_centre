@@ -9,7 +9,7 @@ import { Button } from 'reactstrap';
 import { RRule } from 'rrule';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import { DATE_FORMAT, TIME_FORMAT, MAX_NUMBER_OF_ENTITIES } from '../../../../../constants/disruptions';
-import { getEntityCounts, generateSelectedText, getShapes, getRouteColors } from '../../../../../utils/control/incidents';
+import { getEntityCounts, generateSelectedText, getShapes, getRouteColors, mergeExistingAndDrawnEntities } from '../../../../../utils/control/incidents';
 import {
     createNewIncident,
     openCreateIncident,
@@ -278,22 +278,12 @@ export class CreateIncident extends React.Component {
             this.drawAffectedEntity(); // for redraw affected entity after add effect
         }
 
-        if (this.props.mapDrawingEntities && prevProps.mapDrawingEntities !== this.props.mapDrawingEntities && this.props.editMode === EDIT_TYPE.ADD_EFFECTS) {
-            this.setState(prevState => ({
-                newIncidentEffect: {
-                    ...prevState.newIncidentEffect,
-                    affectedEntities: {
-                        affectedRoutes: uniqBy([
-                            ...(prevState.newIncidentEffect.affectedEntities?.affectedRoutes || []),
-                            ...this.props.mapDrawingEntities.filter(e => e.type === 'route'),
-                        ], 'routeId'),
-                        affectedStops: uniqBy([
-                            ...(prevState.newIncidentEffect.affectedEntities?.affectedStops || []),
-                            ...this.props.mapDrawingEntities.filter(e => e.type === 'stop'),
-                        ], 'stopCode'),
-                    },
-                },
-            }));
+        if (Array.isArray(this.props.mapDrawingEntities) && prevProps.mapDrawingEntities !== this.props.mapDrawingEntities
+            && this.props.editMode === EDIT_TYPE.ADD_EFFECTS && this.props.mapDrawingEntities.length > 0) {
+            this.setState(prevState => ({ newIncidentEffect: {
+                ...prevState.newIncidentEffect,
+                affectedEntities: mergeExistingAndDrawnEntities(prevState.newIncidentEffect.affectedEntities, this.props.mapDrawingEntities),
+            } }));
         }
 
         if (prevProps.disruptionIncidentNoToEdit !== this.props.disruptionIncidentNoToEdit && this.props.editMode === EDIT_TYPE.EDIT) {
