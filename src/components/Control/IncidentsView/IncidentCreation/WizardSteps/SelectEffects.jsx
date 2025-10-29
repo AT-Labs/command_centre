@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { isEmpty, sortBy, uniqueId, some, uniqBy } from 'lodash-es';
+import { isEmpty, sortBy, uniqueId, some } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { AiOutlinePlusCircle, AiOutlineMinusCircle } from 'react-icons/ai';

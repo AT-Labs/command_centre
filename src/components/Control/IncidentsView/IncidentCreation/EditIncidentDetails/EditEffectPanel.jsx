@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Paper, Stack, Button as MuiButton } from '@mui/material';
-import { isEmpty, sortBy, some, isEqual, uniqBy, omit } from 'lodash-es';
+import { isEmpty, sortBy, some, isEqual, omit } from 'lodash-es';
 import { Form, FormFeedback, FormGroup, Input, Label, Button } from 'reactstrap';
 import { connect } from 'react-redux';
 import { FaRegCalendarAlt } from 'react-icons/fa';
