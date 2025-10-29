@@ -9,7 +9,7 @@ import { Button } from 'reactstrap';
 import { RRule } from 'rrule';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import { DATE_FORMAT, TIME_FORMAT, MAX_NUMBER_OF_ENTITIES } from '../../../../../constants/disruptions';
-import { getEntityCounts, generateSelectedText, getShapes, getRouteColors, mergeExistingAndDrawnEntities } from '../../../../../utils/control/incidents';
+import { getEntityCounts, generateSelectedText, getShapes, getRouteColors } from '../../../../../utils/control/incidents';
 import {
     createNewIncident,
     openCreateIncident,
@@ -59,6 +59,7 @@ import {
     generateDisruptionActivePeriods,
     buildIncidentSubmitBody,
     getStatusForEffect,
+    transformParentSourceIdNo,
 } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import IncidentLimitModal from '../../Modals/IncidentLimitModal';
@@ -278,12 +279,22 @@ export class CreateIncident extends React.Component {
             this.drawAffectedEntity(); // for redraw affected entity after add effect
         }
 
-        if (Array.isArray(this.props.mapDrawingEntities) && prevProps.mapDrawingEntities !== this.props.mapDrawingEntities
-            && this.props.editMode === EDIT_TYPE.ADD_EFFECTS && this.props.mapDrawingEntities.length > 0) {
-            this.setState(prevState => ({ newIncidentEffect: {
-                ...prevState.newIncidentEffect,
-                affectedEntities: mergeExistingAndDrawnEntities(prevState.newIncidentEffect.affectedEntities, this.props.mapDrawingEntities),
-            } }));
+        if (this.props.mapDrawingEntities && prevProps.mapDrawingEntities !== this.props.mapDrawingEntities && this.props.editMode === EDIT_TYPE.ADD_EFFECTS) {
+            this.setState(prevState => ({
+                newIncidentEffect: {
+                    ...prevState.newIncidentEffect,
+                    affectedEntities: {
+                        affectedRoutes: uniqBy([
+                            ...(prevState.newIncidentEffect.affectedEntities?.affectedRoutes || []),
+                            ...this.props.mapDrawingEntities.filter(e => e.type === 'route'),
+                        ], 'routeId'),
+                        affectedStops: uniqBy([
+                            ...(prevState.newIncidentEffect.affectedEntities?.affectedStops || []),
+                            ...this.props.mapDrawingEntities.filter(e => e.type === 'stop'),
+                        ], 'stopCode'),
+                    },
+                },
+            }));
         }
 
         if (prevProps.disruptionIncidentNoToEdit !== this.props.disruptionIncidentNoToEdit && this.props.editMode === EDIT_TYPE.EDIT) {
@@ -765,8 +776,8 @@ export class CreateIncident extends React.Component {
         const renderMainHeading = () => {
             const titleByMode = {
                 [EDIT_TYPE.CREATE]: 'Create a new Disruption',
-                [EDIT_TYPE.EDIT]: `Disruption #CCD${this.props.incidentToEdit.incidentId}`,
-                [EDIT_TYPE.ADD_EFFECT]: `Add Effect on Disruption #CCD${this.props.incidentToEdit.incidentId}`,
+                [EDIT_TYPE.EDIT]: `Disruption ${transformParentSourceIdNo(this.props.incidentToEdit.incidentId)}`,
+                [EDIT_TYPE.ADD_EFFECT]: `Add Effect on Disruption ${transformParentSourceIdNo(this.props.incidentToEdit.incidentId)}`,
             };
             if (this.props.editMode === EDIT_TYPE.ADD_EFFECT) {
                 return this.props.activeStep === 2 && <h2 className="pl-4 pr-4 pt-4">{titleByMode[this.props.editMode]}</h2>;

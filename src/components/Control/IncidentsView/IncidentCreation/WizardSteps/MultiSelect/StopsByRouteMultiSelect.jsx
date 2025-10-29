@@ -61,12 +61,10 @@ export const StopsByRouteMultiSelect = (props) => {
             // if current route has no stop then use this else create new
             if (routeList.length === 1 && routeList[0].stopCode === undefined) {
                 const stopByRoute = createStopWithRoute(stop, route);
-                const routeToReplaceIdx = updatedRoutes.findIndex(updatedRoute => updatedRoute.routeId === route.routeId);
-                updatedRoutes[routeToReplaceIdx] = stopByRoute;
+                updatedRoutes = updatedRoutes.filter(updatedRoute => updatedRoute.routeId !== route.routeId);
+                updatedRoutes = [...updatedRoutes, stopByRoute];
             } else {
-                const lastRouteIdx = updatedRoutes.findIndex(updatedRoute => updatedRoute.stopCode === routeList.at(-1).stopCode
-                    && updatedRoute.routeId === routeList.at(-1).routeId);
-                updatedRoutes.splice(lastRouteIdx + 1, 0, createStopWithRoute(stop, route));
+                updatedRoutes = [...updatedRoutes, createStopWithRoute(stop, route)];
             }
         } else if (routeList.length === 1) {
             // remove stop info if only one route
@@ -94,24 +92,21 @@ export const StopsByRouteMultiSelect = (props) => {
         if (isChecked) {
             const uncheckedStops = stopsByRouteDirection.filter(stop => `${stop.directionId}` === `${direction}` && !routeList.some(routeItem => routeItem.stopCode === stop.stopCode && `${routeItem.directionId}` === `${stop.directionId}`));
             if (!isEmpty(uncheckedStops)) {
-                const lastRouteIdx = updatedRoutes.findIndex(updatedRoute => updatedRoute === routeList.at(-1));
                 const stopsToAdd = uncheckedStops.map(stop => createStopWithRoute(routeWithoutStop, stop));
                 if (routeList.length === 1 && routeList[0].stopCode === undefined) {
                     updatedRoutes = updatedRoutes.filter(updatedRoute => updatedRoute.routeId !== route.routeId);
-                    updatedRoutes.splice(lastRouteIdx, 0, ...stopsToAdd);
-                } else {
-                    updatedRoutes.splice(lastRouteIdx + 1, 0, ...stopsToAdd);
                 }
+                updatedRoutes = [...updatedRoutes, ...stopsToAdd];
             }
         } else {
-            const firstRouteIdx = updatedRoutes.findIndex(updatedRoute => updatedRoute.routeId === route.routeId);
             updatedRoutes = updatedRoutes.filter(updatedRoute => updatedRoute.routeId !== route.routeId || `${updatedRoute.directionId}` !== `${direction}`);
 
             // add back single route without stop info
             if (!updatedRoutes.some(updatedRoute => updatedRoute.routeId === route.routeId)) {
-                updatedRoutes.splice(firstRouteIdx, 0, routeWithoutStop);
+                updatedRoutes = [...updatedRoutes, routeWithoutStop];
             }
         }
+
         props.updateAffectedRoutes(updatedRoutes);
     }, [affectedRoutes, props.updateAffectedRoutes, createStopWithRoute, filterOnlyRouteParams]);
 

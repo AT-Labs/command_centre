@@ -200,20 +200,6 @@ const updateWorkaroundsNeedsToBeUpdatedState = isWorkaroundsNeedsToBeUpdated => 
     },
 });
 
-export const setMapDrawingEntities = mapDrawingEntities => ({
-    type: ACTION_TYPE.UPDATE_MAP_DRAWING_ENTITIES,
-    payload: {
-        mapDrawingEntities,
-    },
-});
-
-export const clearMapDrawingEntities = () => ({
-    type: ACTION_TYPE.UPDATE_MAP_DRAWING_ENTITIES,
-    payload: {
-        mapDrawingEntities: [],
-    },
-});
-
 export const getDisruptionsAndIncidents = () => (dispatch, getState) => {
     const state = getState();
     if (!state) {
@@ -453,7 +439,6 @@ export const openCopyIncident = (isCreateEnabled, sourceIncidentId) => ({
 
 export const openCreateIncident = isCreateEnabled => (dispatch) => {
     dispatch(updateOpenCreateIncident(isCreateEnabled));
-    dispatch(clearMapDrawingEntities());
 };
 
 export const resetState = () => ({
@@ -626,6 +611,20 @@ export const setRequestToUpdateEditEffectState = requestToUpdateEditEffect => ({
     type: ACTION_TYPE.SET_REQUEST_TO_UPDATE_EDIT_EFFECT,
     payload: {
         requestToUpdateEditEffect,
+    },
+});
+
+export const setMapDrawingEntities = mapDrawingEntities => ({
+    type: ACTION_TYPE.UPDATE_MAP_DRAWING_ENTITIES,
+    payload: {
+        mapDrawingEntities,
+    },
+});
+
+export const clearMapDrawingEntities = () => ({
+    type: ACTION_TYPE.UPDATE_MAP_DRAWING_ENTITIES,
+    payload: {
+        mapDrawingEntities: [],
     },
 });
 
