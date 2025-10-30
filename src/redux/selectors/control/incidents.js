@@ -240,4 +240,5 @@ export const getRequestedDisruptionKeyToUpdateEditEffect = createSelector(getInc
 export const isCancellationEffectModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isCancellationEffectOpen'));
 export const isApplyChangesModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isApplyChangesOpen'));
 export const isPublishAndApplyChangesModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isPublishAndApplyChangesOpen'));
+export const isConfirmationModalOpen = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'isConfirmationOpen'));
 export const getMapDrawingEntities = createSelector(getIncidentsState, incidentsState => result(incidentsState, 'mapDrawingEntities'));

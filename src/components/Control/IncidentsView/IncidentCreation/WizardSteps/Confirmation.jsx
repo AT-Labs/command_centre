@@ -11,16 +11,26 @@ import {
     deleteAffectedEntities,
     updateIncidentsDatagridConfig,
     updateIncidentsSortingParams,
-    clearActiveIncident } from '../../../../../redux/actions/control/incidents';
+    clearActiveIncident,
+    toggleIncidentModals } from '../../../../../redux/actions/control/incidents';
 import { isModalOpen } from '../../../../../redux/selectors/activity';
 import { getIncidentsDatagridConfig } from '../../../../../redux/selectors/control/incidents';
 import { goToNotificationsView } from '../../../../../redux/actions/control/link';
 import { useDisruptionsNotificationsDirectLink } from '../../../../../redux/selectors/appSettings';
 
 const Confirmation = (props) => {
-    const { isRequesting, resultIncidentId, resultMessage, resultCreateNotification } = props.response;
+    const { isRequesting, resultIncidentId, resultMessage, resultCreateNotification, resultStatus } = props.response;
     const renderContent = () => {
         if (isRequesting) return <DetailLoader />;
+
+        if (resultStatus === 'danger') {
+            return (
+                <div>
+                    <span className="d-block mt-3 mb-2">Failed to update disruption</span>
+                </div>
+            );
+        }
+
         return resultIncidentId
             ? (
                 <>
@@ -56,6 +66,17 @@ const Confirmation = (props) => {
         return 'View and add more information';
     };
 
+    let firstButtonClassName = 'col-4';
+    let secondButtonClassName = 'col-8';
+
+    if (resultStatus === 'danger') {
+        firstButtonClassName = 'col-6';
+        secondButtonClassName = 'col-6';
+    } else if (props.useDisruptionsNotificationsDirectLink && resultIncidentId) {
+        firstButtonClassName = 'col-12 mb-4';
+        secondButtonClassName = 'col-6';
+    }
+
     return (
         <div className="disruption-creation__wizard-confirmation">
             <div className="row">
@@ -65,12 +86,14 @@ const Confirmation = (props) => {
             </div>
             { !isRequesting && (
                 <footer className="row justify-content-between mt-3">
-                    <div className={ props.useDisruptionsNotificationsDirectLink && resultIncidentId ? 'col-12 mb-4' : 'col-4' }>
+                    <div className={ firstButtonClassName }>
                         {
-                            resultIncidentId && (
+                            (resultIncidentId || resultStatus === 'danger') && (
                                 <Button
                                     className="btn cc-btn-primary btn-block"
                                     onClick={ () => {
+                                        props.clearDisruptionActionResult();
+                                        props.toggleIncidentModals('isConfirmationOpen', false);
                                         props.openCreateIncident(false);
                                         props.deleteAffectedEntities();
                                     } }>
@@ -79,10 +102,17 @@ const Confirmation = (props) => {
                             )
                         }
                     </div>
-                    <div className={ props.useDisruptionsNotificationsDirectLink && resultIncidentId ? 'col-6' : 'col-8' }>
+                    <div className={ secondButtonClassName }>
                         <Button
                             className="btn cc-btn-primary btn-block"
                             onClick={ () => {
+                                props.clearDisruptionActionResult();
+                                props.toggleIncidentModals('isConfirmationOpen', false);
+
+                                if (resultStatus === 'danger') {
+                                    return;
+                                }
+
                                 props.openCreateIncident(false);
                                 props.deleteAffectedEntities();
                                 props.updateIncidentsSortingParams({});
@@ -91,10 +121,18 @@ const Confirmation = (props) => {
                                     setTimeout(() => props.updateActiveIncident(resultIncidentId), 0);
                                 }
                             } }>
-                            { resultIncidentId ? getDisruptionDetailsButtonLabel() : 'Close' }
+                            { (() => {
+                                if (resultStatus === 'danger') {
+                                    return 'Try again';
+                                }
+                                if (resultIncidentId) {
+                                    return getDisruptionDetailsButtonLabel();
+                                }
+                                return 'Close';
+                            })() }
                         </Button>
                     </div>
-                    { props.useDisruptionsNotificationsDirectLink && resultIncidentId && (
+                    { props.useDisruptionsNotificationsDirectLink && resultIncidentId && resultStatus !== 'danger' && (
                         <div className="col-6">
                             <Button
                                 className="btn cc-btn-primary btn-block"
@@ -129,6 +167,7 @@ Confirmation.propTypes = {
     useDisruptionsNotificationsDirectLink: PropTypes.bool.isRequired,
     updateIncidentsSortingParams: PropTypes.func.isRequired,
     clearActiveIncident: PropTypes.func.isRequired,
+    toggleIncidentModals: PropTypes.func.isRequired,
 };
 
 Confirmation.defaultProps = {
@@ -150,5 +189,6 @@ export default connect(
         goToNotificationsView,
         updateIncidentsSortingParams,
         clearActiveIncident,
+        toggleIncidentModals,
     },
 )(Confirmation);

@@ -14,7 +14,9 @@ import {
     openCreateIncident,
     deleteAffectedEntities,
     updateIncidentsSortingParams,
-    clearActiveIncident } from '../../../../../redux/actions/control/incidents';
+    clearActiveIncident,
+    toggleIncidentModals,
+    clearDisruptionActionResult } from '../../../../../redux/actions/control/incidents';
 import { goToNotificationsView } from '../../../../../redux/actions/control/link';
 
 const mockStore = configureStore([thunk]);
@@ -38,6 +40,7 @@ jest.mock('../../../../../redux/actions/control/incidents', () => ({
     updateDisruptionsDatagridConfig: jest.fn(),
     updateIncidentsSortingParams: jest.fn(),
     clearActiveIncident: jest.fn(),
+    toggleIncidentModals: jest.fn(),
 }));
 
 jest.mock('../../../../../redux/actions/control/link', () => ({
@@ -58,9 +61,13 @@ describe('Confirmation Component', () => {
         useDisruptionsNotificationsDirectLink: true,
         updateIncidentsSortingParams: jest.fn(),
         clearActiveIncident: jest.fn(),
+        toggleIncidentModals: jest.fn(),
     };
 
     beforeEach(() => {
+        clearDisruptionActionResult.mockImplementation(() => (dispatch) => {
+            dispatch({ type: 'MOCK_CLEAR_DISRUPTION_ACTION_RESULT', payload: null });
+        });
         openCreateIncident.mockImplementation(isCreateEnabled => (dispatch) => {
             dispatch({ type: 'MOCK_OPEN_INCIDENT', payload: isCreateEnabled });
         });
@@ -88,6 +95,9 @@ describe('Confirmation Component', () => {
         });
         goToNotificationsView.mockImplementation(queryOarams => (dispatch) => {
             dispatch({ type: 'MOCK_GO_TO_NOTIFICATIONS', payload: queryOarams });
+        });
+        toggleIncidentModals.mockImplementation((modalType, isOpen) => (dispatch) => {
+            dispatch({ type: 'MOCK_TOGGLE_INCIDENT_MODALS', payload: { modalType, isOpen } });
         });
         store = mockStore({
             control:
@@ -137,22 +147,18 @@ describe('Confirmation Component', () => {
         expect(deleteAffectedEntities).toHaveBeenCalled();
     });
 
-    it('Close modal on click on View disruption details button', () => {
+    it('Close modal on click on View all Disruptions button', () => {
         render(
             <Provider store={ store }>
                 <Confirmation { ...defaultProps } />
             </Provider>,
         );
-        const button = screen.getByRole('button', { name: /view disruption details/i });
+        const button = screen.getByRole('button', { name: /view all disruptions/i });
         expect(button).not.toBeNull();
         fireEvent.click(button);
 
         expect(openCreateIncident).toHaveBeenCalledWith(false);
         expect(deleteAffectedEntities).toHaveBeenCalled();
-        expect(updateIncidentsSortingParams).toHaveBeenCalledWith({});
-        expect(clearActiveIncident).toHaveBeenCalledWith();
-        jest.advanceTimersByTime(100);
-        expect(updateActiveIncident).toHaveBeenCalledWith('123');
     });
 
     it('Close modal on click on View notifications button', () => {
@@ -168,5 +174,26 @@ describe('Confirmation Component', () => {
         expect(openCreateIncident).toHaveBeenCalledWith(false);
         expect(deleteAffectedEntities).toHaveBeenCalled();
         expect(goToNotificationsView).toHaveBeenCalled();
+    });
+
+    it('should display error message for partial error', () => {
+        const propsWithError = {
+            ...defaultProps,
+            response: {
+                isRequesting: false,
+                resultIncidentId: null,
+                resultMessage: 'Failed to update disruption INC123. The following disruptions failed: DISR001, DISR002.',
+                resultStatus: 'danger',
+            },
+        };
+
+        render(
+            <Provider store={ store }>
+                <Confirmation { ...propsWithError } />
+            </Provider>,
+        );
+
+        const message = screen.getByText('Failed to update disruption');
+        expect(message).toBeInTheDocument();
     });
 });

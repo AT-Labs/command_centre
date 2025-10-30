@@ -12,7 +12,6 @@ import { DATE_FORMAT, TIME_FORMAT, MAX_NUMBER_OF_ENTITIES } from '../../../../..
 import { getEntityCounts, generateSelectedText, getShapes, getRouteColors, mergeExistingAndDrawnEntities } from '../../../../../utils/control/incidents';
 import {
     createNewIncident,
-    openCreateIncident,
     toggleIncidentModals,
     updateCurrentStep,
     updateIncident,
@@ -38,6 +37,7 @@ import {
     getEditMode,
     isIncidentCancellationModalOpen,
     isIncidentCreationOpen,
+    isConfirmationModalOpen,
     getBoundsToFit,
     getIncidentsLoadingState,
     isEditEffectPanelOpen,
@@ -124,7 +124,6 @@ export class CreateIncident extends React.Component {
 
         this.state = {
             incidentData: INIT_STATE,
-            isConfirmationOpen: false,
             showAlert: false,
             isSetDetailsValid: false,
             isSelectEntitiesValid: false,
@@ -441,9 +440,7 @@ export class CreateIncident extends React.Component {
             notes: [],
         };
 
-        this.props.createNewIncident(buildIncidentSubmitBody(incident, false));
-        this.props.openCreateIncident(false);
-        this.props.toggleIncidentModals('isConfirmationOpen', true);
+        await this.props.createNewIncident(buildIncidentSubmitBody(incident, false));
     };
 
     validateEntityLimits = (disruptions) => {
@@ -475,11 +472,11 @@ export class CreateIncident extends React.Component {
         if (isEffectUpdated && this.props.isEditEffectPanelOpen) {
             this.props.toggleIncidentModals('isApplyChangesOpen', true);
         } else {
-            await this.onSubmitIncidentUpdate();
+            await this.onSubmitIncidentUpdate(false);
         }
     };
 
-    onSubmitIncidentUpdate = async () => {
+    onSubmitIncidentUpdate = async (isPublish = false) => {
         const { incidentData, editableDisruption, editableWorkarounds, newIncidentEffect } = this.state;
         let updatedDisruption;
         if (this.props.isEditEffectPanelOpen) {
@@ -526,7 +523,11 @@ export class CreateIncident extends React.Component {
             notes: [],
             ...(updatedDisruption && { disruptions: updatedDisruption }),
         };
-        this.props.updateIncident(buildIncidentSubmitBody(incident, true), this.props.editMode === EDIT_TYPE.ADD_EFFECT);
+        this.props.updateIncident(
+            buildIncidentSubmitBody(incident, true),
+            this.props.editMode === EDIT_TYPE.ADD_EFFECT,
+            isPublish,
+        );
         this.clearNewEffectToIncident();
     };
 
@@ -535,15 +536,12 @@ export class CreateIncident extends React.Component {
         if (isEffectUpdated && this.props.isEditEffectPanelOpen) {
             this.props.toggleIncidentModals('isPublishAndApplyChangesOpen', true);
         } else {
-            this.updateData('status', STATUSES.NOT_STARTED);
-            setTimeout(() => this.onSubmitIncidentUpdate(), 0);
+            setTimeout(() => this.onSubmitIncidentUpdate(true), 0);
         }
     };
 
     onPublishIncidentUpdate = () => {
-        this.updateData('status', STATUSES.NOT_STARTED);
-
-        setTimeout(() => this.onSubmitIncidentUpdate(), 0);
+        setTimeout(() => this.onSubmitIncidentUpdate(true), 0);
         this.props.toggleIncidentModals('isPublishAndApplyChangesOpen', false);
     };
 
@@ -751,10 +749,23 @@ export class CreateIncident extends React.Component {
         return generateSelectedText(routesCount, stopsCount);
     };
 
+    getModalTitle = () => {
+        const { resultStatus, resultIncidentId } = this.props.action || {};
+
+        if (resultStatus === 'danger') {
+            return 'Disruption update failed';
+        }
+
+        if (resultIncidentId) {
+            return 'Disruption created';
+        }
+
+        return 'Log a disruption';
+    };
+
     render() {
         const {
             incidentData,
-            isConfirmationOpen,
             isNotesRequiresToUpdate,
             isWorkaroundsRequiresToUpdate,
             workaroundsToSync,
@@ -821,8 +832,8 @@ export class CreateIncident extends React.Component {
                             </Wizard>
                             <CustomModal
                                 className="disruption-creation__modal"
-                                title={ this.props.action.resultIncidentId ? 'Disruption created' : 'Log a disruption' }
-                                isModalOpen={ isConfirmationOpen }>
+                                title={ this.getModalTitle() }
+                                isModalOpen={ this.props.isConfirmationModalOpen }>
                                 <Confirmation response={ this.props.action } />
                             </CustomModal>
                             <CustomModal
@@ -875,8 +886,8 @@ export class CreateIncident extends React.Component {
                                 onPublishUpdate={ this.onPublishUpdate } />
                             <CustomModal
                                 className="disruption-creation__modal"
-                                title={ this.props.action.resultIncidentId ? 'Disruption created' : 'Log a disruption' }
-                                isModalOpen={ isConfirmationOpen }>
+                                title={ this.getModalTitle() }
+                                isModalOpen={ this.props.isConfirmationModalOpen }>
                                 <Confirmation response={ this.props.action } />
                             </CustomModal>
                             <CustomModal
@@ -1010,13 +1021,13 @@ CreateIncident.propTypes = {
     toggleIncidentModals: PropTypes.func.isRequired,
     updateCurrentStep: PropTypes.func.isRequired,
     isCancellationOpen: PropTypes.bool,
+    isConfirmationModalOpen: PropTypes.bool,
     activeStep: PropTypes.number,
     stops: PropTypes.array,
     routes: PropTypes.array,
     editMode: PropTypes.string,
     updateIncident: PropTypes.func.isRequired,
     incidentToEdit: PropTypes.object,
-    openCreateIncident: PropTypes.func.isRequired,
     searchByDrawing: PropTypes.func.isRequired,
     boundsToFit: PropTypes.array.isRequired,
     childStops: PropTypes.object.isRequired,
@@ -1047,6 +1058,7 @@ CreateIncident.propTypes = {
 CreateIncident.defaultProps = {
     isCreateOpen: false,
     isCancellationOpen: false,
+    isConfirmationModalOpen: false,
     activeStep: 1,
     stops: [],
     routes: [],
@@ -1065,6 +1077,7 @@ export default connect(state => ({
     action: getIncidentAction(state),
     isCreateOpen: isIncidentCreationOpen(state),
     isCancellationOpen: isIncidentCancellationModalOpen(state),
+    isConfirmationModalOpen: isConfirmationModalOpen(state),
     activeStep: getIncidentStepCreation(state),
     stops: getAffectedStops(state),
     routes: getAffectedRoutes(state),
@@ -1086,7 +1099,6 @@ export default connect(state => ({
     cachedShapes: getCachedShapes(state),
 }), {
     createNewIncident,
-    openCreateIncident,
     toggleIncidentModals,
     updateCurrentStep,
     updateIncident,

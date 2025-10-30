@@ -1,4 +1,5 @@
-import { getEntityCounts, generateSelectedText, mergeExistingAndDrawnEntities } from './incidents';
+import { getEntityCounts, generateSelectedText, mergeExistingAndDrawnEntities, buildPublishPayload } from './incidents';
+import { STATUSES } from '../../types/disruptions-types';
 
 describe('getEntityCounts', () => {
     it('should return zero counts for null disruption', () => {
@@ -414,5 +415,52 @@ describe('mergeExistingAndDrawnEntities', () => {
         expect(result.affectedStops.length).toBe(5);
         expect(result.affectedRoutes.length).toBe(0);
         expect(result.affectedStops.filter(e => e.stopId === '8000-7386a836').length).toBe(2);
+    });
+});
+
+describe('buildPublishPayload', () => {
+    it('should set incident status to NOT_STARTED and map disruptions to NOT_STARTED', () => {
+        const input = {
+            incidentId: 1,
+            status: STATUSES.DRAFT,
+            disruptions: [
+                { key: 'd1', status: STATUSES.DRAFT, foo: 1 },
+                { key: 'd2', status: STATUSES.ACTIVE, bar: 2 },
+            ],
+            someOtherField: 'keep-me',
+        };
+
+        const output = buildPublishPayload(input);
+
+        expect(output.status).toBe(STATUSES.NOT_STARTED);
+        expect(output.someOtherField).toBe('keep-me');
+        expect(output.disruptions).toHaveLength(2);
+        expect(output.disruptions[0]).toEqual(expect.objectContaining({ key: 'd1', status: STATUSES.NOT_STARTED }));
+        expect(output.disruptions[1]).toEqual(expect.objectContaining({ key: 'd2', status: STATUSES.NOT_STARTED }));
+    });
+
+    it('should handle missing disruptions by treating it as empty array', () => {
+        const input = {
+            incidentId: 2,
+            status: STATUSES.DRAFT,
+        };
+
+        const output = buildPublishPayload(input);
+
+        expect(output.status).toBe(STATUSES.NOT_STARTED);
+        expect(output.disruptions).toEqual([]);
+    });
+
+    it('should handle empty disruptions array', () => {
+        const input = {
+            incidentId: 3,
+            status: STATUSES.DRAFT,
+            disruptions: [],
+        };
+
+        const output = buildPublishPayload(input);
+
+        expect(output.status).toBe(STATUSES.NOT_STARTED);
+        expect(output.disruptions).toEqual([]);
     });
 });

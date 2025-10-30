@@ -318,16 +318,6 @@ describe('CreateIncident component', () => {
             expect(mockUpdateCurrentStep).toHaveBeenCalledWith(1);
         });
 
-        it('Should call openCreateIncident with false', async () => {
-            await wrapper.instance().onSubmitDraft();
-            expect(mockOpenCreateIncident).toHaveBeenCalledWith(false);
-        });
-
-        it('Should call toggleIncidentModals with isConfirmationOpen and true', async () => {
-            await wrapper.instance().onSubmitDraft();
-            expect(mockToggleIncidentModals).toHaveBeenCalledWith('isConfirmationOpen', true);
-        });
-
         it('Should call createNewIncident', async () => {
             await wrapper.instance().onSubmitDraft();
             expect(mockCreateNewIncident).toHaveBeenCalledTimes(1);
@@ -546,7 +536,7 @@ describe('CreateIncident component', () => {
             buildIncidentSubmitBody.mockReturnValue(expectedIncident);
             await wrapper.instance().onSubmitUpdate();
             expect(buildIncidentSubmitBody).toHaveBeenCalledWith(expect.objectContaining({ ...expectedIncident }), true);
-            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident, false);
+            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident, false, false);
         });
 
         it('Should update incident with data from editableDisruption and expectedWorkarounds', async () => {
@@ -669,7 +659,7 @@ describe('CreateIncident component', () => {
             buildIncidentSubmitBody.mockReturnValue(expectedIncident);
             await wrapper.instance().onSubmitUpdate();
             expect(buildIncidentSubmitBody).toHaveBeenCalledWith(expect.objectContaining({ ...expectedIncident }), true);
-            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident, false);
+            expect(mockUpdateIncident).toHaveBeenCalledWith(expectedIncident, false, false);
         });
 
         it('Should call drawAffectedEntity when disruptions length was changed', () => {
@@ -1290,7 +1280,7 @@ describe('CreateIncident component', () => {
             expect(mockToggleIncidentModals).toHaveBeenCalledWith('isPublishAndApplyChangesOpen', true);
         });
 
-        it('Should update status to not-started on onPublishUpdate call', async () => {
+        it('Should call onSubmitIncidentUpdate on onPublishUpdate call', async () => {
             const draftIncident = {
                 ...incidentForEdit,
                 status: STATUSES.DRAFT,
@@ -1313,11 +1303,15 @@ describe('CreateIncident component', () => {
                     isEditEffectPanelOpen
                 />,
             );
+            const onSubmitIncidentUpdateSpy = jest.spyOn(wrapper.instance(), 'onSubmitIncidentUpdate');
+            jest.useFakeTimers();
             await wrapper.instance().onPublishUpdate();
-            expect(wrapper.state('incidentData').status).toEqual(STATUSES.NOT_STARTED);
+            jest.runAllTimers();
+            expect(onSubmitIncidentUpdateSpy).toHaveBeenCalled();
+            jest.useRealTimers();
         });
 
-        it('Should update status to not-started on onPublishIncidentUpdate call and close publish and apply modal', async () => {
+        it('Should call onSubmitIncidentUpdate on onPublishIncidentUpdate call and close publish and apply modal', async () => {
             const draftIncident = {
                 ...incidentForEdit,
                 status: STATUSES.DRAFT,
@@ -1341,9 +1335,13 @@ describe('CreateIncident component', () => {
                     cachedShapes={ {} }
                 />,
             );
+            const onSubmitIncidentUpdateSpy = jest.spyOn(wrapper.instance(), 'onSubmitIncidentUpdate');
+            jest.useFakeTimers();
             await wrapper.instance().onPublishIncidentUpdate();
-            expect(wrapper.state('incidentData').status).toEqual(STATUSES.NOT_STARTED);
+            jest.runAllTimers();
+            expect(onSubmitIncidentUpdateSpy).toHaveBeenCalled();
             expect(mockToggleIncidentModals).toHaveBeenCalledWith('isPublishAndApplyChangesOpen', false);
+            jest.useRealTimers();
         });
     });
 

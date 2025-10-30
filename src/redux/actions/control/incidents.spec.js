@@ -280,6 +280,37 @@ describe('Incidents Actions', () => {
         ]));
     });
 
+    it('dispatches correct actions on updateIncident success for DRAFT status', async () => {
+        disruptionsMgtApi.updateIncident.mockResolvedValue({});
+
+        const incident = {
+            incidentId: 1,
+            header: 'INC123',
+            status: STATUSES.DRAFT,
+            createNotification: false,
+        };
+
+        await store.dispatch(actions.updateIncident(incident));
+        const dispatched = store.getActions();
+
+        expect(dispatched).toEqual(expect.arrayContaining([
+            {
+                payload: { isRequesting: true, resultIncidentId: 1 },
+                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING,
+            },
+            {
+                type: 'update-control-incident-action-result',
+                payload: {
+                    resultIncidentId: 1,
+                    resultStatus: 'success',
+                    resultMessage: 'Draft disruption number #1 saved successfully.',
+                    resultCreateNotification: false,
+                    resultIncidentVersion: undefined,
+                },
+            },
+        ]));
+    });
+
     it('dispatches correct actions on updateIncident failure', async () => {
         disruptionsMgtApi.updateIncident.mockRejectedValue({ code: 'ERR_FAILED' });
 
@@ -392,6 +423,88 @@ describe('Incidents Actions', () => {
             expect.objectContaining({ type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_RESULT }),
         ]));
         expect(result).toEqual({});
+    });
+
+    it('updateIncident with isAddEffect=true dispatches edit mode, step and setIncidentToUpdate', async () => {
+        disruptionsMgtApi.updateIncident.mockResolvedValue({});
+        disruptionsMgtApi.getIncidents.mockResolvedValue({ incidents: [], _links: { permissions: {} } });
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({ disruptions: [], _links: { permissions: {} } });
+        disruptionsMgtApi.getIncident.mockResolvedValue({
+            incidentId: 7,
+            disruptions: [],
+            status: STATUSES.DRAFT,
+        });
+
+        const incident = { incidentId: 7, status: STATUSES.DRAFT, createNotification: false };
+        await store.dispatch(actions.updateIncident(incident, true, false));
+        const dispatched = store.getActions();
+
+        expect(dispatched).toEqual(expect.arrayContaining([
+            { type: ACTION_TYPE.UPDATE_INCIDENT_EDIT_MODE, payload: { editMode: EDIT_TYPE.EDIT } },
+            { type: ACTION_TYPE.UPDATE_INCIDENT_CURRENT_STEP, payload: { activeStep: 1 } },
+        ]));
+
+        // setIncidentToUpdate triggers loading and update to edit
+        expect(dispatched.some(a => a.type === ACTION_TYPE.UPDATE_CONTROL_INCIDENT_FOR_EDIT_LOADING)).toBe(true);
+        expect(dispatched.some(a => a.type === ACTION_TYPE.UPDATE_INCIDENT_TO_EDIT)).toBe(true);
+    });
+
+    it('updateIncident error path dispatches UPDATE_ERROR and opens confirmation modal', async () => {
+        disruptionsMgtApi.updateIncident.mockRejectedValue(new Error('boom'));
+
+        const incident = { incidentId: 9, status: STATUSES.DRAFT, createNotification: false };
+        await store.dispatch(actions.updateIncident(incident));
+        const dispatched = store.getActions();
+
+        expect(dispatched).toEqual(expect.arrayContaining([
+            expect.objectContaining({ type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_RESULT, payload: expect.objectContaining({ resultStatus: 'danger' }) }),
+            { type: ACTION_TYPE.SET_INCIDENTS_MODAL_STATUS, payload: { type: 'isConfirmationOpen', isOpen: true } },
+        ]));
+    });
+
+    it('does not update local incident after publish when incidentToEdit.id mismatches', async () => {
+        disruptionsMgtApi.updateIncident.mockResolvedValue({});
+        disruptionsMgtApi.getIncidents.mockResolvedValue({ incidents: [], _links: { permissions: {} } });
+        disruptionsMgtApi.getDisruptions.mockResolvedValue({ disruptions: [], _links: { permissions: {} } });
+
+        const initialState = {
+            control: {
+                incidents: {
+                    incidentToEdit: {
+                        incidentId: 555, // different from publishing id
+                        status: STATUSES.DRAFT,
+                        disruptions: [{ status: STATUSES.DRAFT }],
+                    },
+                },
+            },
+        };
+        store = mockStore(initialState);
+
+        await store.dispatch(actions.updateIncident({ incidentId: 123, status: STATUSES.DRAFT, createNotification: true }, false, true));
+        const dispatched = store.getActions();
+
+        expect(dispatched.some(a => a.type === ACTION_TYPE.UPDATE_INCIDENT_TO_EDIT)).toBe(false);
+    });
+
+    it('createNewIncident for DRAFT recurring redirects and resets as for DRAFT', async () => {
+        disruptionsMgtApi.createIncident.mockResolvedValue({
+            incidentId: 77,
+            header: 'NEW-DRAFT',
+            version: 1,
+            createNotification: false,
+        });
+
+        const draftIncident = { status: STATUSES.DRAFT, recurrent: true };
+        await store.dispatch(actions.createNewIncident(draftIncident));
+        const dispatched = store.getActions();
+
+        expect(dispatched).toEqual(expect.arrayContaining([
+            { type: ACTION_TYPE.OPEN_CREATE_INCIDENTS, payload: { isCreateEnabled: false } },
+            expect.objectContaining({ type: ACTION_TYPE.DELETE_INCIDENT_AFFECTED_ENTITIES }),
+            { type: ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_SORTING_PARAMS, payload: { sortingParams: {} } },
+            { type: ACTION_TYPE.UPDATE_MAIN_VIEW, payload: { activeMainView: VIEW_TYPE.MAIN.CONTROL } },
+            { type: ACTION_TYPE.UPDATE_CONTROL_DETAIL_VIEW, payload: { activeControlDetailView: VIEW_TYPE.CONTROL_DETAIL.INCIDENTS } },
+        ]));
     });
 
     it('dispatches error result when updateIncident throws inside publishDraftIncident', async () => {

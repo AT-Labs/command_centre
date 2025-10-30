@@ -2,6 +2,7 @@
 import { isEmpty, uniqBy, each, forEach, map } from 'lodash-es';
 
 import { ACTION_RESULT, DISRUPTION_TYPE, STATUSES } from '../../../types/disruptions-types';
+import { buildPublishPayload } from '../../../utils/control/incidents';
 import ERROR_TYPE from '../../../types/error-types';
 import * as disruptionsMgtApi from '../../../utils/transmitters/disruption-mgt-api';
 import * as ccStatic from '../../../utils/transmitters/cc-static';
@@ -307,6 +308,7 @@ export const createNewIncident = incident => async (dispatch, getState) => {
     const myEditMode = getEditMode(state);
     dispatch(updateRequestingIncidentState(true));
     try {
+        // debug: creation flow order
         response = await disruptionsMgtApi.createIncident(incident);
         if (myEditMode === EDIT_TYPE.COPY) {
             dispatch(
@@ -330,6 +332,36 @@ export const createNewIncident = incident => async (dispatch, getState) => {
         dispatch(modalStatus(true));
         dispatch(updateRequestingIncidentState(false));
         dispatch(updateAffectedRoutesState([]));
+        if (response?.incidentId) {
+            if (incident.status !== STATUSES.DRAFT) {
+                dispatch({
+                    type: ACTION_TYPE.SET_INCIDENTS_MODAL_STATUS,
+                    payload: {
+                        type: 'isConfirmationOpen',
+                        isOpen: true,
+                    },
+                });
+            }
+            if (incident.status === STATUSES.DRAFT) {
+                dispatch({
+                    type: ACTION_TYPE.OPEN_CREATE_INCIDENTS,
+                    payload: { isCreateEnabled: false },
+                });
+                dispatch({
+                    type: ACTION_TYPE.DELETE_INCIDENT_AFFECTED_ENTITIES,
+                    payload: {
+                        activeStep: 2,
+                        showSelectedRoutes: false,
+                        affectedEntities: { affectedRoutes: [], affectedStops: [] },
+                        stopsByRoute: {},
+                        routesByStop: {},
+                    },
+                });
+                dispatch(updateIncidentsSortingParams({}));
+                dispatch(updateMainView(VIEW_TYPE.MAIN.CONTROL));
+                dispatch(updateControlDetailView(VIEW_TYPE.CONTROL_DETAIL.INCIDENTS));
+            }
+        }
     }
 
     await dispatch(getDisruptionsAndIncidents());
@@ -643,7 +675,7 @@ export const uploadIncidentFiles = (incident, file) => async (dispatch) => {
         await disruptionsMgtApi.uploadDisruptionFiles(incident, file);
         dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentId)));
     } catch (error) {
-        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
+        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentId)));
     } finally {
         dispatch(updateRequestingIncidentState(false, disruptionId));
     }
@@ -658,7 +690,7 @@ export const deleteIncidentFile = (incident, fileId) => async (dispatch) => {
         await disruptionsMgtApi.deleteDisruptionFile(incident, fileId);
         dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_SUCCESS(incidentId)));
     } catch (error) {
-        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
+        dispatch(updateRequestingIncidentResult(incident.disruptionId, ACTION_RESULT.UPDATE_ERROR(incidentId)));
     } finally {
         dispatch(updateRequestingIncidentState(false, disruptionId));
     }
@@ -871,7 +903,7 @@ export const updateDisruption = disruption => async (dispatch) => {
             dispatch(updateRequestingIncidentResult(incidentId, ACTION_RESULT.UPDATE_SUCCESS(incidentNo, createNotification)));
         }
     } catch (error) {
-        dispatch(updateRequestingIncidentResult(incidentId, ACTION_RESULT.UPDATE_ERROR(incidentNo, error.code)));
+        dispatch(updateRequestingIncidentResult(incidentId, ACTION_RESULT.UPDATE_ERROR(incidentNo)));
     } finally {
         dispatch(setIncidentToUpdate(incidentId, undefined, true));
         dispatch(updateRequestingIncidentState(false, incidentId));
@@ -897,40 +929,80 @@ export const setDisruptionForWorkaroundEdit = disruptionForWorkaroundEdit => (di
     });
 };
 
-export const updateIncident = (incident, isAddEffect = false) => async (dispatch) => {
+const dispatchUpdateResult = (dispatch, incident, incidentId, isPublish, createNotification) => {
+    if (isPublish) {
+        dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_SUCCESS(incidentId, createNotification)));
+        return;
+    }
+    if (incident.status === STATUSES.DRAFT) {
+        dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.SAVE_DRAFT_SUCCESS(incidentId, false)));
+        return;
+    }
+    dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_SUCCESS(incidentId, createNotification)));
+};
+
+const finalizePostUpdate = (dispatch, {
+    isAddEffect, incidentId, hasError,
+}) => {
+    if (isAddEffect) {
+        dispatch(updateEditMode(EDIT_TYPE.EDIT));
+        dispatch(updateCurrentStep(1));
+        dispatch(setIncidentToUpdate(incidentId, undefined, true));
+    } else {
+        dispatch(deleteAffectedEntities());
+        dispatch(toggleIncidentModals('isApplyChangesOpen', false));
+        dispatch(updateLoadingIncidentForEditState(false));
+        if (hasError) {
+            dispatch(toggleIncidentModals('isConfirmationOpen', true));
+        } else {
+            dispatch(openCreateIncident(false));
+        }
+    }
+    dispatch(updateRequestingIncidentState(false, incidentId));
+    dispatch(toggleWorkaroundPanel(false));
+    dispatch(updateDisruptionKeyToWorkaroundEdit(''));
+    dispatch(toggleEditEffectPanel(false));
+    dispatch(updateDisruptionKeyToEditEffect(''));
+    dispatch(setDisruptionForWorkaroundEdit({}));
+};
+
+const applyLocalPublishStatus = (getState, dispatch, incidentId) => {
+    const state = getState();
+    const currentIncident = state.control.incidents.incidentToEdit;
+    if (!currentIncident || currentIncident.incidentId !== incidentId) return;
+
+    const updatedIncident = {
+        ...currentIncident,
+        status: STATUSES.NOT_STARTED,
+        disruptions: currentIncident.disruptions.map(disruption => ({
+            ...disruption,
+            status: STATUSES.NOT_STARTED,
+        })),
+    };
+    dispatch(updateIncidentToEdit(updatedIncident));
+};
+
+export const updateIncident = (incident, isAddEffect = false, isPublish = false) => async (dispatch, getState) => {
     dispatch(updateLoadingIncidentForEditState(true));
     const { incidentId, createNotification } = incident;
     dispatch(updateRequestingIncidentState(true, incidentId));
 
     let result;
+    let hasError = false;
     try {
-        result = await disruptionsMgtApi.updateIncident(incident);
-        if (incident.status === STATUSES.DRAFT) {
-            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.SAVE_DRAFT_SUCCESS(incidentId, false)));
-        } else {
-            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_SUCCESS(incidentId, createNotification)));
-        }
+        const payloadForUpdate = isPublish ? buildPublishPayload(incident) : incident;
+        result = await disruptionsMgtApi.updateIncident(payloadForUpdate);
+        dispatchUpdateResult(dispatch, incident, incidentId, isPublish, createNotification);
     } catch (error) {
-        dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_ERROR(incidentId, error.code)));
+        dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_ERROR(incidentId)));
+        hasError = true;
     } finally {
-        if (isAddEffect) {
-            dispatch(updateEditMode(EDIT_TYPE.EDIT));
-            dispatch(updateCurrentStep(1));
-            dispatch(setIncidentToUpdate(incidentId, undefined, true));
-        } else {
-            dispatch(deleteAffectedEntities());
-            dispatch(openCreateIncident(false));
-            dispatch(toggleIncidentModals('isApplyChangesOpen', false));
-            dispatch(updateLoadingIncidentForEditState(false));
-        }
-        dispatch(updateRequestingIncidentState(false, incidentId));
-        dispatch(toggleWorkaroundPanel(false));
-        dispatch(updateDisruptionKeyToWorkaroundEdit(''));
-        dispatch(toggleEditEffectPanel(false));
-        dispatch(updateDisruptionKeyToEditEffect(''));
-        dispatch(setDisruptionForWorkaroundEdit({}));
+        finalizePostUpdate(dispatch, { isAddEffect, incidentId, hasError });
     }
-    await dispatch(getDisruptionsAndIncidents());
+    if (!hasError) {
+        await dispatch(getDisruptionsAndIncidents());
+        if (isPublish) applyLocalPublishStatus(getState, dispatch, incidentId);
+    }
 
     return result;
 };

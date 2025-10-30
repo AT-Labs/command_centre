@@ -1,5 +1,6 @@
 import { isEmpty, uniqBy, flatMap, forEach } from 'lodash-es';
 import { getJSONFromWKT } from '../helpers';
+import { STATUSES } from '../../types/disruptions-types';
 
 export function getShapes(affectedRoutes, affectedStops) {
     const allAffectedRoutes = uniqBy(
@@ -88,3 +89,12 @@ export const mergeExistingAndDrawnEntities = (existingEntities, drawnEntities) =
         affectedStops: mergedStops,
     };
 };
+
+export const buildPublishPayload = incident => ({
+    ...incident,
+    status: STATUSES.NOT_STARTED,
+    disruptions: (incident.disruptions || []).map(disruption => ({
+        ...disruption,
+        status: STATUSES.NOT_STARTED,
+    })),
+});
