@@ -127,6 +127,7 @@ export const handleRealTimeUpdate = data => (dispatch, getState) => {
         const isUpdateNeeded = updateVehiclePosition(data, dispatch, state);
         if (isUpdateNeeded) {
             const shouldUseDiversion = useDiversion(getState());
+            console.log(`shouldUseDiversion: ${shouldUseDiversion}`);
             throttledRealTimeUpdates(dispatch, shouldUseDiversion);
         }
     }
