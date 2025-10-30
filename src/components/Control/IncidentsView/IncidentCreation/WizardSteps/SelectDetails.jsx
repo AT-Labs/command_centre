@@ -695,7 +695,7 @@ export const SelectDetails = (props) => {
             </Form>
             { props.editMode === EDIT_TYPE.EDIT && (
                 <div className="ml-4 mr-4 ">
-                    <ul className="pl-0 disruption-workarounds-effects">
+                    <ul className="pl-0">
                         <div>
                             <Label for="disruption-creation__wizard-select-details__header" className="p-lr12-tb6">
                                 <span className="font-size-md font-weight-bold">Effects</span>
@@ -710,12 +710,15 @@ export const SelectDetails = (props) => {
                             />
                         </div>
                         {filteredDisruptions.map(disruption => (
-                            <li key={ disruption.key } className={ `disruption-effect-item ${props.disruptionIncidentNoToEdit === disruption.incidentNo ? 'active' : ''}` }>
-                                <p className="p-lr12-tb6 m-0 bold-text">{disruption.header}</p>
+                            <li key={ disruption.key } className={ `effect-summary-item ${props.disruptionIncidentNoToEdit === disruption.incidentNo ? 'effect-background-color' : ''}` }>
                                 <Button
-                                    className="btn cc-btn-link p-lr12-tb6 m-0 effect-link-btn"
+                                    className="btn cc-btn-link p-lr12-tb6 m-0 bold-text effect-link-btn"
                                     onClick={ () => openEditEffectPanel(disruption) }>
-                                    <strong>{disruption.incidentNo}</strong>
+                                    <strong>
+                                        {disruption.header}
+                                        {' – '}
+                                        {disruption.incidentNo}
+                                    </strong>
                                 </Button>
                                 <p className="p-lr12-tb6 m-0">
                                     {getImpactLabel(disruption.impact)}
