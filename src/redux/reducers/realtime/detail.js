@@ -210,7 +210,6 @@ const handleClearSelectedSearchResult = state => ({ ...state, selectedSearchResu
 
 // This handler basically updates the selected vehicle in detail from the vehicle updates received
 export const handleVehiclesUpdate = (state, { payload: { vehicles, shouldUseDiversion } }) => {
-    console.log('handleVehiclesUpdate called with shouldUseDiversion:', shouldUseDiversion);
     if (!shouldUseDiversion) return state;
     if (isEmpty(vehicles)) return state;
 
@@ -222,7 +221,6 @@ export const handleVehiclesUpdate = (state, { payload: { vehicles, shouldUseDive
     const replacementTripId = vehicleToBeUpdated?.trip?.['.replacementTripId'];
     let trip = state.vehicle?.trip || {};
     if (state.vehicle?.trip?.['.replacementTripId'] !== replacementTripId) {
-        // console.log('Replacement Trip ID changed, not updating vehicle detail');
         trip = {
             ...trip,
             '.replacementTripId': replacementTripId,
@@ -237,8 +235,6 @@ export const handleVehiclesUpdate = (state, { payload: { vehicles, shouldUseDive
         },
     };
 
-    // console.log('NEW', JSON.stringify(vehicleToBeUpdated));
-    // console.log('OLD', JSON.stringify(state.vehicle));
     return newState;
 };
 

@@ -33,7 +33,6 @@ const decorateWithRouteType = (vehicle, routes) => {
 };
 
 const throttledRealTimeUpdates = throttle((dispatch, shouldUseDiversion) => {
-    console.log(shouldUseDiversion);
     dispatch({
         type: ACTION_TYPE.FETCH_VEHICLES_REALTIME,
         payload: {
