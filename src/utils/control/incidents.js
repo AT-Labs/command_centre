@@ -69,22 +69,3 @@ export const generateSelectedText = (routesCount, stopsCount) => {
     }
     return selectedText;
 };
-
-export const mergeExistingAndDrawnEntities = (existingEntities, drawnEntities) => {
-    let newRoutes = drawnEntities?.filter(e => e.type === 'route') || [];
-    let newStops = drawnEntities?.filter(e => e.type === 'stop') || [];
-    if (Array.isArray(existingEntities.affectedRoutes) && existingEntities.affectedRoutes.length > 0) {
-        newRoutes = newRoutes.filter(newRoute => !existingEntities.affectedRoutes.some(existingRoute => existingRoute.routeId === newRoute.routeId));
-    }
-
-    if (Array.isArray(existingEntities.affectedStops) && existingEntities.affectedStops.length > 0) {
-        newStops = newStops.filter(newStop => !existingEntities.affectedStops.some(existingStop => existingStop.stopId === newStop.stopId));
-    }
-
-    const mergedRoutes = [...existingEntities.affectedRoutes, ...newRoutes];
-    const mergedStops = [...existingEntities.affectedStops, ...newStops];
-    return {
-        affectedRoutes: mergedRoutes,
-        affectedStops: mergedStops,
-    };
-};

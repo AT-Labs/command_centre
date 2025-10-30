@@ -54,6 +54,9 @@ const defaultVehicleStore = {
 describe('Vehicles actions', () => {
     beforeEach(() => {
         store = mockStore({
+            appSettings: {
+                useDiversion: 'false',
+            },
             realtime: {
                 vehicles: defaultVehicleStore,
             },
@@ -92,6 +95,7 @@ describe('Vehicles actions', () => {
                 {
                     type: ACTION_TYPE.FETCH_VEHICLES_REALTIME,
                     payload: {
+                        shouldUseDiversion: false,
                         vehicles: {
                             [unscheduledVehicleMock.vehicle.vehicle.id]: resultVehicle,
                         },

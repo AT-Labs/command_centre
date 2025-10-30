@@ -35,6 +35,7 @@ const expectedActions = [
     {
         type: ACTION_TYPE.FETCH_VEHICLES_REALTIME,
         payload: {
+            shouldUseDiversion: false,
             vehicles: {
                 [vehicleMockDefault.vehicle.vehicle.id]: vehicleMockDefault,
             },

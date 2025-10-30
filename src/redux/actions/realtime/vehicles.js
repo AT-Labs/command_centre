@@ -6,6 +6,7 @@ import { getAllRoutes } from '../../selectors/static/routes';
 import { getFleetState } from '../../selectors/static/fleet';
 import { updateDataLoading, reportError } from '../activity';
 import { UNSCHEDULED_TAG } from '../../../types/vehicle-types';
+import { useDiversion } from '../../selectors/appSettings';
 
 let vehiclesTrackingCache = {};
 let tripUpdateCache = {};
@@ -31,11 +32,13 @@ const decorateWithRouteType = (vehicle, routes) => {
     return merge(vehicle, { vehicle: { route: routes[getVehicleRouteId(vehicle)] } });
 };
 
-const throttledRealTimeUpdates = throttle((dispatch) => {
+const throttledRealTimeUpdates = throttle((dispatch, shouldUseDiversion) => {
+    console.log(shouldUseDiversion);
     dispatch({
         type: ACTION_TYPE.FETCH_VEHICLES_REALTIME,
         payload: {
             vehicles: vehiclesTrackingCache,
+            shouldUseDiversion,
         },
     });
     vehiclesTrackingCache = {};
@@ -59,6 +62,7 @@ const isValidTripUpdate = (trip, allFleet) => {
 
 const queryRealTimeSnapshot = () => (dispatch, getState) => {
     dispatch(updateDataLoading(true));
+    const shouldUseDiversion = useDiversion(getState());
     gtfsRealTime.getTripUpdateRealTimeSnapshot()
         .then((data) => {
             const tripUpdates = data.map(t => t.tripUpdate);
@@ -81,7 +85,7 @@ const queryRealTimeSnapshot = () => (dispatch, getState) => {
 
             dispatch({
                 type: ACTION_TYPE.FETCH_VEHICLES_REALTIME,
-                payload: { vehicles, isSnapshotUpdate: true },
+                payload: { vehicles, isSnapshotUpdate: true, shouldUseDiversion },
             });
             state = null;
         })
@@ -123,7 +127,8 @@ export const handleRealTimeUpdate = data => (dispatch, getState) => {
     if (isValidVehicleUpdate(data, allFleet)) {
         const isUpdateNeeded = updateVehiclePosition(data, dispatch, state);
         if (isUpdateNeeded) {
-            throttledRealTimeUpdates(dispatch);
+            const shouldUseDiversion = useDiversion(getState());
+            throttledRealTimeUpdates(dispatch, shouldUseDiversion);
         }
     }
     if (isValidTripUpdate(data, allFleet)) {

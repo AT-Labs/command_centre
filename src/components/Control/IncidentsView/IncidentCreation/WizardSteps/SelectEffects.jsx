@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { isEmpty, sortBy, uniqueId, some } from 'lodash-es';
+import { isEmpty, sortBy, uniqueId, some, uniqBy } from 'lodash-es';
 import PropTypes from 'prop-types';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { AiOutlinePlusCircle, AiOutlineMinusCircle } from 'react-icons/ai';
@@ -22,7 +22,7 @@ import { MAX_NUMBER_OF_ENTITIES,
     TIME_FORMAT,
     LABEL_EFFECT_HEADER,
     HEADER_MAX_LENGTH } from '../../../../../constants/disruptions.js';
-import { getEntityCounts, generateSelectedText, mergeExistingAndDrawnEntities } from '../../../../../utils/control/incidents';
+import { getEntityCounts, generateSelectedText } from '../../../../../utils/control/incidents';
 import {
     getStopsByRoute as findStopsByRoute,
     getIncidentToEdit,
@@ -297,17 +297,30 @@ export const SelectEffects = (props) => {
     }, [disruptions]);
 
     useEffect(() => {
-        if (Array.isArray(props.mapDrawingEntities) && props.mapDrawingEntities.length > 0) {
-            setDisruptions(prevIncidentData => prevIncidentData.map((disruption) => {
-                if (disruption.key === props.selectedEffect) {
-                    return {
-                        ...disruption,
-                        affectedEntities: mergeExistingAndDrawnEntities(disruption.affectedEntities, props.mapDrawingEntities),
-                    };
-                }
-                return disruption;
-            }));
-        }
+        setDisruptions(prevIncidentData => prevIncidentData.map((disruption) => {
+            if (disruption.key === props.selectedEffect) {
+                const newRoutes = props.mapDrawingEntities?.filter(e => e.type === 'route') || [];
+                const newStops = props.mapDrawingEntities?.filter(e => e.type === 'stop') || [];
+
+                const mergedRoutes = uniqBy(
+                    [...disruption.affectedEntities.affectedRoutes, ...newRoutes],
+                    'routeId',
+                );
+                const mergedStops = uniqBy(
+                    [...disruption.affectedEntities.affectedStops, ...newStops],
+                    'stopId',
+                );
+
+                return {
+                    ...disruption,
+                    affectedEntities: {
+                        affectedRoutes: mergedRoutes,
+                        affectedStops: mergedStops,
+                    },
+                };
+            }
+            return disruption;
+        }));
         props.clearAffectedRoutes();
         props.clearAffectedStops();
     }, [props.mapDrawingEntities]);
@@ -370,6 +383,7 @@ export const SelectEffects = (props) => {
 
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
+        props.clearMapDrawingEntities();
         setTimeout(() => {
             if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
                 props.onSubmitDraft();
@@ -386,6 +400,7 @@ export const SelectEffects = (props) => {
 
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
+        props.clearMapDrawingEntities();
         setTimeout(() => {
             if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
                 props.onSubmit();
@@ -402,9 +417,7 @@ export const SelectEffects = (props) => {
 
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
-        if (props.mapDrawingEntities.length > 0) {
-            props.clearMapDrawingEntities();
-        }
+        props.clearMapDrawingEntities();
         if (props.editMode !== EDIT_TYPE.ADD_EFFECT) {
             props.onUpdateEntitiesValidation(!isSubmitDisabled && activePeriodsValidForAllDisruptionsV2());
             props.onStepUpdate(2);
@@ -472,9 +485,7 @@ export const SelectEffects = (props) => {
         updateDisruptionsState();
         props.onStepUpdate(0);
         props.updateCurrentStep(1);
-        if (props.mapDrawingEntities.length > 0) {
-            props.clearMapDrawingEntities();
-        }
+        props.clearMapDrawingEntities();
     };
 
     const onChangeStartDate = (key, date) => {

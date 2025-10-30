@@ -209,7 +209,9 @@ const handleRemoveSelectedSearchResult = (state, { payload: { selectedSearchResu
 const handleClearSelectedSearchResult = state => ({ ...state, selectedSearchResults: {} });
 
 // This handler basically updates the selected vehicle in detail from the vehicle updates received
-export const handleVehiclesUpdate = (state, { payload: { vehicles } }) => {
+export const handleVehiclesUpdate = (state, { payload: { vehicles, shouldUseDiversion } }) => {
+    console.log('handleVehiclesUpdate called with shouldUseDiversion:', shouldUseDiversion);
+    if (!shouldUseDiversion) return state;
     if (isEmpty(vehicles)) return state;
 
     const vehicleId = state?.vehicle?.id;
@@ -217,13 +219,27 @@ export const handleVehiclesUpdate = (state, { payload: { vehicles } }) => {
     if (!vehicleId || isEmpty(possibleUpdates)) return state;
 
     const vehicleToBeUpdated = possibleUpdates.length ? possibleUpdates[0].vehicle : {};
-    return {
+    const replacementTripId = vehicleToBeUpdated?.trip?.['.replacementTripId'];
+    let trip = state.vehicle?.trip || {};
+    if (state.vehicle?.trip?.['.replacementTripId'] !== replacementTripId) {
+        // console.log('Replacement Trip ID changed, not updating vehicle detail');
+        trip = {
+            ...trip,
+            '.replacementTripId': replacementTripId,
+        };
+    }
+
+    const newState = {
         ...state,
         vehicle: {
             ...state.vehicle,
-            ...vehicleToBeUpdated,
+            trip,
         },
     };
+
+    // console.log('NEW', JSON.stringify(vehicleToBeUpdated));
+    // console.log('OLD', JSON.stringify(state.vehicle));
+    return newState;
 };
 
 export default handleActions({
@@ -254,4 +270,5 @@ export default handleActions({
     [ACTION_TYPE.UPDATE_STOP_VEHICLE_PREDICATE]: handleUpdateStopVehiclePredicate,
     [ACTION_TYPE.REMOVE_SELECTED_SEARCH_RESULT]: handleRemoveSelectedSearchResult,
     [ACTION_TYPE.CLEAR_SELECTED_SEARCH_RESULT]: handleClearSelectedSearchResult,
+    [ACTION_TYPE.FETCH_VEHICLES_REALTIME]: handleVehiclesUpdate,
 }, INIT_STATE);
