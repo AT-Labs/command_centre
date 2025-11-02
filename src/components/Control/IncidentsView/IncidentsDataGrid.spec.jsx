@@ -7,7 +7,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
+import moment from 'moment';
 import { IncidentsDataGrid } from './IncidentsDataGrid';
+import { STATUSES } from '../../../types/disruptions-types';
 
 jest.mock('@mui/utils/capitalize', () => ({
     __esModule: true,
@@ -268,5 +270,69 @@ describe('IncidentDataGrid Component', () => {
         fireEvent.click(childButton);
 
         expect(screen.getByText('Mock Disruption', { exact: true, trim: true })).toBeInTheDocument();
+    });
+
+    describe('endTime valueGetter for recurrent DRAFT disruptions', () => {
+        it('should calculate endTime from startTime + duration for recurrent DRAFT disruption without saved endTime', async () => {
+            const mockDraftDisruption = {
+                ...mockDisruption,
+                status: STATUSES.DRAFT,
+                startTime: '2025-07-21T08:00:00.000Z',
+                duration: '3',
+                endTime: null,
+                recurrent: true,
+            };
+
+            const props = {
+                ...defaultProps,
+                mergedIncidentsAndDisruptions: [mockIncident, mockDraftDisruption],
+            };
+
+            const { container } = render(
+                <Provider store={ store }>
+                    <IncidentsDataGrid { ...props } />
+                </Provider>,
+            );
+
+            const expandButton = screen.getByLabelText('see children');
+            fireEvent.click(expandButton);
+
+            const expectedEndTime = moment('2025-07-21T08:00:00.000Z').add(3, 'hours').toISOString();
+            const expectedFormattedTime = moment(expectedEndTime).format('DD/MM/YY HH:mm');
+
+            expect(container.textContent).toContain(expectedFormattedTime);
+        });
+
+        it('should combine saved date with calculated time for recurrent DRAFT disruption with saved endTime', async () => {
+            const mockDraftDisruption = {
+                ...mockDisruption,
+                status: STATUSES.DRAFT,
+                startTime: '2025-07-21T08:00:00.000Z',
+                duration: '3',
+                endTime: '2025-07-25T10:00:00.000Z',
+                recurrent: true,
+            };
+
+            const props = {
+                ...defaultProps,
+                mergedIncidentsAndDisruptions: [mockIncident, mockDraftDisruption],
+            };
+
+            const { container } = render(
+                <Provider store={ store }>
+                    <IncidentsDataGrid { ...props } />
+                </Provider>,
+            );
+
+            const expandButton = screen.getByLabelText('see children');
+            fireEvent.click(expandButton);
+
+            const savedEndTime = moment('2025-07-25T10:00:00.000Z');
+            const calculatedTime = moment('2025-07-21T08:00:00.000Z').add(3, 'hours');
+            const expectedEndTime = savedEndTime.hour(calculatedTime.hour()).minute(calculatedTime.minute()).toISOString();
+            const expectedFormattedTime = moment(expectedEndTime).format('DD/MM/YY HH:mm');
+
+            expect(container.textContent).toContain(expectedFormattedTime);
+        });
     });
 });

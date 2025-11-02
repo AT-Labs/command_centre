@@ -198,6 +198,16 @@ export const IncidentsDataGrid = (props) => {
             field: 'endTime',
             headerName: 'END TIME',
             width: 150,
+            valueGetter: (params) => {
+                const { row } = params;
+                if (row?.recurrent && row?.duration && row.status === STATUSES.DRAFT) {
+                    const calculatedTime = moment(row.startTime).add(Number(row.duration), 'hours');
+                    return row.endTime
+                        ? moment(row.endTime).hour(calculatedTime.hour()).minute(calculatedTime.minute()).toISOString()
+                        : calculatedTime.toISOString();
+                }
+                return params.value;
+            },
             valueFormatter: params => (params.value ? moment(params.value).format(dateTimeFormat) : ''),
             type: 'dateTime',
         },
