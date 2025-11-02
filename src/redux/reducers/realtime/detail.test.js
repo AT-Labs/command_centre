@@ -95,6 +95,8 @@ describe('handleVehiclesUpdate', () => {
                     trip: {
                         tripId: 'trip-1',
                     },
+                    foo: 'new',
+                    bar: 'baz',
                 },
             },
             {
@@ -103,20 +105,22 @@ describe('handleVehiclesUpdate', () => {
                     trip: {
                         tripId: 'trip-2',
                     },
+                    foo: 'other',
                 },
             },
         ];
-        const result = handleVehiclesUpdate(state, { payload: { vehicles, shouldUseDiversion: true } });
+        const result = handleVehiclesUpdate(state, { payload: { vehicles } });
         expect(result.vehicle).to.eql({
             id: 'bus-1',
             trip: {
                 tripId: 'trip-1',
-                ".replacementTripId": undefined,
             },
+            foo: 'new',
+            bar: 'baz',
         });
     });
 
-    it('should update vehicle in state if matching id and newer replacementTripId exists', () => {
+    it('should update vehicle in state if matching id and newer data exists', () => {
         const state = {
             vehicle: {
                 id: 'bus-1',
@@ -132,8 +136,11 @@ describe('handleVehiclesUpdate', () => {
                 vehicle: {
                     trip: {
                         tripId: 'trip-1',
+                        foo: 'bar',
                         ".replacementTripId": "2",
                     },
+                    foo: 'new',
+                    bar: 'baz',
                 },
             },
             {
@@ -142,20 +149,24 @@ describe('handleVehiclesUpdate', () => {
                     trip: {
                         tripId: 'trip-2',
                     },
+                    foo: 'other',
                 },
             },
         ];
-        const result = handleVehiclesUpdate(state, { payload: { vehicles, shouldUseDiversion: true } });
+        const result = handleVehiclesUpdate(state, { payload: { vehicles } });
         expect(result.vehicle).to.eql({
             id: 'bus-1',
             trip: {
                 tripId: 'trip-1',
+                foo: 'bar',
                 ".replacementTripId": "2",
             },
+            foo: 'new',
+            bar: 'baz',
         });
     });
 
-    it('should return original state for empty payload', () => {
+    it('should return original state if no vehicles', () => {
         const state = {
             vehicle: {
                 id: 'bus-1',
@@ -179,7 +190,7 @@ describe('handleVehiclesUpdate', () => {
         };
         const vehicles = [
             {
-                id: 'bus-1-NOT_IN_STATE',
+                id: 'bus-1',
                 vehicle: {
                     trip: {
                         tripId: 'trip-1',
@@ -192,14 +203,15 @@ describe('handleVehiclesUpdate', () => {
         expect(result).to.equal(state);
     });
 
-    it('should update replacementTripId if diversion removed and replacementTripId becomes empty', () => {
+    it('should merge vehicle data if possibleUpdates is not empty', () => {
         const state = {
             vehicle: {
                 id: 'bus-1',
                 trip: {
                     tripId: 'trip-1',
-                    ".replacementTripId": 'this_will_become_empty',
                 },
+                foo: 'old',
+                keep: 'yes',
             },
         };
         const vehicles = [
@@ -207,19 +219,22 @@ describe('handleVehiclesUpdate', () => {
                 id: 'bus-1',
                 vehicle: {
                     trip: {
-                        tripId: 'trip-1',
+                        tripId: 'trip-1-updated',
                         ".replacementTripId": null,
                     },
+                    foo: 'new',
                 },
             },
         ];
-        const result = handleVehiclesUpdate(state, { payload: { vehicles, shouldUseDiversion: true } });
+        const result = handleVehiclesUpdate(state, { payload: { vehicles } });
         expect(result.vehicle).to.eql({
             id: 'bus-1',
             trip: {
-                tripId: 'trip-1',
+                tripId: 'trip-1-updated',
                 ".replacementTripId": null,
             },
+            foo: 'new',
+            keep: 'yes',
         });
     });
 });
