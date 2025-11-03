@@ -31,13 +31,13 @@ class TripProgress extends PureComponent {
         return (
             <section className="trip-progress">
                 <h4 className="mx-4 mt-4 mb-0">Trip progress:</h4>
-                {/* <AutoRefreshTable
+                <AutoRefreshTable
                     rows={ pastStops }
                     fetchRows={ () => this.props.fetchPastStops(vehicleId) }
                     columns={ getColumns() }
                     className="trip-progress__past-stops-table px-4 pb-0 pt-3"
                     striped={ false }
-                    emptyMessage={ MESSAGE_TYPES.pastStopNotInfo } /> */}
+                    emptyMessage={ MESSAGE_TYPES.pastStopNotInfo } />
                 <div className="trip-progress__current-stop-indicator">
                     <span className="text-uppercase text-white font-weight-bold">Current location</span>
                 </div>
