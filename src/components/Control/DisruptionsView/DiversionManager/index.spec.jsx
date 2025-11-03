@@ -17,7 +17,6 @@ jest.mock('../../../../utils/transmitters/trip-mgt-api', () => ({
 
 jest.mock('../../../../redux/selectors/appSettings', () => ({
     useDiversion: () => true,
-    useTomTomDirections: () => true,
 }));
 
 jest.mock('../../../../redux/selectors/control/diversions', () => ({
@@ -160,7 +159,6 @@ describe('<DiversionManager />', () => {
 
             const mockDiversion = {
                 diversionShapeWkt: 'LINESTRING(0 0, 1 1)',
-                directions: [],
             };
 
             renderComponent({ diversion: mockDiversion });
