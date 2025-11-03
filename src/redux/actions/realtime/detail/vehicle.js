@@ -4,7 +4,7 @@ import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import ACTION_TYPE from '../../../action-types';
-import { getCurrentVehicleTripId, getVehicleDetail, getCurrentVehicleReplacementTripId } from '../../../selectors/realtime/detail';
+import { getCurrentVehicleTripId } from '../../../selectors/realtime/detail';
 import { getAllVehicles, getVehicleTrip, getVehicleDirectionId, getVehicleRouteId } from '../../../selectors/realtime/vehicles';
 import { updateDataLoading } from '../../activity';
 import { updateRealTimeDetailView } from '../../navigation';
@@ -129,18 +129,7 @@ export const fetchUpcomingStops = vehicleId => (dispatch, getState) => {
     return ccRealtime.getUpcomingByVehicleId(result(trackingVehicle, 'id'), shouldUseNewMonitoring)
         .then((upcoming) => {
             const vehicleTripId = getCurrentVehicleTripId(getState());
-            const vehicleReplacementTripId = getCurrentVehicleReplacementTripId(getState());
-            const vehicleDetail = getVehicleDetail(getState());
-            console.log('vehicleDetail in fetchUpcomingStops:', vehicleDetail);
-            console.log('replacementTripId in fetchUpcomingStops:', vehicleReplacementTripId);
-            console.log('tripId in fetchUpcomingStops:', vehicleTripId);
-
-            return upcoming
-                // .map(item => {
-                //     // console.log('---------------trip', item.trip);
-                //     return item;
-                // })
-                .filter(({ trip }) => [vehicleTripId, vehicleReplacementTripId].includes(trip.tripId))
+            return upcoming.filter(({ trip }) => trip.tripId === vehicleTripId)
                 .map(({ stop, trip }) => {
                     const { stopCode, stopName, scheduleRelationship, passed } = stop;
                     const { scheduledTime, actualTime } = calculateScheduledAndActualTimes(stop);
@@ -173,8 +162,7 @@ export const fetchPastStops = vehicleId => (dispatch, getState) => {
     return ccRealtime.getHistoryByVehicleId(result(trackingVehicle, 'id'), shouldUseNewMonitoring)
         .then((history) => {
             const vehicleTripId = getCurrentVehicleTripId(getState());
-            const vehicleReplacementTripId = getCurrentVehicleReplacementTripId(getState());
-            return history.filter(({ trip }) => [vehicleTripId, vehicleReplacementTripId].includes(trip.tripId))
+            return history.filter(({ trip }) => trip.tripId === vehicleTripId)
                 .map(({ stop, trip }) => {
                     const { stopCode, stopName, stopSequence, scheduleRelationship, passed } = stop;
                     const { scheduledTime, actualTime } = calculateScheduledAndActualTimes(stop);

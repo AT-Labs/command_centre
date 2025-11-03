@@ -14,6 +14,7 @@ import { isDurationValid,
     isEndTimeValid,
     isStartDateValid,
     isStartTimeValid,
+    isStartDateTimeEarlierThanNow,
     recurrenceRadioOptions,
     getStatusOptions,
     momentFromDateTime,
@@ -84,9 +85,22 @@ export const SelectDetails = (props) => {
     useEffect(() => { endTimeRef.current = endTime; }, [endTime]);
     useEffect(() => { recurrentRef.current = recurrent; }, [recurrent]);
 
-    const startTimeValid = () => isStartTimeValid(startDate, startTime, modalOpenedTime, recurrent);
+    const startTimeValid = () => {
+        if (status === STATUSES.NOT_STARTED && recurrent) {
+            const isValid = isStartTimeValid(startDate, startTime, modalOpenedTime, false);
+            return isValid && !isStartDateTimeEarlierThanNow(startDate, startTime);
+        }
 
-    const startDateValid = () => isStartDateValid(startDate, modalOpenedTime, recurrent);
+        return isStartTimeValid(startDate, startTime, modalOpenedTime, recurrent);
+    };
+
+    const startDateValid = () => {
+        if (status === STATUSES.NOT_STARTED && recurrent) {
+            return moment(startDate, DATE_FORMAT, true).isSameOrAfter(moment(), 'day');
+        }
+
+        return isStartDateValid(startDate, modalOpenedTime, recurrent);
+    };
 
     const endTimeValid = () => isEndTimeValid(endDate, endTime, startDate, startTime);
 
@@ -261,12 +275,26 @@ export const SelectDetails = (props) => {
         </>
     );
 
-    const datePickerOptions = recurrent && props.editMode !== EDIT_TYPE.EDIT ? getDatePickerOptions('today') : getDatePickerOptions();
+    const datePickerOptions = useMemo(() => {
+        if (status === STATUSES.NOT_STARTED && recurrent && props.editMode === EDIT_TYPE.EDIT) {
+            return getDatePickerOptions('today');
+        }
+        return recurrent && props.editMode !== EDIT_TYPE.EDIT
+            ? getDatePickerOptions('today')
+            : getDatePickerOptions();
+    }, [status, recurrent, props.editMode]);
 
     const endDateDatePickerOptions = getDatePickerOptions(startDate);
 
     const isDateTimeValid = () => startTimeValid() && startDateValid() && endDateValid() && durationValid();
     const isViewAllDisabled = !isDateTimeValid() || isEmpty(recurrencePattern?.byweekday);
+
+    const isDateTimeEarlierThanNow = useMemo(() => (
+        status === STATUSES.NOT_STARTED && recurrent
+            ? isStartDateTimeEarlierThanNow(startDate, startTime)
+            : false
+    ), [status, recurrent, startDate, startTime]);
+
     const isSubmitDisabled = isRequiredPropsEmpty()
         || !startTimeValid()
         || !startDateValid()
@@ -280,6 +308,7 @@ export const SelectDetails = (props) => {
         || !endTimeValid()
         || !endDateValid()
         || !durationValid()
+        || isDateTimeEarlierThanNow
         || (!props.isEffectValid && props.isEditEffectPanelOpen)
         || (status === STATUSES.DRAFT && isPublishDisabled)
         || (status === STATUSES.DRAFT && !props.isEffectForPublishValid && props.isEditEffectPanelOpen)
@@ -426,6 +455,10 @@ export const SelectDetails = (props) => {
 
     useEffect(() => {
         if (props.editMode === EDIT_TYPE.EDIT) {
+            if (status === STATUSES.NOT_STARTED && recurrent) {
+                return;
+            }
+
             const startDateTime = momentFromDateTime(startDate, startTime, now);
             if (startDateTime?.isValid() && status !== STATUSES.RESOLVED) {
                 if (startDateTime.isAfter(now) && status === STATUSES.IN_PROGRESS) {
@@ -569,8 +602,22 @@ export const SelectDetails = (props) => {
                             className="border border-dark"
                             value={ startTime }
                             onChange={ event => onChangeStartTime(event.target.value) }
-                            invalid={ (props.useDraftDisruptions ? (isStartTimeDirty && !startTimeValid()) : !startTimeValid()) }
-                            disabled={ isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT && status !== STATUSES.DRAFT && status !== STATUSES.NOT_STARTED) }
+                            invalid={
+                                !startTimeValid()
+                                && (
+                                    (status === STATUSES.NOT_STARTED && recurrent)
+                                    || (status === STATUSES.DRAFT && props.useDraftDisruptions && isStartTimeDirty)
+                                )
+                            }
+                            disabled={
+                                isResolved()
+                                || (
+                                    recurrent
+                                    && props.editMode === EDIT_TYPE.EDIT
+                                    && status !== STATUSES.DRAFT
+                                    && status !== STATUSES.NOT_STARTED
+                                )
+                            }
                         />
                         <FormFeedback>Not valid values</FormFeedback>
                     </FormGroup>
