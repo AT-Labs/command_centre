@@ -293,12 +293,8 @@ export class CreateDisruption extends React.Component {
     onSubmitDraft = async () => {
         this.props.updateCurrentStep(1);
         const { disruptionData } = this.state;
-        let startDate;
-        let startTimeMoment;
-        if (!isEmpty(disruptionData.startDate) || !isEmpty(disruptionData.startTime)) {
-            startDate = disruptionData.startDate ? disruptionData.startDate : moment(disruptionData.startTime).format(DATE_FORMAT);
-            startTimeMoment = momentFromDateTime(startDate, disruptionData.startTime);
-        }
+        const startDate = disruptionData.startDate ? disruptionData.startDate : moment(disruptionData.startTime).format(DATE_FORMAT);
+        const startTimeMoment = momentFromDateTime(startDate, disruptionData.startTime);
         let endTimeMoment;
         if (!isEmpty(disruptionData.endDate) && !isEmpty(disruptionData.endTime)) {
             endTimeMoment = momentFromDateTime(disruptionData.endDate, disruptionData.endTime);
@@ -324,8 +320,9 @@ export class CreateDisruption extends React.Component {
             recurrencePattern,
             notes: [],
         };
-        await this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds));
+        this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds));
         this.props.openCreateDisruption(false);
+        this.props.toggleDisruptionModals('isConfirmationOpen', true);
     };
 
     onSubmitUpdate = async () => {
