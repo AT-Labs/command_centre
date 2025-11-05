@@ -1220,6 +1220,74 @@ describe('getMode', () => {
         expect(result.disruptions[0].startTime).toEqual(incident.endTime);
         expect(result.disruptions[0].endTime).toEqual(incident.endTime);
     });
+
+    it('Should handle undefined incident.startTime without error', () => {
+        const incident = {
+            ...mockIncident,
+            startTime: undefined,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    startTime: momentFromDateTime(moment('2025-08-21T20:27:00.000Z').format(DATE_FORMAT), '2025-08-21T20:27:00.000Z'),
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime).toBeUndefined();
+    });
+
+    it('Should handle null incident.startTime without error', () => {
+        const incident = {
+            ...mockIncident,
+            startTime: null,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    startTime: momentFromDateTime(moment('2025-08-21T20:27:00.000Z').format(DATE_FORMAT), '2025-08-21T20:27:00.000Z'),
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime).toBeNull();
+    });
+
+    it('Should handle disruptions with undefined startTime without error', () => {
+        const incident = {
+            ...mockIncident,
+            startTime: moment('2025-08-21T20:27:00.000Z'),
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    startTime: undefined,
+                },
+                {
+                    ...mockDisruption2,
+                    startTime: momentFromDateTime(moment('2025-08-24T20:27:00.000Z').format(DATE_FORMAT), '2025-08-24T20:27:00.000Z'),
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime).toEqual(moment('2025-08-21T20:27:00.000Z'));
+    });
+
+    it('Should handle all disruptions with undefined startTime without error', () => {
+        const incident = {
+            ...mockIncident,
+            startTime: undefined,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    startTime: undefined,
+                },
+                {
+                    ...mockDisruption2,
+                    startTime: undefined,
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime).toBeUndefined();
+    });
 });
 
 describe('getStatusForEffect', () => {

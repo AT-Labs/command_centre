@@ -184,9 +184,9 @@ describe('CreateDisruption component', () => {
             expect(mockOpenCreateDisruption).toHaveBeenCalledWith(false);
         });
 
-        it('should call toggleDisruptionModals with isConfirmationOpen and true', async () => {
+        it('should not call toggleDisruptionModals', async () => {
             await wrapper.instance().onSubmitDraft();
-            expect(mockToggleDisruptionModals).toHaveBeenCalledWith('isConfirmationOpen', true);
+            expect(mockToggleDisruptionModals).not.toHaveBeenCalled();
         });
 
         it('should call createDisruption', async () => {
@@ -221,6 +221,73 @@ describe('CreateDisruption component', () => {
             await wrapper.instance().onSubmitDraft();
 
             expect(mockCreateDisruption).toHaveBeenCalledWith(expectedDisruption);
+        });
+
+        it('should handle empty startDate and startTime without error', async () => {
+            const disruptionData = {
+                startDate: '',
+                startTime: '',
+                endDate: '',
+                endTime: '',
+                disruptionType: 'type',
+                activePeriods: [],
+                recurrencePattern: null,
+            };
+            const expectedDisruption = {
+                ...disruptionData,
+                startTime: undefined,
+                endTime: undefined,
+                status: STATUSES.DRAFT,
+                notes: [],
+            };
+            buildSubmitBody.mockReturnValue(expectedDisruption);
+            wrapper.setState({ disruptionData });
+
+            await wrapper.instance().onSubmitDraft();
+
+            expect(mockCreateDisruption).toHaveBeenCalledTimes(1);
+            const callArgs = mockCreateDisruption.mock.calls[0][0];
+            expect(callArgs.startTime).toBeUndefined();
+            expect(callArgs.endTime).toBeUndefined();
+        });
+
+        it('should handle undefined startDate and startTime without error', async () => {
+            const disruptionData = {
+                startDate: undefined,
+                startTime: undefined,
+                endDate: undefined,
+                endTime: undefined,
+                disruptionType: 'type',
+                activePeriods: [],
+                recurrencePattern: null,
+            };
+            buildSubmitBody.mockReturnValue({ ...disruptionData, status: STATUSES.DRAFT, notes: [] });
+            wrapper.setState({ disruptionData });
+
+            await wrapper.instance().onSubmitDraft();
+
+            expect(mockCreateDisruption).toHaveBeenCalledTimes(1);
+            const callArgs = mockCreateDisruption.mock.calls[0][0];
+            expect(callArgs.startTime).toBeUndefined();
+            expect(callArgs.endTime).toBeUndefined();
+        });
+
+        it('should handle startDate only without error', async () => {
+            const disruptionData = {
+                startDate: '21/08/2025',
+                startTime: '',
+                endDate: '',
+                endTime: '',
+                disruptionType: 'type',
+                activePeriods: [],
+                recurrencePattern: null,
+            };
+            buildSubmitBody.mockReturnValue({ ...disruptionData, status: STATUSES.DRAFT, notes: [] });
+            wrapper.setState({ disruptionData });
+
+            await wrapper.instance().onSubmitDraft();
+
+            expect(mockCreateDisruption).toHaveBeenCalledTimes(1);
         });
 
         it('should call createDisruption with full recurrencePattern', async () => {

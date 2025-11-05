@@ -238,10 +238,13 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
         ...(allResolved && { status: STATUSES.RESOLVED }),
         url: '',
     };
-    const earliestStartTime = moment.min(disruptions.map(disruption => disruption.startTime));
+    const earliestStartTime = moment.min(disruptions.map(disruption => disruption.startTime).filter(Boolean));
 
-    if (earliestStartTime.isBefore(incident.startTime)) {
-        updatedIncident.startTime = earliestStartTime;
+    if (earliestStartTime && earliestStartTime.isValid() && incident.startTime) {
+        const incidentStartTime = moment.isMoment(incident.startTime) ? incident.startTime : moment(incident.startTime);
+        if (moment.isMoment(incidentStartTime) && incidentStartTime.isValid() && earliestStartTime.isBefore(incidentStartTime)) {
+            updatedIncident.startTime = earliestStartTime;
+        }
     }
 
     const endTimes = disruptions.map(disruption => disruption.endTime).filter(endTime => endTime != null);

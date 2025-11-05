@@ -26,7 +26,7 @@ const Confirmation = (props) => {
         if (resultStatus === 'danger') {
             return (
                 <div>
-                    <span className="d-block mt-3 mb-2" style={ { whiteSpace: 'pre-line' } }>{resultMessage || 'Failed to update disruption'}</span>
+                    <span className="d-block mt-3 mb-2">Failed to update disruption</span>
                 </div>
             );
         }
@@ -123,7 +123,7 @@ const Confirmation = (props) => {
                             } }>
                             { (() => {
                                 if (resultStatus === 'danger') {
-                                    return 'Keep editing';
+                                    return 'Try again';
                                 }
                                 if (resultIncidentId) {
                                     return getDisruptionDetailsButtonLabel();
