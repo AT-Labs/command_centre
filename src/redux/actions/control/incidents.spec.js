@@ -342,6 +342,42 @@ describe('Incidents Actions', () => {
         ]));
     });
 
+    it('dispatches correct actions on updateIncident conflict failure', async () => {
+        disruptionsMgtApi.updateIncident.mockRejectedValue({ code: 409, metadata: { conflicts: [{ disruptionId: '1' }, { disruptionId: '2' }] } });
+
+        const incident = {
+            incidentId: 1,
+            header: 'INC456',
+            status: STATUSES.PUBLISHED,
+            createNotification: true,
+        };
+
+        await store.dispatch(actions.updateIncident(incident));
+        const dispatched = store.getActions();
+
+        expect(dispatched).toEqual(expect.arrayContaining([
+            {
+                payload: { isRequesting: true, resultIncidentId: 1 },
+                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING,
+            },
+            {
+                type: 'update-control-incident-action-result',
+                payload: {
+                    resultIncidentId: 1,
+                    resultStatus: 'danger',
+                    resultMessage: `A route variant can have no more than one active diversion in a given period.
+
+To publish or update the date or time of this disruption, please review the period and diversions of the conflicting disruptions:
+
+DISR1
+DISR2`,
+                    resultCreateNotification: undefined,
+                    resultIncidentVersion: undefined,
+                },
+            },
+        ]));
+    });
+
     it('dispatches correct actions on createIncident success', async () => {
         disruptionsMgtApi.createIncident.mockResolvedValue({
             incidentId: 99,
