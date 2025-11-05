@@ -57,6 +57,7 @@ export const useNewMonitoring = createSelector(
 );
 
 export const useDiversion = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useDiversion') === 'true'));
+export const useTomTomDirections = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useTomTomDirections') === 'true'));
 export const useHideSkippedStop = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useHideSkippedStop') === 'true'));
 export const useStopBasedDisruptionsLayer = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useStopBasedDisruptionsLayer') === 'true'));
 export const useHoldTrip = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useHoldTrip') === 'true'));
