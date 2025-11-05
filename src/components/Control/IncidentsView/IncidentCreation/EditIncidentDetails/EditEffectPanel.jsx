@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
+import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Paper, Stack, Button as MuiButton } from '@mui/material';
 import { isEmpty, sortBy, some, isEqual, omit } from 'lodash-es';
 import { Form, FormFeedback, FormGroup, Input, Label, Button } from 'reactstrap';
@@ -47,7 +47,6 @@ import {
     isStartDateValid,
     isStartTimeValid,
     isDurationValid,
-    isStartDateTimeEarlierThanNow,
     getRecurrenceDates,
     getStatusOptions,
     formatCreatedUpdatedTime,
@@ -206,12 +205,8 @@ export const EditEffectPanel = (props, ref) => {
     }));
 
     const startTimeValid = () => {
-        if (disruptionRecurrent && (disruption.status === STATUSES.RESOLVED || disruption.status === STATUSES.NOT_STARTED)) {
-            const isTimeValid = isStartTimeValid(disruption.startDate, disruption.startTime, moment(modalOpenedTime), false);
-            if (disruption.status === STATUSES.RESOLVED) {
-                return isTimeValid;
-            }
-            return isTimeValid && !isStartDateTimeEarlierThanNow(disruption.startDate, disruption.startTime);
+        if (disruption.status === STATUSES.RESOLVED && disruptionRecurrent) {
+            return disruption.startTime !== '24:00' && moment(disruption.startTime, TIME_FORMAT, true).isValid();
         }
         return isStartTimeValid(
             disruption.startDate,
@@ -233,23 +228,13 @@ export const EditEffectPanel = (props, ref) => {
 
     const endDateValid = () => isEndDateValid(disruption.endDate, disruption.startDate, disruptionRecurrent);
 
-    const startDateValid = () => {
-        if (disruption.status === STATUSES.NOT_STARTED && disruptionRecurrent) {
-            return moment(disruption.startDate, DATE_FORMAT, true).isSameOrAfter(moment(), 'day');
-        }
-
-        return isStartDateValid(disruption.startDate, moment(modalOpenedTime), disruptionRecurrent);
-    };
+    const startDateValid = () => isStartDateValid(disruption.startDate, moment(modalOpenedTime), disruptionRecurrent);
 
     const isDateTimeValid = () => startTimeValid() && startDateValid() && endDateValid() && durationValid();
 
     const titleValid = () => !isEmpty(disruption.header);
 
-    const datePickerOptions = useMemo(() => (
-        disruption.status === STATUSES.NOT_STARTED && disruptionRecurrent
-            ? getDatePickerOptions('today')
-            : getDatePickerOptions()
-    ), [disruption.status, disruptionRecurrent]);
+    const datePickerOptions = getDatePickerOptions();
 
     const endDateDatePickerOptions = () => getDatePickerOptions(disruption.startDate || moment().second(0).millisecond(0));
 
@@ -694,10 +679,6 @@ export const EditEffectPanel = (props, ref) => {
     }, [props.isEditEffectUpdateRequested]);
 
     useEffect(() => {
-        if (disruption.status === STATUSES.NOT_STARTED && disruptionRecurrent) {
-            return;
-        }
-
         const startDateTime = momentFromDateTime(disruption.startDate, disruption.startTime, now);
         if (startDateTime?.isValid() && disruption.status !== STATUSES.RESOLVED) {
             if (startDateTime.isAfter(now) && disruption.status === STATUSES.IN_PROGRESS) {
@@ -708,33 +689,15 @@ export const EditEffectPanel = (props, ref) => {
         }
     }, [disruption.startDate, disruption.startTime, disruption.endDate]);
 
-    const isDateTimeEarlierThanNow = useMemo(() => (
-        disruption.status === STATUSES.NOT_STARTED && disruptionRecurrent
-            ? isStartDateTimeEarlierThanNow(disruption.startDate, disruption.startTime)
-            : false
-    ), [disruption.status, disruptionRecurrent, disruption.startDate, disruption.startTime]);
-
     const isApplyDisabled = (() => {
         if (disruption.status === STATUSES.DRAFT) {
             return isDraftSubmitDisabled;
         }
 
         if ((disruption.status === STATUSES.NOT_STARTED || disruption.status === STATUSES.RESOLVED) && disruptionRecurrent) {
-            const baseChecks = some([disruption.impact, disruption.cause, disruption.header, disruption.severity], isEmpty)
+            return some([disruption.impact, disruption.cause, disruption.header, disruption.severity], isEmpty)
                 || (disruption.recurrent && isEmpty(disruption.recurrencePattern.byweekday))
                 || !affectedEntitySelected();
-
-            if (disruption.status === STATUSES.NOT_STARTED) {
-                return baseChecks
-                    || !startTimeValid()
-                    || !startDateValid()
-                    || !endDateValid()
-                    || !durationValid()
-                    || (disruptionRecurrent && !activePeriodsValidV2())
-                    || isDateTimeEarlierThanNow;
-            }
-
-            return baseChecks;
         }
 
         return isSubmitDisabled;
