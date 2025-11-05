@@ -66,6 +66,15 @@ export const isStartDateValid = (startDate, openingTime, recurrent = false) => m
 
 export const isDurationValid = (duration, recurrent) => !recurrent || (!isEmpty(duration) && (Number.isInteger(+duration) && +duration > 0 && +duration < 25));
 
+export const isStartDateTimeEarlierThanNow = (startDate, startTime) => {
+    const startDateTime = moment(`${startDate}T${startTime}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`, true);
+    if (!startDateTime.isValid()) return false;
+
+    if (!startDateTime.isSame(moment(), 'day')) return false;
+
+    return startDateTime.isBefore(moment(), 'minute');
+};
+
 export const buildSubmitBody = (disruption, routes, stops, workarounds) => {
     const modes = [...routes.map(route => VEHICLE_TYPES[route.routeType].type),
         ...stops.filter(stop => stop.routeId).map(routeByStop => VEHICLE_TYPES[routeByStop.routeType].type)];
