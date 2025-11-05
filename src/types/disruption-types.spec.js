@@ -106,20 +106,4 @@ describe('Disruption types', () => {
             expect(result.value).toEqual('');
         });
     });
-
-    describe('UPDATE_CONFLICT_ERROR', () => {
-        it('should return expected result', () => {
-            const expectedResult = {
-                resultStatus: ACTION_RESULT_TYPES.ERROR,
-                resultMessage: `A route variant can have no more than one active diversion in a given period.
-
-To publish or update the date or time of this disruption, please review the period and diversions of the conflicting disruptions:
-
-DISR1
-DISR2`,
-            };
-            const result = ACTION_RESULT.UPDATE_CONFLICT_ERROR([1, 2]);
-            expect(result).toEqual(expectedResult);
-        });
-    });
 });

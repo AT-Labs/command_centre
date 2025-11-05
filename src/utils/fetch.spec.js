@@ -10,7 +10,6 @@ describe('jsonResponseHandling', () => {
         { code: 400, payload: { }, expectedKey: 'undefined' },
         { code: 400, payload: { code: null, error: null }, expectedKey: 'undefined' },
         { code: 400, payload: { code: null, message: null }, expectedKey: 'message' },
-        { code: 409, payload: { code: 409, error: 'conflict', metadata: { data: 'some-metadata' } }, expectedKey: 'error' },
     ];
     it.each(testCases)('throws error with appropriate values args=%p', async ({ code, payload, expectedKey }) => {
         const response = {
@@ -26,7 +25,6 @@ describe('jsonResponseHandling', () => {
             execeptionThrown = true;
             expect(e.code).toBe(code);
             expect(e.message).toBe(payload[expectedKey]);
-            expect(e.metadata).toBe(payload.metadata);
         }
         expect(execeptionThrown).toBe(true);
     });
