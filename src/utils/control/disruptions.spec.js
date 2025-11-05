@@ -1307,7 +1307,7 @@ describe('getMode', () => {
     it('Should handle incident.startTime as string (not moment object)', () => {
         const incident = {
             ...mockIncident,
-            startTime: '2025-08-21T20:27:00.000Z', 
+            startTime: '2025-08-21T20:27:00.000Z',
             disruptions: [
                 {
                     ...mockDisruption1,
@@ -1322,7 +1322,7 @@ describe('getMode', () => {
     it('Should handle invalid incident.startTime after conversion', () => {
         const incident = {
             ...mockIncident,
-            startTime: 'invalid-date-string', 
+            startTime: 'invalid-date-string',
             disruptions: [
                 {
                     ...mockDisruption1,
