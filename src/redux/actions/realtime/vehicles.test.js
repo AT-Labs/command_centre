@@ -35,7 +35,6 @@ const expectedActions = [
     {
         type: ACTION_TYPE.FETCH_VEHICLES_REALTIME,
         payload: {
-            shouldUseDiversion: true,
             vehicles: {
                 [vehicleMockDefault.vehicle.vehicle.id]: vehicleMockDefault,
             },
@@ -47,9 +46,6 @@ describe('vehicles actions', () => {
     beforeEach(() => {
         const mockStore = configureMockStore([thunk]);
         store = mockStore({
-            appSettings: {
-                useDiversion: 'true',
-            },
             navigation: { activeMainView: VIEW_TYPE.MAIN.REAL_TIME },
             static: {
                 fleet: {

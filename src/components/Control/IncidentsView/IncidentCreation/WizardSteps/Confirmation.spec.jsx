@@ -176,13 +176,35 @@ describe('Confirmation Component', () => {
         expect(goToNotificationsView).toHaveBeenCalled();
     });
 
-    it('should display error message for partial error', () => {
+    it('should display error message when resultMessage is present', () => {
+        const errorMessage = 'Failed to update disruption INC123. The following disruptions failed: DISR001, DISR002.';
         const propsWithError = {
             ...defaultProps,
             response: {
                 isRequesting: false,
                 resultIncidentId: null,
-                resultMessage: 'Failed to update disruption INC123. The following disruptions failed: DISR001, DISR002.',
+                resultMessage: errorMessage,
+                resultStatus: 'danger',
+            },
+        };
+
+        render(
+            <Provider store={ store }>
+                <Confirmation { ...propsWithError } />
+            </Provider>,
+        );
+
+        const message = screen.getByText(errorMessage);
+        expect(message).toBeInTheDocument();
+    });
+
+    it('should display default error message when resultMessage is not present', () => {
+        const propsWithError = {
+            ...defaultProps,
+            response: {
+                isRequesting: false,
+                resultIncidentId: null,
+                resultMessage: null,
                 resultStatus: 'danger',
             },
         };
