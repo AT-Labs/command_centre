@@ -123,6 +123,7 @@ export const vehicleChecked = ({ id, key }) => (dispatch, getState) => {
 
 export const fetchUpcomingStops = vehicleId => (dispatch, getState) => {
     const state = getState();
+
     dispatch(updateDataLoading(true));
 
     const trackingVehicle = getTrackingVehicle(vehicleId, getState());

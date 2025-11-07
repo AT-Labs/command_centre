@@ -31,7 +31,7 @@ export const getVehicleOccupancyStatus = createSelector(
 );
 export const getVehicleId = createSelector(getVehicleDetail, vehicleDetailState => vehicleDetailState.id);
 export const getCurrentVehicleTripId = createSelector(getVehicleDetail, vehicleDetailState => get(vehicleDetailState, 'trip.tripId'));
-export const getCurrentVehicleReplacementTripId = createSelector(getVehicleDetail, vehicleDetailState => get(vehicleDetailState, 'trip[".replacementTripId"]'));
+export const getCurrentVehicleReplacementTripId = createSelector(getVehicleDetail, vehicleDetailState => get(vehicleDetailState, ['trip', '.replacementTripId']));
 export const getVehicleLastStopSequence = createSelector(getVehicleDetail, vehicleState => vehicleState.lastStopSequence);
 export const getVehicleUpcomingStops = createSelector(getDetailState, detailState => result(detailState, 'vehicle.upcomingStops'));
 export const getVehiclePastStops = createSelector(getDetailState, detailState => result(detailState, 'vehicle.pastStops'));
