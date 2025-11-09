@@ -428,7 +428,7 @@ export const SelectDetails = (props) => {
             .filter(item => item.routeId === route.routeId && item.stopCode);
         return uniqBy(
             [...stopsFromRoutes, ...stopsFromStops],
-            item => `${item.stopCode}_${item.directionId || ''}`
+            item => `${item.stopCode}_${item.directionId || ''}`,
         );
     }, []);
 
@@ -443,7 +443,6 @@ export const SelectDetails = (props) => {
     const renderRouteWithStops = useCallback((route, disruptionKey, affectedEntities) => {
         const allStopsUnderRoute = getStopsUnderRoute(route, affectedEntities);
         const stopsByDirection = groupBy(allStopsUnderRoute.filter(stop => stop.directionId !== undefined), 'directionId');
-        
         return (
             <React.Fragment key={ `${disruptionKey}_${route.routeId || route.routeShortName}` }>
                 <p className="p-lr12-tb6 m-0 disruption-effect-item-route">
@@ -467,7 +466,6 @@ export const SelectDetails = (props) => {
 
     const renderStopWithRoutes = useCallback((stop, disruptionKey, affectedEntities) => {
         const allRoutesUnderStop = getRoutesUnderStop(stop, affectedEntities);
-        
         return (
             <React.Fragment key={ `${disruptionKey}_${stop.stopId}` }>
                 <p className="p-lr12-tb6 m-0 disruption-effect-item-stop">

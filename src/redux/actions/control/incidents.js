@@ -25,6 +25,7 @@ import { getAllStops } from '../../selectors/static/stops';
 import EDIT_TYPE from '../../../types/edit-types';
 import { updateControlDetailView, updateMainView } from '../navigation';
 import VIEW_TYPE from '../../../types/view-types';
+import { HttpStatus } from '../../../types/http-types';
 
 export const updateIncidentsSortingParams = sortingParams => ({
     type: ACTION_TYPE.UPDATE_CONTROL_INCIDENTS_SORTING_PARAMS,
@@ -284,7 +285,12 @@ export const publishDraftIncident = incident => async (dispatch) => {
             ),
         );
     } catch (error) {
-        dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.PUBLISH_DRAFT_ERROR(error.code)));
+        if (error.code === HttpStatus.CONFLICT && error.metadata?.conflicts) {
+            const disruptionIds = [...new Set(error.metadata.conflicts.map(conflict => conflict.disruptionId))];
+            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_CONFLICT_ERROR(disruptionIds)));
+        } else {
+            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.PUBLISH_DRAFT_ERROR(error.code)));
+        }
     } finally {
         dispatch(updateRequestingIncidentState(false, incident.incidentId));
     }
@@ -994,7 +1000,12 @@ export const updateIncident = (incident, isAddEffect = false, isPublish = false)
         result = await disruptionsMgtApi.updateIncident(payloadForUpdate);
         dispatchUpdateResult(dispatch, incident, incidentId, isPublish, createNotification);
     } catch (error) {
-        dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_ERROR(incidentId)));
+        if (error.code === HttpStatus.CONFLICT && error.metadata?.conflicts) {
+            const disruptionIds = [...new Set(error.metadata.conflicts.map(conflict => conflict.disruptionId))];
+            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_CONFLICT_ERROR(disruptionIds)));
+        } else {
+            dispatch(updateRequestingIncidentResult(incident.incidentId, ACTION_RESULT.UPDATE_ERROR(incidentId)));
+        }
         hasError = true;
     } finally {
         finalizePostUpdate(dispatch, { isAddEffect, incidentId, hasError });

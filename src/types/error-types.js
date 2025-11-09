@@ -39,6 +39,14 @@ export default {
     disruptionUpdate: incidentNo => `Failed to update disruption ${incidentNo}.`,
     disruptionCreate: 'Failed to create disruption',
     draftDisruptionPublish: 'Failed to publish draft disruption',
+    overlappingDiversions: (disruptionIds) => {
+        const formattedDisruptionIds = disruptionIds.map(id => `DISR${id}`).join('\n');
+        return `A route variant can have no more than one active diversion in a given period.
+
+To publish or update the date or time of this disruption, please review the period and diversions of the conflicting disruptions:
+
+${formattedDisruptionIds}`;
+    },
     fetchIncident: 'Failed to load incident data',
     fetchDisruptionsEnabled: false,
     fetchNotificationsEnabled: false,

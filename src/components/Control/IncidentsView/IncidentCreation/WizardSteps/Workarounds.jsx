@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Button, Input, Label } from 'reactstrap';
@@ -18,7 +18,9 @@ import { STATUSES } from '../../../../../types/disruptions-types';
 import { DIRECTIONS } from '../../types';
 
 export const Workarounds = (props) => {
-    const disruptions = props.editMode !== EDIT_TYPE.ADD_EFFECT ? props.data.disruptions : [props.newIncidentEffect];
+    const disruptions = useMemo(() => (
+        props.editMode !== EDIT_TYPE.ADD_EFFECT ? props.data.disruptions : [props.newIncidentEffect]
+    ), [props.editMode, props.data.disruptions, props.newIncidentEffect]);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [filteredDisruptions, setFilteredDisruptions] = useState(disruptions || []);
@@ -73,7 +75,7 @@ export const Workarounds = (props) => {
             .filter(item => item.routeId === route.routeId && item.stopCode);
         return uniqBy(
             [...stopsFromRoutes, ...stopsFromStops],
-            item => `${item.stopCode}_${item.directionId || ''}`
+            item => `${item.stopCode}_${item.directionId || ''}`,
         );
     }, []);
 
@@ -88,7 +90,6 @@ export const Workarounds = (props) => {
     const renderRouteWithStops = useCallback((route, disruptionKey, affectedEntities) => {
         const allStopsUnderRoute = getStopsUnderRoute(route, affectedEntities);
         const stopsByDirection = groupBy(allStopsUnderRoute.filter(stop => stop.directionId !== undefined), 'directionId');
-        
         return (
             <React.Fragment key={ `${disruptionKey}_${route.routeId || route.routeShortName}` }>
                 <p className="p-lr12-tb6 m-0 disruption-effect-item-route">
@@ -110,10 +111,8 @@ export const Workarounds = (props) => {
         );
     }, [getStopsUnderRoute]);
 
-    // Helper function to render stop with routes
     const renderStopWithRoutes = useCallback((stop, disruptionKey, affectedEntities) => {
         const allRoutesUnderStop = getRoutesUnderStop(stop, affectedEntities);
-        
         return (
             <React.Fragment key={ `${disruptionKey}_${stop.stopId}` }>
                 <p className="p-lr12-tb6 m-0 disruption-effect-item-stop">
@@ -140,23 +139,19 @@ export const Workarounds = (props) => {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    useEffect(() => {
+    const filteredDisruptionsMemo = useMemo(() => {
+        if (!disruptions) {
+            return [];
+        }
         const term = debouncedSearchTerm.toLowerCase();
-        const filtered = disruptions.filter(d => d.impact?.toLowerCase().includes(term)
+        return disruptions.filter(d => d.impact?.toLowerCase().includes(term)
             || d.affectedEntities?.affectedRoutes?.some(route => route.routeShortName.toLowerCase().includes(term))
             || d.affectedEntities?.affectedStops?.some(stop => stop.text.toLowerCase().includes(term)));
-        setFilteredDisruptions(filtered);
     }, [debouncedSearchTerm, disruptions]);
 
     useEffect(() => {
-        if (props.editMode === EDIT_TYPE.ADD_EFFECT) {
-            const term = debouncedSearchTerm.toLowerCase();
-            const filtered = [props.newIncidentEffect].filter(d => d.impact?.toLowerCase().includes(term)
-                || d.affectedEntities?.affectedRoutes?.some(route => route.routeShortName.toLowerCase().includes(term))
-                || d.affectedEntities?.affectedStops?.some(stop => stop.text.toLowerCase().includes(term)));
-            setFilteredDisruptions(filtered);
-        }
-    }, [props.newIncidentEffect, debouncedSearchTerm, props.editMode]);
+        setFilteredDisruptions(filteredDisruptionsMemo);
+    }, [filteredDisruptionsMemo]);
 
     const getNextButton = () => {
         if (props.editMode === EDIT_TYPE.ADD_EFFECT && props.incidentStatus === STATUSES.DRAFT) {
