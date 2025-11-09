@@ -18,7 +18,7 @@ import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api
 import { isAffectedStop, createAffectedStop,
     getUniqueStops, createModifiedRouteVariant, canMerge, hasDiversionModified, getUniqueAffectedStopIds,
     mergeDiversionToRouteVariant, removeDuplicatePoints, createRouteVariantDateFilters } from './DiversionHelper';
-import { mergeCoordinates, parseWKT, toWKT } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
+import { parseWKT, toWKT } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
 import EDIT_TYPE from '../../../../types/edit-types';
 import { BUS_TYPE_ID } from '../../../../types/vehicle-types';
 import BaseRouteVariantSelector from './BaseRouteVariantSelector';
@@ -80,12 +80,9 @@ const DiversionManager = (props) => {
         }
         if (baseRouteVariant) {
             setSelectedBaseRouteVariant(baseRouteVariant);
-            const initialCoordinates = isEditingMode ? mergeCoordinates(
-                parseWKT(baseRouteVariant.shapeWkt),
-                parseWKT(props.diversion.diversionShapeWkt),
-            ) : [];
+            const initialCoordinates = parseWKT(props.diversion.diversionRouteVariants[0].shapeWkt);
             setInitialBaseRouteShape(toWKT(initialCoordinates));
-            if (isEditingMode && props.diversion?.directions) {
+            if (props.diversion?.directions) {
                 setInitialDirections(props.diversion.directions);
                 setDirections(props.diversion.directions);
             }

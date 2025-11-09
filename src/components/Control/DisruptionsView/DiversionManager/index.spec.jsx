@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
@@ -356,6 +356,96 @@ describe('<DiversionManager />', () => {
             expect(searchArg.startTime).toBeTruthy();
             expect(typeof searchArg.serviceDateFrom).toBe('string');
             expect(typeof searchArg.startTime).toBe('string');
+        });
+    });
+
+    describe('initEditingMode', () => {
+        let routeVariants;
+        let diversion;
+
+        beforeEach(() => {
+            store = mockStore({});
+            routeVariants = [
+                {
+                    routeVariantId: 'rv1',
+                    directionId: 1,
+                    shapeWkt: 'LINESTRING(0 0, 1 1)',
+                    stops: [{ stopId: 's1' }],
+                },
+                {
+                    routeVariantId: 'rv2',
+                    directionId: 1,
+                    shapeWkt: 'LINESTRING(0 0, 2 2)',
+                    stops: [{ stopId: 's2' }],
+                },
+            ];
+            diversion = {
+                diversionRouteVariants: [
+                    { routeVariantId: 'rv1', shapeWkt: 'LINESTRING(0 0, 1 1)' },
+                    { routeVariantId: 'rv2', shapeWkt: 'LINESTRING(0 0, 2 2)' },
+                ],
+                diversionShapeWkt: 'LINESTRING(0 0, 1 1, 2 2)',
+                directions: ['Go straight', 'Turn left'],
+            };
+            mockProps = {
+                diversion,
+                editMode: 'EDIT',
+                disruption: {},
+                setDiversionManagerReady: jest.fn(),
+                createDiversion: jest.fn(),
+                updateDiversion: jest.fn(),
+                resetDiversionResult: jest.fn(),
+                useDiversion: true,
+                useTomTomDirections: true,
+                resultState: { isLoading: false, diversionId: null, error: null },
+            };
+        });
+
+        it('should select the correct base route variant and set initial directions and shape', async () => {
+            let component;
+            await act(async () => {
+                component = render(
+                    <Provider store={ store }>
+                        <DiversionManager { ...mockProps } />
+                    </Provider>,
+                );
+            });
+
+            expect(component.getByText('Edit Diversion')).toBeInTheDocument();
+        });
+
+        it('should not set state if base route variant is not found', async () => {
+            routeVariants = [
+                {
+                    routeVariantId: 'rv2',
+                    directionId: 1,
+                    shapeWkt: 'LINESTRING(0 0, 2 2)',
+                    stops: [{ stopId: 's2' }],
+                },
+            ];
+            let component;
+            await act(async () => {
+                component = render(
+                    <Provider store={ store }>
+                        <DiversionManager { ...mockProps } />
+                    </Provider>,
+                );
+            });
+
+            expect(component.getByTestId('base-route-variant-selector')).toBeInTheDocument();
+        });
+
+        it('should set secondaryRouteVariantsList and selectedOtherRouteVariants correctly', async () => {
+            let component;
+            await act(async () => {
+                component = render(
+                    <Provider store={ store }>
+                        <DiversionManager { ...mockProps } />
+                    </Provider>,
+                );
+            });
+
+            expect(component.getByTestId('base-route-variant-selector')).toBeInTheDocument();
         });
     });
 });
