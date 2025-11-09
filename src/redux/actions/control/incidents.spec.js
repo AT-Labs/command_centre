@@ -9,7 +9,6 @@ import ERROR_TYPE from '../../../types/error-types';
 import { STATUSES } from '../../../types/disruptions-types';
 import VIEW_TYPE from '../../../types/view-types';
 import { loadIncidentAndRedirectToEdit } from './incidents';
-import { HttpStatus } from '../../../types/http-types';
 
 const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
@@ -343,42 +342,6 @@ describe('Incidents Actions', () => {
         ]));
     });
 
-    it('dispatches correct actions on updateIncident conflict failure', async () => {
-        disruptionsMgtApi.updateIncident.mockRejectedValue({ code: HttpStatus.CONFLICT, metadata: { conflicts: [{ disruptionId: '1' }, { disruptionId: '2' }] } });
-
-        const incident = {
-            incidentId: 1,
-            header: 'INC456',
-            status: STATUSES.PUBLISHED,
-            createNotification: true,
-        };
-
-        await store.dispatch(actions.updateIncident(incident));
-        const dispatched = store.getActions();
-
-        expect(dispatched).toEqual(expect.arrayContaining([
-            {
-                payload: { isRequesting: true, resultIncidentId: 1 },
-                type: ACTION_TYPE.UPDATE_CONTROL_INCIDENT_ACTION_REQUESTING,
-            },
-            {
-                type: 'update-control-incident-action-result',
-                payload: {
-                    resultIncidentId: 1,
-                    resultStatus: 'danger',
-                    resultMessage: `A route variant can have no more than one active diversion in a given period.
-
-To publish or update the date or time of this disruption, please review the period and diversions of the conflicting disruptions:
-
-DISR1
-DISR2`,
-                    resultCreateNotification: undefined,
-                    resultIncidentVersion: undefined,
-                },
-            },
-        ]));
-    });
-
     it('dispatches correct actions on createIncident success', async () => {
         disruptionsMgtApi.createIncident.mockResolvedValue({
             incidentId: 99,
@@ -570,57 +533,6 @@ DISR2`,
                     resultIncidentId: 5,
                     resultIncidentVersion: undefined,
                     resultMessage: 'Failed to publish draft disruption',
-                    resultStatus: 'danger',
-                },
-                type: 'update-control-incident-action-result',
-            },
-            {
-                payload: {
-                    isRequesting: false,
-                    resultIncidentId: 5,
-                },
-                type: 'update-control-incident-action-requesting',
-            },
-            {
-                payload: {
-                    isLoading: false,
-                },
-                type: 'update-control-incidents-loading',
-            },
-        ]));
-    });
-
-    it('dispatches error result when updateIncident throws conflict error inside publishDraftIncident', async () => {
-        disruptionsMgtApi.updateIncident.mockRejectedValue({ code: HttpStatus.CONFLICT, metadata: { conflicts: [{ disruptionId: '1' }, { disruptionId: '2' }] } });
-        const incident = {
-            incidentId: 5,
-            header: 'INC999',
-            status: STATUSES.DRAFT,
-            createNotification: true,
-        };
-
-        await store.dispatch(actions.publishDraftIncident(incident));
-        const dispatched = store.getActions();
-
-        expect(dispatched).toEqual(expect.arrayContaining([
-            {
-                payload: {
-                    isRequesting: true,
-                    resultIncidentId: 5,
-                },
-                type: 'update-control-incident-action-requesting',
-            },
-            {
-                payload: {
-                    resultCreateNotification: undefined,
-                    resultIncidentId: 5,
-                    resultIncidentVersion: undefined,
-                    resultMessage: `A route variant can have no more than one active diversion in a given period.
-
-To publish or update the date or time of this disruption, please review the period and diversions of the conflicting disruptions:
-
-DISR1
-DISR2`,
                     resultStatus: 'danger',
                 },
                 type: 'update-control-incident-action-result',

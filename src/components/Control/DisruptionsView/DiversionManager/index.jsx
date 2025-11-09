@@ -9,16 +9,15 @@ import SidePanel from '../../../Common/OffCanvasLayout/SidePanel/SidePanel';
 import RouteShapeEditor from '../../../Common/Map/RouteShapeEditor/RouteShapeEditor';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
 import ChangeSelectedRouteVariantModal from './ChangeSelectedRouteVariantModal';
-import CreateDiversionWithoutMergeModal from './CreateDiversionWithoutMergeModal';
 import DiversionResultModal, { ACTION_TYPE } from './DiversionResultModal';
 import { createDiversion, updateDiversion, resetDiversionResult, setDiversionManagerReady } from '../../../../redux/actions/control/diversions';
 import { getDiversionResultState, getDiversionForEditing, getDiversionEditMode } from '../../../../redux/selectors/control/diversions';
-import { useDiversion, useTomTomDirections } from '../../../../redux/selectors/appSettings';
+import { useDiversion } from '../../../../redux/selectors/appSettings';
 import { searchRouteVariants } from '../../../../utils/transmitters/trip-mgt-api';
 import { isAffectedStop, createAffectedStop,
     getUniqueStops, createModifiedRouteVariant, canMerge, hasDiversionModified, getUniqueAffectedStopIds,
     mergeDiversionToRouteVariant, removeDuplicatePoints, createRouteVariantDateFilters } from './DiversionHelper';
-import { parseWKT, toWKT } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
+import { mergeCoordinates, parseWKT, toWKT } from '../../../Common/Map/RouteShapeEditor/ShapeHelper';
 import EDIT_TYPE from '../../../../types/edit-types';
 import { BUS_TYPE_ID } from '../../../../types/vehicle-types';
 import BaseRouteVariantSelector from './BaseRouteVariantSelector';
@@ -37,11 +36,9 @@ const DiversionManager = (props) => {
     const [routeVariantsList, setRouteVariantsList] = useState([]);
     const [selectedBaseRouteVariant, setSelectedBaseRouteVariant] = useState(null);
     const [initialBaseRouteShape, setInitialBaseRouteShape] = useState(null);
-    const [initialDirections, setInitialDirections] = useState(isEditingMode && props.diversion?.directions ? props.diversion?.directions : []);
     const [isBaseRouteVariantVisible, setIsBaseRouteVariantVisible] = useState(true);
     const [tempSelectedBaseRouteVariant, setTempSelectedBaseRouteVariant] = useState(); // Save temporarily for confirmation modal
     const [isChangeVariantModalOpen, setIsChangeVariantModalOpen] = useState(false);
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     // For additional route variants
     const [baseRouteVariantOnly, setBaseRouteVariantOnly] = useState(true);
@@ -50,10 +47,6 @@ const DiversionManager = (props) => {
 
     // Shared diversion shape
     const [diversionShapeWkt, setDiversionShapeWkt] = useState(isEditingMode && props.diversion ? props.diversion.diversionShapeWkt : null);
-
-    // TomTom directions from the shape editor
-    const [directions, setDirections] = useState([]);
-    const [hasPendingMerge, setHasPendingMerge] = useState(false);
 
     // Updated base route variant
     const [modifiedBaseRouteVariant, setModifiedBaseRouteVariant] = useState();
@@ -75,17 +68,13 @@ const DiversionManager = (props) => {
         // Select the base route in edit mode
         const baseRouteVariantId = props.diversion.diversionRouteVariants[0].routeVariantId;
         const baseRouteVariant = routeVariants.find(rv => rv.routeVariantId === baseRouteVariantId);
-        if (props.diversion?.directions?.length > 0) {
-            setDirections(props.diversion.directions);
-        }
         if (baseRouteVariant) {
             setSelectedBaseRouteVariant(baseRouteVariant);
-            const initialCoordinates = parseWKT(props.diversion.diversionRouteVariants[0].shapeWkt);
+            const initialCoordinates = isEditingMode ? mergeCoordinates(
+                parseWKT(baseRouteVariant.shapeWkt),
+                parseWKT(props.diversion.diversionShapeWkt),
+            ) : [];
             setInitialBaseRouteShape(toWKT(initialCoordinates));
-            if (props.diversion?.directions) {
-                setInitialDirections(props.diversion.directions);
-                setDirections(props.diversion.directions);
-            }
         } else {
             return;
         }
@@ -225,9 +214,8 @@ const DiversionManager = (props) => {
     }, []);
 
     // Handel the shape updated events triggered by the shape editor
-    const onShapeUpdated = (updatedDiversionShape, updatedRouteVariantShape, tomtomDirections) => {
+    const onShapeUpdated = (updatedDiversionShape, updatedRouteVariantShape) => {
         setDiversionShapeWkt(updatedDiversionShape);
-        setDirections(tomtomDirections);
 
         if (selectedBaseRouteVariant?.routeVariantId && updatedRouteVariantShape && updatedDiversionShape) {
             setModifiedBaseRouteVariant(createModifiedRouteVariant(selectedBaseRouteVariant, updatedRouteVariantShape));
@@ -261,7 +249,7 @@ const DiversionManager = (props) => {
         }
     };
 
-    const submitDiversion = async () => {
+    const onSaveClicked = async () => {
         if (modifiedBaseRouteVariant && diversionShapeWkt) {
             let modifiedOtherRouteVariants = [];
             if (selectedOtherRouteVariants.length > 0) {
@@ -277,7 +265,6 @@ const DiversionManager = (props) => {
                     ...modifiedOtherRouteVariants,
                 ],
                 affectedStops,
-                directions,
             };
 
             if (isEditingMode) {
@@ -288,14 +275,6 @@ const DiversionManager = (props) => {
             } else {
                 props.createDiversion(diversionPayload);
             }
-        }
-    };
-
-    const onSaveClicked = async () => {
-        if (hasPendingMerge) {
-            setIsCreateModalOpen(true);
-        } else {
-            submitDiversion();
         }
     };
 
@@ -433,13 +412,10 @@ const DiversionManager = (props) => {
             <RouteShapeEditor
                 routeVariant={ selectedBaseRouteVariant }
                 initialShape={ initialBaseRouteShape }
-                initialDirections={ initialDirections }
                 additionalRouteVariants={ selectedOtherRouteVariants }
                 highlightedStops={ getUniqueAffectedStopIds(affectedStops) }
                 onShapeUpdated={ onShapeUpdated }
-                onDirectionsUpdated={ ({ pending }) => setHasPendingMerge(pending) }
                 visible={ isBaseRouteVariantVisible }
-                useTomTomDirections={ props.useTomTomDirections }
                 className="map" />
             <CustomModal
                 className="change-selected-route-variant-modal"
@@ -451,18 +427,6 @@ const DiversionManager = (props) => {
                         setIsChangeVariantModalOpen(false);
                     } }
                     onCancel={ () => setIsChangeVariantModalOpen(false) }
-                />
-            </CustomModal>
-            <CustomModal
-                className="create-diversion-modal"
-                title="Automatic detour has not been saved"
-                isModalOpen={ isCreateModalOpen }>
-                <CreateDiversionWithoutMergeModal
-                    onConfirmation={ () => {
-                        submitDiversion();
-                        setIsCreateModalOpen(false);
-                    } }
-                    onCancel={ () => setIsCreateModalOpen(false) }
                 />
             </CustomModal>
             <CustomModal
@@ -491,7 +455,6 @@ DiversionManager.propTypes = {
     resultState: PropTypes.object,
     diversion: PropTypes.object,
     useDiversion: PropTypes.bool.isRequired,
-    useTomTomDirections: PropTypes.bool.isRequired,
 };
 
 DiversionManager.defaultProps = {
@@ -510,5 +473,4 @@ export default connect(state => ({
     resultState: getDiversionResultState(state),
     diversion: getDiversionForEditing(state),
     useDiversion: useDiversion(state),
-    useTomTomDirections: useTomTomDirections(state),
 }), { createDiversion, updateDiversion, resetDiversionResult, setDiversionManagerReady })(DiversionManager);

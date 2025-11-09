@@ -23,10 +23,6 @@ export const ACTION_RESULT = {
         resultStatus: ACTION_RESULT_TYPES.ERROR,
         resultMessage: ERROR_TYPE.disruptionUpdate(incidentNo),
     }),
-    UPDATE_CONFLICT_ERROR: disruptionIds => ({
-        resultStatus: ACTION_RESULT_TYPES.ERROR,
-        resultMessage: ERROR_TYPE.overlappingDiversions(disruptionIds),
-    }),
     CREATE_SUCCESS: (incidentNo, version, createNotification = false) => ({
         resultStatus: ACTION_RESULT_TYPES.SUCCESS,
         resultMessage: `Disruption number #${incidentNo} created successfully.`,
