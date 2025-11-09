@@ -15,6 +15,19 @@ import { updateRealTimeDetailView } from '../../navigation';
 export const mergeRoutesDetails = (entityKey, trips, vehiclesInAllRoutes) => (dispatch) => {
     const routeVariants = groupBy(trips, 'trip_headsign');
     const visibleVehiclesKeydByTripId = keyBy(vehiclesInAllRoutes, 'vehicle.trip.tripId');
+
+    const adjustedVisibleVehiclesByTripId = {};
+    each(visibleVehiclesKeydByTripId, (trip) => {
+        const tripId = result(trip, 'vehicle.trip.tripId');
+        if (tripId != null) {
+            adjustedVisibleVehiclesByTripId[tripId] = trip;
+        }
+        const replacementTripId = result(trip, 'vehicle.trip[".replacementTripId"]');
+        if (replacementTripId != null && replacementTripId !== tripId) {
+            adjustedVisibleVehiclesByTripId[replacementTripId] = trip;
+        }
+    });
+
     dispatch({
         type: ACTION_TYPE.FETCH_ROUTE_TRIPS,
         payload: {
@@ -22,7 +35,7 @@ export const mergeRoutesDetails = (entityKey, trips, vehiclesInAllRoutes) => (di
             routes: map(routeVariants, (routeVariantTrips, headsign) => ({
                 shape_wkt: routeVariantTrips[0].shape_wkt,
                 routeVariantName: headsign,
-                vehicles: orderBy(compact(routeVariantTrips.map(({ trip_id }) => visibleVehiclesKeydByTripId[trip_id])), getVehicleTripStartTimeISO),
+                vehicles: orderBy(compact(routeVariantTrips.map(({ trip_id }) => adjustedVisibleVehiclesByTripId[trip_id])), getVehicleTripStartTimeISO),
             })),
         },
     });
