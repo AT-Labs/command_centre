@@ -1406,6 +1406,7 @@ EditEffectPanel.defaultProps = {
     isDiversionManagerLoading: false,
     isDiversionManagerReady: false,
     onDisruptionChange: () => {},
+    onDisruptionsUpdate: () => {},
 };
 
 export default connect(state => ({
