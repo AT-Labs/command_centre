@@ -1480,4 +1480,40 @@ describe('CreateIncident component', () => {
             expect(wrapper.state('isAlertModalOpen')).toBe(false);
         });
     });
+
+    describe('Close Button Visibility', () => {
+        let wrapper;
+        const mockUpdateCurrentStep = jest.fn();
+        const mockCreateNewIncident = jest.fn();
+        const mockOpenCreateIncident = jest.fn();
+        const mockToggleIncidentModals = jest.fn();
+
+        beforeEach(() => {
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    isEditEffectPanelOpen={ false }
+                />,
+            );
+        });
+
+        afterEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('should render Close button when isEditEffectPanelOpen is false', () => {
+            const button = wrapper.find('Button.disruption-creation-close-disruptions');
+            expect(button).toHaveLength(1);
+        });
+
+        it('should not render Close button when isEditEffectPanelOpen is true', () => {
+            wrapper.setProps({ isEditEffectPanelOpen: true });
+            const button = wrapper.find('Button.disruption-creation-close-disruptions');
+            expect(button).toHaveLength(0);
+        });
+    });
 });
