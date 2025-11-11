@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { isEmpty, some } from 'lodash-es';
+import { isEmpty, some, groupBy, uniqBy } from 'lodash-es';
 import moment from 'moment';
 import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap';
 
@@ -31,6 +31,7 @@ import {
     setRequestedDisruptionKeyToUpdateEditEffect } from '../../../../../redux/actions/control/incidents';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
 import { getParentChildSeverityOptions, STATUSES } from '../../../../../types/disruptions-types';
+import { DIRECTIONS } from '../../types';
 import {
     DATE_FORMAT,
     TIME_FORMAT,
@@ -420,6 +421,69 @@ export const SelectDetails = (props) => {
         return impact ? impact.label : value;
     };
 
+    const getStopsUnderRoute = useCallback((route, affectedEntities) => {
+        const stopsFromRoutes = affectedEntities.affectedRoutes
+            .filter(item => item.routeId === route.routeId && item.stopCode && item.routeShortName === route.routeShortName);
+        const stopsFromStops = (affectedEntities.affectedStops || [])
+            .filter(item => item.routeId === route.routeId && item.stopCode);
+        return uniqBy(
+            [...stopsFromRoutes, ...stopsFromStops],
+            item => `${item.stopCode}_${item.directionId || ''}`,
+        );
+    }, []);
+
+    const getRoutesUnderStop = useCallback((stop, affectedEntities) => {
+        const routesFromStops = affectedEntities.affectedStops
+            .filter(item => item.stopCode === stop.stopCode && item.routeId && item.stopId === stop.stopId);
+        const routesFromRoutes = (affectedEntities.affectedRoutes || [])
+            .filter(item => item.stopCode === stop.stopCode && item.routeId);
+        return uniqBy([...routesFromStops, ...routesFromRoutes], 'routeId');
+    }, []);
+
+    const renderRouteWithStops = useCallback((route, disruptionKey, affectedEntities) => {
+        const allStopsUnderRoute = getStopsUnderRoute(route, affectedEntities);
+        const stopsByDirection = groupBy(allStopsUnderRoute.filter(stop => stop.directionId !== undefined), 'directionId');
+        return (
+            <React.Fragment key={ `${disruptionKey}_${route.routeId || route.routeShortName}` }>
+                <p className="p-lr12-tb6 m-0 disruption-effect-item-route">
+                    Route -
+                    {' '}
+                    {route.routeShortName}
+                </p>
+                {Object.keys(stopsByDirection).length > 0 && Object.keys(stopsByDirection).map(directionId => (
+                    <p className="p-lr12-tb6 m-0 disruption-effect-item-stop pl-4 font-size-sm" key={ `${disruptionKey}_${route.routeId || route.routeShortName}_${directionId}` }>
+                        Stops
+                        {' '}
+                        {DIRECTIONS[directionId] || `Direction ${directionId}`}
+                        :
+                        {' '}
+                        {stopsByDirection[directionId].map(stop => stop.stopCode).join(', ')}
+                    </p>
+                ))}
+            </React.Fragment>
+        );
+    }, [getStopsUnderRoute]);
+
+    const renderStopWithRoutes = useCallback((stop, disruptionKey, affectedEntities) => {
+        const allRoutesUnderStop = getRoutesUnderStop(stop, affectedEntities);
+        return (
+            <React.Fragment key={ `${disruptionKey}_${stop.stopId}` }>
+                <p className="p-lr12-tb6 m-0 disruption-effect-item-stop">
+                    Stop -
+                    {' '}
+                    {stop.text}
+                </p>
+                {allRoutesUnderStop.length > 0 && (
+                    <p className="p-lr12-tb6 m-0 disruption-effect-item-route pl-4 font-size-sm" key={ `${disruptionKey}_${stop.stopId}_routes` }>
+                        Route:
+                        {' '}
+                        {allRoutesUnderStop.map(route => route.routeShortName).join(', ')}
+                    </p>
+                )}
+            </React.Fragment>
+        );
+    }, [getRoutesUnderStop]);
+
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearchTerm(searchTerm);
@@ -441,10 +505,14 @@ export const SelectDetails = (props) => {
     }, [debouncedSearchTerm]);
 
     useEffect(() => {
-        if (disruptions && disruptions.length !== filteredDisruptions.length) {
-            setFilteredDisruptions(disruptions);
+        if (disruptions) {
+            const term = debouncedSearchTerm.toLowerCase();
+            const filtered = disruptions.filter(d => d.impact?.toLowerCase().includes(term)
+                || d.affectedEntities?.affectedRoutes.some(entity => entity.routeShortName.toLowerCase().includes(term))
+                || d.affectedEntities?.affectedStops.some(entity => entity.text.toLowerCase().includes(term)));
+            setFilteredDisruptions(filtered);
         }
-    }, [disruptions]);
+    }, [disruptions, debouncedSearchTerm]);
 
     useEffect(() => {
         if (props.isEffectsRequiresToUpdate) {
@@ -771,25 +839,14 @@ export const SelectDetails = (props) => {
                                     {getImpactLabel(disruption.impact)}
                                 </p>
                                 {disruption.affectedEntities.affectedRoutes && disruption.affectedEntities.affectedRoutes.length > 0 && (
-                                    disruption.affectedEntities.affectedRoutes.filter((item, index, self) => index
-                                    === self.findIndex(i => i.routeShortName === item.routeShortName))
-                                        .map(route => (
-                                            <p className="p-lr12-tb6 m-0 disruption-effect-item-route" key={ `${disruption.key}_${route.routeId}` }>
-                                                Route -
-                                                {' '}
-                                                {route.routeShortName}
-                                            </p>
-                                        ))
+                                    disruption.affectedEntities.affectedRoutes
+                                        .filter((item, index, self) => index === self.findIndex(i => i.routeShortName === item.routeShortName))
+                                        .map(route => renderRouteWithStops(route, disruption.key, disruption.affectedEntities))
                                 )}
                                 {disruption.affectedEntities.affectedStops && disruption.affectedEntities.affectedStops.length > 0 && (
-                                    disruption.affectedEntities.affectedStops.filter((item, index, self) => index === self.findIndex(i => i.stopId === item.stopId))
-                                        .map(stop => (
-                                            <p className="p-lr12-tb6 m-0 disruption-effect-item-stop" key={ `${disruption.key}_${stop.stopId}` }>
-                                                Stop -
-                                                {' '}
-                                                {stop.text}
-                                            </p>
-                                        ))
+                                    disruption.affectedEntities.affectedStops
+                                        .filter((item, index, self) => index === self.findIndex(i => i.stopId === item.stopId))
+                                        .map(stop => renderStopWithRoutes(stop, disruption.key, disruption.affectedEntities))
                                 )}
                             </li>
                         ))}
