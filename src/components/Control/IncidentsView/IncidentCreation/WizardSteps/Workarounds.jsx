@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Button, Input, Label } from 'reactstrap';
-import { groupBy, uniqBy } from 'lodash-es';
 import { isWorkaroundPanelOpen, getDisruptionKeyToWorkaroundEdit, getEditMode } from '../../../../../redux/selectors/control/incidents';
 import { toggleIncidentModals,
     updateCurrentStep,
@@ -15,7 +14,7 @@ import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings'
 import { useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
 import { STATUSES } from '../../../../../types/disruptions-types';
-import { DIRECTIONS } from '../../types';
+import { renderRouteWithStops, renderStopWithRoutes } from '../../../../../utils/control/incidents';
 
 export const Workarounds = (props) => {
     const disruptions = useMemo(() => (
@@ -67,69 +66,6 @@ export const Workarounds = (props) => {
         const impact = impacts.find(i => i.value === value);
         return impact ? impact.label : value;
     };
-
-    const getStopsUnderRoute = useCallback((route, affectedEntities) => {
-        const stopsFromRoutes = affectedEntities.affectedRoutes
-            .filter(item => item.routeId === route.routeId && item.stopCode && item.routeShortName === route.routeShortName);
-        const stopsFromStops = (affectedEntities.affectedStops || [])
-            .filter(item => item.routeId === route.routeId && item.stopCode);
-        return uniqBy(
-            [...stopsFromRoutes, ...stopsFromStops],
-            item => `${item.stopCode}_${item.directionId || ''}`,
-        );
-    }, []);
-
-    const getRoutesUnderStop = useCallback((stop, affectedEntities) => {
-        const routesFromStops = affectedEntities.affectedStops
-            .filter(item => item.stopCode === stop.stopCode && item.routeId && item.stopId === stop.stopId);
-        const routesFromRoutes = (affectedEntities.affectedRoutes || [])
-            .filter(item => item.stopCode === stop.stopCode && item.routeId);
-        return uniqBy([...routesFromStops, ...routesFromRoutes], 'routeId');
-    }, []);
-
-    const renderRouteWithStops = useCallback((route, disruptionKey, affectedEntities) => {
-        const allStopsUnderRoute = getStopsUnderRoute(route, affectedEntities);
-        const stopsByDirection = groupBy(allStopsUnderRoute.filter(stop => stop.directionId !== undefined), 'directionId');
-        return (
-            <React.Fragment key={ `${disruptionKey}_${route.routeId || route.routeShortName}` }>
-                <p className="p-lr12-tb6 m-0 disruption-effect-item-route">
-                    Route -
-                    {' '}
-                    {route.routeShortName}
-                </p>
-                {Object.keys(stopsByDirection).length > 0 && Object.keys(stopsByDirection).map(directionId => (
-                    <p className="p-lr12-tb6 m-0 disruption-effect-item-stop pl-4 font-size-sm" key={ `${disruptionKey}_${route.routeId || route.routeShortName}_${directionId}` }>
-                        Stops
-                        {' '}
-                        {DIRECTIONS[directionId] || `Direction ${directionId}`}
-                        :
-                        {' '}
-                        {stopsByDirection[directionId].map(stop => stop.stopCode).join(', ')}
-                    </p>
-                ))}
-            </React.Fragment>
-        );
-    }, [getStopsUnderRoute]);
-
-    const renderStopWithRoutes = useCallback((stop, disruptionKey, affectedEntities) => {
-        const allRoutesUnderStop = getRoutesUnderStop(stop, affectedEntities);
-        return (
-            <React.Fragment key={ `${disruptionKey}_${stop.stopId}` }>
-                <p className="p-lr12-tb6 m-0 disruption-effect-item-stop">
-                    Stop -
-                    {' '}
-                    {stop.text}
-                </p>
-                {allRoutesUnderStop.length > 0 && (
-                    <p className="p-lr12-tb6 m-0 disruption-effect-item-route pl-4 font-size-sm" key={ `${disruptionKey}_${stop.stopId}_routes` }>
-                        Route:
-                        {' '}
-                        {allRoutesUnderStop.map(route => route.routeShortName).join(', ')}
-                    </p>
-                )}
-            </React.Fragment>
-        );
-    }, [getRoutesUnderStop]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
