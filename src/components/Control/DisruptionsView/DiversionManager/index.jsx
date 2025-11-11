@@ -196,6 +196,9 @@ const DiversionManager = (props) => {
             setAffectedStops(uniqueUpdatedAffectedStops);
         } else {
             setAffectedStops([]);
+            // If no diversion, reset the apply to the base route variant only checkbox
+            // This allows user to change the base route variant
+            setBaseRouteVariantOnly(true);
         }
 
         if (isEditingMode) {
@@ -364,6 +367,11 @@ const DiversionManager = (props) => {
                 ? { ...variant, hidden: false }
                 : variant)),
         );
+
+        // If no more additional route variants, set the apply only to base route checkbox to true again
+        if (updatedAdditionalRouteVariants.length === 0) {
+            setBaseRouteVariantOnly(true);
+        }
     };
 
     const containerClassName = `side-panel-control-component-view d-flex${props.useDiversion ? ' use-diversion-enabled' : ''}`;
