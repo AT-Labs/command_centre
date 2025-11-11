@@ -31,6 +31,7 @@ import {
     setRequestedDisruptionKeyToUpdateEditEffect } from '../../../../../redux/actions/control/incidents';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
 import { getParentChildSeverityOptions, STATUSES } from '../../../../../types/disruptions-types';
+import { renderRouteWithStops, renderStopWithRoutes, filterDisruptionsBySearchTerm } from '../../../../../utils/control/incidents';
 import {
     DATE_FORMAT,
     TIME_FORMAT,
@@ -429,10 +430,7 @@ export const SelectDetails = (props) => {
     }, [searchTerm]);
 
     const updateFilteredDisruptions = () => {
-        const term = debouncedSearchTerm.toLowerCase();
-        const filtered = disruptions.filter(d => d.impact?.toLowerCase().includes(term)
-            || d.affectedEntities?.affectedRoutes.some(entity => entity.routeShortName.toLowerCase().includes(term))
-            || d.affectedEntities?.affectedStops.some(entity => entity.text.toLowerCase().includes(term)));
+        const filtered = filterDisruptionsBySearchTerm(disruptions, debouncedSearchTerm);
         setFilteredDisruptions(filtered);
     };
 
@@ -441,10 +439,11 @@ export const SelectDetails = (props) => {
     }, [debouncedSearchTerm]);
 
     useEffect(() => {
-        if (disruptions && disruptions.length !== filteredDisruptions.length) {
-            setFilteredDisruptions(disruptions);
+        if (disruptions) {
+            const filtered = filterDisruptionsBySearchTerm(disruptions, debouncedSearchTerm);
+            setFilteredDisruptions(filtered);
         }
-    }, [disruptions]);
+    }, [disruptions, debouncedSearchTerm]);
 
     useEffect(() => {
         if (props.isEffectsRequiresToUpdate) {
@@ -771,25 +770,14 @@ export const SelectDetails = (props) => {
                                     {getImpactLabel(disruption.impact)}
                                 </p>
                                 {disruption.affectedEntities.affectedRoutes && disruption.affectedEntities.affectedRoutes.length > 0 && (
-                                    disruption.affectedEntities.affectedRoutes.filter((item, index, self) => index
-                                    === self.findIndex(i => i.routeShortName === item.routeShortName))
-                                        .map(route => (
-                                            <p className="p-lr12-tb6 m-0 disruption-effect-item-route" key={ `${disruption.key}_${route.routeId}` }>
-                                                Route -
-                                                {' '}
-                                                {route.routeShortName}
-                                            </p>
-                                        ))
+                                    disruption.affectedEntities.affectedRoutes
+                                        .filter((item, index, self) => index === self.findIndex(i => i.routeShortName === item.routeShortName))
+                                        .map(route => renderRouteWithStops(route, disruption.key, disruption.affectedEntities))
                                 )}
                                 {disruption.affectedEntities.affectedStops && disruption.affectedEntities.affectedStops.length > 0 && (
-                                    disruption.affectedEntities.affectedStops.filter((item, index, self) => index === self.findIndex(i => i.stopId === item.stopId))
-                                        .map(stop => (
-                                            <p className="p-lr12-tb6 m-0 disruption-effect-item-stop" key={ `${disruption.key}_${stop.stopId}` }>
-                                                Stop -
-                                                {' '}
-                                                {stop.text}
-                                            </p>
-                                        ))
+                                    disruption.affectedEntities.affectedStops
+                                        .filter((item, index, self) => index === self.findIndex(i => i.stopId === item.stopId))
+                                        .map(stop => renderStopWithRoutes(stop, disruption.key, disruption.affectedEntities))
                                 )}
                             </li>
                         ))}
