@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { isEmpty, some } from 'lodash-es';
@@ -31,7 +31,7 @@ import {
     setRequestedDisruptionKeyToUpdateEditEffect } from '../../../../../redux/actions/control/incidents';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
 import { getParentChildSeverityOptions, STATUSES } from '../../../../../types/disruptions-types';
-import { renderRouteWithStops, renderStopWithRoutes, filterDisruptionsBySearchTerm, removeDuplicatesByKey } from '../../../../../utils/control/incidents';
+import { filterDisruptionsBySearchTerm, renderUniqueRoutes, renderUniqueStops } from '../../../../../utils/control/incidents';
 import {
     DATE_FORMAT,
     TIME_FORMAT,
@@ -429,28 +429,27 @@ export const SelectDetails = (props) => {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    const updateFilteredDisruptions = () => {
+    const updateFilteredDisruptions = useCallback(() => {
         const filtered = filterDisruptionsBySearchTerm(disruptions, debouncedSearchTerm);
         setFilteredDisruptions(filtered);
-    };
+    }, [disruptions, debouncedSearchTerm]);
 
     useEffect(() => {
         updateFilteredDisruptions();
-    }, [debouncedSearchTerm]);
+    }, [debouncedSearchTerm, updateFilteredDisruptions]);
 
     useEffect(() => {
         if (disruptions) {
-            const filtered = filterDisruptionsBySearchTerm(disruptions, debouncedSearchTerm);
-            setFilteredDisruptions(filtered);
+            updateFilteredDisruptions();
         }
-    }, [disruptions, debouncedSearchTerm]);
+    }, [disruptions, updateFilteredDisruptions]);
 
     useEffect(() => {
         if (props.isEffectsRequiresToUpdate) {
             updateFilteredDisruptions();
             props.updateIsEffectsRequiresToUpdateState();
         }
-    }, [props.isEffectsRequiresToUpdate]);
+    }, [props.isEffectsRequiresToUpdate, updateFilteredDisruptions]);
 
     useEffect(() => {
         if (props.editMode === EDIT_TYPE.EDIT) {
@@ -770,12 +769,10 @@ export const SelectDetails = (props) => {
                                     {getImpactLabel(disruption.impact)}
                                 </p>
                                 {disruption.affectedEntities.affectedRoutes && disruption.affectedEntities.affectedRoutes.length > 0 && (
-                                    removeDuplicatesByKey(disruption.affectedEntities.affectedRoutes, item => item.routeShortName)
-                                        .map(route => renderRouteWithStops(route, disruption.key, disruption.affectedEntities))
+                                    renderUniqueRoutes(disruption.affectedEntities.affectedRoutes, disruption.key, disruption.affectedEntities)
                                 )}
                                 {disruption.affectedEntities.affectedStops && disruption.affectedEntities.affectedStops.length > 0 && (
-                                    removeDuplicatesByKey(disruption.affectedEntities.affectedStops, item => item.stopId)
-                                        .map(stop => renderStopWithRoutes(stop, disruption.key, disruption.affectedEntities))
+                                    renderUniqueStops(disruption.affectedEntities.affectedStops, disruption.key, disruption.affectedEntities)
                                 )}
                             </li>
                         ))}

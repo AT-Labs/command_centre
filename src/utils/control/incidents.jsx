@@ -101,7 +101,7 @@ export const buildPublishPayload = incident => ({
     })),
 });
 
-export const getStopsUnderRoute = (route, affectedEntities) => {
+const getStopsUnderRoute = (route, affectedEntities) => {
     const { affectedRoutes = [], affectedStops = [] } = affectedEntities;
     const { routeId, routeShortName } = route;
 
@@ -122,7 +122,7 @@ export const getStopsUnderRoute = (route, affectedEntities) => {
     );
 };
 
-export const getRoutesUnderStop = (stop, affectedEntities) => {
+const getRoutesUnderStop = (stop, affectedEntities) => {
     const { affectedRoutes = [], affectedStops = [] } = affectedEntities;
     const { stopCode, stopId } = stop;
 
@@ -140,7 +140,7 @@ export const getRoutesUnderStop = (stop, affectedEntities) => {
     return uniqBy([...routesFromStops, ...routesFromRoutes], 'routeId');
 };
 
-export const renderRouteWithStops = (route, disruptionKey, affectedEntities) => {
+const renderRouteWithStops = (route, disruptionKey, affectedEntities) => {
     const allStopsUnderRoute = getStopsUnderRoute(route, affectedEntities);
     const stopsWithDirection = allStopsUnderRoute.filter(stop => stop.directionId !== undefined);
     const stopsByDirection = groupBy(stopsWithDirection, 'directionId');
@@ -176,7 +176,7 @@ export const renderRouteWithStops = (route, disruptionKey, affectedEntities) => 
     );
 };
 
-export const renderStopWithRoutes = (stop, disruptionKey, affectedEntities) => {
+const renderStopWithRoutes = (stop, disruptionKey, affectedEntities) => {
     const allRoutesUnderStop = getRoutesUnderStop(stop, affectedEntities);
     const routeNames = allRoutesUnderStop.map(route => route.routeShortName).join(', ');
 
@@ -226,4 +226,20 @@ export const removeDuplicatesByKey = (array, getKey) => {
         return [];
     }
     return array.filter((item, index, self) => index === self.findIndex(i => getKey(i) === getKey(item)));
+};
+
+export const renderUniqueRoutes = (routes, disruptionKey, affectedEntities) => {
+    if (!routes || routes.length === 0) {
+        return [];
+    }
+    return removeDuplicatesByKey(routes, item => item.routeShortName)
+        .map(route => renderRouteWithStops(route, disruptionKey, affectedEntities));
+};
+
+export const renderUniqueStops = (stops, disruptionKey, affectedEntities) => {
+    if (!stops || stops.length === 0) {
+        return [];
+    }
+    return removeDuplicatesByKey(stops, item => item.stopId)
+        .map(stop => renderStopWithRoutes(stop, disruptionKey, affectedEntities));
 };

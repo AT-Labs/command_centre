@@ -14,7 +14,7 @@ import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings'
 import { useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
 import { STATUSES } from '../../../../../types/disruptions-types';
-import { renderRouteWithStops, renderStopWithRoutes, filterDisruptionsBySearchTerm, removeDuplicatesByKey } from '../../../../../utils/control/incidents';
+import { filterDisruptionsBySearchTerm, renderUniqueRoutes, renderUniqueStops } from '../../../../../utils/control/incidents';
 
 export const Workarounds = (props) => {
     const disruptions = useMemo(() => (
@@ -117,12 +117,10 @@ export const Workarounds = (props) => {
                                 <strong>{getImpactLabel(disruption.impact)}</strong>
                             </Button>
                             {disruption.affectedEntities.affectedRoutes && disruption.affectedEntities.affectedRoutes.length > 0 && (
-                                removeDuplicatesByKey(disruption.affectedEntities.affectedRoutes, item => item.routeShortName)
-                                    .map(route => renderRouteWithStops(route, disruption.key, disruption.affectedEntities))
+                                renderUniqueRoutes(disruption.affectedEntities.affectedRoutes, disruption.key, disruption.affectedEntities)
                             )}
                             {disruption.affectedEntities.affectedStops && disruption.affectedEntities.affectedStops.length > 0 && (
-                                removeDuplicatesByKey(disruption.affectedEntities.affectedStops, item => item.stopId)
-                                    .map(stop => renderStopWithRoutes(stop, disruption.key, disruption.affectedEntities))
+                                renderUniqueStops(disruption.affectedEntities.affectedStops, disruption.key, disruption.affectedEntities)
                             )}
                         </li>
                     ))}
