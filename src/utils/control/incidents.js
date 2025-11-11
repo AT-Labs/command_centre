@@ -1,6 +1,8 @@
-import { isEmpty, uniqBy, flatMap, forEach } from 'lodash-es';
+import { isEmpty, uniqBy, flatMap, forEach, groupBy } from 'lodash-es';
+import React from 'react';
 import { getJSONFromWKT } from '../helpers';
 import { STATUSES } from '../../types/disruptions-types';
+import { DIRECTIONS } from '../../components/Control/IncidentsView/types';
 
 export function getShapes(affectedRoutes, affectedStops) {
     const allAffectedRoutes = uniqBy(
@@ -98,3 +100,103 @@ export const buildPublishPayload = incident => ({
         status: STATUSES.NOT_STARTED,
     })),
 });
+
+export const getStopsUnderRoute = (route, affectedEntities) => {
+    const { affectedRoutes = [], affectedStops = [] } = affectedEntities;
+    const { routeId, routeShortName } = route;
+
+    const stopsFromRoutes = affectedRoutes.filter((item) => (
+        item.routeId === routeId
+        && item.stopCode
+        && item.routeShortName === routeShortName
+    ));
+
+    const stopsFromStops = affectedStops.filter((item) => (
+        item.routeId === routeId
+        && item.stopCode
+    ));
+
+    return uniqBy(
+        [...stopsFromRoutes, ...stopsFromStops],
+        (item) => `${item.stopCode}_${item.directionId || ''}`,
+    );
+};
+
+export const getRoutesUnderStop = (stop, affectedEntities) => {
+    const { affectedRoutes = [], affectedStops = [] } = affectedEntities;
+    const { stopCode, stopId } = stop;
+
+    const routesFromStops = affectedStops.filter((item) => (
+        item.stopCode === stopCode
+        && item.routeId
+        && item.stopId === stopId
+    ));
+
+    const routesFromRoutes = affectedRoutes.filter((item) => (
+        item.stopCode === stopCode
+        && item.routeId
+    ));
+
+    return uniqBy([...routesFromStops, ...routesFromRoutes], 'routeId');
+};
+
+export const renderRouteWithStops = (route, disruptionKey, affectedEntities) => {
+    const allStopsUnderRoute = getStopsUnderRoute(route, affectedEntities);
+    const stopsWithDirection = allStopsUnderRoute.filter((stop) => stop.directionId !== undefined);
+    const stopsByDirection = groupBy(stopsWithDirection, 'directionId');
+    const directionIds = Object.keys(stopsByDirection);
+    const routeKey = route.routeId || route.routeShortName;
+
+    return (
+        <React.Fragment key={ `${disruptionKey}_${routeKey}` }>
+            <p className="p-lr12-tb6 m-0 disruption-effect-item-route">
+                Route -
+                {' '}
+                {route.routeShortName}
+            </p>
+            {directionIds.length > 0 && directionIds.map((directionId) => {
+                const directionLabel = DIRECTIONS[directionId] || `Direction ${directionId}`;
+                const stopCodes = stopsByDirection[directionId].map((stop) => stop.stopCode).join(', ');
+
+                return (
+                    <p
+                        className="p-lr12-tb6 m-0 disruption-effect-item-stop pl-4 font-size-sm"
+                        key={ `${disruptionKey}_${routeKey}_${directionId}` }
+                    >
+                        Stops
+                        {' '}
+                        {directionLabel}
+                        :
+                        {' '}
+                        {stopCodes}
+                    </p>
+                );
+            })}
+        </React.Fragment>
+    );
+};
+
+export const renderStopWithRoutes = (stop, disruptionKey, affectedEntities) => {
+    const allRoutesUnderStop = getRoutesUnderStop(stop, affectedEntities);
+    const routeNames = allRoutesUnderStop.map((route) => route.routeShortName).join(', ');
+
+    return (
+        <React.Fragment key={ `${disruptionKey}_${stop.stopId}` }>
+            <p className="p-lr12-tb6 m-0 disruption-effect-item-stop">
+                Stop -
+                {' '}
+                {stop.text}
+            </p>
+            {routeNames && (
+                <p
+                    className="p-lr12-tb6 m-0 disruption-effect-item-route pl-4 font-size-sm"
+                    key={ `${disruptionKey}_${stop.stopId}_routes` }
+                >
+                    Route:
+                    {' '}
+                    {routeNames}
+                </p>
+            )}
+        </React.Fragment>
+    );
+};

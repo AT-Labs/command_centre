@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Button, Input, Label } from 'reactstrap';
@@ -14,9 +14,12 @@ import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings'
 import { useAlertEffects } from '../../../../../utils/control/alert-cause-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
 import { STATUSES } from '../../../../../types/disruptions-types';
+import { renderRouteWithStops, renderStopWithRoutes } from '../../../../../utils/control/incidents';
 
 export const Workarounds = (props) => {
-    const disruptions = props.editMode !== EDIT_TYPE.ADD_EFFECT ? props.data.disruptions : [props.newIncidentEffect];
+    const disruptions = useMemo(() => (
+        props.editMode === EDIT_TYPE.ADD_EFFECT ? [props.newIncidentEffect] : props.data.disruptions
+    ), [props.editMode, props.data.disruptions, props.newIncidentEffect]);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [filteredDisruptions, setFilteredDisruptions] = useState(disruptions || []);
@@ -72,23 +75,19 @@ export const Workarounds = (props) => {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    useEffect(() => {
+    const filteredDisruptionsMemo = useMemo(() => {
+        if (!disruptions) {
+            return [];
+        }
         const term = debouncedSearchTerm.toLowerCase();
-        const filtered = disruptions.filter(d => d.impact?.toLowerCase().includes(term)
+        return disruptions.filter(d => d.impact?.toLowerCase().includes(term)
             || d.affectedEntities?.affectedRoutes?.some(route => route.routeShortName.toLowerCase().includes(term))
             || d.affectedEntities?.affectedStops?.some(stop => stop.text.toLowerCase().includes(term)));
-        setFilteredDisruptions(filtered);
-    }, [debouncedSearchTerm]);
+    }, [debouncedSearchTerm, disruptions]);
 
     useEffect(() => {
-        if (props.editMode === EDIT_TYPE.ADD_EFFECT) {
-            const term = debouncedSearchTerm.toLowerCase();
-            const filtered = [props.newIncidentEffect].filter(d => d.impact?.toLowerCase().includes(term)
-                || d.affectedEntities?.affectedRoutes?.some(route => route.routeShortName.toLowerCase().includes(term))
-                || d.affectedEntities?.affectedStops?.some(stop => stop.text.toLowerCase().includes(term)));
-            setFilteredDisruptions(filtered);
-        }
-    }, [props.newIncidentEffect]);
+        setFilteredDisruptions(filteredDisruptionsMemo);
+    }, [filteredDisruptionsMemo]);
 
     const getNextButton = () => {
         if (props.editMode === EDIT_TYPE.ADD_EFFECT && props.incidentStatus === STATUSES.DRAFT) {
@@ -126,24 +125,14 @@ export const Workarounds = (props) => {
                                 <strong>{getImpactLabel(disruption.impact)}</strong>
                             </Button>
                             {disruption.affectedEntities.affectedRoutes && disruption.affectedEntities.affectedRoutes.length > 0 && (
-                                disruption.affectedEntities.affectedRoutes.filter((item, index, self) => index === self.findIndex(i => i.routeShortName === item.routeShortName))
-                                    .map(route => (
-                                        <p className="p-lr12-tb6 m-0 disruption-effect-item-route" key={ `${disruption.key}_${route.routeId}` }>
-                                            Route -
-                                            {' '}
-                                            {route.routeShortName}
-                                        </p>
-                                    ))
+                                disruption.affectedEntities.affectedRoutes
+                                    .filter((item, index, self) => index === self.findIndex(i => i.routeShortName === item.routeShortName))
+                                    .map(route => renderRouteWithStops(route, disruption.key, disruption.affectedEntities))
                             )}
                             {disruption.affectedEntities.affectedStops && disruption.affectedEntities.affectedStops.length > 0 && (
-                                disruption.affectedEntities.affectedStops.filter((item, index, self) => index === self.findIndex(i => i.stopId === item.stopId))
-                                    .map(stop => (
-                                        <p className="p-lr12-tb6 m-0 disruption-effect-item-stop" key={ `${disruption.key}_${stop.stopId}` }>
-                                            Stop -
-                                            {' '}
-                                            {stop.text}
-                                        </p>
-                                    ))
+                                disruption.affectedEntities.affectedStops
+                                    .filter((item, index, self) => index === self.findIndex(i => i.stopId === item.stopId))
+                                    .map(stop => renderStopWithRoutes(stop, disruption.key, disruption.affectedEntities))
                             )}
                         </li>
                     ))}
