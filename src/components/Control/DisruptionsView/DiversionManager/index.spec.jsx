@@ -360,10 +360,25 @@ describe('<DiversionManager />', () => {
     });
 
     describe('initEditingMode', () => {
+        let routeVariants;
         let diversion;
 
         beforeEach(() => {
             store = mockStore({});
+            routeVariants = [
+                {
+                    routeVariantId: 'rv1',
+                    directionId: 1,
+                    shapeWkt: 'LINESTRING(0 0, 1 1)',
+                    stops: [{ stopId: 's1' }],
+                },
+                {
+                    routeVariantId: 'rv2',
+                    directionId: 1,
+                    shapeWkt: 'LINESTRING(0 0, 2 2)',
+                    stops: [{ stopId: 's2' }],
+                },
+            ];
             diversion = {
                 diversionRouteVariants: [
                     { routeVariantId: 'rv1', shapeWkt: 'LINESTRING(0 0, 1 1)' },
@@ -400,6 +415,14 @@ describe('<DiversionManager />', () => {
         });
 
         it('should not set state if base route variant is not found', async () => {
+            routeVariants = [
+                {
+                    routeVariantId: 'rv2',
+                    directionId: 1,
+                    shapeWkt: 'LINESTRING(0 0, 2 2)',
+                    stops: [{ stopId: 's2' }],
+                },
+            ];
             let component;
             await act(async () => {
                 component = render(
