@@ -990,8 +990,8 @@ export class CreateIncident extends React.Component {
                 {!this.props.isEditEffectPanelOpen && (
                     <Button
                         className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
-                        onClick={ () => this.toggleModal('Cancellation', true )}>
-                            Close
+                        onClick={ () => this.toggleModal('Cancellation', true) }>
+                        Close
                         <AiOutlineClose className="disruption-creation-close" size={ 20 } />
                     </Button>
                 )}
