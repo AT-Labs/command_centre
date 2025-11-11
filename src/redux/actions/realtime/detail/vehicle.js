@@ -4,13 +4,13 @@ import VIEW_TYPE from '../../../../types/view-types';
 import * as ccRealtime from '../../../../utils/transmitters/cc-realtime';
 import * as ccStatic from '../../../../utils/transmitters/cc-static';
 import ACTION_TYPE from '../../../action-types';
-import { getCurrentVehicleTripId } from '../../../selectors/realtime/detail';
+import { getCurrentVehicleTripId, getCurrentVehicleReplacementTripId } from '../../../selectors/realtime/detail';
 import { getAllVehicles, getVehicleTrip, getVehicleDirectionId, getVehicleRouteId } from '../../../selectors/realtime/vehicles';
 import { updateDataLoading } from '../../activity';
 import { updateRealTimeDetailView } from '../../navigation';
 import { calculateScheduledAndActualTimes, clearDetail, isWithinNextHalfHour, isWithinPastHalfHour, updateViewDetailKey } from './common';
 import { getVehicleAllocationByVehicleId, getAllocations } from '../../../selectors/control/blocks';
-import { useNewMonitoring } from '../../../selectors/appSettings';
+import { useNewMonitoring, useDiversion } from '../../../selectors/appSettings';
 
 export const updateSelectedVehicle = vehicle => (dispatch) => {
     dispatch({
@@ -123,13 +123,28 @@ export const vehicleChecked = ({ id, key }) => (dispatch, getState) => {
 
 export const fetchUpcomingStops = vehicleId => (dispatch, getState) => {
     const state = getState();
+
     dispatch(updateDataLoading(true));
+
     const trackingVehicle = getTrackingVehicle(vehicleId, getState());
     const shouldUseNewMonitoring = useNewMonitoring(state);
+    const shouldUseDiversion = useDiversion(state);
+
     return ccRealtime.getUpcomingByVehicleId(result(trackingVehicle, 'id'), shouldUseNewMonitoring)
         .then((upcoming) => {
             const vehicleTripId = getCurrentVehicleTripId(getState());
-            return upcoming.filter(({ trip }) => trip.tripId === vehicleTripId)
+
+            let filterCriteria = vehicleTripId;
+            if (shouldUseDiversion) {
+                filterCriteria = [vehicleTripId];
+                const vehicleReplacementTripId = getCurrentVehicleReplacementTripId(getState());
+                if (vehicleReplacementTripId) {
+                    filterCriteria.push(vehicleReplacementTripId);
+                }
+            }
+
+            return upcoming
+                .filter(({ trip }) => (shouldUseDiversion ? filterCriteria.includes(trip.tripId) : trip.tripId === filterCriteria))
                 .map(({ stop, trip }) => {
                     const { stopCode, stopName, scheduleRelationship, passed } = stop;
                     const { scheduledTime, actualTime } = calculateScheduledAndActualTimes(stop);
@@ -159,10 +174,22 @@ export const fetchPastStops = vehicleId => (dispatch, getState) => {
     dispatch(updateDataLoading(true));
     const trackingVehicle = getTrackingVehicle(vehicleId, getState());
     const shouldUseNewMonitoring = useNewMonitoring(state);
+    const shouldUseDiversion = useDiversion(state);
+
     return ccRealtime.getHistoryByVehicleId(result(trackingVehicle, 'id'), shouldUseNewMonitoring)
         .then((history) => {
             const vehicleTripId = getCurrentVehicleTripId(getState());
-            return history.filter(({ trip }) => trip.tripId === vehicleTripId)
+            let filterCriteria = vehicleTripId;
+            if (shouldUseDiversion) {
+                filterCriteria = [vehicleTripId];
+                const vehicleReplacementTripId = getCurrentVehicleReplacementTripId(getState());
+                if (vehicleReplacementTripId) {
+                    filterCriteria.push(vehicleReplacementTripId);
+                }
+            }
+
+            return history
+                .filter(({ trip }) => (shouldUseDiversion ? filterCriteria.includes(trip.tripId) : trip.tripId === filterCriteria))
                 .map(({ stop, trip }) => {
                     const { stopCode, stopName, stopSequence, scheduleRelationship, passed } = stop;
                     const { scheduledTime, actualTime } = calculateScheduledAndActualTimes(stop);
