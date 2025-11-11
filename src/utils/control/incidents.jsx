@@ -105,20 +105,20 @@ export const getStopsUnderRoute = (route, affectedEntities) => {
     const { affectedRoutes = [], affectedStops = [] } = affectedEntities;
     const { routeId, routeShortName } = route;
 
-    const stopsFromRoutes = affectedRoutes.filter((item) => (
+    const stopsFromRoutes = affectedRoutes.filter(item => (
         item.routeId === routeId
         && item.stopCode
         && item.routeShortName === routeShortName
     ));
 
-    const stopsFromStops = affectedStops.filter((item) => (
+    const stopsFromStops = affectedStops.filter(item => (
         item.routeId === routeId
         && item.stopCode
     ));
 
     return uniqBy(
         [...stopsFromRoutes, ...stopsFromStops],
-        (item) => `${item.stopCode}_${item.directionId || ''}`,
+        item => `${item.stopCode}_${item.directionId || ''}`,
     );
 };
 
@@ -126,13 +126,13 @@ export const getRoutesUnderStop = (stop, affectedEntities) => {
     const { affectedRoutes = [], affectedStops = [] } = affectedEntities;
     const { stopCode, stopId } = stop;
 
-    const routesFromStops = affectedStops.filter((item) => (
+    const routesFromStops = affectedStops.filter(item => (
         item.stopCode === stopCode
         && item.routeId
         && item.stopId === stopId
     ));
 
-    const routesFromRoutes = affectedRoutes.filter((item) => (
+    const routesFromRoutes = affectedRoutes.filter(item => (
         item.stopCode === stopCode
         && item.routeId
     ));
@@ -142,7 +142,7 @@ export const getRoutesUnderStop = (stop, affectedEntities) => {
 
 export const renderRouteWithStops = (route, disruptionKey, affectedEntities) => {
     const allStopsUnderRoute = getStopsUnderRoute(route, affectedEntities);
-    const stopsWithDirection = allStopsUnderRoute.filter((stop) => stop.directionId !== undefined);
+    const stopsWithDirection = allStopsUnderRoute.filter(stop => stop.directionId !== undefined);
     const stopsByDirection = groupBy(stopsWithDirection, 'directionId');
     const directionIds = Object.keys(stopsByDirection);
     const routeKey = route.routeId || route.routeShortName;
@@ -156,7 +156,7 @@ export const renderRouteWithStops = (route, disruptionKey, affectedEntities) => 
             </p>
             {directionIds.length > 0 && directionIds.map((directionId) => {
                 const directionLabel = DIRECTIONS[directionId] || `Direction ${directionId}`;
-                const stopCodes = stopsByDirection[directionId].map((stop) => stop.stopCode).join(', ');
+                const stopCodes = stopsByDirection[directionId].map(stop => stop.stopCode).join(', ');
 
                 return (
                     <p
@@ -178,7 +178,7 @@ export const renderRouteWithStops = (route, disruptionKey, affectedEntities) => 
 
 export const renderStopWithRoutes = (stop, disruptionKey, affectedEntities) => {
     const allRoutesUnderStop = getRoutesUnderStop(stop, affectedEntities);
-    const routeNames = allRoutesUnderStop.map((route) => route.routeShortName).join(', ');
+    const routeNames = allRoutesUnderStop.map(route => route.routeShortName).join(', ');
 
     return (
         <React.Fragment key={ `${disruptionKey}_${stop.stopId}` }>
