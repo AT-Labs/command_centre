@@ -1480,4 +1480,40 @@ describe('CreateIncident component', () => {
             expect(wrapper.state('isAlertModalOpen')).toBe(false);
         });
     });
+
+   describe('Close button visibility when Diversion Manager is open', () => {
+        let wrapper;
+        const mockUpdateCurrentStep = jest.fn();
+        const mockCreateNewIncident = jest.fn();
+        const mockOpenCreateIncident = jest.fn();
+        const mockToggleIncidentModals = jest.fn();
+
+        beforeEach(() => {
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    isDiversionManagerOpen={ false }
+                />,
+            );
+        });
+
+        afterEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('should render Close button  when isDiversionManagerOpen is false', () => {
+            const button = wrapper.find('Button.disruption-creation-close-disruptions');
+            expect(button).toHaveLength(1);
+        });
+
+        it('should not render Close button when isDiversionManagerOpen is true', () => {
+            wrapper.setProps({ isDiversionManagerOpen: true });
+            const button = wrapper.find('Button.disruption-creation-close-disruptions');
+            expect(button).toHaveLength(0);
+        });
+    });
 });
