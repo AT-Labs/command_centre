@@ -1,4 +1,12 @@
-import { getEntityCounts, generateSelectedText, mergeExistingAndDrawnEntities, buildPublishPayload, filterDisruptionsBySearchTerm, removeDuplicatesByKey } from './incidents';
+import { getEntityCounts,
+    generateSelectedText,
+    mergeExistingAndDrawnEntities,
+    buildPublishPayload,
+    isDateFieldValid,
+    isTimeFieldValid,
+    startDateTimeWillBeAutomaticallyUpdated,
+    endDateTimeWillBeAutomaticallyUpdated,
+} from './incidents';
 import { STATUSES } from '../../types/disruptions-types';
 
 describe('getEntityCounts', () => {
@@ -465,382 +473,490 @@ describe('buildPublishPayload', () => {
     });
 });
 
-describe('filterDisruptionsBySearchTerm', () => {
-    it('should return empty array when disruptions is null', () => {
-        const result = filterDisruptionsBySearchTerm(null, 'test');
-        expect(result).toEqual([]);
+describe('isDateFieldValid', () => {
+    it('Should return true if date is valid', () => {
+        const result = isDateFieldValid('24/11/2025');
+        expect(result).toBe(true);
     });
 
-    it('should return empty array when disruptions is undefined', () => {
-        const result = filterDisruptionsBySearchTerm(undefined, 'test');
-        expect(result).toEqual([]);
+    it('Should return false if date is empty', () => {
+        const result = isDateFieldValid('');
+        expect(result).toBe(false);
     });
 
-    it('should return empty array when disruptions is empty array', () => {
-        const result = filterDisruptionsBySearchTerm([], 'test');
-        expect(result).toEqual([]);
+    it('Should return false if date is undefined', () => {
+        const result = isDateFieldValid(undefined);
+        expect(result).toBe(false);
     });
 
-    it('should return disruptions when searchTerm is null', () => {
-        const disruptions = [{ key: 'd1', impact: 'Test' }];
-        const result = filterDisruptionsBySearchTerm(disruptions, null);
-        expect(result).toEqual(disruptions);
+    it('Should return false if date is null', () => {
+        const result = isDateFieldValid(null);
+        expect(result).toBe(false);
     });
 
-    it('should return disruptions when searchTerm is undefined', () => {
-        const disruptions = [{ key: 'd1', impact: 'Test' }];
-        const result = filterDisruptionsBySearchTerm(disruptions, undefined);
-        expect(result).toEqual(disruptions);
+    it('Should return false if date is incorrect value', () => {
+        const result = isDateFieldValid('test');
+        expect(result).toBe(false);
     });
 
-    it('should return disruptions when searchTerm is empty string', () => {
-        const disruptions = [{ key: 'd1', impact: 'Test' }];
-        const result = filterDisruptionsBySearchTerm(disruptions, '');
-        expect(result).toEqual(disruptions);
-    });
-
-    it('should match when only impactMatches is true', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Road Closure',
-                affectedEntities: {
-                    affectedRoutes: [{ routeShortName: 'ABC', routeId: 'abc-1' }],
-                    affectedStops: [{ text: 'XYZ Stop', stopId: 'stop1' }],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'Road');
-        expect(result).toHaveLength(1);
-        expect(result[0].key).toBe('d1');
-    });
-
-    it('should match when only routeMatches is true', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Different Impact',
-                affectedEntities: {
-                    affectedRoutes: [{ routeShortName: '101', routeId: '101-1' }],
-                    affectedStops: [{ text: 'Different Stop', stopId: 'stop1' }],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, '101');
-        expect(result).toHaveLength(1);
-        expect(result[0].key).toBe('d1');
-    });
-
-    it('should match when only stopMatches is true', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Different Impact',
-                affectedEntities: {
-                    affectedRoutes: [{ routeShortName: 'ABC', routeId: 'abc-1' }],
-                    affectedStops: [{ text: 'Main Street Stop', stopId: 'stop1' }],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'Main Street');
-        expect(result).toHaveLength(1);
-        expect(result[0].key).toBe('d1');
-    });
-
-    it('should not match when all conditions are false', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Road Closure',
-                affectedEntities: {
-                    affectedRoutes: [{ routeShortName: 'ABC', routeId: 'abc-1' }],
-                    affectedStops: [{ text: 'XYZ Stop', stopId: 'stop1' }],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'NonExistent');
-        expect(result).toHaveLength(0);
-    });
-
-    it('should handle impact undefined', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                affectedEntities: {
-                    affectedRoutes: [{ routeShortName: 'ABC', routeId: 'abc-1' }],
-                    affectedStops: [{ text: 'XYZ Stop', stopId: 'stop1' }],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'NonExistent');
-        expect(result).toHaveLength(0);
-    });
-
-    it('should handle impact null', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: null,
-                affectedEntities: {
-                    affectedRoutes: [{ routeShortName: 'ABC', routeId: 'abc-1' }],
-                    affectedStops: [{ text: 'XYZ Stop', stopId: 'stop1' }],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'NonExistent');
-        expect(result).toHaveLength(0);
-    });
-
-    it('should handle affectedEntities undefined', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Test Impact',
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'Test');
-        expect(result).toHaveLength(1);
-    });
-
-    it('should handle affectedEntities null', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Test Impact',
-                affectedEntities: null,
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'Test');
-        expect(result).toHaveLength(1);
-    });
-
-    it('should handle affectedRoutes undefined', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Test Impact',
-                affectedEntities: {
-                    affectedRoutes: undefined,
-                    affectedStops: [{ text: 'Test Stop', stopId: 'stop1' }],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'Test');
-        expect(result).toHaveLength(1);
-    });
-
-    it('should handle affectedRoutes empty array', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Test Impact',
-                affectedEntities: {
-                    affectedRoutes: [],
-                    affectedStops: [{ text: 'Test Stop', stopId: 'stop1' }],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'Test');
-        expect(result).toHaveLength(1);
-    });
-
-    it('should handle affectedStops undefined', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Test Impact',
-                affectedEntities: {
-                    affectedRoutes: [{ routeShortName: 'Test Route', routeId: 'test-1' }],
-                    affectedStops: undefined,
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'Test');
-        expect(result).toHaveLength(1);
-    });
-
-    it('should handle affectedStops empty array', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Test Impact',
-                affectedEntities: {
-                    affectedRoutes: [{ routeShortName: 'Test Route', routeId: 'test-1' }],
-                    affectedStops: [],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'Test');
-        expect(result).toHaveLength(1);
-    });
-
-    it('should handle routeShortName undefined', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Road Closure',
-                affectedEntities: {
-                    affectedRoutes: [{ routeId: 'abc-1' }],
-                    affectedStops: [{ text: 'XYZ Stop', stopId: 'stop1' }],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'NonExistent');
-        expect(result).toHaveLength(0);
-    });
-
-    it('should handle routeShortName null', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Road Closure',
-                affectedEntities: {
-                    affectedRoutes: [{ routeShortName: null, routeId: 'abc-1' }],
-                    affectedStops: [{ text: 'XYZ Stop', stopId: 'stop1' }],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'NonExistent');
-        expect(result).toHaveLength(0);
-    });
-
-    it('should handle stop.text undefined', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Road Closure',
-                affectedEntities: {
-                    affectedRoutes: [{ routeShortName: 'ABC', routeId: 'abc-1' }],
-                    affectedStops: [{ stopId: 'stop1' }],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'NonExistent');
-        expect(result).toHaveLength(0);
-    });
-
-    it('should handle stop.text null', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Road Closure',
-                affectedEntities: {
-                    affectedRoutes: [{ routeShortName: 'ABC', routeId: 'abc-1' }],
-                    affectedStops: [{ text: null, stopId: 'stop1' }],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'NonExistent');
-        expect(result).toHaveLength(0);
-    });
-
-    it('should handle case-insensitive matching for impact', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'ROAD CLOSURE',
-                affectedEntities: {
-                    affectedRoutes: [],
-                    affectedStops: [],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'road');
-        expect(result).toHaveLength(1);
-        expect(result[0].key).toBe('d1');
-    });
-
-    it('should handle case-insensitive matching for routeShortName', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Different Impact',
-                affectedEntities: {
-                    affectedRoutes: [{ routeShortName: 'ABC', routeId: 'abc-1' }],
-                    affectedStops: [],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'abc');
-        expect(result).toHaveLength(1);
-        expect(result[0].key).toBe('d1');
-    });
-
-    it('should handle case-insensitive matching for stop.text', () => {
-        const disruptions = [
-            {
-                key: 'd1',
-                impact: 'Different Impact',
-                affectedEntities: {
-                    affectedRoutes: [],
-                    affectedStops: [{ text: 'MAIN STREET STOP', stopId: 'stop1' }],
-                },
-            },
-        ];
-        const result = filterDisruptionsBySearchTerm(disruptions, 'main street');
-        expect(result).toHaveLength(1);
-        expect(result[0].key).toBe('d1');
-    });
-
-    it('should return empty array when both disruptions and searchTerm are null', () => {
-        const result = filterDisruptionsBySearchTerm(null, null);
-        expect(result).toEqual([]);
-    });
-
-    it('should return empty array when both disruptions and searchTerm are undefined', () => {
-        const result = filterDisruptionsBySearchTerm(undefined, undefined);
-        expect(result).toEqual([]);
-    });
-
-    it('should return empty array when disruptions is null and searchTerm is undefined', () => {
-        const result = filterDisruptionsBySearchTerm(null, undefined);
-        expect(result).toEqual([]);
-    });
-
-    it('should return empty array when disruptions is undefined and searchTerm is null', () => {
-        const result = filterDisruptionsBySearchTerm(undefined, null);
-        expect(result).toEqual([]);
+    it('Should return false if date with incorrect format', () => {
+        const result = isDateFieldValid('2025/11/24');
+        expect(result).toBe(false);
     });
 });
 
-describe('removeDuplicatesByKey', () => {
-    it('should return empty array when array is null', () => {
-        const result = removeDuplicatesByKey(null, item => item.id);
-        expect(result).toEqual([]);
+describe('isTimeFieldValid', () => {
+    it('Should return true if time is valid', () => {
+        const result = isTimeFieldValid('12:24');
+        expect(result).toBe(true);
     });
 
-    it('should return empty array when array is undefined', () => {
-        const result = removeDuplicatesByKey(undefined, item => item.id);
-        expect(result).toEqual([]);
+    it('Should return false if time is empty', () => {
+        const result = isTimeFieldValid('');
+        expect(result).toBe(false);
     });
 
-    it('should return empty array when array is empty', () => {
-        const result = removeDuplicatesByKey([], item => item.id);
-        expect(result).toEqual([]);
+    it('Should return false if time is undefined', () => {
+        const result = isTimeFieldValid(undefined);
+        expect(result).toBe(false);
     });
 
-    it('should remove duplicates by key', () => {
-        const array = [
-            { id: 1, name: 'First' },
-            { id: 2, name: 'Second' },
-            { id: 1, name: 'First Duplicate' },
-            { id: 3, name: 'Third' },
-            { id: 2, name: 'Second Duplicate' },
+    it('Should return false if time is null', () => {
+        const result = isTimeFieldValid(null);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if time is incorrect value', () => {
+        const result = isTimeFieldValid('test');
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if time with incorrect format', () => {
+        const result = isTimeFieldValid('24/11/2025/ 11:24');
+        expect(result).toBe(false);
+    });
+});
+
+describe('startDateTimeWillBeAutomaticallyUpdated', () => {
+    it('Should return false if child effects has similar start date/time with disruption', () => {
+        const startDate = '15/11/2025';
+        const startTime = '14:11';
+        const disruptions = [
+            {
+                startDate: '15/11/2025',
+                startTime: '14:11',
+            },
+            {
+                startDate: '15/11/2025',
+                startTime: '14:11',
+            },
         ];
-        const result = removeDuplicatesByKey(array, item => item.id);
-        expect(result).toHaveLength(3);
-        expect(result[0].id).toBe(1);
-        expect(result[1].id).toBe(2);
-        expect(result[2].id).toBe(3);
+        const result = startDateTimeWillBeAutomaticallyUpdated(startDate, startTime, disruptions);
+        expect(result).toBe(false);
     });
 
-    it('should keep first occurrence when duplicates exist', () => {
-        const array = [
-            { id: 1, name: 'First' },
-            { id: 1, name: 'Second' },
+    it('Should return false if child effects has later start date/time than disruption', () => {
+        const startDate = '15/11/2025';
+        const startTime = '14:11';
+        const disruptions = [
+            {
+                startDate: '16/11/2025',
+                startTime: '14:11',
+            },
+            {
+                startDate: '15/11/2025',
+                startTime: '15:11',
+            },
         ];
-        const result = removeDuplicatesByKey(array, item => item.id);
-        expect(result).toHaveLength(1);
-        expect(result[0].name).toBe('First');
+        const result = startDateTimeWillBeAutomaticallyUpdated(startDate, startTime, disruptions);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if child effects has invalid start date/time with disruption', () => {
+        const startDate = '15/11/2025';
+        const startTime = '14:11';
+        const disruptions = [
+            {
+                startDate: '',
+                startTime: '14:11',
+            },
+            {
+                startDate: '15/11/2025',
+                startTime: undefined,
+            },
+        ];
+        const result = startDateTimeWillBeAutomaticallyUpdated(startDate, startTime, disruptions);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if child effects has later start date/time and invalid values with disruption', () => {
+        const startDate = '15/11/2025';
+        const startTime = '14:11';
+        const disruptions = [
+            {
+                startDate: '15/11/2025',
+                startTime: '14:11',
+            },
+            {
+                startDate: '16/11/2025',
+                startTime: '14:11',
+            },
+            {
+                startDate: '',
+                startTime: '14:11',
+            },
+            {
+                startDate: '15/11/2025',
+                startTime: undefined,
+            },
+        ];
+        const result = startDateTimeWillBeAutomaticallyUpdated(startDate, startTime, disruptions);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if disruption startTime invalid', () => {
+        const startDate = '15/11/2025';
+        const startTime = '';
+        const disruptions = [
+            {
+                startDate: '15/11/2025',
+                startTime: '14:11',
+            },
+            {
+                startDate: '15/11/2025',
+                startTime: '14:11',
+            },
+        ];
+        const result = startDateTimeWillBeAutomaticallyUpdated(startDate, startTime, disruptions);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if disruption startDate invalid', () => {
+        const startDate = '';
+        const startTime = '14:11';
+        const disruptions = [
+            {
+                startDate: '15/11/2025',
+                startTime: '14:11',
+            },
+            {
+                startDate: '15/11/2025',
+                startTime: '14:11',
+            },
+        ];
+        const result = startDateTimeWillBeAutomaticallyUpdated(startDate, startTime, disruptions);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if all startTime and startDate are incorrect', () => {
+        const startDate = undefined;
+        const startTime = null;
+        const disruptions = [
+            {
+                startDate: '',
+                startTime: 'test',
+            },
+            {
+                startDate: '15/11/2025',
+                startTime: '14:11',
+            },
+        ];
+        const result = startDateTimeWillBeAutomaticallyUpdated(startDate, startTime, disruptions);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if effects is not array', () => {
+        const startDate = '15/11/2025';
+        const startTime = '14:11';
+        const disruptions = { title: 'test' };
+        const result = startDateTimeWillBeAutomaticallyUpdated(startDate, startTime, disruptions);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if effects is empty array', () => {
+        const startDate = '15/11/2025';
+        const startTime = '14:11';
+        const disruptions = [];
+        const result = startDateTimeWillBeAutomaticallyUpdated(startDate, startTime, disruptions);
+        expect(result).toBe(false);
+    });
+
+    it('Should return true child effects has earlier start date than disruption', () => {
+        const startDate = '15/11/2025';
+        const startTime = '14:11';
+        const disruptions = [
+            {
+                startDate: '14/11/2025',
+                startTime: '14:11',
+            },
+            {
+                startDate: '15/11/2025',
+                startTime: '14:11',
+            },
+        ];
+        const result = startDateTimeWillBeAutomaticallyUpdated(startDate, startTime, disruptions);
+        expect(result).toBe(true);
+    });
+
+    it('Should return true child effects has earlier start time than disruption', () => {
+        const startDate = '15/11/2025';
+        const startTime = '14:11';
+        const disruptions = [
+            {
+                startDate: '15/11/2025',
+                startTime: '14:11',
+            },
+            {
+                startDate: '15/11/2025',
+                startTime: '12:11',
+            },
+        ];
+        const result = startDateTimeWillBeAutomaticallyUpdated(startDate, startTime, disruptions);
+        expect(result).toBe(true);
+    });
+
+    it('Should return true child effects has earlier start time than disruption and some of effect are incorrect', () => {
+        const startDate = '15/11/2025';
+        const startTime = '14:11';
+        const disruptions = [
+            {
+                startDate: '14/11/2025',
+                startTime: '14:11',
+            },
+            {
+                startDate: '15/11/2025',
+                startTime: '12:11',
+            },
+            {
+                startDate: '',
+                startTime: '14:11',
+            },
+            {
+                startDate: '15/11/2025',
+                startTime: undefined,
+            },
+        ];
+        const result = startDateTimeWillBeAutomaticallyUpdated(startDate, startTime, disruptions);
+        expect(result).toBe(true);
+    });
+});
+
+describe('endDateTimeWillBeAutomaticallyUpdated', () => {
+    it('Should return false if effects is not array', () => {
+        const endDate = '15/11/2025';
+        const endTime = '14:11';
+        const disruptions = { title: 'test' };
+        const result = endDateTimeWillBeAutomaticallyUpdated(endDate, endTime, disruptions, false);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if effects is empty array', () => {
+        const endDate = '15/11/2025';
+        const endTime = '14:11';
+        const disruptions = [];
+        const result = endDateTimeWillBeAutomaticallyUpdated(endDate, endTime, disruptions, false);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if disruption endDate invalid', () => {
+        const endDate = '';
+        const endTime = '14:11';
+        const disruptions = [
+            {
+                endDate: '15/11/2025',
+                endTime: '14:11',
+            },
+            {
+                endDate: '15/11/2025',
+                endTime: '14:11',
+            },
+        ];
+        const result = endDateTimeWillBeAutomaticallyUpdated(endDate, endTime, disruptions, false);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if disruption startTime invalid and it not recurrent', () => {
+        const endDate = '15/11/2025';
+        const endTime = '';
+        const disruptions = [
+            {
+                endDate: '15/11/2025',
+                endTime: '14:11',
+            },
+            {
+                endDate: '15/11/2025',
+                endTime: '14:11',
+            },
+        ];
+        const result = endDateTimeWillBeAutomaticallyUpdated(endDate, endTime, disruptions, false);
+        expect(result).toBe(false);
+    });
+
+    it('Should return true if disruption startTime invalid and it recurrent and effects has later end date', () => {
+        const endDate = '15/11/2025';
+        const endTime = '';
+        const disruptions = [
+            {
+                endDate: '17/11/2025',
+                endTime: '14:11',
+            },
+            {
+                endDate: '15/11/2025',
+                endTime: '14:11',
+            },
+        ];
+        const result = endDateTimeWillBeAutomaticallyUpdated(endDate, endTime, disruptions, true);
+        expect(result).toBe(true);
+    });
+
+    it('Should return false if child effects has similar end date/time with disruption', () => {
+        const endDate = '15/11/2025';
+        const endTime = '14:11';
+        const disruptions = [
+            {
+                endDate: '15/11/2025',
+                endTime: '14:11',
+            },
+            {
+                endDate: '15/11/2025',
+                endTime: '14:11',
+            },
+        ];
+        const result = endDateTimeWillBeAutomaticallyUpdated(endDate, endTime, disruptions, false);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if child effects has earlier end date with disruption', () => {
+        const endDate = '15/11/2025';
+        const endTime = '14:11';
+        const disruptions = [
+            {
+                endDate: '13/11/2025',
+                endTime: '14:11',
+            },
+            {
+                endDate: '15/11/2025',
+                endTime: '14:11',
+            },
+        ];
+        const result = endDateTimeWillBeAutomaticallyUpdated(endDate, endTime, disruptions, false);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if child effects has earlier end time with disruption', () => {
+        const endDate = '15/11/2025';
+        const endTime = '14:11';
+        const disruptions = [
+            {
+                endDate: '15/11/2025',
+                endTime: '12:11',
+            },
+            {
+                endDate: '15/11/2025',
+                endTime: '14:11',
+            },
+        ];
+        const result = endDateTimeWillBeAutomaticallyUpdated(endDate, endTime, disruptions, false);
+        expect(result).toBe(false);
+    });
+
+    it('Should return false if child effects values are incorrect', () => {
+        const endDate = '15/11/2025';
+        const endTime = '14:11';
+        const disruptions = [
+            {
+                endDate: 'test',
+                endTime: '12:11',
+            },
+            {
+                endDate: '15/11/2025',
+                endTime: undefined,
+            },
+            {
+                endDate: '2025/11/11',
+                endTime: '12:11',
+            },
+            {
+                endDate: null,
+                endTime: undefined,
+            },
+        ];
+        const result = endDateTimeWillBeAutomaticallyUpdated(endDate, endTime, disruptions, false);
+        expect(result).toBe(false);
+    });
+
+    it('Should return true if child effects has later end date with and some of them are incorrect', () => {
+        const endDate = '15/11/2025';
+        const endTime = '14:11';
+        const disruptions = [
+            {
+                endDate: 'test',
+                endTime: '12:11',
+            },
+            {
+                endDate: '15/11/2025',
+                endTime: undefined,
+            },
+            {
+                endDate: '2025/11/11',
+                endTime: '12:11',
+            },
+            {
+                endDate: null,
+                endTime: undefined,
+            },
+            {
+                endDate: '16/11/2025',
+                endTime: '12:11',
+            },
+        ];
+        const result = endDateTimeWillBeAutomaticallyUpdated(endDate, endTime, disruptions, false);
+        expect(result).toBe(true);
+    });
+
+    it('Should return true if child effects has later end date than recurrent disruption', () => {
+        const endDate = '15/11/2025';
+        const endTime = '';
+        const disruptions = [
+            {
+                endDate: '17/11/2025',
+                endTime: '',
+            },
+            {
+                endDate: '15/11/2025',
+                endTime: '',
+            },
+        ];
+        const result = endDateTimeWillBeAutomaticallyUpdated(endDate, endTime, disruptions, true);
+        expect(result).toBe(true);
+    });
+
+    it('Should return true if child effects has later end date with some incorrect effects than recurrent disruption', () => {
+        const endDate = '15/11/2025';
+        const endTime = '';
+        const disruptions = [
+            {
+                endDate: '17/11/2025',
+                endTime: '',
+            },
+            {
+                endDate: '15/11/2025',
+                endTime: '',
+            },
+            {
+                endDate: '15/11/2025',
+                endTime: undefined,
+            },
+            {
+                endDate: '2025/11/11',
+                endTime: '12:11',
+            },
+            {
+                endDate: null,
+                endTime: undefined,
+            },
+        ];
+        const result = endDateTimeWillBeAutomaticallyUpdated(endDate, endTime, disruptions, true);
+        expect(result).toBe(true);
     });
 });
