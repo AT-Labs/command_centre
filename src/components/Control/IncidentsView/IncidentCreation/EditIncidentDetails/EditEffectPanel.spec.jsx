@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
@@ -104,6 +103,7 @@ jest.mock('react-flatpickr', () => props => (
 let onAffectedEntitiesUpdateHandler = null;
 
 jest.mock('../WizardSteps/SelectEffectEntities', () => {
+    // eslint-disable-next-line global-require
     const PropTypesMock = require('prop-types');
     const MockSelectEffectEntities = (props) => {
         // eslint-disable-next-line react/prop-types
@@ -117,7 +117,7 @@ jest.mock('../WizardSteps/SelectEffectEntities', () => {
         );
     };
     MockSelectEffectEntities.propTypes = {
-        onAffectedEntitiesUpdate: PropTypesMock.func,
+        onAffectedEntitiesUpdate: PropTypesMock.func.isRequired,
     };
     MockSelectEffectEntities.displayName = 'SelectEffectEntities';
     return MockSelectEffectEntities;
