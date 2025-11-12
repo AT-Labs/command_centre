@@ -1,10 +1,20 @@
-import { shallow } from 'enzyme';
+import { shallow, mount } from 'enzyme';
 import React from 'react';
 import { withHooks } from 'jest-react-hooks-shallow';
+import { Provider } from 'react-redux';
+import configureMockStore from 'redux-mock-store';
 import { Workarounds } from './Workarounds';
 import Footer from './Footer';
+import { SelectedEntitiesRenderer } from './SelectedEntitiesRenderer';
+import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 import EDIT_TYPE from '../../../../../types/edit-types';
 import { STATUSES } from '../../../../../types/disruptions-types';
+
+jest.mock('../../../../../redux/selectors/appSettings', () => ({
+    useDraftDisruptions: jest.fn(),
+}));
+
+const mockStore = configureMockStore([]);
 
 let wrapper;
 jest.useFakeTimers();
@@ -12,6 +22,7 @@ jest.useFakeTimers();
 const mockDisruptions = [
     {
         key: 'DISR123',
+        header: 'Test Disruption 1',
         impact: 'CANCELLATION',
         affectedEntities: {
             affectedStops: [],
@@ -20,6 +31,7 @@ const mockDisruptions = [
     },
     {
         key: 'DISR321',
+        header: 'Test Disruption 2',
         impact: 'Delay',
         affectedEntities: {
             affectedStops: [{ text: '100 test stop', stopId: 100 }, { text: '102 test stop', stopId: 102 }],
@@ -175,14 +187,29 @@ describe('<Workarounds />', () => {
     });
 
     it('Should render table with correct disruptions data', () => {
-        wrapper = setup({ editMode: EDIT_TYPE.CREATE });
-        const routes = wrapper.find('.disruption-effect-item-route');
-        const stops = wrapper.find('.disruption-effect-item-stop');
-        expect(wrapper.find('Button').length).toBe(2);
-        expect(routes).toHaveLength(2);
-        expect(stops).toHaveLength(2);
-        expect(routes.at(0).text()).toBe('Route - WEST');
-        expect(stops.at(0).text()).toBe('Stop - 100 test stop');
+        useDraftDisruptions.mockReturnValue(false);
+        const store = mockStore({});
+        const props = { ...componentPropsMock, editMode: EDIT_TYPE.CREATE };
+        wrapper = mount(
+            <Provider store={ store }>
+                <Workarounds { ...props } />
+            </Provider>,
+        );
+
+        const disruptionList = wrapper.find('ul.disruption-workarounds-effects');
+        expect(disruptionList.find('Button').length).toBe(2);
+
+        const selectedEntitiesRenderers = disruptionList.find(SelectedEntitiesRenderer);
+        expect(selectedEntitiesRenderers).toHaveLength(2);
+
+        const allRoutes = disruptionList.find('.disruption-effect-item-route');
+        const allStops = disruptionList.find('.disruption-effect-item-stop');
+
+        expect(allRoutes).toHaveLength(2);
+        expect(allRoutes.at(0).text()).toBe('Route - WEST');
+
+        expect(allStops).toHaveLength(2);
+        expect(allStops.at(0).text()).toBe('Stop - 100 test stop');
     });
 
     it('Should call toggleWorkaroundPanel when openWorkaroundPanel is called', () => {
@@ -194,28 +221,44 @@ describe('<Workarounds />', () => {
     });
 
     it('Should rerender effects after updating filtering value', () => {
-        withHooks(() => {
-            wrapper = setup({ editMode: EDIT_TYPE.CREATE });
-            const routes = wrapper.find('.disruption-effect-item-route');
-            const stops = wrapper.find('.disruption-effect-item-stop');
-            expect(wrapper.find('Button').length).toBe(2);
-            expect(routes).toHaveLength(2);
-            expect(stops).toHaveLength(2);
-            expect(routes.at(0).text()).toBe('Route - WEST');
-            expect(stops.at(0).text()).toBe('Stop - 100 test stop');
+        useDraftDisruptions.mockReturnValue(false);
+        const store = mockStore({});
+        const props = { ...componentPropsMock, editMode: EDIT_TYPE.CREATE };
+        wrapper = mount(
+            <Provider store={ store }>
+                <Workarounds { ...props } />
+            </Provider>,
+        );
+        let disruptionList = wrapper.find('ul.disruption-workarounds-effects');
+        let selectedEntitiesRenderers = disruptionList.find(SelectedEntitiesRenderer);
+        expect(disruptionList.find('Button').length).toBe(2);
+        expect(selectedEntitiesRenderers).toHaveLength(2);
 
-            wrapper.find('Input#disruption-creation__wizard-select-details__header')
-                .props()
-                .onChange({ target: { value: 'east' } });
-            wrapper.update();
-            jest.advanceTimersByTime(2000);
-            expect(wrapper.find('Input#disruption-creation__wizard-select-details__header').props().value).toBe('east');
-            expect(wrapper.find('Button').length).toBe(1);
-            const updatedRoutes = wrapper.find('.disruption-effect-item-route');
-            const updatedStops = wrapper.find('.disruption-effect-item-stop');
-            expect(updatedRoutes).toHaveLength(2);
-            expect(updatedStops).toHaveLength(0);
-        });
+        let allRoutes = disruptionList.find('.disruption-effect-item-route');
+        let allStops = disruptionList.find('.disruption-effect-item-stop');
+        expect(allRoutes).toHaveLength(2);
+        expect(allRoutes.at(0).text()).toBe('Route - WEST');
+        expect(allStops).toHaveLength(2);
+        expect(allStops.at(0).text()).toBe('Stop - 100 test stop');
+
+        wrapper.find('Input#disruption-creation__wizard-select-details__header')
+            .props()
+            .onChange({ target: { value: 'east' } });
+        wrapper.update();
+        jest.advanceTimersByTime(2000);
+        wrapper.update();
+        expect(wrapper.find('Input#disruption-creation__wizard-select-details__header').props().value).toBe('east');
+
+        disruptionList = wrapper.find('ul.disruption-workarounds-effects');
+        expect(disruptionList.find('Button').length).toBe(1);
+
+        selectedEntitiesRenderers = disruptionList.find(SelectedEntitiesRenderer);
+        expect(selectedEntitiesRenderers).toHaveLength(1);
+
+        allRoutes = disruptionList.find('.disruption-effect-item-route');
+        allStops = disruptionList.find('.disruption-effect-item-stop');
+        expect(allRoutes).toHaveLength(2);
+        expect(allStops).toHaveLength(0);
     });
 
     it('Should render footer with correct button on draft status for add effect mode', () => {
@@ -226,11 +269,21 @@ describe('<Workarounds />', () => {
 
     it('Should update disruptions on update newIncidentEffect value', () => {
         withHooks(() => {
-            wrapper = setup({ editMode: EDIT_TYPE.ADD_EFFECT });
-            wrapper.setProps({ newIncidentEffect: { ...mockDisruptions[1] } });
+            useDraftDisruptions.mockReturnValue(false);
+            const store = mockStore({});
+            const props = { ...componentPropsMock, editMode: EDIT_TYPE.ADD_EFFECT, newIncidentEffect: { ...mockDisruptions[1] } };
+            wrapper = mount(
+                <Provider store={ store }>
+                    <Workarounds { ...props } />
+                </Provider>,
+            );
+            wrapper.update();
+            const selectedEntitiesRenderers = wrapper.find(SelectedEntitiesRenderer);
+            expect(selectedEntitiesRenderers).toHaveLength(1);
+
             const stops = wrapper.find('.disruption-effect-item-stop');
             expect(stops).toHaveLength(2);
-            expect(stops.at(0).text()).toBe('Stop - 100 test stop');
+            expect(stops.first().text()).toBe('Stop - 100 test stop');
         });
     });
 });
