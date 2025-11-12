@@ -139,6 +139,14 @@ describe('Confirmation Component', () => {
         updateIsEffectUpdatedState: jest.fn(),
         updateEffectValidationForPublishState: jest.fn(),
         onDisruptionChange: jest.fn(),
+        incidentDateRange: {
+            startDate: mockDisruption.startDate,
+            startTime: mockDisruption.startTime,
+            endDate: mockDisruption.endDate,
+            endTime: mockDisruption.endTime,
+        },
+        updateStartDateTimeWillBeUpdated: jest.fn(),
+        updateEndDateTimeWillBeUpdated: jest.fn(),
     };
 
     beforeEach(() => {
@@ -986,5 +994,173 @@ describe('Confirmation Component', () => {
 
             expect(queryByText('View & Edit Diversions')).not.toBeInTheDocument();
         });
+    });
+
+    it('Should trigger updateStartDateTimeWillBeUpdated on startDate change with correct value', () => {
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...defaultProps } />
+            </Provider>,
+        );
+        const startPicker = screen.getByTestId('start-date_date-picker');
+        fireEvent.change(startPicker, { target: { value: '2025-06-08' } });
+        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+
+        fireEvent.change(startPicker, { target: { value: '2025-06-11' } });
+        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
+    });
+
+    it('Should trigger updateStartDateTimeWillBeUpdated on clearing startDate value in correct way', () => {
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...defaultProps } />
+            </Provider>,
+        );
+        const startPicker = screen.getByTestId('start-date_date-picker');
+        fireEvent.change(startPicker, { target: { value: '2025-06-08' } });
+        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+
+        fireEvent.change(startPicker, { target: { value: '' } });
+        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
+    });
+
+    it('Should trigger updateStartDateTimeWillBeUpdated on startTime change with correct value', () => {
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...defaultProps } />
+            </Provider>,
+        );
+        const input = screen.getByTestId('start-time_input');
+        fireEvent.change(input, { target: { value: '05:33' } });
+        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+
+        fireEvent.change(input, { target: { value: '06:11' } });
+        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
+    });
+
+    it('Should trigger updateStartDateTimeWillBeUpdated on clearing and not valid value startTime value in correct way', () => {
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...defaultProps } />
+            </Provider>,
+        );
+        const input = screen.getByTestId('start-time_input');
+        fireEvent.change(input, { target: { value: '05:33' } });
+        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+
+        fireEvent.change(input, { target: { value: '' } });
+        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
+
+        fireEvent.change(input, { target: { value: '05:11' } });
+        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+
+        fireEvent.change(input, { target: { value: '05:' } });
+        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
+    });
+
+    it('Should trigger updateEndDateTimeWillBeUpdated on endDate change with correct value for recurrent disruption', () => {
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...defaultProps } />
+            </Provider>,
+        );
+        const endPicker = screen.getByTestId('end-date_date-picker');
+
+        fireEvent.change(endPicker, { target: { value: '2025-06-21' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+
+        fireEvent.change(endPicker, { target: { value: '2025-06-18' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
+    });
+
+    it('Should trigger updateEndDateTimeWillBeUpdated on clearing endDate value in correct way', () => {
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel { ...defaultProps } />
+            </Provider>,
+        );
+        const endPicker = screen.getByTestId('end-date_date-picker');
+
+        fireEvent.change(endPicker, { target: { value: '2025-06-21' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+
+        fireEvent.change(endPicker, { target: { value: '' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
+    });
+
+    it('Should trigger updateEndDateTimeWillBeUpdated on endDate change with correct value for non-recurrent disruption', () => {
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel
+                    { ...defaultProps }
+                    disruptions={ [{ ...mockDisruption, recurrent: false }] }
+                />
+            </Provider>,
+        );
+        const endPicker = screen.getByTestId('end-date_date-picker');
+
+        fireEvent.change(endPicker, { target: { value: '2025-06-21' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+
+        fireEvent.change(endPicker, { target: { value: '2025-06-18' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
+    });
+
+    it('Should trigger updateEndDateTimeWillBeUpdated on clearing endDate value in correct way for non-recurrent disruption', () => {
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel
+                    { ...defaultProps }
+                    disruptions={ [{ ...mockDisruption, recurrent: false }] }
+                />
+            </Provider>,
+        );
+        const endPicker = screen.getByTestId('end-date_date-picker');
+
+        fireEvent.change(endPicker, { target: { value: '2025-06-21' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+
+        fireEvent.change(endPicker, { target: { value: '' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
+    });
+
+    it('Should trigger updateEndDateTimeWillBeUpdated on endTime change with correct value for non-recurrent disruption', () => {
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel
+                    { ...defaultProps }
+                    disruptions={ [{ ...mockDisruption, recurrent: false }] }
+                />
+            </Provider>,
+        );
+        const input = screen.getByTestId('end-time_input');
+        fireEvent.change(input, { target: { value: '10:11' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+
+        fireEvent.change(input, { target: { value: '08:33' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
+    });
+
+    it('Should trigger updateEndDateTimeWillBeUpdated on clearing and not valid value startTime value in correct way for non-recurrent disruption', () => {
+        render(
+            <Provider store={ store }>
+                <EditEffectPanel
+                    { ...defaultProps }
+                    disruptions={ [{ ...mockDisruption, recurrent: false }] }
+                />
+            </Provider>,
+        );
+        const input = screen.getByTestId('end-time_input');
+        fireEvent.change(input, { target: { value: '10:11' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+
+        fireEvent.change(input, { target: { value: '' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
+
+        fireEvent.change(input, { target: { value: '10:24' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+
+        fireEvent.change(input, { target: { value: '091' } });
+        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
     });
 });
