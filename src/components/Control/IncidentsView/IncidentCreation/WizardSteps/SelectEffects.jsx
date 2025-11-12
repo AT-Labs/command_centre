@@ -290,6 +290,11 @@ export const SelectEffects = (props) => {
             : disruption));
         setDisruptions(updatedDisruptions);
         setRequireMapUpdate(true);
+        if (props.editMode === EDIT_TYPE.ADD_EFFECT) {
+            props.updateNewIncidentEffect(updatedDisruptions[0]);
+        } else {
+            props.onDataUpdate('disruptions', updatedDisruptions);
+        }
     };
 
     useEffect(() => {

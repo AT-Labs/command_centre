@@ -98,3 +98,30 @@ export const buildPublishPayload = incident => ({
         status: STATUSES.NOT_STARTED,
     })),
 });
+
+export const filterDisruptionsBySearchTerm = (disruptions, searchTerm) => {
+    if (!disruptions || !searchTerm) {
+        return disruptions || [];
+    }
+
+    const term = searchTerm.toLowerCase();
+
+    return disruptions.filter((disruption) => {
+        const impactMatches = disruption.impact?.toLowerCase().includes(term);
+        const routeMatches = disruption.affectedEntities?.affectedRoutes?.some(
+            route => route.routeShortName?.toLowerCase().includes(term),
+        );
+        const stopMatches = disruption.affectedEntities?.affectedStops?.some(
+            stop => stop.text?.toLowerCase().includes(term),
+        );
+
+        return impactMatches || routeMatches || stopMatches;
+    });
+};
+
+export const removeDuplicatesByKey = (array, getKey) => {
+    if (!array || array.length === 0) {
+        return [];
+    }
+    return array.filter((item, index, self) => index === self.findIndex(i => getKey(i) === getKey(item)));
+};
