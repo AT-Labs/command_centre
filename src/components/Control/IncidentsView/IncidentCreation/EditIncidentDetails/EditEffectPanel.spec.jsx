@@ -100,6 +100,21 @@ jest.mock('react-flatpickr', () => props => (
     <input data-testid={ props['data-testid'] } id={ props.id } value={ props.value } onChange={ e => props.onChange([new Date(e.target.value)]) } />
 ));
 
+let onAffectedEntitiesUpdateHandler = null;
+
+jest.mock('../WizardSteps/SelectEffectEntities', () => {
+    const React = require('react');
+    const MockSelectEffectEntities = (props) => {
+        onAffectedEntitiesUpdateHandler = props.onAffectedEntitiesUpdate;
+        return React.createElement('div', { 'data-testid': 'select-effect-entities' }, [
+            React.createElement('div', { key: 'text' }, 'Search routes or draw in the map'),
+            React.createElement('div', { key: 'component' }, 'SelectEffectEntities'),
+        ]);
+    };
+    MockSelectEffectEntities.displayName = 'SelectEffectEntities';
+    return MockSelectEffectEntities;
+});
+
 const fakeNow = new Date(2025, 5, 9, 11, 37, 0);
 
 describe('Confirmation Component', () => {
@@ -989,31 +1004,9 @@ describe('Confirmation Component', () => {
     });
 
     describe('onDisruptionsUpdate', () => {
-        const findAndCallOnAffectedEntitiesUpdate = (container, disruptionKey, valueKey, affectedEntities) => {
-            const allElements = container.querySelectorAll('*');
-            for (const element of allElements) {
-                const reactFiber = element._reactInternalFiber || element.__reactInternalInstance;
-                if (reactFiber) {
-                    let current = reactFiber;
-                    const visited = new Set();
-                    while (current && !visited.has(current)) {
-                        visited.add(current);
-                        if (current.memoizedProps && typeof current.memoizedProps.onAffectedEntitiesUpdate === 'function') {
-                            current.memoizedProps.onAffectedEntitiesUpdate(disruptionKey, valueKey, affectedEntities);
-                            return true;
-                        }
-                        if (current.child) {
-                            current = current.child;
-                        } else if (current.sibling) {
-                            current = current.sibling;
-                        } else {
-                            current = current.return;
-                        }
-                    }
-                }
-            }
-            return false;
-        };
+        beforeEach(() => {
+            onAffectedEntitiesUpdateHandler = null;
+        });
 
         it('should call onDisruptionsUpdate when onAffectedEntitiesUpdate is called with onDisruptionsUpdate and disruptions props', () => {
             const onDisruptionsUpdateSpy = jest.fn();
@@ -1023,15 +1016,17 @@ describe('Confirmation Component', () => {
                 ...defaultProps,
                 onDisruptionsUpdate: onDisruptionsUpdateSpy,
                 disruptions: [disruption1, disruption2],
+                isEditEffectPanelOpen: true,
             };
 
-            const { container } = render(
+            render(
                 <Provider store={ store }>
                     <EditEffectPanel { ...props } />
                 </Provider>,
             );
 
             expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+            expect(onAffectedEntitiesUpdateHandler).toBeTruthy();
 
             const newAffectedRoutes = [{
                 category: { type: 'route', icon: '', label: 'Routes' },
@@ -1044,7 +1039,7 @@ describe('Confirmation Component', () => {
                 valueKey: 'routeId',
             }];
 
-            findAndCallOnAffectedEntitiesUpdate(container, 'DISR123', 'affectedRoutes', newAffectedRoutes);
+            onAffectedEntitiesUpdateHandler('DISR123', 'affectedRoutes', newAffectedRoutes);
 
             expect(onDisruptionsUpdateSpy).toHaveBeenCalledWith('disruptions', expect.arrayContaining([
                 expect.objectContaining({
@@ -1067,13 +1062,16 @@ describe('Confirmation Component', () => {
                 ...defaultProps,
                 onDisruptionsUpdate: onDisruptionsUpdateSpy,
                 disruptions: [disruption1, disruption2],
+                isEditEffectPanelOpen: true,
             };
 
-            const { container } = render(
+            render(
                 <Provider store={ store }>
                     <EditEffectPanel { ...props } />
                 </Provider>,
             );
+
+            expect(onAffectedEntitiesUpdateHandler).toBeTruthy();
 
             const newAffectedStops = [{
                 category: { type: 'stop', icon: '', label: 'Stops' },
@@ -1084,7 +1082,7 @@ describe('Confirmation Component', () => {
                 valueKey: 'stopCode',
             }];
 
-            findAndCallOnAffectedEntitiesUpdate(container, 'DISR123', 'affectedStops', newAffectedStops);
+            onAffectedEntitiesUpdateHandler('DISR123', 'affectedStops', newAffectedStops);
 
             expect(onDisruptionsUpdateSpy).toHaveBeenCalled();
             const callArgs = onDisruptionsUpdateSpy.mock.calls[0];
@@ -1109,15 +1107,17 @@ describe('Confirmation Component', () => {
                 ...defaultProps,
                 onDisruptionsUpdate: undefined,
                 disruptions: [{ ...mockDisruption, incidentNo: 'DISR123' }],
+                isEditEffectPanelOpen: true,
             };
 
-            const { container } = render(
+            render(
                 <Provider store={ store }>
                     <EditEffectPanel { ...props } />
                 </Provider>,
             );
 
             expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+            expect(onAffectedEntitiesUpdateHandler).toBeTruthy();
 
             const newAffectedRoutes = [{
                 category: { type: 'route', icon: '', label: 'Routes' },
@@ -1130,9 +1130,8 @@ describe('Confirmation Component', () => {
                 valueKey: 'routeId',
             }];
 
-            findAndCallOnAffectedEntitiesUpdate(container, 'DISR123', 'affectedRoutes', newAffectedRoutes);
+            onAffectedEntitiesUpdateHandler('DISR123', 'affectedRoutes', newAffectedRoutes);
 
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
             expect(onDisruptionsUpdateSpy).not.toHaveBeenCalled();
         });
 

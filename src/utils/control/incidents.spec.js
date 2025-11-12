@@ -1,4 +1,4 @@
-import { getEntityCounts, generateSelectedText, mergeExistingAndDrawnEntities, buildPublishPayload, filterDisruptionsBySearchTerm, removeDuplicatesByKey } from './incidents';
+import { getEntityCounts, generateSelectedText, mergeExistingAndDrawnEntities, buildPublishPayload, filterDisruptionsBySearchTerm } from './incidents';
 import { STATUSES } from '../../types/disruptions-types';
 
 describe('getEntityCounts', () => {
