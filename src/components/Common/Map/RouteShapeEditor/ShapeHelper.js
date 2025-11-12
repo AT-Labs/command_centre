@@ -145,6 +145,9 @@ export const findDifferences = (original, updated) => {
 
 // Function to parse WKT LINESTRING into an array of coordinates
 export const parseWKT = (wkt) => {
+    if (!wkt || typeof wkt !== 'string' || !wkt.startsWith('LINESTRING')) {
+        return [];
+    }
     const coords = wkt
         .replace('LINESTRING(', '')
         .replace(')', '')

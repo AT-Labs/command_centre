@@ -119,6 +119,35 @@ describe('parseWKT', () => {
         const coords = parseWKT(wkt);
         expect(coords).toEqual([[10, 30], [30, 10], [40, 40]]);
     });
+
+    it('returns empty array for null input', () => {
+        expect(parseWKT(null)).toEqual([]);
+    });
+
+    it('returns empty array for undefined input', () => {
+        expect(parseWKT(undefined)).toEqual([]);
+    });
+
+    it('returns empty array for empty string', () => {
+        expect(parseWKT('')).toEqual([]);
+    });
+
+    it('returns empty array for non-string input', () => {
+        expect(parseWKT(123)).toEqual([]);
+        expect(parseWKT({})).toEqual([]);
+        expect(parseWKT([])).toEqual([]);
+    });
+
+    it('returns empty array for string not starting with LINESTRING', () => {
+        expect(parseWKT('POLYGON((30 10, 40 40, 20 40, 10 20, 30 10))')).toEqual([]);
+        expect(parseWKT('POINT(10 20)')).toEqual([]);
+    });
+
+    it('parses LINESTRING with extra spaces', () => {
+        const wkt = 'LINESTRING(  30 10 ,  10 30  ,40 40 )';
+        const coords = parseWKT(wkt);
+        expect(coords).toEqual([[10, 30], [30, 10], [40, 40]]);
+    });
 });
 
 describe('toWKT', () => {
