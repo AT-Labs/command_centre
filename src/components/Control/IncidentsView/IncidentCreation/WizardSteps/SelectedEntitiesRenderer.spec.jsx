@@ -420,6 +420,47 @@ describe('<SelectedEntitiesRenderer />', () => {
 
             expect(wrapper.html()).toBe(null);
         });
+
+        it('should use empty arrays when affectedRoutes property is missing', () => {
+            const affectedEntities = {
+                affectedStops: [
+                    {
+                        routeId: '101-202',
+                        stopCode: '8000',
+                        stopId: 'stop1',
+                    },
+                ],
+            };
+
+            const wrapper = mount(
+                <SelectedEntitiesRenderer
+                    affectedEntities={ affectedEntities }
+                    disruptionKey={ mockDisruptionKey }
+                />,
+            );
+
+            expect(wrapper.exists()).toBe(true);
+        });
+
+        it('should use empty arrays when affectedStops property is missing', () => {
+            const affectedEntities = {
+                affectedRoutes: [
+                    {
+                        routeId: '101-202',
+                        routeShortName: '101',
+                    },
+                ],
+            };
+
+            const wrapper = mount(
+                <SelectedEntitiesRenderer
+                    affectedEntities={ affectedEntities }
+                    disruptionKey={ mockDisruptionKey }
+                />,
+            );
+
+            expect(wrapper.exists()).toBe(true);
+        });
     });
 
     describe('getRoutesUnderStop - default values for affectedRoutes and affectedStops', () => {
@@ -456,6 +497,49 @@ describe('<SelectedEntitiesRenderer />', () => {
                     },
                 ],
                 affectedStops: undefined,
+            };
+
+            const wrapper = mount(
+                <SelectedEntitiesRenderer
+                    affectedEntities={ affectedEntities }
+                    disruptionKey={ mockDisruptionKey }
+                />,
+            );
+
+            expect(wrapper.exists()).toBe(true);
+        });
+
+        it('should use empty arrays when affectedRoutes property is missing in getRoutesUnderStop', () => {
+            const affectedEntities = {
+                affectedStops: [
+                    {
+                        stopId: 'stop1',
+                        stopCode: '8000',
+                        text: 'Test Stop',
+                        routeId: '101-202',
+                    },
+                ],
+            };
+
+            const wrapper = mount(
+                <SelectedEntitiesRenderer
+                    affectedEntities={ affectedEntities }
+                    disruptionKey={ mockDisruptionKey }
+                />,
+            );
+
+            expect(wrapper.exists()).toBe(true);
+        });
+
+        it('should use empty arrays when affectedStops property is missing in getRoutesUnderStop', () => {
+            const affectedEntities = {
+                affectedRoutes: [
+                    {
+                        routeId: '101-202',
+                        routeShortName: '101',
+                        stopCode: '8000',
+                    },
+                ],
             };
 
             const wrapper = mount(
