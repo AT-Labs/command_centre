@@ -1140,4 +1140,25 @@ describe('filterDisruptionsBySearchTerm', () => {
         const result = filterDisruptionsBySearchTerm(disruptions, 'Main Street');
         expect(result).toHaveLength(1);
     });
+
+    it('should execute all three assignment lines even when nothing matches', () => {
+        const disruptions = [
+            {
+                key: 'd1',
+                impact: 'Road Closure',
+                affectedEntities: {
+                    affectedRoutes: [
+                        { routeShortName: '101', routeId: '101-1' },
+                        { routeShortName: '202', routeId: '202-1' },
+                    ],
+                    affectedStops: [
+                        { text: 'Main Street Stop', stopId: 'stop1' },
+                        { text: 'Park Avenue Stop', stopId: 'stop2' },
+                    ],
+                },
+            },
+        ];
+        const result = filterDisruptionsBySearchTerm(disruptions, 'NonExistentTerm');
+        expect(result).toHaveLength(0);
+    });
 });
