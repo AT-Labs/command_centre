@@ -103,13 +103,15 @@ jest.mock('react-flatpickr', () => props => (
 let onAffectedEntitiesUpdateHandler = null;
 
 jest.mock('../WizardSteps/SelectEffectEntities', () => {
-    const React = require('react');
+    // eslint-disable-next-line react/prop-types
     const MockSelectEffectEntities = (props) => {
         onAffectedEntitiesUpdateHandler = props.onAffectedEntitiesUpdate;
-        return React.createElement('div', { 'data-testid': 'select-effect-entities' }, [
-            React.createElement('div', { key: 'text' }, 'Search routes or draw in the map'),
-            React.createElement('div', { key: 'component' }, 'SelectEffectEntities'),
-        ]);
+        return (
+            <div data-testid="select-effect-entities">
+                <div>Search routes or draw in the map</div>
+                <div>SelectEffectEntities</div>
+            </div>
+        );
     };
     MockSelectEffectEntities.displayName = 'SelectEffectEntities';
     return MockSelectEffectEntities;
