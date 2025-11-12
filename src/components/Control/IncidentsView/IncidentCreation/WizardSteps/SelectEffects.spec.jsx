@@ -720,4 +720,82 @@ describe('<SelectEffects />', () => {
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
         });
     });
+
+    describe('updateNewIncidentEffect when editMode is ADD_EFFECT', () => {
+        let data;
+
+        beforeEach(() => {
+            data = {
+                ...mockIncident,
+                disruptions: [{ ...mockDisruption }],
+            };
+            componentPropsMock.updateNewIncidentEffect.mockClear();
+        });
+
+        it('should call updateNewIncidentEffect when onAffectedEntitiesUpdate is called in ADD_EFFECT mode', () => {
+            withHooks(() => {
+                wrapper = setup({ data, editMode: EDIT_TYPE.ADD_EFFECT });
+                const newAffectedRoutes = [{
+                    category: { type: 'route', icon: '', label: 'Routes' },
+                    labelKey: 'routeShortName',
+                    routeId: 'WEST-201',
+                    routeShortName: 'WEST',
+                    routeType: 2,
+                    text: 'WEST',
+                    type: 'route',
+                    valueKey: 'routeId',
+                }];
+                const selectEffectEntities = wrapper.find(SelectEffectEntities);
+                const disruptionKey = selectEffectEntities.prop('disruptionKey');
+                selectEffectEntities.prop('onAffectedEntitiesUpdate')(disruptionKey, 'affectedRoutes', newAffectedRoutes);
+                wrapper.update();
+                jest.advanceTimersByTime(100);
+                expect(componentPropsMock.updateNewIncidentEffect).toHaveBeenCalled();
+                const lastCall = componentPropsMock.updateNewIncidentEffect.mock.calls[componentPropsMock.updateNewIncidentEffect.mock.calls.length - 1];
+                expect(lastCall[0]).toMatchObject({
+                    affectedEntities: expect.objectContaining({
+                        affectedRoutes: newAffectedRoutes,
+                    }),
+                });
+            });
+        });
+
+        it('should call updateNewIncidentEffect with first disruption when updateDisruptionsState is called in ADD_EFFECT mode', () => {
+            withHooks(() => {
+                wrapper = setup({ data, editMode: EDIT_TYPE.ADD_EFFECT });
+                const input = wrapper.find('#disruption-creation__wizard-select-details__header');
+                input.simulate('change', { target: { value: 'New Header' } });
+                input.simulate('blur', { target: { value: 'New Header' } });
+                wrapper.update();
+                jest.advanceTimersByTime(100);
+                expect(componentPropsMock.updateNewIncidentEffect).toHaveBeenCalled();
+                const callsWithNewHeader = componentPropsMock.updateNewIncidentEffect.mock.calls.filter(
+                    call => call[0] && call[0].header === 'New Header',
+                );
+                expect(callsWithNewHeader.length).toBeGreaterThan(0);
+            });
+        });
+
+        it('should not call updateNewIncidentEffect when editMode is not ADD_EFFECT', () => {
+            withHooks(() => {
+                wrapper = setup({ data, editMode: EDIT_TYPE.CREATE });
+                const newAffectedRoutes = [{
+                    category: { type: 'route', icon: '', label: 'Routes' },
+                    labelKey: 'routeShortName',
+                    routeId: 'WEST-201',
+                    routeShortName: 'WEST',
+                    routeType: 2,
+                    text: 'WEST',
+                    type: 'route',
+                    valueKey: 'routeId',
+                }];
+                const selectEffectEntities = wrapper.find(SelectEffectEntities);
+                selectEffectEntities.prop('onAffectedEntitiesUpdate')('DISR123', 'affectedRoutes', newAffectedRoutes);
+                wrapper.update();
+                jest.advanceTimersByTime(100);
+                expect(componentPropsMock.updateNewIncidentEffect).not.toHaveBeenCalled();
+                expect(componentPropsMock.onDataUpdate).toHaveBeenCalledWith('disruptions', expect.any(Array));
+            });
+        });
+    });
 });
