@@ -85,6 +85,13 @@ describe('Route detail actions', () => {
         trip_id: '1086098588-20180921103729_v70.37',
     };
 
+    const baseTrip = {
+        trip_headsign: 'Head Sign A',
+        shape_wkt: 'shape_wkt',
+        trip_id: '1086147568-20180921103729_v70.37',
+    };
+    const tripsWithOneVariant = [baseTrip];
+
     it('Should display routes details actions and return visible vehicles - mergeRoutesDetails()', async () => {
         const expectedActions = [
             {
@@ -109,6 +116,146 @@ describe('Route detail actions', () => {
 
         store.dispatch(route.mergeRoutesDetails(undefined, routeTrips, vehiclesInAllRoutesFake));
         expect(store.getActions()).to.eql(expectedActions);
+    });
+
+    it('should map a vehicle that has no replacementTripId to its original tripId', () => {
+        const vehicleNoReplacement = {
+            id: '14213',
+            vehicle: {
+                trip: {
+                    tripId: '1086147568-20180921103729_v70.37',
+                    startTime: '11:05:00',
+                    startDate: '20251110',
+                    scheduleRelationship: 'SCHEDULED',
+                    routeId: '12203-20180921103729_v70.37',
+                },
+            },
+        };
+        const vehicleInFakeRoute = { [vehicleNoReplacement.vehicle.trip.tripId]: vehicleNoReplacement };
+
+        const expectedPayload = {
+            entityKey: undefined,
+            routes: [
+                {
+                    routeVariantName: 'Head Sign A',
+                    shape_wkt: 'shape_wkt',
+                    vehicles: [vehicleNoReplacement],
+                },
+            ],
+        };
+
+        store.dispatch(route.mergeRoutesDetails(undefined, tripsWithOneVariant, vehicleInFakeRoute));
+        const actions = store.getActions();
+        expect(actions).to.have.lengthOf(1);
+        expect(actions[0]).to.eql({
+            type: ACTION_TYPE.FETCH_ROUTE_TRIPS,
+            payload: expectedPayload,
+        });
+    });
+
+    it('should map vehicles with and without replacementTripIds correctly', () => {
+        const originalTripId = '1086147568-20180921103729_v70.37';
+        const replacementTripId = '9999999999-REPLACED';
+        const anotherTripId = '1086096251-20180921103729_v70.37';
+
+        const vehicleNoReplacement = {
+            id: '14213',
+            vehicle: {
+                trip: {
+                    tripId: anotherTripId,
+                    startTime: '11:05:00',
+                    startDate: '20251110',
+                    scheduleRelationship: 'SCHEDULED',
+                    routeId: '12203-20180921103729_v70.37',
+                },
+            },
+        };
+
+        const vehicleWithReplacement = {
+            id: '14214',
+            vehicle: {
+                trip: {
+                    tripId: originalTripId,
+                    startTime: '11:10:00',
+                    startDate: '20251110',
+                    scheduleRelationship: 'SCHEDULED',
+                    routeId: '12203-20180921103729_v70.37',
+                    '.replacementTripId': replacementTripId,
+                },
+            },
+        };
+
+        const vehiclesInAllRoutesFake = {
+            [anotherTripId]: vehicleNoReplacement,
+            [originalTripId]: vehicleWithReplacement,
+        };
+        const trips = [
+            { ...baseTrip, trip_id: originalTripId, trip_headsign: 'Head Sign A' },
+            { ...baseTrip, trip_id: replacementTripId, trip_headsign: 'Head Sign A' },
+            { ...baseTrip, trip_id: anotherTripId, trip_headsign: 'Head Sign B' },
+        ];
+
+        const expectedPayload = {
+            entityKey: undefined,
+            routes: [
+                {
+                    routeVariantName: 'Head Sign A',
+                    shape_wkt: 'shape_wkt',
+                    vehicles: [vehicleWithReplacement, vehicleWithReplacement],
+                },
+                {
+                    routeVariantName: 'Head Sign B',
+                    shape_wkt: 'shape_wkt',
+                    vehicles: [vehicleNoReplacement],
+                },
+            ],
+        };
+
+        store.dispatch(route.mergeRoutesDetails(undefined, trips, vehiclesInAllRoutesFake));
+
+        const actions = store.getActions();
+        expect(actions).to.have.lengthOf(1);
+        expect(actions[0]).to.eql({
+            type: ACTION_TYPE.FETCH_ROUTE_TRIPS,
+            payload: expectedPayload,
+        });
+    });
+
+    it('should not duplicate when replacementTripId equals the original tripId', () => {
+        const sameId = '1086147568-20180921103729_v70.37';
+        const vehicleSameReplacement = {
+            id: '14213',
+            vehicle: {
+                trip: {
+                    tripId: sameId,
+                    startTime: '11:05:00',
+                    startDate: '20251110',
+                    scheduleRelationship: 'SCHEDULED',
+                    routeId: '12203-20180921103729_v70.37',
+                    '.replacementTripId': sameId,
+                },
+            },
+        };
+        const vehiclesInAllRoutesFake = { [sameId]: vehicleSameReplacement };
+
+        const expectedPayload = {
+            entityKey: undefined,
+            routes: [
+                {
+                    routeVariantName: 'Head Sign A',
+                    shape_wkt: 'shape_wkt',
+                    vehicles: [vehicleSameReplacement],
+                },
+            ],
+        };
+
+        store.dispatch(route.mergeRoutesDetails(undefined, tripsWithOneVariant, vehiclesInAllRoutesFake));
+        const actions = store.getActions();
+        expect(actions).to.have.lengthOf(1);
+        expect(actions[0]).to.eql({
+            type: ACTION_TYPE.FETCH_ROUTE_TRIPS,
+            payload: expectedPayload,
+        });
     });
 
     it('Should get stops by route - getStopsByRoute()', async () => {
