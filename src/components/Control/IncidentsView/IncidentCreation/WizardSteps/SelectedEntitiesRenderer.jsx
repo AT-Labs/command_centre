@@ -188,4 +188,3 @@ SelectedEntitiesRenderer.propTypes = {
 SelectedEntitiesRenderer.defaultProps = {
     affectedEntities: null,
 };
-

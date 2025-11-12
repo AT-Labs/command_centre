@@ -99,7 +99,6 @@ export const buildPublishPayload = incident => ({
     })),
 });
 
-
 export const filterDisruptionsBySearchTerm = (disruptions, searchTerm) => {
     if (!disruptions || !searchTerm) {
         return disruptions || [];
@@ -126,4 +125,3 @@ export const removeDuplicatesByKey = (array, getKey) => {
     }
     return array.filter((item, index, self) => index === self.findIndex(i => getKey(i) === getKey(item)));
 };
-
