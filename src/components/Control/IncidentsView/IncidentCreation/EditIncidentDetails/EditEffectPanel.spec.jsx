@@ -139,14 +139,6 @@ describe('Confirmation Component', () => {
         updateIsEffectUpdatedState: jest.fn(),
         updateEffectValidationForPublishState: jest.fn(),
         onDisruptionChange: jest.fn(),
-        incidentDateRange: {
-            startDate: mockDisruption.startDate,
-            startTime: mockDisruption.startTime,
-            endDate: mockDisruption.endDate,
-            endTime: mockDisruption.endTime,
-        },
-        updateStartDateTimeWillBeUpdated: jest.fn(),
-        updateEndDateTimeWillBeUpdated: jest.fn(),
     };
 
     beforeEach(() => {
@@ -996,311 +988,170 @@ describe('Confirmation Component', () => {
         });
     });
 
-    it('Should trigger updateStartDateTimeWillBeUpdated on startDate change with correct value', () => {
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps } />
-            </Provider>,
-        );
-        const startPicker = screen.getByTestId('start-date_date-picker');
-        fireEvent.change(startPicker, { target: { value: '2025-06-08' } });
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+    describe('onDisruptionsUpdate', () => {
+        const findAndCallOnAffectedEntitiesUpdate = (container, disruptionKey, valueKey, affectedEntities) => {
+            const allElements = container.querySelectorAll('*');
+            for (const element of allElements) {
+                const reactFiber = element._reactInternalFiber || element.__reactInternalInstance;
+                if (reactFiber) {
+                    let current = reactFiber;
+                    const visited = new Set();
+                    while (current && !visited.has(current)) {
+                        visited.add(current);
+                        if (current.memoizedProps && typeof current.memoizedProps.onAffectedEntitiesUpdate === 'function') {
+                            current.memoizedProps.onAffectedEntitiesUpdate(disruptionKey, valueKey, affectedEntities);
+                            return true;
+                        }
+                        if (current.child) {
+                            current = current.child;
+                        } else if (current.sibling) {
+                            current = current.sibling;
+                        } else {
+                            current = current.return;
+                        }
+                    }
+                }
+            }
+            return false;
+        };
 
-        fireEvent.change(startPicker, { target: { value: '2025-06-11' } });
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-    });
+        it('should call onDisruptionsUpdate when onAffectedEntitiesUpdate is called with onDisruptionsUpdate and disruptions props', () => {
+            const onDisruptionsUpdateSpy = jest.fn();
+            const disruption1 = { ...mockDisruption, incidentNo: 'DISR123', key: 'DISR123' };
+            const disruption2 = { ...mockDisruption, incidentNo: 'DISR456', key: 'DISR456' };
+            const props = {
+                ...defaultProps,
+                onDisruptionsUpdate: onDisruptionsUpdateSpy,
+                disruptions: [disruption1, disruption2],
+            };
 
-    it('Should trigger updateStartDateTimeWillBeUpdated on clearing startDate value in correct way', () => {
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps } />
-            </Provider>,
-        );
-        const startPicker = screen.getByTestId('start-date_date-picker');
-        fireEvent.change(startPicker, { target: { value: '2025-06-08' } });
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+            const { container } = render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
 
-        fireEvent.change(startPicker, { target: { value: '' } });
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-    });
+            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
 
-    it('Should trigger updateStartDateTimeWillBeUpdated on startTime change with correct value', () => {
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps } />
-            </Provider>,
-        );
-        const input = screen.getByTestId('start-time_input');
-        fireEvent.change(input, { target: { value: '05:33' } });
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+            const newAffectedRoutes = [{
+                category: { type: 'route', icon: '', label: 'Routes' },
+                labelKey: 'routeShortName',
+                routeId: 'WEST-201',
+                routeShortName: 'WEST',
+                routeType: 2,
+                text: 'WEST',
+                type: 'route',
+                valueKey: 'routeId',
+            }];
 
-        fireEvent.change(input, { target: { value: '06:11' } });
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-    });
+            findAndCallOnAffectedEntitiesUpdate(container, 'DISR123', 'affectedRoutes', newAffectedRoutes);
 
-    it('Should trigger updateStartDateTimeWillBeUpdated on clearing and not valid value startTime value in correct way', () => {
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps } />
-            </Provider>,
-        );
-        const input = screen.getByTestId('start-time_input');
-        fireEvent.change(input, { target: { value: '05:33' } });
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+            expect(onDisruptionsUpdateSpy).toHaveBeenCalledWith('disruptions', expect.arrayContaining([
+                expect.objectContaining({
+                    incidentNo: 'DISR123',
+                    affectedEntities: expect.objectContaining({
+                        affectedRoutes: expect.arrayContaining([
+                            expect.objectContaining({ routeShortName: 'WEST' }),
+                        ]),
+                    }),
+                }),
+                expect.objectContaining({ incidentNo: 'DISR456' }),
+            ]));
+        });
 
-        fireEvent.change(input, { target: { value: '' } });
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
+        it('should call onDisruptionsUpdate with updated disruptions list when affected entities are updated and replace correct disruption', () => {
+            const onDisruptionsUpdateSpy = jest.fn();
+            const disruption1 = { ...mockDisruption, incidentNo: 'DISR123', key: 'DISR123' };
+            const disruption2 = { ...mockDisruption, incidentNo: 'DISR456', key: 'DISR456' };
+            const props = {
+                ...defaultProps,
+                onDisruptionsUpdate: onDisruptionsUpdateSpy,
+                disruptions: [disruption1, disruption2],
+            };
 
-        fireEvent.change(input, { target: { value: '05:11' } });
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+            const { container } = render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
 
-        fireEvent.change(input, { target: { value: '05:' } });
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-    });
+            const newAffectedStops = [{
+                category: { type: 'stop', icon: '', label: 'Stops' },
+                labelKey: 'stopCode',
+                stopCode: '100',
+                stopName: 'Test Stop',
+                type: 'stop',
+                valueKey: 'stopCode',
+            }];
 
-    it('Should trigger updateEndDateTimeWillBeUpdated on endDate change with correct value for recurrent disruption', () => {
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps } />
-            </Provider>,
-        );
-        const endPicker = screen.getByTestId('end-date_date-picker');
+            findAndCallOnAffectedEntitiesUpdate(container, 'DISR123', 'affectedStops', newAffectedStops);
 
-        fireEvent.change(endPicker, { target: { value: '2025-06-21' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+            expect(onDisruptionsUpdateSpy).toHaveBeenCalled();
+            const callArgs = onDisruptionsUpdateSpy.mock.calls[0];
+            expect(callArgs[0]).toBe('disruptions');
+            expect(callArgs[1]).toHaveLength(2);
 
-        fireEvent.change(endPicker, { target: { value: '2025-06-18' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-    });
+            expect(callArgs[1][0]).toMatchObject({
+                incidentNo: 'DISR123',
+                affectedEntities: expect.objectContaining({
+                    affectedStops: expect.arrayContaining([
+                        expect.objectContaining({ stopCode: '100' }),
+                    ]),
+                }),
+            });
 
-    it('Should trigger updateEndDateTimeWillBeUpdated on clearing endDate value in correct way', () => {
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps } />
-            </Provider>,
-        );
-        const endPicker = screen.getByTestId('end-date_date-picker');
+            expect(callArgs[1][1]).toMatchObject({ incidentNo: 'DISR456' });
+        });
 
-        fireEvent.change(endPicker, { target: { value: '2025-06-21' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+        it('should not call onDisruptionsUpdate when onDisruptionsUpdate prop is not provided', () => {
+            const onDisruptionsUpdateSpy = jest.fn();
+            const props = {
+                ...defaultProps,
+                onDisruptionsUpdate: undefined,
+                disruptions: [{ ...mockDisruption, incidentNo: 'DISR123' }],
+            };
 
-        fireEvent.change(endPicker, { target: { value: '' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-    });
+            const { container } = render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
 
-    it('Should trigger updateEndDateTimeWillBeUpdated on endDate change with correct value for non-recurrent disruption', () => {
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel
-                    { ...defaultProps }
-                    disruptions={ [{ ...mockDisruption, recurrent: false }] }
-                />
-            </Provider>,
-        );
-        const endPicker = screen.getByTestId('end-date_date-picker');
+            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
 
-        fireEvent.change(endPicker, { target: { value: '2025-06-21' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+            const newAffectedRoutes = [{
+                category: { type: 'route', icon: '', label: 'Routes' },
+                labelKey: 'routeShortName',
+                routeId: 'WEST-201',
+                routeShortName: 'WEST',
+                routeType: 2,
+                text: 'WEST',
+                type: 'route',
+                valueKey: 'routeId',
+            }];
 
-        fireEvent.change(endPicker, { target: { value: '2025-06-18' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-    });
+            findAndCallOnAffectedEntitiesUpdate(container, 'DISR123', 'affectedRoutes', newAffectedRoutes);
 
-    it('Should trigger updateEndDateTimeWillBeUpdated on clearing endDate value in correct way for non-recurrent disruption', () => {
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel
-                    { ...defaultProps }
-                    disruptions={ [{ ...mockDisruption, recurrent: false }] }
-                />
-            </Provider>,
-        );
-        const endPicker = screen.getByTestId('end-date_date-picker');
+            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
+            expect(onDisruptionsUpdateSpy).not.toHaveBeenCalled();
+        });
 
-        fireEvent.change(endPicker, { target: { value: '2025-06-21' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
+        it('should not call onDisruptionsUpdate when disruptions prop is not provided', () => {
+            const onDisruptionsUpdateSpy = jest.fn();
+            const props = {
+                ...defaultProps,
+                onDisruptionsUpdate: onDisruptionsUpdateSpy,
+                disruptions: undefined,
+            };
 
-        fireEvent.change(endPicker, { target: { value: '' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-    });
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
 
-    it('Should trigger updateEndDateTimeWillBeUpdated on endTime change with correct value for non-recurrent disruption', () => {
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel
-                    { ...defaultProps }
-                    disruptions={ [{ ...mockDisruption, recurrent: false }] }
-                />
-            </Provider>,
-        );
-        const input = screen.getByTestId('end-time_input');
-        fireEvent.change(input, { target: { value: '10:11' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
-
-        fireEvent.change(input, { target: { value: '08:33' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-    });
-
-    it('Should trigger updateEndDateTimeWillBeUpdated on clearing and not valid value startTime value in correct way for non-recurrent disruption', () => {
-        render(
-            <Provider store={ store }>
-                <EditEffectPanel
-                    { ...defaultProps }
-                    disruptions={ [{ ...mockDisruption, recurrent: false }] }
-                />
-            </Provider>,
-        );
-        const input = screen.getByTestId('end-time_input');
-        fireEvent.change(input, { target: { value: '10:11' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
-
-        fireEvent.change(input, { target: { value: '' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-
-        fireEvent.change(input, { target: { value: '10:24' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
-
-        fireEvent.change(input, { target: { value: '091' } });
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-    });
-
-    it('Should trigger updateStartDateTimeWillBeUpdated on disruption startDate update', () => {
-        const { rerender } = render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps } />
-            </Provider>,
-        );
-
-        rerender(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps }
-                    incidentDateRange={ {
-                        startDate: '11/06/2025',
-                        startTime: mockDisruption.startTime,
-                        endDate: mockDisruption.endDate,
-                        endTime: mockDisruption.endTime,
-                    } }
-                />
-            </Provider>,
-        );
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
-        rerender(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps }
-                    incidentDateRange={ {
-                        startDate: '',
-                        startTime: mockDisruption.startTime,
-                        endDate: mockDisruption.endDate,
-                        endTime: mockDisruption.endTime,
-                    } }
-                />
-            </Provider>,
-        );
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-    });
-
-    it('Should trigger updateStartDateTimeWillBeUpdated on disruption startTime update', () => {
-        const { rerender } = render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps } />
-            </Provider>,
-        );
-
-        rerender(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps }
-                    incidentDateRange={ {
-                        startDate: mockDisruption.startDate,
-                        startTime: '12:12',
-                        endDate: mockDisruption.endDate,
-                        endTime: mockDisruption.endTime,
-                    } }
-                />
-            </Provider>,
-        );
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
-        rerender(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps }
-                    incidentDateRange={ {
-                        startDate: mockDisruption.startDate,
-                        startTime: '11:',
-                        endDate: mockDisruption.endDate,
-                        endTime: mockDisruption.endTime,
-                    } }
-                />
-            </Provider>,
-        );
-        expect(defaultProps.updateStartDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-    });
-
-    it('Should trigger updateEndDateTimeWillBeUpdated on disruption endDate update', () => {
-        const { rerender } = render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps } />
-            </Provider>,
-        );
-
-        rerender(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps }
-                    incidentDateRange={ {
-                        startDate: mockDisruption.startDate,
-                        startTime: mockDisruption.startTime,
-                        endDate: '18/06/2025',
-                        endTime: mockDisruption.endTime,
-                    } }
-                />
-            </Provider>,
-        );
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
-        rerender(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps }
-                    incidentDateRange={ {
-                        startDate: mockDisruption.startDate,
-                        startTime: mockDisruption.startTime,
-                        endDate: '',
-                        endTime: mockDisruption.endTime,
-                    } }
-                />
-            </Provider>,
-        );
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
-    });
-
-    it('Should trigger updateEndDateTimeWillBeUpdated on disruption endTime update', () => {
-        const { rerender } = render(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps } />
-            </Provider>,
-        );
-
-        rerender(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps }
-                    incidentDateRange={ {
-                        startDate: mockDisruption.startDate,
-                        startTime: mockDisruption.startTime,
-                        endDate: mockDisruption.endDate,
-                        endTime: '07:11',
-                    } }
-                />
-            </Provider>,
-        );
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(true);
-        rerender(
-            <Provider store={ store }>
-                <EditEffectPanel { ...defaultProps }
-                    incidentDateRange={ {
-                        startDate: mockDisruption.startDate,
-                        startTime: mockDisruption.startTime,
-                        endDate: mockDisruption.endDate,
-                        endTime: '08',
-                    } }
-                />
-            </Provider>,
-        );
-        expect(defaultProps.updateEndDateTimeWillBeUpdated).toHaveBeenCalledWith(false);
+            expect(screen.queryByText('Edit details of Effect DISR123')).not.toBeInTheDocument();
+            expect(onDisruptionsUpdateSpy).not.toHaveBeenCalled();
+        });
     });
 });
