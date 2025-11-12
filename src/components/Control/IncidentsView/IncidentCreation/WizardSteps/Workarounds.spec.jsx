@@ -198,16 +198,16 @@ describe('<Workarounds />', () => {
 
         const disruptionList = wrapper.find('ul.disruption-workarounds-effects');
         expect(disruptionList.find('Button').length).toBe(2);
-        
+
         const selectedEntitiesRenderers = disruptionList.find(SelectedEntitiesRenderer);
         expect(selectedEntitiesRenderers).toHaveLength(2);
-        
+
         const allRoutes = disruptionList.find('.disruption-effect-item-route');
         const allStops = disruptionList.find('.disruption-effect-item-stop');
-        
+
         expect(allRoutes).toHaveLength(2);
         expect(allRoutes.at(0).text()).toBe('Route - WEST');
-        
+
         expect(allStops).toHaveLength(2);
         expect(allStops.at(0).text()).toBe('Stop - 100 test stop');
     });
@@ -233,7 +233,7 @@ describe('<Workarounds />', () => {
         let selectedEntitiesRenderers = disruptionList.find(SelectedEntitiesRenderer);
         expect(disruptionList.find('Button').length).toBe(2);
         expect(selectedEntitiesRenderers).toHaveLength(2);
-        
+
         let allRoutes = disruptionList.find('.disruption-effect-item-route');
         let allStops = disruptionList.find('.disruption-effect-item-stop');
         expect(allRoutes).toHaveLength(2);
@@ -248,13 +248,13 @@ describe('<Workarounds />', () => {
         jest.advanceTimersByTime(2000);
         wrapper.update();
         expect(wrapper.find('Input#disruption-creation__wizard-select-details__header').props().value).toBe('east');
-        
+
         disruptionList = wrapper.find('ul.disruption-workarounds-effects');
         expect(disruptionList.find('Button').length).toBe(1);
-        
+
         selectedEntitiesRenderers = disruptionList.find(SelectedEntitiesRenderer);
         expect(selectedEntitiesRenderers).toHaveLength(1);
-        
+
         allRoutes = disruptionList.find('.disruption-effect-item-route');
         allStops = disruptionList.find('.disruption-effect-item-stop');
         expect(allRoutes).toHaveLength(2);
@@ -280,7 +280,7 @@ describe('<Workarounds />', () => {
             wrapper.update();
             const selectedEntitiesRenderers = wrapper.find(SelectedEntitiesRenderer);
             expect(selectedEntitiesRenderers).toHaveLength(1);
-            
+
             const stops = wrapper.find('.disruption-effect-item-stop');
             expect(stops).toHaveLength(2);
             expect(stops.first().text()).toBe('Stop - 100 test stop');
