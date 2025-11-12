@@ -781,4 +781,172 @@ describe('filterDisruptionsBySearchTerm', () => {
         expect(result).toHaveLength(1);
         expect(result[0].key).toBe('d1');
     });
+
+    it('should execute routeMatches when affectedRoutes has matching routeShortName', () => {
+        const disruptions = [
+            {
+                key: 'd1',
+                impact: 'Different Impact',
+                affectedEntities: {
+                    affectedRoutes: [
+                        { routeShortName: 'ABC', routeId: 'abc-1' },
+                        { routeShortName: '101', routeId: '101-1' },
+                    ],
+                    affectedStops: [{ text: 'Different Stop', stopId: 'stop1' }],
+                },
+            },
+        ];
+        const result = filterDisruptionsBySearchTerm(disruptions, '101');
+        expect(result).toHaveLength(1);
+        expect(result[0].key).toBe('d1');
+    });
+
+    it('should execute routeMatches when affectedRoutes has non-matching routeShortName', () => {
+        const disruptions = [
+            {
+                key: 'd1',
+                impact: 'Different Impact',
+                affectedEntities: {
+                    affectedRoutes: [
+                        { routeShortName: 'ABC', routeId: 'abc-1' },
+                        { routeShortName: 'DEF', routeId: 'def-1' },
+                    ],
+                    affectedStops: [{ text: 'Different Stop', stopId: 'stop1' }],
+                },
+            },
+        ];
+        const result = filterDisruptionsBySearchTerm(disruptions, '101');
+        expect(result).toHaveLength(0);
+    });
+
+    it('should execute stopMatches when affectedStops has matching text', () => {
+        const disruptions = [
+            {
+                key: 'd1',
+                impact: 'Different Impact',
+                affectedEntities: {
+                    affectedRoutes: [{ routeShortName: 'ABC', routeId: 'abc-1' }],
+                    affectedStops: [
+                        { text: 'XYZ Stop', stopId: 'stop1' },
+                        { text: 'Main Street Stop', stopId: 'stop2' },
+                    ],
+                },
+            },
+        ];
+        const result = filterDisruptionsBySearchTerm(disruptions, 'Main Street');
+        expect(result).toHaveLength(1);
+        expect(result[0].key).toBe('d1');
+    });
+
+    it('should execute stopMatches when affectedStops has non-matching text', () => {
+        const disruptions = [
+            {
+                key: 'd1',
+                impact: 'Different Impact',
+                affectedEntities: {
+                    affectedRoutes: [{ routeShortName: 'ABC', routeId: 'abc-1' }],
+                    affectedStops: [
+                        { text: 'XYZ Stop', stopId: 'stop1' },
+                        { text: 'DEF Stop', stopId: 'stop2' },
+                    ],
+                },
+            },
+        ];
+        const result = filterDisruptionsBySearchTerm(disruptions, 'Main Street');
+        expect(result).toHaveLength(0);
+    });
+
+    it('should execute impactMatches when impact exists and matches', () => {
+        const disruptions = [
+            {
+                key: 'd1',
+                impact: 'Road Closure',
+                affectedEntities: {
+                    affectedRoutes: [],
+                    affectedStops: [],
+                },
+            },
+        ];
+        const result = filterDisruptionsBySearchTerm(disruptions, 'Road');
+        expect(result).toHaveLength(1);
+        expect(result[0].key).toBe('d1');
+    });
+
+    it('should execute impactMatches when impact exists but does not match', () => {
+        const disruptions = [
+            {
+                key: 'd1',
+                impact: 'Road Closure',
+                affectedEntities: {
+                    affectedRoutes: [],
+                    affectedStops: [],
+                },
+            },
+        ];
+        const result = filterDisruptionsBySearchTerm(disruptions, 'Detour');
+        expect(result).toHaveLength(0);
+    });
+
+    it('should execute all three conditions when none match', () => {
+        const disruptions = [
+            {
+                key: 'd1',
+                impact: 'Road Closure',
+                affectedEntities: {
+                    affectedRoutes: [{ routeShortName: 'ABC', routeId: 'abc-1' }],
+                    affectedStops: [{ text: 'XYZ Stop', stopId: 'stop1' }],
+                },
+            },
+        ];
+        const result = filterDisruptionsBySearchTerm(disruptions, 'NonExistent');
+        expect(result).toHaveLength(0);
+    });
+
+    it('should execute all three conditions when impact matches', () => {
+        const disruptions = [
+            {
+                key: 'd1',
+                impact: 'Road Closure',
+                affectedEntities: {
+                    affectedRoutes: [{ routeShortName: 'ABC', routeId: 'abc-1' }],
+                    affectedStops: [{ text: 'XYZ Stop', stopId: 'stop1' }],
+                },
+            },
+        ];
+        const result = filterDisruptionsBySearchTerm(disruptions, 'Road');
+        expect(result).toHaveLength(1);
+        expect(result[0].key).toBe('d1');
+    });
+
+    it('should execute all three conditions when route matches', () => {
+        const disruptions = [
+            {
+                key: 'd1',
+                impact: 'Different Impact',
+                affectedEntities: {
+                    affectedRoutes: [{ routeShortName: '101', routeId: '101-1' }],
+                    affectedStops: [{ text: 'Different Stop', stopId: 'stop1' }],
+                },
+            },
+        ];
+        const result = filterDisruptionsBySearchTerm(disruptions, '101');
+        expect(result).toHaveLength(1);
+        expect(result[0].key).toBe('d1');
+    });
+
+    it('should execute all three conditions when stop matches', () => {
+        const disruptions = [
+            {
+                key: 'd1',
+                impact: 'Different Impact',
+                affectedEntities: {
+                    affectedRoutes: [{ routeShortName: 'ABC', routeId: 'abc-1' }],
+                    affectedStops: [{ text: 'Main Street Stop', stopId: 'stop1' }],
+                },
+            },
+        ];
+        const result = filterDisruptionsBySearchTerm(disruptions, 'Main Street');
+        expect(result).toHaveLength(1);
+        expect(result[0].key).toBe('d1');
+    });
 });
