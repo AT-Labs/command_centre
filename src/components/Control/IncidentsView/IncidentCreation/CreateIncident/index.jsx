@@ -9,13 +9,7 @@ import { Button } from 'reactstrap';
 import { RRule } from 'rrule';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import { DATE_FORMAT, TIME_FORMAT, MAX_NUMBER_OF_ENTITIES } from '../../../../../constants/disruptions';
-import { getEntityCounts,
-    generateSelectedText,
-    getShapes,
-    getRouteColors,
-    mergeExistingAndDrawnEntities,
-    startDateTimeWillBeAutomaticallyUpdated,
-    endDateTimeWillBeAutomaticallyUpdated } from '../../../../../utils/control/incidents';
+import { getEntityCounts, generateSelectedText, getShapes, getRouteColors, mergeExistingAndDrawnEntities } from '../../../../../utils/control/incidents';
 import {
     createNewIncident,
     toggleIncidentModals,
@@ -148,8 +142,6 @@ export class CreateIncident extends React.Component {
             totalEntities: 0,
             effectToBeCleared: null,
             disruptionToEdit: null,
-            startDateTimeWillBeUpdated: false,
-            endDateTimeWillBeUpdated: false,
         };
         this.editEffectPanelRef = createRef();
     }
@@ -305,28 +297,12 @@ export class CreateIncident extends React.Component {
         const { incidentData } = this.state;
         let recurrenceDates;
         let recurrencePattern;
-        let startDateTimeWillBeUpdated;
-        let endDateTimeWillBeUpdated;
-        const updatedIncidentData = { ...incidentData, [key]: value };
 
         if (['startDate', 'startTime', 'endDate', 'recurrent'].includes(key)) {
+            const updatedIncidentData = { ...incidentData, [key]: value };
             recurrenceDates = getRecurrenceDates(updatedIncidentData.startDate, updatedIncidentData.startTime, updatedIncidentData.endDate);
             recurrencePattern = incidentData.recurrent ? parseRecurrencePattern(incidentData.recurrencePattern) : { freq: RRule.WEEKLY };
         }
-
-        if (this.props.editMode === EDIT_TYPE.CREATE && ['startDate', 'startTime', 'disruptions'].includes(key)) {
-            startDateTimeWillBeUpdated = startDateTimeWillBeAutomaticallyUpdated(updatedIncidentData.startDate, updatedIncidentData.startTime, updatedIncidentData.disruptions);
-        }
-
-        if (this.props.editMode === EDIT_TYPE.CREATE && ['endDate', 'endTime', 'disruptions'].includes(key)) {
-            endDateTimeWillBeUpdated = endDateTimeWillBeAutomaticallyUpdated(
-                updatedIncidentData.endDate,
-                incidentData.recurrent ? '23:59' : updatedIncidentData.endTime,
-                updatedIncidentData.disruptions,
-                incidentData.recurrent,
-            );
-        }
-
         this.setState(prevState => ({
             incidentData: {
                 ...prevState.incidentData,
@@ -338,8 +314,6 @@ export class CreateIncident extends React.Component {
                     },
                 }),
             },
-            startDateTimeWillBeUpdated: startDateTimeWillBeUpdated ?? prevState.startDateTimeWillBeUpdated,
-            endDateTimeWillBeUpdated: endDateTimeWillBeUpdated ?? prevState.endDateTimeWillBeUpdated,
         }));
     };
 
@@ -799,10 +773,7 @@ export class CreateIncident extends React.Component {
             isEffectValid,
             isEffectForPublishValid,
             newIncidentEffect,
-            isSetDetailsValid,
-            startDateTimeWillBeUpdated,
-            endDateTimeWillBeUpdated,
-        } = this.state;
+            isSetDetailsValid } = this.state;
         const renderMainHeading = () => {
             const titleByMode = {
                 [EDIT_TYPE.CREATE]: 'Create a new Disruption',
@@ -838,8 +809,6 @@ export class CreateIncident extends React.Component {
                                         onUpdateDetailsValidation={ this.onUpdateDetailsValidation }
                                         onSubmitUpdate={ this.onSubmitUpdate }
                                         onDisruptionSelected={ key => this.setState({ selectedEffect: key }) }
-                                        startDateTimeWillBeUpdated={ startDateTimeWillBeUpdated }
-                                        endDateTimeWillBeUpdated={ endDateTimeWillBeUpdated }
                                     />
                                 )}
                                 <SelectEffects
@@ -914,9 +883,7 @@ export class CreateIncident extends React.Component {
                                 isEffectValid={ isEffectValid }
                                 isEffectForPublishValid={ isEffectForPublishValid }
                                 onDisruptionSelected={ key => this.setState({ selectedEffect: key }) }
-                                onPublishUpdate={ this.onPublishUpdate }
-                                startDateTimeWillBeUpdated={ startDateTimeWillBeUpdated }
-                                endDateTimeWillBeUpdated={ endDateTimeWillBeUpdated } />
+                                onPublishUpdate={ this.onPublishUpdate } />
                             <CustomModal
                                 className="disruption-creation__modal"
                                 title={ this.getModalTitle() }
@@ -973,9 +940,6 @@ export class CreateIncident extends React.Component {
                         updateIsEffectUpdatedState={ isUpdated => this.setState({ isEffectUpdated: isUpdated }) }
                         updateEffectValidationForPublishState={ valid => this.setState({ isEffectForPublishValid: valid }) }
                         onDisruptionChange={ disruption => this.setState({ disruptionToEdit: disruption }) }
-                        incidentDateRange={ { startDate: incidentData.startDate, startTime: incidentData.startTime, endDate: incidentData.endDate, endTime: incidentData.endTime } }
-                        updateStartDateTimeWillBeUpdated={ willBeUpdated => this.setState({ startDateTimeWillBeUpdated: willBeUpdated }) }
-                        updateEndDateTimeWillBeUpdated={ willBeUpdated => this.setState({ endDateTimeWillBeUpdated: willBeUpdated }) }
                     />
                 )}
                 <Map
