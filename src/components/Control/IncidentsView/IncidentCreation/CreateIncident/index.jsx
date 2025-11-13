@@ -88,7 +88,6 @@ import { HighlightingLayer } from '../../../../Common/Map/HighlightingLayer/High
 import { SelectedStopsMarker } from '../../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import DrawLayer from './DrawLayer';
 import { useGeoSearchRoutesByDisruptionPeriod, useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
-import { getIsDiversionManagerOpen } from '../../../../../redux/selectors/control/diversions';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import WorkaroundPanel from '../WizardSteps/WorkaroundPanel';
 import EditEffectPanel from '../EditIncidentDetails/EditEffectPanel';
@@ -988,14 +987,12 @@ export class CreateIncident extends React.Component {
                         onDrawDeleted={ () => this.removeAffectedEntities() }
                     />
                 </Map>
-                {!this.props.isDiversionManagerOpen && (
-                    <Button
-                        className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
-                        onClick={ () => this.toggleModal('Cancellation', true) }>
-                        Close
-                        <AiOutlineClose className="disruption-creation-close" size={ 20 } />
-                    </Button>
-                )}
+                <Button
+                    className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
+                    onClick={ () => this.toggleModal('Cancellation', true) }>
+                    Close
+                    <AiOutlineClose className="disruption-creation-close" size={ 20 } />
+                </Button>
                 {this.state.showAlert && (
                     <AlertMessage
                         autoDismiss
@@ -1056,7 +1053,6 @@ CreateIncident.propTypes = {
     toggleEditEffectPanel: PropTypes.func.isRequired,
     disruptionIncidentNoToEdit: PropTypes.string,
     cachedShapes: PropTypes.arrayOf(PropTypes.object).isRequired,
-    isDiversionManagerOpen: PropTypes.bool,
 };
 
 CreateIncident.defaultProps = {
@@ -1075,7 +1071,6 @@ CreateIncident.defaultProps = {
     isApplyChangesOpen: false,
     isPublishAndApplyChangesOpen: false,
     disruptionIncidentNoToEdit: '',
-    isDiversionManagerOpen: false,
 };
 
 export default connect(state => ({
@@ -1102,7 +1097,6 @@ export default connect(state => ({
     mapDrawingEntities: getMapDrawingEntities(state),
     disruptionIncidentNoToEdit: getDisruptionKeyToEditEffect(state),
     cachedShapes: getCachedShapes(state),
-    isDiversionManagerOpen: getIsDiversionManagerOpen(state),
 }), {
     createNewIncident,
     toggleIncidentModals,
