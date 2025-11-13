@@ -5,7 +5,7 @@ import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import { updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
 import { buildIncidentSubmitBody, momentFromDateTime, getStatusForEffect } from '../../../../../utils/control/disruptions';
-import { getEntityCounts } from '../../../../../utils/control/incidents';
+import { getEntityCounts, startDateTimeWillBeAutomaticallyUpdated, endDateTimeWillBeAutomaticallyUpdated } from '../../../../../utils/control/incidents';
 import { STATUSES, DISRUPTION_TYPE, getParentChildDefaultSeverity } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
@@ -45,6 +45,15 @@ jest.mock('../../../../../utils/control/disruptions', () => {
         buildIncidentSubmitBody: jest.fn(),
         momentFromDateTime: jest.fn(),
         getStatusForEffect: jest.fn(),
+    };
+});
+
+jest.mock('../../../../../utils/control/incidents', () => {
+    const actual = jest.requireActual('../../../../../utils/control/incidents');
+    return {
+        ...actual,
+        startDateTimeWillBeAutomaticallyUpdated: jest.fn(),
+        endDateTimeWillBeAutomaticallyUpdated: jest.fn(),
     };
 });
 
@@ -1481,12 +1490,37 @@ describe('CreateIncident component', () => {
         });
     });
 
-    describe('Close button visibility when Diversion Manager is open', () => {
+    describe('updateData', () => {
         let wrapper;
         const mockUpdateCurrentStep = jest.fn();
         const mockCreateNewIncident = jest.fn();
         const mockOpenCreateIncident = jest.fn();
         const mockToggleIncidentModals = jest.fn();
+        const disruptions = [
+            {
+                startDate: '14/11/2025',
+                startTime: '11:11',
+                endDate: '20/11/2025',
+                endTime: '11:00',
+            },
+            {
+                startDate: '13/11/2025',
+                startTime: '10:00',
+                endDate: '19/11/2025',
+                endTime: '09:09',
+            },
+        ];
+
+        const mockIncidentData = {
+            ...defaultIncidentData,
+            startDate: '13/11/2025',
+            startTime: '10:00',
+            endDate: '20/11/2025',
+            endTime: '11:00',
+            disruptionType: 'type',
+            activePeriods: [],
+            disruptions,
+        };
 
         beforeEach(() => {
             wrapper = shallow(
@@ -1495,25 +1529,176 @@ describe('CreateIncident component', () => {
                     createNewIncident={ mockCreateNewIncident }
                     openCreateIncident={ mockOpenCreateIncident }
                     toggleIncidentModals={ mockToggleIncidentModals }
+                    incidentData={ mockIncidentData }
                     action={ mockAction }
-                    isDiversionManagerOpen={ false }
+                    editMode={ EDIT_TYPE.CREATE }
                 />,
             );
         });
 
-        afterEach(() => {
-            jest.clearAllMocks();
+        it('Should call startDateTimeWillBeAutomaticallyUpdated on startDate update', async () => {
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    incidentData={ mockIncidentData }
+                    action={ mockAction }
+                    editMode={ EDIT_TYPE.CREATE }
+                />,
+            );
+            wrapper.setState({ incidentData: mockIncidentData });
+            await wrapper.instance().updateData('startDate', '14/11/2025');
+            expect(startDateTimeWillBeAutomaticallyUpdated).toHaveBeenCalledWith('14/11/2025', '10:00', disruptions);
         });
 
-        it('should render Close button  when isDiversionManagerOpen is false', () => {
-            const button = wrapper.find('Button.disruption-creation-close-disruptions');
-            expect(button).toHaveLength(1);
+        it('Should call startDateTimeWillBeAutomaticallyUpdated on startTime update', async () => {
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    incidentData={ mockIncidentData }
+                    action={ mockAction }
+                    editMode={ EDIT_TYPE.CREATE }
+                />,
+            );
+            wrapper.setState({ incidentData: mockIncidentData });
+            await wrapper.instance().updateData('startTime', '10:17');
+            expect(startDateTimeWillBeAutomaticallyUpdated).toHaveBeenCalledWith('13/11/2025', '10:17', disruptions);
         });
 
-        it('should not render Close button when isDiversionManagerOpen is true', () => {
-            wrapper.setProps({ isDiversionManagerOpen: true });
-            const button = wrapper.find('Button.disruption-creation-close-disruptions');
-            expect(button).toHaveLength(0);
+        it('Should call startDateTimeWillBeAutomaticallyUpdated on disruptions update', async () => {
+            const mockDisruptions = [
+                ...disruptions,
+                {
+                    startDate: '15/11/2025',
+                    startTime: '12:12',
+                    endDate: '18/11/2025',
+                    endTime: '14:14',
+                },
+            ];
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    incidentData={ mockIncidentData }
+                    action={ mockAction }
+                    editMode={ EDIT_TYPE.CREATE }
+                />,
+            );
+            wrapper.setState({ incidentData: mockIncidentData });
+            await wrapper.instance().updateData('disruptions', mockDisruptions);
+            expect(startDateTimeWillBeAutomaticallyUpdated).toHaveBeenCalledWith('13/11/2025', '10:00', mockDisruptions);
+        });
+
+        it('Should call endDateTimeWillBeAutomaticallyUpdated on endDate update', async () => {
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    incidentData={ mockIncidentData }
+                    action={ mockAction }
+                    editMode={ EDIT_TYPE.CREATE }
+                />,
+            );
+            wrapper.setState({ incidentData: mockIncidentData });
+            await wrapper.instance().updateData('endDate', '18/11/2025');
+            expect(endDateTimeWillBeAutomaticallyUpdated).toHaveBeenCalledWith('18/11/2025', '11:00', disruptions, false);
+        });
+
+        it('Should call endDateTimeWillBeAutomaticallyUpdated on endTime update', async () => {
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    incidentData={ mockIncidentData }
+                    action={ mockAction }
+                    editMode={ EDIT_TYPE.CREATE }
+                />,
+            );
+            wrapper.setState({ incidentData: mockIncidentData });
+            await wrapper.instance().updateData('endTime', '15:17');
+            expect(endDateTimeWillBeAutomaticallyUpdated).toHaveBeenCalledWith('20/11/2025', '15:17', disruptions, false);
+        });
+
+        it('Should call endDateTimeWillBeAutomaticallyUpdated on disruptions update', async () => {
+            const mockDisruptions = [
+                ...disruptions,
+                {
+                    startDate: '15/11/2025',
+                    startTime: '12:12',
+                    endDate: '18/11/2025',
+                    endTime: '14:14',
+                },
+            ];
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    incidentData={ mockIncidentData }
+                    action={ mockAction }
+                    editMode={ EDIT_TYPE.CREATE }
+                />,
+            );
+            wrapper.setState({ incidentData: mockIncidentData });
+            await wrapper.instance().updateData('disruptions', mockDisruptions);
+            expect(endDateTimeWillBeAutomaticallyUpdated).toHaveBeenCalledWith('20/11/2025', '11:00', mockDisruptions, false);
+        });
+
+        it('Should call endDateTimeWillBeAutomaticallyUpdated on endDate update', async () => {
+            const updatedIncidentData = { ...mockIncidentData, recurrent: true };
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    incidentData={ updatedIncidentData }
+                    action={ mockAction }
+                    editMode={ EDIT_TYPE.CREATE }
+                />,
+            );
+            wrapper.setState({ incidentData: updatedIncidentData });
+            await wrapper.instance().updateData('endDate', '18/11/2025');
+            expect(endDateTimeWillBeAutomaticallyUpdated).toHaveBeenCalledWith('18/11/2025', '23:59', disruptions, true);
+        });
+
+        it('Should call endDateTimeWillBeAutomaticallyUpdated on disruptions update', async () => {
+            const updatedIncidentData = { ...mockIncidentData, recurrent: true };
+            const mockDisruptions = [
+                ...disruptions,
+                {
+                    startDate: '15/11/2025',
+                    startTime: '12:12',
+                    endDate: '18/11/2025',
+                    endTime: '14:14',
+                },
+            ];
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    incidentData={ updatedIncidentData }
+                    action={ mockAction }
+                    editMode={ EDIT_TYPE.CREATE }
+                />,
+            );
+            wrapper.setState({ incidentData: updatedIncidentData });
+            await wrapper.instance().updateData('disruptions', mockDisruptions);
+            expect(endDateTimeWillBeAutomaticallyUpdated).toHaveBeenCalledWith('20/11/2025', '23:59', mockDisruptions, true);
         });
     });
 });

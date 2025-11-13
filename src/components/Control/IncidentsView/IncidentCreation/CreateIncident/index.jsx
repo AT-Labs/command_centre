@@ -9,7 +9,13 @@ import { Button } from 'reactstrap';
 import { RRule } from 'rrule';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import { DATE_FORMAT, TIME_FORMAT, MAX_NUMBER_OF_ENTITIES } from '../../../../../constants/disruptions';
-import { getEntityCounts, generateSelectedText, getShapes, getRouteColors, mergeExistingAndDrawnEntities } from '../../../../../utils/control/incidents';
+import { getEntityCounts,
+    generateSelectedText,
+    getShapes,
+    getRouteColors,
+    mergeExistingAndDrawnEntities,
+    startDateTimeWillBeAutomaticallyUpdated,
+    endDateTimeWillBeAutomaticallyUpdated } from '../../../../../utils/control/incidents';
 import {
     createNewIncident,
     toggleIncidentModals,
@@ -88,7 +94,6 @@ import { HighlightingLayer } from '../../../../Common/Map/HighlightingLayer/High
 import { SelectedStopsMarker } from '../../../../Common/Map/StopsLayer/SelectedStopsMarker';
 import DrawLayer from './DrawLayer';
 import { useGeoSearchRoutesByDisruptionPeriod, useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
-import { getIsDiversionManagerOpen } from '../../../../../redux/selectors/control/diversions';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import WorkaroundPanel from '../WizardSteps/WorkaroundPanel';
 import EditEffectPanel from '../EditIncidentDetails/EditEffectPanel';
@@ -143,6 +148,8 @@ export class CreateIncident extends React.Component {
             totalEntities: 0,
             effectToBeCleared: null,
             disruptionToEdit: null,
+            startDateTimeWillBeUpdated: false,
+            endDateTimeWillBeUpdated: false,
         };
         this.editEffectPanelRef = createRef();
     }
@@ -298,12 +305,28 @@ export class CreateIncident extends React.Component {
         const { incidentData } = this.state;
         let recurrenceDates;
         let recurrencePattern;
+        let startDateTimeWillBeUpdated;
+        let endDateTimeWillBeUpdated;
+        const updatedIncidentData = { ...incidentData, [key]: value };
 
         if (['startDate', 'startTime', 'endDate', 'recurrent'].includes(key)) {
-            const updatedIncidentData = { ...incidentData, [key]: value };
             recurrenceDates = getRecurrenceDates(updatedIncidentData.startDate, updatedIncidentData.startTime, updatedIncidentData.endDate);
             recurrencePattern = incidentData.recurrent ? parseRecurrencePattern(incidentData.recurrencePattern) : { freq: RRule.WEEKLY };
         }
+
+        if (this.props.editMode === EDIT_TYPE.CREATE && ['startDate', 'startTime', 'disruptions'].includes(key)) {
+            startDateTimeWillBeUpdated = startDateTimeWillBeAutomaticallyUpdated(updatedIncidentData.startDate, updatedIncidentData.startTime, updatedIncidentData.disruptions);
+        }
+
+        if (this.props.editMode === EDIT_TYPE.CREATE && ['endDate', 'endTime', 'disruptions'].includes(key)) {
+            endDateTimeWillBeUpdated = endDateTimeWillBeAutomaticallyUpdated(
+                updatedIncidentData.endDate,
+                incidentData.recurrent ? '23:59' : updatedIncidentData.endTime,
+                updatedIncidentData.disruptions,
+                incidentData.recurrent,
+            );
+        }
+
         this.setState(prevState => ({
             incidentData: {
                 ...prevState.incidentData,
@@ -315,6 +338,8 @@ export class CreateIncident extends React.Component {
                     },
                 }),
             },
+            startDateTimeWillBeUpdated: startDateTimeWillBeUpdated ?? prevState.startDateTimeWillBeUpdated,
+            endDateTimeWillBeUpdated: endDateTimeWillBeUpdated ?? prevState.endDateTimeWillBeUpdated,
         }));
     };
 
@@ -774,7 +799,10 @@ export class CreateIncident extends React.Component {
             isEffectValid,
             isEffectForPublishValid,
             newIncidentEffect,
-            isSetDetailsValid } = this.state;
+            isSetDetailsValid,
+            startDateTimeWillBeUpdated,
+            endDateTimeWillBeUpdated,
+        } = this.state;
         const renderMainHeading = () => {
             const titleByMode = {
                 [EDIT_TYPE.CREATE]: 'Create a new Disruption',
@@ -810,6 +838,8 @@ export class CreateIncident extends React.Component {
                                         onUpdateDetailsValidation={ this.onUpdateDetailsValidation }
                                         onSubmitUpdate={ this.onSubmitUpdate }
                                         onDisruptionSelected={ key => this.setState({ selectedEffect: key }) }
+                                        startDateTimeWillBeUpdated={ startDateTimeWillBeUpdated }
+                                        endDateTimeWillBeUpdated={ endDateTimeWillBeUpdated }
                                     />
                                 )}
                                 <SelectEffects
@@ -884,7 +914,9 @@ export class CreateIncident extends React.Component {
                                 isEffectValid={ isEffectValid }
                                 isEffectForPublishValid={ isEffectForPublishValid }
                                 onDisruptionSelected={ key => this.setState({ selectedEffect: key }) }
-                                onPublishUpdate={ this.onPublishUpdate } />
+                                onPublishUpdate={ this.onPublishUpdate }
+                                startDateTimeWillBeUpdated={ startDateTimeWillBeUpdated }
+                                endDateTimeWillBeUpdated={ endDateTimeWillBeUpdated } />
                             <CustomModal
                                 className="disruption-creation__modal"
                                 title={ this.getModalTitle() }
@@ -941,6 +973,9 @@ export class CreateIncident extends React.Component {
                         updateIsEffectUpdatedState={ isUpdated => this.setState({ isEffectUpdated: isUpdated }) }
                         updateEffectValidationForPublishState={ valid => this.setState({ isEffectForPublishValid: valid }) }
                         onDisruptionChange={ disruption => this.setState({ disruptionToEdit: disruption }) }
+                        incidentDateRange={ { startDate: incidentData.startDate, startTime: incidentData.startTime, endDate: incidentData.endDate, endTime: incidentData.endTime } }
+                        updateStartDateTimeWillBeUpdated={ willBeUpdated => this.setState({ startDateTimeWillBeUpdated: willBeUpdated }) }
+                        updateEndDateTimeWillBeUpdated={ willBeUpdated => this.setState({ endDateTimeWillBeUpdated: willBeUpdated }) }
                     />
                 )}
                 <Map
@@ -988,14 +1023,12 @@ export class CreateIncident extends React.Component {
                         onDrawDeleted={ () => this.removeAffectedEntities() }
                     />
                 </Map>
-                {!this.props.isDiversionManagerOpen && (
-                    <Button
-                        className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
-                        onClick={ () => this.toggleModal('Cancellation', true) }>
-                        Close
-                        <AiOutlineClose className="disruption-creation-close" size={ 20 } />
-                    </Button>
-                )}
+                <Button
+                    className="disruption-creation-close-disruptions fixed-top mp-0 border-0 rounded-0"
+                    onClick={ () => this.toggleModal('Cancellation', true) }>
+                    Close
+                    <AiOutlineClose className="disruption-creation-close" size={ 20 } />
+                </Button>
                 {this.state.showAlert && (
                     <AlertMessage
                         autoDismiss
@@ -1056,7 +1089,6 @@ CreateIncident.propTypes = {
     toggleEditEffectPanel: PropTypes.func.isRequired,
     disruptionIncidentNoToEdit: PropTypes.string,
     cachedShapes: PropTypes.arrayOf(PropTypes.object).isRequired,
-    isDiversionManagerOpen: PropTypes.bool,
 };
 
 CreateIncident.defaultProps = {
@@ -1075,7 +1107,6 @@ CreateIncident.defaultProps = {
     isApplyChangesOpen: false,
     isPublishAndApplyChangesOpen: false,
     disruptionIncidentNoToEdit: '',
-    isDiversionManagerOpen: false,
 };
 
 export default connect(state => ({
@@ -1102,7 +1133,6 @@ export default connect(state => ({
     mapDrawingEntities: getMapDrawingEntities(state),
     disruptionIncidentNoToEdit: getDisruptionKeyToEditEffect(state),
     cachedShapes: getCachedShapes(state),
-    isDiversionManagerOpen: getIsDiversionManagerOpen(state),
 }), {
     createNewIncident,
     toggleIncidentModals,
