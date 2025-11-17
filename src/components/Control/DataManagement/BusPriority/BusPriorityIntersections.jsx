@@ -43,7 +43,7 @@ export const BusPriorityIntersectionsDataGrid = (props) => {
         [
             <Tooltip title="Edit Intersection" placement="top-end" key={ uniqueId(row.rowKey) }>
                 <IconButton aria-label="open-edit-intersection"
-                    onClick={() => {
+                    onClick={ () => {
                         setNewTravelTime(row.Travel_Time);
                         setNewGeofenceRadius(row.Geofence_Radius);
                         setEditIntersectionEntity(row);
@@ -218,12 +218,12 @@ export const BusPriorityIntersectionsDataGrid = (props) => {
                         <Input
                             type="number"
                             id="intersection-travel-time"
-                            value={newTravelTime}
+                            value={ newTravelTime }
                             className="intersection-modal__travel-time cc-form-control"
                             placeholder="Travel Time"
-                            onChange={(event) => {
+                            onChange={ (event) => {
                                 setNewTravelTime(event.target.value);
-                            }}
+                            } }
                             min="1"
                         />
                     </div>

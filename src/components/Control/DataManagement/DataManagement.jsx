@@ -97,21 +97,21 @@ export const DataManagement = (props) => {
     drawerList.push(
         {
             id: drawerId,
-            icon: <MdRoute size={25} />,
+            icon: <MdRoute size={ 25 } />,
             label: 'Bus Priority Routes',
             component: <BusPriorityRoutesDataGrid />,
             header: 'Manage Bus Priority Allowed Routes',
         },
         {
             id: drawerId + 1,
-            icon: <BsSignIntersectionFill size={25} />,
+            icon: <BsSignIntersectionFill size={ 25 } />,
             label: 'Bus Priority Intersections',
             component: <BusPriorityIntersectionsDataGrid />,
             header: 'Manage Bus Priority Intersections',
         },
         {
             id: drawerId + 2,
-            icon: <MdDataThresholding size={25} />,
+            icon: <MdDataThresholding size={ 25 } />,
             label: 'Bus Priority Thresholds',
             component: <BusPriorityThresholdDataGrid />,
             header: 'Manage Bus Priority Thresholds',
