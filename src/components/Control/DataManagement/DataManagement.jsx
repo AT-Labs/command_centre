@@ -178,8 +178,8 @@ export const DataManagement = (props) => {
 DataManagement.propTypes = {
     pageSettings: PropTypes.object.isRequired,
     updatePageSettings: PropTypes.func.isRequired,
-    useBusPriorityDataManagement: PropTypes.bool.isRequired,
-    isBusPriorityViewPermitted: PropTypes.bool.isRequired,
+    // useBusPriorityDataManagement: PropTypes.bool.isRequired,
+    // isBusPriorityViewPermitted: PropTypes.bool.isRequired,
     stopMessagesPermissions: PropTypes.array.isRequired,
 };
 
