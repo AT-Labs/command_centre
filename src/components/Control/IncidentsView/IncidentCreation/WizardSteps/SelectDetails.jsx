@@ -563,37 +563,6 @@ export const SelectDetails = (props) => {
                             <div className="disruption-recurrence-invalid">Please select start date</div>
                         )}
                     </FormGroup>
-                </div>
-                <div className="col-6">
-                    <FormGroup>
-                        <Label for="disruption-creation__wizard-select-details__start-time">
-                            <span className="font-size-md font-weight-bold">{LABEL_START_TIME}</span>
-                        </Label>
-                        <Input
-                            id="disruption-creation__wizard-select-details__start-time"
-                            className="border border-dark"
-                            value={ startTime }
-                            onChange={ event => onChangeStartTime(event.target.value) }
-                            invalid={ !startTimeValid() && isStartTimeDirty }
-                            disabled={
-                                isResolved()
-                                || (
-                                    recurrent
-                                    && props.editMode === EDIT_TYPE.EDIT
-                                    && status !== STATUSES.DRAFT
-                                    && status !== STATUSES.NOT_STARTED
-                                )
-                            }
-                        />
-                        <FormFeedback>Not valid values</FormFeedback>
-                    </FormGroup>
-                </div>
-                {props.startDateTimeWillBeUpdated && (
-                    <div className="col-12 disruption-warning-message">
-                        Parent start date/time conflicts with the timing of associated effects. It might be updated automatically.
-                    </div>
-                )}
-                <div className="col-6">
                     <FormGroup className="position-relative">
                         <Label for="disruption-creation__wizard-select-details__end-date">
                             <span className="font-size-md font-weight-bold">
@@ -624,6 +593,34 @@ export const SelectDetails = (props) => {
                     </FormGroup>
                 </div>
                 <div className="col-6">
+                    <FormGroup>
+                        <Label for="disruption-creation__wizard-select-details__start-time">
+                            <span className="font-size-md font-weight-bold">{LABEL_START_TIME}</span>
+                        </Label>
+                        <Input
+                            id="disruption-creation__wizard-select-details__start-time"
+                            className="border border-dark"
+                            value={ startTime }
+                            onChange={ event => onChangeStartTime(event.target.value) }
+                            invalid={
+                                !startTimeValid()
+                                && (
+                                    (status === STATUSES.NOT_STARTED && recurrent)
+                                    || (status === STATUSES.DRAFT && props.useDraftDisruptions && isStartTimeDirty)
+                                )
+                            }
+                            disabled={
+                                isResolved()
+                                || (
+                                    recurrent
+                                    && props.editMode === EDIT_TYPE.EDIT
+                                    && status !== STATUSES.DRAFT
+                                    && status !== STATUSES.NOT_STARTED
+                                )
+                            }
+                        />
+                        <FormFeedback>Not valid values</FormFeedback>
+                    </FormGroup>
                     { !recurrent && (
                         <FormGroup>
                             <Label for="disruption-creation__wizard-select-details__end-time">
@@ -661,11 +658,6 @@ export const SelectDetails = (props) => {
                         </FormGroup>
                     )}
                 </div>
-                {props.endDateTimeWillBeUpdated && (
-                    <div className="col-12 disruption-warning-message">
-                        Parent end date/time conflicts with the timing of associated effects. It might be updated automatically.
-                    </div>
-                )}
                 { recurrent && (
                     <>
                         <div className="col-6 text-center">
@@ -878,8 +870,6 @@ SelectDetails.propTypes = {
     isEffectForPublishValid: PropTypes.bool,
     onPublishUpdate: PropTypes.func,
     onDisruptionSelected: PropTypes.func,
-    startDateTimeWillBeUpdated: PropTypes.bool,
-    endDateTimeWillBeUpdated: PropTypes.bool,
 };
 
 SelectDetails.defaultProps = {
@@ -900,8 +890,6 @@ SelectDetails.defaultProps = {
     isEffectForPublishValid: true,
     onPublishUpdate: () => { },
     onDisruptionSelected: () => { },
-    startDateTimeWillBeUpdated: false,
-    endDateTimeWillBeUpdated: false,
 };
 
 export default connect(state => ({
