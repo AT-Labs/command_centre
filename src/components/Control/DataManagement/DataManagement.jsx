@@ -93,31 +93,31 @@ export const DataManagement = (props) => {
         drawerId += 1;
     }
 
-    // if (props.useBusPriorityDataManagement && props.isBusPriorityViewPermitted) {
-    drawerList.push(
-        {
-            id: drawerId,
-            icon: <MdRoute size={ 25 } />,
-            label: 'Bus Priority Routes',
-            component: <BusPriorityRoutesDataGrid />,
-            header: 'Manage Bus Priority Allowed Routes',
-        },
-        {
-            id: drawerId + 1,
-            icon: <BsSignIntersectionFill size={ 25 } />,
-            label: 'Bus Priority Intersections',
-            component: <BusPriorityIntersectionsDataGrid />,
-            header: 'Manage Bus Priority Intersections',
-        },
-        {
-            id: drawerId + 2,
-            icon: <MdDataThresholding size={ 25 } />,
-            label: 'Bus Priority Thresholds',
-            component: <BusPriorityThresholdDataGrid />,
-            header: 'Manage Bus Priority Thresholds',
-        },
-    );
-    // }
+    if (props.useBusPriorityDataManagement && props.isBusPriorityViewPermitted) {
+        drawerList.push(
+            {
+                id: drawerId,
+                icon: <MdRoute size={ 25 } />,
+                label: 'Bus Priority Routes',
+                component: <BusPriorityRoutesDataGrid />,
+                header: 'Manage Bus Priority Allowed Routes',
+            },
+            {
+                id: drawerId + 1,
+                icon: <BsSignIntersectionFill size={ 25 } />,
+                label: 'Bus Priority Intersections',
+                component: <BusPriorityIntersectionsDataGrid />,
+                header: 'Manage Bus Priority Intersections',
+            },
+            {
+                id: drawerId + 2,
+                icon: <MdDataThresholding size={ 25 } />,
+                label: 'Bus Priority Thresholds',
+                component: <BusPriorityThresholdDataGrid />,
+                header: 'Manage Bus Priority Thresholds',
+            },
+        );
+    }
 
     const handleListItemClick = (event, index) => {
         props.updatePageSettings({ selectedIndex: index });
@@ -178,8 +178,8 @@ export const DataManagement = (props) => {
 DataManagement.propTypes = {
     pageSettings: PropTypes.object.isRequired,
     updatePageSettings: PropTypes.func.isRequired,
-    // useBusPriorityDataManagement: PropTypes.bool.isRequired,
-    // isBusPriorityViewPermitted: PropTypes.bool.isRequired,
+    useBusPriorityDataManagement: PropTypes.bool.isRequired,
+    isBusPriorityViewPermitted: PropTypes.bool.isRequired,
     stopMessagesPermissions: PropTypes.array.isRequired,
 };
 
