@@ -183,7 +183,7 @@ export const BusPriorityIntersectionsDataGrid = (props) => {
                 okButton={ {
                     label: 'Save Changes',
                     onClick: updateIntersection,
-                    isDisabled: newGeofenceRadius < 1 || !Number.isInteger(Number(newGeofenceRadius)) || newTravelTime < 1 || !Number.isInteger(Number(newTravelTime)),
+                    isDisabled: (newGeofenceRadius < 1 || !Number.isInteger(Number(newGeofenceRadius))) || (newTravelTime < 1 || !Number.isInteger(Number(newTravelTime))),
                 } }>
                 <div className="row">
                     <div className="col">
