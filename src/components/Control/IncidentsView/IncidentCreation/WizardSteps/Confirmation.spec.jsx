@@ -174,6 +174,7 @@ describe('Confirmation Component', () => {
         expect(openCreateIncident).toHaveBeenCalledWith(false);
         expect(deleteAffectedEntities).toHaveBeenCalled();
         expect(goToNotificationsView).toHaveBeenCalled();
+        expect(toggleIncidentModals).toHaveBeenCalledWith('isConfirmationOpen', false);
     });
 
     it('should display error message when resultMessage is present', () => {
