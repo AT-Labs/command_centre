@@ -279,7 +279,6 @@ export const SelectEffects = (props) => {
     const isDraftSubmitDisabled = isRequiredDraftPropsEmpty();
 
     const onAffectedEntitiesUpdate = (disruptionKey, valueKey, affectedEntities) => {
-        console.log('SelectEffects - onAffectedEntitiesUpdate', disruptionKey, valueKey, affectedEntities);
         const updatedDisruptions = disruptions.map(disruption => (disruption.key === disruptionKey
             ? {
                 ...disruption,

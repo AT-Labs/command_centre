@@ -41,7 +41,6 @@ export const updateDiversionResultState = (isLoading, diversionId, error) => ({
 });
 
 export const createDiversion = diversion => async (dispatch) => {
-    console.log('createDiversion action dispatched');
     let response;
     dispatch(
         updateDiversionResultState(true, null, null),
@@ -58,7 +57,6 @@ export const createDiversion = diversion => async (dispatch) => {
 };
 
 export const updateDiversion = diversion => async (dispatch) => {
-    console.log('updateDiversion action dispatched');
     dispatch(
         updateDiversionResultState(true, null, null),
     );
@@ -74,7 +72,6 @@ export const updateDiversion = diversion => async (dispatch) => {
 };
 
 export const resetDiversionResult = () => (dispatch) => {
-    console.log('resetDiversionResult action dispatched');
     dispatch(
         updateDiversionResultState(false, null, null),
     );

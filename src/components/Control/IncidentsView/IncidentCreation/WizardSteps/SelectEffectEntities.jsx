@@ -271,7 +271,7 @@ export const SelectEffectEntities = (props) => {
 
     const disruptionTypeParams = {
         Routes: {
-            label: 'Search routes or draw in the map123',
+            label: 'Search routes or draw in the map',
             placeholder: 'Enter a route',
             searchCategory: [ROUTE.type],
         },

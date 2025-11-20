@@ -582,7 +582,6 @@ const DisruptionDetailView = (props) => {
 
     return (
         <Form className={ props.className }>
-            <p>CJ Was here for DisruptionDetail</p>
             <div className={ isReadOnlyMode ? 'read-only-container' : '' }>
                 <div className={ `row position-relative ${props.className === 'magnify' ? 'mr-0' : ''}` }>
                     <AffectedEntities
@@ -904,10 +903,11 @@ const DisruptionDetailView = (props) => {
                                             className="cc-btn-primary ml-1 mr-1 mb-2"
                                             onClick={ handleUpdateDisruption }
                                             disabled={ isSaveDisabled }>
-                                            Save M3!
+                                            Save
                                         </Button>
                                     </>
                                 )}
+
                                 <DisruptionSummaryModal
                                     disruption={ disruption }
                                     isModalOpen={ disruptionsDetailsModalOpen }
