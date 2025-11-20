@@ -52,6 +52,7 @@ const ViewDiversionDetailModal = (props) => {
     };
 
     const deleteDiversion = async (diversionId) => {
+        console.log('Deleting diversion with ID:', diversionId);
         await deleteDiversionAPI(diversionId);
         props.setShouldRefetchDiversions(prevRefetch => !prevRefetch);
     };

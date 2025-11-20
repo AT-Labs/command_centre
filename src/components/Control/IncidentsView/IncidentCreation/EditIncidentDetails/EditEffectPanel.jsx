@@ -346,6 +346,7 @@ export const EditEffectPanel = (props, ref) => {
     };
 
     const onAffectedEntitiesUpdate = (disruptionKey, valueKey, affectedEntities) => {
+        console.log('EditEffectPanel - onAffectedEntitiesUpdate', disruptionKey, valueKey, affectedEntities);
         const updatedDisruptions = {
             ...disruption,
             affectedEntities: {

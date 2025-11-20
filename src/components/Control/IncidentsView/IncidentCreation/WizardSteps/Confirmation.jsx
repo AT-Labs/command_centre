@@ -139,7 +139,6 @@ const Confirmation = (props) => {
                                 onClick={ () => {
                                     props.openCreateIncident(false);
                                     props.deleteAffectedEntities();
-                                    props.toggleIncidentModals('isConfirmationOpen', false);
                                     props.goToNotificationsView({
                                         version: props.response.resultIncidentVersion ?? 1,
                                         incidentId: props.response.resultIncidentId,
