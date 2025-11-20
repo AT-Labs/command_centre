@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import PropTypes from 'prop-types';
 import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { Paper, Stack, Button as MuiButton } from '@mui/material';
@@ -875,7 +876,8 @@ export const EditEffectPanel = (props, ref) => {
         });
         const fetchDisruptionForDiversion = async () => {
             console.log('[useEffect - DiversionManager fetch] Fetch/Refetch disruption for diversion manager', props.isDiversionManagerOpen);
-            if (props.isDiversionManagerOpen && disruption?.disruptionId && !fetchedDisruption) {
+            // TODO: Reinstate this if (props.isDiversionManagerOpen && disruption?.disruptionId && !fetchedDisruption) {
+            if (disruption?.disruptionId) {
                 console.log('[useEffect - DiversionManager fetch] Fetching disruption data', { disruptionId: disruption.disruptionId });
                 setIsLoadingDisruption(true);
                 const disruptionData = await getDisruptionAPI(disruption.disruptionId);
@@ -887,8 +889,20 @@ export const EditEffectPanel = (props, ref) => {
         };
 
         fetchDisruptionForDiversion();
-    }, [props.isDiversionManagerOpen, disruption?.disruptionId,
+    }, [props.isDiversionManagerOpen, disruption?.disruptionId]);
 
+    // TODO: We actually need a listener to the Diversion Modal, on change we need to call fetch disruption above
+    // TODO: We also need to listen to disruption and fetchedDisruption. If any changes, we need to consolidate (but how?)
+    // TODO: Think about not fetching, instead return by diversion modal
+    useEffect(() => {
+        console.log('-----CHANGED: Disruption or FetchedDisruption-----', { disruption, fetchedDisruption, localDiversions });
+        // eslint-disable-next-line no-debugger
+        // debugger;
+    }, [
+        disruption,
+        fetchedDisruption,
+        localDiversions,
+    ]);
     useEffect(() => {
         if (props.isDiversionManagerOpen) {
             setIsLoaderProtected(true);
@@ -945,7 +959,7 @@ export const EditEffectPanel = (props, ref) => {
             }
 
             const data = await getDiversionAPI(disruption?.disruptionId);
-            console.log('[useEffect - fetchDiversions] Fetched diversions', { count: data?.length || 0 });
+            console.log('[useEffect - fetchDiversions] Fetched diversions', { count: data?.length || 0 }, data);
             setLocalDiversions(data || []);
         };
         fetchDiversions();
