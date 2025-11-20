@@ -346,6 +346,7 @@ export const EditEffectPanel = (props, ref) => {
     };
 
     const onAffectedEntitiesUpdate = (disruptionKey, valueKey, affectedEntities) => {
+        console.log('EditEffectPanel - onAffectedEntitiesUpdate', disruptionKey, valueKey, affectedEntities);
         const updatedDisruptions = {
             ...disruption,
             affectedEntities: {
@@ -805,16 +806,18 @@ export const EditEffectPanel = (props, ref) => {
 
     useEffect(() => {
         const fetchDisruptionForDiversion = async () => {
-            if (props.isDiversionManagerOpen && disruption?.disruptionId && !fetchedDisruption) {
+            console.log('Fetch/Refetch disruption for diversion manager', props.isDiversionManagerOpen);
+            if (disruption?.disruptionId && !fetchedDisruption) {
                 setIsLoadingDisruption(true);
                 const disruptionData = await getDisruptionAPI(disruption.disruptionId);
+                console.log('Fetched disruption data for diversion manager', disruptionData);
                 setFetchedDisruption(disruptionData);
                 setIsLoadingDisruption(false);
             }
         };
 
         fetchDisruptionForDiversion();
-    }, [props.isDiversionManagerOpen, disruption?.disruptionId, fetchedDisruption]);
+    }, [props.isDiversionManagerOpen, disruption, fetchedDisruption]);
 
     useEffect(() => {
         if (props.isDiversionManagerOpen) {
@@ -902,7 +905,7 @@ export const EditEffectPanel = (props, ref) => {
                 <Paper component={ Stack } direction="column" justifyContent="center" className="mui-paper">
                     <div className="edit-effect-panel-body effect-background-color">
                         <div className="label-with-icon">
-                            <h2 className="pl-4 pr-4 pt-4">{ `Edit details of Effect ${disruption.incidentNo}` }</h2>
+                            <h2 className="pl-4 pr-4 pt-4">{ `Edit details of Effect ${disruption.incidentNo}` } CJ was here as well</h2>
                             <div style={ { display: 'flex', alignItems: 'center', gap: '10px' } }>
                                 {props.useDiversion && (
                                     <div style={ { position: 'relative' } } data-diversion-menu>
@@ -1247,7 +1250,9 @@ export const EditEffectPanel = (props, ref) => {
                                     <span className="pl-2">Draft Stop Message</span>
                                 </FormGroup>
                             </div>
-                            <div className={ `${isResolved() ? 'disruption-display-block resolved-effect' : 'disruption-display-block'}` }>
+                            <div className={`${isResolved() ? 'disruption-display-block resolved-effect' : 'disruption-display-block'}`}>
+                                <p>Here lies SelectEffectEntities</p>
+                                <pre>{ JSON.stringify(disruption.affectedEntities, null, 2)}</pre>
                                 <SelectEffectEntities
                                     disruptionKey={ disruption.key }
                                     affectedEntities={ disruption.affectedEntities }

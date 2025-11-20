@@ -265,6 +265,7 @@ const DiversionManager = (props) => {
     };
 
     const submitDiversion = async () => {
+        console.log('submitDiversion called');
         if (modifiedBaseRouteVariant && diversionShapeWkt) {
             let modifiedOtherRouteVariants = [];
             if (selectedOtherRouteVariants.length > 0) {
@@ -385,7 +386,7 @@ const DiversionManager = (props) => {
                 toggleButton={ false }
             >
                 <div className="diversion-creation-container">
-                    <h2 className="pl-4 pr-4">{ title }</h2>
+                    <h2 className="pl-4 pr-4">{ title } - CJ was here!</h2>
                     <BaseRouteVariantSelector
                         disabled={ !baseRouteVariantOnly || props.editMode === EDIT_TYPE.EDIT }
                         editMode={ props.editMode }
