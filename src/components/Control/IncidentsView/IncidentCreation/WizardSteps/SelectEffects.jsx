@@ -783,7 +783,7 @@ export const SelectEffects = (props) => {
                                 <span className="pl-2">Draft Stop Message</span>
                             </FormGroup>
                         </div>
-                        <div className="disruption-display-block">
+                        <div className="disruption-display-block creation-flow-select-entities">
                             <SelectEffectEntities
                                 disruptionKey={ disruption.key }
                                 affectedEntities={ disruption.affectedEntities }

@@ -1,10 +1,6 @@
 import { isEmpty, uniqBy, flatMap, forEach } from 'lodash-es';
-import moment from 'moment';
 import { getJSONFromWKT } from '../helpers';
 import { STATUSES } from '../../types/disruptions-types';
-import { DATE_FORMAT_DDMMYYYY as DATE_FORMAT } from '../dateUtils';
-import { momentFromDateTime } from './disruptions';
-import { TIME_FORMAT } from '../../constants/disruptions';
 
 export function getShapes(affectedRoutes, affectedStops) {
     const allAffectedRoutes = uniqBy(
@@ -102,53 +98,3 @@ export const buildPublishPayload = incident => ({
         status: STATUSES.NOT_STARTED,
     })),
 });
-
-export const isDateFieldValid = date => moment(date, DATE_FORMAT, true).isValid();
-export const isTimeFieldValid = time => time !== '24:00' && moment(time, TIME_FORMAT, true).isValid();
-
-export const startDateTimeWillBeAutomaticallyUpdated = (startDate, startTime, disruptions) => {
-    if (!Array.isArray(disruptions) || disruptions.length === 0 || !isDateFieldValid(startDate) || !isTimeFieldValid(startTime)) {
-        return false;
-    }
-    const disruptionStartTimes = disruptions.reduce((momentStartTimes, disruption) => {
-        if (!isDateFieldValid(disruption.startDate) || !isTimeFieldValid(disruption.startTime)) {
-            return momentStartTimes;
-        }
-        momentStartTimes.push(momentFromDateTime(disruption.startDate, disruption.startTime));
-        return momentStartTimes;
-    }, []);
-    if (disruptionStartTimes.length === 0) {
-        return false;
-    }
-    const earliestDisruptionsStartTime = moment.min(disruptionStartTimes);
-    const incidentStartTimeMoment = momentFromDateTime(startDate, startTime);
-    if (earliestDisruptionsStartTime && incidentStartTimeMoment) {
-        return earliestDisruptionsStartTime.isBefore(incidentStartTimeMoment);
-    }
-
-    return false;
-};
-
-export const endDateTimeWillBeAutomaticallyUpdated = (endDate, endTime, disruptions, recurrent = false) => {
-    if (!Array.isArray(disruptions) || disruptions.length === 0 || !isDateFieldValid(endDate) || (!recurrent && !isTimeFieldValid(endTime))) {
-        return false;
-    }
-
-    const disruptionEndTimes = disruptions.reduce((momentEndTimes, disruption) => {
-        if (!isDateFieldValid(disruption.endDate) || (!recurrent && !isTimeFieldValid(disruption.endTime))) {
-            return momentEndTimes;
-        }
-        momentEndTimes.push(momentFromDateTime(disruption.endDate, recurrent ? '23:59' : disruption.endTime));
-        return momentEndTimes;
-    }, []);
-    if (disruptionEndTimes.length === 0) {
-        return false;
-    }
-    const latestDisruptionsEndTime = moment.max(disruptionEndTimes);
-    const incidentEndTimeMoment = momentFromDateTime(endDate, recurrent ? '23:59' : endTime);
-    if (latestDisruptionsEndTime && incidentEndTimeMoment) {
-        return latestDisruptionsEndTime.isAfter(incidentEndTimeMoment);
-    }
-
-    return false;
-};
