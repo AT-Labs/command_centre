@@ -160,13 +160,13 @@ export const BusPriorityIntersectionsDataGrid = (props) => {
     };
 
     const isGeofenceRadiusValid = (geofenceRadius) => {
-        const num = Number(geofenceRadius);
-        return Number.isInteger(num) && num >= 1;
+        const geofenceRadiusNumber = Number(geofenceRadius);
+        return Number.isInteger(geofenceRadiusNumber) && geofenceRadiusNumber >= 1;
     };
 
     const isTravelTimeValid = (travelTime) => {
-        const num = Number(travelTime);
-        return Number.isInteger(num) && num >= 1;
+        const travelTimeNumber = Number(travelTime);
+        return Number.isInteger(travelTimeNumber) && travelTimeNumber >= 1;
     };
 
     return (
