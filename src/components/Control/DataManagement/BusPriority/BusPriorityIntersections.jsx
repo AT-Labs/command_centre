@@ -159,14 +159,14 @@ export const BusPriorityIntersectionsDataGrid = (props) => {
         setNewTravelTime(0);
     };
 
-    const isGeofenceRadiusValid = (geofenceRadius) => {
-        const geofenceRadiusNumber = Number(geofenceRadius);
-        return Number.isInteger(geofenceRadiusNumber) && geofenceRadiusNumber >= 1;
+    const isGeofenceRadiusValid = (value) => {
+        const geofenceRadius = Number(value);
+        return Number.isInteger(geofenceRadius) && geofenceRadius >= 1;
     };
 
-    const isTravelTimeValid = (travelTime) => {
-        const travelTimeNumber = Number(travelTime);
-        return Number.isInteger(travelTimeNumber) && travelTimeNumber >= 1;
+    const isTravelTimeValid = (value) => {
+        const travelTime = Number(value);
+        return Number.isInteger(travelTime) && travelTime >= 1;
     };
 
     return (
