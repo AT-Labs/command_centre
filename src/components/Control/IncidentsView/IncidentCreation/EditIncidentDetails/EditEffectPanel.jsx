@@ -804,20 +804,13 @@ export const EditEffectPanel = (props, ref) => {
     }, [isDiversionMenuOpen]);
 
     useEffect(() => {
-        // eslint-disable-next-line max-len
-        console.log('----FETCH DISRUPTION EFFECT:Should I fetch?', { shouldRefetchDiversions, isDiversionMenuOpen: props.isDiversionManagerOpen, disruptionId: disruption?.disruptionId, fetchedDisruption });
         const fetchDisruptionForDiversion = async () => {
             if (shouldRefetchDiversions || (props.isDiversionManagerOpen && disruption?.disruptionId && !fetchedDisruption)) {
-            // if (disruption?.disruptionId && !fetchedDisruption) {
                 setShouldRefetchDiversions(false);
-                console.log('----FETCH DISRUPTION EFFECT:Yes. Fetching');
                 setIsLoadingDisruption(true);
                 const disruptionData = await getDisruptionAPI(disruption.disruptionId);
-                console.log('----FETCH DISRUPTION EFFECT:Fetched, done', disruptionData);
                 setFetchedDisruption(disruptionData);
                 setIsLoadingDisruption(false);
-            } else {
-                console.log('----FETCH DISRUPTION EFFECT:No. Not fetching');
             }
         };
 
@@ -826,26 +819,17 @@ export const EditEffectPanel = (props, ref) => {
 
     useEffect(() => {
         if (fetchedDisruption == null) return;
-        console.log('----<< CHANGES DETECTED!!!  >>:Setting fetched disruption. Fetched Disruption changed', fetchedDisruption);
-        console.log('----<< Fetched  >>: Fetched disruption in EditEffectPanel:');
-        console.table(fetchedDisruption.affectedEntities);
-        console.log('----<< ORIGINAL  >>:Current disruption in EditEffectPanel:');
-        console.table(disruption.affectedEntities.affectedRoutes);
-
         // Moving shapeWkt over to fetchedDisruption: Somehow, the caller of <EditEffectpanel> have appended shapeWkt. Reusing that.
         const shapeWktMap = new Map(
             disruption.affectedEntities.affectedRoutes.map(route => [route.routeId, route.shapeWkt]),
         );
-        const newAffectedRoutes = fetchedDisruption.affectedEntities.map(entity => {
+        const newAffectedRoutes = fetchedDisruption.affectedEntities.map((entity) => {
             const shapeWkt = shapeWktMap.get(entity.routeId);
             return {
                 ...entity,
                 shapeWkt,
             };
         });
-
-        console.log('----<< PROCESSED  >>:Updated routes count:', newAffectedRoutes.length);
-        console.table(newAffectedRoutes);
 
         // Set the new disruption with updated affectedEntities
         setDisruption({
@@ -918,7 +902,6 @@ export const EditEffectPanel = (props, ref) => {
         }
 
         if (fetchedDisruption) {
-            console.log('----RENDERING DIVERSION MANAGER:with fetched disruption:', fetchedDisruption);
             return (
                 <DiversionManager
                     disruption={ fetchedDisruption }
