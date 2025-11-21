@@ -8,7 +8,7 @@ import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import EditEffectPanel from './EditEffectPanel';
+import EditEffectPanel, { updateDisruptionWithFetchData } from './EditEffectPanel';
 import {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
@@ -994,63 +994,85 @@ describe('Confirmation Component', () => {
     });
 
     describe('Fetched Disruption ShapeWkt Merge', () => {
-        it('should use Map for efficient shapeWkt lookup when merging route data', () => {
-            // This test verifies the Map-based deduplication implementation at lines 823-826
-            // Simulates the logic: const shapeWktMap = new Map(disruption.affectedEntities.affectedRoutes.map(route => [route.routeId, route.shapeWkt]));
+        it('should merge shapeWkt from current disruption into fetched disruption using Map', () => {
+            // Setup current disruption with routes that have shapeWkt
+            const disruption = {
+                affectedEntities: {
+                    affectedRoutes: [
+                        {
+                            routeId: '101-202',
+                            routeShortName: '101',
+                            routeType: 3,
+                            shapeWkt: 'LINESTRING(0 0, 1 1)',
+                        },
+                        {
+                            routeId: '105-202',
+                            routeShortName: '105',
+                            routeType: 3,
+                            shapeWkt: 'LINESTRING(2 2, 3 3)',
+                        },
+                    ],
+                    affectedStops: [],
+                },
+            };
 
-            const currentRoutes = [
+            // Setup fetched disruption with routes that lack shapeWkt
+            const fetchedDisruption = {
+                affectedEntities: [
+                    { routeId: '101-202', routeShortName: '101', routeType: 3 },
+                    { routeId: '105-202', routeShortName: '105', routeType: 3 },
+                    { routeId: '999-202', routeShortName: '999', routeType: 3 }, // Route not in current disruption
+                ],
+            };
+
+            // Mock setDisruption to capture the updated disruption
+            const setDisruption = jest.fn();
+
+            // Call the function being tested
+            updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption);
+
+            // Verify setDisruption was called with merged data
+            expect(setDisruption).toHaveBeenCalledTimes(1);
+            const updatedDisruption = setDisruption.mock.calls[0][0];
+
+            // Verify the structure is correct
+            expect(updatedDisruption.affectedEntities.affectedRoutes).toEqual([
                 {
                     routeId: '101-202',
                     routeShortName: '101',
                     routeType: 3,
-                    shapeWkt: 'LINESTRING(0 0, 1 1)',
+                    shapeWkt: 'LINESTRING(0 0, 1 1)', // shapeWkt merged from current disruption
                 },
                 {
                     routeId: '105-202',
                     routeShortName: '105',
                     routeType: 3,
-                    shapeWkt: 'LINESTRING(2 2, 3 3)',
-                },
-            ];
-
-            // Create the Map just like the component does at line 823
-            const shapeWktMap = new Map(
-                currentRoutes.map(route => [route.routeId, route.shapeWkt]),
-            );
-
-            // Verify Map is created correctly with O(1) lookup
-            expect(shapeWktMap.size).toBe(2);
-            expect(shapeWktMap.get('101-202')).toBe('LINESTRING(0 0, 1 1)');
-            expect(shapeWktMap.get('105-202')).toBe('LINESTRING(2 2, 3 3)');
-            expect(shapeWktMap.get('non-existent')).toBeUndefined();
-
-            // Simulate fetched routes that need shapeWkt merged (lines 827-830)
-            const fetchedEntities = [
-                { routeId: '101-202', routeShortName: '101', routeType: 3 },
-                { routeId: '105-202', routeShortName: '105', routeType: 3 },
-            ];
-
-            // Merge shapeWkt from Map
-            const mergedRoutes = fetchedEntities.map((entity) => {
-                const shapeWkt = shapeWktMap.get(entity.routeId);
-                return { ...entity, shapeWkt };
-            });
-
-            // Verify merged routes have correct shapeWkt
-            expect(mergedRoutes).toEqual([
-                {
-                    routeId: '101-202',
-                    routeShortName: '101',
-                    routeType: 3,
-                    shapeWkt: 'LINESTRING(0 0, 1 1)',
+                    shapeWkt: 'LINESTRING(2 2, 3 3)', // shapeWkt merged from current disruption
                 },
                 {
-                    routeId: '105-202',
-                    routeShortName: '105',
+                    routeId: '999-202',
+                    routeShortName: '999',
                     routeType: 3,
-                    shapeWkt: 'LINESTRING(2 2, 3 3)',
+                    shapeWkt: undefined, // No matching route in current disruption
                 },
             ]);
+        });
+
+        it('should not call setDisruption when fetchedDisruption is null', () => {
+            const disruption = {
+                affectedEntities: {
+                    affectedRoutes: [{ routeId: '101-202', shapeWkt: 'LINESTRING(0 0, 1 1)' }],
+                    affectedStops: [],
+                },
+            };
+
+            const setDisruption = jest.fn();
+
+            // Call with null fetchedDisruption
+            updateDisruptionWithFetchData(null, disruption, setDisruption);
+
+            // Verify setDisruption was never called (early return)
+            expect(setDisruption).not.toHaveBeenCalled();
         });
     });
 });

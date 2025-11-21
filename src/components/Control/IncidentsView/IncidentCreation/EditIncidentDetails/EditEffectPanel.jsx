@@ -125,6 +125,30 @@ const INIT_EFFECT_STATE = {
     status: STATUSES.NOT_STARTED,
 };
 
+export function updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption) {
+    if (fetchedDisruption == null) return;
+    // Moving shapeWkt over to fetchedDisruption: Somehow, the caller of <EditEffectpanel> have appended shapeWkt. Reusing that.
+    const shapeWktMap = new Map(
+        disruption.affectedEntities.affectedRoutes.map(route => [route.routeId, route.shapeWkt]),
+    );
+    const newAffectedRoutes = fetchedDisruption.affectedEntities.map((entity) => {
+        const shapeWkt = shapeWktMap.get(entity.routeId);
+        return {
+            ...entity,
+            shapeWkt,
+        };
+    });
+
+    // Set the new disruption with updated affectedEntities
+    setDisruption({
+        ...disruption,
+        affectedEntities: {
+            ...disruption.affectedEntities,
+            affectedRoutes: newAffectedRoutes,
+        },
+    });
+}
+
 export const EditEffectPanel = (props, ref) => {
     const { disruptions, disruptionIncidentNoToEdit, disruptionRecurrent, modalOpenedTime } = props;
     const [disruption, setDisruption] = useState({ ...INIT_EFFECT_STATE });
@@ -818,27 +842,7 @@ export const EditEffectPanel = (props, ref) => {
     }, [props.isDiversionManagerOpen, disruption?.disruptionId, fetchedDisruption, shouldRefetchDiversions]);
 
     useEffect(() => {
-        if (fetchedDisruption == null) return;
-        // Moving shapeWkt over to fetchedDisruption: Somehow, the caller of <EditEffectpanel> have appended shapeWkt. Reusing that.
-        const shapeWktMap = new Map(
-            disruption.affectedEntities.affectedRoutes.map(route => [route.routeId, route.shapeWkt]),
-        );
-        const newAffectedRoutes = fetchedDisruption.affectedEntities.map((entity) => {
-            const shapeWkt = shapeWktMap.get(entity.routeId);
-            return {
-                ...entity,
-                shapeWkt,
-            };
-        });
-
-        // Set the new disruption with updated affectedEntities
-        setDisruption({
-            ...disruption,
-            affectedEntities: {
-                ...disruption.affectedEntities,
-                affectedRoutes: newAffectedRoutes,
-            },
-        });
+        updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption);
     }, [fetchedDisruption]);
 
     useEffect(() => {
