@@ -130,10 +130,8 @@ export const findDifferences = (original, updated) => {
     }
 
     // Adjust indices to include one point before and after if possible
-    // Special case: the updated route only removed some points without adding new ones,
-    // which result the startIndex being exactly one more than endIndex
-    if (startIndex <= endIndex || startIndex - endIndex === 1) {
-        if (startIndex > 0) {
+    if (startIndex <= endIndex) {
+        if (startIndex > 1) {
             startIndex -= 1;
         }
         if (endIndex < length2 - 1) {
