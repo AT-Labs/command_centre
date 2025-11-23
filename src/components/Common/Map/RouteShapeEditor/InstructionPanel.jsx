@@ -3,49 +3,33 @@ import PropTypes from 'prop-types';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Tooltip from '@mui/material/Tooltip';
 import './InstructionPanel.scss';
-import { TomTomManeuver } from './constants';
 
 const maneuverToSymbol = (maneuver) => {
-    if (maneuver === TomTomManeuver.TURN_LEFT || maneuver === TomTomManeuver.ROUNDABOUT_LEFT) return 'L';
-    if (maneuver === TomTomManeuver.TURN_RIGHT || maneuver === TomTomManeuver.ROUNDABOUT_RIGHT) return 'R';
+    if (maneuver.includes('TURN_LEFT')) return 'L';
+    if (maneuver.includes('TURN_RIGHT')) return 'R';
     return null;
 };
 
 const maneuverToText = (maneuver, street) => {
     switch (maneuver) {
-    case TomTomManeuver.DEPART:
+    case 'DEPART':
         return `${street} as normal`;
-    case TomTomManeuver.TURN_LEFT:
-    case TomTomManeuver.ROUNDABOUT_LEFT:
+    case 'WAYPOINT_REACHED':
+        return `Continue on ${street}`;
+    case 'TURN_LEFT':
         return `Turn left onto ${street}`;
-    case TomTomManeuver.TURN_RIGHT:
-    case TomTomManeuver.ROUNDABOUT_RIGHT:
+    case 'TURN_RIGHT':
         return `Turn right onto ${street}`;
-    case TomTomManeuver.WAYPOINT_REACHED:
-    case TomTomManeuver.ROUNDABOUT_STRAIGHT:
-    case TomTomManeuver.ARRIVE:
     default:
         return street ? `Continue on ${street}` : 'Continue';
     }
 };
 
-const deduplicateInstructions = (instructions) => {
-    if (!Array.isArray(instructions)) return [];
-    let prevKey = null;
-    return instructions.filter((inst) => {
-        const key = `${inst.maneuver}-${inst.nextRoadInfo?.streetName?.text || ''}`;
-        const isDuplicate = key === prevKey;
-        prevKey = key;
-        return !isDuplicate;
-    });
-};
-
 const InstructionPanel = ({ instructions }) => {
     const textRef = useRef();
-    const deduplicatedInstructions = deduplicateInstructions(instructions);
 
     // Generate plain text for all instructions
-    const allText = deduplicatedInstructions.map((inst) => {
+    const allText = instructions.map((inst) => {
         const street = inst.nextRoadInfo?.streetName?.text || '';
         const symbol = maneuverToSymbol(inst.maneuver);
         const text = maneuverToText(inst.maneuver, street);
@@ -69,7 +53,7 @@ const InstructionPanel = ({ instructions }) => {
                 </Tooltip>
             </div>
             <div ref={ textRef } className="instructions-content">
-                {deduplicatedInstructions.map((inst) => {
+                {instructions.map((inst) => {
                     const street = inst.nextRoadInfo?.streetName?.text || '';
                     const symbol = maneuverToSymbol(inst.maneuver);
                     const text = maneuverToText(inst.maneuver, street);

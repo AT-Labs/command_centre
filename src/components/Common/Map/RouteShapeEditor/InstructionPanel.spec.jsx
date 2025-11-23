@@ -15,32 +15,16 @@ describe('<InstructionPanel />', () => {
             nextRoadInfo: { streetName: { text: 'Second Ave' } },
         },
         {
-            maneuver: 'ROUNDABOUT_LEFT',
-            nextRoadInfo: { streetName: { text: 'Second Roundabout Ave' } },
-        },
-        {
             maneuver: 'TURN_RIGHT',
             nextRoadInfo: { streetName: { text: 'Third Blvd' } },
         },
         {
-            maneuver: 'ROUNDABOUT_RIGHT',
-            nextRoadInfo: { streetName: { text: 'Third Roundabout Blvd' } },
-        },
-        {
             maneuver: 'WAYPOINT_REACHED',
             nextRoadInfo: { streetName: { text: 'Fourth Rd' } },
         },
         {
-            maneuver: 'WAYPOINT_REACHED',
-            nextRoadInfo: { streetName: { text: 'Fourth Rd' } },
-        },
-        {
-            maneuver: 'ROUNDABOUT_STRAIGHT',
-            nextRoadInfo: { streetName: { text: 'Fifth Roundabout Ln' } },
-        },
-        {
-            maneuver: 'ARRIVE',
-            nextRoadInfo: { streetName: { text: 'Sixth Ln' } },
+            maneuver: 'CONTINUE',
+            nextRoadInfo: { streetName: { text: 'Fifth Ln' } },
         },
     ];
 
@@ -53,12 +37,9 @@ describe('<InstructionPanel />', () => {
         render(<InstructionPanel instructions={ instructions } />);
         expect(screen.getByText('Main St as normal')).toBeInTheDocument();
         expect(screen.getByText('L - Second Ave')).toBeInTheDocument();
-        expect(screen.getByText('L - Second Roundabout Ave')).toBeInTheDocument();
         expect(screen.getByText('R - Third Blvd')).toBeInTheDocument();
-        expect(screen.getByText('R - Third Roundabout Blvd')).toBeInTheDocument();
         expect(screen.getByText('Continue on Fourth Rd')).toBeInTheDocument();
-        expect(screen.getByText('Continue on Fifth Roundabout Ln')).toBeInTheDocument();
-        expect(screen.getByText('Continue on Sixth Ln')).toBeInTheDocument();
+        expect(screen.getByText('Continue on Fifth Ln')).toBeInTheDocument();
     });
 
     it('copies instructions to clipboard when copy icon is clicked', async () => {
@@ -77,12 +58,9 @@ describe('<InstructionPanel />', () => {
             [
                 'Main St as normal',
                 'L - Second Ave',
-                'L - Second Roundabout Ave',
                 'R - Third Blvd',
-                'R - Third Roundabout Blvd',
                 'Continue on Fourth Rd',
-                'Continue on Fifth Roundabout Ln',
-                'Continue on Sixth Ln',
+                'Continue on Fifth Ln',
             ].join('\n'),
         );
     });

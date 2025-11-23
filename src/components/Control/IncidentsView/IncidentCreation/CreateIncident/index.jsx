@@ -180,12 +180,16 @@ export class CreateIncident extends React.Component {
         const updatedDisruptions = disruptions.map((disruption) => {
             const type = disruption.affectedEntities.some(entity => entity.type === 'route') ? DISRUPTION_TYPE.ROUTES : DISRUPTION_TYPE.STOPS;
             const entities = disruption.affectedEntities ?? [];
+            const isRecurrent = incidentToEdit.recurrent;
+            const incidentEndDate = incidentToEdit.endDate || (endTime ? moment(endTime).format(DATE_FORMAT) : null);
+
             return {
                 ...disruption,
                 ...(disruption.startTime && { startTime: moment(disruption.startTime).format(TIME_FORMAT) }),
                 ...(disruption.startTime && { startDate: moment(disruption.startTime).format(DATE_FORMAT) }),
                 ...(disruption.endTime && { endTime: moment(disruption.endTime).format(TIME_FORMAT) }),
                 ...(disruption.endTime && { endDate: moment(disruption.endTime).format(DATE_FORMAT) }),
+                ...(isRecurrent && isEmpty(disruption.endDate) && incidentEndDate && { endDate: incidentEndDate }),
                 ...{
                     affectedEntities: {
                         affectedStops: entities.filter(entity => entity.type === 'stop'),
@@ -394,7 +398,9 @@ export class CreateIncident extends React.Component {
         const startDate = incidentData.startDate ? incidentData.startDate : moment(incidentData.startTime).format(DATE_FORMAT);
         const startTimeMoment = momentFromDateTime(startDate, incidentData.startTime);
         let endTimeMoment;
-        if (!isEmpty(incidentData.endDate) && !isEmpty(incidentData.endTime)) {
+        if (incidentData.recurrent && incidentData.recurrencePattern?.until && !isEmpty(incidentData.endDate)) {
+            endTimeMoment = moment.utc(incidentData.recurrencePattern.until);
+        } else if (!isEmpty(incidentData.endDate) && !isEmpty(incidentData.endTime)) {
             endTimeMoment = momentFromDateTime(incidentData.endDate, incidentData.endTime);
         }
 
@@ -430,6 +436,14 @@ export class CreateIncident extends React.Component {
                 recurrencePattern: { ...incidentData.recurrencePattern },
                 header: incidentData.header,
             }];
+        }
+
+        const incidentEndDate = incidentData.endDate;
+        if (incidentData.recurrent && incidentEndDate) {
+            incidentData.disruptions = incidentData.disruptions.map(disruption => ({
+                ...disruption,
+                ...(isEmpty(disruption.endDate) && { endDate: incidentEndDate }),
+            }));
         }
 
         const incident = {
@@ -508,6 +522,14 @@ export class CreateIncident extends React.Component {
                     ...newIncidentEffect,
                     ...(incidentData.status === STATUSES.DRAFT ? { status: STATUSES.DRAFT } : getStatusForEffect(newIncidentEffect)),
                 }];
+        }
+
+        const incidentEndDate = incidentData.endDate;
+        if (incidentData.recurrent && incidentEndDate) {
+            updatedDisruption = updatedDisruption.map(disruption => ({
+                ...disruption,
+                ...(isEmpty(disruption.endDate) && { endDate: incidentEndDate }),
+            }));
         }
 
         const incidentStartDate = incidentData.startDate ? incidentData.startDate : moment(incidentData.startTime).format(DATE_FORMAT);
@@ -929,6 +951,7 @@ export class CreateIncident extends React.Component {
                         onWorkaroundUpdate={ this.updateDisruptionWorkaround }
                         modalOpenedTime={ incidentData.modalOpenedTime ? moment(incidentData.modalOpenedTime).toISOString() : '' }
                         disruptionRecurrent={ incidentData.recurrent }
+                        incidentEndDate={ incidentData.endDate }
                         onDisruptionsUpdate={ this.updateData }
                         isNotesRequiresToUpdate={ isNotesRequiresToUpdate }
                         updateIsNotesRequiresToUpdateState={ () => this.setState({ isNotesRequiresToUpdate: false }) }

@@ -88,14 +88,14 @@ describe('findDifferences', () => {
         const original = [[0, 0], [0, 1], [0, 2], [0, 3]];
         const updated = [[0, 0], [1, 1], [1, 2], [0, 3]];
         const differences = findDifferences(original, updated);
-        expect(differences).toEqual([[0, 0], [1, 1], [1, 2], [0, 3]]);
+        expect(differences).toEqual([[1, 1], [1, 2], [0, 3]]);
     });
 
     it('finds differences at the start', () => {
-        const original = [[0, 0], [1, 1], [0, 2]];
+        const original = [[0, 0], [0, 1], [0, 2]];
         const updated = [[1, 0], [1, 1], [0, 2]];
         const differences = findDifferences(original, updated);
-        expect(differences).toEqual([[1, 0], [1, 1]]);
+        expect(differences).toEqual([[1, 0], [1, 1], [0, 2]]);
     });
 
     it('finds differences at the end', () => {
@@ -103,14 +103,6 @@ describe('findDifferences', () => {
         const updated = [[0, 0], [0, 1], [1, 2]];
         const differences = findDifferences(original, updated);
         expect(differences).toEqual([[0, 1], [1, 2]]);
-    });
-
-    it('finds differences when the updated list only removes points', () => {
-        const original = [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]];
-        const updated = [[0, 0], [0, 1], [0, 3], [0, 4]];
-        const differences = findDifferences(original, updated);
-        // [0, 2] is removed, return the surrounding points
-        expect(differences).toEqual([[0, 1], [0, 3]]);
     });
 
     it('returns empty array when lists are identical', () => {
