@@ -30,14 +30,13 @@ const maneuverToText = (maneuver, street) => {
 };
 
 const deduplicateInstructions = (instructions) => {
-    const seen = new Set();
+    if (!Array.isArray(instructions)) return [];
+    let prevKey = null;
     return instructions.filter((inst) => {
         const key = `${inst.maneuver}-${inst.nextRoadInfo?.streetName?.text || ''}`;
-        if (seen.has(key)) {
-            return false;
-        }
-        seen.add(key);
-        return true;
+        const isDuplicate = key === prevKey;
+        prevKey = key;
+        return !isDuplicate;
     });
 };
 
