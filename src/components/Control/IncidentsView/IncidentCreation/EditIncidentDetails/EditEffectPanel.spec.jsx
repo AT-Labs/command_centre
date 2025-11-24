@@ -987,4 +987,142 @@ describe('Confirmation Component', () => {
             expect(queryByText('View & Edit Diversions')).not.toBeInTheDocument();
         });
     });
+
+    describe('initDisruptionData', () => {
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('Should return early when disruption is not found', () => {
+            const props = {
+                ...defaultProps,
+                disruptions: [{ ...mockDisruption, incidentNo: 'DISR999' }],
+                disruptionIncidentNoToEdit: 'DISR123',
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(defaultProps.updateEditableDisruption).not.toHaveBeenCalled();
+            expect(defaultProps.setDisruptionForWorkaroundEdit).not.toHaveBeenCalled();
+        });
+
+        it('Should set endDate from incidentEndDate when disruptionRecurrent is true and disruption.endDate is empty', () => {
+            const incidentEndDate = '25/06/2025';
+            const disruptionWithoutEndDate = {
+                ...mockDisruption,
+                incidentNo: 'DISR123',
+                endDate: null,
+            };
+
+            const props = {
+                ...defaultProps,
+                disruptions: [disruptionWithoutEndDate],
+                disruptionIncidentNoToEdit: 'DISR123',
+                disruptionRecurrent: true,
+                incidentEndDate,
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    endDate: incidentEndDate,
+                }),
+            );
+        });
+
+        it('Should not set endDate from incidentEndDate when disruptionRecurrent is false', () => {
+            const incidentEndDate = '25/06/2025';
+            const disruptionWithoutEndDate = {
+                ...mockDisruption,
+                incidentNo: 'DISR123',
+                endDate: null,
+            };
+
+            const props = {
+                ...defaultProps,
+                disruptions: [disruptionWithoutEndDate],
+                disruptionIncidentNoToEdit: 'DISR123',
+                disruptionRecurrent: false,
+                incidentEndDate,
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    endDate: null,
+                }),
+            );
+        });
+
+        it('Should not set endDate from incidentEndDate when disruption.endDate is already set', () => {
+            const incidentEndDate = '25/06/2025';
+            const disruptionWithEndDate = {
+                ...mockDisruption,
+                incidentNo: 'DISR123',
+                endDate: '20/06/2025',
+            };
+
+            const props = {
+                ...defaultProps,
+                disruptions: [disruptionWithEndDate],
+                disruptionIncidentNoToEdit: 'DISR123',
+                disruptionRecurrent: true,
+                incidentEndDate,
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    endDate: '20/06/2025',
+                }),
+            );
+        });
+
+        it('Should not set endDate from incidentEndDate when incidentEndDate is empty', () => {
+            const disruptionWithoutEndDate = {
+                ...mockDisruption,
+                incidentNo: 'DISR123',
+                endDate: null,
+            };
+
+            const props = {
+                ...defaultProps,
+                disruptions: [disruptionWithoutEndDate],
+                disruptionIncidentNoToEdit: 'DISR123',
+                disruptionRecurrent: true,
+                incidentEndDate: null,
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    endDate: null,
+                }),
+            );
+        });
+    });
 });

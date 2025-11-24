@@ -10,6 +10,7 @@ import { getEntityCounts } from '../../../../../utils/control/incidents';
 import { STATUSES, DISRUPTION_TYPE, getParentChildDefaultSeverity } from '../../../../../types/disruptions-types';
 import { DEFAULT_CAUSE } from '../../../../../types/disruption-cause-and-effect';
 import EDIT_TYPE from '../../../../../types/edit-types';
+import { DATE_FORMAT } from '../../../../../constants/disruptions';
 
 jest.mock('../../../../Common/Map/ShapeLayer/ShapeLayer', () => jest.fn());
 
@@ -486,6 +487,231 @@ describe('CreateIncident component', () => {
             expect(momentFromDateTime).toHaveBeenCalledTimes(1);
             expect(momentFromDateTime).toHaveBeenCalledWith(startDate, startTime);
             expect(momentFromDateTime).not.toHaveBeenCalledWith(endDate, endTime);
+        });
+    });
+
+    describe('setupDataEdit', () => {
+        let wrapper;
+        const mockUpdateCurrentStep = jest.fn();
+        const mockCreateNewIncident = jest.fn();
+        const mockOpenCreateIncident = jest.fn();
+        const mockToggleIncidentModals = jest.fn();
+        const mockUpdateIncident = jest.fn();
+        const mockUpdateAffectedStopsState = jest.fn();
+        const mockUpdateAffectedRoutesState = jest.fn();
+        const mockGetRoutesByShortName = jest.fn();
+
+        afterEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('Should set incidentEndDate from incidentToEdit.endDate when endDate is provided', () => {
+            const endDate = '15/03/2025';
+            const incidentToEditWithEndDate = {
+                ...incidentForEdit,
+                recurrent: true,
+                endDate,
+                endTime: null,
+                disruptions: [{
+                    ...incidentForEdit.disruptions[0],
+                    endDate: null,
+                }],
+            };
+
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentToEditWithEndDate }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                />,
+            );
+
+            const incidentData = wrapper.state('incidentData');
+            const disruption = incidentData.disruptions[0];
+            expect(disruption.endDate).toBe(endDate);
+        });
+
+        it('Should set incidentEndDate from endTime when endDate is not provided but endTime is provided', () => {
+            const endTime = '2025-08-21T20:30:00.000Z';
+            const expectedEndDate = moment(endTime).format(DATE_FORMAT);
+            const incidentToEditWithEndTime = {
+                ...incidentForEdit,
+                recurrent: true,
+                endDate: null,
+                endTime,
+                disruptions: [{
+                    ...incidentForEdit.disruptions[0],
+                    endDate: null,
+                }],
+            };
+
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentToEditWithEndTime }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                />,
+            );
+
+            const incidentData = wrapper.state('incidentData');
+            const disruption = incidentData.disruptions[0];
+            expect(disruption.endDate).toBe(expectedEndDate);
+        });
+
+        it('Should set incidentEndDate to null when both endDate and endTime are not provided', () => {
+            const incidentToEditWithoutEndDate = {
+                ...incidentForEdit,
+                recurrent: true,
+                endDate: null,
+                endTime: null,
+                disruptions: [{
+                    ...incidentForEdit.disruptions[0],
+                    endDate: null,
+                    endTime: null,
+                }],
+            };
+
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentToEditWithoutEndDate }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                />,
+            );
+
+            const incidentData = wrapper.state('incidentData');
+            const disruption = incidentData.disruptions[0];
+
+            expect(disruption.endDate).toBeFalsy();
+        });
+
+        it('Should set endDate for recurrent incidents when disruption.endDate is empty and incidentEndDate is provided', () => {
+            const endDate = '15/03/2025';
+            const incidentToEditRecurrent = {
+                ...incidentForEdit,
+                recurrent: true,
+                endDate,
+                endTime: null,
+                disruptions: [{
+                    ...incidentForEdit.disruptions[0],
+                    endDate: null,
+                }],
+            };
+
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentToEditRecurrent }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                />,
+            );
+
+            const incidentData = wrapper.state('incidentData');
+            const disruption = incidentData.disruptions[0];
+            expect(disruption.endDate).toBe(endDate);
+        });
+
+        it('Should not set endDate for non-recurrent incidents even when disruption.endDate is empty and incidentEndDate is provided', () => {
+            const endDate = '15/03/2025';
+            const incidentToEditNonRecurrent = {
+                ...incidentForEdit,
+                recurrent: false,
+                endDate,
+                endTime: null,
+                disruptions: [{
+                    ...incidentForEdit.disruptions[0],
+                    endDate: null,
+                    endTime: null,
+                }],
+            };
+
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentToEditNonRecurrent }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                />,
+            );
+
+            const incidentData = wrapper.state('incidentData');
+            const disruption = incidentData.disruptions[0];
+            
+            expect(disruption.endDate).toBeFalsy();
+        });
+
+        it('Should not set endDate for recurrent incidents when disruption.endDate is already provided', () => {
+            const incidentEndDate = '15/03/2025';
+            const disruptionEndDate = '20/03/2025';
+            const incidentToEditRecurrent = {
+                ...incidentForEdit,
+                recurrent: true,
+                endDate: incidentEndDate,
+                endTime: null,
+                disruptions: [{
+                    ...incidentForEdit.disruptions[0],
+                    endDate: disruptionEndDate,
+                }],
+            };
+
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentToEditRecurrent }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                />,
+            );
+
+            const incidentData = wrapper.state('incidentData');
+            const disruption = incidentData.disruptions[0];
+            expect(disruption.endDate).toBe(disruptionEndDate);
         });
     });
 
