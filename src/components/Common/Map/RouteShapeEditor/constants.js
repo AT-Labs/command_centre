@@ -9,3 +9,15 @@ export const DEFAULT_AUCKLAND_COORDINATES = [-36.8485, 174.7633];
 export const TOMTOM_STOP_POINTS_LIMIT = 20; // TomTom API allows up to 20 points (including start and end)
 export const EDITOR_HANDLER_TOOLTIP = 'Drag the red dots to update the shape for the selected route variant.';
 export const EDITOR_BUTTON_TOOLTIP = 'Edit route path';
+
+// TomTom maneuver types for left and right instructions
+export const TomTomManeuver = Object.freeze({
+    DEPART: 'DEPART',
+    TURN_RIGHT: 'TURN_RIGHT',
+    ROUNDABOUT_RIGHT: 'ROUNDABOUT_RIGHT',
+    TURN_LEFT: 'TURN_LEFT',
+    ROUNDABOUT_LEFT: 'ROUNDABOUT_LEFT',
+    ROUNDABOUT_STRAIGHT: 'ROUNDABOUT_STRAIGHT',
+    WAYPOINT_REACHED: 'WAYPOINT_REACHED',
+    ARRIVE: 'ARRIVE',
+});
