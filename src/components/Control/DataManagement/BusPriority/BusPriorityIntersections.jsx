@@ -33,7 +33,6 @@ export const BusPriorityIntersectionsDataGrid = (props) => {
     const [isEditIntersectionModalOpen, setIsEditIntersectionModalOpen] = useState(false);
     const [editIntersectionEntity, setEditIntersectionEntity] = useState({});
     const [newGeofenceRadius, setNewGeofenceRadius] = useState(0);
-    const [newTravelTime, setNewTravelTime] = useState(0);
 
     useEffect(() => {
         props.getBusPriorityIntersections();
@@ -44,7 +43,6 @@ export const BusPriorityIntersectionsDataGrid = (props) => {
             <Tooltip title="Edit Intersection" placement="top-end" key={ uniqueId(row.rowKey) }>
                 <IconButton aria-label="open-edit-intersection"
                     onClick={ () => {
-                        setNewTravelTime(row.Travel_Time);
                         setNewGeofenceRadius(row.Geofence_Radius);
                         setEditIntersectionEntity(row);
                         setIsEditIntersectionModalOpen(true);
@@ -90,13 +88,6 @@ export const BusPriorityIntersectionsDataGrid = (props) => {
             field: 'Site_Id',
             headerName: LABEL_SITE_ID,
             width: 75,
-            type: 'string',
-            filterable: true,
-        },
-        {
-            field: 'Travel_Time',
-            headerName: LABEL_TRAVEL_TIME,
-            width: 120,
             type: 'string',
             filterable: true,
         },
@@ -149,24 +140,12 @@ export const BusPriorityIntersectionsDataGrid = (props) => {
     const updateIntersection = () => {
         const intersection = editIntersectionEntity;
         intersection.Geofence_Radius = Number(newGeofenceRadius);
-        intersection.Travel_Time = Number(newTravelTime);
 
         props.updateBusPriorityIntersection(intersection);
 
         setIsEditIntersectionModalOpen(false);
         setEditIntersectionEntity({});
         setNewGeofenceRadius(0);
-        setNewTravelTime(0);
-    };
-
-    const isGeofenceRadiusValid = (value) => {
-        const geofenceRadius = Number(value);
-        return Number.isInteger(geofenceRadius) && geofenceRadius >= 1;
-    };
-
-    const isTravelTimeValid = (value) => {
-        const travelTime = Number(value);
-        return Number.isInteger(travelTime) && travelTime >= 1;
     };
 
     return (
@@ -188,29 +167,21 @@ export const BusPriorityIntersectionsDataGrid = (props) => {
                     setIsEditIntersectionModalOpen(false);
                     setEditIntersectionEntity({});
                     setNewGeofenceRadius(0);
-                    setNewTravelTime(0);
                 } }
                 okButton={ {
                     label: 'Save Changes',
                     onClick: updateIntersection,
-                    isDisabled: !isGeofenceRadiusValid(newGeofenceRadius) || !isTravelTimeValid(newTravelTime),
+                    isDisabled: newGeofenceRadius < 1 || !Number.isInteger(Number(newGeofenceRadius)),
                 } }>
                 <div className="row">
                     <div className="col">
                         <ModalAlert
                             color="danger"
-                            isOpen={ !isGeofenceRadiusValid(newGeofenceRadius) }
+                            isOpen={ newGeofenceRadius < 1 || !Number.isInteger(Number(newGeofenceRadius)) }
                             content={ <span>Geofence Radius should be positive integer</span> } />
                     </div>
                 </div>
-                <div className="row">
-                    <div className="col">
-                        <ModalAlert
-                            color="danger"
-                            isOpen={ !isTravelTimeValid(newTravelTime) }
-                            content={ <span>Travel Time should be positive integer</span> } />
-                    </div>
-                </div>
+
                 <div className="row mb-3">
                     <div className="col-4 font-weight-bold">Bus Route:</div>
                     <div className="col-8">
@@ -229,23 +200,6 @@ export const BusPriorityIntersectionsDataGrid = (props) => {
                         {editIntersectionEntity.Site_Id}
                     </div>
                 </div>
-                <div className="row mb-3">
-                    <div className="col-4 font-weight-bold">Travel Time:</div>
-                    <div className="col-8">
-                        <Input
-                            type="number"
-                            id="intersection-travel-time"
-                            value={ newTravelTime }
-                            className="intersection-modal__travel-time cc-form-control"
-                            placeholder="Travel Time"
-                            onChange={ (event) => {
-                                setNewTravelTime(event.target.value);
-                            } }
-                            min="1"
-                            data-testid="travel-time-input"
-                        />
-                    </div>
-                </div>
                 <div className="row">
                     <div className="col-4 font-weight-bold">Geofence Radius:</div>
                     <div className="col-8">
@@ -259,7 +213,6 @@ export const BusPriorityIntersectionsDataGrid = (props) => {
                                 setNewGeofenceRadius(event.target.value);
                             } }
                             min="1"
-                            data-testid="geofence-radius-input"
                         />
                     </div>
                 </div>

@@ -148,7 +148,7 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
     }
     const modes = getMode(disruption);
     const routesToRequest = disruption.affectedEntities.affectedRoutes.map((
-        { routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon },
+        { routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon, diversionIds },
     ) => ({
         routeId,
         routeShortName,
@@ -163,6 +163,7 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
             stopLat,
             stopLon,
         }),
+        ...(diversionIds && { diversionIds }),
     }));
     const stopsToRequest = disruption.affectedEntities.affectedStops.map(entity => omit(entity, ['shapeWkt']));
 

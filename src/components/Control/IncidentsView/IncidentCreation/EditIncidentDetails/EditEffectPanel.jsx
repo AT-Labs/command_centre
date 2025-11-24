@@ -125,6 +125,35 @@ const INIT_EFFECT_STATE = {
     status: STATUSES.NOT_STARTED,
 };
 
+export function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms)); // eslint-disable-line
+}
+
+export function updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption) {
+    if (fetchedDisruption == null) return;
+
+    // Moving shapeWkt over to fetchedDisruption: Somehow, the caller of <EditEffectpanel> have appended shapeWkt. Reusing that.
+    const shapeWktMap = new Map(
+        disruption.affectedEntities.affectedRoutes.map(route => [route.routeId, route.shapeWkt]),
+    );
+    const newAffectedRoutes = fetchedDisruption.affectedEntities.map((entity) => {
+        const shapeWkt = shapeWktMap.get(entity.routeId);
+        return {
+            ...entity,
+            shapeWkt,
+        };
+    });
+
+    // Set the new disruption with updated affectedEntities
+    setDisruption({
+        ...disruption,
+        affectedEntities: {
+            ...disruption.affectedEntities,
+            affectedRoutes: newAffectedRoutes,
+        },
+    });
+}
+
 export const EditEffectPanel = (props, ref) => {
     const { disruptions, disruptionIncidentNoToEdit, disruptionRecurrent, modalOpenedTime } = props;
     const [disruption, setDisruption] = useState({ ...INIT_EFFECT_STATE });
@@ -805,7 +834,13 @@ export const EditEffectPanel = (props, ref) => {
 
     useEffect(() => {
         const fetchDisruptionForDiversion = async () => {
-            if (props.isDiversionManagerOpen && disruption?.disruptionId && !fetchedDisruption) {
+            if (shouldRefetchDiversions || (props.isDiversionManagerOpen && disruption?.disruptionId && !fetchedDisruption)) {
+                // if (shouldRefetchDiversions) {
+                // console.log('Refetching diversion:WAITING');
+                // await sleep(2000); // small delay to ensure diversion manager is closed and backend cache is cleared before refetching
+                // console.log('Refetching diversion:WAITING DONE');
+                // }
+                setShouldRefetchDiversions(false);
                 setIsLoadingDisruption(true);
                 const disruptionData = await getDisruptionAPI(disruption.disruptionId);
                 setFetchedDisruption(disruptionData);
@@ -814,7 +849,11 @@ export const EditEffectPanel = (props, ref) => {
         };
 
         fetchDisruptionForDiversion();
-    }, [props.isDiversionManagerOpen, disruption?.disruptionId, fetchedDisruption]);
+    }, [props.isDiversionManagerOpen, disruption?.disruptionId, fetchedDisruption, shouldRefetchDiversions]);
+
+    useEffect(() => {
+        updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption);
+    }, [fetchedDisruption]);
 
     useEffect(() => {
         if (props.isDiversionManagerOpen) {

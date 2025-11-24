@@ -524,8 +524,10 @@ export class CreateIncident extends React.Component {
             notes: [],
             ...(updatedDisruption && { disruptions: updatedDisruption }),
         };
+        const submitBody = buildIncidentSubmitBody(incident, true);
+
         this.props.updateIncident(
-            buildIncidentSubmitBody(incident, true),
+            submitBody,
             this.props.editMode === EDIT_TYPE.ADD_EFFECT,
             isPublish,
         );

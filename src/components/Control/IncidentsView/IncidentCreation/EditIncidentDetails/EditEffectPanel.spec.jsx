@@ -8,7 +8,7 @@ import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import EditEffectPanel from './EditEffectPanel';
+import EditEffectPanel, { updateDisruptionWithFetchData } from './EditEffectPanel';
 import {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
@@ -99,6 +99,11 @@ jest.mock('react-flatpickr', () => props => (
     // eslint-disable-next-line react/prop-types
     <input data-testid={ props['data-testid'] } id={ props.id } value={ props.value } onChange={ e => props.onChange([new Date(e.target.value)]) } />
 ));
+
+jest.mock('../../../../../utils/transmitters/disruption-mgt-api', () => ({
+    getDisruption: jest.fn(),
+    getDiversion: jest.fn(),
+}));
 
 const fakeNow = new Date(2025, 5, 9, 11, 37, 0);
 
@@ -985,6 +990,89 @@ describe('Confirmation Component', () => {
             fireEvent.click(viewButton);
 
             expect(queryByText('View & Edit Diversions')).not.toBeInTheDocument();
+        });
+    });
+
+    describe('Fetched Disruption ShapeWkt Merge', () => {
+        it('should merge shapeWkt from current disruption into fetched disruption using Map', () => {
+            // Setup current disruption with routes that have shapeWkt
+            const disruption = {
+                affectedEntities: {
+                    affectedRoutes: [
+                        {
+                            routeId: '101-202',
+                            routeShortName: '101',
+                            routeType: 3,
+                            shapeWkt: 'LINESTRING(0 0, 1 1)',
+                        },
+                        {
+                            routeId: '105-202',
+                            routeShortName: '105',
+                            routeType: 3,
+                            shapeWkt: 'LINESTRING(2 2, 3 3)',
+                        },
+                    ],
+                    affectedStops: [],
+                },
+            };
+
+            // Setup fetched disruption with routes that lack shapeWkt
+            const fetchedDisruption = {
+                affectedEntities: [
+                    { routeId: '101-202', routeShortName: '101', routeType: 3 },
+                    { routeId: '105-202', routeShortName: '105', routeType: 3 },
+                    { routeId: '999-202', routeShortName: '999', routeType: 3 }, // Route not in current disruption
+                ],
+            };
+
+            // Mock setDisruption to capture the updated disruption
+            const setDisruption = jest.fn();
+
+            // Call the function being tested
+            updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption);
+
+            // Verify setDisruption was called with merged data
+            expect(setDisruption).toHaveBeenCalledTimes(1);
+            const updatedDisruption = setDisruption.mock.calls[0][0];
+
+            // Verify the structure is correct
+            expect(updatedDisruption.affectedEntities.affectedRoutes).toEqual([
+                {
+                    routeId: '101-202',
+                    routeShortName: '101',
+                    routeType: 3,
+                    shapeWkt: 'LINESTRING(0 0, 1 1)', // shapeWkt merged from current disruption
+                },
+                {
+                    routeId: '105-202',
+                    routeShortName: '105',
+                    routeType: 3,
+                    shapeWkt: 'LINESTRING(2 2, 3 3)', // shapeWkt merged from current disruption
+                },
+                {
+                    routeId: '999-202',
+                    routeShortName: '999',
+                    routeType: 3,
+                    shapeWkt: undefined, // No matching route in current disruption
+                },
+            ]);
+        });
+
+        it('should not call setDisruption when fetchedDisruption is null', () => {
+            const disruption = {
+                affectedEntities: {
+                    affectedRoutes: [{ routeId: '101-202', shapeWkt: 'LINESTRING(0 0, 1 1)' }],
+                    affectedStops: [],
+                },
+            };
+
+            const setDisruption = jest.fn();
+
+            // Call with null fetchedDisruption
+            updateDisruptionWithFetchData(null, disruption, setDisruption);
+
+            // Verify setDisruption was never called (early return)
+            expect(setDisruption).not.toHaveBeenCalled();
         });
     });
 });
