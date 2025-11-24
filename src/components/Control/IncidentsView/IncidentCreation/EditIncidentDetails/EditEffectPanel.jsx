@@ -125,8 +125,33 @@ const INIT_EFFECT_STATE = {
     status: STATUSES.NOT_STARTED,
 };
 
+export function updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption) {
+    if (fetchedDisruption == null) return;
+
+    // Moving shapeWkt over to fetchedDisruption: Somehow, the caller of <EditEffectpanel> have appended shapeWkt. Reusing that.
+    const shapeWktMap = new Map(
+        disruption.affectedEntities.affectedRoutes.map(route => [route.routeId, route.shapeWkt]),
+    );
+    const newAffectedRoutes = fetchedDisruption.affectedEntities.map((entity) => {
+        const shapeWkt = shapeWktMap.get(entity.routeId);
+        return {
+            ...entity,
+            shapeWkt,
+        };
+    });
+
+    // Set the new disruption with updated affectedEntities
+    setDisruption({
+        ...disruption,
+        affectedEntities: {
+            ...disruption.affectedEntities,
+            affectedRoutes: newAffectedRoutes,
+        },
+    });
+}
+
 export const EditEffectPanel = (props, ref) => {
-    const { disruptions, disruptionIncidentNoToEdit, disruptionRecurrent, modalOpenedTime, incidentEndDate } = props;
+    const { disruptions, disruptionIncidentNoToEdit, disruptionRecurrent, modalOpenedTime } = props;
     const [disruption, setDisruption] = useState({ ...INIT_EFFECT_STATE });
     const [originalDisruption, setOriginalDisruption] = useState({ ...INIT_EFFECT_STATE });
     const [now] = useState(moment().second(0).millisecond(0));
@@ -157,15 +182,7 @@ export const EditEffectPanel = (props, ref) => {
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
 
     const initDisruptionData = () => {
-        const foundDisruption = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
-        if (!foundDisruption) return;
-
-        const disruptionToSet = { ...foundDisruption };
-
-        if (disruptionRecurrent && isEmpty(disruptionToSet.endDate) && incidentEndDate) {
-            disruptionToSet.endDate = incidentEndDate;
-        }
-
+        const disruptionToSet = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
         setDisruption(disruptionToSet);
         props.updateEditableDisruption(disruptionToSet);
         setOriginalDisruption(disruptionToSet);
@@ -190,7 +207,7 @@ export const EditEffectPanel = (props, ref) => {
         if (props.disruptions && disruptionIncidentNoToEdit && !props.isNotesRequiresToUpdate) {
             initDisruptionData();
         }
-    }, [props.disruptions, incidentEndDate]);
+    }, [props.disruptions]);
 
     useEffect(() => {
         if (Array.isArray(props.mapDrawingEntities) && props.mapDrawingEntities.length > 0) {
@@ -636,7 +653,7 @@ export const EditEffectPanel = (props, ref) => {
         } else {
             setDisruption({ ...INIT_EFFECT_STATE });
         }
-    }, [disruptionIncidentNoToEdit, incidentEndDate]);
+    }, [disruptionIncidentNoToEdit]);
 
     useEffect(() => {
         if (disruptionIncidentNoToEdit && props.isNotesRequiresToUpdate) {
@@ -813,7 +830,8 @@ export const EditEffectPanel = (props, ref) => {
 
     useEffect(() => {
         const fetchDisruptionForDiversion = async () => {
-            if (props.isDiversionManagerOpen && disruption?.disruptionId && !fetchedDisruption) {
+            if (shouldRefetchDiversions || (props.isDiversionManagerOpen && disruption?.disruptionId && !fetchedDisruption)) {
+                setShouldRefetchDiversions(false);
                 setIsLoadingDisruption(true);
                 const disruptionData = await getDisruptionAPI(disruption.disruptionId);
                 setFetchedDisruption(disruptionData);
@@ -822,7 +840,11 @@ export const EditEffectPanel = (props, ref) => {
         };
 
         fetchDisruptionForDiversion();
-    }, [props.isDiversionManagerOpen, disruption?.disruptionId, fetchedDisruption]);
+    }, [props.isDiversionManagerOpen, disruption?.disruptionId, fetchedDisruption, shouldRefetchDiversions]);
+
+    useEffect(() => {
+        updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption);
+    }, [fetchedDisruption]);
 
     useEffect(() => {
         if (props.isDiversionManagerOpen) {
@@ -1356,7 +1378,6 @@ EditEffectPanel.propTypes = {
     updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
     disruptionRecurrent: PropTypes.bool.isRequired,
     modalOpenedTime: PropTypes.string.isRequired,
-    incidentEndDate: PropTypes.string,
     isWorkaroundPanelOpen: PropTypes.bool,
     toggleWorkaroundPanel: PropTypes.func.isRequired,
     updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
@@ -1398,7 +1419,6 @@ EditEffectPanel.propTypes = {
 EditEffectPanel.defaultProps = {
     isEditEffectPanelOpen: false,
     disruptionIncidentNoToEdit: '',
-    incidentEndDate: '',
     isWorkaroundPanelOpen: false,
     workaroundsToSync: [],
     isCancellationEffectOpen: false,
