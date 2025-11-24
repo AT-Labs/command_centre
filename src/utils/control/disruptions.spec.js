@@ -641,6 +641,7 @@ const mockDisruption1 = {
             agencyName: 'New Zealand Bus',
             agencyId: 'NZB',
             text: '101',
+            diversionIds: ['diversion-1', 'diversion-2'],
             category: {
                 type: 'route',
                 icon: '',
@@ -650,6 +651,7 @@ const mockDisruption1 = {
             valueKey: 'routeId',
             labelKey: 'routeShortName',
             type: 'route',
+            diversionIds: ['diversion-1', 'diversion-2'],
         },
         {
             routeId: '105-202',
@@ -948,12 +950,13 @@ describe('buildDisruptionSubmitBody', () => {
         const expectedDisruption1 = {
             ...mockDisruption1,
             affectedEntities: [...mockDisruption1.affectedEntities.affectedRoutes.map((
-                { routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon },
+                { routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon, diversionIds },
             ) => ({
                 routeId,
                 routeShortName,
                 routeType,
                 type,
+                diversionIds,
                 notes: [],
                 ...(stopCode !== undefined && {
                     directionId,
