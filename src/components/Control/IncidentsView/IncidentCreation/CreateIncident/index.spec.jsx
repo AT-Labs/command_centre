@@ -675,7 +675,7 @@ describe('CreateIncident component', () => {
 
             const incidentData = wrapper.state('incidentData');
             const disruption = incidentData.disruptions[0];
-            
+
             expect(disruption.endDate).toBeFalsy();
         });
 
