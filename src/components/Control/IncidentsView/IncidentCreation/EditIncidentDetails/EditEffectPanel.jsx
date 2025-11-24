@@ -126,7 +126,7 @@ const INIT_EFFECT_STATE = {
 };
 
 export const EditEffectPanel = (props, ref) => {
-    const { disruptions, disruptionIncidentNoToEdit, disruptionRecurrent, modalOpenedTime, incidentEndDate } = props;
+    const { disruptions, disruptionIncidentNoToEdit, disruptionRecurrent, modalOpenedTime } = props;
     const [disruption, setDisruption] = useState({ ...INIT_EFFECT_STATE });
     const [originalDisruption, setOriginalDisruption] = useState({ ...INIT_EFFECT_STATE });
     const [now] = useState(moment().second(0).millisecond(0));
@@ -157,15 +157,7 @@ export const EditEffectPanel = (props, ref) => {
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
 
     const initDisruptionData = () => {
-        const foundDisruption = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
-        if (!foundDisruption) return;
-
-        const disruptionToSet = { ...foundDisruption };
-
-        if (disruptionRecurrent && isEmpty(disruptionToSet.endDate) && incidentEndDate) {
-            disruptionToSet.endDate = incidentEndDate;
-        }
-
+        const disruptionToSet = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
         setDisruption(disruptionToSet);
         props.updateEditableDisruption(disruptionToSet);
         setOriginalDisruption(disruptionToSet);
@@ -190,7 +182,7 @@ export const EditEffectPanel = (props, ref) => {
         if (props.disruptions && disruptionIncidentNoToEdit && !props.isNotesRequiresToUpdate) {
             initDisruptionData();
         }
-    }, [props.disruptions, incidentEndDate]);
+    }, [props.disruptions]);
 
     useEffect(() => {
         if (Array.isArray(props.mapDrawingEntities) && props.mapDrawingEntities.length > 0) {
@@ -636,7 +628,7 @@ export const EditEffectPanel = (props, ref) => {
         } else {
             setDisruption({ ...INIT_EFFECT_STATE });
         }
-    }, [disruptionIncidentNoToEdit, incidentEndDate]);
+    }, [disruptionIncidentNoToEdit]);
 
     useEffect(() => {
         if (disruptionIncidentNoToEdit && props.isNotesRequiresToUpdate) {
@@ -1356,7 +1348,6 @@ EditEffectPanel.propTypes = {
     updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
     disruptionRecurrent: PropTypes.bool.isRequired,
     modalOpenedTime: PropTypes.string.isRequired,
-    incidentEndDate: PropTypes.string,
     isWorkaroundPanelOpen: PropTypes.bool,
     toggleWorkaroundPanel: PropTypes.func.isRequired,
     updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
@@ -1398,7 +1389,6 @@ EditEffectPanel.propTypes = {
 EditEffectPanel.defaultProps = {
     isEditEffectPanelOpen: false,
     disruptionIncidentNoToEdit: '',
-    incidentEndDate: '',
     isWorkaroundPanelOpen: false,
     workaroundsToSync: [],
     isCancellationEffectOpen: false,
