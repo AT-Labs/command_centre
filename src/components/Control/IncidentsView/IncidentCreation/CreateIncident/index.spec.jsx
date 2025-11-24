@@ -1,6 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import { RRule } from 'rrule';
+import moment from 'moment';
 import { CreateIncident } from './index';
 import LoadingOverlay from '../../../../Common/Overlay/LoadingOverlay';
 import { updateCurrentStep } from '../../../../../redux/actions/control/disruptions';
@@ -381,6 +382,110 @@ describe('CreateIncident component', () => {
             await wrapper.instance().onSubmitDraft();
 
             expect(mockCreateNewIncident).toHaveBeenCalledWith(expectedDisruption);
+        });
+
+        it('Should set endTimeMoment from recurrencePattern.until when recurrent with until and endDate', async () => {
+            const untilDate = new Date('2025-03-15T10:00:00.000Z');
+            const endDate = '15/03/2025';
+            const incidentData = {
+                ...defaultIncidentData,
+                recurrent: true,
+                endDate,
+                recurrencePattern: {
+                    freq: RRule.WEEKLY,
+                    until: untilDate,
+                    byweekday: [0],
+                },
+                disruptions: [],
+                notes: '',
+            };
+
+            const expectedEndTimeMoment = moment.utc(untilDate);
+            const expectedIncident = {
+                ...incidentData,
+                endTime: expectedEndTimeMoment,
+                status: STATUSES.DRAFT,
+            };
+
+            buildIncidentSubmitBody.mockReturnValue(expectedIncident);
+            wrapper.setState({ incidentData });
+
+            await wrapper.instance().onSubmitDraft();
+
+            const callArgs = buildIncidentSubmitBody.mock.calls[0][0];
+            expect(callArgs.endTime).toBeDefined();
+            expect(callArgs.endTime.isSame(expectedEndTimeMoment)).toBe(true);
+        });
+
+        it('Should set endTimeMoment from endDate and endTime when both are provided (for non-recurrent incidents)', async () => {
+            const endDate = '15/03/2025';
+            const endTime = '14:30:00';
+            const mockEndTimeMoment = moment('2025-03-15T14:30:00');
+            const incidentData = {
+                ...defaultIncidentData,
+                endDate,
+                endTime,
+                disruptions: [],
+                notes: '',
+            };
+
+            momentFromDateTime.mockReturnValue(mockEndTimeMoment);
+            const expectedIncident = {
+                ...incidentData,
+                endTime: mockEndTimeMoment,
+                status: STATUSES.DRAFT,
+            };
+
+            buildIncidentSubmitBody.mockReturnValue(expectedIncident);
+            wrapper.setState({ incidentData });
+
+            await wrapper.instance().onSubmitDraft();
+
+            expect(momentFromDateTime).toHaveBeenCalledWith(endDate, endTime);
+            const callArgs = buildIncidentSubmitBody.mock.calls[0][0];
+            expect(callArgs.endTime).toBe(mockEndTimeMoment);
+        });
+
+        it('Should use recurrencePattern.until instead of endDate/endTime for recurrent incidents', async () => {
+            const untilDate = new Date('2025-03-20T12:00:00.000Z');
+            const endDate = '15/03/2025';
+            const endTime = '14:30:00';
+            const startDate = '10/03/2025';
+            const startTime = '09:00:00';
+            const incidentData = {
+                ...defaultIncidentData,
+                recurrent: true,
+                startDate,
+                startTime,
+                endDate,
+                endTime,
+                recurrencePattern: {
+                    freq: RRule.WEEKLY,
+                    until: untilDate,
+                    byweekday: [0],
+                },
+                disruptions: [],
+                notes: '',
+            };
+
+            const expectedEndTimeMoment = moment.utc(untilDate);
+            const expectedIncident = {
+                ...incidentData,
+                endTime: expectedEndTimeMoment,
+                status: STATUSES.DRAFT,
+            };
+
+            buildIncidentSubmitBody.mockReturnValue(expectedIncident);
+            wrapper.setState({ incidentData });
+
+            await wrapper.instance().onSubmitDraft();
+
+            const callArgs = buildIncidentSubmitBody.mock.calls[0][0];
+            expect(callArgs.endTime).toBeDefined();
+            expect(callArgs.endTime.isSame(expectedEndTimeMoment)).toBe(true);
+            expect(momentFromDateTime).toHaveBeenCalledTimes(1);
+            expect(momentFromDateTime).toHaveBeenCalledWith(startDate, startTime);
+            expect(momentFromDateTime).not.toHaveBeenCalledWith(endDate, endTime);
         });
     });
 
