@@ -125,10 +125,6 @@ const INIT_EFFECT_STATE = {
     status: STATUSES.NOT_STARTED,
 };
 
-export function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms)); // eslint-disable-line
-}
-
 export function updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption) {
     if (fetchedDisruption == null) return;
 
@@ -835,11 +831,6 @@ export const EditEffectPanel = (props, ref) => {
     useEffect(() => {
         const fetchDisruptionForDiversion = async () => {
             if (shouldRefetchDiversions || (props.isDiversionManagerOpen && disruption?.disruptionId && !fetchedDisruption)) {
-                // if (shouldRefetchDiversions) {
-                // console.log('Refetching diversion:WAITING');
-                // await sleep(2000); // small delay to ensure diversion manager is closed and backend cache is cleared before refetching
-                // console.log('Refetching diversion:WAITING DONE');
-                // }
                 setShouldRefetchDiversions(false);
                 setIsLoadingDisruption(true);
                 const disruptionData = await getDisruptionAPI(disruption.disruptionId);
