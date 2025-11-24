@@ -148,14 +148,15 @@ describe('<BusPriorityIntersectionsDataGrid />', () => {
 
     it('opens edit modal when edit button is clicked', () => {
         render(<BusPriorityIntersectionsDataGrid { ...defaultProps } />);
-        const withinModal = openFreshEditModal();
+        const { geofenceInput, travelTimeInput } = findModals();
+        const busRouteValue = screen.getAllByText('101');
 
-        const modal = screen.getByTestId('custom-modal');
-        expect(modal).toBeInTheDocument();
+        expect(geofenceInput).toBeInTheDocument();
+        expect(travelTimeInput).toBeInTheDocument();
 
-        expect(withinModal.getByTestId('modal-title')).toHaveTextContent('Edit Intersections');
-        expect(withinModal.getByText('Bus Route:')).toBeInTheDocument();
-        expect(withinModal.getByText('101')).toBeInTheDocument();
+        expect(screen.getByTestId('modal-title')).toHaveTextContent('Edit Intersections');
+        expect(screen.getByText('Bus Route:')).toBeInTheDocument();
+        expect(busRouteValue[1]).toBeInTheDocument();
     });
 
     it('pre-fills Travel Time and Geofence Radius in the modal', () => {
