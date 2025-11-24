@@ -651,7 +651,6 @@ const mockDisruption1 = {
             valueKey: 'routeId',
             labelKey: 'routeShortName',
             type: 'route',
-            diversionIds: ['diversion-1', 'diversion-2'],
         },
         {
             routeId: '105-202',
