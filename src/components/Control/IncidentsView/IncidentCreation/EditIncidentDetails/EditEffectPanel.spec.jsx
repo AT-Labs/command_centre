@@ -8,7 +8,7 @@ import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import EditEffectPanel, { updateDisruptionWithFetchData } from './EditEffectPanel';
+import EditEffectPanel from './EditEffectPanel';
 import {
     toggleEditEffectPanel,
     updateDisruptionKeyToEditEffect,
@@ -99,11 +99,6 @@ jest.mock('react-flatpickr', () => props => (
     // eslint-disable-next-line react/prop-types
     <input data-testid={ props['data-testid'] } id={ props.id } value={ props.value } onChange={ e => props.onChange([new Date(e.target.value)]) } />
 ));
-
-jest.mock('../../../../../utils/transmitters/disruption-mgt-api', () => ({
-    getDisruption: jest.fn(),
-    getDiversion: jest.fn(),
-}));
 
 const fakeNow = new Date(2025, 5, 9, 11, 37, 0);
 
@@ -993,86 +988,141 @@ describe('Confirmation Component', () => {
         });
     });
 
-    describe('Fetched Disruption ShapeWkt Merge', () => {
-        it('should merge shapeWkt from current disruption into fetched disruption using Map', () => {
-            // Setup current disruption with routes that have shapeWkt
-            const disruption = {
-                affectedEntities: {
-                    affectedRoutes: [
-                        {
-                            routeId: '101-202',
-                            routeShortName: '101',
-                            routeType: 3,
-                            shapeWkt: 'LINESTRING(0 0, 1 1)',
-                        },
-                        {
-                            routeId: '105-202',
-                            routeShortName: '105',
-                            routeType: 3,
-                            shapeWkt: 'LINESTRING(2 2, 3 3)',
-                        },
-                    ],
-                    affectedStops: [],
-                },
-            };
-
-            // Setup fetched disruption with routes that lack shapeWkt
-            const fetchedDisruption = {
-                affectedEntities: [
-                    { routeId: '101-202', routeShortName: '101', routeType: 3 },
-                    { routeId: '105-202', routeShortName: '105', routeType: 3 },
-                    { routeId: '999-202', routeShortName: '999', routeType: 3 }, // Route not in current disruption
-                ],
-            };
-
-            // Mock setDisruption to capture the updated disruption
-            const setDisruption = jest.fn();
-
-            // Call the function being tested
-            updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption);
-
-            // Verify setDisruption was called with merged data
-            expect(setDisruption).toHaveBeenCalledTimes(1);
-            const updatedDisruption = setDisruption.mock.calls[0][0];
-
-            // Verify the structure is correct
-            expect(updatedDisruption.affectedEntities.affectedRoutes).toEqual([
-                {
-                    routeId: '101-202',
-                    routeShortName: '101',
-                    routeType: 3,
-                    shapeWkt: 'LINESTRING(0 0, 1 1)', // shapeWkt merged from current disruption
-                },
-                {
-                    routeId: '105-202',
-                    routeShortName: '105',
-                    routeType: 3,
-                    shapeWkt: 'LINESTRING(2 2, 3 3)', // shapeWkt merged from current disruption
-                },
-                {
-                    routeId: '999-202',
-                    routeShortName: '999',
-                    routeType: 3,
-                    shapeWkt: undefined, // No matching route in current disruption
-                },
-            ]);
+    describe('initDisruptionData', () => {
+        beforeEach(() => {
+            jest.clearAllMocks();
         });
 
-        it('should not call setDisruption when fetchedDisruption is null', () => {
-            const disruption = {
-                affectedEntities: {
-                    affectedRoutes: [{ routeId: '101-202', shapeWkt: 'LINESTRING(0 0, 1 1)' }],
-                    affectedStops: [],
-                },
+        it('Should return early when disruption is not found', () => {
+            const props = {
+                ...defaultProps,
+                disruptions: [{ ...mockDisruption, incidentNo: 'DISR999' }],
+                disruptionIncidentNoToEdit: 'DISR123',
             };
 
-            const setDisruption = jest.fn();
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
 
-            // Call with null fetchedDisruption
-            updateDisruptionWithFetchData(null, disruption, setDisruption);
+            expect(defaultProps.updateEditableDisruption).not.toHaveBeenCalled();
+            expect(defaultProps.setDisruptionForWorkaroundEdit).not.toHaveBeenCalled();
+        });
 
-            // Verify setDisruption was never called (early return)
-            expect(setDisruption).not.toHaveBeenCalled();
+        it('Should set endDate from incidentEndDate when disruptionRecurrent is true and disruption.endDate is empty', () => {
+            const incidentEndDate = '25/06/2025';
+            const disruptionWithoutEndDate = {
+                ...mockDisruption,
+                incidentNo: 'DISR123',
+                endDate: null,
+            };
+
+            const props = {
+                ...defaultProps,
+                disruptions: [disruptionWithoutEndDate],
+                disruptionIncidentNoToEdit: 'DISR123',
+                disruptionRecurrent: true,
+                incidentEndDate,
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    endDate: incidentEndDate,
+                }),
+            );
+        });
+
+        it('Should not set endDate from incidentEndDate when disruptionRecurrent is false', () => {
+            const incidentEndDate = '25/06/2025';
+            const disruptionWithoutEndDate = {
+                ...mockDisruption,
+                incidentNo: 'DISR123',
+                endDate: null,
+            };
+
+            const props = {
+                ...defaultProps,
+                disruptions: [disruptionWithoutEndDate],
+                disruptionIncidentNoToEdit: 'DISR123',
+                disruptionRecurrent: false,
+                incidentEndDate,
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    endDate: null,
+                }),
+            );
+        });
+
+        it('Should not set endDate from incidentEndDate when disruption.endDate is already set', () => {
+            const incidentEndDate = '25/06/2025';
+            const disruptionWithEndDate = {
+                ...mockDisruption,
+                incidentNo: 'DISR123',
+                endDate: '20/06/2025',
+            };
+
+            const props = {
+                ...defaultProps,
+                disruptions: [disruptionWithEndDate],
+                disruptionIncidentNoToEdit: 'DISR123',
+                disruptionRecurrent: true,
+                incidentEndDate,
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    endDate: '20/06/2025',
+                }),
+            );
+        });
+
+        it('Should not set endDate from incidentEndDate when incidentEndDate is empty', () => {
+            const disruptionWithoutEndDate = {
+                ...mockDisruption,
+                incidentNo: 'DISR123',
+                endDate: null,
+            };
+
+            const props = {
+                ...defaultProps,
+                disruptions: [disruptionWithoutEndDate],
+                disruptionIncidentNoToEdit: 'DISR123',
+                disruptionRecurrent: true,
+                incidentEndDate: null,
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    endDate: null,
+                }),
+            );
         });
     });
 });
