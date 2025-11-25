@@ -128,27 +128,11 @@ const INIT_EFFECT_STATE = {
 export function updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption) {
     if (fetchedDisruption == null) return;
 
-    // Moving shapeWkt over to fetchedDisruption: Somehow, the caller of <EditEffectpanel> have appended shapeWkt. Reusing that.
-    // const shapeWktMap = new Map(
-    //     disruption.affectedEntities.affectedRoutes.map(route => [route.routeId, route.shapeWkt]),
-    // );
-    // const newAffectedRoutes = fetchedDisruption.affectedEntities.map((entity) => {
-    //     const shapeWkt = shapeWktMap.get(entity.routeId);
-    //     return {
-    //         ...entity,
-    //         shapeWkt: undefined,
-    //     };
-    // });
-    const affectedRoutes = {
-        ...fetchedDisruption.affectedEntities,
-    };
-
-    // Set the new disruption with updated affectedEntities
     setDisruption({
         ...disruption,
         affectedEntities: {
             ...disruption.affectedEntities,
-            affectedRoutes,
+            affectedRoutes: fetchedDisruption.affectedEntities,
         },
     });
 }
@@ -186,7 +170,6 @@ export const EditEffectPanel = (props, ref) => {
 
     const initDisruptionData = () => {
         const disruptionToSet = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
-        console.log('Initializing disruption data in EditEffectPanel: ', disruptionToSet);
         setDisruption(disruptionToSet);
         props.updateEditableDisruption(disruptionToSet);
         setOriginalDisruption(disruptionToSet);
@@ -221,10 +204,6 @@ export const EditEffectPanel = (props, ref) => {
             });
         }
     }, [props.mapDrawingEntities]);
-
-    // useEffect(() => {
-    //     console.log('Disruption changed in EditEffectPanel: ', disruption);
-    // }, [disruption]);
 
     useImperativeHandle(ref, () => ({
         deleteAffectedEntities() {
