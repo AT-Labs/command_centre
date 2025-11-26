@@ -383,13 +383,6 @@ export const EditEffectPanel = (props, ref) => {
         setRequireMapUpdate(true);
         props.setDisruptionForWorkaroundEdit(updatedDisruptions);
         props.setRequireToUpdateWorkaroundsState(true);
-
-        if (props.onDisruptionsUpdate && props.disruptions) {
-            const updatedDisruptionsList = props.disruptions.map(d => (
-                d.incidentNo === disruption.incidentNo ? updatedDisruptions : d
-            ));
-            props.onDisruptionsUpdate('disruptions', updatedDisruptionsList);
-        }
     };
 
     const resetAffectedEntities = () => {
@@ -1421,7 +1414,6 @@ EditEffectPanel.propTypes = {
     mapDrawingEntities: PropTypes.array.isRequired,
     onDisruptionChange: PropTypes.func,
     clearMapDrawingEntities: PropTypes.func.isRequired,
-    onDisruptionsUpdate: PropTypes.func,
 };
 
 EditEffectPanel.defaultProps = {
@@ -1436,7 +1428,6 @@ EditEffectPanel.defaultProps = {
     isDiversionManagerLoading: false,
     isDiversionManagerReady: false,
     onDisruptionChange: () => {},
-    onDisruptionsUpdate: () => {},
 };
 
 export default connect(state => ({
