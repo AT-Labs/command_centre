@@ -541,7 +541,7 @@ describe('CreateIncident component', () => {
 
         it('Should set incidentEndDate from endTime when endDate is not provided but endTime is provided', () => {
             const endTime = '2025-08-21T20:30:00.000Z';
-            const expectedEndDate = moment(endTime).format(DATE_FORMAT);
+            const expectedEndDate = moment.utc(endTime).format(DATE_FORMAT);
             const incidentToEditWithEndTime = {
                 ...incidentForEdit,
                 recurrent: true,
