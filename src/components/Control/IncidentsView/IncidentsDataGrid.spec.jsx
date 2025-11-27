@@ -299,13 +299,13 @@ describe('IncidentDataGrid Component', () => {
 
             const childRow = container.querySelector('.incidents-custom-data-grid-child-row');
             expect(childRow).toBeInTheDocument();
-            
+
             const cells = childRow.querySelectorAll('.MuiDataGrid-cell');
-            const endTimeCell = Array.from(cells).find(cell => {
+            const endTimeCell = Array.from(cells).find((cell) => {
                 const field = cell.getAttribute('data-field');
                 return field === 'endTime';
             }) || cells[7];
-            
+
             expect(endTimeCell?.textContent?.trim()).toBe('');
         });
 
