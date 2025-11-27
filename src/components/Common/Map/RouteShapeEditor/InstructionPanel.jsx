@@ -31,11 +31,11 @@ const maneuverToText = (maneuver, street) => {
 
 const deduplicateInstructions = (instructions) => {
     if (!Array.isArray(instructions)) return [];
-    let prevKey = null;
+    let prevText = null;
     return instructions.filter((inst) => {
-        const key = `${inst.maneuver}-${inst.nextRoadInfo?.streetName?.text || ''}`;
-        const isDuplicate = key === prevKey;
-        prevKey = key;
+        const nextText = maneuverToText(inst.maneuver, inst.nextRoadInfo?.streetName?.text || '');
+        const isDuplicate = nextText === prevText;
+        prevText = nextText;
         return !isDuplicate;
     });
 };
