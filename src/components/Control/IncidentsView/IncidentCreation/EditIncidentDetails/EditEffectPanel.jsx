@@ -125,7 +125,8 @@ const INIT_EFFECT_STATE = {
     status: STATUSES.NOT_STARTED,
 };
 
-export function updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption) {
+export function updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption, props) {
+    console.log('updateDisruptionWithFetchData called');
     if (fetchedDisruption == null) return;
 
     // Moving shapeWkt over to fetchedDisruption: Somehow, the caller of <EditEffectpanel> have appended shapeWkt. Reusing that.
@@ -141,13 +142,19 @@ export function updateDisruptionWithFetchData(fetchedDisruption, disruption, set
     });
 
     // Set the new disruption with updated affectedEntities
-    setDisruption({
+    const newDisruption = {
         ...disruption,
         affectedEntities: {
             ...disruption.affectedEntities,
             affectedRoutes: newAffectedRoutes,
         },
-    });
+    };
+    if (setDisruption) setDisruption(newDisruption);
+    // if (applyDisruptionChanges) applyDisruptionChanges(newDisruption, false);
+    props.updateEditableDisruption(newDisruption);
+    // setRequireMapUpdate(true);
+    props.setDisruptionForWorkaroundEdit(newDisruption);
+    props.setRequireToUpdateWorkaroundsState(true);
 }
 
 export const EditEffectPanel = (props, ref) => {
@@ -843,7 +850,7 @@ export const EditEffectPanel = (props, ref) => {
     }, [props.isDiversionManagerOpen, disruption?.disruptionId, fetchedDisruption, shouldRefetchDiversions]);
 
     useEffect(() => {
-        updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption);
+        updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption, props);
     }, [fetchedDisruption]);
 
     useEffect(() => {
