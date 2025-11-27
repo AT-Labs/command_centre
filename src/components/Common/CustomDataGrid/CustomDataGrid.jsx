@@ -307,7 +307,7 @@ export const CustomDataGrid = (props) => {
         }
 
         setSelectedRows(updatedIds);
-        props.onRowExpanded(updatedIds);
+        props.onRowExpanded();
     }, [props.multipleDetailPanelOpen, props.onRowExpanded, setSelectedRows]);
 
     return (
