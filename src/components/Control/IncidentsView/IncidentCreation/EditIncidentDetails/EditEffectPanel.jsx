@@ -125,7 +125,7 @@ const INIT_EFFECT_STATE = {
     status: STATUSES.NOT_STARTED,
 };
 
-export function updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption) {
+export function updateDisruptionWithFetchData(fetchedDisruption, disruption, updateDisruptionState) {
     if (fetchedDisruption == null) return;
 
     // Moving shapeWkt over to fetchedDisruption: Somehow, the caller of <EditEffectpanel> have appended shapeWkt. Reusing that.
@@ -141,13 +141,20 @@ export function updateDisruptionWithFetchData(fetchedDisruption, disruption, set
     });
 
     // Set the new disruption with updated affectedEntities
-    setDisruption({
+    const newDisruption = {
         ...disruption,
         affectedEntities: {
             ...disruption.affectedEntities,
             affectedRoutes: newAffectedRoutes,
         },
-    });
+    };
+
+    // Updating other local states
+    updateDisruptionState(newDisruption);
+    // props.updateEditableDisruption(newDisruption);
+    // setRequireMapUpdate(true); // This is to refresh map in next cycle
+    // props.setDisruptionForWorkaroundEdit(newDisruption);
+    // props.setRequireToUpdateWorkaroundsState(true);
 }
 
 export const EditEffectPanel = (props, ref) => {
@@ -370,6 +377,14 @@ export const EditEffectPanel = (props, ref) => {
         setActivePeriodsModalOpen(true);
     };
 
+    const updateDisruptionState = (updatedDisruptions) => {
+        setDisruption(updatedDisruptions);
+        props.updateEditableDisruption(updatedDisruptions);
+        setRequireMapUpdate(true);
+        props.setDisruptionForWorkaroundEdit(updatedDisruptions);
+        props.setRequireToUpdateWorkaroundsState(true);
+    };
+
     const onAffectedEntitiesUpdate = (disruptionKey, valueKey, affectedEntities) => {
         const updatedDisruptions = {
             ...disruption,
@@ -378,11 +393,12 @@ export const EditEffectPanel = (props, ref) => {
                 [valueKey]: affectedEntities,
             },
         };
-        setDisruption(updatedDisruptions);
-        props.updateEditableDisruption(updatedDisruptions);
-        setRequireMapUpdate(true);
-        props.setDisruptionForWorkaroundEdit(updatedDisruptions);
-        props.setRequireToUpdateWorkaroundsState(true);
+        // setDisruption(updatedDisruptions);
+        // props.updateEditableDisruption(updatedDisruptions);
+        // setRequireMapUpdate(true);
+        // props.setDisruptionForWorkaroundEdit(updatedDisruptions);
+        // props.setRequireToUpdateWorkaroundsState(true);
+        updateDisruptionState(updatedDisruptions);
     };
 
     const resetAffectedEntities = () => {
@@ -842,8 +858,9 @@ export const EditEffectPanel = (props, ref) => {
         fetchDisruptionForDiversion();
     }, [props.isDiversionManagerOpen, disruption?.disruptionId, fetchedDisruption, shouldRefetchDiversions]);
 
+    // When disruption is refreshed from API (usually via diversion modal), we need to update local states with these updates
     useEffect(() => {
-        updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption);
+        updateDisruptionWithFetchData(fetchedDisruption, disruption, updateDisruptionState);
     }, [fetchedDisruption]);
 
     useEffect(() => {

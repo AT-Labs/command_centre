@@ -254,7 +254,12 @@ export const IncidentsDataGrid = (props) => {
         [],
     );
 
-    const updateActiveDisruption = () => {
+    const updateActiveDisruption = (ids) => {
+        if (ids?.length > 0) {
+            props.updateActiveDisruptionId(ids[0]);
+        } else {
+            props.updateActiveDisruptionId(null);
+        }
         props.updateCopyDisruptionState(false);
     };
 
@@ -306,7 +311,6 @@ export const IncidentsDataGrid = (props) => {
 
         const timer = setTimeout(() => {
             props.clearActiveIncident();
-            props.updateActiveDisruptionId(null);
         }, 500);
 
         return () => clearTimeout(timer);
@@ -336,7 +340,7 @@ export const IncidentsDataGrid = (props) => {
                 getRowClassName={ params => (params.row.disruptionId ? 'incidents-custom-data-grid-child-row' : 'incidents-custom-data-grid-parent-row') }
                 calculateDetailPanelHeight={ props.useViewDisruptionDetailsPage ? () => 400 : calculateDetailPanelHeight }
                 expandedDetailPanels={ activeDisruptionCompositeId ? [activeDisruptionCompositeId] : null }
-                onRowExpanded={ updateActiveDisruption }
+                onRowExpanded={ ids => updateActiveDisruption(ids) }
                 initialState={ initialState }
                 autoExpandActiveIncident={ activeIncidentId }
                 autoExpandSubChild={ props.activeDisruptionId ? props.activeDisruptionId : null }
