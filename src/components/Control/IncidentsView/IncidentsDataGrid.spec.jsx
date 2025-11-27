@@ -273,7 +273,7 @@ describe('IncidentDataGrid Component', () => {
     });
 
     describe('endTime valueGetter for recurrent DRAFT disruptions', () => {
-        it('should calculate endTime from startTime + duration for recurrent DRAFT disruption without saved endTime', async () => {
+        it('should not display endTime when endTime is null for recurrent DRAFT disruption', async () => {
             const mockDraftDisruption = {
                 ...mockDisruption,
                 status: STATUSES.DRAFT,
@@ -297,10 +297,16 @@ describe('IncidentDataGrid Component', () => {
             const expandButton = screen.getByLabelText('see children');
             fireEvent.click(expandButton);
 
-            const expectedEndTime = moment('2025-07-21T08:00:00.000Z').add(3, 'hours').toISOString();
-            const expectedFormattedTime = moment(expectedEndTime).format('DD/MM/YY HH:mm');
-
-            expect(container.textContent).toContain(expectedFormattedTime);
+            const childRow = container.querySelector('.incidents-custom-data-grid-child-row');
+            expect(childRow).toBeInTheDocument();
+            
+            const cells = childRow.querySelectorAll('.MuiDataGrid-cell');
+            const endTimeCell = Array.from(cells).find(cell => {
+                const field = cell.getAttribute('data-field');
+                return field === 'endTime';
+            }) || cells[7];
+            
+            expect(endTimeCell?.textContent?.trim()).toBe('');
         });
 
         it('should combine saved date with calculated time for recurrent DRAFT disruption with saved endTime', async () => {
