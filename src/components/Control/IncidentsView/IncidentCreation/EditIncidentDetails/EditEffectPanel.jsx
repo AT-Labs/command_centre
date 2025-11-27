@@ -141,20 +141,13 @@ export function updateDisruptionWithFetchData(fetchedDisruption, disruption, upd
     });
 
     // Set the new disruption with updated affectedEntities
-    const newDisruption = {
+    updateDisruptionState({
         ...disruption,
         affectedEntities: {
             ...disruption.affectedEntities,
             affectedRoutes: newAffectedRoutes,
         },
-    };
-
-    // Updating other local states
-    updateDisruptionState(newDisruption);
-    // props.updateEditableDisruption(newDisruption);
-    // setRequireMapUpdate(true); // This is to refresh map in next cycle
-    // props.setDisruptionForWorkaroundEdit(newDisruption);
-    // props.setRequireToUpdateWorkaroundsState(true);
+    });
 }
 
 export const EditEffectPanel = (props, ref) => {
@@ -393,11 +386,6 @@ export const EditEffectPanel = (props, ref) => {
                 [valueKey]: affectedEntities,
             },
         };
-        // setDisruption(updatedDisruptions);
-        // props.updateEditableDisruption(updatedDisruptions);
-        // setRequireMapUpdate(true);
-        // props.setDisruptionForWorkaroundEdit(updatedDisruptions);
-        // props.setRequireToUpdateWorkaroundsState(true);
         updateDisruptionState(updatedDisruptions);
     };
 

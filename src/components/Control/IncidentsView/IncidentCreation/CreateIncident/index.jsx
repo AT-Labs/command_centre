@@ -318,9 +318,7 @@ export class CreateIncident extends React.Component {
         }));
     };
 
-    applyDisruptionChanges = (newDisruption, fromApplyClick = true) => {
-        if (!fromApplyClick) return;
-        console.log('applyDisruptionChanges called in CreateIncident', newDisruption, fromApplyClick);
+    applyDisruptionChanges = (newDisruption) => {
         const { editableWorkarounds } = this.state;
         this.setState(prevState => ({
             incidentData: { ...prevState.incidentData,
