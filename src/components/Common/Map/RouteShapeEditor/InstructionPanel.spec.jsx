@@ -31,11 +31,7 @@ describe('<InstructionPanel />', () => {
             nextRoadInfo: { streetName: { text: 'Fourth Rd' } },
         },
         {
-            maneuver: 'ROUNDABOUT_BACK',
-            nextRoadInfo: { streetName: { text: 'Fourth Rd' } },
-        },
-        {
-            maneuver: 'EXIT_ROUNDABOUT',
+            maneuver: 'WAYPOINT_REACHED',
             nextRoadInfo: { streetName: { text: 'Fourth Rd' } },
         },
         {
