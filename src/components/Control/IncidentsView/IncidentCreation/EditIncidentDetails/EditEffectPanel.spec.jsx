@@ -1026,14 +1026,14 @@ describe('Confirmation Component', () => {
             };
 
             // Mock setDisruption to capture the updated disruption
-            const updateDisruptionState = jest.fn();
+            const setDisruption = jest.fn();
 
             // Call the function being tested
-            updateDisruptionWithFetchData(fetchedDisruption, disruption, updateDisruptionState);
+            updateDisruptionWithFetchData(fetchedDisruption, disruption, setDisruption);
 
             // Verify setDisruption was called with merged data
-            expect(updateDisruptionState).toHaveBeenCalledTimes(1);
-            const updatedDisruption = updateDisruptionState.mock.calls[0][0];
+            expect(setDisruption).toHaveBeenCalledTimes(1);
+            const updatedDisruption = setDisruption.mock.calls[0][0];
 
             // Verify the structure is correct
             expect(updatedDisruption.affectedEntities.affectedRoutes).toEqual([
@@ -1058,7 +1058,7 @@ describe('Confirmation Component', () => {
             ]);
         });
 
-        it('should not call updateDisruptionState when fetchedDisruption is null', () => {
+        it('should not call setDisruption when fetchedDisruption is null', () => {
             const disruption = {
                 affectedEntities: {
                     affectedRoutes: [{ routeId: '101-202', shapeWkt: 'LINESTRING(0 0, 1 1)' }],
