@@ -105,29 +105,6 @@ jest.mock('../../../../../utils/transmitters/disruption-mgt-api', () => ({
     getDiversion: jest.fn(),
 }));
 
-let onAffectedEntitiesUpdateHandler = null;
-
-jest.mock('../WizardSteps/SelectEffectEntities', () => {
-    // eslint-disable-next-line global-require
-    const PropTypesMock = require('prop-types');
-    const MockSelectEffectEntities = (props) => {
-        // eslint-disable-next-line react/prop-types
-        const { onAffectedEntitiesUpdate } = props;
-        onAffectedEntitiesUpdateHandler = onAffectedEntitiesUpdate;
-        return (
-            <div data-testid="select-effect-entities">
-                <div>Search routes or draw in the map</div>
-                <div>SelectEffectEntities</div>
-            </div>
-        );
-    };
-    MockSelectEffectEntities.propTypes = {
-        onAffectedEntitiesUpdate: PropTypesMock.func.isRequired,
-    };
-    MockSelectEffectEntities.displayName = 'SelectEffectEntities';
-    return MockSelectEffectEntities;
-});
-
 const fakeNow = new Date(2025, 5, 9, 11, 37, 0);
 
 describe('Confirmation Component', () => {
@@ -1099,20 +1076,16 @@ describe('Confirmation Component', () => {
         });
     });
 
-    describe('onDisruptionsUpdate', () => {
+    describe('initDisruptionData', () => {
         beforeEach(() => {
-            onAffectedEntitiesUpdateHandler = null;
+            jest.clearAllMocks();
         });
 
-        it('should call onDisruptionsUpdate when onAffectedEntitiesUpdate is called with onDisruptionsUpdate and disruptions props', () => {
-            const onDisruptionsUpdateSpy = jest.fn();
-            const disruption1 = { ...mockDisruption, incidentNo: 'DISR123', key: 'DISR123' };
-            const disruption2 = { ...mockDisruption, incidentNo: 'DISR456', key: 'DISR456' };
+        it('Should return early when disruption is not found', () => {
             const props = {
                 ...defaultProps,
-                onDisruptionsUpdate: onDisruptionsUpdateSpy,
-                disruptions: [disruption1, disruption2],
-                isEditEffectPanelOpen: true,
+                disruptions: [{ ...mockDisruption, incidentNo: 'DISR999' }],
+                disruptionIncidentNoToEdit: 'DISR123',
             };
 
             render(
@@ -1121,89 +1094,53 @@ describe('Confirmation Component', () => {
                 </Provider>,
             );
 
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-            expect(onAffectedEntitiesUpdateHandler).toBeTruthy();
-
-            const newAffectedRoutes = [{
-                category: { type: 'route', icon: '', label: 'Routes' },
-                labelKey: 'routeShortName',
-                routeId: 'WEST-201',
-                routeShortName: 'WEST',
-                routeType: 2,
-                text: 'WEST',
-                type: 'route',
-                valueKey: 'routeId',
-            }];
-
-            onAffectedEntitiesUpdateHandler('DISR123', 'affectedRoutes', newAffectedRoutes);
-
-            expect(onDisruptionsUpdateSpy).toHaveBeenCalledWith('disruptions', expect.arrayContaining([
-                expect.objectContaining({
-                    incidentNo: 'DISR123',
-                    affectedEntities: expect.objectContaining({
-                        affectedRoutes: expect.arrayContaining([
-                            expect.objectContaining({ routeShortName: 'WEST' }),
-                        ]),
-                    }),
-                }),
-                expect.objectContaining({ incidentNo: 'DISR456' }),
-            ]));
+            expect(defaultProps.updateEditableDisruption).not.toHaveBeenCalled();
+            expect(defaultProps.setDisruptionForWorkaroundEdit).not.toHaveBeenCalled();
         });
 
-        it('should call onDisruptionsUpdate with updated disruptions list when affected entities are updated and replace correct disruption', () => {
-            const onDisruptionsUpdateSpy = jest.fn();
-            const disruption1 = { ...mockDisruption, incidentNo: 'DISR123', key: 'DISR123' };
-            const disruption2 = { ...mockDisruption, incidentNo: 'DISR456', key: 'DISR456' };
-            const props = {
-                ...defaultProps,
-                onDisruptionsUpdate: onDisruptionsUpdateSpy,
-                disruptions: [disruption1, disruption2],
-                isEditEffectPanelOpen: true,
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(onAffectedEntitiesUpdateHandler).toBeTruthy();
-
-            const newAffectedStops = [{
-                category: { type: 'stop', icon: '', label: 'Stops' },
-                labelKey: 'stopCode',
-                stopCode: '100',
-                stopName: 'Test Stop',
-                type: 'stop',
-                valueKey: 'stopCode',
-            }];
-
-            onAffectedEntitiesUpdateHandler('DISR123', 'affectedStops', newAffectedStops);
-
-            expect(onDisruptionsUpdateSpy).toHaveBeenCalled();
-            const callArgs = onDisruptionsUpdateSpy.mock.calls[0];
-            expect(callArgs[0]).toBe('disruptions');
-            expect(callArgs[1]).toHaveLength(2);
-
-            expect(callArgs[1][0]).toMatchObject({
+        it('Should set endDate from incidentEndDate when disruptionRecurrent is true and disruption.endDate is empty', () => {
+            const incidentEndDate = '25/06/2025';
+            const disruptionWithoutEndDate = {
+                ...mockDisruption,
                 incidentNo: 'DISR123',
-                affectedEntities: expect.objectContaining({
-                    affectedStops: expect.arrayContaining([
-                        expect.objectContaining({ stopCode: '100' }),
-                    ]),
+                endDate: null,
+            };
+
+            const props = {
+                ...defaultProps,
+                disruptions: [disruptionWithoutEndDate],
+                disruptionIncidentNoToEdit: 'DISR123',
+                disruptionRecurrent: true,
+                incidentEndDate,
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    endDate: incidentEndDate,
                 }),
-            });
-
-            expect(callArgs[1][1]).toMatchObject({ incidentNo: 'DISR456' });
+            );
         });
 
-        it('should not call onDisruptionsUpdate when onDisruptionsUpdate prop is not provided', () => {
-            const onDisruptionsUpdateSpy = jest.fn();
+        it('Should not set endDate from incidentEndDate when disruptionRecurrent is false', () => {
+            const incidentEndDate = '25/06/2025';
+            const disruptionWithoutEndDate = {
+                ...mockDisruption,
+                incidentNo: 'DISR123',
+                endDate: null,
+            };
+
             const props = {
                 ...defaultProps,
-                onDisruptionsUpdate: undefined,
-                disruptions: [{ ...mockDisruption, incidentNo: 'DISR123' }],
-                isEditEffectPanelOpen: true,
+                disruptions: [disruptionWithoutEndDate],
+                disruptionIncidentNoToEdit: 'DISR123',
+                disruptionRecurrent: false,
+                incidentEndDate,
             };
 
             render(
@@ -1212,31 +1149,27 @@ describe('Confirmation Component', () => {
                 </Provider>,
             );
 
-            expect(screen.getByText('Edit details of Effect DISR123')).toBeInTheDocument();
-            expect(onAffectedEntitiesUpdateHandler).toBeTruthy();
-
-            const newAffectedRoutes = [{
-                category: { type: 'route', icon: '', label: 'Routes' },
-                labelKey: 'routeShortName',
-                routeId: 'WEST-201',
-                routeShortName: 'WEST',
-                routeType: 2,
-                text: 'WEST',
-                type: 'route',
-                valueKey: 'routeId',
-            }];
-
-            onAffectedEntitiesUpdateHandler('DISR123', 'affectedRoutes', newAffectedRoutes);
-
-            expect(onDisruptionsUpdateSpy).not.toHaveBeenCalled();
+            expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    endDate: null,
+                }),
+            );
         });
 
-        it('should not call onDisruptionsUpdate when disruptions prop is not provided', () => {
-            const onDisruptionsUpdateSpy = jest.fn();
+        it('Should not set endDate from incidentEndDate when disruption.endDate is already set', () => {
+            const incidentEndDate = '25/06/2025';
+            const disruptionWithEndDate = {
+                ...mockDisruption,
+                incidentNo: 'DISR123',
+                endDate: '20/06/2025',
+            };
+
             const props = {
                 ...defaultProps,
-                onDisruptionsUpdate: onDisruptionsUpdateSpy,
-                disruptions: undefined,
+                disruptions: [disruptionWithEndDate],
+                disruptionIncidentNoToEdit: 'DISR123',
+                disruptionRecurrent: true,
+                incidentEndDate,
             };
 
             render(
@@ -1245,8 +1178,39 @@ describe('Confirmation Component', () => {
                 </Provider>,
             );
 
-            expect(screen.queryByText('Edit details of Effect DISR123')).not.toBeInTheDocument();
-            expect(onDisruptionsUpdateSpy).not.toHaveBeenCalled();
+            expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    endDate: '20/06/2025',
+                }),
+            );
+        });
+
+        it('Should not set endDate from incidentEndDate when incidentEndDate is empty', () => {
+            const disruptionWithoutEndDate = {
+                ...mockDisruption,
+                incidentNo: 'DISR123',
+                endDate: null,
+            };
+
+            const props = {
+                ...defaultProps,
+                disruptions: [disruptionWithoutEndDate],
+                disruptionIncidentNoToEdit: 'DISR123',
+                disruptionRecurrent: true,
+                incidentEndDate: null,
+            };
+
+            render(
+                <Provider store={ store }>
+                    <EditEffectPanel { ...props } />
+                </Provider>,
+            );
+
+            expect(defaultProps.updateEditableDisruption).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    endDate: null,
+                }),
+            );
         });
     });
 });

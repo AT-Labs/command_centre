@@ -200,15 +200,15 @@ export const IncidentsDataGrid = (props) => {
             width: 150,
             valueGetter: (params) => {
                 const { row } = params;
-                if (row?.recurrent && row?.duration && row.status === STATUSES.DRAFT) {
-                    const calculatedTime = moment(row.startTime).add(Number(row.duration), 'hours');
+                if (row?.recurrent && row?.endTime && row?.duration && row.status === STATUSES.DRAFT) {
+                    const calculatedTime = moment.utc(row.startTime).add(Number(row.duration), 'hours');
                     return row.endTime
-                        ? moment(row.endTime).hour(calculatedTime.hour()).minute(calculatedTime.minute()).toISOString()
+                        ? moment.utc(row.endTime).hour(calculatedTime.hour()).minute(calculatedTime.minute()).toISOString()
                         : calculatedTime.toISOString();
                 }
                 return params.value;
             },
-            valueFormatter: params => (params.value ? moment(params.value).format(dateTimeFormat) : ''),
+            valueFormatter: params => (params.value ? moment.utc(params.value).format(dateTimeFormat) : ''),
             type: 'dateTime',
         },
         {
