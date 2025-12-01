@@ -209,7 +209,7 @@ export class CreateIncident extends React.Component {
                 ...(requireToUpdateForm ? { startTime: incidentData.startTime } : (startTime && { startTime: moment(startTime).format(TIME_FORMAT) })),
                 ...(requireToUpdateForm ? { startDate: incidentData.startDate } : (startTime && { startDate: moment(startTime).format(DATE_FORMAT) })),
                 ...(requireToUpdateForm ? { endTime: incidentData.endTime } : (endTime && { endTime: moment.utc(endTime).format(TIME_FORMAT) })),
-                ...(requireToUpdateForm ? { endDate: incidentData.endDate } : (endTime && { endDate: moment.utc(endTime).format(DATE_FORMAT) })),
+                ...(requireToUpdateForm ? { endDate: incidentData.endDate } : (endTime && { endDate: moment(endTime).format(DATE_FORMAT) })),
                 ...(requireToUpdateForm && { header: incidentData.header }),
                 ...(requireToUpdateForm && { cause: incidentData.cause }),
                 ...(requireToUpdateForm && { status: incidentData.status }),
