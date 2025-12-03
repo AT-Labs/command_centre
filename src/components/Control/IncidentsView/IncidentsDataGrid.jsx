@@ -208,7 +208,7 @@ export const IncidentsDataGrid = (props) => {
                 }
                 return params.value;
             },
-            valueFormatter: params => {
+            valueFormatter: (params) => {
                 if (!params.value) return '';
                 const utcMoment = moment.utc(params.value);
                 return `${utcMoment.format('DD/MM/YY')} ${utcMoment.local().format('HH:mm')}`;

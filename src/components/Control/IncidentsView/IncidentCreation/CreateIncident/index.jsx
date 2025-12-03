@@ -209,11 +209,27 @@ export class CreateIncident extends React.Component {
                 ...(requireToUpdateForm ? { startTime: incidentData.startTime } : (startTime && { startTime: moment(startTime).format(TIME_FORMAT) })),
                 ...(requireToUpdateForm ? { startDate: incidentData.startDate } : (startTime && { startDate: moment(startTime).format(DATE_FORMAT) })),
                 ...(requireToUpdateForm ? { endTime: incidentData.endTime } : (endTime && { endTime: moment(endTime).format(TIME_FORMAT) })),
-                ...(requireToUpdateForm ? { 
-                    endDate: !isEmpty(incidentData.endDate) 
-                        ? incidentData.endDate 
-                        : (incidentToEdit.endDate || (endTime ? moment.utc(endTime).format(DATE_FORMAT) : null))
-                } : (endTime ? { endDate: moment.utc(endTime).format(DATE_FORMAT) } : (incidentToEdit.endDate ? { endDate: incidentToEdit.endDate } : {}))),
+                ...(requireToUpdateForm ? (() => {
+                    let endDateValue;
+                    if (!isEmpty(incidentData.endDate)) {
+                        endDateValue = incidentData.endDate;
+                    } else if (incidentToEdit.endDate) {
+                        endDateValue = incidentToEdit.endDate;
+                    } else if (endTime) {
+                        endDateValue = moment.utc(endTime).format(DATE_FORMAT);
+                    } else {
+                        endDateValue = null;
+                    }
+                    return { endDate: endDateValue };
+                })() : (() => {
+                    if (endTime) {
+                        return { endDate: moment.utc(endTime).format(DATE_FORMAT) };
+                    }
+                    if (incidentToEdit.endDate) {
+                        return { endDate: incidentToEdit.endDate };
+                    }
+                    return {};
+                })()),
                 ...(requireToUpdateForm && { header: incidentData.header }),
                 ...(requireToUpdateForm && { cause: incidentData.cause }),
                 ...(requireToUpdateForm && { status: incidentData.status }),
