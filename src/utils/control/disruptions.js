@@ -149,7 +149,12 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
     let startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
     let endTimeMoment;
     if (!isEmpty(disruptionEndDate) && !isEmpty(disruption.endTime)) {
-        endTimeMoment = momentFromDateTime(disruptionEndDate, disruption.endTime);
+        const isISOFormat = typeof disruption.endTime === 'string' && (disruption.endTime.includes('T') || disruption.endTime.endsWith('Z'));
+        if (isISOFormat) {
+            endTimeMoment = moment.utc(disruption.endTime);
+        } else {
+            endTimeMoment = momentFromDateTime(disruptionEndDate, disruption.endTime);
+        }
     }
     const modes = getMode(disruption);
     const routesToRequest = disruption.affectedEntities.affectedRoutes.map((

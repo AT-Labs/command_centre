@@ -201,14 +201,18 @@ export const IncidentsDataGrid = (props) => {
             valueGetter: (params) => {
                 const { row } = params;
                 if (row?.recurrent && row?.endTime && row?.duration && row.status === STATUSES.DRAFT) {
-                    const calculatedTime = moment(row.startTime).add(Number(row.duration), 'hours');
+                    const calculatedTime = moment.utc(row.startTime).add(Number(row.duration), 'hours');
                     return row.endTime
-                        ? moment(row.endTime).hour(calculatedTime.hour()).minute(calculatedTime.minute()).toISOString()
+                        ? moment.utc(row.endTime).hour(calculatedTime.hour()).minute(calculatedTime.minute()).toISOString()
                         : calculatedTime.toISOString();
                 }
                 return params.value;
             },
-            valueFormatter: params => (params.value ? moment(params.value).format(dateTimeFormat) : ''),
+            valueFormatter: params => {
+                if (!params.value) return '';
+                const utcMoment = moment.utc(params.value);
+                return `${utcMoment.format('DD/MM/YY')} ${utcMoment.local().format('HH:mm')}`;
+            },
             type: 'dateTime',
         },
         {
