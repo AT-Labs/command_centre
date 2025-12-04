@@ -151,7 +151,7 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
     if (!isEmpty(disruptionEndDate) && !isEmpty(disruption.endTime)) {
         const isISOFormat = typeof disruption.endTime === 'string' && (disruption.endTime.includes('T') || disruption.endTime.endsWith('Z'));
         if (isISOFormat) {
-            endTimeMoment = moment.utc(disruption.endTime);
+            endTimeMoment = moment(disruption.endTime);
         } else {
             endTimeMoment = momentFromDateTime(disruptionEndDate, disruption.endTime);
         }
@@ -182,11 +182,15 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
     if (disruption.status === STATUSES.NOT_STARTED && isStatusBecomeResolved) {
         startTimeMoment = incidentEndTimeMoment;
     }
+    let finalEndTime = endTimeMoment;
+    if (incidentRecurrent && finalEndTime && moment.isMoment(finalEndTime)) {
+        finalEndTime = finalEndTime.toISOString();
+    }
     return {
         ...disruption,
         ...(isEditMode ? { } : { status: incidentStatus }),
         ...(isEditMode ? { } : { cause: incidentCause }),
-        endTime: endTimeMoment,
+        endTime: finalEndTime,
         endDate: disruptionEndDate,
         startTime: startTimeMoment,
         mode: uniq(modes).join(', '),
@@ -270,6 +274,9 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
     };
     if (incident.recurrent && incident.endDate) {
         result.endDate = incident.endDate;
+    }
+    if (incident.recurrent && result.endTime && moment.isMoment(result.endTime)) {
+        result.endTime = result.endTime.toISOString();
     }
     return result;
 };

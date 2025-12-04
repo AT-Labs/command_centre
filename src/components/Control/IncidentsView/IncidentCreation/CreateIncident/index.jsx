@@ -189,7 +189,7 @@ export class CreateIncident extends React.Component {
                 ...(disruption.startTime && { startTime: moment(disruption.startTime).format(TIME_FORMAT) }),
                 ...(disruption.startTime && { startDate: moment(disruption.startTime).format(DATE_FORMAT) }),
                 ...(disruption.endTime && { endTime: moment(disruption.endTime).format(TIME_FORMAT) }),
-                ...(disruption.endTime && { endDate: moment.utc(disruption.endTime).format(DATE_FORMAT) }),
+                ...(disruption.endTime && { endDate: moment(disruption.endTime).format(DATE_FORMAT) }),
                 ...(isRecurrent && !hasDisruptionEndDate && incidentEndDate && { endDate: incidentEndDate }),
                 ...{
                     affectedEntities: {
@@ -209,27 +209,7 @@ export class CreateIncident extends React.Component {
                 ...(requireToUpdateForm ? { startTime: incidentData.startTime } : (startTime && { startTime: moment(startTime).format(TIME_FORMAT) })),
                 ...(requireToUpdateForm ? { startDate: incidentData.startDate } : (startTime && { startDate: moment(startTime).format(DATE_FORMAT) })),
                 ...(requireToUpdateForm ? { endTime: incidentData.endTime } : (endTime && { endTime: moment(endTime).format(TIME_FORMAT) })),
-                ...(requireToUpdateForm ? (() => {
-                    let endDateValue;
-                    if (!isEmpty(incidentData.endDate)) {
-                        endDateValue = incidentData.endDate;
-                    } else if (incidentToEdit.endDate) {
-                        endDateValue = incidentToEdit.endDate;
-                    } else if (endTime) {
-                        endDateValue = moment.utc(endTime).format(DATE_FORMAT);
-                    } else {
-                        endDateValue = null;
-                    }
-                    return { endDate: endDateValue };
-                })() : (() => {
-                    if (endTime) {
-                        return { endDate: moment.utc(endTime).format(DATE_FORMAT) };
-                    }
-                    if (incidentToEdit.endDate) {
-                        return { endDate: incidentToEdit.endDate };
-                    }
-                    return {};
-                })()),
+                ...(requireToUpdateForm ? { endDate: incidentData.endDate } : (endTime && { endDate: moment(endTime).format(DATE_FORMAT) })),
                 ...(requireToUpdateForm && { header: incidentData.header }),
                 ...(requireToUpdateForm && { cause: incidentData.cause }),
                 ...(requireToUpdateForm && { status: incidentData.status }),
@@ -419,8 +399,8 @@ export class CreateIncident extends React.Component {
         const startDate = incidentData.startDate ? incidentData.startDate : moment(incidentData.startTime).format(DATE_FORMAT);
         const startTimeMoment = momentFromDateTime(startDate, incidentData.startTime);
         let endTimeMoment;
-        if (incidentData.recurrent && incidentData.recurrencePattern?.until && !isEmpty(incidentData.endDate)) {
-            endTimeMoment = moment.utc(incidentData.recurrencePattern.until);
+        if (incidentData.recurrent && !isEmpty(incidentData.endDate) && incidentData.startTime) {
+            endTimeMoment = momentFromDateTime(incidentData.endDate, incidentData.startTime).utc();
         } else if (!isEmpty(incidentData.endDate) && !isEmpty(incidentData.endTime)) {
             endTimeMoment = momentFromDateTime(incidentData.endDate, incidentData.endTime);
         }
@@ -464,8 +444,8 @@ export class CreateIncident extends React.Component {
             incidentData.disruptions = incidentData.disruptions.map(disruption => ({
                 ...disruption,
                 ...(isEmpty(disruption.endDate) && { endDate: incidentEndDate }),
-                ...(disruption.recurrencePattern?.until && !isEmpty(disruption.endDate || incidentEndDate) && {
-                    endTime: moment.utc(disruption.recurrencePattern.until).toISOString(),
+                ...(disruption.startTime && !isEmpty(disruption.endDate || incidentEndDate) && {
+                    endTime: momentFromDateTime(disruption.endDate || incidentEndDate, disruption.startTime).utc().toISOString(),
                 }),
             }));
         }
@@ -553,8 +533,8 @@ export class CreateIncident extends React.Component {
             updatedDisruption = updatedDisruption.map(disruption => ({
                 ...disruption,
                 ...(isEmpty(disruption.endDate) && { endDate: incidentEndDate }),
-                ...(disruption.recurrencePattern?.until && !isEmpty(disruption.endDate || incidentEndDate) && {
-                    endTime: moment.utc(disruption.recurrencePattern.until).toISOString(),
+                ...(disruption.startTime && !isEmpty(disruption.endDate || incidentEndDate) && {
+                    endTime: momentFromDateTime(disruption.endDate || incidentEndDate, disruption.startTime).utc().toISOString(),
                 }),
             }));
         }
@@ -563,8 +543,8 @@ export class CreateIncident extends React.Component {
         const startTimeMoment = momentFromDateTime(incidentStartDate, incidentData.startTime);
 
         let endTimeMoment;
-        if (incidentData.recurrent && incidentData.recurrencePattern?.until && !isEmpty(incidentData.endDate)) {
-            endTimeMoment = moment.utc(incidentData.recurrencePattern.until);
+        if (incidentData.recurrent && !isEmpty(incidentData.endDate) && incidentData.startTime) {
+            endTimeMoment = momentFromDateTime(incidentData.endDate, incidentData.startTime).utc();
         } else if (!isEmpty(incidentData.endDate) && !isEmpty(incidentData.endTime)) {
             endTimeMoment = momentFromDateTime(incidentData.endDate, incidentData.endTime);
         }
