@@ -421,7 +421,7 @@ export class CreateIncident extends React.Component {
             incidentData.disruptions = [{
                 startTime: incidentData.startTime,
                 startDate: incidentData.startDate,
-                endTime: endTimeMoment?.isValid() ? endTimeMoment.toISOString() : incidentData.endTime,
+                endTime: endTimeMoment?.isValid() ? endTimeMoment : incidentData.endTime,
                 endDate: incidentData.endDate,
                 impact: DEFAULT_IMPACT.value,
                 cause: incidentData.cause,
@@ -445,7 +445,7 @@ export class CreateIncident extends React.Component {
                 ...disruption,
                 ...(isEmpty(disruption.endDate) && { endDate: incidentEndDate }),
                 ...(disruption.startTime && !isEmpty(disruption.endDate || incidentEndDate) && {
-                    endTime: momentFromDateTime(disruption.endDate || incidentEndDate, disruption.startTime).utc().toISOString(),
+                    endTime: momentFromDateTime(disruption.endDate || incidentEndDate, disruption.startTime).utc(),
                 }),
             }));
         }
@@ -534,7 +534,7 @@ export class CreateIncident extends React.Component {
                 ...disruption,
                 ...(isEmpty(disruption.endDate) && { endDate: incidentEndDate }),
                 ...(disruption.startTime && !isEmpty(disruption.endDate || incidentEndDate) && {
-                    endTime: momentFromDateTime(disruption.endDate || incidentEndDate, disruption.startTime).utc().toISOString(),
+                    endTime: momentFromDateTime(disruption.endDate || incidentEndDate, disruption.startTime).utc(),
                 }),
             }));
         }
