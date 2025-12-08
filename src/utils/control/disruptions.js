@@ -234,7 +234,7 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
         incident.cause,
         isEditMode,
         incident.endTime,
-        incident.recurrent
+        incident.recurrent,
     ));
     const allResolved = disruptions.every(disruption => disruption.status === STATUSES.RESOLVED);
     const updatedIncident = {

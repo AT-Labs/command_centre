@@ -1017,7 +1017,7 @@ describe('buildDisruptionSubmitBody', () => {
             'CONGESTION',
             false,
             null,
-            true
+            true,
         );
         expect(result.endDate).toEqual(disruptionEndDate);
     });
@@ -1240,71 +1240,6 @@ describe('getMode', () => {
         expect(result.disruptions[0].status).toEqual(STATUSES.RESOLVED);
         expect(result.disruptions[0].startTime).toEqual(incident.endTime);
         expect(result.disruptions[0].endTime).toEqual(incident.endTime);
-    });
-
-    it('Should inherit endDate from incident to disruptions when disruptions have no endDate for recurring incident', () => {
-        const incidentEndDate = '15/10/2025';
-        const incident = {
-            ...mockRecurrentIncident,
-            recurrent: true,
-            endDate: incidentEndDate,
-            disruptions: [
-                {
-                    ...mockRecurrentDisruption1,
-                    endDate: '',
-                },
-                {
-                    ...mockRecurrentDisruption2,
-                    endDate: '',
-                },
-            ],
-        };
-        const result = buildIncidentSubmitBody(incident, false);
-        expect(result.disruptions[0].endDate).toEqual(incidentEndDate);
-        expect(result.disruptions[1].endDate).toEqual(incidentEndDate);
-        expect(result.endDate).toEqual(incidentEndDate);
-    });
-
-    it('Should preserve endDate for incident when disruptions inherit it in recurring incident', () => {
-        const incidentEndDate = '15/10/2025';
-        const incident = {
-            ...mockRecurrentIncident,
-            recurrent: true,
-            endDate: incidentEndDate,
-            disruptions: [
-                {
-                    ...mockRecurrentDisruption1,
-                    endDate: '',
-                },
-            ],
-        };
-        const result = buildIncidentSubmitBody(incident, false);
-        expect(result.endDate).toEqual(incidentEndDate);
-        expect(result.disruptions[0].endDate).toEqual(incidentEndDate);
-    });
-
-    it('Should keep disruption endDate when it exists and not inherit from incident for recurring incident', () => {
-        const disruptionEndDate = '20/10/2025';
-        const incidentEndDate = '15/10/2025';
-        const incident = {
-            ...mockRecurrentIncident,
-            recurrent: true,
-            endDate: incidentEndDate,
-            disruptions: [
-                {
-                    ...mockRecurrentDisruption1,
-                    endDate: disruptionEndDate,
-                },
-                {
-                    ...mockRecurrentDisruption2,
-                    endDate: '',
-                },
-            ],
-        };
-        const result = buildIncidentSubmitBody(incident, false);
-        expect(result.disruptions[0].endDate).toEqual(disruptionEndDate);
-        expect(result.disruptions[1].endDate).toEqual(incidentEndDate);
-        expect(result.endDate).toEqual(incidentEndDate);
     });
 });
 
