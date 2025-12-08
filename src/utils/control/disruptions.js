@@ -129,10 +129,19 @@ export const getRecurrenceDates = (startDate, startTime, endDate) => {
     if (startDate && startTime) {
         recurrenceDates.dtstart = momentFromDateTime(startDate, startTime).tz('UTC', true).toDate();
     }
-    if (endDate && startTime) {
-        recurrenceDates.until = momentFromDateTime(endDate, startTime).tz('UTC', true).toDate();
+    if (endDate) {
+        recurrenceDates.until = momentFromDateTime(endDate, startTime || '00:00').tz('UTC', true).toDate();
     }
     return recurrenceDates;
+};
+
+const calculateEndTimeMoment = (disruptionEndDate, endTime) => {
+    if (isEmpty(disruptionEndDate) || isEmpty(endTime)) {
+        return undefined;
+    }
+    return moment.isMoment(endTime)
+        ? endTime
+        : momentFromDateTime(disruptionEndDate, endTime);
 };
 
 export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCause, isEditMode, incidentEndTimeMoment, incidentRecurrent) => {
@@ -143,13 +152,9 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
         recurrenceDates = getRecurrenceDates(disruption.startDate, disruption.startTime, disruptionEndDate);
     }
     const startDate = disruption.startDate ? disruption.startDate : moment(disruption.startTime).format(DATE_FORMAT);
-    let startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
-    let endTimeMoment;
-    if (!isEmpty(disruptionEndDate) && !isEmpty(disruption.endTime)) {
-        endTimeMoment = moment.isMoment(disruption.endTime)
-            ? disruption.endTime
-            : momentFromDateTime(disruptionEndDate, disruption.endTime);
-    }
+    const startTime = disruption.startTime || (disruption.startDate ? '00:00' : undefined);
+    let startTimeMoment = disruption.startDate || disruption.startTime ? momentFromDateTime(startDate, startTime) : undefined;
+    const endTimeMoment = calculateEndTimeMoment(disruptionEndDate, disruption.endTime);
     const modes = getMode(disruption);
     const routesToRequest = disruption.affectedEntities.affectedRoutes.map((
         { routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon, diversionIds },
