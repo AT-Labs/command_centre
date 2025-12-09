@@ -17,6 +17,7 @@ import {
     isRecurringPeriodInvalid,
     getDurationWithoutSeconds,
     buildIncidentSubmitBody,
+    buildDisruptionSubmitBody,
     buildDisruptionsQuery,
     transformParentSourceIdNo,
     getStatusForEffect,
@@ -1001,6 +1002,24 @@ describe('buildDisruptionSubmitBody', () => {
             url: '',
         };
         expect(buildIncidentSubmitBody(mockIncident, true)).toEqual(expectedIncident);
+    });
+
+    it('Should keep disruption endDate when it exists for recurring incident', () => {
+        const disruptionEndDate = '20/10/2025';
+        const disruption = {
+            ...mockDisruption1,
+            endDate: disruptionEndDate,
+            recurrent: true,
+        };
+        const result = buildDisruptionSubmitBody(
+            disruption,
+            STATUSES.ACTIVE,
+            'CONGESTION',
+            false,
+            null,
+            true,
+        );
+        expect(result.endDate).toEqual(disruptionEndDate);
     });
 });
 
