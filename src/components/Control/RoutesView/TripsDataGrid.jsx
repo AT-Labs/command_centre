@@ -518,6 +518,8 @@ export const TripsDataGrid = (props) => {
         [],
     );
 
+    const latestActiveTripInstanceId = props.activeTripInstance.length > 0 ? getTripInstanceId(props.activeTripInstance[props.activeTripInstance.length - 1]) : null;
+
     const getRowClassName = ({ row: { tripInstance } }) => {
         const status = get(tripInstance, 'status', null);
         if (isTripCompleted(status)) {
@@ -600,6 +602,7 @@ export const TripsDataGrid = (props) => {
                     panelContent: 'custom-panel-content',
                     filterFormValueInput: 'custom-filter-value-input',
                 } }
+                autoExpandSubChild={ latestActiveTripInstanceId }
             />
         </div>
     );

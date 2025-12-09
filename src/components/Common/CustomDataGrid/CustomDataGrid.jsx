@@ -14,6 +14,7 @@ export const CustomDataGrid = (props) => {
     const apiRef = useGridApiRef();
     const [selectedRows, setSelectedRows] = useState([]);
     const [currentCellEditParams, setCurrentCellEditParams] = useState(null);
+    const [isInitialRedirectDone, setIsInitialRedirectDone] = useState(false);
 
     const getExpandedPanels = useCallback(() => apiRef.current?.getExpandedDetailPanels?.() || [], []);
 
@@ -188,6 +189,11 @@ export const CustomDataGrid = (props) => {
         if (!hasExpanded || !apiRef.current) return;
 
         setExpandedPanels(expandedPanels);
+        if (props.autoExpandSubChild && !props.loading) {
+            requestAnimationFrame(() => {
+                scrollToRow(props.autoExpandSubChild);
+            });
+        }
 
         if (isInitialLoad && props.dataSource.length > 0) {
             setIsInitialLoad(false);
@@ -236,7 +242,9 @@ export const CustomDataGrid = (props) => {
     ]);
 
     useEffect(() => {
-        if (!apiRef.current || !props.autoExpandActiveIncident) return;
+        if (!apiRef.current) return;
+        if (isInitialRedirectDone) return;
+        if (!props.autoExpandActiveIncident && !props.autoExpandSubChild) return;
 
         const executeExpansion = () => {
             handleDetailPanelExpansion();
@@ -244,10 +252,13 @@ export const CustomDataGrid = (props) => {
         };
 
         requestAnimationFrame(executeExpansion);
+
+        if (props.autoExpandActiveIncident || props.autoExpandSubChild) setIsInitialRedirectDone(true);
     }, [
         handleDetailPanelExpansion,
         handleAutoExpandIncident,
         props.autoExpandActiveIncident,
+        props.autoExpandSubChild,
     ]);
 
     useEffect(() => {
