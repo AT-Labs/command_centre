@@ -358,7 +358,6 @@ export const SelectDetails = (props) => {
         if (props.editMode === EDIT_TYPE.EDIT && status === STATUSES.DRAFT) {
             props.onSubmitUpdate();
         } else {
-            props.onStepUpdate(3);
             props.onSubmitDraft();
         }
     };

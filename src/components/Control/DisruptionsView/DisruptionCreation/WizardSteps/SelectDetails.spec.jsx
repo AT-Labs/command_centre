@@ -294,7 +294,6 @@ describe('<SelectDetails />', () => {
             wrapper = setup({ data, stops, routes });
             const footer = wrapper.find(Footer);
             footer.prop('onSubmitDraft')();
-            expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3);
             expect(componentPropsMock.onSubmitDraft).toHaveBeenCalled();
         });
     });
