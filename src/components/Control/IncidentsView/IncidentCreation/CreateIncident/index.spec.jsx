@@ -1343,6 +1343,102 @@ describe('CreateIncident component', () => {
             expect(mockToggleIncidentModals).toHaveBeenCalledWith('isPublishAndApplyChangesOpen', false);
             jest.useRealTimers();
         });
+
+        it('Should not call toggleIncidentModals or onSubmitIncidentUpdate when validation fails in onPublishUpdate', async () => {
+            const draftIncident = {
+                ...incidentForEdit,
+                status: STATUSES.DRAFT,
+                disruptions: [{ ...incidentForEdit.disruptions[0], status: STATUSES.DRAFT }],
+            };
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ draftIncident }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateEditMode={ mockUpdateEditMode }
+                    isEditEffectPanelOpen
+                />,
+            );
+            const disruptionToEditWithExceededLimit = {
+                affectedEntities: {
+                    affectedRoutes: Array(201).fill({ routeId: '1' }),
+                    affectedStops: [],
+                },
+            };
+            wrapper.setState({
+                disruptionToEdit: disruptionToEditWithExceededLimit,
+            });
+            const onSubmitIncidentUpdateSpy = jest.spyOn(wrapper.instance(), 'onSubmitIncidentUpdate');
+            jest.useFakeTimers();
+            await wrapper.instance().onPublishUpdate();
+            jest.runAllTimers();
+            expect(onSubmitIncidentUpdateSpy).not.toHaveBeenCalled();
+            expect(mockToggleIncidentModals).not.toHaveBeenCalled();
+            expect(wrapper.state('isAlertModalOpen')).toBe(true);
+            expect(wrapper.state('totalEntities')).toBeGreaterThan(200);
+            jest.useRealTimers();
+        });
+
+        it('Should not call update functions when validation fails in addNewEffectToIncident', async () => {
+            wrapper = shallow(
+                <CreateIncident
+                    updateCurrentStep={ mockUpdateCurrentStep }
+                    createNewIncident={ mockCreateNewIncident }
+                    openCreateIncident={ mockOpenCreateIncident }
+                    toggleIncidentModals={ mockToggleIncidentModals }
+                    action={ mockAction }
+                    incidentToEdit={ incidentForEdit }
+                    editMode={ EDIT_TYPE.EDIT }
+                    updateIncident={ mockUpdateIncident }
+                    updateAffectedStopsState={ mockUpdateAffectedStopsState }
+                    updateAffectedRoutesState={ mockUpdateAffectedRoutesState }
+                    getRoutesByShortName={ mockGetRoutesByShortName }
+                    updateEditMode={ mockUpdateEditMode }
+                    isEditEffectPanelOpen
+                    updateDisruptionKeyToWorkaroundEdit={ mockUpdateDisruptionKeyToWorkaroundEdit }
+                    toggleWorkaroundPanel={ mockToggleWorkaroundPanel }
+                    setDisruptionForWorkaroundEdit={ mockSetDisruptionForWorkaroundEdit }
+                    toggleEditEffectPanel={ mockToggleEditEffectPanel }
+                />,
+            );
+            // Clear mocks after component initialization (componentDidMount calls setupDataEdit)
+            mockSetDisruptionForWorkaroundEdit.mockClear();
+            mockToggleWorkaroundPanel.mockClear();
+            mockUpdateDisruptionKeyToWorkaroundEdit.mockClear();
+            mockUpdateAffectedStopsState.mockClear();
+            mockUpdateAffectedRoutesState.mockClear();
+            mockUpdateEditMode.mockClear();
+            mockUpdateCurrentStep.mockClear();
+            mockToggleEditEffectPanel.mockClear();
+            const disruptionToEditWithExceededLimit = {
+                affectedEntities: {
+                    affectedRoutes: Array(201).fill({ routeId: '1' }),
+                    affectedStops: [],
+                },
+            };
+            wrapper.setState({
+                disruptionToEdit: disruptionToEditWithExceededLimit,
+            });
+            await wrapper.instance().addNewEffectToIncident();
+            expect(mockSetDisruptionForWorkaroundEdit).not.toHaveBeenCalled();
+            expect(mockToggleWorkaroundPanel).not.toHaveBeenCalled();
+            expect(mockUpdateDisruptionKeyToWorkaroundEdit).not.toHaveBeenCalled();
+            expect(mockUpdateAffectedStopsState).not.toHaveBeenCalled();
+            expect(mockUpdateAffectedRoutesState).not.toHaveBeenCalled();
+            expect(mockUpdateEditMode).not.toHaveBeenCalled();
+            expect(mockUpdateCurrentStep).not.toHaveBeenCalled();
+            expect(mockToggleEditEffectPanel).not.toHaveBeenCalled();
+            expect(wrapper.state('isAlertModalOpen')).toBe(true);
+            expect(wrapper.state('totalEntities')).toBeGreaterThan(200);
+        });
     });
 
     describe('validateEntityLimits', () => {

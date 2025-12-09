@@ -719,5 +719,43 @@ describe('<SelectEffects />', () => {
 
             expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(false);
         });
+
+        it('Should not add disruption and not call effectAddedHandler when validation fails in addDisruption', () => {
+            const mockEffectAddedHandler = jest.fn();
+            const disruption = createDisruptionWithEntities(201, 0);
+            const props = {
+                ...componentPropsMock,
+                data: { ...data, disruptions: [disruption] },
+                effectAddedHandler: mockEffectAddedHandler,
+            };
+            wrapper = setup(props);
+
+            const initialDisruptionsCount = wrapper.find('.incident-effect').length;
+            wrapper.find('.add-disruption-button').simulate('click');
+            wrapper.update();
+
+            expect(wrapper.find('.incident-effect').length).toBe(initialDisruptionsCount);
+            expect(mockEffectAddedHandler).not.toHaveBeenCalled();
+            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(true);
+            expect(wrapper.find('IncidentLimitModal').prop('totalEntities')).toBeGreaterThan(200);
+        });
+
+        it('Should not call update functions when validation fails in onBack', () => {
+            const disruption = createDisruptionWithEntities(201, 0);
+            const props = {
+                ...componentPropsMock,
+                data: { ...data, disruptions: [disruption] },
+            };
+            wrapper = setup(props);
+
+            const footer = wrapper.find(Footer);
+            footer.renderProp('onBack')();
+
+            expect(componentPropsMock.onStepUpdate).not.toHaveBeenCalled();
+            expect(componentPropsMock.updateCurrentStep).not.toHaveBeenCalled();
+            expect(componentPropsMock.clearMapDrawingEntities).not.toHaveBeenCalled();
+            expect(wrapper.find('IncidentLimitModal').prop('isOpen')).toBe(true);
+            expect(wrapper.find('IncidentLimitModal').prop('totalEntities')).toBeGreaterThan(200);
+        });
     });
 });

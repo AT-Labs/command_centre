@@ -457,6 +457,10 @@ export const SelectEffects = (props) => {
     };
 
     const addDisruption = () => {
+        if (!validateEntityLimit()) {
+            return;
+        }
+
         const newDisruption = setupDisruption();
         setDisruptions(prev => [...prev, newDisruption]);
         props.effectAddedHandler(newDisruption.key);
@@ -468,6 +472,10 @@ export const SelectEffects = (props) => {
     };
 
     const onBack = () => {
+        if (!validateEntityLimit()) {
+            return;
+        }
+
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
         props.onStepUpdate(0);

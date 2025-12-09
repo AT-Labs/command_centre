@@ -534,6 +534,10 @@ export class CreateIncident extends React.Component {
     };
 
     onPublishUpdate = () => {
+        if (!this.validateEntityLimits(this.state.disruptionToEdit)) {
+            return;
+        }
+
         const { isEffectUpdated } = this.state;
         if (isEffectUpdated && this.props.isEditEffectPanelOpen) {
             this.props.toggleIncidentModals('isPublishAndApplyChangesOpen', true);
@@ -579,6 +583,10 @@ export class CreateIncident extends React.Component {
     };
 
     addNewEffectToIncident = () => {
+        if (!this.validateEntityLimits(this.state.disruptionToEdit)) {
+            return;
+        }
+
         this.props.setDisruptionForWorkaroundEdit({});
         this.props.toggleWorkaroundPanel(false);
         this.props.updateDisruptionKeyToWorkaroundEdit('');
