@@ -129,32 +129,23 @@ export const getRecurrenceDates = (startDate, startTime, endDate) => {
     if (startDate && startTime) {
         recurrenceDates.dtstart = momentFromDateTime(startDate, startTime).tz('UTC', true).toDate();
     }
-    if (endDate) {
-        recurrenceDates.until = momentFromDateTime(endDate, startTime || '00:00').tz('UTC', true).toDate();
+    if (endDate && startTime) {
+        recurrenceDates.until = momentFromDateTime(endDate, startTime).tz('UTC', true).toDate();
     }
     return recurrenceDates;
 };
 
-const calculateEndTimeMoment = (disruptionEndDate, endTime) => {
-    if (isEmpty(disruptionEndDate) || isEmpty(endTime)) {
-        return undefined;
-    }
-    return moment.isMoment(endTime)
-        ? endTime
-        : momentFromDateTime(disruptionEndDate, endTime);
-};
-
 export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCause, isEditMode, incidentEndTimeMoment, incidentRecurrent) => {
-    const disruptionEndDate = disruption.endDate;
-
     let recurrenceDates;
     if (incidentRecurrent) {
-        recurrenceDates = getRecurrenceDates(disruption.startDate, disruption.startTime, disruptionEndDate);
+        recurrenceDates = getRecurrenceDates(disruption.startDate, disruption.startTime, disruption.endDate);
     }
     const startDate = disruption.startDate ? disruption.startDate : moment(disruption.startTime).format(DATE_FORMAT);
-    const startTime = disruption.startTime || (disruption.startDate ? '00:00' : undefined);
-    let startTimeMoment = disruption.startDate || disruption.startTime ? momentFromDateTime(startDate, startTime) : undefined;
-    const endTimeMoment = calculateEndTimeMoment(disruptionEndDate, disruption.endTime);
+    let startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
+    let endTimeMoment;
+    if (!isEmpty(disruption.endDate) && !isEmpty(disruption.endTime)) {
+        endTimeMoment = momentFromDateTime(disruption.endDate, disruption.endTime);
+    }
     const modes = getMode(disruption);
     const routesToRequest = disruption.affectedEntities.affectedRoutes.map((
         { routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon, diversionIds },
@@ -185,8 +176,7 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
         ...disruption,
         ...(isEditMode ? { } : { status: incidentStatus }),
         ...(isEditMode ? { } : { cause: incidentCause }),
-        endTime: incidentRecurrent && endTimeMoment ? endTimeMoment.toISOString() : endTimeMoment,
-        endDate: disruptionEndDate,
+        endTime: endTimeMoment,
         startTime: startTimeMoment,
         mode: uniq(modes).join(', '),
         affectedEntities: [...routesToRequest, ...stopsToRequest],
@@ -261,17 +251,10 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
         && (latestEndTime.isAfter(incident.endTime) || (incident.status !== STATUSES.RESOLVED && allResolved))) {
         updatedIncident.endTime = latestEndTime;
     }
-    const result = {
+    return {
         ...updatedIncident,
         ...(incident.recurrent && calculateValuesForRecurrentIncident(updatedIncident)),
     };
-    if (incident.recurrent && incident.endDate) {
-        result.endDate = incident.endDate;
-    }
-    if (incident.recurrent && result.endTime && moment.isMoment(result.endTime)) {
-        result.endTime = result.endTime.toISOString();
-    }
-    return result;
 };
 
 export const getStatusForEffect = (disruption) => {
