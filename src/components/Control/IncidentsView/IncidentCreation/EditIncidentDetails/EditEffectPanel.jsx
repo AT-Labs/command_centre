@@ -398,6 +398,13 @@ export const EditEffectPanel = (props, ref) => {
             },
         };
         updateDisruptionState(updatedDisruptions);
+
+        if (props.onDisruptionsUpdate && props.disruptions) {
+            const updatedDisruptionsList = props.disruptions.map(d => (
+                d.incidentNo === disruption.incidentNo ? updatedDisruptions : d
+            ));
+            props.onDisruptionsUpdate('disruptions', updatedDisruptionsList);
+        }
     };
 
     const resetAffectedEntities = () => {
@@ -1455,6 +1462,7 @@ EditEffectPanel.propTypes = {
     mapDrawingEntities: PropTypes.array.isRequired,
     onDisruptionChange: PropTypes.func,
     clearMapDrawingEntities: PropTypes.func.isRequired,
+    onDisruptionsUpdate: PropTypes.func,
     incidentDateRange: PropTypes.object.isRequired,
     updateStartDateTimeWillBeUpdated: PropTypes.func.isRequired,
     updateEndDateTimeWillBeUpdated: PropTypes.func.isRequired,
@@ -1473,6 +1481,7 @@ EditEffectPanel.defaultProps = {
     isDiversionManagerLoading: false,
     isDiversionManagerReady: false,
     onDisruptionChange: () => {},
+    onDisruptionsUpdate: () => {},
 };
 
 export default connect(state => ({

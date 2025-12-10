@@ -103,6 +103,42 @@ export const buildPublishPayload = incident => ({
     })),
 });
 
+export const filterDisruptionsBySearchTerm = (disruptions, searchTerm) => {
+    if (!disruptions || !searchTerm) {
+        return disruptions || [];
+    }
+
+    const term = searchTerm.toLowerCase();
+
+    return disruptions.filter((disruption) => {
+        const impactMatches = disruption.impact?.toLowerCase().includes(term);
+        if (impactMatches) {
+            return true;
+        }
+        const routeMatches = disruption.affectedEntities?.affectedRoutes?.some(
+            route => route.routeShortName?.toLowerCase().includes(term),
+        );
+        if (routeMatches) {
+            return true;
+        }
+        const stopMatches = disruption.affectedEntities?.affectedStops?.some(
+            stop => stop.text?.toLowerCase().includes(term),
+        );
+        if (stopMatches) {
+            return true;
+        }
+
+        return false;
+    });
+};
+
+export const removeDuplicatesByKey = (array, getKey) => {
+    if (!array || array.length === 0) {
+        return [];
+    }
+    return array.filter((item, index, self) => index === self.findIndex(i => getKey(i) === getKey(item)));
+};
+
 export const isDateFieldValid = date => moment(date, DATE_FORMAT, true).isValid();
 export const isTimeFieldValid = time => time !== '24:00' && moment(time, TIME_FORMAT, true).isValid();
 
