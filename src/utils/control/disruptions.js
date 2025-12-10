@@ -223,6 +223,23 @@ const getRecurrentPatterForIncident = (incident) => {
     };
 };
 
+const shouldUpdateStartTime = (earliestStartTime, incidentStartTime) => {
+    if (!earliestStartTime?.isValid() || !incidentStartTime) {
+        return false;
+    }
+    const momentStartTime = moment.isMoment(incidentStartTime) ? incidentStartTime : moment(incidentStartTime);
+    return moment.isMoment(momentStartTime) && momentStartTime.isValid() && earliestStartTime.isBefore(momentStartTime);
+};
+
+const shouldUpdateEndTime = (latestEndTime, incident, allResolved) => {
+    if (!latestEndTime || incident.recurrent || !incident.endTime) {
+        return false;
+    }
+    const isEndTimeAfter = latestEndTime.isAfter(incident.endTime);
+    const shouldResolve = incident.status !== STATUSES.RESOLVED && allResolved;
+    return isEndTimeAfter || shouldResolve;
+};
+
 const calculateValuesForRecurrentIncident = (incident) => {
     let endDate;
     if (incident.status === STATUSES.DRAFT) {
@@ -274,19 +291,13 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
         url: '',
     };
     const earliestStartTime = moment.min(disruptions.map(disruption => disruption.startTime).filter(Boolean));
-
-    if (earliestStartTime?.isValid() && incident.startTime) {
-        const incidentStartTime = moment.isMoment(incident.startTime) ? incident.startTime : moment(incident.startTime);
-        if (moment.isMoment(incidentStartTime) && incidentStartTime.isValid() && earliestStartTime.isBefore(incidentStartTime)) {
-            updatedIncident.startTime = earliestStartTime;
-        }
+    if (shouldUpdateStartTime(earliestStartTime, incident.startTime)) {
+        updatedIncident.startTime = earliestStartTime;
     }
 
     const endTimes = disruptions.map(disruption => disruption.endTime).filter(endTime => endTime != null);
     const latestEndTime = endTimes.length > 0 ? moment.max(endTimes) : null;
-    const isEndTimeAfterIncident = latestEndTime && incident.endTime && latestEndTime.isAfter(incident.endTime);
-    const shouldResolve = incident.status !== STATUSES.RESOLVED && allResolved;
-    if (latestEndTime && !incident.recurrent && incident.endTime && (isEndTimeAfterIncident || shouldResolve)) {
+    if (shouldUpdateEndTime(latestEndTime, incident, allResolved)) {
         updatedIncident.endTime = latestEndTime;
     }
     const result = {
