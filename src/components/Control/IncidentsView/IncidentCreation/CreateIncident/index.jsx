@@ -825,8 +825,12 @@ export class CreateIncident extends React.Component {
     getModalTitle = () => {
         const { resultStatus, resultIncidentId } = this.props.action || {};
 
-        if (resultStatus === 'danger') {
+        if (resultStatus === 'danger' && this.props.editMode === EDIT_TYPE.EDIT) {
             return 'Disruption update failed';
+        }
+
+        if (resultStatus === 'danger' && this.props.editMode === EDIT_TYPE.CREATE) {
+            return 'Disruption creation failed';
         }
 
         if (resultIncidentId) {

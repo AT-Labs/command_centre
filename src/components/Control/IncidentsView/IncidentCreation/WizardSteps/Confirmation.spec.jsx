@@ -18,6 +18,7 @@ import {
     toggleIncidentModals,
     clearDisruptionActionResult } from '../../../../../redux/actions/control/incidents';
 import { goToNotificationsView } from '../../../../../redux/actions/control/link';
+import EDIT_TYPE from '../../../../../types/edit-types';
 
 const mockStore = configureStore([thunk]);
 
@@ -58,7 +59,7 @@ describe('Confirmation Component', () => {
         openCreateIncident,
         deleteAffectedEntities: jest.fn(),
         goToNotificationsView: jest.fn(),
-        useDisruptionsNotificationsDirectLink: true,
+        isDisruptionsNotificationsDirectLinkEnabled: true,
         updateIncidentsSortingParams: jest.fn(),
         clearActiveIncident: jest.fn(),
         toggleIncidentModals: jest.fn(),
@@ -110,6 +111,7 @@ describe('Confirmation Component', () => {
                         isCreateEnabled: false,
                         activeIncident: null,
                         incidentsSortingParams: { sortBy: 'incidentTitle', order: 'asc' },
+                        editMode: EDIT_TYPE.EDIT,
                     },
                 },
             appSettings: {
@@ -217,6 +219,38 @@ describe('Confirmation Component', () => {
         );
 
         const message = screen.getByText('Failed to update disruption');
+        expect(message).toBeInTheDocument();
+    });
+
+    it('should display error message for partial error', () => {
+        store = mockStore({
+            ...store.getState(),
+            control: {
+                ...store.getState().control,
+                incidents: {
+                    ...store.getState().control.incidents,
+                    editMode: EDIT_TYPE.CREATE,
+                },
+            },
+        });
+
+        const propsWithError = {
+            ...defaultProps,
+            response: {
+                isRequesting: false,
+                resultIncidentId: null,
+                resultMessage: 'Failed to create disruption. The following disruptions failed: DISR001',
+                resultStatus: 'danger',
+            },
+        };
+
+        render(
+            <Provider store={ store }>
+                <Confirmation { ...propsWithError } />
+            </Provider>,
+        );
+
+        const message = screen.getByText('Failed to create disruption. The following disruptions failed: DISR001');
         expect(message).toBeInTheDocument();
     });
 });
