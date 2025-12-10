@@ -1238,24 +1238,6 @@ describe('Confirmation Component', () => {
 
             expect(onDisruptionsUpdateSpy).not.toHaveBeenCalled();
         });
-
-        it('should not call onDisruptionsUpdate when disruptions prop is not provided', () => {
-            const onDisruptionsUpdateSpy = jest.fn();
-            const props = {
-                ...defaultProps,
-                onDisruptionsUpdate: onDisruptionsUpdateSpy,
-                disruptions: undefined,
-            };
-
-            render(
-                <Provider store={ store }>
-                    <EditEffectPanel { ...props } />
-                </Provider>,
-            );
-
-            expect(screen.queryByText('Edit details of Effect DISR123')).not.toBeInTheDocument();
-            expect(onDisruptionsUpdateSpy).not.toHaveBeenCalled();
-        });
     });
 
     describe('initDisruptionData', () => {

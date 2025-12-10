@@ -1,7 +1,7 @@
 import { getEntityCounts,
     generateSelectedText,
     mergeExistingAndDrawnEntities,
-    buildPublishPayload, 
+    buildPublishPayload,
     filterDisruptionsBySearchTerm,
     isDateFieldValid,
     isTimeFieldValid,
