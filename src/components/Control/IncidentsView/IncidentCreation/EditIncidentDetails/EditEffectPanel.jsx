@@ -29,14 +29,7 @@ import { MAX_NUMBER_OF_ENTITIES,
     LABEL_STATUS,
     LABEL_DISRUPTION_NOTES,
     DESCRIPTION_NOTE_MAX_LENGTH } from '../../../../../constants/disruptions.js';
-import { getEntityCounts,
-    generateSelectedText,
-    mergeExistingAndDrawnEntities,
-    startDateTimeWillBeAutomaticallyUpdated,
-    endDateTimeWillBeAutomaticallyUpdated,
-    isTimeFieldValid,
-    isDateFieldValid,
-} from '../../../../../utils/control/incidents';
+import { getEntityCounts, generateSelectedText, mergeExistingAndDrawnEntities } from '../../../../../utils/control/incidents';
 import IncidentLimitModal from '../../Modals/IncidentLimitModal.jsx';
 import { isEditEffectPanelOpen,
     getDisruptionKeyToEditEffect,
@@ -158,7 +151,7 @@ export function updateDisruptionWithFetchData(fetchedDisruption, disruption, upd
 }
 
 export const EditEffectPanel = (props, ref) => {
-    const { disruptions, disruptionIncidentNoToEdit, disruptionRecurrent, modalOpenedTime } = props;
+    const { disruptions, disruptionIncidentNoToEdit, disruptionRecurrent, modalOpenedTime, incidentEndDate } = props;
     const [disruption, setDisruption] = useState({ ...INIT_EFFECT_STATE });
     const [originalDisruption, setOriginalDisruption] = useState({ ...INIT_EFFECT_STATE });
     const [now] = useState(moment().second(0).millisecond(0));
@@ -189,7 +182,15 @@ export const EditEffectPanel = (props, ref) => {
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
 
     const initDisruptionData = () => {
-        const disruptionToSet = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
+        const foundDisruption = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
+        if (!foundDisruption) return;
+
+        const disruptionToSet = { ...foundDisruption };
+
+        if (disruptionRecurrent && isEmpty(disruptionToSet.endDate) && incidentEndDate) {
+            disruptionToSet.endDate = incidentEndDate;
+        }
+
         setDisruption(disruptionToSet);
         props.updateEditableDisruption(disruptionToSet);
         setOriginalDisruption(disruptionToSet);
@@ -327,8 +328,12 @@ export const EditEffectPanel = (props, ref) => {
     const onChangeEndDate = (date, isRecurrent) => {
         if (isRecurrent) {
             if (date.length === 0) {
-                updateDisruption({ endDate: '' });
-                setIsEndDateDirty(true);
+                if (disruption.status === STATUSES.DRAFT) {
+                    updateDisruption({ endDate: '', isEndDateDirty: false });
+                } else {
+                    updateDisruption({ isEndDateDirty: true });
+                    setIsEndDateDirty(true);
+                }
             } else {
                 updateDisruption({ endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '' });
                 setIsEndDateDirty(false);
@@ -896,30 +901,6 @@ export const EditEffectPanel = (props, ref) => {
         fetchDiversions();
     }, [disruption?.disruptionId, shouldRefetchDiversions]);
 
-    useEffect(() => {
-        if (isDateFieldValid(props.incidentDateRange.startDate) && isTimeFieldValid(props.incidentDateRange.startTime)) {
-            const updatedDisruptions = disruptions.map(d => (d.incidentNo === disruptionIncidentNoToEdit
-                ? { ...d, startDate: disruption.startDate, startTime: disruption.startTime }
-                : d));
-            const start = startDateTimeWillBeAutomaticallyUpdated(props.incidentDateRange.startDate, props.incidentDateRange.startTime, updatedDisruptions);
-            props.updateStartDateTimeWillBeUpdated(start);
-        } else if (!isDateFieldValid(props.incidentDateRange.startDate) || !isTimeFieldValid(props.incidentDateRange.startTime)) {
-            props.updateStartDateTimeWillBeUpdated(false);
-        }
-    }, [props.incidentDateRange.startDate, props.incidentDateRange.startTime, disruption.startDate, disruption.startTime]);
-
-    useEffect(() => {
-        if (isDateFieldValid(props.incidentDateRange.endDate) && isTimeFieldValid(props.incidentDateRange.endTime)) {
-            const updatedDisruptions = disruptions.map(d => (d.incidentNo === disruptionIncidentNoToEdit
-                ? { ...d, endDate: disruption.endDate, endTime: disruption.endTime }
-                : d));
-            const end = endDateTimeWillBeAutomaticallyUpdated(props.incidentDateRange.endDate, props.incidentDateRange.endTime, updatedDisruptions, disruptionRecurrent);
-            props.updateEndDateTimeWillBeUpdated(end);
-        } else if (!isDateFieldValid(props.incidentDateRange.endDate) || !isTimeFieldValid(props.incidentDateRange.endTime)) {
-            props.updateEndDateTimeWillBeUpdated(false);
-        }
-    }, [props.incidentDateRange.endDate, props.incidentDateRange.endTime, disruption.endDate, disruption.endTime]);
-
     useEffect(() => () => {
         document.body.classList.remove('diversion-loading');
         isMounted.current = false;
@@ -1410,6 +1391,7 @@ EditEffectPanel.propTypes = {
     updateDisruptionKeyToEditEffect: PropTypes.func.isRequired,
     disruptionRecurrent: PropTypes.bool.isRequired,
     modalOpenedTime: PropTypes.string.isRequired,
+    incidentEndDate: PropTypes.string,
     isWorkaroundPanelOpen: PropTypes.bool,
     toggleWorkaroundPanel: PropTypes.func.isRequired,
     updateDisruptionKeyToWorkaroundEdit: PropTypes.func.isRequired,
@@ -1446,14 +1428,12 @@ EditEffectPanel.propTypes = {
     mapDrawingEntities: PropTypes.array.isRequired,
     onDisruptionChange: PropTypes.func,
     clearMapDrawingEntities: PropTypes.func.isRequired,
-    incidentDateRange: PropTypes.object.isRequired,
-    updateStartDateTimeWillBeUpdated: PropTypes.func.isRequired,
-    updateEndDateTimeWillBeUpdated: PropTypes.func.isRequired,
 };
 
 EditEffectPanel.defaultProps = {
     isEditEffectPanelOpen: false,
     disruptionIncidentNoToEdit: '',
+    incidentEndDate: '',
     isWorkaroundPanelOpen: false,
     workaroundsToSync: [],
     isCancellationEffectOpen: false,

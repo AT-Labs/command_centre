@@ -9,13 +9,7 @@ import { Button } from 'reactstrap';
 import { RRule } from 'rrule';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import { DATE_FORMAT, TIME_FORMAT, MAX_NUMBER_OF_ENTITIES } from '../../../../../constants/disruptions';
-import { getEntityCounts,
-    generateSelectedText,
-    getShapes,
-    getRouteColors,
-    mergeExistingAndDrawnEntities,
-    startDateTimeWillBeAutomaticallyUpdated,
-    endDateTimeWillBeAutomaticallyUpdated } from '../../../../../utils/control/incidents';
+import { getEntityCounts, generateSelectedText, getShapes, getRouteColors, mergeExistingAndDrawnEntities } from '../../../../../utils/control/incidents';
 import {
     createNewIncident,
     toggleIncidentModals,
@@ -149,8 +143,6 @@ export class CreateIncident extends React.Component {
             totalEntities: 0,
             effectToBeCleared: null,
             disruptionToEdit: null,
-            startDateTimeWillBeUpdated: false,
-            endDateTimeWillBeUpdated: false,
         };
         this.editEffectPanelRef = createRef();
     }
@@ -188,12 +180,17 @@ export class CreateIncident extends React.Component {
         const updatedDisruptions = disruptions.map((disruption) => {
             const type = disruption.affectedEntities.some(entity => entity.type === 'route') ? DISRUPTION_TYPE.ROUTES : DISRUPTION_TYPE.STOPS;
             const entities = disruption.affectedEntities ?? [];
+            const isRecurrent = incidentToEdit.recurrent;
+            const incidentEndDate = incidentToEdit.endDate || (endTime ? moment.utc(endTime).format(DATE_FORMAT) : null);
+            const hasDisruptionEndDate = !isEmpty(disruption.endDate) || (disruption.endTime && moment(disruption.endTime).isValid());
+
             return {
                 ...disruption,
                 ...(disruption.startTime && { startTime: moment(disruption.startTime).format(TIME_FORMAT) }),
                 ...(disruption.startTime && { startDate: moment(disruption.startTime).format(DATE_FORMAT) }),
                 ...(disruption.endTime && { endTime: moment(disruption.endTime).format(TIME_FORMAT) }),
                 ...(disruption.endTime && { endDate: moment(disruption.endTime).format(DATE_FORMAT) }),
+                ...(isRecurrent && !hasDisruptionEndDate && incidentEndDate && { endDate: incidentEndDate }),
                 ...{
                     affectedEntities: {
                         affectedStops: entities.filter(entity => entity.type === 'stop'),
@@ -306,28 +303,12 @@ export class CreateIncident extends React.Component {
         const { incidentData } = this.state;
         let recurrenceDates;
         let recurrencePattern;
-        let startDateTimeWillBeUpdated;
-        let endDateTimeWillBeUpdated;
-        const updatedIncidentData = { ...incidentData, [key]: value };
 
         if (['startDate', 'startTime', 'endDate', 'recurrent'].includes(key)) {
+            const updatedIncidentData = { ...incidentData, [key]: value };
             recurrenceDates = getRecurrenceDates(updatedIncidentData.startDate, updatedIncidentData.startTime, updatedIncidentData.endDate);
             recurrencePattern = incidentData.recurrent ? parseRecurrencePattern(incidentData.recurrencePattern) : { freq: RRule.WEEKLY };
         }
-
-        if (this.props.editMode === EDIT_TYPE.CREATE && ['startDate', 'startTime', 'disruptions'].includes(key)) {
-            startDateTimeWillBeUpdated = startDateTimeWillBeAutomaticallyUpdated(updatedIncidentData.startDate, updatedIncidentData.startTime, updatedIncidentData.disruptions);
-        }
-
-        if (this.props.editMode === EDIT_TYPE.CREATE && ['endDate', 'endTime', 'disruptions'].includes(key)) {
-            endDateTimeWillBeUpdated = endDateTimeWillBeAutomaticallyUpdated(
-                updatedIncidentData.endDate,
-                incidentData.recurrent ? '23:59' : updatedIncidentData.endTime,
-                updatedIncidentData.disruptions,
-                incidentData.recurrent,
-            );
-        }
-
         this.setState(prevState => ({
             incidentData: {
                 ...prevState.incidentData,
@@ -339,8 +320,6 @@ export class CreateIncident extends React.Component {
                     },
                 }),
             },
-            startDateTimeWillBeUpdated: startDateTimeWillBeUpdated ?? prevState.startDateTimeWillBeUpdated,
-            endDateTimeWillBeUpdated: endDateTimeWillBeUpdated ?? prevState.endDateTimeWillBeUpdated,
         }));
     };
 
@@ -394,7 +373,7 @@ export class CreateIncident extends React.Component {
         this.toggleModal('Confirmation', true);
 
         const startDate = incidentData.startDate ? incidentData.startDate : moment(incidentData.startTime).format(DATE_FORMAT);
-        const startTimeMoment = momentFromDateTime(startDate, incidentData.startTime);
+        const startTimeMoment = momentFromDateTime(startDate, incidentData.startTime || (incidentData.startDate ? '00:00' : undefined));
 
         let endTimeMoment;
         if (!isEmpty(incidentData.endDate) && !isEmpty(incidentData.endTime)) {
@@ -410,6 +389,22 @@ export class CreateIncident extends React.Component {
         this.props.createNewIncident(buildIncidentSubmitBody(incident, false));
     };
 
+    updateDisruptionsWithEndDate = (disruptions, isRecurrent, incidentEndDate) => {
+        if (!isRecurrent || !incidentEndDate) {
+            return disruptions;
+        }
+        return disruptions.map(disruption => ({
+            ...disruption,
+            ...(isEmpty(disruption.endDate) && { endDate: incidentEndDate }),
+            ...(!isEmpty(disruption.endDate || incidentEndDate) && {
+                endTime: momentFromDateTime(
+                    disruption.endDate || incidentEndDate,
+                    disruption.startTime || '00:00',
+                ).utc(),
+            }),
+        }));
+    };
+
     onSubmitDraft = async () => {
         this.props.updateCurrentStep(1);
         const { incidentData } = this.state;
@@ -418,9 +413,11 @@ export class CreateIncident extends React.Component {
             return;
         }
         const startDate = incidentData.startDate ? incidentData.startDate : moment(incidentData.startTime).format(DATE_FORMAT);
-        const startTimeMoment = momentFromDateTime(startDate, incidentData.startTime);
+        const startTimeMoment = momentFromDateTime(startDate, incidentData.startTime || (incidentData.startDate ? '00:00' : undefined));
         let endTimeMoment;
-        if (!isEmpty(incidentData.endDate) && !isEmpty(incidentData.endTime)) {
+        if (incidentData.recurrent && !isEmpty(incidentData.endDate)) {
+            endTimeMoment = momentFromDateTime(incidentData.endDate, incidentData.startTime || '00:00').utc();
+        } else if (!isEmpty(incidentData.endDate) && !isEmpty(incidentData.endTime)) {
             endTimeMoment = momentFromDateTime(incidentData.endDate, incidentData.endTime);
         }
 
@@ -440,7 +437,7 @@ export class CreateIncident extends React.Component {
             incidentData.disruptions = [{
                 startTime: incidentData.startTime,
                 startDate: incidentData.startDate,
-                endTime: incidentData.endTime,
+                endTime: endTimeMoment?.isValid() ? endTimeMoment : incidentData.endTime,
                 endDate: incidentData.endDate,
                 impact: DEFAULT_IMPACT.value,
                 cause: incidentData.cause,
@@ -457,6 +454,12 @@ export class CreateIncident extends React.Component {
                 header: incidentData.header,
             }];
         }
+
+        incidentData.disruptions = this.updateDisruptionsWithEndDate(
+            incidentData.disruptions,
+            incidentData.recurrent,
+            incidentData.endDate,
+        );
 
         const incident = {
             ...incidentData,
@@ -505,9 +508,9 @@ export class CreateIncident extends React.Component {
 
     onSubmitIncidentUpdate = async (isPublish = false) => {
         const { incidentData, editableDisruption, editableWorkarounds, newIncidentEffect } = this.state;
-        let updatedDisruption;
+        let updatedDisruptions;
         if (this.props.isEditEffectPanelOpen) {
-            updatedDisruption = incidentData.disruptions.map(disruption => (disruption.incidentNo === editableDisruption.incidentNo
+            updatedDisruptions = incidentData.disruptions.map(disruption => (disruption.incidentNo === editableDisruption.incidentNo
                 ? { ...disruption,
                     ...editableDisruption,
                     ...(this.props.isWorkaroundPanelOpen && editableWorkarounds?.key === disruption.incidentNo ? { workarounds: editableWorkarounds.workarounds } : {}),
@@ -520,7 +523,7 @@ export class CreateIncident extends React.Component {
                     ...(disruption.status === STATUSES.DRAFT && incidentData.status === STATUSES.NOT_STARTED && { status: STATUSES.NOT_STARTED }),
                 }));
         } else {
-            updatedDisruption = incidentData.disruptions.map(disruption => ({
+            updatedDisruptions = incidentData.disruptions.map(disruption => ({
                 ...disruption,
                 ...(disruption.note && { notes: [...disruption.notes, ...([{ description: disruption.note }])] }),
                 ...(disruption.status === STATUSES.DRAFT && incidentData.status === STATUSES.NOT_STARTED && { status: STATUSES.NOT_STARTED }),
@@ -528,19 +531,27 @@ export class CreateIncident extends React.Component {
         }
 
         if (this.props.editMode === EDIT_TYPE.ADD_EFFECT && newIncidentEffect.key) {
-            updatedDisruption = [
-                ...updatedDisruption,
+            updatedDisruptions = [
+                ...updatedDisruptions,
                 {
                     ...newIncidentEffect,
                     ...(incidentData.status === STATUSES.DRAFT ? { status: STATUSES.DRAFT } : getStatusForEffect(newIncidentEffect)),
                 }];
         }
 
+        updatedDisruptions = this.updateDisruptionsWithEndDate(
+            updatedDisruptions,
+            incidentData.recurrent,
+            incidentData.endDate,
+        );
+
         const incidentStartDate = incidentData.startDate ? incidentData.startDate : moment(incidentData.startTime).format(DATE_FORMAT);
-        const startTimeMoment = momentFromDateTime(incidentStartDate, incidentData.startTime);
+        const startTimeMoment = momentFromDateTime(incidentStartDate, incidentData.startTime || (incidentData.startDate ? '00:00' : undefined));
 
         let endTimeMoment;
-        if (!isEmpty(incidentData.endDate) && !isEmpty(incidentData.endTime)) {
+        if (incidentData.recurrent && !isEmpty(incidentData.endDate)) {
+            endTimeMoment = momentFromDateTime(incidentData.endDate, incidentData.startTime || '00:00').utc();
+        } else if (!isEmpty(incidentData.endDate) && !isEmpty(incidentData.endTime)) {
             endTimeMoment = momentFromDateTime(incidentData.endDate, incidentData.endTime);
         }
         const incident = {
@@ -548,7 +559,7 @@ export class CreateIncident extends React.Component {
             endTime: endTimeMoment,
             startTime: startTimeMoment,
             notes: [],
-            ...(updatedDisruption && { disruptions: updatedDisruption }),
+            ...(updatedDisruptions && { disruptions: updatedDisruptions }),
         };
 
         this.props.updateIncident(
@@ -809,10 +820,7 @@ export class CreateIncident extends React.Component {
             isEffectValid,
             isEffectForPublishValid,
             newIncidentEffect,
-            isSetDetailsValid,
-            startDateTimeWillBeUpdated,
-            endDateTimeWillBeUpdated,
-        } = this.state;
+            isSetDetailsValid } = this.state;
         const renderMainHeading = () => {
             const titleByMode = {
                 [EDIT_TYPE.CREATE]: 'Create a new Disruption',
@@ -848,8 +856,6 @@ export class CreateIncident extends React.Component {
                                         onUpdateDetailsValidation={ this.onUpdateDetailsValidation }
                                         onSubmitUpdate={ this.onSubmitUpdate }
                                         onDisruptionSelected={ key => this.setState({ selectedEffect: key }) }
-                                        startDateTimeWillBeUpdated={ startDateTimeWillBeUpdated }
-                                        endDateTimeWillBeUpdated={ endDateTimeWillBeUpdated }
                                     />
                                 )}
                                 <SelectEffects
@@ -924,9 +930,7 @@ export class CreateIncident extends React.Component {
                                 isEffectValid={ isEffectValid }
                                 isEffectForPublishValid={ isEffectForPublishValid }
                                 onDisruptionSelected={ key => this.setState({ selectedEffect: key }) }
-                                onPublishUpdate={ this.onPublishUpdate }
-                                startDateTimeWillBeUpdated={ startDateTimeWillBeUpdated }
-                                endDateTimeWillBeUpdated={ endDateTimeWillBeUpdated } />
+                                onPublishUpdate={ this.onPublishUpdate } />
                             <CustomModal
                                 className="disruption-creation__modal"
                                 title={ this.getModalTitle() }
@@ -971,6 +975,7 @@ export class CreateIncident extends React.Component {
                         onWorkaroundUpdate={ this.updateDisruptionWorkaround }
                         modalOpenedTime={ incidentData.modalOpenedTime ? moment(incidentData.modalOpenedTime).toISOString() : '' }
                         disruptionRecurrent={ incidentData.recurrent }
+                        incidentEndDate={ incidentData.endDate }
                         onDisruptionsUpdate={ this.updateData }
                         isNotesRequiresToUpdate={ isNotesRequiresToUpdate }
                         updateIsNotesRequiresToUpdateState={ () => this.setState({ isNotesRequiresToUpdate: false }) }
@@ -983,9 +988,6 @@ export class CreateIncident extends React.Component {
                         updateIsEffectUpdatedState={ isUpdated => this.setState({ isEffectUpdated: isUpdated }) }
                         updateEffectValidationForPublishState={ valid => this.setState({ isEffectForPublishValid: valid }) }
                         onDisruptionChange={ disruption => this.setState({ disruptionToEdit: disruption }) }
-                        incidentDateRange={ { startDate: incidentData.startDate, startTime: incidentData.startTime, endDate: incidentData.endDate, endTime: incidentData.endTime } }
-                        updateStartDateTimeWillBeUpdated={ willBeUpdated => this.setState({ startDateTimeWillBeUpdated: willBeUpdated }) }
-                        updateEndDateTimeWillBeUpdated={ willBeUpdated => this.setState({ endDateTimeWillBeUpdated: willBeUpdated }) }
                     />
                 )}
                 <Map
