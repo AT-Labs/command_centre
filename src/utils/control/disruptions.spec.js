@@ -957,7 +957,6 @@ describe('buildDisruptionSubmitBody', () => {
                 routeType,
                 type,
                 diversionIds,
-                notes: [],
                 ...(stopCode !== undefined && {
                     directionId,
                     stopId,
@@ -981,7 +980,6 @@ describe('buildDisruptionSubmitBody', () => {
                 routeShortName,
                 routeType,
                 type,
-                notes: [],
                 ...(stopCode !== undefined && {
                     directionId,
                     stopId,
