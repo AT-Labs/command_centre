@@ -144,6 +144,7 @@ const Confirmation = (props) => {
                 <>
                     <div className="col-12 mb-4">
                         <Button
+                            role="button"
                             className="btn cc-btn-primary btn-block"
                             onClick={ handleViewAll }>
                             View all disruptions
@@ -151,6 +152,7 @@ const Confirmation = (props) => {
                     </div>
                     <div className="col-6">
                         <Button
+                            role="button"
                             className="btn cc-btn-primary btn-block"
                             onClick={ handleViewDetails }>
                             View disruption details
@@ -158,6 +160,7 @@ const Confirmation = (props) => {
                     </div>
                     <div className="col-6">
                         <Button
+                            role="button"
                             className="btn cc-btn-primary btn-block"
                             onClick={ handleViewNotifications }>
                             View notifications
