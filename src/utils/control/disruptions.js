@@ -147,16 +147,10 @@ const calculateEndTimeMoment = (disruptionEndDate, endTime) => {
 export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCause, isEditMode, incidentEndTimeMoment, incidentRecurrent) => {
     const disruptionEndDate = disruption.endDate;
 
-    let recurrenceDates;
-    if (incidentRecurrent) {
-        recurrenceDates = getRecurrenceDates(disruption.startDate, disruption.startTime, disruptionEndDate);
-    }
-    let startDate = '';
-    if (disruption.startDate) {
-        startDate = disruption.startDate;
-    } else if (disruption.startTime) {
-        startDate = moment(disruption.startTime).format(DATE_FORMAT);
-    }
+    const recurrenceDates = incidentRecurrent
+        ? getRecurrenceDates(disruption.startDate, disruption.startTime, disruptionEndDate)
+        : undefined;
+    const startDate = disruption.startDate || (disruption.startTime ? moment(disruption.startTime).format(DATE_FORMAT) : '');
     const startTime = disruption.startTime || (disruption.startDate ? '00:00' : undefined);
     let startTimeMoment = disruption.startDate || disruption.startTime ? momentFromDateTime(startDate, startTime) : undefined;
     const endTimeMoment = calculateEndTimeMoment(disruptionEndDate, disruption.endTime);
@@ -290,19 +284,22 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
 
     const endTimes = disruptions.map(disruption => disruption.endTime).filter(endTime => endTime != null);
     const latestEndTime = endTimes.length > 0 ? moment.max(endTimes) : null;
-    if (latestEndTime && !incident.recurrent && incident.endTime
-        && (latestEndTime.isAfter(incident.endTime) || (incident.status !== STATUSES.RESOLVED && allResolved))) {
+    const shouldUpdateEndTime = latestEndTime && !incident.recurrent && incident.endTime
+        && (latestEndTime.isAfter(incident.endTime) || (incident.status !== STATUSES.RESOLVED && allResolved));
+    if (shouldUpdateEndTime) {
         updatedIncident.endTime = latestEndTime;
     }
     const result = {
         ...updatedIncident,
         ...(incident.recurrent && calculateValuesForRecurrentIncident(updatedIncident)),
     };
-    if (incident.recurrent && incident.endDate) {
-        result.endDate = incident.endDate;
-    }
-    if (incident.recurrent && result.endTime && moment.isMoment(result.endTime)) {
-        result.endTime = result.endTime.toISOString();
+    if (incident.recurrent) {
+        if (incident.endDate) {
+            result.endDate = incident.endDate;
+        }
+        if (result.endTime && moment.isMoment(result.endTime)) {
+            result.endTime = result.endTime.toISOString();
+        }
     }
     return result;
 };
