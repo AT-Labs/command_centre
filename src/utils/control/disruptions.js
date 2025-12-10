@@ -284,22 +284,20 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
 
     const endTimes = disruptions.map(disruption => disruption.endTime).filter(endTime => endTime != null);
     const latestEndTime = endTimes.length > 0 ? moment.max(endTimes) : null;
-    const shouldUpdateEndTime = latestEndTime && !incident.recurrent && incident.endTime
-        && (latestEndTime.isAfter(incident.endTime) || (incident.status !== STATUSES.RESOLVED && allResolved));
-    if (shouldUpdateEndTime) {
+    const isEndTimeAfterIncident = latestEndTime && incident.endTime && latestEndTime.isAfter(incident.endTime);
+    const shouldResolve = incident.status !== STATUSES.RESOLVED && allResolved;
+    if (latestEndTime && !incident.recurrent && incident.endTime && (isEndTimeAfterIncident || shouldResolve)) {
         updatedIncident.endTime = latestEndTime;
     }
     const result = {
         ...updatedIncident,
         ...(incident.recurrent && calculateValuesForRecurrentIncident(updatedIncident)),
     };
-    if (incident.recurrent) {
-        if (incident.endDate) {
-            result.endDate = incident.endDate;
-        }
-        if (result.endTime && moment.isMoment(result.endTime)) {
-            result.endTime = result.endTime.toISOString();
-        }
+    if (incident.recurrent && incident.endDate) {
+        result.endDate = incident.endDate;
+    }
+    if (incident.recurrent && result.endTime && moment.isMoment(result.endTime)) {
+        result.endTime = result.endTime.toISOString();
     }
     return result;
 };
