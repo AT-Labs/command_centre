@@ -184,7 +184,7 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
         ...disruption,
         ...(isEditMode ? { } : { status: incidentStatus }),
         ...(isEditMode ? { } : { cause: incidentCause }),
-        endTime: endTimeMoment,
+        endTime: incidentRecurrent && endTimeMoment ? endTimeMoment.toISOString() : endTimeMoment,
         endDate: disruptionEndDate,
         startTime: startTimeMoment,
         mode: uniq(modes).join(', '),
