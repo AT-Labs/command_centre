@@ -170,11 +170,11 @@ export const toCoordinates = latlngs => latlngs.map(item => [item.lat, item.lng]
 
 // Ramer–Douglas–Peucker_algorithm to thin WKT points
 // This implementation is a modified version to avoid removing points that are far apart (Keep the long motorway segments unchanged)
-// This implementation removes points that create a height less than the threshold and keeps points that are far apart (>20 meters)
+// This implementation removes points that create a height less than the threshold and always keeps points that are far apart (>20 meters)
 // This helps to reduce the number of points in a route shape while preserving its overall shape
 // Default threshold is set to 0.00002 (~2 meters in lat/lon degrees) to keep the shape around the roundabouts and curves
 // This can also be used to reduce the number of points in the TomTom diversion shapes
-export function thinCoordinates(points, threshold = 0.00002) {
+export function thinCoordinates(points, heightThreshold = 0.00002, distanceThreshold = 20) {
     // Basic validation
     if (!Array.isArray(points) || points.length < 3) {
         return points; // Need at least 3 points to form a triangle and perform thinning
@@ -211,10 +211,10 @@ export function thinCoordinates(points, threshold = 0.00002) {
 
         // If height is greater than threshold, keep the point
         // If the distance to the previous point is more than threshold, also keep the point to avoid large gaps for motorway segments
-        if (height > threshold || calculateDistance(
+        if (height > heightThreshold || calculateDistance(
             [lastKeptPoint.lat, lastKeptPoint.lon],
             [curr.lat, curr.lon],
-        ) > 20) {
+        ) > distanceThreshold) {
             thinnedCoords.push(points[i]);
         }
     }
