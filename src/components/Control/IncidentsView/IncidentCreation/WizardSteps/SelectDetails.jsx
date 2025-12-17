@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { isEmpty, some } from 'lodash-es';
@@ -31,8 +31,6 @@ import {
     setRequestedDisruptionKeyToUpdateEditEffect } from '../../../../../redux/actions/control/incidents';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
 import { getParentChildSeverityOptions, STATUSES } from '../../../../../types/disruptions-types';
-import { filterDisruptionsBySearchTerm } from '../../../../../utils/control/incidents';
-import { SelectedEntitiesRenderer } from './SelectedEntitiesRenderer';
 import {
     DATE_FORMAT,
     TIME_FORMAT,
@@ -360,6 +358,7 @@ export const SelectDetails = (props) => {
         if (props.editMode === EDIT_TYPE.EDIT && status === STATUSES.DRAFT) {
             props.onSubmitUpdate();
         } else {
+            props.onStepUpdate(3);
             props.onSubmitDraft();
         }
     };
@@ -429,27 +428,30 @@ export const SelectDetails = (props) => {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    const updateFilteredDisruptions = useCallback(() => {
-        const filtered = filterDisruptionsBySearchTerm(disruptions, debouncedSearchTerm);
+    const updateFilteredDisruptions = () => {
+        const term = debouncedSearchTerm.toLowerCase();
+        const filtered = disruptions.filter(d => d.impact?.toLowerCase().includes(term)
+            || d.affectedEntities?.affectedRoutes.some(entity => entity.routeShortName.toLowerCase().includes(term))
+            || d.affectedEntities?.affectedStops.some(entity => entity.text.toLowerCase().includes(term)));
         setFilteredDisruptions(filtered);
-    }, [disruptions, debouncedSearchTerm]);
+    };
 
     useEffect(() => {
         updateFilteredDisruptions();
-    }, [debouncedSearchTerm, updateFilteredDisruptions]);
+    }, [debouncedSearchTerm]);
 
     useEffect(() => {
-        if (disruptions) {
-            updateFilteredDisruptions();
+        if (disruptions && disruptions.length !== filteredDisruptions.length) {
+            setFilteredDisruptions(disruptions);
         }
-    }, [disruptions, updateFilteredDisruptions]);
+    }, [disruptions]);
 
     useEffect(() => {
         if (props.isEffectsRequiresToUpdate) {
             updateFilteredDisruptions();
             props.updateIsEffectsRequiresToUpdateState();
         }
-    }, [props.isEffectsRequiresToUpdate, updateFilteredDisruptions]);
+    }, [props.isEffectsRequiresToUpdate]);
 
     useEffect(() => {
         if (props.editMode === EDIT_TYPE.EDIT) {
@@ -561,37 +563,6 @@ export const SelectDetails = (props) => {
                             <div className="disruption-recurrence-invalid">Please select start date</div>
                         )}
                     </FormGroup>
-                </div>
-                <div className="col-6">
-                    <FormGroup>
-                        <Label for="disruption-creation__wizard-select-details__start-time">
-                            <span className="font-size-md font-weight-bold">{LABEL_START_TIME}</span>
-                        </Label>
-                        <Input
-                            id="disruption-creation__wizard-select-details__start-time"
-                            className="border border-dark"
-                            value={ startTime }
-                            onChange={ event => onChangeStartTime(event.target.value) }
-                            invalid={ !startTimeValid() && isStartTimeDirty }
-                            disabled={
-                                isResolved()
-                                || (
-                                    recurrent
-                                    && props.editMode === EDIT_TYPE.EDIT
-                                    && status !== STATUSES.DRAFT
-                                    && status !== STATUSES.NOT_STARTED
-                                )
-                            }
-                        />
-                        <FormFeedback>Not valid values</FormFeedback>
-                    </FormGroup>
-                </div>
-                {props.startDateTimeWillBeUpdated && (
-                    <div className="col-12 disruption-warning-message">
-                        Set from earliest child start date/time.
-                    </div>
-                )}
-                <div className="col-6">
                     <FormGroup className="position-relative">
                         <Label for="disruption-creation__wizard-select-details__end-date">
                             <span className="font-size-md font-weight-bold">
@@ -622,6 +593,34 @@ export const SelectDetails = (props) => {
                     </FormGroup>
                 </div>
                 <div className="col-6">
+                    <FormGroup>
+                        <Label for="disruption-creation__wizard-select-details__start-time">
+                            <span className="font-size-md font-weight-bold">{LABEL_START_TIME}</span>
+                        </Label>
+                        <Input
+                            id="disruption-creation__wizard-select-details__start-time"
+                            className="border border-dark"
+                            value={ startTime }
+                            onChange={ event => onChangeStartTime(event.target.value) }
+                            invalid={
+                                !startTimeValid()
+                                && (
+                                    (status === STATUSES.NOT_STARTED && recurrent)
+                                    || (status === STATUSES.DRAFT && props.useDraftDisruptions && isStartTimeDirty)
+                                )
+                            }
+                            disabled={
+                                isResolved()
+                                || (
+                                    recurrent
+                                    && props.editMode === EDIT_TYPE.EDIT
+                                    && status !== STATUSES.DRAFT
+                                    && status !== STATUSES.NOT_STARTED
+                                )
+                            }
+                        />
+                        <FormFeedback>Not valid values</FormFeedback>
+                    </FormGroup>
                     { !recurrent && (
                         <FormGroup>
                             <Label for="disruption-creation__wizard-select-details__end-time">
@@ -659,11 +658,6 @@ export const SelectDetails = (props) => {
                         </FormGroup>
                     )}
                 </div>
-                {props.endDateTimeWillBeUpdated && (
-                    <div className="col-12 disruption-warning-message">
-                        Set from latest child end date/time.
-                    </div>
-                )}
                 { recurrent && (
                     <>
                         <div className="col-6 text-center">
@@ -740,7 +734,6 @@ export const SelectDetails = (props) => {
                                 onChange={ event => props.onDataUpdate('header', event.target.value) }
                                 onBlur={ onBlurTitle }
                                 value={ header }
-                                invalid={ isTitleDirty && !titleValid() }
                             />
                             <FormFeedback>Please enter disruption title</FormFeedback>
                         </FormGroup>
@@ -777,10 +770,27 @@ export const SelectDetails = (props) => {
                                 <p className="p-lr12-tb6 m-0">
                                     {getImpactLabel(disruption.impact)}
                                 </p>
-                                <SelectedEntitiesRenderer
-                                    affectedEntities={ disruption.affectedEntities }
-                                    disruptionKey={ disruption.key }
-                                />
+                                {disruption.affectedEntities.affectedRoutes && disruption.affectedEntities.affectedRoutes.length > 0 && (
+                                    disruption.affectedEntities.affectedRoutes.filter((item, index, self) => index
+                                    === self.findIndex(i => i.routeShortName === item.routeShortName))
+                                        .map(route => (
+                                            <p className="p-lr12-tb6 m-0 disruption-effect-item-route" key={ `${disruption.key}_${route.routeId}` }>
+                                                Route -
+                                                {' '}
+                                                {route.routeShortName}
+                                            </p>
+                                        ))
+                                )}
+                                {disruption.affectedEntities.affectedStops && disruption.affectedEntities.affectedStops.length > 0 && (
+                                    disruption.affectedEntities.affectedStops.filter((item, index, self) => index === self.findIndex(i => i.stopId === item.stopId))
+                                        .map(stop => (
+                                            <p className="p-lr12-tb6 m-0 disruption-effect-item-stop" key={ `${disruption.key}_${stop.stopId}` }>
+                                                Stop -
+                                                {' '}
+                                                {stop.text}
+                                            </p>
+                                        ))
+                                )}
                             </li>
                         ))}
                     </ul>
@@ -860,8 +870,6 @@ SelectDetails.propTypes = {
     isEffectForPublishValid: PropTypes.bool,
     onPublishUpdate: PropTypes.func,
     onDisruptionSelected: PropTypes.func,
-    startDateTimeWillBeUpdated: PropTypes.bool,
-    endDateTimeWillBeUpdated: PropTypes.bool,
 };
 
 SelectDetails.defaultProps = {
@@ -882,8 +890,6 @@ SelectDetails.defaultProps = {
     isEffectForPublishValid: true,
     onPublishUpdate: () => { },
     onDisruptionSelected: () => { },
-    startDateTimeWillBeUpdated: false,
-    endDateTimeWillBeUpdated: false,
 };
 
 export default connect(state => ({

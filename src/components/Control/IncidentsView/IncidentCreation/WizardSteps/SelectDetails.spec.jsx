@@ -592,6 +592,7 @@ describe('SelectDetails Component', () => {
             expect(button.disabled).toBe(false);
             fireEvent.click(button);
             expect(defaultProps.onSubmitDraft).toHaveBeenCalled();
+            expect(defaultProps.onStepUpdate).toHaveBeenCalledWith(3);
         });
 
         it('Should be enable with filled recurrent incident and trigger onSubmit draft on clicking', () => {
@@ -611,6 +612,7 @@ describe('SelectDetails Component', () => {
             fireEvent.click(button);
 
             expect(defaultProps.onSubmitDraft).toHaveBeenCalled();
+            expect(defaultProps.onStepUpdate).toHaveBeenCalledWith(3);
         });
     });
 

@@ -8,7 +8,6 @@ import {
     toWKT,
     deduplicateCoordinates,
     toCoordinates,
-    thinCoordinates,
 } from './ShapeHelper.js';
 
 describe('calculateDistance', () => {
@@ -227,104 +226,5 @@ describe('toCoordinates', () => {
 
     it('returns an empty array when input is empty', () => {
         expect(toCoordinates([])).toEqual([]);
-    });
-});
-
-describe('thinCoordinates', () => {
-    it('returns the same array when less than 3 points', () => {
-        expect(thinCoordinates([])).toEqual([]);
-        expect(thinCoordinates([[1, 2]])).toEqual([[1, 2]]);
-        expect(thinCoordinates([[1, 2], [3, 4]])).toEqual([[1, 2], [3, 4]]);
-    });
-
-    it('always keeps first and last points', () => {
-        const points = [[0, 0], [0.00001, 0.00001], [0, 1]];
-        const thinned = thinCoordinates(points, 0.00002);
-        expect(thinned[0]).toEqual([0, 0]);
-        expect(thinned[thinned.length - 1]).toEqual([0, 1]);
-    });
-
-    it('removes points with low perpendicular height', () => {
-        // Points forming a nearly straight line - middle point should be removed
-        const points = [[0, 0], [0.00001, 0.00001], [0, 1]];
-        const thinned = thinCoordinates(points, 0.00002);
-        // Middle point should be removed as it has very low height
-        expect(thinned.length).toBeLessThan(points.length);
-    });
-
-    it('keeps points with high perpendicular height', () => {
-        // Points forming a triangle with significant height
-        const points = [[0, 0], [0.5, 0.5], [1, 0]];
-        const thinned = thinCoordinates(points, 0.00002);
-        // All points should be kept as middle point has significant height
-        expect(thinned.length).toBe(3);
-    });
-
-    it('keeps points that are far apart regardless of height', () => {
-        // Points where middle point is far from previous (>20 meters)
-        // this is to make sure that we don't remove points on long motorway segments
-        // The goal for the thin algorithm is to reduce points that are too close to each other
-        const points = [
-            [0, 0],
-            [0.0002, 0.0001], // ~20+ meters away, enough distance for shape editor
-            [0.0004, 0],
-        ];
-        const thinned = thinCoordinates(points, 0.00002, 20);
-        // All points should be kept due to distance threshold
-        expect(thinned.length).toBe(3);
-    });
-
-    it('applies custom height threshold', () => {
-        const points = [[0, 0], [0.00005, 0.00005], [0, 1]];
-        const thinnedLow = thinCoordinates(points, 0.0001);
-        const thinnedHigh = thinCoordinates(points, 0.00001);
-        // Higher threshold removes more points
-        expect(thinnedLow.length).toBeLessThanOrEqual(thinnedHigh.length);
-    });
-
-    it('applies custom distance threshold', () => {
-        const points = [[0, 0], [0.0001, 0.0001], [0, 1]];
-        const thinned50 = thinCoordinates(points, 0.00002, 50);
-        const thinned10 = thinCoordinates(points, 0.00002, 10);
-        // Lower distance threshold keeps more points
-        expect(thinned10.length).toBeGreaterThanOrEqual(thinned50.length);
-    });
-
-    it('handles complex polyline with multiple segments', () => {
-        const points = [
-            [0, 0],
-            [0.00001, 0.00001], // Low height, should be removed
-            [0, 0.5],
-            [0.5, 0.5], // High height, should be kept
-            [0, 1],
-            [0.00001, 1.00001], // Low height, should be removed
-            [0, 2],
-        ];
-        const thinned = thinCoordinates(points, 0.00002);
-        expect(thinned.length).toBeLessThan(points.length);
-        expect(thinned[0]).toEqual([0, 0]);
-        expect(thinned[thinned.length - 1]).toEqual([0, 2]);
-    });
-
-    it('returns all points when they all have high significance', () => {
-        // Points forming a zigzag pattern - all should be kept
-        const points = [
-            [0, 0],
-            [0, 1],
-            [1, 1],
-            [1, 2],
-            [2, 2],
-        ];
-        const thinned = thinCoordinates(points, 0.00002);
-        expect(thinned.length).toBe(points.length);
-    });
-
-    it('does not include duplicate last point', () => {
-        const points = [[0, 0], [0.5, 0.5], [1, 1]];
-        const thinned = thinCoordinates(points, 0.00002);
-        const lastPoint = thinned[thinned.length - 1];
-        const secondLastPoint = thinned[thinned.length - 2];
-        // Last point should not be a duplicate
-        expect(lastPoint[0] === secondLastPoint[0] && lastPoint[1] === secondLastPoint[1]).toBe(false);
     });
 });

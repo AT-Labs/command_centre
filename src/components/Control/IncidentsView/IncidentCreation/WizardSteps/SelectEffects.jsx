@@ -290,11 +290,6 @@ export const SelectEffects = (props) => {
             : disruption));
         setDisruptions(updatedDisruptions);
         setRequireMapUpdate(true);
-        if (props.editMode === EDIT_TYPE.ADD_EFFECT) {
-            props.updateNewIncidentEffect(updatedDisruptions[0]);
-        } else {
-            props.onDataUpdate('disruptions', updatedDisruptions);
-        }
     };
 
     useEffect(() => {
@@ -796,7 +791,7 @@ export const SelectEffects = (props) => {
                                 <span className="pl-2">Draft Stop Message</span>
                             </FormGroup>
                         </div>
-                        <div className="disruption-display-block creation-flow-select-entities">
+                        <div className="disruption-display-block">
                             <SelectEffectEntities
                                 disruptionKey={ disruption.key }
                                 affectedEntities={ disruption.affectedEntities }
