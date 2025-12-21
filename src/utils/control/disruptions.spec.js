@@ -17,6 +17,7 @@ import {
     isRecurringPeriodInvalid,
     getDurationWithoutSeconds,
     buildIncidentSubmitBody,
+    buildDisruptionSubmitBody,
     buildDisruptionsQuery,
     transformParentSourceIdNo,
     getStatusForEffect,
@@ -956,7 +957,6 @@ describe('buildDisruptionSubmitBody', () => {
                 routeType,
                 type,
                 diversionIds,
-                notes: [],
                 ...(stopCode !== undefined && {
                     directionId,
                     stopId,
@@ -980,7 +980,6 @@ describe('buildDisruptionSubmitBody', () => {
                 routeShortName,
                 routeType,
                 type,
-                notes: [],
                 ...(stopCode !== undefined && {
                     directionId,
                     stopId,
@@ -1001,6 +1000,139 @@ describe('buildDisruptionSubmitBody', () => {
             url: '',
         };
         expect(buildIncidentSubmitBody(mockIncident, true)).toEqual(expectedIncident);
+    });
+
+    it('Should handle draft recurrent incident without startTime', () => {
+        const incident = {
+            ...mockRecurrentIncident,
+            status: STATUSES.DRAFT,
+            startTime: undefined,
+            disruptions: [
+                {
+                    ...mockRecurrentDisruption1,
+                    startDate: '',
+                    startTime: '',
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.recurrencePattern).toBeDefined();
+        expect(result.recurrencePattern.byweekday).toBeDefined();
+        expect(result.recurrencePattern.freq).toBeDefined();
+        expect(result.recurrencePattern.dtstart).toBeUndefined();
+        expect(result.recurrencePattern.until).toBeUndefined();
+    });
+
+    it('Should handle draft recurrent incident without endDate', () => {
+        const incident = {
+            ...mockRecurrentIncident,
+            status: STATUSES.DRAFT,
+            endDate: '',
+            disruptions: [
+                {
+                    ...mockRecurrentDisruption1,
+                    endDate: '',
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.endDate).toEqual('');
+        expect(result.recurrencePattern).toBeDefined();
+    });
+
+    it('Should handle draft recurrent incident without startTime and endDate', () => {
+        const incident = {
+            ...mockRecurrentIncident,
+            status: STATUSES.DRAFT,
+            startTime: undefined,
+            endDate: '',
+            disruptions: [
+                {
+                    ...mockRecurrentDisruption1,
+                    startDate: '',
+                    startTime: '',
+                    endDate: '',
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.endDate).toEqual('');
+        expect(result.recurrencePattern).toBeDefined();
+        expect(result.recurrencePattern.byweekday).toBeDefined();
+        expect(result.recurrencePattern.freq).toBeDefined();
+        expect(result.recurrencePattern.dtstart).toBeUndefined();
+        expect(result.recurrencePattern.until).toBeUndefined();
+    });
+
+    it('Should handle draft recurrent incident with valid startTime', () => {
+        const incident = {
+            ...mockRecurrentIncident,
+            status: STATUSES.DRAFT,
+            startTime: moment([2025, 9, 3, 16, 23, 0, 0]),
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.recurrencePattern).toBeDefined();
+        expect(result.recurrencePattern.dtstart).toBeDefined();
+        expect(result.recurrencePattern.until).toBeDefined();
+    });
+
+    it('Should handle draft recurrent incident with invalid startTime', () => {
+        const incident = {
+            ...mockRecurrentIncident,
+            status: STATUSES.DRAFT,
+            startTime: moment('invalid-date'),
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.recurrencePattern).toBeDefined();
+        expect(result.recurrencePattern.byweekday).toBeDefined();
+        expect(result.recurrencePattern.freq).toBeDefined();
+        expect(result.recurrencePattern.dtstart).toBeUndefined();
+        expect(result.recurrencePattern.until).toBeUndefined();
+    });
+
+    it('Should handle draft recurrent incident with endDate from disruptions', () => {
+        const incident = {
+            ...mockRecurrentIncident,
+            status: STATUSES.DRAFT,
+            endDate: '',
+            disruptions: [
+                {
+                    ...mockRecurrentDisruption1,
+                    endDate: '12/10/2025',
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.endDate).toEqual('12/10/2025');
+        expect(result.recurrencePattern).toBeDefined();
+    });
+
+    it('Should handle non-draft recurrent incident with startTime as before', () => {
+        const incident = {
+            ...mockRecurrentIncident,
+            status: STATUSES.NOT_STARTED,
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.recurrencePattern.dtstart).toBeDefined();
+        expect(result.recurrencePattern.until).toBeDefined();
+    });
+
+    it('Should keep disruption endDate when it exists for recurring incident', () => {
+        const disruptionEndDate = '20/10/2025';
+        const disruption = {
+            ...mockDisruption1,
+            endDate: disruptionEndDate,
+            recurrent: true,
+        };
+        const result = buildDisruptionSubmitBody(
+            disruption,
+            STATUSES.ACTIVE,
+            'CONGESTION',
+            false,
+            null,
+            true,
+        );
+        expect(result.endDate).toEqual(disruptionEndDate);
     });
 });
 
@@ -1221,6 +1353,155 @@ describe('getMode', () => {
         expect(result.disruptions[0].status).toEqual(STATUSES.RESOLVED);
         expect(result.disruptions[0].startTime).toEqual(incident.endTime);
         expect(result.disruptions[0].endTime).toEqual(incident.endTime);
+    });
+
+    it('Should handle undefined incident.startTime without error', () => {
+        const incident = {
+            ...mockIncident,
+            startTime: undefined,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    startTime: momentFromDateTime(moment('2025-08-21T20:27:00.000Z').format(DATE_FORMAT), '2025-08-21T20:27:00.000Z'),
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime).toBeUndefined();
+    });
+
+    it('Should handle null incident.startTime without error', () => {
+        const incident = {
+            ...mockIncident,
+            startTime: null,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    startTime: momentFromDateTime(moment('2025-08-21T20:27:00.000Z').format(DATE_FORMAT), '2025-08-21T20:27:00.000Z'),
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime).toBeNull();
+    });
+
+    it('Should handle disruptions with undefined startTime without error', () => {
+        const incident = {
+            ...mockIncident,
+            startTime: moment('2025-08-21T20:27:00.000Z'),
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    startTime: undefined,
+                },
+                {
+                    ...mockDisruption2,
+                    startTime: momentFromDateTime(moment('2025-08-24T20:27:00.000Z').format(DATE_FORMAT), '2025-08-24T20:27:00.000Z'),
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime).toEqual(moment('2025-08-21T20:27:00.000Z'));
+    });
+
+    it('Should handle all disruptions with undefined startTime without error', () => {
+        const incident = {
+            ...mockIncident,
+            startTime: undefined,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    startTime: undefined,
+                },
+                {
+                    ...mockDisruption2,
+                    startTime: undefined,
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime).toBeUndefined();
+    });
+
+    it('Should handle invalid earliestStartTime without error', () => {
+        const incident = {
+            ...mockIncident,
+            startTime: moment('2025-08-21T20:27:00.000Z'),
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    startTime: moment.invalid(),
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime).toEqual(moment('2025-08-21T20:27:00.000Z'));
+    });
+
+    it('Should handle incident.startTime as string (not moment object)', () => {
+        const incident = {
+            ...mockIncident,
+            startTime: '2025-08-21T20:27:00.000Z',
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    startTime: momentFromDateTime('20/08/2025', '18:00'),
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime).toBeDefined();
+    });
+
+    it('Should handle invalid incident.startTime after conversion', () => {
+        const incident = {
+            ...mockIncident,
+            startTime: 'invalid-date-string',
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    startTime: momentFromDateTime('20/08/2025', '18:00'),
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime).toBeDefined();
+    });
+
+    it('Should not update startTime when earliestStartTime is not before incident.startTime', () => {
+        const incidentStartTime = moment('2025-08-20T18:00:00.000Z');
+        const latestStartTimeMoment = moment('2025-08-21T20:27:00.000Z'); // Later than incident
+        const incident = {
+            ...mockIncident,
+            startTime: incidentStartTime,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    startDate: latestStartTimeMoment.format(DATE_FORMAT),
+                    startTime: latestStartTimeMoment.format(TIME_FORMAT),
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime.format()).toEqual(incidentStartTime.format());
+    });
+
+    it('Should update startTime to earliestStartTime when earliestStartTime is before incident.startTime', () => {
+        const incidentStartTime = moment('2025-08-22T20:27:00.000Z');
+        const earliestStartTimeMoment = moment('2025-08-21T20:27:00.000Z'); // Earlier than incident
+        const incident = {
+            ...mockIncident,
+            startTime: incidentStartTime,
+            disruptions: [
+                {
+                    ...mockDisruption1,
+                    startDate: earliestStartTimeMoment.format(DATE_FORMAT),
+                    startTime: earliestStartTimeMoment.format(TIME_FORMAT),
+                },
+            ],
+        };
+        const result = buildIncidentSubmitBody(incident, false);
+        expect(result.startTime.format()).toEqual(earliestStartTimeMoment.format());
     });
 });
 

@@ -129,23 +129,32 @@ export const getRecurrenceDates = (startDate, startTime, endDate) => {
     if (startDate && startTime) {
         recurrenceDates.dtstart = momentFromDateTime(startDate, startTime).tz('UTC', true).toDate();
     }
-    if (endDate && startTime) {
-        recurrenceDates.until = momentFromDateTime(endDate, startTime).tz('UTC', true).toDate();
+    if (endDate) {
+        recurrenceDates.until = momentFromDateTime(endDate, startTime || '00:00').tz('UTC', true).toDate();
     }
     return recurrenceDates;
 };
 
+const calculateEndTimeMoment = (disruptionEndDate, endTime) => {
+    if (isEmpty(disruptionEndDate) || isEmpty(endTime)) {
+        return undefined;
+    }
+    return moment.isMoment(endTime)
+        ? endTime
+        : momentFromDateTime(disruptionEndDate, endTime);
+};
+
 export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCause, isEditMode, incidentEndTimeMoment, incidentRecurrent) => {
-    let recurrenceDates;
-    if (incidentRecurrent) {
-        recurrenceDates = getRecurrenceDates(disruption.startDate, disruption.startTime, disruption.endDate);
-    }
-    const startDate = disruption.startDate ? disruption.startDate : moment(disruption.startTime).format(DATE_FORMAT);
-    let startTimeMoment = momentFromDateTime(startDate, disruption.startTime);
-    let endTimeMoment;
-    if (!isEmpty(disruption.endDate) && !isEmpty(disruption.endTime)) {
-        endTimeMoment = momentFromDateTime(disruption.endDate, disruption.endTime);
-    }
+    const disruptionEndDate = disruption.endDate;
+    const recurrenceDates = incidentRecurrent
+        ? getRecurrenceDates(disruption.startDate, disruption.startTime, disruptionEndDate)
+        : undefined;
+
+    const startDate = disruption.startDate || (disruption.startTime ? moment(disruption.startTime).format(DATE_FORMAT) : '');
+    const startTime = disruption.startTime || (disruption.startDate ? '00:00' : undefined);
+    let startTimeMoment = disruption.startDate || disruption.startTime ? momentFromDateTime(startDate, startTime) : undefined;
+
+    const endTimeMoment = calculateEndTimeMoment(disruptionEndDate, disruption.endTime);
     const modes = getMode(disruption);
     const routesToRequest = disruption.affectedEntities.affectedRoutes.map((
         { routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon, diversionIds },
@@ -154,7 +163,6 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
         routeShortName,
         routeType,
         type,
-        notes: [],
         ...(stopCode !== undefined && {
             directionId,
             stopId,
@@ -177,6 +185,7 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
         ...(isEditMode ? { } : { status: incidentStatus }),
         ...(isEditMode ? { } : { cause: incidentCause }),
         endTime: endTimeMoment,
+        endDate: disruptionEndDate,
         startTime: startTimeMoment,
         mode: uniq(modes).join(', '),
         affectedEntities: [...routesToRequest, ...stopsToRequest],
@@ -196,7 +205,17 @@ export const buildDisruptionSubmitBody = (disruption, incidentStatus, incidentCa
 const getRecurrentPatterForIncident = (incident) => {
     const byweekday = [...new Set([...incident.disruptions.flatMap(d => d.recurrencePattern.byweekday), ...incident.recurrencePattern.byweekday])]
         .filter(x => x != null).sort((a, b) => a - b);
-    const recurrenceDates = getRecurrenceDates(incident.startTime.format(DATE_FORMAT), incident.startTime.format(TIME_FORMAT), incident.endDate);
+    let recurrenceDates = {};
+    if (incident.status === STATUSES.DRAFT) {
+        if (incident.startTime) {
+            const startTimeMoment = moment.isMoment(incident.startTime) ? incident.startTime : moment(incident.startTime);
+            if (moment.isMoment(startTimeMoment) && startTimeMoment.isValid()) {
+                recurrenceDates = getRecurrenceDates(startTimeMoment.format(DATE_FORMAT), startTimeMoment.format(TIME_FORMAT), incident.endDate);
+            }
+        }
+    } else {
+        recurrenceDates = getRecurrenceDates(incident.startTime.format(DATE_FORMAT), incident.startTime.format(TIME_FORMAT), incident.endDate);
+    }
     return {
         byweekday,
         freq: incident.recurrencePattern.freq,
@@ -204,14 +223,46 @@ const getRecurrentPatterForIncident = (incident) => {
     };
 };
 
+const shouldUpdateStartTime = (earliestStartTime, incidentStartTime) => {
+    if (!earliestStartTime?.isValid() || !incidentStartTime) {
+        return false;
+    }
+    const momentStartTime = moment.isMoment(incidentStartTime) ? incidentStartTime : moment(incidentStartTime);
+    return moment.isMoment(momentStartTime) && momentStartTime.isValid() && earliestStartTime.isBefore(momentStartTime);
+};
+
+const shouldUpdateEndTime = (latestEndTime, incident, allResolved) => {
+    if (!latestEndTime || incident.recurrent || !incident.endTime) {
+        return false;
+    }
+    const isEndTimeAfter = latestEndTime.isAfter(incident.endTime);
+    const shouldResolve = incident.status !== STATUSES.RESOLVED && allResolved;
+    return isEndTimeAfter || shouldResolve;
+};
+
 const calculateValuesForRecurrentIncident = (incident) => {
-    const endDates = [
-        ...incident.disruptions
-            .map(disruption => moment(disruption.endDate, DATE_FORMAT, true))
-            .filter(m => m.isValid()),
-        moment(incident.endDate, DATE_FORMAT, true),
-    ].filter(m => m.isValid());
-    const endDate = moment.max(endDates).format(DATE_FORMAT);
+    let endDate;
+    if (incident.status === STATUSES.DRAFT) {
+        const endDates = [
+            ...incident.disruptions
+                .map(disruption => moment(disruption.endDate, DATE_FORMAT, true))
+                .filter(m => m.isValid()),
+            ...(incident.endDate ? [moment(incident.endDate, DATE_FORMAT, true)] : []),
+        ].filter(m => m.isValid());
+        if (endDates.length > 0) {
+            endDate = moment.max(endDates).format(DATE_FORMAT);
+        } else {
+            endDate = incident.endDate || '';
+        }
+    } else {
+        const endDates = [
+            ...incident.disruptions
+                .map(disruption => moment(disruption.endDate, DATE_FORMAT, true))
+                .filter(m => m.isValid()),
+            moment(incident.endDate, DATE_FORMAT, true),
+        ].filter(m => m.isValid());
+        endDate = moment.max(endDates).format(DATE_FORMAT);
+    }
     const durations = [...incident.disruptions.flatMap(d => d.duration), ...incident.duration];
     const duration = String(Math.max(...durations.map(Number)));
     return {
@@ -239,22 +290,27 @@ export const buildIncidentSubmitBody = (incident, isEditMode) => {
         ...(allResolved && { status: STATUSES.RESOLVED }),
         url: '',
     };
-    const earliestStartTime = moment.min(disruptions.map(disruption => disruption.startTime));
-
-    if (earliestStartTime.isBefore(incident.startTime)) {
+    const earliestStartTime = moment.min(disruptions.map(disruption => disruption.startTime).filter(Boolean));
+    if (shouldUpdateStartTime(earliestStartTime, incident.startTime)) {
         updatedIncident.startTime = earliestStartTime;
     }
 
     const endTimes = disruptions.map(disruption => disruption.endTime).filter(endTime => endTime != null);
     const latestEndTime = endTimes.length > 0 ? moment.max(endTimes) : null;
-    if (latestEndTime && !incident.recurrent && incident.endTime
-        && (latestEndTime.isAfter(incident.endTime) || (incident.status !== STATUSES.RESOLVED && allResolved))) {
+    if (shouldUpdateEndTime(latestEndTime, incident, allResolved)) {
         updatedIncident.endTime = latestEndTime;
     }
-    return {
+    const result = {
         ...updatedIncident,
         ...(incident.recurrent && calculateValuesForRecurrentIncident(updatedIncident)),
     };
+    if (incident.recurrent && incident.endDate) {
+        result.endDate = incident.endDate;
+    }
+    if (incident.recurrent && result.endTime && moment.isMoment(result.endTime)) {
+        result.endTime = result.endTime.toISOString();
+    }
+    return result;
 };
 
 export const getStatusForEffect = (disruption) => {

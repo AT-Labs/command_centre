@@ -293,8 +293,18 @@ export class CreateDisruption extends React.Component {
     onSubmitDraft = async () => {
         this.props.updateCurrentStep(1);
         const { disruptionData } = this.state;
-        const startDate = disruptionData.startDate ? disruptionData.startDate : moment(disruptionData.startTime).format(DATE_FORMAT);
-        const startTimeMoment = momentFromDateTime(startDate, disruptionData.startTime);
+        let startDate;
+        let startTimeMoment;
+        if (!isEmpty(disruptionData.startDate) || !isEmpty(disruptionData.startTime)) {
+            if (disruptionData.startDate) {
+                startDate = disruptionData.startDate;
+            } else if (disruptionData.startTime) {
+                startDate = moment(disruptionData.startTime).format(DATE_FORMAT);
+            } else {
+                startDate = '';
+            }
+            startTimeMoment = disruptionData.startDate || disruptionData.startTime ? momentFromDateTime(startDate, disruptionData.startTime) : undefined;
+        }
         let endTimeMoment;
         if (!isEmpty(disruptionData.endDate) && !isEmpty(disruptionData.endTime)) {
             endTimeMoment = momentFromDateTime(disruptionData.endDate, disruptionData.endTime);
@@ -305,8 +315,18 @@ export class CreateDisruption extends React.Component {
             recurrencePattern = {
                 freq: disruptionData.recurrencePattern.freq,
                 byweekday: disruptionData.recurrencePattern.byweekday ?? [],
-                ...(disruptionData.startTime && { dtstart: disruptionData.recurrencePattern.dtstart }),
-                ...(disruptionData.endTime && { until: disruptionData.recurrencePattern.until }),
+                ...(
+                    !isEmpty(disruptionData.startDate)
+                    && !isEmpty(disruptionData.startTime)
+                    && disruptionData.recurrencePattern?.dtstart
+                    && { dtstart: disruptionData.recurrencePattern.dtstart }
+                ),
+                ...(
+                    !isEmpty(disruptionData.endDate)
+                    && !isEmpty(disruptionData.endTime)
+                    && disruptionData.recurrencePattern?.until
+                    && { until: disruptionData.recurrencePattern.until }
+                ),
             };
         } else {
             recurrencePattern = disruptionData.recurrencePattern;
@@ -320,9 +340,8 @@ export class CreateDisruption extends React.Component {
             recurrencePattern,
             notes: [],
         };
-        this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds));
+        await this.props.createDisruption(buildSubmitBody(disruption, this.props.routes, this.props.stops, disruptionData.workarounds));
         this.props.openCreateDisruption(false);
-        this.props.toggleDisruptionModals('isConfirmationOpen', true);
     };
 
     onSubmitUpdate = async () => {

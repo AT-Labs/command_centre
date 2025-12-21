@@ -221,7 +221,6 @@ export const SelectDisruptionEntities = (props) => {
 
     const onSaveDraft = () => {
         if (!props.isEditMode) {
-            props.onStepUpdate(3);
             props.onSubmitDraft();
         } else {
             props.onSubmitUpdate();
