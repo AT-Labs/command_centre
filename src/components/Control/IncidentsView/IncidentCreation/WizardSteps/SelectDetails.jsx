@@ -75,7 +75,8 @@ export const SelectDetails = (props) => {
     const [isRecurrencePatternDirty, setIsRecurrencePatternDirty] = useState(false);
     const [isStartTimeDirty, setIsStartTimeDirty] = useState(false);
     const [isStartDateDirty, setIsStartDateDirty] = useState(false);
-    const [isEndDateDirty, setIsEndDateDirty] = useState(false);
+    const [isStartDateInvalid, setIsStartDateInvalid] = useState(false);
+    const [isEndDateInvalid, setIsEndDateInvalid] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [filteredDisruptions, setFilteredDisruptions] = useState(disruptions || []);
@@ -88,7 +89,7 @@ export const SelectDetails = (props) => {
     useEffect(() => { recurrentRef.current = recurrent; }, [recurrent]);
 
     const startTimeValid = () => {
-        if (status === STATUSES.NOT_STARTED && recurrent) {
+        if ((status === STATUSES.NOT_STARTED || status === STATUSES.DRAFT) && recurrent && props.editMode === EDIT_TYPE.EDIT) {
             const isValid = isStartTimeValid(startDate, startTime, modalOpenedTime, false);
             return isValid && !isStartDateTimeEarlierThanNow(startDate, startTime);
         }
@@ -97,14 +98,13 @@ export const SelectDetails = (props) => {
     };
 
     const startDateValid = () => {
-        if (status === STATUSES.NOT_STARTED && recurrent) {
+        if ((status === STATUSES.NOT_STARTED || status === STATUSES.DRAFT) && recurrent) {
             return moment(startDate, DATE_FORMAT, true).isSameOrAfter(moment(), 'day');
         }
-
         return isStartDateValid(startDate, modalOpenedTime, recurrent);
     };
 
-    const endTimeValid = () => isEndTimeValid(endDate, endTime, startDate, startTime);
+    const endTimeValid = () => (recurrent ? true : isEndTimeValid(endDate, endTime, startDate, startTime));
 
     const endDateValid = () => isEndDateValid(endDate, startDate, recurrent);
 
@@ -215,19 +215,15 @@ export const SelectDetails = (props) => {
     const onChangeEndDate = (date) => {
         if (recurrentRef.current) {
             if (date.length === 0) {
-                if (props.useDraftDisruptions) {
-                    props.onDataUpdate('endDate', '');
-                    setIsEndDateDirty(false);
-                } else {
-                    setIsEndDateDirty(true);
-                }
+                props.onDataUpdate('endDate', '');
+                setIsEndDateInvalid(true);
             } else {
                 props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
-                setIsEndDateDirty(false);
+                setIsEndDateInvalid(false);
             }
         } else {
             props.onDataUpdate('endDate', date.length ? moment(date[0]).format(DATE_FORMAT) : '');
-            setIsEndDateDirty(false);
+            setIsEndDateInvalid(false);
             if (date.length && isEmpty(endTimeRef.current)) {
                 props.onDataUpdate('endTime', '23:59');
             }
@@ -237,12 +233,12 @@ export const SelectDetails = (props) => {
     const onBlurEndDate = (date) => {
         if (recurrentRef.current) {
             if (date.length === 0 && !props.useDraftDisruptions) {
-                setIsEndDateDirty(true);
+                setIsEndDateInvalid(true);
             } else {
-                setIsEndDateDirty(false);
+                setIsEndDateInvalid(false);
             }
         } else {
-            setIsEndDateDirty(false);
+            setIsEndDateInvalid(false);
         }
     };
 
@@ -252,12 +248,13 @@ export const SelectDetails = (props) => {
 
     const onChangeStartDate = (date) => {
         if (date.length === 0) {
-            setIsStartDateDirty(true);
             props.onDataUpdate('startDate', '');
+            setIsStartDateInvalid(true);
         } else {
-            setIsStartDateDirty(false);
             props.onDataUpdate('startDate', moment(date[0]).format(DATE_FORMAT));
+            setIsStartDateInvalid(false);
         }
+        setIsStartDateDirty(true);
     };
 
     const isRequiredPropsEmpty = () => {
@@ -278,7 +275,7 @@ export const SelectDetails = (props) => {
     );
 
     const datePickerOptions = useMemo(() => {
-        if (status === STATUSES.NOT_STARTED && recurrent && props.editMode === EDIT_TYPE.EDIT) {
+        if ((status === STATUSES.NOT_STARTED || status === STATUSES.DRAFT) && recurrent && props.editMode === EDIT_TYPE.EDIT) {
             return getDatePickerOptions('today');
         }
         return recurrent && props.editMode !== EDIT_TYPE.EDIT
@@ -545,19 +542,19 @@ export const SelectDetails = (props) => {
                             <Flatpickr
                                 data-testid="start-date_date-picker"
                                 id="disruption-creation__wizard-select-details__start-date"
-                                className={ `font-weight-normal cc-form-control form-control ${isStartDateDirty ? 'is-invalid' : ''}` }
+                                className={ `font-weight-normal cc-form-control form-control ${isStartDateInvalid ? 'is-invalid' : ''}` }
                                 value={ startDate }
                                 options={ datePickerOptions }
                                 placeholder="Select date"
                                 onChange={ date => onChangeStartDate(date) }
                                 disabled={ isResolved() || (recurrent && props.editMode === EDIT_TYPE.EDIT && status !== STATUSES.DRAFT && status !== STATUSES.NOT_STARTED) } />
                         </div>
-                        {!isStartDateDirty && (
+                        {!isStartDateInvalid && (
                             <FaRegCalendarAlt
                                 className="disruption-creation__wizard-select-details__icon position-absolute"
                                 size={ 22 } />
                         )}
-                        {isStartDateDirty && (
+                        {isStartDateInvalid && (
                             <div className="disruption-recurrence-invalid">Please select start date</div>
                         )}
                     </FormGroup>
@@ -572,7 +569,7 @@ export const SelectDetails = (props) => {
                             className="border border-dark"
                             value={ startTime }
                             onChange={ event => onChangeStartTime(event.target.value) }
-                            invalid={ !startTimeValid() && isStartTimeDirty }
+                            invalid={ !startTimeValid() && (isStartTimeDirty || isStartDateDirty) }
                             disabled={
                                 isResolved()
                                 || (
@@ -602,7 +599,7 @@ export const SelectDetails = (props) => {
                             <Flatpickr
                                 data-testid="end-date_date-picker"
                                 id="disruption-creation__wizard-select-details__end-date"
-                                className={ `font-weight-normal cc-form-control form-control ${isEndDateDirty ? 'is-invalid' : ''}` }
+                                className={ `font-weight-normal cc-form-control form-control ${isEndDateInvalid ? 'is-invalid' : ''}` }
                                 value={ endDate }
                                 options={ endDateDatePickerOptions }
                                 onChange={ date => onChangeEndDate(date) }
@@ -611,12 +608,12 @@ export const SelectDetails = (props) => {
 
                             />
                         </div>
-                        {!isEndDateDirty && (
+                        {!isEndDateInvalid && (
                             <FaRegCalendarAlt
                                 className="disruption-creation__wizard-select-details__icon position-absolute"
                                 size={ 22 } />
                         )}
-                        {isEndDateDirty && (
+                        {isEndDateInvalid && (
                             <span className="disruption-recurrence-invalid">Please select end date</span>
                         )}
                     </FormGroup>

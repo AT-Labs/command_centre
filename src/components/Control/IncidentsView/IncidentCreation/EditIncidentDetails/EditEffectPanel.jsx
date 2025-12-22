@@ -167,7 +167,8 @@ export const EditEffectPanel = (props, ref) => {
     const [isStartTimeDirty, setIsStartTimeDirty] = useState(false);
     const [isTitleDirty, setIsTitleDirty] = useState(false);
     const [isStartDateDirty, setIsStartDateDirty] = useState(false);
-    const [isEndDateDirty, setIsEndDateDirty] = useState(false);
+    const [isStartDateInvalid, setIsStartDateInvalid] = useState(false);
+    const [isEndDateInvalid, setIsEndDateInvalid] = useState(false);
     const [isImpactDirty, setIsImpactDirty] = useState(false);
     const [isSeverityDirty, setIsSeverityDirty] = useState(false);
     const [isDurationDirty, setIsDurationDirty] = useState(false);
@@ -246,7 +247,7 @@ export const EditEffectPanel = (props, ref) => {
     }));
 
     const startTimeValid = () => {
-        if (disruptionRecurrent && (disruption.status === STATUSES.RESOLVED || disruption.status === STATUSES.NOT_STARTED)) {
+        if (disruptionRecurrent && (disruption.status === STATUSES.RESOLVED || disruption.status === STATUSES.NOT_STARTED || disruption.status === STATUSES.DRAFT)) {
             const isTimeValid = isStartTimeValid(disruption.startDate, disruption.startTime, moment(modalOpenedTime), false);
             if (disruption.status === STATUSES.RESOLVED) {
                 return isTimeValid;
@@ -274,7 +275,7 @@ export const EditEffectPanel = (props, ref) => {
     const endDateValid = () => isEndDateValid(disruption.endDate, disruption.startDate, disruptionRecurrent);
 
     const startDateValid = () => {
-        if (disruption.status === STATUSES.NOT_STARTED && disruptionRecurrent) {
+        if ((disruption.status === STATUSES.NOT_STARTED || disruption.status === STATUSES.DRAFT) && disruptionRecurrent) {
             return moment(disruption.startDate, DATE_FORMAT, true).isSameOrAfter(moment(), 'day');
         }
 
@@ -286,7 +287,7 @@ export const EditEffectPanel = (props, ref) => {
     const titleValid = () => !isEmpty(disruption.header);
 
     const datePickerOptions = useMemo(() => (
-        disruption.status === STATUSES.NOT_STARTED && disruptionRecurrent
+        (disruption.status === STATUSES.NOT_STARTED || disruption.status === STATUSES.DRAFT) && disruptionRecurrent
             ? getDatePickerOptions('today')
             : getDatePickerOptions()
     ), [disruption.status, disruptionRecurrent]);
@@ -325,37 +326,38 @@ export const EditEffectPanel = (props, ref) => {
     const onChangeStartDate = (date) => {
         if (date.length === 0) {
             updateDisruption({ startDate: '' });
-            setIsStartDateDirty(true);
+            setIsStartDateInvalid(true);
         } else {
             updateDisruption({ startDate: moment(date[0]).format(DATE_FORMAT) });
-            setIsStartDateDirty(false);
+            setIsStartDateInvalid(false);
         }
+        setIsStartDateDirty(true);
     };
 
     const onChangeEndDate = (date, isRecurrent) => {
         if (isRecurrent) {
             if (date.length === 0) {
                 updateDisruption({ endDate: '' });
-                setIsEndDateDirty(true);
+                setIsEndDateInvalid(true);
             } else {
                 updateDisruption({ endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '' });
-                setIsEndDateDirty(false);
+                setIsEndDateInvalid(false);
             }
         } else {
             updateDisruption({ endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '' });
-            setIsEndDateDirty(false);
+            setIsEndDateInvalid(false);
         }
     };
 
     const onBlurEndDate = (date, isRecurrent) => {
         if (isRecurrent) {
             if (date.length === 0 && disruption.status !== STATUSES.DRAFT) {
-                setIsEndDateDirty(true);
+                setIsEndDateInvalid(true);
             } else {
-                setIsEndDateDirty(false);
+                setIsEndDateInvalid(false);
             }
         } else {
-            setIsEndDateDirty(false);
+            setIsEndDateInvalid(false);
         }
     };
 
@@ -397,8 +399,14 @@ export const EditEffectPanel = (props, ref) => {
                 [valueKey]: affectedEntities,
             },
         };
-
         updateDisruptionState(updatedDisruptions);
+
+        if (props.onDisruptionsUpdate && props.disruptions) {
+            const updatedDisruptionsList = props.disruptions.map(d => (
+                d.incidentNo === disruption.incidentNo ? updatedDisruptions : d
+            ));
+            props.onDisruptionsUpdate('disruptions', updatedDisruptionsList);
+        }
     };
 
     const resetAffectedEntities = () => {
@@ -1097,7 +1105,7 @@ export const EditEffectPanel = (props, ref) => {
                                             data-testid="start-date_date-picker"
                                             key="start-date"
                                             id="disruption-creation__wizard-select-details__start-date"
-                                            className={ `font-weight-normal cc-form-control form-control ${isStartDateDirty ? 'is-invalid' : ''}` }
+                                            className={ `font-weight-normal cc-form-control form-control ${isStartDateInvalid ? 'is-invalid' : ''}` }
                                             value={ disruption.startDate }
                                             options={ datePickerOptions }
                                             placeholder="Select date"
@@ -1105,12 +1113,12 @@ export const EditEffectPanel = (props, ref) => {
                                             disabled={ isResolved() || (disruptionRecurrent && disruption.status !== STATUSES.DRAFT && disruption.status !== STATUSES.NOT_STARTED) }
                                         />
                                     </div>
-                                    {!isStartDateDirty && (
+                                    {!isStartDateInvalid && (
                                         <FaRegCalendarAlt
                                             className="disruption-creation__wizard-select-details__icon position-absolute"
                                             size={ 22 } />
                                     )}
-                                    {isStartDateDirty && (
+                                    {isStartDateInvalid && (
                                         <div className="disruption-recurrence-invalid">Please select start date</div>
                                     )}
                                 </FormGroup>
@@ -1125,7 +1133,7 @@ export const EditEffectPanel = (props, ref) => {
                                             data-testid="end-date_date-picker"
                                             key="end-date"
                                             id="disruption-creation__wizard-select-details__end-date"
-                                            className={ `font-weight-normal cc-form-control form-control ${isEndDateDirty ? 'is-invalid' : ''}` }
+                                            className={ `font-weight-normal cc-form-control form-control ${isEndDateInvalid ? 'is-invalid' : ''}` }
                                             value={ disruption.endDate }
                                             options={ endDateDatePickerOptions() }
                                             onChange={ date => onChangeEndDate(date, disruptionRecurrent) }
@@ -1133,12 +1141,12 @@ export const EditEffectPanel = (props, ref) => {
                                             disabled={ isResolved() }
                                         />
                                     </div>
-                                    {!isEndDateDirty && (
+                                    {!isEndDateInvalid && (
                                         <FaRegCalendarAlt
                                             className="disruption-creation__wizard-select-details__icon position-absolute"
                                             size={ 22 } />
                                     )}
-                                    {isEndDateDirty && (
+                                    {isEndDateInvalid && (
                                         <span className="disruption-recurrence-invalid">Please select end date</span>
                                     )}
                                 </FormGroup>
@@ -1157,7 +1165,7 @@ export const EditEffectPanel = (props, ref) => {
                                             updateDisruption({ startTime: event.target.value });
                                             setIsStartTimeDirty(true);
                                         } }
-                                        invalid={ (disruption.status === STATUSES.DRAFT ? (isStartTimeDirty && !startTimeValid()) : !startTimeValid()) }
+                                        invalid={ (disruption.status === STATUSES.DRAFT ? ((isStartTimeDirty || isStartDateDirty) && !startTimeValid()) : !startTimeValid()) }
                                         disabled={ isResolved() || (disruptionRecurrent && disruption.status !== STATUSES.DRAFT && disruption.status !== STATUSES.NOT_STARTED) }
                                     />
                                     <FormFeedback>Not valid values</FormFeedback>
