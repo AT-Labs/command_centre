@@ -85,6 +85,7 @@ describe('<Workarounds />', () => {
         });
         const footer = wrapper.find(Footer);
         footer.prop('onSubmitDraft')();
+        expect(componentPropsMock.onStepUpdate).toHaveBeenCalledWith(3);
         expect(onSubmitDraftSpy).toHaveBeenCalled();
     });
 

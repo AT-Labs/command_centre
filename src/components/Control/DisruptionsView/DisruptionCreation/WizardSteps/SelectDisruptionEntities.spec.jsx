@@ -90,6 +90,7 @@ describe('<SelectDisruptionEntities />', () => {
             onSubmitDraft: onSubmitDraftSpy,
         });
         wrapper.find(Footer).prop('onSubmitDraft')();
+        expect(onStepUpdateSpy.calledOnceWith(3)).toEqual(true);
         expect(onSubmitDraftSpy.calledOnce).toEqual(true);
     });
 
@@ -117,6 +118,7 @@ describe('<SelectDisruptionEntities />', () => {
             onSubmitDraft: onSubmitDraftSpy,
         });
         wrapper.find(Footer).prop('onSubmitDraft')();
+        expect(onStepUpdateSpy.calledOnceWith(3)).toEqual(true);
         expect(onSubmitDraftSpy.calledOnce).toEqual(true);
     });
 });

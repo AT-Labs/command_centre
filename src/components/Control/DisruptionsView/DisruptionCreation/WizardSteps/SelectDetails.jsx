@@ -220,6 +220,7 @@ export const SelectDetails = (props) => {
     };
 
     const onSaveDraft = () => {
+        props.onStepUpdate(3);
         props.onSubmitDraft();
     };
 

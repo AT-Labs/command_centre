@@ -592,6 +592,7 @@ describe('SelectDetails Component', () => {
             expect(button.disabled).toBe(false);
             fireEvent.click(button);
             expect(defaultProps.onSubmitDraft).toHaveBeenCalled();
+            expect(defaultProps.onStepUpdate).toHaveBeenCalledWith(3);
         });
 
         it('Should be enable with filled recurrent incident and trigger onSubmit draft on clicking', () => {
@@ -611,6 +612,7 @@ describe('SelectDetails Component', () => {
             fireEvent.click(button);
 
             expect(defaultProps.onSubmitDraft).toHaveBeenCalled();
+            expect(defaultProps.onStepUpdate).toHaveBeenCalledWith(3);
         });
     });
 
@@ -874,25 +876,6 @@ describe('SelectDetails Component', () => {
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startDate', '18/06/2025');
         });
 
-        it('Should update startDate on change for recurrent disruption and display validation message', async () => {
-            const props = {
-                ...defaultProps,
-                editMode: EDIT_TYPE.EDIT,
-                data: { ...filledRecurrentIncidentData, startTime: '22:11', status: STATUSES.NOT_STARTED },
-            };
-            render(
-                <Provider store={ store }>
-                    <SelectDetails { ...props } />
-                </Provider>,
-            );
-            const startPicker = screen.getByTestId('start-date_date-picker');
-            fireEvent.change(startPicker, { target: { value: '2025-06-17' } });
-
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(1);
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('startDate', '17/06/2025');
-            expect(screen.getByText('Not valid values')).toBeInTheDocument();
-        });
-
         it('Should update endDate on change', () => {
             const props = {
                 ...defaultProps,
@@ -909,24 +892,6 @@ describe('SelectDetails Component', () => {
 
             expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(1);
             expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '11/07/2025');
-        });
-
-        it('Should update endDate on change for recurring disruption', () => {
-            const props = {
-                ...defaultProps,
-                editMode: EDIT_TYPE.EDIT,
-                data: { ...filledRecurrentIncidentData, status: STATUSES.NOT_STARTED },
-            };
-            render(
-                <Provider store={ store }>
-                    <SelectDetails { ...props } />
-                </Provider>,
-            );
-            const endPicker = screen.getByTestId('end-date_date-picker');
-            fireEvent.change(endPicker, { target: { value: '2025-07-05' } });
-
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledTimes(1);
-            expect(defaultProps.onDataUpdate).toHaveBeenCalledWith('endDate', '05/07/2025');
         });
 
         it('Should update endDate and endTime if it empty on change', () => {
