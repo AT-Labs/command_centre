@@ -277,8 +277,8 @@ describe('thinCoordinates', () => {
     it('applies custom height threshold', () => {
         const points = [[0, 0], [0.0002, 0.000001], [0.0004, 0]];
         // Actual height = 0.000001, distance: 22.23926331449096
-        const thinnedLow = thinCoordinates(points, 0.0000001, 50);
-        const thinnedHigh = thinCoordinates(points, 0.0001, 50);
+        const thinnedLow = thinCoordinates(points, 0.0000001, 50); // Should keep all points
+        const thinnedHigh = thinCoordinates(points, 0.0001, 50); // Should remove middle point
         // Higher threshold removes more points
         expect(thinnedHigh.length).toBeLessThan(thinnedLow.length);
     });
@@ -286,10 +286,10 @@ describe('thinCoordinates', () => {
     it('applies custom distance threshold', () => {
         const points = [[0, 0], [0.0002, 0.000001], [0.0004, 0]];
         // Actual height = 0.000001, distance: 22.23926331449096
-        const thinned50 = thinCoordinates(points, 0.00002, 50);
-        const thinned10 = thinCoordinates(points, 0.00002, 10);
-        // Lower distance threshold keeps more points
-        expect(thinned10.length).toBeGreaterThan(thinned50.length);
+        const thinned50 = thinCoordinates(points, 0.00002, 50); // Should remove middle point
+        const thinned10 = thinCoordinates(points, 0.00002, 10); // Should keep all points
+        // Higher distance threshold removes more points
+        expect(thinned50.length).toBeLessThan(thinned10.length);
     });
 
     it('handles complex polyline with multiple segments', () => {
