@@ -290,6 +290,11 @@ export const SelectEffects = (props) => {
             : disruption));
         setDisruptions(updatedDisruptions);
         setRequireMapUpdate(true);
+        if (props.editMode === EDIT_TYPE.ADD_EFFECT) {
+            props.updateNewIncidentEffect(updatedDisruptions[0]);
+        } else {
+            props.onDataUpdate('disruptions', updatedDisruptions);
+        }
     };
 
     useEffect(() => {
@@ -457,6 +462,10 @@ export const SelectEffects = (props) => {
     };
 
     const addDisruption = () => {
+        if (!validateEntityLimit()) {
+            return;
+        }
+
         const newDisruption = setupDisruption();
         setDisruptions(prev => [...prev, newDisruption]);
         props.effectAddedHandler(newDisruption.key);
@@ -468,6 +477,10 @@ export const SelectEffects = (props) => {
     };
 
     const onBack = () => {
+        if (!validateEntityLimit()) {
+            return;
+        }
+
         removeNotFoundFromStopGroups();
         updateDisruptionsState();
         props.onStepUpdate(0);
@@ -783,7 +796,7 @@ export const SelectEffects = (props) => {
                                 <span className="pl-2">Draft Stop Message</span>
                             </FormGroup>
                         </div>
-                        <div className="disruption-display-block">
+                        <div className="disruption-display-block creation-flow-select-entities">
                             <SelectEffectEntities
                                 disruptionKey={ disruption.key }
                                 affectedEntities={ disruption.affectedEntities }

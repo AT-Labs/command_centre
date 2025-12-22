@@ -18,6 +18,7 @@ import {
     toggleIncidentModals,
     clearDisruptionActionResult } from '../../../../../redux/actions/control/incidents';
 import { goToNotificationsView } from '../../../../../redux/actions/control/link';
+import EDIT_TYPE from '../../../../../types/edit-types';
 
 const mockStore = configureStore([thunk]);
 
@@ -58,7 +59,7 @@ describe('Confirmation Component', () => {
         openCreateIncident,
         deleteAffectedEntities: jest.fn(),
         goToNotificationsView: jest.fn(),
-        useDisruptionsNotificationsDirectLink: true,
+        isDisruptionsNotificationsDirectLinkEnabled: true,
         updateIncidentsSortingParams: jest.fn(),
         clearActiveIncident: jest.fn(),
         toggleIncidentModals: jest.fn(),
@@ -110,6 +111,7 @@ describe('Confirmation Component', () => {
                         isCreateEnabled: false,
                         activeIncident: null,
                         incidentsSortingParams: { sortBy: 'incidentTitle', order: 'asc' },
+                        editMode: EDIT_TYPE.EDIT,
                     },
                 },
             appSettings: {
@@ -174,6 +176,7 @@ describe('Confirmation Component', () => {
         expect(openCreateIncident).toHaveBeenCalledWith(false);
         expect(deleteAffectedEntities).toHaveBeenCalled();
         expect(goToNotificationsView).toHaveBeenCalled();
+        expect(toggleIncidentModals).toHaveBeenCalledWith('isConfirmationOpen', false);
     });
 
     it('should display error message when resultMessage is present', () => {
@@ -217,5 +220,273 @@ describe('Confirmation Component', () => {
 
         const message = screen.getByText('Failed to update disruption');
         expect(message).toBeInTheDocument();
+    });
+
+    it('should display error message for partial error', () => {
+        store = mockStore({
+            ...store.getState(),
+            control: {
+                ...store.getState().control,
+                incidents: {
+                    ...store.getState().control.incidents,
+                    editMode: EDIT_TYPE.CREATE,
+                },
+            },
+        });
+
+        const propsWithError = {
+            ...defaultProps,
+            response: {
+                isRequesting: false,
+                resultIncidentId: null,
+                resultMessage: 'Failed to create disruption. The following disruptions failed: DISR001',
+                resultStatus: 'danger',
+            },
+        };
+
+        render(
+            <Provider store={ store }>
+                <Confirmation { ...propsWithError } />
+            </Provider>,
+        );
+
+        const message = screen.getByText('Failed to create disruption. The following disruptions failed: DISR001');
+        expect(message).toBeInTheDocument();
+    });
+
+    it('should display loader when isRequesting is true', () => {
+        const propsWithLoading = {
+            ...defaultProps,
+            response: {
+                isRequesting: true,
+                resultIncidentId: null,
+                resultMessage: null,
+                resultStatus: null,
+            },
+        };
+
+        render(
+            <Provider store={ store }>
+                <Confirmation { ...propsWithLoading } />
+            </Provider>,
+        );
+
+        expect(screen.getByLabelText('Loading data')).toBeInTheDocument();
+    });
+
+    it('should render View disruption details button when direct link is enabled', () => {
+        const propsWithDirectLink = {
+            ...defaultProps,
+            isDisruptionsNotificationsDirectLinkEnabled: true,
+            response: {
+                ...action,
+                resultStatus: 'success',
+                resultIncidentId: '123',
+            },
+        };
+
+        render(
+            <Provider store={ store }>
+                <Confirmation { ...propsWithDirectLink } />
+            </Provider>,
+        );
+
+        const button = screen.getByRole('button', { name: /view disruption details/i });
+        expect(button).toBeInTheDocument();
+
+        const viewAllButton = screen.getByRole('button', { name: /view all disruptions/i });
+        expect(viewAllButton).toBeInTheDocument();
+
+        const viewNotificationsButton = screen.getByRole('button', { name: /view notifications/i });
+        expect(viewNotificationsButton).toBeInTheDocument();
+    });
+
+    it('should render View and add more information button when direct link is disabled', () => {
+        store = mockStore({
+            ...store.getState(),
+            appSettings: {
+                useDisruptionsNotificationsDirectLink: 'false',
+            },
+        });
+
+        const propsWithoutDirectLink = {
+            ...defaultProps,
+            response: {
+                ...action,
+                resultStatus: 'success',
+                resultIncidentId: '123',
+            },
+        };
+
+        render(
+            <Provider store={ store }>
+                <Confirmation { ...propsWithoutDirectLink } />
+            </Provider>,
+        );
+
+        const button = screen.getByRole('button', { name: /view and add more information/i });
+        expect(button).toBeInTheDocument();
+
+        const viewAllButton = screen.getByRole('button', { name: /^view all$/i });
+        expect(viewAllButton).toBeInTheDocument();
+    });
+
+    it('should handle View and add more information button click', () => {
+        store = mockStore({
+            ...store.getState(),
+            appSettings: {
+                useDisruptionsNotificationsDirectLink: 'false',
+            },
+        });
+
+        const propsWithoutDirectLink = {
+            ...defaultProps,
+            response: {
+                ...action,
+                resultStatus: 'success',
+                resultIncidentId: '123',
+            },
+        };
+
+        render(
+            <Provider store={ store }>
+                <Confirmation { ...propsWithoutDirectLink } />
+            </Provider>,
+        );
+
+        const button = screen.getByRole('button', { name: /view and add more information/i });
+        fireEvent.click(button);
+
+        jest.runAllTimers();
+
+        expect(clearDisruptionActionResult).toHaveBeenCalled();
+        expect(toggleIncidentModals).toHaveBeenCalledWith('isConfirmationOpen', false);
+        expect(openCreateIncident).toHaveBeenCalledWith(false);
+        expect(deleteAffectedEntities).toHaveBeenCalled();
+        expect(updateIncidentsSortingParams).toHaveBeenCalledWith({});
+        expect(clearActiveIncident).toHaveBeenCalled();
+        expect(updateActiveIncident).toHaveBeenCalledWith('123');
+    });
+
+    it('should handle View disruption details button click', () => {
+        render(
+            <Provider store={ store }>
+                <Confirmation { ...defaultProps } />
+            </Provider>,
+        );
+
+        const button = screen.getByRole('button', { name: /view disruption details/i });
+        fireEvent.click(button);
+
+        jest.runAllTimers();
+
+        expect(clearDisruptionActionResult).toHaveBeenCalled();
+        expect(toggleIncidentModals).toHaveBeenCalledWith('isConfirmationOpen', false);
+        expect(openCreateIncident).toHaveBeenCalledWith(false);
+        expect(deleteAffectedEntities).toHaveBeenCalled();
+        expect(updateIncidentsSortingParams).toHaveBeenCalledWith({});
+        expect(clearActiveIncident).toHaveBeenCalled();
+        expect(updateActiveIncident).toHaveBeenCalledWith('123');
+    });
+
+    it('should handle Keep editing button click when error occurs', () => {
+        const propsWithError = {
+            ...defaultProps,
+            response: {
+                isRequesting: false,
+                resultIncidentId: null,
+                resultMessage: 'Error message',
+                resultStatus: 'danger',
+            },
+        };
+
+        render(
+            <Provider store={ store }>
+                <Confirmation { ...propsWithError } />
+            </Provider>,
+        );
+
+        const button = screen.getByRole('button', { name: /keep editing/i });
+        fireEvent.click(button);
+
+        expect(clearDisruptionActionResult).toHaveBeenCalled();
+        expect(toggleIncidentModals).toHaveBeenCalledWith('isConfirmationOpen', false);
+    });
+
+    it('should display draft notification message when resultCreateNotification is true', () => {
+        const propsWithNotification = {
+            ...defaultProps,
+            response: {
+                ...action,
+                resultCreateNotification: true,
+            },
+        };
+
+        render(
+            <Provider store={ store }>
+                <Confirmation { ...propsWithNotification } />
+            </Provider>,
+        );
+
+        expect(screen.getByText('Draft stop message has been created')).toBeInTheDocument();
+    });
+
+    it('should not call updateActiveIncident when isModalOpen is false', () => {
+        const propsWithModalClosed = {
+            ...defaultProps,
+            isModalOpen: false,
+        };
+
+        render(
+            <Provider store={ store }>
+                <Confirmation { ...propsWithModalClosed } />
+            </Provider>,
+        );
+
+        const button = screen.getByRole('button', { name: /view disruption details/i });
+        fireEvent.click(button);
+
+        jest.runAllTimers();
+
+        expect(updateActiveIncident).toHaveBeenCalledWith('123');
+    });
+
+    it('should not call updateActiveIncident when resultIncidentId is null', () => {
+        const propsWithoutIncidentId = {
+            ...defaultProps,
+            response: {
+                ...action,
+                resultIncidentId: null,
+            },
+        };
+
+        render(
+            <Provider store={ store }>
+                <Confirmation { ...propsWithoutIncidentId } />
+            </Provider>,
+        );
+
+        expect(screen.queryByText('New disruption has been created')).not.toBeInTheDocument();
+    });
+
+    it('should render null when no valid state is present', () => {
+        const propsWithNoState = {
+            ...defaultProps,
+            response: {
+                isRequesting: false,
+                resultIncidentId: null,
+                resultMessage: null,
+                resultStatus: null,
+            },
+        };
+
+        const { container } = render(
+            <Provider store={ store }>
+                <Confirmation { ...propsWithNoState } />
+            </Provider>,
+        );
+
+        expect(container.querySelector('.disruption-creation__wizard-confirmation')).toBeInTheDocument();
+        expect(container.querySelector('.col').textContent).toBe('');
     });
 });
