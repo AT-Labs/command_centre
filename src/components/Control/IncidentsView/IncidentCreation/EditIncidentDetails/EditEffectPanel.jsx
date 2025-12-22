@@ -397,14 +397,8 @@ export const EditEffectPanel = (props, ref) => {
                 [valueKey]: affectedEntities,
             },
         };
-        updateDisruptionState(updatedDisruptions);
 
-        if (props.onDisruptionsUpdate && props.disruptions) {
-            const updatedDisruptionsList = props.disruptions.map(d => (
-                d.incidentNo === disruption.incidentNo ? updatedDisruptions : d
-            ));
-            props.onDisruptionsUpdate('disruptions', updatedDisruptionsList);
-        }
+        updateDisruptionState(updatedDisruptions);
     };
 
     const resetAffectedEntities = () => {
