@@ -51,6 +51,7 @@ import {
     isStartTimeValid,
     isDurationValid,
     getRecurrenceDates,
+    isStartDateTimeEarlierThanNow,
 } from '../../../../../utils/control/disruptions';
 import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
@@ -77,6 +78,7 @@ const INIT_EFFECT_STATE = {
     isStartTimeDirty: false,
     startDate: '',
     isStartDateDirty: false,
+    isStartDateInvalid: false,
     endTime: '',
     endDate: '',
     isEndDateInvalid: false,
@@ -110,6 +112,7 @@ export const SelectEffects = (props) => {
         severity: incidentSeverity,
         cause: incidentCause,
         header: incidentHeader,
+        status: incidentStatus,
         modalOpenedTime,
     } = props.data;
 
@@ -190,6 +193,10 @@ export const SelectEffects = (props) => {
 
     const startTimeValid = (key) => {
         const disruption = getDisruptionByKey(key);
+        if (incidentRecurrent && props.editMode === EDIT_TYPE.ADD_EFFECT && (incidentStatus === STATUSES.DRAFT || incidentStatus === STATUSES.NOT_STARTED)) {
+            const isValid = isStartTimeValid(disruption.startDate, disruption.startTime, modalOpenedTime, false);
+            return isValid && !isStartDateTimeEarlierThanNow(disruption.startDate, disruption.startTime);
+        }
         return isStartTimeValid(
             disruption.startDate,
             disruption.startTime,
@@ -200,7 +207,13 @@ export const SelectEffects = (props) => {
 
     const startTimeValidForAllDisruptions = () => disruptions.every(disruption => startTimeValid(disruption.key));
 
-    const startDateValid = key => isStartDateValid(disruptions.find(d => d.key === key).startDate, modalOpenedTime, incidentRecurrent);
+    const startDateValid = (key) => {
+        const disruption = getDisruptionByKey(key);
+        if (incidentRecurrent && props.editMode === EDIT_TYPE.ADD_EFFECT && (incidentStatus === STATUSES.DRAFT || incidentStatus === STATUSES.NOT_STARTED)) {
+            return moment(disruption.startDate, DATE_FORMAT, true).isSameOrAfter(moment(), 'day');
+        }
+        return isStartDateValid(disruption.startDate, modalOpenedTime, incidentRecurrent);
+    };
 
     const startDateValidForAllDisruptions = () => disruptions.every(disruption => startDateValid(disruption.key));
 
@@ -494,9 +507,9 @@ export const SelectEffects = (props) => {
 
     const onChangeStartDate = (key, date) => {
         if (date.length === 0) {
-            updateDisruption(key, { startDate: '', isStartDateDirty: true });
+            updateDisruption(key, { startDate: '', isStartDateDirty: true, isStartDateInvalid: true });
         } else {
-            updateDisruption(key, { startDate: moment(date[0]).format(DATE_FORMAT), isStartDateDirty: false });
+            updateDisruption(key, { startDate: moment(date[0]).format(DATE_FORMAT), isStartDateDirty: true, isStartDateInvalid: false });
         }
     };
 
@@ -528,6 +541,7 @@ export const SelectEffects = (props) => {
         setDisruptions(prev => prev.map(d => (d.key === key ? {
             ...d,
             recurrencePattern: { ...d.recurrencePattern, byweekday },
+            isRecurrencePatternDirty: true,
         } : d)));
     };
 
@@ -650,17 +664,17 @@ export const SelectEffects = (props) => {
                                 <Flatpickr
                                     key={ `${disruption.key}_start-date` }
                                     id="disruption-creation__wizard-select-details__start-date"
-                                    className={ `font-weight-normal cc-form-control form-control ${disruption.isStartDateDirty ? 'is-invalid' : ''}` }
+                                    className={ `font-weight-normal cc-form-control form-control ${disruption.isStartDateInvalid ? 'is-invalid' : ''}` }
                                     value={ disruption.startDate }
                                     options={ datePickerOptions }
                                     placeholder="Select date"
                                     onChange={ date => onChangeStartDate(disruption.key, date) } />
-                                {!disruption.isStartDateDirty && (
+                                {!disruption.isStartDateInvalid && (
                                     <FaRegCalendarAlt
                                         className="disruption-creation__wizard-select-details__icon position-absolute"
                                         size={ 22 } />
                                 )}
-                                {disruption.isStartDateDirty && (
+                                {disruption.isStartDateInvalid && (
                                     <div className="disruption-recurrence-invalid">Please select start date</div>
                                 )}
                             </FormGroup>
@@ -711,8 +725,10 @@ export const SelectEffects = (props) => {
                                     id="disruption-creation__wizard-select-details__start-time"
                                     className="border border-dark"
                                     value={ disruption.startTime }
-                                    onChange={ event => updateDisruption(disruption.key, { startTime: event.target.value, isStartTimeDirty: false }) }
-                                    invalid={ (props.useDraftDisruptions ? (!disruption.isStartTimeDirty && !startTimeValid(disruption.key)) : !startTimeValid(disruption.key)) }
+                                    onChange={ event => updateDisruption(disruption.key, { startTime: event.target.value, isStartTimeDirty: true }) }
+                                    invalid={ (props.useDraftDisruptions
+                                        ? ((disruption.isStartTimeDirty || disruption.isStartDateDirty) && !startTimeValid(disruption.key))
+                                        : !startTimeValid(disruption.key)) }
                                 />
                                 <FormFeedback>Not valid values</FormFeedback>
                             </FormGroup>
