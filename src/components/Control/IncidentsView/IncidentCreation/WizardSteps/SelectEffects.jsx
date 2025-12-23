@@ -541,6 +541,7 @@ export const SelectEffects = (props) => {
         setDisruptions(prev => prev.map(d => (d.key === key ? {
             ...d,
             recurrencePattern: { ...d.recurrencePattern, byweekday },
+            isRecurrencePatternDirty: true,
         } : d)));
     };
 
