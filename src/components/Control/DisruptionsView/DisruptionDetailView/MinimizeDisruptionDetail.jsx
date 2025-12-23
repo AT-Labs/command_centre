@@ -5,6 +5,7 @@ import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
 import { toString, omit, isEmpty, uniqBy, uniqWith } from 'lodash-es';
 import moment from 'moment';
 import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
+import HistoryIcon from '@mui/icons-material/History';
 import Message from '../../Common/Message/Message';
 import { SEVERITIES, STATUSES } from '../../../../types/disruptions-types';
 import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
@@ -46,6 +47,7 @@ import {
     formatCreatedUpdatedTime,
     recurrenceRadioOptions,
     momentFromDateTime,
+    getLatestNote,
 } from '../../../../utils/control/disruptions';
 import DisruptionSummaryModal from '../DisruptionDetail/DisruptionSummaryModal';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
@@ -58,6 +60,7 @@ import { fetchEndDateFromRecurrence } from '../../../../utils/recurrence';
 import '../DisruptionDetail/styles.scss';
 import '../../IncidentsView/style.scss';
 import AddNoteModal from '../../IncidentsView/IncidentCreation/EditIncidentDetails/AddNoteModal';
+import HistoryNotesModal from '../../IncidentsView/IncidentCreation/EditIncidentDetails/HistoryNotesModal';
 
 export const MinimizeDisruptionDetail = (props) => {
     const { disruption, isRequesting, resultDisruptionId, resultStatus, resultMessage } = props;
@@ -79,6 +82,7 @@ export const MinimizeDisruptionDetail = (props) => {
     const [descriptionNote, setDescriptionNote] = useState('');
     const [lastNote, setLastNote] = useState();
     const [noteModalOpen, setNoteModalOpen] = useState(false);
+    const [historyNotesModalOpen, setHistoryNotesModalOpen] = useState(false);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqWith([...affectedRoutes, ...props.routes], (routeA, routeB) => routeA.routeId === routeB.routeId && routeA.stopCode === routeB.stopCode);
@@ -140,6 +144,27 @@ export const MinimizeDisruptionDetail = (props) => {
             setLastNote(disruptionNotes[disruptionNotes.length - 1]);
         }
     }, [lastUpdatedTime, lastNote]);
+
+    const onNoteUpdate = async (updatedDisruption) => {
+        const notes = updatedDisruption.notes || disruption.notes || [];
+        const formattedNotes = Array.isArray(notes)
+            ? notes
+                .filter(note => note && note.description)
+                .map(note => ({
+                    ...(note.id && { id: note.id }),
+                    description: note.description,
+                }))
+            : [];
+        
+        const disruptionToUpdate = {
+            ...disruption,
+            ...updatedDisruption,
+            notes: formattedNotes,
+            startTime: momentFromDateTime(fetchStartDate(), disruption.startTime ? moment(disruption.startTime).format(TIME_FORMAT) : ''),
+            endTime: momentFromDateTime(fetchEndDate(), disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : ''),
+        };
+        await props.updateDisruption(disruptionToUpdate);
+    };
 
     const handleUpdateDisruption = () => props.updateDisruption(setDisruption());
 
@@ -278,7 +303,16 @@ export const MinimizeDisruptionDetail = (props) => {
             </div>
             <div className="row">
                 <div className="col-5 disruption-detail__contributors">
-                    <LastNoteView label={ LABEL_LAST_NOTE } note={ lastNote } id="disruption-detail__last-note-view" />
+                    <div className="d-flex align-items-center">
+                        <LastNoteView label={ LABEL_LAST_NOTE } note={ lastNote } id="disruption-detail__last-note-view" />
+                        {lastNote && (
+                            <HistoryIcon
+                                style={ { color: '#399CDB', cursor: 'pointer', marginLeft: '8px' } }
+                                onClick={ () => setHistoryNotesModalOpen(true) }
+                                title="View Notes History"
+                            />
+                        )}
+                    </div>
                     <DisruptionLabelAndText id="disruption-detail__created-by" label={ LABEL_CREATED_BY } text={ `${createdBy}, ${formatCreatedUpdatedTime(createdTime)}` } />
                     <DisruptionLabelAndText id="disruption-detail__last-updated" label={ LABEL_LAST_UPDATED_BY } text={ `${lastUpdatedBy}, ${formatCreatedUpdatedTime(lastUpdatedTime)}` } />
                 </div>
@@ -318,6 +352,11 @@ export const MinimizeDisruptionDetail = (props) => {
                 onClose={ note => handleAddNoteModalClose(note) }
                 onSubmit={ note => handleAddNoteModalSubmit(note) }
             />
+            <HistoryNotesModal
+                disruption={ disruption }
+                isModalOpen={ historyNotesModalOpen }
+                onClose={ () => setHistoryNotesModalOpen(false) }
+                onNoteUpdate={ onNoteUpdate } />
             <ConfirmationModal
                 title={ activeConfirmationModalProps.title }
                 message={ activeConfirmationModalProps.message }

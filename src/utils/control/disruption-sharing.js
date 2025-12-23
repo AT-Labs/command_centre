@@ -62,19 +62,20 @@ async function getFileBase64(url) {
  * We use the inline style is because many email clients doesn't support a css file, please don't move the styles to a css or scss file.
  */
 function generateHtmlNotes(notes) {
-    if (notes?.length > 0) {
-        return `<table style="display: table; border-spacing: 2px; border-color: grey;">
-            <tbody>
-                ${[...notes].reverse().map(note => (`<tr>
-                <td style="vertical-align: top; width: 40%;">${formatCreatedUpdatedTime(note.createdTime)}</td>
-                <td style="vertical-align: top; width: 100%;">
-                    <pre style="font-family: inherit;">${note.description}</pre>
-                </td>
-                </tr>`)).join('')}
-            </tbody>
-        </table>`;
+    if (!notes || !Array.isArray(notes) || notes.length === 0) {
+        return `<span>${DISRUPTIONS_MESSAGE_TYPE.noNotesMessage}</span>`;
     }
-    return `<span>${DISRUPTIONS_MESSAGE_TYPE.noNotesMessage}</span>`;
+    
+    return `<table style="display: table; border-spacing: 2px; border-color: grey;">
+        <tbody>
+            ${[...notes].reverse().map(note => (`<tr>
+            <td style="vertical-align: top; width: 40%;">${formatCreatedUpdatedTime(note.lastUpdatedTime ?? note.createdTime)}</td>
+            <td style="vertical-align: top; width: 100%;">
+                <pre style="font-family: inherit;">${note.description}</pre>
+            </td>
+            </tr>`)).join('')}
+        </tbody>
+    </table>`;
 }
 
 function createHtmlLine(label, value) {
@@ -218,12 +219,14 @@ async function generateHtmlDetailsTable(disruption) {
 }
 
 function generateHtmlNotesTable(disruption) {
-    if (!disruption.notes?.length) {
+    const notes = disruption.notes || [];
+    if (!Array.isArray(notes) || notes.length === 0) {
         return '';
     }
 
-    const notesHtml = [...disruption.notes].reverse().map((note) => {
-        const createdTime = formatCreatedUpdatedTime(note.createdTime);
+    const notesHtml = [...notes].reverse().map((note) => {
+        const displayTime = note.lastUpdatedTime ?? note.createdTime;
+        const createdTime = formatCreatedUpdatedTime(displayTime);
         const nonBreakingCreatedTime = createdTime.replace(/ /g, '&nbsp;');
 
         return `<tr>

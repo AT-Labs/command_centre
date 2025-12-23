@@ -1,13 +1,19 @@
 .notes-history-modal {
     .notes-history-header {
         .notes-table-header {
-            width: 25%;
+            width: 20%;
             border-top: 2px solid #DEE2E6;
             border-bottom: 2px solid #DEE2E6;
         }
 
         .notes-table-header-notes {
-            width: 50%;
+            width: 45%;
+            border-top: 2px solid #DEE2E6;
+            border-bottom: 2px solid #DEE2E6;
+        }
+
+        .notes-table-header-actions {
+            width: 15%;
             border-top: 2px solid #DEE2E6;
             border-bottom: 2px solid #DEE2E6;
         }
@@ -16,6 +22,27 @@
     .notes-history-body {
         .notes-table-cell {
             overflow-wrap: anywhere;
+        }
+
+        .notes-description {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .notes-actions-cell {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .notes-edit-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .notes-edit-textarea {
+            width: 100%;
+            min-width: 300px;
         }
     }
 

@@ -222,7 +222,17 @@ export const EditEffectPanel = (props, ref) => {
         if (props.disruptions && disruptionIncidentNoToEdit && !props.isNotesRequiresToUpdate) {
             initDisruptionData();
         }
-    }, [props.disruptions]);
+    }, [props.disruptions, props.isNotesRequiresToUpdate]);
+
+    useEffect(() => {
+        if (props.isNotesRequiresToUpdate && disruptionIncidentNoToEdit && props.disruptions) {
+            const timer = setTimeout(() => {
+                initDisruptionData();
+                props.updateIsNotesRequiresToUpdateState();
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [props.isNotesRequiresToUpdate]);
 
     useEffect(() => {
         if (Array.isArray(props.mapDrawingEntities) && props.mapDrawingEntities.length > 0) {
@@ -579,6 +589,67 @@ export const EditEffectPanel = (props, ref) => {
         props.updateDisruptionAction(updatedDisruption);
         updateDisruption({ note: '' });
     };
+
+    const onNoteUpdate = async (updatedDisruption) => {
+        try {
+            const startDate = updatedDisruption.startDate ? updatedDisruption.startDate : moment(updatedDisruption.startTime).format(DATE_FORMAT);
+            const startTimeMoment = momentFromDateTime(startDate, updatedDisruption.startTime);
+
+            let endTimeMoment;
+            if (!isEmpty(updatedDisruption.endDate) && !isEmpty(updatedDisruption.endTime)) {
+                endTimeMoment = momentFromDateTime(updatedDisruption.endDate, updatedDisruption.endTime);
+            }
+            
+            const affectedRoutes = updatedDisruption.affectedEntities?.affectedRoutes || disruption.affectedEntities?.affectedRoutes || [];
+            const affectedStops = updatedDisruption.affectedEntities?.affectedStops || disruption.affectedEntities?.affectedStops || [];
+            
+            const routesToRequest = affectedRoutes.map((
+                { routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon, diversionIds },
+            ) => ({
+                routeId,
+                routeShortName,
+                routeType,
+                type,
+                ...(stopCode !== undefined && {
+                    directionId,
+                    stopId,
+                    stopCode,
+                    stopName,
+                    stopLat,
+                    stopLon,
+                }),
+                ...(diversionIds && { diversionIds }),
+            }));
+            const stopsToRequest = affectedStops.map(entity => omit(entity, ['shapeWkt']));
+            
+            const affectedEntitiesArray = [...routesToRequest, ...stopsToRequest];
+            
+            const notes = updatedDisruption.notes || disruption.notes || [];
+            const formattedNotes = Array.isArray(notes)
+                ? notes
+                    .filter(note => note && note.description)
+                    .map(note => ({
+                        ...(note.id && { id: note.id }),
+                        description: note.description,
+                    }))
+                : [];
+            
+            const disruptionToUpdate = {
+                ...disruption, 
+                ...updatedDisruption,
+                affectedEntities: affectedEntitiesArray,
+                endTime: endTimeMoment,
+                startTime: startTimeMoment,
+                notes: formattedNotes
+            };
+            
+            await props.updateDisruptionAction(disruptionToUpdate);
+            
+        } catch (error) {
+            throw error;
+        }
+    };
+
 
     const validateEntityLimit = () => {
         const { entitiesCount } = getEntityCounts(disruption);
@@ -1303,9 +1374,9 @@ export const EditEffectPanel = (props, ref) => {
                                 <div className="col-12 last-note-grid">
                                     <span className="font-size-md font-weight-bold last-note-label">Last note</span>
                                     <span className="pl-2 last-note-info">
-                                        {disruption.notes[disruption.notes.length - 1].createdBy}
+                                        {disruption.notes[disruption.notes.length - 1].lastUpdatedBy ?? disruption.notes[disruption.notes.length - 1].createdBy}
                                         {', '}
-                                        {formatCreatedUpdatedTime(disruption.notes[disruption.notes.length - 1].createdTime)}
+                                        {formatCreatedUpdatedTime(disruption.notes[disruption.notes.length - 1].lastUpdatedTime ?? disruption.notes[disruption.notes.length - 1].createdTime)}
                                     </span>
                                     <span className="pl-2 last-note-description pt-2">
                                         {disruption.notes[disruption.notes.length - 1].description}
@@ -1369,7 +1440,8 @@ export const EditEffectPanel = (props, ref) => {
             <HistoryNotesModal
                 disruption={ disruption }
                 isModalOpen={ historyNotesModalOpen }
-                onClose={ () => setHistoryNotesModalOpen(false) } />
+                onClose={ () => setHistoryNotesModalOpen(false) }
+                onNoteUpdate={ onNoteUpdate } />
             <AddNoteModal
                 disruption={ disruption }
                 isModalOpen={ noteModalOpen }
