@@ -238,19 +238,28 @@ const RouteShapeEditor = (props) => {
     }, [props.initialDirections]);
 
     useEffect(() => {
-        const originalShape = props.routeVariant?.shapeWkt;
-        if (originalShape?.startsWith('LINESTRING')) {
-            const coords = parseWKT(props.routeVariant?.shapeWkt);
-            setOriginalCoords(coords);
+        if (props.routeVariant) {
+            const originalShape = props.routeVariant?.shapeWkt;
+            if (originalShape?.startsWith('LINESTRING')) {
+                const coords = parseWKT(props.routeVariant?.shapeWkt);
+                setOriginalCoords(coords);
+                setUpdatedCoords([]);
+                resetTomTom();
+                if (coords.length > 0 && mapRef.current) {
+                    setCenter(coords[0]);
+                }
+            }
+            setIsEditablePolylineVisible(false);
+        } else {
+            // Clear everything when there is no route variant
+            setOriginalCoords([]);
+            setEditablePolyline([]);
             setUpdatedCoords([]);
             resetTomTom();
-            if (coords.length > 0 && mapRef.current) {
-                setCenter(coords[0]);
-            }
         }
+
         // This is to fix the leaflet issue where the state of editor preserves previous layer.
         // This triggers a force reload
-        setIsEditablePolylineVisible(false);
         const timer = setTimeout(() => {
             setIsEditablePolylineVisible(true);
         }, 100);
