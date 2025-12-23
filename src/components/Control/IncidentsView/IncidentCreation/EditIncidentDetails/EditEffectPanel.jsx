@@ -167,7 +167,8 @@ export const EditEffectPanel = (props, ref) => {
     const [isStartTimeDirty, setIsStartTimeDirty] = useState(false);
     const [isTitleDirty, setIsTitleDirty] = useState(false);
     const [isStartDateDirty, setIsStartDateDirty] = useState(false);
-    const [isEndDateDirty, setIsEndDateDirty] = useState(false);
+    const [isStartDateInvalid, setIsStartDateInvalid] = useState(false);
+    const [isEndDateInvalid, setIsEndDateInvalid] = useState(false);
     const [isImpactDirty, setIsImpactDirty] = useState(false);
     const [isSeverityDirty, setIsSeverityDirty] = useState(false);
     const [isDurationDirty, setIsDurationDirty] = useState(false);
@@ -187,6 +188,7 @@ export const EditEffectPanel = (props, ref) => {
     const isMounted = useRef(true);
     const [totalEntities, setTotalEntities] = useState(0);
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+    const maxActivePeriodsCount = 100;
 
     const initDisruptionData = () => {
         const foundDisruption = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
@@ -196,6 +198,11 @@ export const EditEffectPanel = (props, ref) => {
 
         if (disruptionRecurrent && isEmpty(disruptionToSet.endDate) && incidentEndDate) {
             disruptionToSet.endDate = incidentEndDate;
+
+            disruptionToSet.recurrencePattern = {
+                ...parseRecurrencePattern(foundDisruption.recurrencePattern),
+                ...getRecurrenceDates(foundDisruption.startDate, foundDisruption.startTime, incidentEndDate),
+            };
         }
 
         setDisruption(disruptionToSet);
@@ -222,18 +229,7 @@ export const EditEffectPanel = (props, ref) => {
         if (props.disruptions && disruptionIncidentNoToEdit && !props.isNotesRequiresToUpdate) {
             initDisruptionData();
         }
-    }, [props.disruptions, props.isNotesRequiresToUpdate]);
-
-    useEffect(() => {
-        if (props.isNotesRequiresToUpdate && disruptionIncidentNoToEdit && props.disruptions) {
-            const timer = setTimeout(() => {
-                initDisruptionData();
-                props.updateIsNotesRequiresToUpdateState();
-            }, 100);
-            return () => clearTimeout(timer);
-        }
-        return undefined;
-    }, [props.isNotesRequiresToUpdate]);
+    }, [props.disruptions]);
 
     useEffect(() => {
         if (Array.isArray(props.mapDrawingEntities) && props.mapDrawingEntities.length > 0) {
@@ -257,7 +253,7 @@ export const EditEffectPanel = (props, ref) => {
     }));
 
     const startTimeValid = () => {
-        if (disruptionRecurrent && (disruption.status === STATUSES.RESOLVED || disruption.status === STATUSES.NOT_STARTED)) {
+        if (disruptionRecurrent && (disruption.status === STATUSES.RESOLVED || disruption.status === STATUSES.NOT_STARTED || disruption.status === STATUSES.DRAFT)) {
             const isTimeValid = isStartTimeValid(disruption.startDate, disruption.startTime, moment(modalOpenedTime), false);
             if (disruption.status === STATUSES.RESOLVED) {
                 return isTimeValid;
@@ -285,7 +281,7 @@ export const EditEffectPanel = (props, ref) => {
     const endDateValid = () => isEndDateValid(disruption.endDate, disruption.startDate, disruptionRecurrent);
 
     const startDateValid = () => {
-        if (disruption.status === STATUSES.NOT_STARTED && disruptionRecurrent) {
+        if ((disruption.status === STATUSES.NOT_STARTED || disruption.status === STATUSES.DRAFT) && disruptionRecurrent) {
             return moment(disruption.startDate, DATE_FORMAT, true).isSameOrAfter(moment(), 'day');
         }
 
@@ -297,7 +293,7 @@ export const EditEffectPanel = (props, ref) => {
     const titleValid = () => !isEmpty(disruption.header);
 
     const datePickerOptions = useMemo(() => (
-        disruption.status === STATUSES.NOT_STARTED && disruptionRecurrent
+        (disruption.status === STATUSES.NOT_STARTED || disruption.status === STATUSES.DRAFT) && disruptionRecurrent
             ? getDatePickerOptions('today')
             : getDatePickerOptions()
     ), [disruption.status, disruptionRecurrent]);
@@ -336,37 +332,38 @@ export const EditEffectPanel = (props, ref) => {
     const onChangeStartDate = (date) => {
         if (date.length === 0) {
             updateDisruption({ startDate: '' });
-            setIsStartDateDirty(true);
+            setIsStartDateInvalid(true);
         } else {
             updateDisruption({ startDate: moment(date[0]).format(DATE_FORMAT) });
-            setIsStartDateDirty(false);
+            setIsStartDateInvalid(false);
         }
+        setIsStartDateDirty(true);
     };
 
     const onChangeEndDate = (date, isRecurrent) => {
         if (isRecurrent) {
             if (date.length === 0) {
                 updateDisruption({ endDate: '' });
-                setIsEndDateDirty(true);
+                setIsEndDateInvalid(true);
             } else {
                 updateDisruption({ endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '' });
-                setIsEndDateDirty(false);
+                setIsEndDateInvalid(false);
             }
         } else {
             updateDisruption({ endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '' });
-            setIsEndDateDirty(false);
+            setIsEndDateInvalid(false);
         }
     };
 
     const onBlurEndDate = (date, isRecurrent) => {
         if (isRecurrent) {
             if (date.length === 0 && disruption.status !== STATUSES.DRAFT) {
-                setIsEndDateDirty(true);
+                setIsEndDateInvalid(true);
             } else {
-                setIsEndDateDirty(false);
+                setIsEndDateInvalid(false);
             }
         } else {
-            setIsEndDateDirty(false);
+            setIsEndDateInvalid(false);
         }
     };
 
@@ -408,14 +405,8 @@ export const EditEffectPanel = (props, ref) => {
                 [valueKey]: affectedEntities,
             },
         };
-        updateDisruptionState(updatedDisruptions);
 
-        if (props.onDisruptionsUpdate && props.disruptions) {
-            const updatedDisruptionsList = props.disruptions.map(d => (
-                d.incidentNo === disruption.incidentNo ? updatedDisruptions : d
-            ));
-            props.onDisruptionsUpdate('disruptions', updatedDisruptionsList);
-        }
+        updateDisruptionState(updatedDisruptions);
     };
 
     const resetAffectedEntities = () => {
@@ -516,7 +507,8 @@ export const EditEffectPanel = (props, ref) => {
 
     const activePeriodsValidV2 = () => {
         if (disruption.recurrent) {
-            return isActivePeriodsValid(disruption.recurrencePattern, disruption.duration, disruption.maxActivePeriodsCount);
+            const result = isActivePeriodsValid(disruption.recurrencePattern, disruption.duration, maxActivePeriodsCount);
+            return result;
         }
         return true;
     };
@@ -589,61 +581,6 @@ export const EditEffectPanel = (props, ref) => {
         };
         props.updateDisruptionAction(updatedDisruption);
         updateDisruption({ note: '' });
-    };
-
-    const onNoteUpdate = async (updatedDisruption) => {
-        const startDate = updatedDisruption.startDate ? updatedDisruption.startDate : moment(updatedDisruption.startTime).format(DATE_FORMAT);
-        const startTimeMoment = momentFromDateTime(startDate, updatedDisruption.startTime);
-
-        let endTimeMoment;
-        if (!isEmpty(updatedDisruption.endDate) && !isEmpty(updatedDisruption.endTime)) {
-            endTimeMoment = momentFromDateTime(updatedDisruption.endDate, updatedDisruption.endTime);
-        }
-
-        const affectedRoutes = updatedDisruption.affectedEntities?.affectedRoutes || disruption.affectedEntities?.affectedRoutes || [];
-        const affectedStops = updatedDisruption.affectedEntities?.affectedStops || disruption.affectedEntities?.affectedStops || [];
-
-        const routesToRequest = affectedRoutes.map((
-            { routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon, diversionIds },
-        ) => ({
-            routeId,
-            routeShortName,
-            routeType,
-            type,
-            ...(stopCode !== undefined && {
-                directionId,
-                stopId,
-                stopCode,
-                stopName,
-                stopLat,
-                stopLon,
-            }),
-            ...(diversionIds && { diversionIds }),
-        }));
-        const stopsToRequest = affectedStops.map(entity => omit(entity, ['shapeWkt']));
-
-        const affectedEntitiesArray = [...routesToRequest, ...stopsToRequest];
-
-        const notes = updatedDisruption.notes || disruption.notes || [];
-        const formattedNotes = Array.isArray(notes)
-            ? notes
-                .filter(note => note && note.description)
-                .map(note => ({
-                    ...(note.id && { id: note.id }),
-                    description: note.description,
-                }))
-            : [];
-
-        const disruptionToUpdate = {
-            ...disruption,
-            ...updatedDisruption,
-            affectedEntities: affectedEntitiesArray,
-            endTime: endTimeMoment,
-            startTime: startTimeMoment,
-            notes: formattedNotes,
-        };
-
-        await props.updateDisruptionAction(disruptionToUpdate);
     };
 
     const validateEntityLimit = () => {
@@ -1169,7 +1106,7 @@ export const EditEffectPanel = (props, ref) => {
                                             data-testid="start-date_date-picker"
                                             key="start-date"
                                             id="disruption-creation__wizard-select-details__start-date"
-                                            className={ `font-weight-normal cc-form-control form-control ${isStartDateDirty ? 'is-invalid' : ''}` }
+                                            className={ `font-weight-normal cc-form-control form-control ${isStartDateInvalid ? 'is-invalid' : ''}` }
                                             value={ disruption.startDate }
                                             options={ datePickerOptions }
                                             placeholder="Select date"
@@ -1177,12 +1114,12 @@ export const EditEffectPanel = (props, ref) => {
                                             disabled={ isResolved() || (disruptionRecurrent && disruption.status !== STATUSES.DRAFT && disruption.status !== STATUSES.NOT_STARTED) }
                                         />
                                     </div>
-                                    {!isStartDateDirty && (
+                                    {!isStartDateInvalid && (
                                         <FaRegCalendarAlt
                                             className="disruption-creation__wizard-select-details__icon position-absolute"
                                             size={ 22 } />
                                     )}
-                                    {isStartDateDirty && (
+                                    {isStartDateInvalid && (
                                         <div className="disruption-recurrence-invalid">Please select start date</div>
                                     )}
                                 </FormGroup>
@@ -1197,7 +1134,7 @@ export const EditEffectPanel = (props, ref) => {
                                             data-testid="end-date_date-picker"
                                             key="end-date"
                                             id="disruption-creation__wizard-select-details__end-date"
-                                            className={ `font-weight-normal cc-form-control form-control ${isEndDateDirty ? 'is-invalid' : ''}` }
+                                            className={ `font-weight-normal cc-form-control form-control ${isEndDateInvalid ? 'is-invalid' : ''}` }
                                             value={ disruption.endDate }
                                             options={ endDateDatePickerOptions() }
                                             onChange={ date => onChangeEndDate(date, disruptionRecurrent) }
@@ -1205,12 +1142,12 @@ export const EditEffectPanel = (props, ref) => {
                                             disabled={ isResolved() }
                                         />
                                     </div>
-                                    {!isEndDateDirty && (
+                                    {!isEndDateInvalid && (
                                         <FaRegCalendarAlt
                                             className="disruption-creation__wizard-select-details__icon position-absolute"
                                             size={ 22 } />
                                     )}
-                                    {isEndDateDirty && (
+                                    {isEndDateInvalid && (
                                         <span className="disruption-recurrence-invalid">Please select end date</span>
                                     )}
                                 </FormGroup>
@@ -1229,7 +1166,7 @@ export const EditEffectPanel = (props, ref) => {
                                             updateDisruption({ startTime: event.target.value });
                                             setIsStartTimeDirty(true);
                                         } }
-                                        invalid={ (disruption.status === STATUSES.DRAFT ? (isStartTimeDirty && !startTimeValid()) : !startTimeValid()) }
+                                        invalid={ (disruption.status === STATUSES.DRAFT ? ((isStartTimeDirty || isStartDateDirty) && !startTimeValid()) : !startTimeValid()) }
                                         disabled={ isResolved() || (disruptionRecurrent && disruption.status !== STATUSES.DRAFT && disruption.status !== STATUSES.NOT_STARTED) }
                                     />
                                     <FormFeedback>Not valid values</FormFeedback>
@@ -1290,17 +1227,14 @@ export const EditEffectPanel = (props, ref) => {
                                             View All
                                         </Button>
                                     </div>
-                                    { (disruption.status === STATUSES.DRAFT
-                                        ? (!isEmpty(disruption.recurrencePattern.byweekday) && activePeriodsValidV2())
-                                        : !isEmpty(disruption.recurrencePattern.byweekday)) && (
+                                    { (!isEmpty(disruption.recurrencePattern.byweekday) && activePeriodsValidV2()) && (
                                         <div className="col-12 mb-3">
                                             <BsArrowRepeat size={ 22 } />
                                             <span className="pl-1">{ getRecurrenceText(parseRecurrencePattern(disruption.recurrencePattern)) }</span>
                                         </div>
                                     )}
-                                    { (disruption.status === STATUSES.DRAFT
-                                        ? (disruption.isRecurrencePatternDirty && (isEmpty(disruption.recurrencePattern.byweekday) || !activePeriodsValidV2()))
-                                        : (isRecurrencePatternDirty && isEmpty(disruption.recurrencePattern.byweekday))) && (
+                                    { (isRecurrencePatternDirty && (isEmpty(disruption.recurrencePattern.byweekday) || !activePeriodsValidV2()))
+                                    && (
                                         <div className="col-12 mb-3">
                                             <span className="disruption-recurrence-invalid">Please select recurrence</span>
                                         </div>
@@ -1369,12 +1303,9 @@ export const EditEffectPanel = (props, ref) => {
                                 <div className="col-12 last-note-grid">
                                     <span className="font-size-md font-weight-bold last-note-label">Last note</span>
                                     <span className="pl-2 last-note-info">
-                                        {disruption.notes[disruption.notes.length - 1].lastUpdatedBy ?? disruption.notes[disruption.notes.length - 1].createdBy}
+                                        {disruption.notes[disruption.notes.length - 1].createdBy}
                                         {', '}
-                                        {formatCreatedUpdatedTime(
-                                            disruption.notes[disruption.notes.length - 1].lastUpdatedTime
-                                            ?? disruption.notes[disruption.notes.length - 1].createdTime,
-                                        )}
+                                        {formatCreatedUpdatedTime(disruption.notes[disruption.notes.length - 1].createdTime)}
                                     </span>
                                     <span className="pl-2 last-note-description pt-2">
                                         {disruption.notes[disruption.notes.length - 1].description}
@@ -1438,8 +1369,7 @@ export const EditEffectPanel = (props, ref) => {
             <HistoryNotesModal
                 disruption={ disruption }
                 isModalOpen={ historyNotesModalOpen }
-                onClose={ () => setHistoryNotesModalOpen(false) }
-                onNoteUpdate={ onNoteUpdate } />
+                onClose={ () => setHistoryNotesModalOpen(false) } />
             <AddNoteModal
                 disruption={ disruption }
                 isModalOpen={ noteModalOpen }
@@ -1532,7 +1462,6 @@ EditEffectPanel.propTypes = {
     mapDrawingEntities: PropTypes.array.isRequired,
     onDisruptionChange: PropTypes.func,
     clearMapDrawingEntities: PropTypes.func.isRequired,
-    onDisruptionsUpdate: PropTypes.func,
     incidentDateRange: PropTypes.object.isRequired,
     updateStartDateTimeWillBeUpdated: PropTypes.func.isRequired,
     updateEndDateTimeWillBeUpdated: PropTypes.func.isRequired,
@@ -1551,7 +1480,6 @@ EditEffectPanel.defaultProps = {
     isDiversionManagerLoading: false,
     isDiversionManagerReady: false,
     onDisruptionChange: () => {},
-    onDisruptionsUpdate: () => {},
 };
 
 export default connect(state => ({

@@ -24,23 +24,22 @@ import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert
 import { DEFAULT_CAUSE, DEFAULT_IMPACT } from '../../../../types/disruption-cause-and-effect';
 
 const generateDisruptionNotes = (notes) => {
-    if (!Array.isArray(notes) || notes.length === 0) {
-        return <span>{ DISRUPTIONS_MESSAGE_TYPE.noNotesMessage }</span>;
+    if (Array.isArray(notes) && notes.length > 0) {
+        return (
+            <Table className="table">
+                <tbody className="notes-tbody">
+                    {[...notes].reverse().map(note => (
+                        <tr key={ note.id } className="row d-block">
+                            <td className="col-3">{formatCreatedUpdatedTime(note.createdTime)}</td>
+                            <td className="col-3">{note.createdBy}</td>
+                            <td className="col-6">{note.description}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </Table>
+        );
     }
-
-    return (
-        <Table className="table">
-            <tbody className="notes-tbody">
-                {[...notes].reverse().map(note => (
-                    <tr key={ note.id } className="row d-block">
-                        <td className="col-3">{formatCreatedUpdatedTime(note.lastUpdatedTime ?? note.createdTime)}</td>
-                        <td className="col-3">{note.lastUpdatedBy ?? note.createdBy}</td>
-                        <td className="col-6">{note.description}</td>
-                    </tr>
-                ))}
-            </tbody>
-        </Table>
-    );
+    return <span>{ DISRUPTIONS_MESSAGE_TYPE.noNotesMessage }</span>;
 };
 
 const createLine = (label, value) => {
