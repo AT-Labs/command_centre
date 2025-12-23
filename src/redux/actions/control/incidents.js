@@ -574,10 +574,8 @@ export const getRoutesByShortName = currentRoutes => (dispatch, getState) => {
             return [stopsWithShapes, affectedRoutesWithShapes];
         })
         .then(async () => {
-            dispatch(updateCachedShapesState(missingCacheShapes));
-            dispatch(updateAffectedRoutesState(affectedRoutesWithShapes));
-            dispatch(updateAffectedStopsState(stopsWithShapes));
-            dispatch(updateLoadingIncidentsState(false));
+            await dispatch(updateCachedShapesState(missingCacheShapes));
+            await dispatch(updateLoadingIncidentsState(false));
         })
         .catch((err) => {
             throw err;
