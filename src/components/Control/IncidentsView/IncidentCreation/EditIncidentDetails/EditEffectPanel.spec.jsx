@@ -105,21 +105,6 @@ jest.mock('../../../../../utils/transmitters/disruption-mgt-api', () => ({
     getDiversion: jest.fn(),
 }));
 
-jest.mock('../WizardSteps/SelectEffectEntities', () => {
-    const PropTypesMock = require('prop-types');
-    const MockSelectEffectEntities = (props) => (
-        <div data-testid="select-effect-entities">
-            <div>Search routes or draw in the map</div>
-            <div>SelectEffectEntities</div>
-        </div>
-    );
-    MockSelectEffectEntities.propTypes = {
-        onAffectedEntitiesUpdate: PropTypesMock.func.isRequired,
-    };
-    MockSelectEffectEntities.displayName = 'SelectEffectEntities';
-    return MockSelectEffectEntities;
-});
-
 const fakeNow = new Date(2025, 5, 9, 11, 37, 0);
 
 describe('Confirmation Component', () => {
