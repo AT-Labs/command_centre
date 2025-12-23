@@ -153,9 +153,9 @@ export const SelectDetails = (props) => {
     const startDateValidForAllDisruptions = () => disruptionsForPublishValidation.every(
         disruption => isStartDateValid(disruption.startDate, modalOpenedTime, disruption.recurrent),
     );
-    const endTimeValidForAllDisruptions = () => disruptionsForPublishValidation.every(
+    const endTimeValidForAllDisruptions = () => (recurrent ? true : disruptionsForPublishValidation.every(
         disruption => isEndTimeValid(disruption.endDate, disruption.endTime, disruption.startDate, disruption.startTime),
-    );
+    ));
     const endDateValidForAllDisruptions = () => disruptionsForPublishValidation.every(
         disruption => isEndDateValid(disruption.endDate, disruption.startDate, disruption.recurrent),
     );
