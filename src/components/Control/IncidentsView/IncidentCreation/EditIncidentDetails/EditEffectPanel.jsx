@@ -232,6 +232,7 @@ export const EditEffectPanel = (props, ref) => {
             }, 100);
             return () => clearTimeout(timer);
         }
+        return undefined;
     }, [props.isNotesRequiresToUpdate]);
 
     useEffect(() => {
@@ -591,65 +592,59 @@ export const EditEffectPanel = (props, ref) => {
     };
 
     const onNoteUpdate = async (updatedDisruption) => {
-        try {
-            const startDate = updatedDisruption.startDate ? updatedDisruption.startDate : moment(updatedDisruption.startTime).format(DATE_FORMAT);
-            const startTimeMoment = momentFromDateTime(startDate, updatedDisruption.startTime);
+        const startDate = updatedDisruption.startDate ? updatedDisruption.startDate : moment(updatedDisruption.startTime).format(DATE_FORMAT);
+        const startTimeMoment = momentFromDateTime(startDate, updatedDisruption.startTime);
 
-            let endTimeMoment;
-            if (!isEmpty(updatedDisruption.endDate) && !isEmpty(updatedDisruption.endTime)) {
-                endTimeMoment = momentFromDateTime(updatedDisruption.endDate, updatedDisruption.endTime);
-            }
-            
-            const affectedRoutes = updatedDisruption.affectedEntities?.affectedRoutes || disruption.affectedEntities?.affectedRoutes || [];
-            const affectedStops = updatedDisruption.affectedEntities?.affectedStops || disruption.affectedEntities?.affectedStops || [];
-            
-            const routesToRequest = affectedRoutes.map((
-                { routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon, diversionIds },
-            ) => ({
-                routeId,
-                routeShortName,
-                routeType,
-                type,
-                ...(stopCode !== undefined && {
-                    directionId,
-                    stopId,
-                    stopCode,
-                    stopName,
-                    stopLat,
-                    stopLon,
-                }),
-                ...(diversionIds && { diversionIds }),
-            }));
-            const stopsToRequest = affectedStops.map(entity => omit(entity, ['shapeWkt']));
-            
-            const affectedEntitiesArray = [...routesToRequest, ...stopsToRequest];
-            
-            const notes = updatedDisruption.notes || disruption.notes || [];
-            const formattedNotes = Array.isArray(notes)
-                ? notes
-                    .filter(note => note && note.description)
-                    .map(note => ({
-                        ...(note.id && { id: note.id }),
-                        description: note.description,
-                    }))
-                : [];
-            
-            const disruptionToUpdate = {
-                ...disruption, 
-                ...updatedDisruption,
-                affectedEntities: affectedEntitiesArray,
-                endTime: endTimeMoment,
-                startTime: startTimeMoment,
-                notes: formattedNotes
-            };
-            
-            await props.updateDisruptionAction(disruptionToUpdate);
-            
-        } catch (error) {
-            throw error;
+        let endTimeMoment;
+        if (!isEmpty(updatedDisruption.endDate) && !isEmpty(updatedDisruption.endTime)) {
+            endTimeMoment = momentFromDateTime(updatedDisruption.endDate, updatedDisruption.endTime);
         }
-    };
 
+        const affectedRoutes = updatedDisruption.affectedEntities?.affectedRoutes || disruption.affectedEntities?.affectedRoutes || [];
+        const affectedStops = updatedDisruption.affectedEntities?.affectedStops || disruption.affectedEntities?.affectedStops || [];
+
+        const routesToRequest = affectedRoutes.map((
+            { routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon, diversionIds },
+        ) => ({
+            routeId,
+            routeShortName,
+            routeType,
+            type,
+            ...(stopCode !== undefined && {
+                directionId,
+                stopId,
+                stopCode,
+                stopName,
+                stopLat,
+                stopLon,
+            }),
+            ...(diversionIds && { diversionIds }),
+        }));
+        const stopsToRequest = affectedStops.map(entity => omit(entity, ['shapeWkt']));
+
+        const affectedEntitiesArray = [...routesToRequest, ...stopsToRequest];
+
+        const notes = updatedDisruption.notes || disruption.notes || [];
+        const formattedNotes = Array.isArray(notes)
+            ? notes
+                .filter(note => note && note.description)
+                .map(note => ({
+                    ...(note.id && { id: note.id }),
+                    description: note.description,
+                }))
+            : [];
+
+        const disruptionToUpdate = {
+            ...disruption,
+            ...updatedDisruption,
+            affectedEntities: affectedEntitiesArray,
+            endTime: endTimeMoment,
+            startTime: startTimeMoment,
+            notes: formattedNotes,
+        };
+
+        await props.updateDisruptionAction(disruptionToUpdate);
+    };
 
     const validateEntityLimit = () => {
         const { entitiesCount } = getEntityCounts(disruption);
@@ -1376,7 +1371,10 @@ export const EditEffectPanel = (props, ref) => {
                                     <span className="pl-2 last-note-info">
                                         {disruption.notes[disruption.notes.length - 1].lastUpdatedBy ?? disruption.notes[disruption.notes.length - 1].createdBy}
                                         {', '}
-                                        {formatCreatedUpdatedTime(disruption.notes[disruption.notes.length - 1].lastUpdatedTime ?? disruption.notes[disruption.notes.length - 1].createdTime)}
+                                        {formatCreatedUpdatedTime(
+                                            disruption.notes[disruption.notes.length - 1].lastUpdatedTime
+                                            ?? disruption.notes[disruption.notes.length - 1].createdTime,
+                                        )}
                                     </span>
                                     <span className="pl-2 last-note-description pt-2">
                                         {disruption.notes[disruption.notes.length - 1].description}

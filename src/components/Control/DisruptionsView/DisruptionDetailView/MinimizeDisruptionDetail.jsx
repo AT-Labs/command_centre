@@ -47,7 +47,6 @@ import {
     formatCreatedUpdatedTime,
     recurrenceRadioOptions,
     momentFromDateTime,
-    getLatestNote,
 } from '../../../../utils/control/disruptions';
 import DisruptionSummaryModal from '../DisruptionDetail/DisruptionSummaryModal';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
@@ -146,16 +145,16 @@ export const MinimizeDisruptionDetail = (props) => {
     }, [lastUpdatedTime, lastNote]);
 
     const onNoteUpdate = async (updatedDisruption) => {
-        const notes = updatedDisruption.notes || disruption.notes || [];
-        const formattedNotes = Array.isArray(notes)
-            ? notes
+        const updatedNotes = updatedDisruption.notes || disruption.notes || [];
+        const formattedNotes = Array.isArray(updatedNotes)
+            ? updatedNotes
                 .filter(note => note && note.description)
                 .map(note => ({
                     ...(note.id && { id: note.id }),
                     description: note.description,
                 }))
             : [];
-        
+
         const disruptionToUpdate = {
             ...disruption,
             ...updatedDisruption,

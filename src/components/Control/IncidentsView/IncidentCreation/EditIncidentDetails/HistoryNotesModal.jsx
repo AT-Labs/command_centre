@@ -1,12 +1,12 @@
 import { Table, Button, Input } from 'reactstrap';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { formatCreatedUpdatedTime } from '../../../../../utils/control/disruptions';
-import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import { BsPencilSquare } from 'react-icons/bs';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { IconButton } from '@mui/material';
+import { formatCreatedUpdatedTime } from '../../../../../utils/control/disruptions';
+import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import { DESCRIPTION_NOTE_MAX_LENGTH } from '../../../../../constants/disruptions';
 import './HistoryNotesModal.scss';
 
@@ -44,9 +44,9 @@ const HistoryNotesModal = (props) => {
         setIsSaving(true);
         try {
             const notes = props.disruption.notes || [];
-            
+
             const updatedNotes = notes
-                .map(note => {
+                .map((note) => {
                     if (note.id === editingNoteId) {
                         return {
                             id: note.id,
@@ -71,7 +71,7 @@ const HistoryNotesModal = (props) => {
             setEditingNoteId(null);
             setEditedDescription('');
         } catch (error) {
-            console.error('Error updating note:', error);
+            // Error is handled by parent component
         } finally {
             setIsSaving(false);
         }
@@ -102,7 +102,7 @@ const HistoryNotesModal = (props) => {
                         </tr>
                     </thead>
                     <tbody className="notes-history-body">
-                        {[...props.disruption.notes].reverse().map(note => (
+                        {[...props.disruption.notes].reverse().map((note) => (
                             <tr key={ note.id }>
                                 <td>
                                     {formatCreatedUpdatedTime(note.lastUpdatedTime ?? note.createdTime)}
@@ -176,6 +176,10 @@ HistoryNotesModal.propTypes = {
     disruption: PropTypes.object.isRequired,
     onClose: PropTypes.func.isRequired,
     onNoteUpdate: PropTypes.func,
+};
+
+HistoryNotesModal.defaultProps = {
+    onNoteUpdate: undefined,
 };
 
 export default HistoryNotesModal;

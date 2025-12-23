@@ -65,7 +65,7 @@ function generateHtmlNotes(notes) {
     if (!notes || !Array.isArray(notes) || notes.length === 0) {
         return `<span>${DISRUPTIONS_MESSAGE_TYPE.noNotesMessage}</span>`;
     }
-    
+
     return `<table style="display: table; border-spacing: 2px; border-color: grey;">
         <tbody>
             ${[...notes].reverse().map(note => (`<tr>

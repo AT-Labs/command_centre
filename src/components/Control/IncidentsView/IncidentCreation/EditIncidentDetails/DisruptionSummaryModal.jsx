@@ -25,7 +25,7 @@ const generateDisruptionNotes = (notes) => {
     if (!notes || !Array.isArray(notes) || notes.length === 0) {
         return <span>{ DISRUPTIONS_MESSAGE_TYPE.noNotesMessage }</span>;
     }
-    
+
     return (
         <Table className="table">
             <tbody className="notes-tbody">
