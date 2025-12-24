@@ -363,8 +363,8 @@ describe('MinimizeDisruptionDetail', () => {
 
             const callArgs = updateDisruption.mock.calls[0][0];
             expect(callArgs.notes).toHaveLength(2);
-            expect(callArgs.notes.find((n) => n.id === 'note-2').description).toBe('Updated Note 2');
-            expect(callArgs.notes.find((n) => n.id === 'note-1').description).toBe('Note 1');
+            expect(callArgs.notes.find(n => n.id === 'note-2').description).toBe('Updated Note 2');
+            expect(callArgs.notes.find(n => n.id === 'note-1').description).toBe('Note 1');
         });
 
         it('Should render HistoryNotesModal when useParentChildIncident is true and lastNote exists', () => {
