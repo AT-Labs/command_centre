@@ -98,7 +98,7 @@ const HistoryNotesModal = (props) => {
                             <th className="notes-table-header">Last updated time</th>
                             <th className="notes-table-header">Last updated by</th>
                             <th className="notes-table-header-notes">Notes</th>
-                            <th className="notes-table-header-actions"></th>
+                            <th className="notes-table-header-actions" />
                         </tr>
                     </thead>
                     <tbody className="notes-history-body">

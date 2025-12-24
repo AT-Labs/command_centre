@@ -39,7 +39,6 @@ const generateDisruptionNotes = (notes) => {
             </Table>
         );
     }
-
     return <span>{ DISRUPTIONS_MESSAGE_TYPE.noNotesMessage }</span>;
 };
 

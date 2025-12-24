@@ -312,7 +312,7 @@ export const MinimizeDisruptionDetail = (props) => {
                             <DisruptionLabelAndText id="disruption-detail__created-by" label={ LABEL_CREATED_BY } text={ `${createdBy}, ${formatCreatedUpdatedTime(createdTime)}` } />
                             <DisruptionLabelAndText id="disruption-detail__last-updated" label={ LABEL_LAST_UPDATED_BY } text={ `${lastUpdatedBy}, ${formatCreatedUpdatedTime(lastUpdatedTime)}` } />
                         </div>
-                        {lastNote && (
+                        {props.useParentChildIncident && lastNote && (
                             <HistoryIcon
                                 style={ { color: '#399CDB', cursor: 'pointer', marginLeft: '8px', flexShrink: 0, marginTop: '4px' } }
                                 onClick={ () => setHistoryNotesModalOpen(true) }
