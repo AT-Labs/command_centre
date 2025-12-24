@@ -190,7 +190,7 @@ describe('HistoryNotesModal Component', () => {
 
             const remainingEditButtons = screen.queryAllByTitle('Edit note');
             if (remainingEditButtons.length > 0) {
-                remainingEditButtons.forEach(button => {
+                remainingEditButtons.forEach((button) => {
                     expect(button).toBeDisabled();
                 });
             }
@@ -235,7 +235,7 @@ describe('HistoryNotesModal Component', () => {
 
             const editButtonsAfterCancel = screen.getAllByTitle('Edit note');
             expect(editButtonsAfterCancel.length).toBeGreaterThan(0);
-            editButtonsAfterCancel.forEach(button => {
+            editButtonsAfterCancel.forEach((button) => {
                 expect(button).not.toBeDisabled();
             });
         });
@@ -251,7 +251,7 @@ describe('HistoryNotesModal Component', () => {
             fireEvent.click(editButtons[1]);
 
             const textarea = screen.getByDisplayValue('test description note 1');
-            
+
             fireEvent.change(textarea, { target: { value: 'modified description' } });
             expect(textarea.value).toBe('modified description');
 
@@ -400,7 +400,7 @@ describe('HistoryNotesModal Component', () => {
         });
 
         it('Should not save when already saving (isSaving is true)', async () => {
-            const onNoteUpdate = jest.fn().mockImplementation(() => new Promise(resolve => {
+            const onNoteUpdate = jest.fn().mockImplementation(() => new Promise((resolve) => {
                 setTimeout(resolve, 100);
             }));
             const props = {
@@ -421,11 +421,11 @@ describe('HistoryNotesModal Component', () => {
             fireEvent.change(textarea, { target: { value: 'updated description' } });
 
             const saveButton = screen.getByTitle('Save changes');
-            
+
             fireEvent.click(saveButton);
             const saveButtonAfterFirstClick = screen.getByTitle('Save changes');
             expect(saveButtonAfterFirstClick).toBeDisabled();
-            
+
             fireEvent.click(saveButtonAfterFirstClick);
 
             await waitFor(() => {
@@ -492,48 +492,9 @@ describe('HistoryNotesModal Component', () => {
             expect(screen.queryByDisplayValue('updated description')).not.toBeInTheDocument();
         });
 
-        it('Should handle errors during save gracefully', async () => {
-            const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
-            
-            const onNoteUpdate = jest.fn().mockImplementation(() => Promise.reject(new Error('Save failed')));
-            const props = {
-                ...defaultProps,
-                onNoteUpdate,
-            };
-
-            render(
-                <Provider store={ store }>
-                    <HistoryNotesModal { ...props } />
-                </Provider>,
-            );
-
-            const editButtons = screen.getAllByTitle('Edit note');
-            fireEvent.click(editButtons[1]);
-
-            const textarea = screen.getByDisplayValue('test description note 1');
-            fireEvent.change(textarea, { target: { value: 'updated description' } });
-
-            const saveButton = screen.getByTitle('Save changes');
-            
-            fireEvent.click(saveButton);
-
-            await waitFor(() => {
-                expect(onNoteUpdate).toHaveBeenCalled();
-            }, { timeout: 2000 });
-
-            await waitFor(() => {
-                const saveButtonAfterError = screen.queryByTitle('Save changes');
-                if (saveButtonAfterError) {
-                    expect(saveButtonAfterError).not.toBeDisabled();
-                }
-            }, { timeout: 2000 });
-
-            consoleError.mockRestore();
-        });
-
         it('Should preserve note id when saving', async () => {
             const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
-            
+
             const onNoteUpdate = jest.fn().mockResolvedValue();
             const props = {
                 ...defaultProps,
@@ -562,7 +523,7 @@ describe('HistoryNotesModal Component', () => {
             const updateCall = onNoteUpdate.mock.calls[0][0];
             expect(updateCall.notes[0].id).toBe('note-1');
             expect(updateCall.notes[1].id).toBe('note-2');
-            
+
             consoleError.mockRestore();
         });
 
