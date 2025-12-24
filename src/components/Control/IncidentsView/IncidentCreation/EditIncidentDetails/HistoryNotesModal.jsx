@@ -70,8 +70,6 @@ const HistoryNotesModal = (props) => {
 
             setEditingNoteId(null);
             setEditedDescription('');
-        } catch (error) {
-            // Error is handled by parent component
         } finally {
             setIsSaving(false);
         }

@@ -148,7 +148,7 @@ export const MinimizeDisruptionDetail = (props) => {
         const updatedNotes = updatedDisruption.notes || disruption.notes || [];
         const formattedNotes = Array.isArray(updatedNotes)
             ? updatedNotes
-                .filter(note => note && note.description)
+                .filter(note => note?.description)
                 .map(note => ({
                     ...(note.id && { id: note.id }),
                     description: note.description,
@@ -304,11 +304,7 @@ export const MinimizeDisruptionDetail = (props) => {
                 <div className="col-5 disruption-detail__contributors">
                     <div className="d-flex align-items-start">
                         <div style={ { flex: 1, minWidth: 0 } }>
-                            <LastNoteView
-                                label={ LABEL_LAST_NOTE }
-                                note={ lastNote }
-                                id="disruption-detail__last-note-view"
-                            />
+                            <LastNoteView label={ LABEL_LAST_NOTE } note={ lastNote } id="disruption-detail__last-note-view" />
                             <DisruptionLabelAndText id="disruption-detail__created-by" label={ LABEL_CREATED_BY } text={ `${createdBy}, ${formatCreatedUpdatedTime(createdTime)}` } />
                             <DisruptionLabelAndText id="disruption-detail__last-updated" label={ LABEL_LAST_UPDATED_BY } text={ `${lastUpdatedBy}, ${formatCreatedUpdatedTime(lastUpdatedTime)}` } />
                         </div>

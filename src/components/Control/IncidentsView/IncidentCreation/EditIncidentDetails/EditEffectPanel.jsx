@@ -225,17 +225,6 @@ export const EditEffectPanel = (props, ref) => {
     }, [props.disruptions, props.isNotesRequiresToUpdate]);
 
     useEffect(() => {
-        if (props.isNotesRequiresToUpdate && disruptionIncidentNoToEdit && props.disruptions) {
-            const timer = setTimeout(() => {
-                initDisruptionData();
-                props.updateIsNotesRequiresToUpdateState();
-            }, 100);
-            return () => clearTimeout(timer);
-        }
-        return undefined;
-    }, [props.isNotesRequiresToUpdate]);
-
-    useEffect(() => {
         if (Array.isArray(props.mapDrawingEntities) && props.mapDrawingEntities.length > 0) {
             setDisruption({
                 ...disruption,
@@ -592,55 +581,33 @@ export const EditEffectPanel = (props, ref) => {
     };
 
     const onNoteUpdate = async (updatedDisruption) => {
-        const startDate = updatedDisruption.startDate ? updatedDisruption.startDate : moment(updatedDisruption.startTime).format(DATE_FORMAT);
-        const startTimeMoment = momentFromDateTime(startDate, updatedDisruption.startTime);
+        const notes = updatedDisruption.notes ?? originalDisruption.notes ?? [];
+        const formattedNotes = notes
+            .filter(note => note?.description)
+            .map(note => ({
+                ...(note.id && { id: note.id }),
+                description: note.description,
+            }));
+
+        const startDate = originalDisruption.startDate ?? moment(originalDisruption.startTime).format(DATE_FORMAT);
+        const startTimeMoment = momentFromDateTime(startDate, originalDisruption.startTime);
 
         let endTimeMoment;
-        if (!isEmpty(updatedDisruption.endDate) && !isEmpty(updatedDisruption.endTime)) {
-            endTimeMoment = momentFromDateTime(updatedDisruption.endDate, updatedDisruption.endTime);
+        if (!isEmpty(originalDisruption.endDate) && !isEmpty(originalDisruption.endTime)) {
+            endTimeMoment = momentFromDateTime(originalDisruption.endDate, originalDisruption.endTime);
         }
 
-        const affectedRoutes = updatedDisruption.affectedEntities?.affectedRoutes || disruption.affectedEntities?.affectedRoutes || [];
-        const affectedStops = updatedDisruption.affectedEntities?.affectedStops || disruption.affectedEntities?.affectedStops || [];
-
-        const routesToRequest = affectedRoutes.map((
-            { routeId, routeShortName, routeType, type, directionId, stopId, stopCode, stopName, stopLat, stopLon, diversionIds },
-        ) => ({
-            routeId,
-            routeShortName,
-            routeType,
-            type,
-            ...(stopCode !== undefined && {
-                directionId,
-                stopId,
-                stopCode,
-                stopName,
-                stopLat,
-                stopLon,
-            }),
-            ...(diversionIds && { diversionIds }),
-        }));
-        const stopsToRequest = affectedStops.map(entity => omit(entity, ['shapeWkt']));
-
-        const affectedEntitiesArray = [...routesToRequest, ...stopsToRequest];
-
-        const notes = updatedDisruption.notes || disruption.notes || [];
-        const formattedNotes = Array.isArray(notes)
-            ? notes
-                .filter(note => note && note.description)
-                .map(note => ({
-                    ...(note.id && { id: note.id }),
-                    description: note.description,
-                }))
-            : [];
+        const affectedEntities = [...originalDisruption.affectedEntities.affectedRoutes,
+            ...originalDisruption.affectedEntities.affectedStops]
+            .map(entity => omit(entity, ['shapeWkt']));
+        const affectedEntitiesArray = [...affectedEntities];
 
         const disruptionToUpdate = {
-            ...disruption,
-            ...updatedDisruption,
-            affectedEntities: affectedEntitiesArray,
-            endTime: endTimeMoment,
-            startTime: startTimeMoment,
+            ...originalDisruption,
             notes: formattedNotes,
+            startTime: startTimeMoment,
+            endTime: endTimeMoment,
+            affectedEntities: affectedEntitiesArray,
         };
 
         await props.updateDisruptionAction(disruptionToUpdate);
