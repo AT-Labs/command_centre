@@ -1332,22 +1332,24 @@ export const EditEffectPanel = (props, ref) => {
                                     </div>
                                 </FormGroup>
                             </div>
-                            { disruption.notes.length > 0 && (
-                                <div className="col-12 last-note-grid">
-                                    <span className="font-size-md font-weight-bold last-note-label">Last note</span>
-                                    <span className="pl-2 last-note-info">
-                                        {disruption.notes[disruption.notes.length - 1].lastUpdatedBy ?? disruption.notes[disruption.notes.length - 1].createdBy}
-                                        {', '}
-                                        {formatCreatedUpdatedTime(
-                                            disruption.notes[disruption.notes.length - 1].lastUpdatedTime
-                                            ?? disruption.notes[disruption.notes.length - 1].createdTime,
-                                        )}
-                                    </span>
-                                    <span className="pl-2 last-note-description pt-2">
-                                        {disruption.notes[disruption.notes.length - 1].description}
-                                    </span>
-                                </div>
-                            )}
+                            { disruption.notes.length > 0 && (() => {
+                                const lastNote = disruption.notes.at(-1);
+                                return (
+                                    <div className="col-12 last-note-grid">
+                                        <span className="font-size-md font-weight-bold last-note-label">Last note</span>
+                                        <span className="pl-2 last-note-info">
+                                            {lastNote.lastUpdatedBy ?? lastNote.createdBy}
+                                            {', '}
+                                            {formatCreatedUpdatedTime(
+                                                lastNote.lastUpdatedTime ?? lastNote.createdTime,
+                                            )}
+                                        </span>
+                                        <span className="pl-2 last-note-description pt-2">
+                                            {lastNote.description}
+                                        </span>
+                                    </div>
+                                );
+                            })()}
                             <div className="col-12">
                                 <FormGroup className="disruption-creation__checkbox">
                                     <Input

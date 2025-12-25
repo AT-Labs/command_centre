@@ -13,10 +13,10 @@ const LastNoteView = (props) => {
             <div className="col-9 text-right">
                 {note && (
                     <>
-                        <span>{note.createdBy}</span>
+                        <span>{note.lastUpdatedBy ?? note.createdBy}</span>
                         ,
                         {' '}
-                        {formatCreatedUpdatedTime(note.createdTime)}
+                        {formatCreatedUpdatedTime(note.lastUpdatedTime ?? note.createdTime)}
                         ,
                         {' '}
                         {note.description}
