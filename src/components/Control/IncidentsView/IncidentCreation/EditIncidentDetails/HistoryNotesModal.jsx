@@ -117,7 +117,7 @@ const HistoryNotesModal = (props) => {
                                             maxLength={ DESCRIPTION_NOTE_MAX_LENGTH }
                                             rows={ 4 }
                                             className="notes-edit-textarea"
-                                            style={ { resize: 'vertical', minHeight: '80px', maxHeight: '300px', overflowY: 'auto' } }
+                                            style={ { resize: 'both', minHeight: '80px', maxHeight: '300px', minWidth: '80px', maxWidth: '350px', overflowY: 'auto' } }
                                         />
                                     ) : (
                                         <div className="notes-description">{note.description}</div>
