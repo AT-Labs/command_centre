@@ -30,8 +30,8 @@ const generateDisruptionNotes = (notes) => {
                 <tbody className="notes-tbody">
                     {[...notes].reverse().map(note => (
                         <tr key={ note.id } className="row d-block">
-                            <td className="col-3">{formatCreatedUpdatedTime(note.lastUpdatedTime ?? note.createdTime)}</td>
-                            <td className="col-3">{note.lastUpdatedBy ?? note.createdBy}</td>
+                            <td className="col-3">{formatCreatedUpdatedTime(note.createdTime)}</td>
+                            <td className="col-3">{note.createdBy}</td>
                             <td className="col-6">{note.description}</td>
                         </tr>
                     ))}

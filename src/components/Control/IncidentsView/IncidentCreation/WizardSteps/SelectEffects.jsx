@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { connect } from 'react-redux';
 import { isEmpty, sortBy, uniqueId, some } from 'lodash-es';
 import PropTypes from 'prop-types';
@@ -51,6 +51,7 @@ import {
     isStartTimeValid,
     isDurationValid,
     getRecurrenceDates,
+    isStartDateTimeEarlierThanNow,
 } from '../../../../../utils/control/disruptions';
 import { useDraftDisruptions } from '../../../../../redux/selectors/appSettings';
 import { DisruptionDetailSelect } from '../../../DisruptionsView/DisruptionDetail/DisruptionDetailSelect';
@@ -77,9 +78,10 @@ const INIT_EFFECT_STATE = {
     isStartTimeDirty: false,
     startDate: '',
     isStartDateDirty: false,
+    isStartDateInvalid: false,
     endTime: '',
     endDate: '',
-    isEndDateDirty: false,
+    isEndDateInvalid: false,
     impact: DEFAULT_IMPACT.value,
     isImpactDirty: false,
     cause: DEFAULT_CAUSE.value,
@@ -110,6 +112,7 @@ export const SelectEffects = (props) => {
         severity: incidentSeverity,
         cause: incidentCause,
         header: incidentHeader,
+        status: incidentStatus,
         modalOpenedTime,
     } = props.data;
 
@@ -180,7 +183,9 @@ export const SelectEffects = (props) => {
         </>
     );
 
-    const datePickerOptions = getDatePickerOptions();
+    const datePickerOptions = useMemo(() => (incidentRecurrent
+        ? getDatePickerOptions('today')
+        : getDatePickerOptions()), [incidentRecurrent]);
 
     const endDateDatePickerOptions = key => getDatePickerOptions(disruptions.find(d => d.key === key).startDate);
 
@@ -188,6 +193,10 @@ export const SelectEffects = (props) => {
 
     const startTimeValid = (key) => {
         const disruption = getDisruptionByKey(key);
+        if (incidentRecurrent && props.editMode === EDIT_TYPE.ADD_EFFECT && (incidentStatus === STATUSES.DRAFT || incidentStatus === STATUSES.NOT_STARTED)) {
+            const isValid = isStartTimeValid(disruption.startDate, disruption.startTime, modalOpenedTime, false);
+            return isValid && !isStartDateTimeEarlierThanNow(disruption.startDate, disruption.startTime);
+        }
         return isStartTimeValid(
             disruption.startDate,
             disruption.startTime,
@@ -198,7 +207,13 @@ export const SelectEffects = (props) => {
 
     const startTimeValidForAllDisruptions = () => disruptions.every(disruption => startTimeValid(disruption.key));
 
-    const startDateValid = key => isStartDateValid(disruptions.find(d => d.key === key).startDate, modalOpenedTime, incidentRecurrent);
+    const startDateValid = (key) => {
+        const disruption = getDisruptionByKey(key);
+        if (incidentRecurrent && props.editMode === EDIT_TYPE.ADD_EFFECT && (incidentStatus === STATUSES.DRAFT || incidentStatus === STATUSES.NOT_STARTED)) {
+            return moment(disruption.startDate, DATE_FORMAT, true).isSameOrAfter(moment(), 'day');
+        }
+        return isStartDateValid(disruption.startDate, modalOpenedTime, incidentRecurrent);
+    };
 
     const startDateValidForAllDisruptions = () => disruptions.every(disruption => startDateValid(disruption.key));
 
@@ -492,37 +507,33 @@ export const SelectEffects = (props) => {
 
     const onChangeStartDate = (key, date) => {
         if (date.length === 0) {
-            updateDisruption(key, { startDate: '', isStartDateDirty: true });
+            updateDisruption(key, { startDate: '', isStartDateDirty: true, isStartDateInvalid: true });
         } else {
-            updateDisruption(key, { startDate: moment(date[0]).format(DATE_FORMAT), isStartDateDirty: false });
+            updateDisruption(key, { startDate: moment(date[0]).format(DATE_FORMAT), isStartDateDirty: true, isStartDateInvalid: false });
         }
     };
 
     const onChangeEndDate = (key, date, isRecurrent) => {
         if (isRecurrent) {
             if (date.length === 0) {
-                if (props.useDraftDisruptions) {
-                    updateDisruption(key, { endDate: '', isEndDateDirty: false });
-                } else {
-                    updateDisruption(key, { isEndDateDirty: true });
-                }
+                updateDisruption(key, { endDate: '', isEndDateInvalid: true });
             } else {
-                updateDisruption(key, { endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '', isEndDateDirty: false });
+                updateDisruption(key, { endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '', isEndDateInvalid: false });
             }
         } else {
-            updateDisruption(key, { endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '', isEndDateDirty: false });
+            updateDisruption(key, { endDate: date.length ? moment(date[0]).format(DATE_FORMAT) : '', isEndDateInvalid: false });
         }
     };
 
     const onBlurEndDate = (key, date, isRecurrent) => {
         if (isRecurrent) {
-            if (date.length === 0 && !props.useDraftDisruptions) {
-                updateDisruption(key, { isEndDateDirty: true });
+            if (date.length === 0) {
+                updateDisruption(key, { isEndDateInvalid: true });
             } else {
-                updateDisruption(key, { isEndDateDirty: false });
+                updateDisruption(key, { isEndDateInvalid: false });
             }
         } else {
-            updateDisruption(key, { isEndDateDirty: false });
+            updateDisruption(key, { isEndDateInvalid: false });
         }
     };
 
@@ -530,6 +541,7 @@ export const SelectEffects = (props) => {
         setDisruptions(prev => prev.map(d => (d.key === key ? {
             ...d,
             recurrencePattern: { ...d.recurrencePattern, byweekday },
+            isRecurrencePatternDirty: true,
         } : d)));
     };
 
@@ -652,17 +664,17 @@ export const SelectEffects = (props) => {
                                 <Flatpickr
                                     key={ `${disruption.key}_start-date` }
                                     id="disruption-creation__wizard-select-details__start-date"
-                                    className={ `font-weight-normal cc-form-control form-control ${disruption.isStartDateDirty ? 'is-invalid' : ''}` }
+                                    className={ `font-weight-normal cc-form-control form-control ${disruption.isStartDateInvalid ? 'is-invalid' : ''}` }
                                     value={ disruption.startDate }
                                     options={ datePickerOptions }
                                     placeholder="Select date"
                                     onChange={ date => onChangeStartDate(disruption.key, date) } />
-                                {!disruption.isStartDateDirty && (
+                                {!disruption.isStartDateInvalid && (
                                     <FaRegCalendarAlt
                                         className="disruption-creation__wizard-select-details__icon position-absolute"
                                         size={ 22 } />
                                 )}
-                                {disruption.isStartDateDirty && (
+                                {disruption.isStartDateInvalid && (
                                     <div className="disruption-recurrence-invalid">Please select start date</div>
                                 )}
                             </FormGroup>
@@ -676,7 +688,7 @@ export const SelectEffects = (props) => {
                                     <Flatpickr
                                         key={ `${disruption.key}_end-date` }
                                         id="disruption-creation__wizard-select-details__end-date"
-                                        className={ `font-weight-normal cc-form-control form-control ${disruption.isEndDateDirty ? 'is-invalid' : ''}` }
+                                        className={ `font-weight-normal cc-form-control form-control ${disruption.isEndDateInvalid ? 'is-invalid' : ''}` }
                                         value={ disruption.endDate }
                                         options={ endDateDatePickerOptions(disruption.key) }
                                         onChange={ date => onChangeEndDate(disruption.key, date, false) }
@@ -687,19 +699,19 @@ export const SelectEffects = (props) => {
                                     <Flatpickr
                                         key={ `${disruption.key}_end-date` }
                                         id="disruption-creation__wizard-select-details__end-date"
-                                        className={ `font-weight-normal cc-form-control form-control ${disruption.isEndDateDirty ? 'is-invalid' : ''}` }
+                                        className={ `font-weight-normal cc-form-control form-control ${disruption.isEndDateInvalid ? 'is-invalid' : ''}` }
                                         value={ disruption.endDate }
                                         options={ endDateDatePickerOptions(disruption.key) }
                                         onChange={ date => onChangeEndDate(disruption.key, date, true) }
                                         onOpen={ date => onBlurEndDate(disruption.key, date, true) }
                                     />
                                 )}
-                                {!disruption.isEndDateDirty && (
+                                {!disruption.isEndDateInvalid && (
                                     <FaRegCalendarAlt
                                         className="disruption-creation__wizard-select-details__icon position-absolute"
                                         size={ 22 } />
                                 )}
-                                {disruption.isEndDateDirty && (
+                                {disruption.isEndDateInvalid && (
                                     <span className="disruption-recurrence-invalid">Please select end date</span>
                                 )}
                             </FormGroup>
@@ -713,8 +725,10 @@ export const SelectEffects = (props) => {
                                     id="disruption-creation__wizard-select-details__start-time"
                                     className="border border-dark"
                                     value={ disruption.startTime }
-                                    onChange={ event => updateDisruption(disruption.key, { startTime: event.target.value, isStartTimeDirty: false }) }
-                                    invalid={ (props.useDraftDisruptions ? (!disruption.isStartTimeDirty && !startTimeValid(disruption.key)) : !startTimeValid(disruption.key)) }
+                                    onChange={ event => updateDisruption(disruption.key, { startTime: event.target.value, isStartTimeDirty: true }) }
+                                    invalid={ (props.useDraftDisruptions
+                                        ? ((disruption.isStartTimeDirty || disruption.isStartDateDirty) && !startTimeValid(disruption.key))
+                                        : !startTimeValid(disruption.key)) }
                                 />
                                 <FormFeedback>Not valid values</FormFeedback>
                             </FormGroup>
