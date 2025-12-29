@@ -80,8 +80,6 @@ const RouteShapeEditor = (props) => {
         setTomtomInstructions(props.initialDirections || []);
         setShowTomTomWarning(false);
         setMergedTomTom(false);
-        // This makes sure to notify parent that TomTom processing is done (reset)
-        props.onDirectionsUpdated({ pending: false });
     };
 
     // Undo handler
