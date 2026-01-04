@@ -198,6 +198,11 @@ export const EditEffectPanel = (props, ref) => {
 
         if (disruptionRecurrent && isEmpty(disruptionToSet.endDate) && incidentEndDate) {
             disruptionToSet.endDate = incidentEndDate;
+
+            disruptionToSet.recurrencePattern = {
+                ...parseRecurrencePattern(foundDisruption.recurrencePattern),
+                ...getRecurrenceDates(foundDisruption.startDate, foundDisruption.startTime, incidentEndDate),
+            };
         }
 
         setDisruption(disruptionToSet);
