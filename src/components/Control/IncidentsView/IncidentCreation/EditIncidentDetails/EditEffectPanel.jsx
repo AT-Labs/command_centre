@@ -641,8 +641,16 @@ export const EditEffectPanel = (props, ref) => {
             props.updateAffectedStopsState(sortBy(stops, sortedStop => sortedStop.stopCode));
             props.updateAffectedRoutesState(routes);
 
-            if (routes.length > 0) {
-                props.getRoutesByShortName(routes.slice(0, 10));
+            // Get stops that have an associated route
+            const stopsWithRouteId = stops.filter(stop => stop.routeId && stop.routeShortName);
+
+            // Combine routes + stops-with-routes, remove duplicates
+            const allRoutesToFetch = [...routes, ...stopsWithRouteId];
+            const uniqueRoutesToFetch = allRoutesToFetch.filter((route, index, self) => index === self.findIndex(r => r.routeId === route.routeId));
+
+            // Now fetch shapes for ALL of them
+            if (uniqueRoutesToFetch.length > 0) {
+                props.getRoutesByShortName(uniqueRoutesToFetch.slice(0, 10));
             }
         } else {
             setRequireMapUpdate(true);
@@ -665,8 +673,16 @@ export const EditEffectPanel = (props, ref) => {
             props.updateAffectedStopsState(sortBy(stops, sortedStop => sortedStop.stopCode));
             props.updateAffectedRoutesState(routes);
 
-            if (routes.length > 0) {
-                props.getRoutesByShortName(routes.slice(0, 10));
+            // Get stops that have an associated route
+            const stopsWithRouteId = stops.filter(stop => stop.routeId && stop.routeShortName);
+
+            // Combine routes + stops-with-routes, remove duplicates
+            const allRoutesToFetch = [...routes, ...stopsWithRouteId];
+            const uniqueRoutesToFetch = allRoutesToFetch.filter((route, index, self) => index === self.findIndex(r => r.routeId === route.routeId));
+
+            // Now fetch shapes for ALL of them
+            if (uniqueRoutesToFetch.length > 0) {
+                props.getRoutesByShortName(uniqueRoutesToFetch.slice(0, 10));
             }
             setRequireMapUpdate(false);
         }
