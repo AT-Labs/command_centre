@@ -124,7 +124,7 @@ export const BusPriorityThresholdDataGrid = (props) => {
             field: 'SiteId',
             headerName: LABEL_SITEID,
             width: 100,
-            type: 'string',
+            type: 'number',
         },
         {
             field: 'Occupancy',
