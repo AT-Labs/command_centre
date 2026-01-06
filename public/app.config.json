@@ -40,6 +40,7 @@
     "useHoldTrip": "false",
     "useStopBasedDisruptionsLayer": "false",
     "useTripOperationNotes": "false",
+    "useEditDisruptionNotes": "false",
     "useStopBasedDisruptionsSearch": "false",
     "useTripCancellationCause": "false",
     "useParentChildIncident": "false",
