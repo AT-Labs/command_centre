@@ -209,24 +209,6 @@ export class CreateIncident extends React.Component {
                 key: disruption.incidentNo,
             };
         });
-
-        let startDateTimeWillBeUpdated = false;
-        let endDateTimeWillBeUpdated = false;
-        if (requireToUpdateForm) {
-            startDateTimeWillBeUpdated = startDateTimeWillBeAutomaticallyUpdated(
-                incidentData.startDate,
-                incidentData.startTime,
-                updatedDisruptions,
-            );
-
-            endDateTimeWillBeUpdated = endDateTimeWillBeAutomaticallyUpdated(
-                incidentData.endDate,
-                incidentData.recurrent ? '23:59' : incidentData.endTime,
-                updatedDisruptions,
-                incidentData.recurrent,
-            );
-        }
-
         this.setState({
             incidentData: {
                 ...INIT_STATE,
@@ -246,8 +228,6 @@ export class CreateIncident extends React.Component {
                 disruptions: [...updatedDisruptions],
             },
             ...(this.props.disruptionIncidentNoToEdit ? { selectedEffect: this.props.disruptionIncidentNoToEdit } : null),
-            startDateTimeWillBeUpdated,
-            endDateTimeWillBeUpdated,
         });
 
         if (requireToUpdateForm) {
