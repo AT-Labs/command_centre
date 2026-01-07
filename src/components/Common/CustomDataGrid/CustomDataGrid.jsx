@@ -189,6 +189,8 @@ export const CustomDataGrid = (props) => {
         if (!hasExpanded || !apiRef.current) return;
 
         setExpandedPanels(expandedPanels);
+        setSelectedRows(expandedPanels);
+
         if (props.autoExpandSubChild && !props.loading) {
             requestAnimationFrame(() => {
                 scrollToRow(props.autoExpandSubChild);
@@ -198,7 +200,7 @@ export const CustomDataGrid = (props) => {
         if (isInitialLoad && props.dataSource.length > 0) {
             setIsInitialLoad(false);
         }
-    }, [props.expandedDetailPanels, props.dataSource, isInitialLoad, setExpandedPanels]);
+    }, [props.expandedDetailPanels, props.dataSource, isInitialLoad, setExpandedPanels, scrollToRow]);
 
     const handleAutoExpandIncident = useCallback(() => {
         const {
@@ -260,6 +262,30 @@ export const CustomDataGrid = (props) => {
         props.autoExpandActiveIncident,
         props.autoExpandSubChild,
     ]);
+
+    // Watch for expandedDetailPanels changes and expand panels accordingly
+    useEffect(() => {
+        if (!apiRef.current) return;
+
+        const expandedPanels = props.expandedDetailPanels;
+        const hasExpanded = expandedPanels?.length > 0;
+
+        if (hasExpanded) {
+            const currentlyExpanded = apiRef.current.getExpandedDetailPanels?.() || [];
+            const panelsChanged = JSON.stringify(currentlyExpanded.sort()) !== JSON.stringify(expandedPanels.sort());
+
+            if (panelsChanged) {
+                setExpandedPanels(expandedPanels);
+                setSelectedRows(expandedPanels);
+            }
+        } else if (expandedPanels === null || expandedPanels.length === 0) {
+            const currentlyExpanded = apiRef.current.getExpandedDetailPanels?.() || [];
+            if (currentlyExpanded.length > 0) {
+                setExpandedPanels([]);
+                setSelectedRows([]);
+            }
+        }
+    }, [props.expandedDetailPanels, setExpandedPanels]);
 
     useEffect(() => {
         const columnVisChangeEvent = apiRef.current.subscribeEvent('columnVisibilityChange', () => {
