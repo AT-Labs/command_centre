@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import PropTypes from 'prop-types';
 import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { Paper, Stack, Button as MuiButton } from '@mui/material';
@@ -104,8 +103,7 @@ import { ViewDiversionDetailModal } from '../../../DisruptionsView/DisruptionDet
 import { openDiversionManager, updateDiversionMode, updateDiversionToEdit } from '../../../../../redux/actions/control/diversions';
 import EDIT_TYPE from '../../../../../types/edit-types';
 import DiversionManager from '../../../DisruptionsView/DiversionManager';
-import { getDiversion as getDiversionAPI } from '../../../../../utils/transmitters/disruption-mgt-api';
-import { useDiversionDisruptionRefetcher } from './EditEffectPanelHooks';
+import { getDisruption as getDisruptionAPI, getDiversion as getDiversionAPI } from '../../../../../utils/transmitters/disruption-mgt-api';
 
 const INIT_EFFECT_STATE = {
     key: '',
@@ -134,6 +132,31 @@ const INIT_EFFECT_STATE = {
     status: STATUSES.NOT_STARTED,
 };
 
+export function updateDisruptionWithFetchData(fetchedDisruption, disruption, updateDisruptionState) {
+    if (fetchedDisruption == null) return;
+
+    // Moving shapeWkt over to fetchedDisruption: Somehow, the caller of <EditEffectpanel> have appended shapeWkt. Reusing that.
+    const shapeWktMap = new Map(
+        disruption.affectedEntities.affectedRoutes.map(route => [route.routeId, route.shapeWkt]),
+    );
+    const newAffectedRoutes = fetchedDisruption.affectedEntities.map((entity) => {
+        const shapeWkt = shapeWktMap.get(entity.routeId);
+        return {
+            ...entity,
+            shapeWkt,
+        };
+    });
+
+    // Set the new disruption with updated affectedEntities
+    updateDisruptionState({
+        ...disruption,
+        affectedEntities: {
+            ...disruption.affectedEntities,
+            affectedRoutes: newAffectedRoutes,
+        },
+    });
+}
+
 export const EditEffectPanel = (props, ref) => {
     const { disruptions, disruptionIncidentNoToEdit, disruptionRecurrent, modalOpenedTime, incidentEndDate } = props;
     const [disruption, setDisruption] = useState({ ...INIT_EFFECT_STATE });
@@ -157,8 +180,10 @@ export const EditEffectPanel = (props, ref) => {
 
     const [isDiversionMenuOpen, setIsDiversionMenuOpen] = useState(false);
     const [isViewDiversionsModalOpen, setIsViewDiversionsModalOpen] = useState(false);
+    const [fetchedDisruption, setFetchedDisruption] = useState(null);
     const [isLoadingDisruption, setIsLoadingDisruption] = useState(false);
     const [localDiversions, setLocalDiversions] = useState([]);
+    const [shouldRefetchDiversions, setShouldRefetchDiversions] = useState(false);
     const [isLoaderProtected, setIsLoaderProtected] = useState(false);
     const isMounted = useRef(true);
     const [totalEntities, setTotalEntities] = useState(0);
@@ -166,7 +191,6 @@ export const EditEffectPanel = (props, ref) => {
     const maxActivePeriodsCount = 100;
 
     const initDisruptionData = () => {
-        console.log('Init disruption data called in EditEffectPanel...', disruptions);
         const foundDisruption = disruptions.find(d => d.incidentNo === disruptionIncidentNoToEdit);
         if (!foundDisruption) return;
 
@@ -174,6 +198,11 @@ export const EditEffectPanel = (props, ref) => {
 
         if (disruptionRecurrent && isEmpty(disruptionToSet.endDate) && incidentEndDate) {
             disruptionToSet.endDate = incidentEndDate;
+
+            disruptionToSet.recurrencePattern = {
+                ...parseRecurrencePattern(foundDisruption.recurrencePattern),
+                ...getRecurrenceDates(foundDisruption.startDate, foundDisruption.startTime, incidentEndDate),
+            };
         }
 
         setDisruption(disruptionToSet);
@@ -186,10 +215,8 @@ export const EditEffectPanel = (props, ref) => {
 
     useEffect(() => {
         if (disruptionIncidentNoToEdit && disruptions && disruptions.length > 0) {
-            console.log('Initializing disruption data for EditEffectPanel...');
             initDisruptionData();
         } else {
-            console.log('No disruptionIncidentNoToEdit or disruptions data is empty, resetting disruption state.', disruptionIncidentNoToEdit);
             setDisruption({ ...INIT_EFFECT_STATE });
         }
     }, []);
@@ -370,13 +397,6 @@ export const EditEffectPanel = (props, ref) => {
         props.setRequireToUpdateWorkaroundsState(true);
     };
 
-    const { fetchedDisruption, setFetchedDisruption, shouldRefetchDiversions, setShouldRefetchDiversions } = useDiversionDisruptionRefetcher({
-        setIsLoadingDisruption,
-        disruption,
-        isDiversionManagerOpen: props.isDiversionManagerOpen,
-        updateDisruptionState,
-    });
-
     const onAffectedEntitiesUpdate = (disruptionKey, valueKey, affectedEntities) => {
         const updatedDisruptions = {
             ...disruption,
@@ -386,14 +406,8 @@ export const EditEffectPanel = (props, ref) => {
             },
         };
         updateDisruptionState(updatedDisruptions);
-
-        if (props.onDisruptionsUpdate && props.disruptions) {
-            const updatedDisruptionsList = props.disruptions.map(d => (
-                d.incidentNo === disruption.incidentNo ? updatedDisruptions : d
-            ));
-            props.onDisruptionsUpdate('disruptions', updatedDisruptionsList);
-        }
     };
+
     const resetAffectedEntities = () => {
         setDisruption((prev) => {
             const updatedDisruption = {
@@ -854,6 +868,25 @@ export const EditEffectPanel = (props, ref) => {
     }, [isDiversionMenuOpen]);
 
     useEffect(() => {
+        const fetchDisruptionForDiversion = async () => {
+            if (shouldRefetchDiversions || (props.isDiversionManagerOpen && disruption?.disruptionId && !fetchedDisruption)) {
+                setShouldRefetchDiversions(false);
+                setIsLoadingDisruption(true);
+                const disruptionData = await getDisruptionAPI(disruption.disruptionId);
+                setFetchedDisruption(disruptionData);
+                setIsLoadingDisruption(false);
+            }
+        };
+
+        fetchDisruptionForDiversion();
+    }, [props.isDiversionManagerOpen, disruption?.disruptionId, fetchedDisruption, shouldRefetchDiversions]);
+
+    // When disruption is refreshed from API (usually via diversion modal), we need to update local states with these updates
+    useEffect(() => {
+        updateDisruptionWithFetchData(fetchedDisruption, disruption, updateDisruptionState);
+    }, [fetchedDisruption]);
+
+    useEffect(() => {
         if (props.isDiversionManagerOpen) {
             setIsLoaderProtected(true);
         } else {
@@ -882,7 +915,6 @@ export const EditEffectPanel = (props, ref) => {
         }
     }, [props.isDiversionManagerOpen, disruption?.disruptionId]);
 
-    // TODO: Do we still need this???
     useEffect(() => {
         const fetchDiversions = async () => {
             if (!disruption?.disruptionId) {
@@ -1444,7 +1476,6 @@ EditEffectPanel.propTypes = {
     mapDrawingEntities: PropTypes.array.isRequired,
     onDisruptionChange: PropTypes.func,
     clearMapDrawingEntities: PropTypes.func.isRequired,
-    onDisruptionsUpdate: PropTypes.func,
     incidentDateRange: PropTypes.object.isRequired,
     updateStartDateTimeWillBeUpdated: PropTypes.func.isRequired,
     updateEndDateTimeWillBeUpdated: PropTypes.func.isRequired,
@@ -1463,7 +1494,6 @@ EditEffectPanel.defaultProps = {
     isDiversionManagerLoading: false,
     isDiversionManagerReady: false,
     onDisruptionChange: () => {},
-    onDisruptionsUpdate: () => {},
 };
 
 export default connect(state => ({
