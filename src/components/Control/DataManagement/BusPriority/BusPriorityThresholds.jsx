@@ -130,7 +130,7 @@ export const BusPriorityThresholdDataGrid = (props) => {
             headerName: LABEL_SITEID,
             width: 100,
             type: 'number',
-            valueFormatter: params => {
+            valueFormatter: (params) => {
                 const v = params.value;
                 return (v === undefined || v === null || v === '') ? '' : String(v);
             },
