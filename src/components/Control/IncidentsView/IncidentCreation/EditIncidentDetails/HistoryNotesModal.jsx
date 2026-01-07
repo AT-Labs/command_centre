@@ -1,88 +1,17 @@
-import { Table, Button, Input } from 'reactstrap';
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import { Table, Button } from 'reactstrap';
+import React from 'react';
 import { connect } from 'react-redux';
-import { BsPencilSquare } from 'react-icons/bs';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import { IconButton } from '@mui/material';
+import PropTypes from 'prop-types';
 import { formatCreatedUpdatedTime } from '../../../../../utils/control/disruptions';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
-import { DESCRIPTION_NOTE_MAX_LENGTH } from '../../../../../constants/disruptions';
-import { useEditDisruptionNotes } from '../../../../../redux/selectors/appSettings';
 import './HistoryNotesModal.scss';
 
 const HistoryNotesModal = (props) => {
-    const [editingNoteId, setEditingNoteId] = useState(null);
-    const [editedDescription, setEditedDescription] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
-
-    useEffect(() => {
-        if (!props.isModalOpen) {
-            setEditingNoteId(null);
-            setEditedDescription('');
-            setIsSaving(false);
-        }
-    }, [props.isModalOpen]);
-
-    const handleEditClick = (note) => {
-        if (editingNoteId !== null) {
-            return;
-        }
-        setEditingNoteId(note.id);
-        setEditedDescription(note.description);
-    };
-
-    const handleCancel = () => {
-        setEditingNoteId(null);
-        setEditedDescription('');
-    };
-
-    const handleSave = async () => {
-        if (!editedDescription.trim() || isSaving) {
-            return;
-        }
-
-        setIsSaving(true);
-        try {
-            const notes = props.disruption.notes || [];
-
-            const updatedNotes = notes
-                .map((note) => {
-                    if (note.id === editingNoteId) {
-                        return {
-                            id: note.id,
-                            description: editedDescription.trim(),
-                        };
-                    }
-                    return {
-                        ...(note.id && { id: note.id }),
-                        description: note.description,
-                    };
-                })
-                .filter(note => note.description);
-
-            if (props.onNoteUpdate) {
-                await props.onNoteUpdate({
-                    ...props.disruption,
-                    notes: updatedNotes,
-                    affectedEntities: props.disruption.affectedEntities || { affectedRoutes: [], affectedStops: [] },
-                });
-            }
-
-            setEditingNoteId(null);
-            setEditedDescription('');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
     const generateModalFooter = () => (
         <Button onClick={ () => props.onClose() } className="cc-btn-primary">
             Close
         </Button>
     );
-
     return (
         <CustomModal
             className="cc-modal-standard-width disruption-summary notes-history-modal"
@@ -98,7 +27,6 @@ const HistoryNotesModal = (props) => {
                             <th className="notes-table-header">Last updated time</th>
                             <th className="notes-table-header">Last updated by</th>
                             <th className="notes-table-header-notes">Notes</th>
-                            {props.useEditDisruptionNotes && <th className="notes-table-header-actions" />}
                         </tr>
                     </thead>
                     <tbody className="notes-history-body">
@@ -111,55 +39,8 @@ const HistoryNotesModal = (props) => {
                                     {note.lastUpdatedBy ?? note.createdBy}
                                 </td>
                                 <td className="notes-table-cell">
-                                    {props.useEditDisruptionNotes && editingNoteId === note.id ? (
-                                        <Input
-                                            type="textarea"
-                                            value={ editedDescription }
-                                            onChange={ e => setEditedDescription(e.target.value) }
-                                            maxLength={ DESCRIPTION_NOTE_MAX_LENGTH }
-                                            rows={ 4 }
-                                            className="notes-edit-textarea"
-                                            style={ { resize: 'both', minHeight: '80px', maxHeight: '300px', minWidth: '80px', maxWidth: '350px', overflowY: 'auto' } }
-                                        />
-                                    ) : (
-                                        <div className="notes-description">{note.description}</div>
-                                    )}
+                                    {note.description}
                                 </td>
-                                {props.useEditDisruptionNotes && (
-                                    <td className="notes-table-cell notes-actions-cell">
-                                        {editingNoteId === note.id ? (
-                                            <div className="notes-edit-actions">
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={ handleSave }
-                                                    disabled={ isSaving || !editedDescription.trim() || editedDescription === note.description }
-                                                    color="primary"
-                                                    title="Save changes"
-                                                >
-                                                    <CheckIcon />
-                                                </IconButton>
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={ handleCancel }
-                                                    disabled={ isSaving }
-                                                    color="secondary"
-                                                    title="Cancel"
-                                                >
-                                                    <CloseIcon />
-                                                </IconButton>
-                                            </div>
-                                        ) : (
-                                            <IconButton
-                                                size="medium"
-                                                onClick={ () => handleEditClick(note) }
-                                                disabled={ editingNoteId !== null }
-                                                title="Edit note"
-                                            >
-                                                <BsPencilSquare />
-                                            </IconButton>
-                                        )}
-                                    </td>
-                                )}
                             </tr>
                         ))}
                     </tbody>
@@ -177,14 +58,6 @@ HistoryNotesModal.propTypes = {
     isModalOpen: PropTypes.bool.isRequired,
     disruption: PropTypes.object.isRequired,
     onClose: PropTypes.func.isRequired,
-    onNoteUpdate: PropTypes.func,
-    useEditDisruptionNotes: PropTypes.bool.isRequired,
 };
 
-HistoryNotesModal.defaultProps = {
-    onNoteUpdate: undefined,
-};
-
-export default connect(state => ({
-    useEditDisruptionNotes: useEditDisruptionNotes(state),
-}))(HistoryNotesModal);
+export default connect()(HistoryNotesModal);
