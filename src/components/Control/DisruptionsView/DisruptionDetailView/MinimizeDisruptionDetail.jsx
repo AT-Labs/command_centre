@@ -399,6 +399,7 @@ MinimizeDisruptionDetail.propTypes = {
     useDraftDisruptions: PropTypes.bool,
     useParentChildIncident: PropTypes.bool,
     useDisruptionNotePopup: PropTypes.bool,
+    useEditDisruptionNotes: PropTypes.bool,
 };
 
 MinimizeDisruptionDetail.defaultProps = {

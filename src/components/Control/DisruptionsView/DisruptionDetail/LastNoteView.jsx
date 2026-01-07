@@ -6,7 +6,7 @@ import { formatCreatedUpdatedTime } from '../../../../utils/control/disruptions'
 import { useEditDisruptionNotes } from '../../../../redux/selectors/appSettings';
 
 const LastNoteView = (props) => {
-    const { note, label, id, useEditDisruptionNotes } = props;
+    const { note, label, id } = props;
     return (
         <div className="row">
             <div className="col-3">
@@ -15,10 +15,10 @@ const LastNoteView = (props) => {
             <div className="col-9 text-right">
                 {note && (
                     <>
-                        <span>{(useEditDisruptionNotes && note.lastUpdatedBy) || note.createdBy}</span>
+                        <span>{(props.useEditDisruptionNotes && note.lastUpdatedBy) || note.createdBy}</span>
                         ,
                         {' '}
-                        {formatCreatedUpdatedTime((useEditDisruptionNotes && note.lastUpdatedTime) || note.createdTime)}
+                        {formatCreatedUpdatedTime((props.useEditDisruptionNotes && note.lastUpdatedTime) || note.createdTime)}
                         ,
                         {' '}
                         {note.description}

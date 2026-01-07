@@ -198,6 +198,11 @@ export const EditEffectPanel = (props, ref) => {
 
         if (disruptionRecurrent && isEmpty(disruptionToSet.endDate) && incidentEndDate) {
             disruptionToSet.endDate = incidentEndDate;
+
+            disruptionToSet.recurrencePattern = {
+                ...parseRecurrencePattern(foundDisruption.recurrencePattern),
+                ...getRecurrenceDates(foundDisruption.startDate, foundDisruption.startTime, incidentEndDate),
+            };
         }
 
         setDisruption(disruptionToSet);
@@ -401,13 +406,6 @@ export const EditEffectPanel = (props, ref) => {
             },
         };
         updateDisruptionState(updatedDisruptions);
-
-        if (props.onDisruptionsUpdate && props.disruptions) {
-            const updatedDisruptionsList = props.disruptions.map(d => (
-                d.incidentNo === disruption.incidentNo ? updatedDisruptions : d
-            ));
-            props.onDisruptionsUpdate('disruptions', updatedDisruptionsList);
-        }
     };
 
     const resetAffectedEntities = () => {
@@ -1354,10 +1352,10 @@ export const EditEffectPanel = (props, ref) => {
                                     <div className="col-12 last-note-grid">
                                         <span className="font-size-md font-weight-bold last-note-label">Last note</span>
                                         <span className="pl-2 last-note-info">
-                                            {lastNote.lastUpdatedBy ?? lastNote.createdBy}
+                                            {(props.useEditDisruptionNotes && lastNote.lastUpdatedBy) || lastNote.createdBy}
                                             {', '}
                                             {formatCreatedUpdatedTime(
-                                                lastNote.lastUpdatedTime ?? lastNote.createdTime,
+                                                (props.useEditDisruptionNotes && lastNote.lastUpdatedTime) || lastNote.createdTime,
                                             )}
                                         </span>
                                         <span className="pl-2 last-note-description pt-2">
@@ -1424,7 +1422,7 @@ export const EditEffectPanel = (props, ref) => {
                 disruption={ disruption }
                 isModalOpen={ historyNotesModalOpen }
                 onClose={ () => setHistoryNotesModalOpen(false) }
-                onNoteUpdate={ props.useEditDisruptionNotes ? onNoteUpdate : undefined } />
+                onNoteUpdate={ onNoteUpdate } />
             <AddNoteModal
                 disruption={ disruption }
                 isModalOpen={ noteModalOpen }
@@ -1507,6 +1505,7 @@ EditEffectPanel.propTypes = {
     updateIsEffectUpdatedState: PropTypes.func.isRequired,
     useDisruptionNotePopup: PropTypes.bool,
     useDiversion: PropTypes.bool,
+    useEditDisruptionNotes: PropTypes.bool,
     openDiversionManager: PropTypes.func.isRequired,
     updateDiversionMode: PropTypes.func.isRequired,
     updateDiversionToEdit: PropTypes.func.isRequired,
@@ -1517,7 +1516,6 @@ EditEffectPanel.propTypes = {
     mapDrawingEntities: PropTypes.array.isRequired,
     onDisruptionChange: PropTypes.func,
     clearMapDrawingEntities: PropTypes.func.isRequired,
-    onDisruptionsUpdate: PropTypes.func,
     incidentDateRange: PropTypes.object.isRequired,
     updateStartDateTimeWillBeUpdated: PropTypes.func.isRequired,
     updateEndDateTimeWillBeUpdated: PropTypes.func.isRequired,
@@ -1536,7 +1534,6 @@ EditEffectPanel.defaultProps = {
     isDiversionManagerLoading: false,
     isDiversionManagerReady: false,
     onDisruptionChange: () => {},
-    onDisruptionsUpdate: () => {},
 };
 
 export default connect(state => ({

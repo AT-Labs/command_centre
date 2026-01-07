@@ -141,6 +141,7 @@ DisruptionSummaryModal.propTypes = {
     onClose: PropTypes.func.isRequired,
     useDraftDisruptions: PropTypes.bool.isRequired,
     useDisruptionDraftEmailSharing: PropTypes.bool.isRequired,
+    useEditDisruptionNotes: PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({

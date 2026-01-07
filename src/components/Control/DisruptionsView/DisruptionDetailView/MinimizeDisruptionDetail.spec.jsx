@@ -336,13 +336,13 @@ describe('MinimizeDisruptionDetail', () => {
                 ],
             };
 
-            const { container } = renderWithStore({
+            renderWithStore({
                 disruption,
                 updateDisruption,
                 useParentChildIncident: true,
             });
 
-            const historyIcon = container.querySelector('[title="View Notes History"]');
+            const historyIcon = await screen.findByTitle('View Notes History');
             fireEvent.click(historyIcon);
 
             await waitFor(() => {
@@ -368,22 +368,6 @@ describe('MinimizeDisruptionDetail', () => {
             expect(callArgs.notes.find(n => n.id === 'note-1').description).toBe('Note 1');
         });
 
-        it('Should render HistoryNotesModal when useParentChildIncident is true and lastNote exists', () => {
-            const disruption = {
-                ...disruptionMock,
-                notes: [
-                    { id: 'note-1', description: 'Last note', createdTime: '2025-05-27T08:00:00Z' },
-                ],
-            };
-
-            const { container } = renderWithStore({
-                disruption,
-                useParentChildIncident: true,
-            });
-
-            const historyIcon = container.querySelector('[title="View Notes History"]');
-            expect(historyIcon).toBeInTheDocument();
-        });
 
         it('Should open HistoryNotesModal when history icon is clicked', async () => {
             const disruption = {
@@ -393,12 +377,12 @@ describe('MinimizeDisruptionDetail', () => {
                 ],
             };
 
-            const { container } = renderWithStore({
+            renderWithStore({
                 disruption,
                 useParentChildIncident: true,
             });
 
-            const historyIcon = container.querySelector('[title="View Notes History"]');
+            const historyIcon = await screen.findByTitle('View Notes History');
             fireEvent.click(historyIcon);
 
             await waitFor(() => {
@@ -415,13 +399,13 @@ describe('MinimizeDisruptionDetail', () => {
                 ],
             };
 
-            const { container } = renderWithStore({
+            renderWithStore({
                 disruption,
                 updateDisruption,
                 useParentChildIncident: true,
             });
 
-            const historyIcon = container.querySelector('[title="View Notes History"]');
+            const historyIcon = await screen.findByTitle('View Notes History');
             fireEvent.click(historyIcon);
 
             await waitFor(() => {

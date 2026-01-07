@@ -128,6 +128,7 @@ DisruptionSummaryModal.propTypes = {
     useDisruptionEmailFormat: PropTypes.bool.isRequired,
     useDraftDisruptions: PropTypes.bool.isRequired,
     useDisruptionDraftEmailSharing: PropTypes.bool.isRequired,
+    useEditDisruptionNotes: PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({
