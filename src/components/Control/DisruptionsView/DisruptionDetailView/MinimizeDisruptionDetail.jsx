@@ -5,11 +5,10 @@ import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
 import { toString, omit, isEmpty, uniqBy, uniqWith } from 'lodash-es';
 import moment from 'moment';
 import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
-import HistoryIcon from '@mui/icons-material/History';
 import Message from '../../Common/Message/Message';
 import { SEVERITIES, STATUSES } from '../../../../types/disruptions-types';
 import { useAlertCauses, useAlertEffects } from '../../../../utils/control/alert-cause-effect';
-import { useDisruptionNotePopup, useDraftDisruptions, useParentChildIncident, useEditDisruptionNotes } from '../../../../redux/selectors/appSettings';
+import { useDisruptionNotePopup, useDraftDisruptions, useParentChildIncident } from '../../../../redux/selectors/appSettings';
 import {
     LABEL_CAUSE,
     LABEL_CREATED_BY,
@@ -59,7 +58,6 @@ import { fetchEndDateFromRecurrence } from '../../../../utils/recurrence';
 import '../DisruptionDetail/styles.scss';
 import '../../IncidentsView/style.scss';
 import AddNoteModal from '../../IncidentsView/IncidentCreation/EditIncidentDetails/AddNoteModal';
-import HistoryNotesModal from '../../IncidentsView/IncidentCreation/EditIncidentDetails/HistoryNotesModal';
 
 export const MinimizeDisruptionDetail = (props) => {
     const { disruption, isRequesting, resultDisruptionId, resultStatus, resultMessage } = props;
@@ -81,7 +79,6 @@ export const MinimizeDisruptionDetail = (props) => {
     const [descriptionNote, setDescriptionNote] = useState('');
     const [lastNote, setLastNote] = useState();
     const [noteModalOpen, setNoteModalOpen] = useState(false);
-    const [historyNotesModalOpen, setHistoryNotesModalOpen] = useState(false);
 
     const haveRoutesOrStopsChanged = (affectedRoutes, affectedStops) => {
         const uniqRoutes = uniqWith([...affectedRoutes, ...props.routes], (routeA, routeB) => routeA.routeId === routeB.routeId && routeA.stopCode === routeB.stopCode);
@@ -143,27 +140,6 @@ export const MinimizeDisruptionDetail = (props) => {
             setLastNote(disruptionNotes[disruptionNotes.length - 1]);
         }
     }, [lastUpdatedTime, lastNote]);
-
-    const onNoteUpdate = async (updatedDisruption) => {
-        const updatedNotes = updatedDisruption.notes || disruption.notes || [];
-        const formattedNotes = Array.isArray(updatedNotes)
-            ? updatedNotes
-                .filter(note => note?.description)
-                .map(note => ({
-                    ...(note.id && { id: note.id }),
-                    description: note.description,
-                }))
-            : [];
-
-        const disruptionToUpdate = {
-            ...disruption,
-            ...updatedDisruption,
-            notes: formattedNotes,
-            startTime: momentFromDateTime(fetchStartDate(), disruption.startTime ? moment(disruption.startTime).format(TIME_FORMAT) : ''),
-            endTime: momentFromDateTime(fetchEndDate(), disruption.endTime ? moment(disruption.endTime).format(TIME_FORMAT) : ''),
-        };
-        await props.updateDisruption(disruptionToUpdate);
-    };
 
     const handleUpdateDisruption = () => props.updateDisruption(setDisruption());
 
@@ -302,20 +278,9 @@ export const MinimizeDisruptionDetail = (props) => {
             </div>
             <div className="row">
                 <div className="col-5 disruption-detail__contributors">
-                    <div className="d-flex align-items-start">
-                        <div style={ { flex: 1, minWidth: 0 } }>
-                            <LastNoteView label={ LABEL_LAST_NOTE } note={ lastNote } id="disruption-detail__last-note-view" />
-                            <DisruptionLabelAndText id="disruption-detail__created-by" label={ LABEL_CREATED_BY } text={ `${createdBy}, ${formatCreatedUpdatedTime(createdTime)}` } />
-                            <DisruptionLabelAndText id="disruption-detail__last-updated" label={ LABEL_LAST_UPDATED_BY } text={ `${lastUpdatedBy}, ${formatCreatedUpdatedTime(lastUpdatedTime)}` } />
-                        </div>
-                        {props.useEditDisruptionNotes && lastNote && (
-                            <HistoryIcon
-                                style={ { color: '#399CDB', cursor: 'pointer', marginLeft: '8px', flexShrink: 0, marginTop: '4px' } }
-                                onClick={ () => setHistoryNotesModalOpen(true) }
-                                title="View Notes History"
-                            />
-                        )}
-                    </div>
+                    <LastNoteView label={ LABEL_LAST_NOTE } note={ lastNote } id="disruption-detail__last-note-view" />
+                    <DisruptionLabelAndText id="disruption-detail__created-by" label={ LABEL_CREATED_BY } text={ `${createdBy}, ${formatCreatedUpdatedTime(createdTime)}` } />
+                    <DisruptionLabelAndText id="disruption-detail__last-updated" label={ LABEL_LAST_UPDATED_BY } text={ `${lastUpdatedBy}, ${formatCreatedUpdatedTime(lastUpdatedTime)}` } />
                 </div>
                 <div className="col-7">
                     <FormGroup className="pl-0 h-100 d-flex align-items-end justify-content-end">
@@ -353,13 +318,6 @@ export const MinimizeDisruptionDetail = (props) => {
                 onClose={ note => handleAddNoteModalClose(note) }
                 onSubmit={ note => handleAddNoteModalSubmit(note) }
             />
-            {props.useEditDisruptionNotes && (
-                <HistoryNotesModal
-                    disruption={ disruption }
-                    isModalOpen={ historyNotesModalOpen }
-                    onClose={ () => setHistoryNotesModalOpen(false) }
-                    onNoteUpdate={ onNoteUpdate } />
-            )}
             <ConfirmationModal
                 title={ activeConfirmationModalProps.title }
                 message={ activeConfirmationModalProps.message }
@@ -399,7 +357,6 @@ MinimizeDisruptionDetail.propTypes = {
     useDraftDisruptions: PropTypes.bool,
     useParentChildIncident: PropTypes.bool,
     useDisruptionNotePopup: PropTypes.bool,
-    useEditDisruptionNotes: PropTypes.bool,
 };
 
 MinimizeDisruptionDetail.defaultProps = {
@@ -415,7 +372,6 @@ MinimizeDisruptionDetail.defaultProps = {
     useDraftDisruptions: false,
     useParentChildIncident: false,
     useDisruptionNotePopup: false,
-    useEditDisruptionNotes: false,
 };
 
 export default connect(state => ({
@@ -429,7 +385,6 @@ export default connect(state => ({
     useDraftDisruptions: useDraftDisruptions(state),
     useParentChildIncident: useParentChildIncident(state),
     useDisruptionNotePopup: useDisruptionNotePopup(state),
-    useEditDisruptionNotes: useEditDisruptionNotes(state),
 }), {
     getRoutesByShortName,
     openCreateDisruption,

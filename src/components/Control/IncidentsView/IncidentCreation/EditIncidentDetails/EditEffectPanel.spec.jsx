@@ -245,7 +245,6 @@ describe('Confirmation Component', () => {
             appSettings: {
                 useParentChildIncident: 'true',
                 useDiversion: 'true',
-                useEditDisruptionNotes: 'true',
             },
             search: {
                 isLoading: false,

@@ -123,7 +123,6 @@ describe('DisruptionSummaryModal Component', () => {
                 useDisruptionEmailFormat: 'true',
                 useDraftDisruptions: 'true',
                 useDisruptionDraftEmailSharing: 'true',
-                useEditDisruptionNotes: 'true',
             },
         });
     });

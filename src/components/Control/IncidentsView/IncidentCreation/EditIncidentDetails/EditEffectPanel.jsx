@@ -97,7 +97,7 @@ import CancellationEffectModal from './CancellationEffectModal';
 import CustomModal from '../../../../Common/CustomModal/CustomModal';
 import './EditEffectPanel.scss';
 import AddNoteModal from './AddNoteModal';
-import { useDisruptionNotePopup, useDiversion, useEditDisruptionNotes } from '../../../../../redux/selectors/appSettings';
+import { useDisruptionNotePopup, useDiversion } from '../../../../../redux/selectors/appSettings';
 import { getIsDiversionManagerOpen, getIsDiversionManagerLoading, getIsDiversionManagerReady } from '../../../../../redux/selectors/control/diversions';
 import { ViewDiversionDetailModal } from '../../../DisruptionsView/DisruptionDetail/ViewDiversionDetailModal';
 import { openDiversionManager, updateDiversionMode, updateDiversionToEdit } from '../../../../../redux/actions/control/diversions';
@@ -229,7 +229,7 @@ export const EditEffectPanel = (props, ref) => {
         if (props.disruptions && disruptionIncidentNoToEdit && !props.isNotesRequiresToUpdate) {
             initDisruptionData();
         }
-    }, [props.disruptions, props.isNotesRequiresToUpdate]);
+    }, [props.disruptions]);
 
     useEffect(() => {
         if (Array.isArray(props.mapDrawingEntities) && props.mapDrawingEntities.length > 0) {
@@ -579,39 +579,6 @@ export const EditEffectPanel = (props, ref) => {
         };
         props.updateDisruptionAction(updatedDisruption);
         updateDisruption({ note: '' });
-    };
-
-    const onNoteUpdate = async (updatedDisruption) => {
-        const notes = updatedDisruption.notes ?? originalDisruption.notes ?? [];
-        const formattedNotes = notes
-            .filter(note => note?.description)
-            .map(note => ({
-                ...(note.id && { id: note.id }),
-                description: note.description,
-            }));
-
-        const startDate = originalDisruption.startDate ?? moment(originalDisruption.startTime).format(DATE_FORMAT);
-        const startTimeMoment = momentFromDateTime(startDate, originalDisruption.startTime);
-
-        let endTimeMoment;
-        if (!isEmpty(originalDisruption.endDate) && !isEmpty(originalDisruption.endTime)) {
-            endTimeMoment = momentFromDateTime(originalDisruption.endDate, originalDisruption.endTime);
-        }
-
-        const affectedEntities = [...originalDisruption.affectedEntities.affectedRoutes,
-            ...originalDisruption.affectedEntities.affectedStops]
-            .map(entity => omit(entity, ['shapeWkt']));
-        const affectedEntitiesArray = [...affectedEntities];
-
-        const disruptionToUpdate = {
-            ...originalDisruption,
-            notes: formattedNotes,
-            startTime: startTimeMoment,
-            endTime: endTimeMoment,
-            affectedEntities: affectedEntitiesArray,
-        };
-
-        await props.updateDisruptionAction(disruptionToUpdate);
     };
 
     const validateEntityLimit = () => {
@@ -1346,24 +1313,19 @@ export const EditEffectPanel = (props, ref) => {
                                     </div>
                                 </FormGroup>
                             </div>
-                            { disruption.notes.length > 0 && (() => {
-                                const lastNote = disruption.notes.at(-1);
-                                return (
-                                    <div className="col-12 last-note-grid">
-                                        <span className="font-size-md font-weight-bold last-note-label">Last note</span>
-                                        <span className="pl-2 last-note-info">
-                                            {(props.useEditDisruptionNotes && lastNote.lastUpdatedBy) || lastNote.createdBy}
-                                            {', '}
-                                            {formatCreatedUpdatedTime(
-                                                (props.useEditDisruptionNotes && lastNote.lastUpdatedTime) || lastNote.createdTime,
-                                            )}
-                                        </span>
-                                        <span className="pl-2 last-note-description pt-2">
-                                            {lastNote.description}
-                                        </span>
-                                    </div>
-                                );
-                            })()}
+                            { disruption.notes.length > 0 && (
+                                <div className="col-12 last-note-grid">
+                                    <span className="font-size-md font-weight-bold last-note-label">Last note</span>
+                                    <span className="pl-2 last-note-info">
+                                        {disruption.notes[disruption.notes.length - 1].createdBy}
+                                        {', '}
+                                        {formatCreatedUpdatedTime(disruption.notes[disruption.notes.length - 1].createdTime)}
+                                    </span>
+                                    <span className="pl-2 last-note-description pt-2">
+                                        {disruption.notes[disruption.notes.length - 1].description}
+                                    </span>
+                                </div>
+                            )}
                             <div className="col-12">
                                 <FormGroup className="disruption-creation__checkbox">
                                     <Input
@@ -1421,8 +1383,7 @@ export const EditEffectPanel = (props, ref) => {
             <HistoryNotesModal
                 disruption={ disruption }
                 isModalOpen={ historyNotesModalOpen }
-                onClose={ () => setHistoryNotesModalOpen(false) }
-                onNoteUpdate={ onNoteUpdate } />
+                onClose={ () => setHistoryNotesModalOpen(false) } />
             <AddNoteModal
                 disruption={ disruption }
                 isModalOpen={ noteModalOpen }
@@ -1505,7 +1466,6 @@ EditEffectPanel.propTypes = {
     updateIsEffectUpdatedState: PropTypes.func.isRequired,
     useDisruptionNotePopup: PropTypes.bool,
     useDiversion: PropTypes.bool,
-    useEditDisruptionNotes: PropTypes.bool,
     openDiversionManager: PropTypes.func.isRequired,
     updateDiversionMode: PropTypes.func.isRequired,
     updateDiversionToEdit: PropTypes.func.isRequired,
@@ -1530,7 +1490,6 @@ EditEffectPanel.defaultProps = {
     isCancellationEffectOpen: false,
     useDisruptionNotePopup: false,
     useDiversion: false,
-    useEditDisruptionNotes: false,
     isDiversionManagerOpen: false,
     isDiversionManagerLoading: false,
     isDiversionManagerReady: false,
@@ -1546,7 +1505,6 @@ export default connect(state => ({
     isCancellationEffectOpen: isCancellationEffectModalOpen(state),
     useDisruptionNotePopup: useDisruptionNotePopup(state),
     useDiversion: useDiversion(state),
-    useEditDisruptionNotes: useEditDisruptionNotes(state),
     isDiversionManagerOpen: getIsDiversionManagerOpen(state),
     isDiversionManagerLoading: getIsDiversionManagerLoading(state),
     isDiversionManagerReady: getIsDiversionManagerReady(state),

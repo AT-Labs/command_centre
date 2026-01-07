@@ -1,16 +1,10 @@
 import React from 'react';
 import { expect } from 'chai';
-import { mount } from 'enzyme';
-import { Provider } from 'react-redux';
-import configureStore from 'redux-mock-store';
-import thunk from 'redux-thunk';
+import { shallow } from 'enzyme';
 
 import { LastNoteView } from './LastNoteView';
 
-const mockStore = configureStore([thunk]);
-
 let wrapper;
-let store;
 
 const mockProps = {
     id: 'note-1',
@@ -24,17 +18,9 @@ const mockProps = {
 };
 
 const setup = (customProps) => {
-    const props = { ...mockProps, ...customProps };
-    store = mockStore({
-        appSettings: {
-            useEditDisruptionNotes: 'true',
-        },
-    });
-    return mount(
-        <Provider store={ store }>
-            <LastNoteView { ...props } />
-        </Provider>,
-    );
+    const props = mockProps;
+    Object.assign(props, customProps);
+    return shallow(<LastNoteView { ...props } />);
 };
 
 describe('<LastNoteView />', () => {
