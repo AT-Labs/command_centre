@@ -1,6 +1,6 @@
 import React from 'react';
 import { expect } from 'chai';
-import { shallow } from 'enzyme';
+import { mount } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
@@ -30,11 +30,11 @@ const setup = (customProps) => {
             useEditDisruptionNotes: 'true',
         },
     });
-    return shallow(
+    return mount(
         <Provider store={ store }>
             <LastNoteView { ...props } />
         </Provider>,
-    ).dive().dive();
+    );
 };
 
 describe('<LastNoteView />', () => {

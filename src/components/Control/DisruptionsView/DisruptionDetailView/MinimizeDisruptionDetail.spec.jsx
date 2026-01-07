@@ -113,12 +113,12 @@ const renderWithStore = (props = {}) => {
                         affectedStops: [],
                     },
                 },
-                appSettings: {
-                    useViewDisruptionDetailsPage: true,
-                    useDisruptionDetails: true,
-                    useEditDisruptionNotes: 'true',
-                },
             },
+        appSettings: {
+            useViewDisruptionDetailsPage: 'true',
+            useDisruptionDetails: 'true',
+            useEditDisruptionNotes: 'true',
+        },
     });
     return render(
         <Provider store={ store }>
@@ -342,7 +342,12 @@ describe('MinimizeDisruptionDetail', () => {
                 useParentChildIncident: true,
             });
 
-            const historyIcon = await screen.findByTitle('View Notes History');
+            await waitFor(() => {
+                const historyIcon = screen.queryByTitle('View Notes History');
+                expect(historyIcon).toBeInTheDocument();
+            });
+
+            const historyIcon = screen.getByTitle('View Notes History');
             fireEvent.click(historyIcon);
 
             await waitFor(() => {
@@ -368,7 +373,6 @@ describe('MinimizeDisruptionDetail', () => {
             expect(callArgs.notes.find(n => n.id === 'note-1').description).toBe('Note 1');
         });
 
-
         it('Should open HistoryNotesModal when history icon is clicked', async () => {
             const disruption = {
                 ...disruptionMock,
@@ -382,7 +386,12 @@ describe('MinimizeDisruptionDetail', () => {
                 useParentChildIncident: true,
             });
 
-            const historyIcon = await screen.findByTitle('View Notes History');
+            await waitFor(() => {
+                const historyIcon = screen.queryByTitle('View Notes History');
+                expect(historyIcon).toBeInTheDocument();
+            });
+
+            const historyIcon = screen.getByTitle('View Notes History');
             fireEvent.click(historyIcon);
 
             await waitFor(() => {
@@ -405,7 +414,12 @@ describe('MinimizeDisruptionDetail', () => {
                 useParentChildIncident: true,
             });
 
-            const historyIcon = await screen.findByTitle('View Notes History');
+            await waitFor(() => {
+                const historyIcon = screen.queryByTitle('View Notes History');
+                expect(historyIcon).toBeInTheDocument();
+            });
+
+            const historyIcon = screen.getByTitle('View Notes History');
             fireEvent.click(historyIcon);
 
             await waitFor(() => {

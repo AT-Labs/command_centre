@@ -1530,6 +1530,7 @@ EditEffectPanel.defaultProps = {
     isCancellationEffectOpen: false,
     useDisruptionNotePopup: false,
     useDiversion: false,
+    useEditDisruptionNotes: false,
     isDiversionManagerOpen: false,
     isDiversionManagerLoading: false,
     isDiversionManagerReady: false,

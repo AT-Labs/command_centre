@@ -415,6 +415,7 @@ MinimizeDisruptionDetail.defaultProps = {
     useDraftDisruptions: false,
     useParentChildIncident: false,
     useDisruptionNotePopup: false,
+    useEditDisruptionNotes: false,
 };
 
 export default connect(state => ({
