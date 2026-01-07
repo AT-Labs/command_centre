@@ -29,8 +29,9 @@ export function updateDisruptionWithFetchData(fetchedDisruption, disruption, upd
     });
 }
 
-// Used when diversion is updated, we need to reload saved diversion in disruption data
-// This is because diversion code, add diversions diretly in database
+// This hook is used when diversion is updated, we need to reload saved diversion in disruption data
+// This is because diversion code, add diversions directly in database
+// We should extend this in future to hold all disruption <--> diversion related hook items here
 export function useDiversionDisruptionRefetcher({
     setIsLoadingDisruption,
     disruption,
@@ -67,15 +68,12 @@ export function useDiversionDisruptionRefetcher({
         fetchDisruptionForDiversion();
     }, [isDiversionManagerOpen, disruption.disruptionId, fetchedDisruption, shouldRefetchDiversions]);
 
-    // When disruption is refreshed from API (usually via diversion modal), we need to update local states with these updates
+    // When disruption is refreshed from API (usually via diversion modal), we need to update local states with these updates and redux store
     useEffect(() => {
         if (!fetchedDisruption) return;
 
-        // Build merged disruption with shapeWkt preserved from local state
+        // Updating local state
         updateDisruptionWithFetchData(fetchedDisruption, disruption, updateDisruptionState);
-
-        // Update local state with merged data (including shapeWkt)
-        // updateDisruptionState(mergedDisruption);
 
         // Update redux incidentToEdit with SAME merged data (not raw fetchedDisruption)
         const ammendedIncidentToUpdate = {
