@@ -2,13 +2,17 @@
  * @jest-environment jsdom
  */
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
+import moment from 'moment';
 import { MinimizeDisruptionDetail } from './MinimizeDisruptionDetail';
 import { STATUSES } from '../../../../types/disruptions-types';
+import { momentFromDateTime } from '../../../../utils/control/disruptions';
+import { fetchEndDateFromRecurrence } from '../../../../utils/recurrence';
+import { TIME_FORMAT, DATE_FORMAT } from '../../../../constants/disruptions';
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
@@ -16,6 +20,16 @@ const mockStore = configureStore(middlewares);
 jest.mock('../../../../utils/control/alert-cause-effect', () => ({
     useAlertCauses: () => [{ value: 'ACCIDENT', label: 'Accident' }],
     useAlertEffects: () => [{ value: 'SIGNIFICANT_DELAYS', label: 'Significant Delays' }],
+}));
+
+jest.mock('../../../../utils/control/disruptions', () => ({
+    ...jest.requireActual('../../../../utils/control/disruptions'),
+    momentFromDateTime: jest.fn(),
+}));
+
+jest.mock('../../../../utils/recurrence', () => ({
+    ...jest.requireActual('../../../../utils/recurrence'),
+    fetchEndDateFromRecurrence: jest.fn(),
 }));
 
 const disruptionMock = {
@@ -99,11 +113,12 @@ const renderWithStore = (props = {}) => {
                         affectedStops: [],
                     },
                 },
-                appSettings: {
-                    useViewDisruptionDetailsPage: true,
-                    useDisruptionDetails: true,
-                },
             },
+        appSettings: {
+            useViewDisruptionDetailsPage: 'true',
+            useDisruptionDetails: 'true',
+            useEditDisruptionNotes: 'true',
+        },
     });
     return render(
         <Provider store={ store }>
@@ -113,6 +128,17 @@ const renderWithStore = (props = {}) => {
 };
 
 describe('MinimizeDisruptionDetail', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        momentFromDateTime.mockImplementation((date, time) => {
+            if (date && time) {
+                return moment(`${date}T${time}:00`, `${DATE_FORMAT}T${TIME_FORMAT}:ss`);
+            }
+            return undefined;
+        });
+        fetchEndDateFromRecurrence.mockReturnValue('27/05/2025');
+    });
+
     it('renders component with basic elements', () => {
         renderWithStore();
 
@@ -297,5 +323,95 @@ describe('MinimizeDisruptionDetail', () => {
         fireEvent.change(modalTextarea, { target: { value: 'Note in modal only' } });
 
         expect(modalTextarea.value).toBe('Note in modal only');
+    });
+
+    describe('onNoteUpdate', () => {
+        it('Should format notes and call updateDisruption with updated disruption when editing note in HistoryNotesModal', async () => {
+            const updateDisruption = jest.fn().mockResolvedValue();
+            const disruption = {
+                ...disruptionMock,
+                notes: [
+                    { id: 'note-1', description: 'Note 1', createdTime: '2025-05-27T08:00:00Z', createdBy: 'user1' },
+                    { id: 'note-2', description: 'Note 2', createdTime: '2025-05-27T09:00:00Z', createdBy: 'user2' },
+                ],
+            };
+
+            const { container } = renderWithStore({
+                disruption,
+                updateDisruption,
+                useEditDisruptionNotes: true,
+            });
+
+            const historyIcon = container.querySelector('[title="View Notes History"]');
+            fireEvent.click(historyIcon);
+
+            await waitFor(() => {
+                expect(screen.getByText(/Disruption notes history/i)).toBeInTheDocument();
+            });
+
+            const editButtons = screen.getAllByTitle('Edit note');
+            fireEvent.click(editButtons[0]);
+
+            const textarea = screen.getByDisplayValue('Note 2');
+            fireEvent.change(textarea, { target: { value: 'Updated Note 2' } });
+
+            const saveButton = screen.getByTitle('Save changes');
+            fireEvent.click(saveButton);
+
+            await waitFor(() => {
+                expect(updateDisruption).toHaveBeenCalled();
+            });
+
+            const callArgs = updateDisruption.mock.calls[0][0];
+            expect(callArgs.notes).toHaveLength(2);
+            expect(callArgs.notes.find(n => n.id === 'note-2').description).toBe('Updated Note 2');
+            expect(callArgs.notes.find(n => n.id === 'note-1').description).toBe('Note 1');
+        });
+
+        it('Should open HistoryNotesModal when history icon is clicked', async () => {
+            const disruption = {
+                ...disruptionMock,
+                notes: [
+                    { id: 'note-1', description: 'Last note', createdTime: '2025-05-27T08:00:00Z' },
+                ],
+            };
+
+            const { container } = renderWithStore({
+                disruption,
+                useEditDisruptionNotes: true,
+            });
+
+            const historyIcon = container.querySelector('[title="View Notes History"]');
+            fireEvent.click(historyIcon);
+
+            await waitFor(() => {
+                expect(screen.getByText(/Disruption notes history/i)).toBeInTheDocument();
+            });
+        });
+
+        it('Should pass disruption and onNoteUpdate to HistoryNotesModal', async () => {
+            const updateDisruption = jest.fn().mockResolvedValue();
+            const disruption = {
+                ...disruptionMock,
+                notes: [
+                    { id: 'note-1', description: 'Last note', createdTime: '2025-05-27T08:00:00Z' },
+                ],
+            };
+
+            const { container } = renderWithStore({
+                disruption,
+                updateDisruption,
+                useEditDisruptionNotes: true,
+            });
+
+            const historyIcon = container.querySelector('[title="View Notes History"]');
+            fireEvent.click(historyIcon);
+
+            await waitFor(() => {
+                expect(screen.getByText(/Disruption notes history/i)).toBeInTheDocument();
+            });
+
+            expect(screen.getByText('Last note')).toBeInTheDocument();
+        });
     });
 });
