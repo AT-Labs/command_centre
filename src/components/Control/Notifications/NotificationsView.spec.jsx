@@ -424,4 +424,40 @@ describe('<NotificationsView />', () => {
         renderedCell.props.onClick();
         expect(mockGoToIncidentsView).toHaveBeenCalledWith({ incidentDisruptionNo: 67890 }, { setActiveIncident: true });
     });
+
+    describe('notification finding and selection', () => {
+        test('should update expandedDetailPanels when selectedNotification changes', () => {
+            const notification1 = { notificationContentId: 'notif-1' };
+            const notification2 = { notificationContentId: 'notif-2' };
+
+            const wrapper = setup({ selectedNotification: notification1 });
+            expect(wrapper.find(CustomDataGrid).prop('expandedDetailPanels')).toEqual(['notif-1']);
+
+            wrapper.setProps({ selectedNotification: notification2 });
+            expect(wrapper.find(CustomDataGrid).prop('expandedDetailPanels')).toEqual(['notif-2']);
+        });
+
+        test('should update expandedDetailPanels to null when selectedNotification is cleared', () => {
+            const notification = { notificationContentId: 'notif-1' };
+            const wrapper = setup({ selectedNotification: notification });
+            expect(wrapper.find(CustomDataGrid).prop('expandedDetailPanels')).toEqual(['notif-1']);
+
+            wrapper.setProps({ selectedNotification: null });
+            expect(wrapper.find(CustomDataGrid).prop('expandedDetailPanels')).toBeNull();
+        });
+
+        test('should pass expandedDetailPanels prop correctly to CustomDataGrid', () => {
+            const selectedNotification = {
+                notificationContentId: 'test-notification-id',
+                source: {
+                    identifier: 12345,
+                    version: 1,
+                },
+            };
+            const wrapper = setup({ selectedNotification });
+
+            const expandedDetailPanels = wrapper.find(CustomDataGrid).prop('expandedDetailPanels');
+            expect(expandedDetailPanels).toEqual(['test-notification-id']);
+        });
+    });
 });
