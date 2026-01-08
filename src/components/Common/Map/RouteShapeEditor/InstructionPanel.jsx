@@ -11,28 +11,16 @@ const maneuverToSymbol = (maneuver) => {
     return null;
 };
 
-// Extract street name from nextRoadInfo
-// Prioritize streetName.text, then roadNames array
-const findStreetName = (nextRoadInfo) => {
-    if (nextRoadInfo?.streetName?.text) {
-        return nextRoadInfo.streetName.text;
-    }
-    if (nextRoadInfo?.roadNames?.length > 0) {
-        return nextRoadInfo?.roadNames?.find(r => r.identifier?.text)?.identifier.text ?? '';
-    }
-    return '';
-};
-
 const maneuverToText = (maneuver, street) => {
     switch (maneuver) {
     case TomTomManeuver.DEPART:
-        return street ? `${street} as normal` : 'Drive as normal';
+        return `${street} as normal`;
     case TomTomManeuver.TURN_LEFT:
     case TomTomManeuver.ROUNDABOUT_LEFT:
-        return street ? `Turn left onto ${street}` : 'Turn left';
+        return `Turn left onto ${street}`;
     case TomTomManeuver.TURN_RIGHT:
     case TomTomManeuver.ROUNDABOUT_RIGHT:
-        return street ? `Turn right onto ${street}` : 'Turn right';
+        return `Turn right onto ${street}`;
     case TomTomManeuver.WAYPOINT_REACHED:
     case TomTomManeuver.ROUNDABOUT_STRAIGHT:
     case TomTomManeuver.ARRIVE:
@@ -41,34 +29,11 @@ const maneuverToText = (maneuver, street) => {
     }
 };
 
-// Combine symbol and street name for display
-// Default to turn left or right if street name is not available
-const symbolToText = (symbol, street) => {
-    if (street) {
-        return `${symbol} - ${street}`;
-    }
-    switch (symbol) {
-    case 'L':
-        return 'L - Turn left';
-    case 'R':
-        return 'R - Turn right';
-    default:
-        return symbol;
-    }
-};
-
-// For copying to clipboard
-const generateInstructionText = (instruction) => {
-    const street = findStreetName(instruction.nextRoadInfo);
-    const symbol = maneuverToSymbol(instruction.maneuver);
-    return symbol ? symbolToText(symbol, street) : maneuverToText(instruction.maneuver, street);
-};
-
 const deduplicateInstructions = (instructions) => {
     if (!Array.isArray(instructions)) return [];
     let prevText = null;
     return instructions.filter((inst) => {
-        const nextText = maneuverToText(inst.maneuver, findStreetName(inst.nextRoadInfo));
+        const nextText = maneuverToText(inst.maneuver, inst.nextRoadInfo?.streetName?.text || '');
         const isDuplicate = nextText === prevText;
         prevText = nextText;
         return !isDuplicate;
@@ -80,7 +45,12 @@ const InstructionPanel = ({ instructions }) => {
     const deduplicatedInstructions = deduplicateInstructions(instructions);
 
     // Generate plain text for all instructions
-    const allText = deduplicatedInstructions.map(inst => generateInstructionText(inst)).join('\n');
+    const allText = deduplicatedInstructions.map((inst) => {
+        const street = inst.nextRoadInfo?.streetName?.text || '';
+        const symbol = maneuverToSymbol(inst.maneuver);
+        const text = maneuverToText(inst.maneuver, street);
+        return symbol ? `${symbol} - ${street}` : text;
+    }).join('\n');
 
     const handleCopy = () => {
         navigator.clipboard.writeText(allText);
@@ -100,7 +70,7 @@ const InstructionPanel = ({ instructions }) => {
             </div>
             <div ref={ textRef } className="instructions-content">
                 {deduplicatedInstructions.map((inst) => {
-                    const street = findStreetName(inst.nextRoadInfo);
+                    const street = inst.nextRoadInfo?.streetName?.text || '';
                     const symbol = maneuverToSymbol(inst.maneuver);
                     const text = maneuverToText(inst.maneuver, street);
 
@@ -111,7 +81,9 @@ const InstructionPanel = ({ instructions }) => {
                         <div key={ key } style={ { borderBottom: '1px solid #ccc', padding: '10px' } }>
                             {symbol ? (
                                 <div style={ { fontWeight: 'bold' } }>
-                                    {symbolToText(symbol, street)}
+                                    {symbol}
+                                    {' - '}
+                                    {street}
                                 </div>
                             ) : (
                                 <div>{text}</div>
