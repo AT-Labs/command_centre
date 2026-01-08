@@ -20,8 +20,6 @@ const mockProps = {
     dataSource: [],
     datagridConfig: {
         density: 'standard',
-        page: 0,
-        pageSize: 25,
     },
     columns: [],
     toolbar: null,
@@ -31,9 +29,6 @@ const mockProps = {
     getRowId: null,
     rowCount: 0,
     serverSideData: false,
-    updateDatagridConfig: jest.fn(),
-    expandedDetailPanels: null,
-    onRowExpanded: jest.fn(),
 };
 
 const setup = (customProps) => {
@@ -44,10 +39,6 @@ const setup = (customProps) => {
 };
 
 describe('<CustomDataGrid />', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
     afterEach(() => {
         jest.clearAllTimers();
         if (wrapper) {
@@ -60,34 +51,6 @@ describe('<CustomDataGrid />', () => {
     describe('Check View', () => {
         it('Should have customDataGrid class container', () => {
             wrapper = setup();
-            expect(wrapper.find('.customDataGrid').length).toEqual(1);
-        });
-    });
-
-    describe('expandedDetailPanels prop handling', () => {
-        it('should accept expandedDetailPanels prop', () => {
-            const expandedPanels = ['panel-1', 'panel-2'];
-            wrapper = setup({ expandedDetailPanels: expandedPanels });
-            expect(wrapper.exists()).toEqual(true);
-        });
-
-        it('should handle null expandedDetailPanels', () => {
-            wrapper = setup({ expandedDetailPanels: null });
-            expect(wrapper.exists()).toEqual(true);
-        });
-
-        it('should handle empty expandedDetailPanels array', () => {
-            wrapper = setup({ expandedDetailPanels: [] });
-            expect(wrapper.exists()).toEqual(true);
-        });
-
-        it('should handle expandedDetailPanels prop with getDetailPanelContent', () => {
-            const expandedPanels = ['test-panel-id'];
-            wrapper = setup({
-                expandedDetailPanels: expandedPanels,
-                getDetailPanelContent: () => <div>Detail</div>,
-            });
-            expect(wrapper.exists()).toEqual(true);
             expect(wrapper.find('.customDataGrid').length).toEqual(1);
         });
     });

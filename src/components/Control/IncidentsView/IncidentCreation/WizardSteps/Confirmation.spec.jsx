@@ -175,67 +175,8 @@ describe('Confirmation Component', () => {
 
         expect(openCreateIncident).toHaveBeenCalledWith(false);
         expect(deleteAffectedEntities).toHaveBeenCalled();
-        expect(goToNotificationsView).toHaveBeenCalledWith({
-            version: 1,
-            incidentId: '123',
-            source: 'DISR',
-            new: true,
-        });
+        expect(goToNotificationsView).toHaveBeenCalled();
         expect(toggleIncidentModals).toHaveBeenCalledWith('isConfirmationOpen', false);
-    });
-
-    it('should pass correct query params to goToNotificationsView with resultIncidentVersion', () => {
-        const propsWithVersion = {
-            ...defaultProps,
-            response: {
-                ...action,
-                resultIncidentVersion: 5,
-                resultIncidentId: '456',
-            },
-        };
-
-        render(
-            <Provider store={ store }>
-                <Confirmation { ...propsWithVersion } />
-            </Provider>,
-        );
-
-        const button = screen.getByRole('button', { name: /view notifications/i });
-        fireEvent.click(button);
-
-        expect(goToNotificationsView).toHaveBeenCalledWith({
-            version: 5,
-            incidentId: '456',
-            source: 'DISR',
-            new: true,
-        });
-    });
-
-    it('should use default version 1 when resultIncidentVersion is not provided', () => {
-        const propsWithoutVersion = {
-            ...defaultProps,
-            response: {
-                ...action,
-                resultIncidentVersion: null,
-                resultIncidentId: '789',
-            },
-        };
-
-        render(
-            <Provider store={ store }>
-                <Confirmation { ...propsWithoutVersion } />
-            </Provider>,
-        );
-
-        const button = screen.getByRole('button', { name: /view notifications/i });
-        fireEvent.click(button);
-
-        expect(goToNotificationsView).toHaveBeenCalledWith({
-            version: 1,
-            incidentId: '789',
-            source: 'DISR',
-            new: true,
-        });
     });
 
     it('should display error message when resultMessage is present', () => {

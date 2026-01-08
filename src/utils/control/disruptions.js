@@ -111,16 +111,20 @@ const getMode = disruption => [
         .filter(Boolean),
 ];
 
-const filterWorkaroundsByAffectedEntity = (workarounds, affectedRoutes, affectedStops) => workarounds.filter((workaround) => {
+export const filterWorkaroundsByAffectedEntity = (workarounds, affectedRoutes, affectedStops) => workarounds.filter((workaround) => {
     if (workaround.type === 'stop') {
-        return affectedStops.some(affectedStop => workaround.stopCode === affectedStop.stopCode);
+        return (affectedStops.some(affectedStop => workaround.stopCode === affectedStop.stopCode)
+            || affectedRoutes.some(affectedRoute => affectedRoute?.stopCode !== null && workaround.stopCode === affectedRoute.stopCode)
+        );
     }
     if (workaround.type === 'route') {
-        return affectedRoutes.some(affectedRoute => workaround.routeShortName === affectedRoute.routeShortName);
+        return (affectedRoutes.some(affectedRoute => workaround.routeShortName === affectedRoute.routeShortName)
+            || affectedStops.some(affectedStop => affectedStop?.routeShortName !== null && workaround.routeShortName === affectedStop.routeShortName));
     }
     if (workaround.type === 'all') {
         return workarounds.length === 1;
     }
+
     return false;
 });
 
