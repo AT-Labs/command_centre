@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
+import { connect } from 'react-redux';
 import { Label } from 'reactstrap';
 import { formatCreatedUpdatedTime } from '../../../../utils/control/disruptions';
+import { useEditDisruptionNotes } from '../../../../redux/selectors/appSettings';
 
 const LastNoteView = (props) => {
     const { note, label, id } = props;
@@ -13,10 +15,10 @@ const LastNoteView = (props) => {
             <div className="col-9 text-right">
                 {note && (
                     <>
-                        <span>{note.createdBy}</span>
+                        <span>{(props.useEditDisruptionNotes && note.lastUpdatedBy) || note.createdBy}</span>
                         ,
                         {' '}
-                        {formatCreatedUpdatedTime(note.createdTime)}
+                        {formatCreatedUpdatedTime((props.useEditDisruptionNotes && note.lastUpdatedTime) || note.createdTime)}
                         ,
                         {' '}
                         {note.description}
@@ -31,10 +33,15 @@ LastNoteView.propTypes = {
     id: PropTypes.string.isRequired,
     label: PropTypes.string.isRequired,
     note: PropTypes.object,
+    useEditDisruptionNotes: PropTypes.bool.isRequired,
 };
 
 LastNoteView.defaultProps = {
     note: undefined,
 };
 
-export { LastNoteView };
+const ConnectedLastNoteView = connect(state => ({
+    useEditDisruptionNotes: useEditDisruptionNotes(state),
+}))(LastNoteView);
+
+export { ConnectedLastNoteView as LastNoteView };
