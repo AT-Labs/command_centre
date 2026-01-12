@@ -20,7 +20,7 @@ import {
     buildDisruptionSubmitBody,
     buildDisruptionsQuery,
     transformParentSourceIdNo,
-    getStatusForEffect,
+    getStatusForEffect, filterWorkaroundsByAffectedEntity,
 } from './disruptions';
 import { DATE_FORMAT, TIME_FORMAT } from '../../constants/disruptions';
 import { STATUSES } from '../../types/disruptions-types';
@@ -198,6 +198,126 @@ describe('buildSubmitBody', () => {
             affectedEntities: [],
             mode: '',
         });
+    });
+});
+
+describe('filterWorkaroundsByAffectedEntity', () => {
+    const affectedRoutes = [
+        { routeShortName: 'R1', stopCode: 'S1' },
+        { routeShortName: 'R2', stopCode: 'S2' },
+    ];
+    const affectedStops = [
+        { stopCode: 'S1', routeShortName: 'R1' },
+        { stopCode: 'S3', routeShortName: 'R3' },
+    ];
+
+    it('returns stop workarounds matching affectedStops', () => {
+        const workarounds = [
+            { type: 'stop', stopCode: 'S1' },
+            { type: 'stop', stopCode: 'S4' },
+        ];
+        const result = filterWorkaroundsByAffectedEntity(workarounds, affectedRoutes, affectedStops);
+        expect(result).toEqual([{ type: 'stop', stopCode: 'S1' }]);
+    });
+
+    it('returns stop workarounds matching affectedRoutes', () => {
+        const workarounds = [
+            { type: 'stop', stopCode: 'S2' },
+        ];
+        const result = filterWorkaroundsByAffectedEntity(workarounds, affectedRoutes, affectedStops);
+        expect(result).toEqual([{ type: 'stop', stopCode: 'S2' }]);
+    });
+
+    it('returns route workarounds matching affectedRoutes', () => {
+        const workarounds = [
+            { type: 'route', routeShortName: 'R2' },
+            { type: 'route', routeShortName: 'R3' },
+        ];
+        const result = filterWorkaroundsByAffectedEntity(workarounds, affectedRoutes, affectedStops);
+        expect(result).toEqual(workarounds);
+    });
+
+    it('returns route workarounds matching affectedStops', () => {
+        const workarounds = [
+            { type: 'route', routeShortName: 'R3' },
+        ];
+        const result = filterWorkaroundsByAffectedEntity(workarounds, affectedRoutes, affectedStops);
+        expect(result).toEqual(workarounds);
+    });
+
+    it('returns all workaround only if it is the only workaround', () => {
+        const workarounds = [
+            { type: 'all', workaround: 'for all' },
+        ];
+        const result = filterWorkaroundsByAffectedEntity(workarounds, affectedRoutes, affectedStops);
+        expect(result).toEqual(workarounds);
+    });
+
+    it('does not return all workaround if there are multiple workarounds', () => {
+        const workarounds = [
+            { type: 'all', workaround: 'for all' },
+            { type: 'route', routeShortName: 'R1' },
+        ];
+        const result = filterWorkaroundsByAffectedEntity(workarounds, affectedRoutes, affectedStops);
+        expect(result).toEqual([{ type: 'route', routeShortName: 'R1' }]);
+    });
+
+    it('returns empty array if no matches', () => {
+        const workarounds = [
+            { type: 'stop', stopCode: 'S99' },
+            { type: 'route', routeShortName: 'R99' },
+        ];
+        const result = filterWorkaroundsByAffectedEntity(workarounds, affectedRoutes, affectedStops);
+        expect(result).toEqual([]);
+    });
+
+    it('returns empty array for unknown workaround type', () => {
+        const workarounds = [
+            { type: 'unknown', foo: 'bar' },
+        ];
+        const result = filterWorkaroundsByAffectedEntity(workarounds, affectedRoutes, affectedStops);
+        expect(result).toEqual([]);
+    });
+
+    it('returns empty array if workarounds have no stopCode or routeShortName', () => {
+        const workarounds = [
+            { type: 'stop' },
+            { type: 'route' },
+            { type: 'stop', workaround: 'no code' },
+            { type: 'route', workaround: 'no name' },
+        ];
+        const testAffectedRoutes = [
+            { routeShortName: 'R1', stopCode: 'S1' },
+        ];
+        const testAffectedStops = [
+            { stopCode: 'S1', routeShortName: 'R1' },
+        ];
+        const result = filterWorkaroundsByAffectedEntity(workarounds, testAffectedRoutes, testAffectedStops);
+        expect(result).toEqual([]);
+    });
+
+    it('returns empty array if affectedRoutes have no stopCode', () => {
+        const workarounds = [
+            { type: 'stop', stopCode: 'S1' },
+        ];
+        const testAffectedRoutes = [
+            { routeShortName: 'R1' }, // missing stopCode
+        ];
+
+        const result = filterWorkaroundsByAffectedEntity(workarounds, testAffectedRoutes, []);
+        expect(result).toEqual([]);
+    });
+
+    it('returns empty array if affectedStops have no routeShortName', () => {
+        const workarounds = [
+            { type: 'route', routeShortName: 'R1' },
+        ];
+
+        const testAffectedStops = [
+            { stopCode: 'S1', routeShortName: undefined },
+        ];
+        const result = filterWorkaroundsByAffectedEntity(workarounds, [], testAffectedStops);
+        expect(result).toEqual([]);
     });
 });
 

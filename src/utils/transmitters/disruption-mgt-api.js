@@ -10,7 +10,7 @@ const { GET, POST, PUT, DELETE } = HTTP_TYPES;
 
 export const getDisruptionsViewPermission = () => getViewPermission(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/view`);
 
-export const getDisruptions = (includeDrafts = false) => fetchWithAuthHeader(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions?includeDraft=${includeDrafts}`, { method: GET })
+export const getDisruptions     = (includeDrafts = false) => fetchWithAuthHeader(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions?includeDraft=${includeDrafts}`, { method: GET })
     .then(response => jsonResponseHandling(response));
 
 export const getDisruption = (disruptionId, signal) => fetchWithAuthHeader(`${REACT_APP_DISRUPTION_MGT_QUERY_URL}/disruptions/${disruptionId}`, { method: GET, signal })
