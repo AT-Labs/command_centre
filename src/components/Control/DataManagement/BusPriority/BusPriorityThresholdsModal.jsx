@@ -115,8 +115,12 @@ const BusPriorityThresholdsModal = (props) => {
                 let routeMatched = (!threshold.RouteId && !routeIds);
 
                 if (!routeMatched && threshold.RouteId && routeIds) {
-                    const thresholdRoutes = threshold.RouteId.split(',').map(item => item.trim());
-                    const currentRoutes = routeIds.split(',').map(item => item.trim());
+                    const thresholdRoutes = String(threshold.RouteId)
+                        .split(',')
+                        .map(item => item.trim());
+                    const currentRoutes = String(routeIds)
+                        .split(',')
+                        .map(item => item.trim());
 
                     routeMatched = currentRoutes.some(item => thresholdRoutes.includes(item));
                 }
