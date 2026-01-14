@@ -115,20 +115,14 @@ const BusPriorityThresholdsModal = (props) => {
                 let routeMatched = (!threshold.RouteId && !routeIds);
 
                 if (!routeMatched && threshold.RouteId && routeIds) {
-                    const thresholdRoutes = String(threshold.RouteId)
-                        .split(',')
-                        .map(item => item.trim());
-                    const currentRoutes = String(routeIds)
-                        .split(',')
-                        .map(item => item.trim());
+                    const thresholdRoutes = threshold.RouteId.split(',').map(item => item.trim());
+                    const currentRoutes = routeIds.split(',').map(item => item.trim());
 
                     routeMatched = currentRoutes.some(item => thresholdRoutes.includes(item));
                 }
 
-                const thresholdSiteId = (threshold.SiteId !== undefined && threshold.SiteId !== null && threshold.SiteId !== '') ? Number.parseInt(threshold.SiteId, 10) : null;
-
                 return (threshold.Occupancy === occupancy || (!threshold.Occupancy && !occupancy))
-                        && (thresholdSiteId === siteId || (!thresholdSiteId && !siteId))
+                        && (threshold.SiteId === siteId || (!threshold.SiteId && !siteId))
                         && routeMatched;
             });
 
@@ -157,17 +151,9 @@ const BusPriorityThresholdsModal = (props) => {
 
     useEffect(() => {
         if (props.thresholdSet != null) {
-            const initalThresholds = props.allThresholds.filter((threshold) => {
-                const thresholdSiteId = (threshold.SiteId !== undefined && threshold.SiteId !== null && threshold.SiteId !== '')
-                    ? Number.parseInt(threshold.SiteId, 10)
-                    : null;
-                const propSiteId = (props.thresholdSet.siteId !== undefined && props.thresholdSet.siteId !== null && props.thresholdSet.siteId !== '')
-                    ? Number.parseInt(props.thresholdSet.siteId, 10)
-                    : null;
-                return (threshold.Occupancy === props.thresholdSet.occupancy)
-                    && (thresholdSiteId === propSiteId)
-                    && (threshold.RouteId === props.thresholdSet.routeId);
-            });
+            const initalThresholds = (props.allThresholds.filter(threshold => threshold.Occupancy === props.thresholdSet.occupancy
+                && threshold.SiteId === props.thresholdSet.siteId
+                && threshold.RouteId === props.thresholdSet.routeId));
 
             setThresholds(initalThresholds);
             setOriginalThresholds(initalThresholds);
@@ -383,15 +369,13 @@ const BusPriorityThresholdsModal = (props) => {
                         <span className="filter-label">Site Id</span>
                     </Label>
                     <Input
-                        type="number"
                         id="siteId"
                         disabled={ disableFilters }
                         value={ siteId ?? '' }
                         className="cc-form-control"
                         placeholder="Site Id"
                         onChange={ (event) => {
-                            const { value } = event.target;
-                            setSiteId(value === '' ? null : Number.parseInt(value, 10));
+                            setSiteId(event.target.value.toUpperCase());
                         } }
                     />
                 </div>
@@ -540,7 +524,7 @@ BusPriorityThresholdsModal.propTypes = {
     updateThresholds: PropTypes.func.isRequired,
     deleteThresholds: PropTypes.func.isRequired,
     thresholdSet: PropTypes.shape({
-        siteId: PropTypes.number,
+        siteId: PropTypes.string,
         occupancy: PropTypes.string,
         routeId: PropTypes.string,
     }),
