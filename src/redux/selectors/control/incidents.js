@@ -83,20 +83,11 @@ export const getRouteColors = createSelector(getAffectedRoutes, getAffectedStops
     return [];
 });
 
-export const getBoundsToFit = createSelector(getShapes, getAffectedStops, (shapes, affectedStops) => {
+export const getBoundsToFit = createSelector(getShapes, (shapes) => {
     let pointsInBounds = [];
 
     if (!isEmpty(shapes)) {
         pointsInBounds = shapes.filter(shape => !!shape);
-    }
-
-    if (!isEmpty(affectedStops)) {
-        affectedStops.forEach((stop) => {
-            // Include stops that don't have a routeId and have coordinates
-            if (!stop.routeId && stop.stopLat && stop.stopLon) {
-                pointsInBounds.push([[stop.stopLat, stop.stopLon]]);
-            }
-        });
     }
 
     return pointsInBounds;

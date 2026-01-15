@@ -655,29 +655,7 @@ export class CreateIncident extends React.Component {
     };
 
     updateSelectedEffect = (key) => {
-        const { editMode } = this.props;
-        const { incidentData, newIncidentEffect } = this.state;
-
-        let selectedDisruption = null;
-        if (editMode === EDIT_TYPE.CREATE) {
-            selectedDisruption = incidentData.disruptions.find(d => d.key === key);
-        } else if (editMode === EDIT_TYPE.ADD_EFFECT && !isEmpty(newIncidentEffect) && newIncidentEffect.key === key) {
-            selectedDisruption = newIncidentEffect;
-        }
-
         this.setState({ selectedEffect: key });
-
-        if (selectedDisruption) {
-            const routes = selectedDisruption.affectedEntities?.affectedRoutes || [];
-            const stops = selectedDisruption.affectedEntities?.affectedStops || [];
-
-            this.props.updateAffectedStopsState(sortBy(stops, sortedStop => sortedStop.stopCode));
-            this.props.updateAffectedRoutesState(routes);
-
-            if (routes.length > 0) {
-                this.props.getRoutesByShortName(routes);
-            }
-        }
     };
 
     clearNewEffectToIncident = () => {
