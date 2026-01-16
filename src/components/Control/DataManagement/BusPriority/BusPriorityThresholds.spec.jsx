@@ -192,7 +192,7 @@ describe('<BusPriorityThresholdDataGrid />', () => {
     });
 
     it('displays loading indicator when isLoading is true', () => {
-        render(<BusPriorityThresholdDataGrid { ...defaultProps } isLoading={ true } />);
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } isLoading />);
         expect(screen.getByTestId('loading')).toBeInTheDocument();
     });
 
