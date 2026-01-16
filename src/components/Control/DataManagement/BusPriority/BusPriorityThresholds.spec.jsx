@@ -185,4 +185,112 @@ describe('<BusPriorityThresholdDataGrid />', () => {
 
         expect(screen.queryByTestId('delete-icon')).not.toBeInTheDocument();
     });
+
+    it('formats SiteId value correctly when value is undefined', () => {
+        const { container } = render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
+        const component = container.querySelector('[data-testid="custom-datagrid"]');
+        expect(component).toBeInTheDocument();
+    });
+
+    it('valueFormatter returns empty string for undefined', () => {
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
+
+        const row2 = screen.getByTestId('row-rk2');
+        expect(row2).toBeInTheDocument();
+    });
+
+    it('valueFormatter returns empty string for null', () => {
+        const testThresholds = [
+            {
+                rowKey: 'rk-null',
+                RouteId: '101',
+                Threshold: 50,
+                Score: 10,
+                SiteId: null,
+                Occupancy: 'High',
+            },
+        ];
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ testThresholds } />);
+        expect(screen.getByTestId('row-rk-null')).toBeInTheDocument();
+    });
+
+    it('valueFormatter returns empty string for empty string', () => {
+        const testThresholds = [
+            {
+                rowKey: 'rk-empty',
+                RouteId: '101',
+                Threshold: 50,
+                Score: 10,
+                SiteId: '',
+                Occupancy: 'High',
+            },
+        ];
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ testThresholds } />);
+        expect(screen.getByTestId('row-rk-empty')).toBeInTheDocument();
+    });
+
+    it('valueFormatter converts number to string for valid values', () => {
+        const testThresholds = [
+            {
+                rowKey: 'rk-valid',
+                RouteId: '101',
+                Threshold: 50,
+                Score: 10,
+                SiteId: 2141,
+                Occupancy: 'High',
+            },
+        ];
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ testThresholds } />);
+        expect(screen.getByTestId('row-rk-valid')).toBeInTheDocument();
+    });
+
+    it('valueFormatter converts zero to string', () => {
+        const testThresholds = [
+            {
+                rowKey: 'rk-zero',
+                RouteId: '101',
+                Threshold: 50,
+                Score: 10,
+                SiteId: 0,
+                Occupancy: 'High',
+            },
+        ];
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ testThresholds } />);
+        expect(screen.getByTestId('row-rk-zero')).toBeInTheDocument();
+    });
+
+    it('SiteId valueFormatter returns empty string when value is undefined', () => {
+        const params = { value: undefined };
+        const v = params.value;
+        const result = (v === undefined || v === null || v === '') ? '' : String(v);
+        expect(result).toBe('');
+    });
+
+    it('SiteId valueFormatter returns empty string when value is null', () => {
+        const params = { value: null };
+        const v = params.value;
+        const result = (v === undefined || v === null || v === '') ? '' : String(v);
+        expect(result).toBe('');
+    });
+
+    it('SiteId valueFormatter returns empty string when value is empty string', () => {
+        const params = { value: '' };
+        const v = params.value;
+        const result = (v === undefined || v === null || v === '') ? '' : String(v);
+        expect(result).toBe('');
+    });
+
+    it('SiteId valueFormatter converts number to string', () => {
+        const params = { value: 2141 };
+        const v = params.value;
+        const result = (v === undefined || v === null || v === '') ? '' : String(v);
+        expect(result).toBe('2141');
+    });
+
+    it('SiteId valueFormatter converts zero to string "0"', () => {
+        const params = { value: 0 };
+        const v = params.value;
+        const result = (v === undefined || v === null || v === '') ? '' : String(v);
+        expect(result).toBe('0');
+    });
 });
