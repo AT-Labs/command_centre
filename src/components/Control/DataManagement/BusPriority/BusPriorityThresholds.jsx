@@ -36,7 +36,12 @@ export const BusPriorityThresholdDataGrid = (props) => {
     const openThresholdModal = (update, row = null) => {
         setMode(update);
         if (update !== UPDATE_TYPE.NEW) {
-            setThresholdSet({ siteId: row.SiteId, routeId: row.RouteId, occupancy: row.Occupancy });
+            const siteIdNum = (row.SiteId !== undefined && row.SiteId !== null && row.SiteId !== '') ? Number.parseInt(row.SiteId, 10) : null;
+            setThresholdSet({
+                siteId: siteIdNum,
+                routeId: row.RouteId,
+                occupancy: row.Occupancy,
+            });
         } else {
             setThresholdSet(null);
         }
@@ -124,7 +129,11 @@ export const BusPriorityThresholdDataGrid = (props) => {
             field: 'SiteId',
             headerName: LABEL_SITEID,
             width: 100,
-            type: 'string',
+            type: 'number',
+            valueFormatter: (params) => {
+                const v = params.value;
+                return (v === undefined || v === null || v === '') ? '' : String(v);
+            },
         },
         {
             field: 'Occupancy',
