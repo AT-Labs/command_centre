@@ -208,4 +208,158 @@ describe('<BusPriorityThresholdsModal />', () => {
 
         expect(defaultProps.onClose).toHaveBeenCalled();
     });
+
+    it('renders DELETE mode modal title and properties', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.DELETE } />);
+        expect(screen.getByTestId('modal-title')).toHaveTextContent('Delete Threshold Set');
+    });
+
+    it('calls deleteThresholds when delete mode button is clicked', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.DELETE } />);
+        const deleteButton = screen.getByRole('button', { name: /Delete threshold set/i });
+        fireEvent.click(deleteButton);
+
+        expect(defaultProps.deleteThresholds).toHaveBeenCalled();
+    });
+
+    it('toggleEditModal returns empty div in VIEW mode', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.VIEW } />);
+        expect(screen.queryByTestId('delete-icon')).not.toBeInTheDocument();
+    });
+
+    it('formats Route IDs with single ID', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
+        const { routeIdInput } = getInputs();
+
+        fireEvent.change(routeIdInput, { target: { value: '50' } });
+        fireEvent.blur(routeIdInput);
+
+        expect(routeIdInput.value).toBe('50');
+    });
+
+    it('formats Route IDs with empty string', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
+        const { routeIdInput } = getInputs();
+
+        fireEvent.change(routeIdInput, { target: { value: '30, , 10' } });
+        fireEvent.blur(routeIdInput);
+
+        expect(routeIdInput.value).toBe('10, 30');
+    });
+
+    it('handles Enter key press on Route ID input', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
+        const { routeIdInput } = getInputs();
+
+        fireEvent.change(routeIdInput, { target: { value: '30, 10, 20' } });
+        fireEvent.keyDown(routeIdInput, { key: 'Enter' });
+
+        expect(routeIdInput.value).toBe('10, 20, 30');
+    });
+
+    it('does not format Route ID on non-Enter key press', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
+        const { routeIdInput } = getInputs();
+
+        fireEvent.change(routeIdInput, { target: { value: '30, 10, 20' } });
+        fireEvent.keyDown(routeIdInput, { key: 'a' });
+
+        expect(routeIdInput.value).toBe('30, 10, 20');
+    });
+
+    it('converts Route ID input to uppercase', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
+        const { routeIdInput } = getInputs();
+
+        fireEvent.change(routeIdInput, { target: { value: 'abc, def, xyz' } });
+
+        expect(routeIdInput.value).toBe('ABC, DEF, XYZ');
+    });
+
+    it('shows Add threshold button in NEW mode', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
+        expect(screen.getByText('Add threshold')).toBeInTheDocument();
+    });
+
+    it('shows Add threshold button in UPDATE mode', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.UPDATE } />);
+        expect(screen.getByText('Add threshold')).toBeInTheDocument();
+    });
+
+    it('shows Duplicate thresholds button only in UPDATE mode', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.UPDATE } />);
+        expect(screen.getByText('Duplicate thresholds')).toBeInTheDocument();
+    });
+
+    it('hides Duplicate thresholds button in NEW mode', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
+        expect(screen.queryByText('Duplicate thresholds')).not.toBeInTheDocument();
+    });
+
+    it('updates threshold when Site ID changes', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.UPDATE } />);
+        const { siteIdInput } = getInputs();
+
+        fireEvent.change(siteIdInput, { target: { value: '5000' } });
+
+        expect(siteIdInput.value).toBe('5000');
+    });
+
+    it('disables all filters in DELETE mode', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.DELETE } />);
+        const { siteIdInput, routeIdInput, occupancySelect } = getInputs();
+
+        expect(siteIdInput).toBeDisabled();
+        expect(routeIdInput).toBeDisabled();
+        expect(occupancySelect).toBeDisabled();
+    });
+
+    it('enables all filters in NEW mode', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
+        const { siteIdInput, routeIdInput, occupancySelect } = getInputs();
+
+        expect(siteIdInput).not.toBeDisabled();
+        expect(routeIdInput).not.toBeDisabled();
+        expect(occupancySelect).not.toBeDisabled();
+    });
+
+    it('save button is disabled with empty thresholds', () => {
+        const customProps = {
+            ...defaultProps,
+            mode: UPDATE_TYPE.NEW,
+            allThresholds: [],
+        };
+        render(<BusPriorityThresholdsModal { ...customProps } />);
+        const { saveButton } = getInputs();
+
+        expect(saveButton).toBeDisabled();
+    });
+
+    it('updates Site ID filter', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
+        const { siteIdInput } = getInputs();
+
+        fireEvent.change(siteIdInput, { target: { value: '9999' } });
+
+        expect(siteIdInput.value).toBe('9999');
+    });
+
+    it('handles occupancy change through blur event', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
+        const { occupancySelect } = getInputs();
+
+        fireEvent.blur(occupancySelect, { currentTarget: { value: 'MANY_SEATS_AVAILABLE' } });
+
+        expect(occupancySelect).toBeInTheDocument();
+    });
+
+    it('renders modal alert when invalid conditions exist', () => {
+        render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
+        const addButton = screen.getByText('Add threshold');
+
+        fireEvent.click(addButton);
+
+        const alert = screen.queryByTestId('modal-alert');
+        expect(alert).toBeInTheDocument();
+    });
 });

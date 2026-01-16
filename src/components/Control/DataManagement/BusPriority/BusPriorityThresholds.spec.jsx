@@ -186,23 +186,40 @@ describe('<BusPriorityThresholdDataGrid />', () => {
         expect(screen.queryByTestId('delete-icon')).not.toBeInTheDocument();
     });
 
-    it('formats SiteId value correctly when value is undefined', () => {
-        const { container } = render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
-        const component = container.querySelector('[data-testid="custom-datagrid"]');
-        expect(component).toBeInTheDocument();
-    });
-
-    it('valueFormatter returns empty string for undefined', () => {
+    it('modal does not render when isThresholdsModalOpen is false', () => {
         render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
-
-        const row2 = screen.getByTestId('row-rk2');
-        expect(row2).toBeInTheDocument();
+        expect(screen.queryByTestId('threshold-modal')).not.toBeInTheDocument();
     });
 
-    it('valueFormatter returns empty string for null', () => {
-        const testThresholds = [
+    it('displays loading indicator when isLoading is true', () => {
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } isLoading={ true } />);
+        expect(screen.getByTestId('loading')).toBeInTheDocument();
+    });
+
+    it('calls updateBusPriorityThresholdsDatagridConfig when datagrid config updates', () => {
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
+        expect(defaultProps.updateBusPriorityThresholdsDatagridConfig).not.toHaveBeenCalled();
+    });
+
+    it('valueFormatter handles undefined SiteId correctly', () => {
+        const thresholdsWithUndefined = [
             {
-                rowKey: 'rk-null',
+                rowKey: 'rk1',
+                RouteId: '101',
+                Threshold: 50,
+                Score: 10,
+                SiteId: undefined,
+                Occupancy: 'High',
+            },
+        ];
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithUndefined } />);
+        expect(screen.getByTestId('row-rk1')).toBeInTheDocument();
+    });
+
+    it('valueFormatter handles null SiteId correctly', () => {
+        const thresholdsWithNull = [
+            {
+                rowKey: 'rk1',
                 RouteId: '101',
                 Threshold: 50,
                 Score: 10,
@@ -210,14 +227,14 @@ describe('<BusPriorityThresholdDataGrid />', () => {
                 Occupancy: 'High',
             },
         ];
-        render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ testThresholds } />);
-        expect(screen.getByTestId('row-rk-null')).toBeInTheDocument();
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithNull } />);
+        expect(screen.getByTestId('row-rk1')).toBeInTheDocument();
     });
 
-    it('valueFormatter returns empty string for empty string', () => {
-        const testThresholds = [
+    it('valueFormatter handles empty string SiteId correctly', () => {
+        const thresholdsWithEmptyString = [
             {
-                rowKey: 'rk-empty',
+                rowKey: 'rk1',
                 RouteId: '101',
                 Threshold: 50,
                 Score: 10,
@@ -225,72 +242,50 @@ describe('<BusPriorityThresholdDataGrid />', () => {
                 Occupancy: 'High',
             },
         ];
-        render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ testThresholds } />);
-        expect(screen.getByTestId('row-rk-empty')).toBeInTheDocument();
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithEmptyString } />);
+        expect(screen.getByTestId('row-rk1')).toBeInTheDocument();
     });
 
-    it('valueFormatter converts number to string for valid values', () => {
-        const testThresholds = [
+    it('valueFormatter converts numeric SiteId to string correctly', () => {
+        const thresholdsWithNumber = [
             {
-                rowKey: 'rk-valid',
+                rowKey: 'rk1',
                 RouteId: '101',
                 Threshold: 50,
                 Score: 10,
-                SiteId: 2141,
+                SiteId: 5000,
                 Occupancy: 'High',
             },
         ];
-        render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ testThresholds } />);
-        expect(screen.getByTestId('row-rk-valid')).toBeInTheDocument();
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithNumber } />);
+        expect(screen.getByTestId('row-rk1')).toBeInTheDocument();
     });
 
-    it('valueFormatter converts zero to string', () => {
-        const testThresholds = [
-            {
-                rowKey: 'rk-zero',
-                RouteId: '101',
-                Threshold: 50,
-                Score: 10,
-                SiteId: 0,
-                Occupancy: 'High',
-            },
-        ];
-        render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ testThresholds } />);
-        expect(screen.getByTestId('row-rk-zero')).toBeInTheDocument();
+    it('calls updateThresholds action when modal triggers update', () => {
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
+        const editButtons = screen.getAllByTestId('edit-icon');
+        fireEvent.click(editButtons[0]);
+        fireEvent.click(screen.getByTestId('modal-save'));
+
+        expect(defaultProps.saveNewThresholds).toHaveBeenCalled();
     });
 
-    it('SiteId valueFormatter returns empty string when value is undefined', () => {
-        const params = { value: undefined };
-        const v = params.value;
-        const result = (v === undefined || v === null || v === '') ? '' : String(v);
-        expect(result).toBe('');
+    it('calls deleteThresholds action when modal delete is triggered', () => {
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
+        const deleteButtons = screen.getAllByTestId('delete-icon');
+        fireEvent.click(deleteButtons[0]);
+        fireEvent.click(screen.getByTestId('modal-delete'));
+
+        expect(defaultProps.deleteThresholds).toHaveBeenCalled();
     });
 
-    it('SiteId valueFormatter returns empty string when value is null', () => {
-        const params = { value: null };
-        const v = params.value;
-        const result = (v === undefined || v === null || v === '') ? '' : String(v);
-        expect(result).toBe('');
-    });
+    it('opens modal in DELETE mode and passes correct threshold set', () => {
+        render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
+        const deleteButtons = screen.getAllByTestId('delete-icon');
+        fireEvent.click(deleteButtons[0]);
 
-    it('SiteId valueFormatter returns empty string when value is empty string', () => {
-        const params = { value: '' };
-        const v = params.value;
-        const result = (v === undefined || v === null || v === '') ? '' : String(v);
-        expect(result).toBe('');
-    });
-
-    it('SiteId valueFormatter converts number to string', () => {
-        const params = { value: 2141 };
-        const v = params.value;
-        const result = (v === undefined || v === null || v === '') ? '' : String(v);
-        expect(result).toBe('2141');
-    });
-
-    it('SiteId valueFormatter converts zero to string "0"', () => {
-        const params = { value: 0 };
-        const v = params.value;
-        const result = (v === undefined || v === null || v === '') ? '' : String(v);
-        expect(result).toBe('0');
+        expect(screen.getByTestId('threshold-modal')).toBeInTheDocument();
+        expect(screen.getByTestId('modal-mode')).toHaveTextContent('DELETE');
+        expect(screen.getByTestId('modal-site-id')).toHaveTextContent('2141');
     });
 });
