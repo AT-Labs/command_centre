@@ -11,16 +11,16 @@ import { BusPriorityThresholdDataGrid } from './BusPriorityThresholds';
 jest.mock('../../../Common/CustomDataGrid/CustomDataGrid', () => {
     const MockCustomDataGrid = props => (
         <div data-testid="custom-datagrid">
-            { props.loading && <div data-testid="loading">Loading...</div> }
-            { props.dataSource.map(row => (
+            {props.loading && <div data-testid="loading">Loading...</div>}
+            {props.dataSource.map(row => (
                 <div key={ `row-${props.getRowId(row)}` } data-testid={ `row-${props.getRowId(row)}` }>
-                    <span data-testid={ `cell-route-${props.getRowId(row)}` }>{ row.RouteId }</span>
-                    <span data-testid={ `cell-threshold-${props.getRowId(row)}` }>{ row.Threshold }</span>
-                    { props.columns
+                    <span data-testid={ `cell-route-${props.getRowId(row)}` }>{row.RouteId}</span>
+                    <span data-testid={ `cell-threshold-${props.getRowId(row)}` }>{row.Threshold}</span>
+                    {props.columns
                         .find(col => col.field === 'action')
                         ?.getActions({ row })
                         ?.map(action => (
-                            <div key={ `${props.getRowId(row)}-action` }>{ action }</div>
+                            <div key={ `${props.getRowId(row)}-action` }>{action}</div>
                         ))}
                 </div>
             ))}
@@ -38,9 +38,9 @@ jest.mock('./BusPriorityThresholdsModal', () => {
         return (
             <div data-testid="threshold-modal">
                 <div data-testid="modal-mode">
-                    { mode }
+                    {mode}
                 </div>
-                <div data-testid="modal-site-id">{ thresholdSet?.siteId }</div>
+                <div data-testid="modal-site-id">{thresholdSet?.siteId}</div>
                 <button type="button" data-testid="modal-close" onClick={ onClose }>Close</button>
                 <button type="button" data-testid="modal-save" onClick={ () => saveNewThresholds({ test: 'data' }) }>
                     Save
