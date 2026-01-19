@@ -7,15 +7,11 @@ import { FaPlus } from 'react-icons/fa';
 import { Button } from 'reactstrap';
 import { BsPencilSquare } from 'react-icons/bs';
 import CustomDataGrid from '../../../Common/CustomDataGrid/CustomDataGrid';
-import {
-    getAllBusPriorityThresholds,
+import { getAllBusPriorityThresholds,
     getBusPriorityThresholdsDatagridConfig,
-    getIsLoadingBusPriorityThresholds, isBusPriorityEditAllowed,
-} from '../../../../redux/selectors/control/dataManagement/busPriority';
-import {
-    getBusPriorityThresholds, saveNewThresholds, updateBusPriorityThresholdsDatagridConfig,
-    updateThresholds, deleteThresholds,
-} from '../../../../redux/actions/control/dataManagement';
+    getIsLoadingBusPriorityThresholds, isBusPriorityEditAllowed } from '../../../../redux/selectors/control/dataManagement/busPriority';
+import { getBusPriorityThresholds, saveNewThresholds, updateBusPriorityThresholdsDatagridConfig,
+    updateThresholds, deleteThresholds } from '../../../../redux/actions/control/dataManagement';
 import BusPriorityThresholdsModal, { UPDATE_TYPE } from './BusPriorityThresholdsModal';
 
 import './BusPriorityThresholds.scss';
@@ -181,7 +177,7 @@ export const BusPriorityThresholdDataGrid = (props) => {
                 updateDatagridConfig={ config => props.updateBusPriorityThresholdsDatagridConfig(config) }
                 getRowId={ row => row.rowKey }
             />
-            {isThresholdsModalOpen && (
+            { isThresholdsModalOpen && (
                 <BusPriorityThresholdsModal
                     isModalOpen={ isThresholdsModalOpen }
                     onClose={ () => {
@@ -194,7 +190,7 @@ export const BusPriorityThresholdDataGrid = (props) => {
                     deleteThresholds={ thresholds => props.deleteThresholds(thresholds) }
                     thresholdSet={ thresholdSet }
                 />
-            )}
+            ) }
         </div>
     );
 };

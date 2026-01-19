@@ -3,7 +3,6 @@
  */
 /* eslint-disable react/prop-types */
 
-// @ts-ignore - React is required for JSX transformation
 import React from 'react';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -35,10 +34,10 @@ jest.mock('../../../Common/CustomMuiDialog/CustomMuiDialog', () => {
         if (!isOpen) return null;
         return (
             <div data-testid="custom-mui-dialog">
-                <div data-testid="dialog-title">{title}</div>
+                <div data-testid="dialog-title">{ title }</div>
                 <button type="button" data-testid="dialog-close" onClick={ onClose }>Close</button>
-                <div data-testid="dialog-body">{children}</div>
-                <div data-testid="dialog-footer">{footerContent}</div>
+                <div data-testid="dialog-body">{ children }</div>
+                <div data-testid="dialog-footer">{ footerContent }</div>
             </div>
         );
     };
@@ -49,8 +48,8 @@ jest.mock('../../../Common/CustomMuiDialog/CustomMuiDialog', () => {
 jest.mock('../../../Common/CustomDataGrid/CustomDataGrid', () => {
     const MockCustomDataGrid = props => (
         <div data-testid="custom-datagrid">
-            <div data-testid="toolbar">{props.toolbarButtons()}</div>
-            {props.dataSource.map((row) => {
+            <div data-testid="toolbar">{ props.toolbarButtons() }</div>
+            { props.dataSource.map((row) => {
                 const actions = props.columns
                     .find(col => col.field === 'action')
                     ?.getActions({ row });
@@ -59,7 +58,7 @@ jest.mock('../../../Common/CustomDataGrid/CustomDataGrid', () => {
                     <div key={ props.getRowId(row) } data-testid={ `row-${props.getRowId(row)}` }>
                         <span data-testid={ `cell-score-${props.getRowId(row)}` }>
                             <span data-testid={ `score-value-${props.getRowId(row)}` }>
-                                {row.Score}
+                                { row.Score }
                             </span>
                             <input
                                 type="number"
@@ -76,7 +75,7 @@ jest.mock('../../../Common/CustomDataGrid/CustomDataGrid', () => {
                         </span>
                         <span data-testid={ `cell-threshold-${props.getRowId(row)}` }>
                             <span data-testid={ `threshold-value-${props.getRowId(row)}` }>
-                                {row.Threshold}
+                                { row.Threshold }
                             </span>
                             <input
                                 type="number"
@@ -91,8 +90,8 @@ jest.mock('../../../Common/CustomDataGrid/CustomDataGrid', () => {
                                 } }
                             />
                         </span>
-                        {actions?.map(action => (
-                            <div key={ action.key }>{action}</div>
+                        { actions?.map(action => (
+                            <div key={ action.key }>{ action }</div>
                         ))}
                     </div>
                 );
@@ -119,7 +118,7 @@ jest.mock('../../BlocksView/BlockModals/ModalAlert', () => {
         if (!isOpen) return null;
         return (
             <div data-testid="modal-alert" data-color={ color }>
-                {content}
+                { content }
             </div>
         );
     };
