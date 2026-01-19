@@ -128,8 +128,8 @@ const BusPriorityThresholdsModal = (props) => {
                 const thresholdSiteId = (threshold.SiteId !== undefined && threshold.SiteId !== null && threshold.SiteId !== '') ? Number.parseInt(threshold.SiteId, 10) : null;
 
                 return (threshold.Occupancy === occupancy || (!threshold.Occupancy && !occupancy))
-                        && (thresholdSiteId === siteId || (!thresholdSiteId && !siteId))
-                        && routeMatched;
+                    && (thresholdSiteId === siteId || (!thresholdSiteId && !siteId))
+                    && routeMatched;
             });
 
         const duplicateScores = hasDuplicates(thresholds.map(row => row.Score));
@@ -321,7 +321,7 @@ const BusPriorityThresholdsModal = (props) => {
 
     const generateOccupancyOptions = () => Object.entries(VEHICLE_OCCUPANCY_STATUS_TYPE).map(([, value]) => (
         <option key={ value } value={ value }>
-            { value }
+            {value}
         </option>
     ));
 
@@ -331,12 +331,12 @@ const BusPriorityThresholdsModal = (props) => {
 
     const toolBarButtons = () => (
         <>
-            { (updateType === UPDATE_TYPE.NEW || updateType === UPDATE_TYPE.UPDATE) && (
+            {(updateType === UPDATE_TYPE.NEW || updateType === UPDATE_TYPE.UPDATE) && (
                 <MuiButton color="primary" startIcon={ <GridAddIcon /> } onClick={ handleAddRow }>
                     Add threshold
                 </MuiButton>
             )}
-            { updateType === UPDATE_TYPE.UPDATE && (
+            {updateType === UPDATE_TYPE.UPDATE && (
                 <MuiButton color="primary" startIcon={ <GridMenuIcon /> } onClick={ handleDuplicateSet }>
                     Duplicate thresholds
                 </MuiButton>
@@ -374,7 +374,7 @@ const BusPriorityThresholdsModal = (props) => {
                     <ModalAlert
                         color="danger"
                         isOpen={ invalidFilters }
-                        content={ <span>{ invalidFilterString }</span> } />
+                        content={ <span>{invalidFilterString}</span> } />
                 </div>
             </div>
             <div className="row filter-container">
@@ -424,7 +424,7 @@ const BusPriorityThresholdsModal = (props) => {
                         onBlur={ e => onOccupancyChange(e.currentTarget.value) }
                         onChange={ e => onOccupancyChange(e.currentTarget.value) }>
                         <option value={ null } />
-                        { generateOccupancyOptions() }
+                        {generateOccupancyOptions()}
                     </Input>
                 </div>
             </div>
@@ -516,7 +516,7 @@ const BusPriorityThresholdsModal = (props) => {
             className="cc-btn-primary w-100"
             onClick={ activeModalProps.onClick }
             disabled={ !canSave }>
-            { activeModalProps.mainButtonLabel }
+            {activeModalProps.mainButtonLabel}
         </Button>
     );
 
@@ -526,7 +526,7 @@ const BusPriorityThresholdsModal = (props) => {
             onClose={ closeModal }
             isOpen={ props.isModalOpen }
             footerContent={ generateFooter() }>
-            { activeModalProps.renderBody }
+            {activeModalProps.renderBody}
         </CustomMuiDialog>
     );
 };

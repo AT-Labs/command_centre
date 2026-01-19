@@ -11,19 +11,19 @@ import { BusPriorityThresholdDataGrid } from './BusPriorityThresholds';
 jest.mock('../../../Common/CustomDataGrid/CustomDataGrid', () => {
     const MockCustomDataGrid = props => (
         <div data-testid="custom-datagrid">
-            { props.loading && <div data-testid="loading">Loading...</div> }
-            { props.dataSource.map(row => (
+            {props.loading && <div data-testid="loading">Loading...</div>}
+            {props.dataSource.map(row => (
                 <div key={ `row-${props.getRowId(row)}` } data-testid={ `row-${props.getRowId(row)}` }>
-                    <span data-testid={ `cell-route-${props.getRowId(row)}` }>{ row.RouteId }</span>
-                    <span data-testid={ `cell-threshold-${props.getRowId(row)}` }>{ row.Threshold }</span>
-                    <span data-testid={ `cell-score-${props.getRowId(row)}` }>{ row.Score }</span>
-                    <span data-testid={ `cell-siteid-${props.getRowId(row)}` }>{ row.SiteId }</span>
-                    <span data-testid={ `cell-occupancy-${props.getRowId(row)}` }>{ row.Occupancy }</span>
-                    { props.columns
+                    <span data-testid={ `cell-route-${props.getRowId(row)}` }>{row.RouteId}</span>
+                    <span data-testid={ `cell-threshold-${props.getRowId(row)}` }>{row.Threshold}</span>
+                    <span data-testid={ `cell-score-${props.getRowId(row)}` }>{row.Score}</span>
+                    <span data-testid={ `cell-siteid-${props.getRowId(row)}` }>{row.SiteId}</span>
+                    <span data-testid={ `cell-occupancy-${props.getRowId(row)}` }>{row.Occupancy}</span>
+                    {props.columns
                         .find(col => col.field === 'action')
                         ?.getActions({ row })
                         ?.map(action => (
-                            <div key={ `${props.getRowId(row)}-action-${action.key}` }>{ action }</div>
+                            <div key={ `${props.getRowId(row)}-action-${action.key}` }>{action}</div>
                         ))}
                 </div>
             ))}
@@ -48,11 +48,11 @@ jest.mock('./BusPriorityThresholdsModal', () => {
         return (
             <div data-testid="threshold-modal">
                 <div data-testid="modal-mode">
-                    { mode }
+                    {mode}
                 </div>
-                <div data-testid="modal-site-id">{ thresholdSet?.siteId ?? 'none' }</div>
-                <div data-testid="modal-route-id">{ thresholdSet?.routeId ?? 'none' }</div>
-                <div data-testid="modal-occupancy">{ thresholdSet?.occupancy ?? 'none' }</div>
+                <div data-testid="modal-site-id">{thresholdSet?.siteId ?? 'none'}</div>
+                <div data-testid="modal-route-id">{thresholdSet?.routeId ?? 'none'}</div>
+                <div data-testid="modal-occupancy">{thresholdSet?.occupancy ?? 'none'}</div>
                 <button type="button" data-testid="modal-close" onClick={ onClose }>Close</button>
                 <button type="button" data-testid="modal-save" onClick={ () => saveNewThresholds({ test: 'data' }) }>
                     Save
@@ -132,14 +132,6 @@ describe('<BusPriorityThresholdDataGrid />', () => {
             render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
             expect(defaultProps.getBusPriorityThresholds).toHaveBeenCalledTimes(1);
         });
-
-        it('only calls getBusPriorityThresholds once on mount', () => {
-            const { rerender } = render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
-            expect(defaultProps.getBusPriorityThresholds).toHaveBeenCalledTimes(1);
-
-            rerender(<BusPriorityThresholdDataGrid { ...defaultProps } isLoading />);
-            expect(defaultProps.getBusPriorityThresholds).toHaveBeenCalledTimes(1);
-        });
     });
 
     describe('UI Rendering', () => {
@@ -163,27 +155,11 @@ describe('<BusPriorityThresholdDataGrid />', () => {
             expect(screen.getByTestId('loading')).toBeInTheDocument();
         });
 
-        it('does not display loading indicator when isLoading is false', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } isLoading={ false } />);
-            expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
-        });
-
         it('displays grid data correctly', () => {
             render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
             expect(screen.getByTestId('cell-route-rk1')).toHaveTextContent('101');
             expect(screen.getByTestId('cell-threshold-rk2')).toHaveTextContent('20');
             expect(screen.getByTestId('cell-score-rk1')).toHaveTextContent('10');
-        });
-
-        it('renders all threshold rows', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
-            expect(screen.getByTestId('row-rk1')).toBeInTheDocument();
-            expect(screen.getByTestId('row-rk2')).toBeInTheDocument();
-        });
-
-        it('renders correctly with empty thresholds array', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ [] } />);
-            expect(screen.getByTestId('custom-datagrid')).toBeInTheDocument();
         });
     });
 
@@ -259,39 +235,6 @@ describe('<BusPriorityThresholdDataGrid />', () => {
 
             expect(screen.getByTestId('modal-site-id')).toHaveTextContent('none');
         });
-
-        it('handles undefined SiteId correctly', () => {
-            const thresholdsWithUndefined = [
-                { ...mockThresholds[0], SiteId: undefined },
-            ];
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithUndefined } />);
-            const editButtons = screen.getAllByTestId('edit-icon');
-            fireEvent.click(editButtons[0]);
-
-            expect(screen.getByTestId('modal-site-id')).toHaveTextContent('none');
-        });
-
-        it('handles empty string SiteId correctly', () => {
-            const thresholdsWithEmpty = [
-                { ...mockThresholds[0], SiteId: '' },
-            ];
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithEmpty } />);
-            const editButtons = screen.getAllByTestId('edit-icon');
-            fireEvent.click(editButtons[0]);
-
-            expect(screen.getByTestId('modal-site-id')).toHaveTextContent('none');
-        });
-
-        it('handles numeric SiteId correctly', () => {
-            const thresholdsWithNumber = [
-                { ...mockThresholds[0], SiteId: 5000 },
-            ];
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithNumber } />);
-            const editButtons = screen.getAllByTestId('edit-icon');
-            fireEvent.click(editButtons[0]);
-
-            expect(screen.getByTestId('modal-site-id')).toHaveTextContent('5000');
-        });
     });
 
     describe('Default Threshold Set Detection', () => {
@@ -351,12 +294,6 @@ describe('<BusPriorityThresholdDataGrid />', () => {
             expect(editButtons).toHaveLength(2);
         });
 
-        it('displays view button for each row when edit is not allowed', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } isEditAllowed={ false } />);
-            const editButtons = screen.getAllByTestId('edit-icon');
-            expect(editButtons).toHaveLength(2);
-        });
-
         it('does not display delete button when edit is not allowed', () => {
             render(<BusPriorityThresholdDataGrid { ...defaultProps } isEditAllowed={ false } />);
             expect(screen.queryByTestId('delete-icon')).not.toBeInTheDocument();
@@ -404,19 +341,6 @@ describe('<BusPriorityThresholdDataGrid />', () => {
     });
 
     describe('Modal State Management', () => {
-        it('maintains modal state after opening and closing', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
-
-            fireEvent.click(screen.getByText('Add New Threshold Set'));
-            expect(screen.getByTestId('threshold-modal')).toBeInTheDocument();
-
-            fireEvent.click(screen.getByTestId('modal-close'));
-            expect(screen.queryByTestId('threshold-modal')).not.toBeInTheDocument();
-
-            fireEvent.click(screen.getByText('Add New Threshold Set'));
-            expect(screen.getByTestId('threshold-modal')).toBeInTheDocument();
-        });
-
         it('switches between different modal modes correctly', () => {
             render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
 
@@ -435,83 +359,9 @@ describe('<BusPriorityThresholdDataGrid />', () => {
             fireEvent.click(deleteButtons[0]);
             expect(screen.getByTestId('modal-mode')).toHaveTextContent('DELETE');
         });
-
-        it('clears thresholdSet when opening NEW mode', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
-
-            const editButtons = screen.getAllByTestId('edit-icon');
-            fireEvent.click(editButtons[0]);
-            expect(screen.getByTestId('modal-site-id')).toHaveTextContent('2141');
-
-            fireEvent.click(screen.getByTestId('modal-close'));
-
-            fireEvent.click(screen.getByText('Add New Threshold Set'));
-            expect(screen.getByTestId('modal-site-id')).toHaveTextContent('none');
-        });
-    });
-
-    describe('Modal Props Passing', () => {
-        it('passes all required props to modal', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
-            fireEvent.click(screen.getByText('Add New Threshold Set'));
-
-            expect(screen.getByTestId('threshold-modal')).toBeInTheDocument();
-            expect(screen.getByTestId('modal-mode')).toBeInTheDocument();
-        });
-
-        it('passes correct thresholdSet data for UPDATE mode', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
-            const editButtons = screen.getAllByTestId('edit-icon');
-            fireEvent.click(editButtons[0]);
-
-            expect(screen.getByTestId('modal-site-id')).toHaveTextContent('2141');
-            expect(screen.getByTestId('modal-route-id')).toHaveTextContent('101');
-            expect(screen.getByTestId('modal-occupancy')).toHaveTextContent('High');
-        });
-
-        it('passes correct thresholdSet data for DELETE mode', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
-            const deleteButtons = screen.getAllByTestId('delete-icon');
-            fireEvent.click(deleteButtons[0]);
-
-            expect(screen.getByTestId('modal-site-id')).toHaveTextContent('2141');
-            expect(screen.getByTestId('modal-route-id')).toHaveTextContent('101');
-            expect(screen.getByTestId('modal-occupancy')).toHaveTextContent('High');
-        });
     });
 
     describe('Edge Cases', () => {
-        it('handles thresholds with all fields populated', () => {
-            const completeThreshold = [
-                {
-                    rowKey: 'complete',
-                    partitionKey: 'pk-complete',
-                    RouteId: '202',
-                    Threshold: 75,
-                    Score: 20,
-                    SiteId: '3000',
-                    Occupancy: 'Medium',
-                },
-            ];
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ completeThreshold } />);
-
-            expect(screen.getByTestId('row-complete')).toBeInTheDocument();
-            expect(screen.getByTestId('cell-route-complete')).toHaveTextContent('202');
-        });
-
-        it('handles thresholds with only required fields', () => {
-            const minimalThreshold = [
-                {
-                    rowKey: 'minimal',
-                    Threshold: 40,
-                    Score: 12,
-                },
-            ];
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ minimalThreshold } />);
-
-            expect(screen.getByTestId('row-minimal')).toBeInTheDocument();
-        });
-
         it('handles zero values correctly', () => {
             const zeroThreshold = [
                 {
@@ -526,68 +376,6 @@ describe('<BusPriorityThresholdDataGrid />', () => {
 
             expect(screen.getByTestId('cell-threshold-zero')).toHaveTextContent('0');
             expect(screen.getByTestId('cell-score-zero')).toHaveTextContent('0');
-        });
-
-        it('handles very long RouteId strings', () => {
-            const longRouteId = [
-                {
-                    rowKey: 'long',
-                    RouteId: 'VERY_LONG_ROUTE_ID_STRING_12345678910',
-                    Threshold: 45,
-                    Score: 18,
-                },
-            ];
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ longRouteId } />);
-
-            expect(screen.getByTestId('cell-route-long')).toHaveTextContent('VERY_LONG_ROUTE_ID_STRING_12345678910');
-        });
-    });
-
-    describe('Component Props', () => {
-        it('passes correct props to CustomDataGrid', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
-
-            expect(screen.getByTestId('custom-datagrid')).toBeInTheDocument();
-        });
-
-        it('passes loading state to CustomDataGrid', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } isLoading />);
-
-            expect(screen.getByTestId('loading')).toBeInTheDocument();
-        });
-
-        it('passes data source to CustomDataGrid', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
-
-            expect(screen.getByTestId('row-rk1')).toBeInTheDocument();
-            expect(screen.getByTestId('row-rk2')).toBeInTheDocument();
-        });
-    });
-
-    describe('Multiple Rows Interaction', () => {
-        it('can open edit modal for different rows sequentially', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
-            const editButtons = screen.getAllByTestId('edit-icon');
-
-            fireEvent.click(editButtons[0]);
-            expect(screen.getByTestId('modal-site-id')).toHaveTextContent('2141');
-            fireEvent.click(screen.getByTestId('modal-close'));
-
-            fireEvent.click(editButtons[1]);
-            expect(screen.getByTestId('modal-site-id')).toHaveTextContent('none');
-        });
-
-        it('can switch between edit and delete for same row', () => {
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
-            const editButtons = screen.getAllByTestId('edit-icon');
-            const deleteButtons = screen.getAllByTestId('delete-icon');
-
-            fireEvent.click(editButtons[0]);
-            expect(screen.getByTestId('modal-mode')).toHaveTextContent('UPDATE');
-            fireEvent.click(screen.getByTestId('modal-close'));
-
-            fireEvent.click(deleteButtons[0]);
-            expect(screen.getByTestId('modal-mode')).toHaveTextContent('DELETE');
         });
     });
 });

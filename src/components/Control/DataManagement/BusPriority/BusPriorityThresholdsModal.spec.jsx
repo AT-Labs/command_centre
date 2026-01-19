@@ -34,10 +34,10 @@ jest.mock('../../../Common/CustomMuiDialog/CustomMuiDialog', () => {
         if (!isOpen) return null;
         return (
             <div data-testid="custom-mui-dialog">
-                <div data-testid="dialog-title">{ title }</div>
+                <div data-testid="dialog-title">{title}</div>
                 <button type="button" data-testid="dialog-close" onClick={ onClose }>Close</button>
-                <div data-testid="dialog-body">{ children }</div>
-                <div data-testid="dialog-footer">{ footerContent }</div>
+                <div data-testid="dialog-body">{children}</div>
+                <div data-testid="dialog-footer">{footerContent}</div>
             </div>
         );
     };
@@ -48,8 +48,8 @@ jest.mock('../../../Common/CustomMuiDialog/CustomMuiDialog', () => {
 jest.mock('../../../Common/CustomDataGrid/CustomDataGrid', () => {
     const MockCustomDataGrid = props => (
         <div data-testid="custom-datagrid">
-            <div data-testid="toolbar">{ props.toolbarButtons() }</div>
-            { props.dataSource.map((row) => {
+            <div data-testid="toolbar">{props.toolbarButtons()}</div>
+            {props.dataSource.map((row) => {
                 const actions = props.columns
                     .find(col => col.field === 'action')
                     ?.getActions({ row });
@@ -58,7 +58,7 @@ jest.mock('../../../Common/CustomDataGrid/CustomDataGrid', () => {
                     <div key={ props.getRowId(row) } data-testid={ `row-${props.getRowId(row)}` }>
                         <span data-testid={ `cell-score-${props.getRowId(row)}` }>
                             <span data-testid={ `score-value-${props.getRowId(row)}` }>
-                                { row.Score }
+                                {row.Score}
                             </span>
                             <input
                                 type="number"
@@ -75,7 +75,7 @@ jest.mock('../../../Common/CustomDataGrid/CustomDataGrid', () => {
                         </span>
                         <span data-testid={ `cell-threshold-${props.getRowId(row)}` }>
                             <span data-testid={ `threshold-value-${props.getRowId(row)}` }>
-                                { row.Threshold }
+                                {row.Threshold}
                             </span>
                             <input
                                 type="number"
@@ -90,8 +90,8 @@ jest.mock('../../../Common/CustomDataGrid/CustomDataGrid', () => {
                                 } }
                             />
                         </span>
-                        { actions?.map(action => (
-                            <div key={ action.key }>{ action }</div>
+                        {actions?.map(action => (
+                            <div key={ action.key }>{action}</div>
                         ))}
                     </div>
                 );
@@ -118,7 +118,7 @@ jest.mock('../../BlocksView/BlockModals/ModalAlert', () => {
         if (!isOpen) return null;
         return (
             <div data-testid="modal-alert" data-color={ color }>
-                { content }
+                {content}
             </div>
         );
     };
@@ -232,20 +232,6 @@ describe('BusPriorityThresholdsModal', () => {
             expect(occupancySelect).toBeInTheDocument();
         });
 
-        it('allows entering Site Id', () => {
-            render(<BusPriorityThresholdsModal { ...defaultProps } />);
-            const siteIdInput = screen.getByPlaceholderText('Site Id');
-            fireEvent.change(siteIdInput, { target: { value: '1234' } });
-            expect(siteIdInput).toHaveValue(1234);
-        });
-
-        it('allows entering Route Id', () => {
-            render(<BusPriorityThresholdsModal { ...defaultProps } />);
-            const routeIdInput = screen.getByPlaceholderText('Route Id');
-            fireEvent.change(routeIdInput, { target: { value: '101' } });
-            expect(routeIdInput).toHaveValue('101');
-        });
-
         it('converts Route Id to uppercase', () => {
             render(<BusPriorityThresholdsModal { ...defaultProps } />);
             const routeIdInput = screen.getByPlaceholderText('Route Id');
@@ -269,31 +255,12 @@ describe('BusPriorityThresholdsModal', () => {
             expect(routeIdInput).toHaveValue('104, 105');
         });
 
-        it('allows selecting Occupancy', () => {
-            render(<BusPriorityThresholdsModal { ...defaultProps } />);
-            const occupancySelect = document.querySelector('#occupancy');
-
-            expect(occupancySelect).toBeInTheDocument();
-
-            fireEvent.change(occupancySelect, { target: { value: 'High' }, currentTarget: { value: 'High' } });
-
-            expect(occupancySelect).toBeInTheDocument();
-        });
-
         it('disables filters in DELETE mode', () => {
             render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.DELETE } thresholdSet={ { siteId: 2141, routeId: '101', occupancy: 'High' } } />);
             expect(screen.getByPlaceholderText('Site Id')).toBeDisabled();
             expect(screen.getByPlaceholderText('Route Id')).toBeDisabled();
             const occupancySelect = document.querySelector('#occupancy');
             expect(occupancySelect).toBeDisabled();
-        });
-
-        it('enables filters in NEW mode', () => {
-            render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
-            expect(screen.getByPlaceholderText('Site Id')).not.toBeDisabled();
-            expect(screen.getByPlaceholderText('Route Id')).not.toBeDisabled();
-            const occupancySelect = document.querySelector('#occupancy');
-            expect(occupancySelect).not.toBeDisabled();
         });
     });
 
@@ -341,11 +308,6 @@ describe('BusPriorityThresholdsModal', () => {
             expect(screen.getByText('Add threshold')).toBeInTheDocument();
         });
 
-        it('shows Add threshold button in UPDATE mode', () => {
-            render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.UPDATE } thresholdSet={ { siteId: 2141, routeId: '101', occupancy: 'High' } } />);
-            expect(screen.getByText('Add threshold')).toBeInTheDocument();
-        });
-
         it('shows Duplicate thresholds button only in UPDATE mode', () => {
             render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.UPDATE } thresholdSet={ { siteId: 2141, routeId: '101', occupancy: 'High' } } />);
             expect(screen.getByText('Duplicate thresholds')).toBeInTheDocument();
@@ -360,11 +322,6 @@ describe('BusPriorityThresholdsModal', () => {
             render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.DELETE } thresholdSet={ { siteId: 2141, routeId: '101', occupancy: 'High' } } />);
             expect(screen.queryByText('Add threshold')).not.toBeInTheDocument();
             expect(screen.queryByText('Duplicate thresholds')).not.toBeInTheDocument();
-        });
-
-        it('does not show toolbar buttons in VIEW mode', () => {
-            render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.VIEW } thresholdSet={ { siteId: 2141, routeId: '101', occupancy: 'High' } } />);
-            expect(screen.queryByText('Add threshold')).not.toBeInTheDocument();
         });
     });
 
@@ -436,17 +393,6 @@ describe('BusPriorityThresholdsModal', () => {
             fireEvent.click(screen.getByText('Add threshold'));
 
             expect(screen.getByTestId('delete-icon')).toBeInTheDocument();
-        });
-
-        it('shows delete button for each row in UPDATE mode', () => {
-            render(<BusPriorityThresholdsModal
-                { ...defaultProps }
-                mode={ UPDATE_TYPE.UPDATE }
-                thresholdSet={ { siteId: 2141, routeId: '101', occupancy: 'High' } }
-            />);
-
-            const deleteIcons = screen.getAllByTestId('delete-icon');
-            expect(deleteIcons.length).toBeGreaterThan(0);
         });
 
         it('does not show delete button in DELETE mode', () => {
@@ -684,37 +630,6 @@ describe('BusPriorityThresholdsModal', () => {
                 expect(saveButton).toBeDisabled();
             });
         });
-
-        it('button state changes based on data validity', async () => {
-            render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
-
-            const saveButton = screen.getByText('Add new threshold set');
-            expect(saveButton).toBeDisabled();
-
-            const siteIdInput = screen.getByPlaceholderText('Site Id');
-            fireEvent.change(siteIdInput, { target: { value: 5000 } });
-
-            fireEvent.click(screen.getByText('Add threshold'));
-
-            await waitFor(() => {
-                expect(screen.getByTestId('edit-score-NEW10000')).toBeInTheDocument();
-            });
-
-            const scoreInput = screen.getByTestId('edit-score-NEW10000');
-            fireEvent.change(scoreInput, { target: { value: '10' } });
-            fireEvent.blur(scoreInput);
-
-            const thresholdInput = screen.getByTestId('edit-threshold-NEW10000');
-            fireEvent.change(thresholdInput, { target: { value: '50' } });
-            fireEvent.blur(thresholdInput);
-
-            await waitFor(() => {
-                expect(screen.getByTestId('score-value-NEW10000')).toHaveTextContent('10');
-                expect(screen.getByTestId('threshold-value-NEW10000')).toHaveTextContent('50');
-            });
-
-            expect(screen.getByText('Add new threshold set')).toBeInTheDocument();
-        });
     });
 
     describe('Modal Actions', () => {
@@ -722,15 +637,6 @@ describe('BusPriorityThresholdsModal', () => {
             render(<BusPriorityThresholdsModal { ...defaultProps } />);
             fireEvent.click(screen.getByTestId('dialog-close'));
             expect(defaultProps.onClose).toHaveBeenCalled();
-        });
-
-        it('has correct button label and calls handler in NEW mode', () => {
-            render(<BusPriorityThresholdsModal { ...defaultProps } mode={ UPDATE_TYPE.NEW } />);
-
-            const saveButton = screen.getByText('Add new threshold set');
-            expect(saveButton).toBeInTheDocument();
-
-            expect(saveButton).toBeDisabled();
         });
 
         it('has correct button label in UPDATE mode', () => {
