@@ -235,6 +235,34 @@ describe('<BusPriorityThresholdDataGrid />', () => {
 
             expect(screen.getByTestId('modal-site-id')).toHaveTextContent('none');
         });
+
+        it('handles undefined SiteId correctly in UPDATE mode', () => {
+            const thresholdsWithUndefined = [
+                {
+                    ...mockThresholds[0],
+                    SiteId: undefined,
+                },
+            ];
+            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithUndefined } />);
+            const editButtons = screen.getAllByTestId('edit-icon');
+            fireEvent.click(editButtons[0]);
+
+            expect(screen.getByTestId('modal-site-id')).toHaveTextContent('none');
+        });
+
+        it('handles empty string SiteId correctly in UPDATE mode', () => {
+            const thresholdsWithEmpty = [
+                {
+                    ...mockThresholds[0],
+                    SiteId: '',
+                },
+            ];
+            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithEmpty } />);
+            const editButtons = screen.getAllByTestId('edit-icon');
+            fireEvent.click(editButtons[0]);
+
+            expect(screen.getByTestId('modal-site-id')).toHaveTextContent('none');
+        });
     });
 
     describe('Default Threshold Set Detection', () => {
@@ -283,6 +311,40 @@ describe('<BusPriorityThresholdDataGrid />', () => {
             render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ siteOnlyThreshold } />);
 
             const row = screen.getByTestId('row-site-only');
+            expect(row.querySelector('.hidden-icon')).not.toBeInTheDocument();
+        });
+
+        it('identifies threshold as non-default when only RouteId exists', () => {
+            const routeOnlyThreshold = [
+                {
+                    rowKey: 'route-only',
+                    RouteId: '200',
+                    SiteId: null,
+                    Occupancy: null,
+                    Threshold: 40,
+                    Score: 12,
+                },
+            ];
+            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ routeOnlyThreshold } />);
+
+            const row = screen.getByTestId('row-route-only');
+            expect(row.querySelector('.hidden-icon')).not.toBeInTheDocument();
+        });
+
+        it('identifies threshold as non-default when only Occupancy exists', () => {
+            const occupancyOnlyThreshold = [
+                {
+                    rowKey: 'occupancy-only',
+                    RouteId: null,
+                    SiteId: null,
+                    Occupancy: 'Medium',
+                    Threshold: 35,
+                    Score: 8,
+                },
+            ];
+            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ occupancyOnlyThreshold } />);
+
+            const row = screen.getByTestId('row-occupancy-only');
             expect(row.querySelector('.hidden-icon')).not.toBeInTheDocument();
         });
     });
