@@ -9,33 +9,43 @@ import '@testing-library/jest-dom';
 import { BusPriorityThresholdDataGrid } from './BusPriorityThresholds';
 
 jest.mock('../../../Common/CustomDataGrid/CustomDataGrid', () => {
-    const MockCustomDataGrid = props => (
-        <div data-testid="custom-datagrid">
-            {props.loading && <div data-testid="loading">Loading...</div>}
-            {props.dataSource.map(row => (
-                <div key={ `row-${props.getRowId(row)}` } data-testid={ `row-${props.getRowId(row)}` }>
-                    <span data-testid={ `cell-route-${props.getRowId(row)}` }>{row.RouteId}</span>
-                    <span data-testid={ `cell-threshold-${props.getRowId(row)}` }>{row.Threshold}</span>
-                    <span data-testid={ `cell-score-${props.getRowId(row)}` }>{row.Score}</span>
-                    <span data-testid={ `cell-siteid-${props.getRowId(row)}` }>{row.SiteId}</span>
-                    <span data-testid={ `cell-occupancy-${props.getRowId(row)}` }>{row.Occupancy}</span>
-                    {props.columns
-                        .find(col => col.field === 'action')
-                        ?.getActions({ row })
-                        ?.map(action => (
-                            <div key={ `${props.getRowId(row)}-action-${action.key}` }>{action}</div>
-                        ))}
-                </div>
-            ))}
-            <button
-                type="button"
-                data-testid="trigger-config-update"
-                onClick={ () => props.updateDatagridConfig({ newConfig: 'test' }) }
-            >
-                Update Config
-            </button>
-        </div>
-    );
+    const MockCustomDataGrid = (props) => {
+        const siteIdColumn = props.columns.find(col => col.field === 'SiteId');
+        const formatSiteId = (row) => {
+            if (siteIdColumn?.valueFormatter) {
+                return siteIdColumn.valueFormatter({ value: row.SiteId });
+            }
+            return row.SiteId;
+        };
+
+        return (
+            <div data-testid="custom-datagrid">
+                {props.loading && <div data-testid="loading">Loading...</div>}
+                {props.dataSource.map(row => (
+                    <div key={ `row-${props.getRowId(row)}` } data-testid={ `row-${props.getRowId(row)}` }>
+                        <span data-testid={ `cell-route-${props.getRowId(row)}` }>{row.RouteId}</span>
+                        <span data-testid={ `cell-threshold-${props.getRowId(row)}` }>{row.Threshold}</span>
+                        <span data-testid={ `cell-score-${props.getRowId(row)}` }>{row.Score}</span>
+                        <span data-testid={ `cell-siteid-${props.getRowId(row)}` }>{formatSiteId(row)}</span>
+                        <span data-testid={ `cell-occupancy-${props.getRowId(row)}` }>{row.Occupancy}</span>
+                        {props.columns
+                            .find(col => col.field === 'action')
+                            ?.getActions({ row })
+                            ?.map(action => (
+                                <div key={ `${props.getRowId(row)}-action-${action.key}` }>{action}</div>
+                            ))}
+                    </div>
+                ))}
+                <button
+                    type="button"
+                    data-testid="trigger-config-update"
+                    onClick={ () => props.updateDatagridConfig({ newConfig: 'test' }) }
+                >
+                    Update Config
+                </button>
+            </div>
+        );
+    };
     MockCustomDataGrid.displayName = 'MockCustomDataGrid';
     return MockCustomDataGrid;
 });
@@ -163,6 +173,65 @@ describe('<BusPriorityThresholdDataGrid />', () => {
         });
     });
 
+    describe('SiteId Value Formatting', () => {
+        it('displays SiteId as string when value is valid', () => {
+            render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
+            const siteIdCell = screen.getByTestId('cell-siteid-rk1');
+            expect(siteIdCell).toHaveTextContent('2141');
+        });
+
+        it('displays empty string when SiteId is null', () => {
+            render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
+            const siteIdCell = screen.getByTestId('cell-siteid-rk2');
+            expect(siteIdCell).toHaveTextContent('');
+        });
+
+        it('displays empty string when SiteId is undefined', () => {
+            const thresholdsWithUndefined = [
+                {
+                    rowKey: 'undefined-siteid',
+                    RouteId: '103',
+                    SiteId: undefined,
+                    Threshold: 60,
+                    Score: 15,
+                },
+            ];
+            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithUndefined } />);
+            const siteIdCell = screen.getByTestId('cell-siteid-undefined-siteid');
+            expect(siteIdCell).toHaveTextContent('');
+        });
+
+        it('displays empty string when SiteId is empty string', () => {
+            const thresholdsWithEmpty = [
+                {
+                    rowKey: 'empty-siteid',
+                    RouteId: '104',
+                    SiteId: '',
+                    Threshold: 70,
+                    Score: 18,
+                },
+            ];
+            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithEmpty } />);
+            const siteIdCell = screen.getByTestId('cell-siteid-empty-siteid');
+            expect(siteIdCell).toHaveTextContent('');
+        });
+
+        it('displays numeric SiteId as string', () => {
+            const thresholdsWithNumber = [
+                {
+                    rowKey: 'numeric-siteid',
+                    RouteId: '105',
+                    SiteId: 5000,
+                    Threshold: 80,
+                    Score: 20,
+                },
+            ];
+            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithNumber } />);
+            const siteIdCell = screen.getByTestId('cell-siteid-numeric-siteid');
+            expect(siteIdCell).toHaveTextContent('5000');
+        });
+    });
+
     describe('Modal Interactions - Opening', () => {
         it('modal does not render initially', () => {
             render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
@@ -232,34 +301,6 @@ describe('<BusPriorityThresholdDataGrid />', () => {
             render(<BusPriorityThresholdDataGrid { ...defaultProps } />);
             const editButtons = screen.getAllByTestId('edit-icon');
             fireEvent.click(editButtons[1]);
-
-            expect(screen.getByTestId('modal-site-id')).toHaveTextContent('none');
-        });
-
-        it('handles undefined SiteId correctly in UPDATE mode', () => {
-            const thresholdsWithUndefined = [
-                {
-                    ...mockThresholds[0],
-                    SiteId: undefined,
-                },
-            ];
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithUndefined } />);
-            const editButtons = screen.getAllByTestId('edit-icon');
-            fireEvent.click(editButtons[0]);
-
-            expect(screen.getByTestId('modal-site-id')).toHaveTextContent('none');
-        });
-
-        it('handles empty string SiteId correctly in UPDATE mode', () => {
-            const thresholdsWithEmpty = [
-                {
-                    ...mockThresholds[0],
-                    SiteId: '',
-                },
-            ];
-            render(<BusPriorityThresholdDataGrid { ...defaultProps } busPriorityThresholds={ thresholdsWithEmpty } />);
-            const editButtons = screen.getAllByTestId('edit-icon');
-            fireEvent.click(editButtons[0]);
 
             expect(screen.getByTestId('modal-site-id')).toHaveTextContent('none');
         });
