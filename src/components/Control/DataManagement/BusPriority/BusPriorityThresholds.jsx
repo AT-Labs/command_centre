@@ -10,11 +10,11 @@ import CustomDataGrid from '../../../Common/CustomDataGrid/CustomDataGrid';
 import {
     getAllBusPriorityThresholds,
     getBusPriorityThresholdsDatagridConfig,
-    getIsLoadingBusPriorityThresholds, isBusPriorityEditAllowed
+    getIsLoadingBusPriorityThresholds, isBusPriorityEditAllowed,
 } from '../../../../redux/selectors/control/dataManagement/busPriority';
 import {
     getBusPriorityThresholds, saveNewThresholds, updateBusPriorityThresholdsDatagridConfig,
-    updateThresholds, deleteThresholds
+    updateThresholds, deleteThresholds,
 } from '../../../../redux/actions/control/dataManagement';
 import BusPriorityThresholdsModal, { UPDATE_TYPE } from './BusPriorityThresholdsModal';
 
@@ -60,11 +60,11 @@ export const BusPriorityThresholdDataGrid = (props) => {
 
         if (!props.isEditAllowed) {
             return [
-                <Tooltip title="View Threshold Set" placement="top-end" key={`view-${row.rowKey}`}>
+                <Tooltip title="View Threshold Set" placement="top-end" key={ `view-${row.rowKey}` }>
                     <IconButton
                         color="default"
                         aria-label="edit"
-                        onClick={() => openThresholdModal(UPDATE_TYPE.VIEW, row)}
+                        onClick={ () => openThresholdModal(UPDATE_TYPE.VIEW, row) }
                     >
                         <BsPencilSquare />
                     </IconButton>
@@ -73,20 +73,20 @@ export const BusPriorityThresholdDataGrid = (props) => {
         }
 
         return [
-            <Tooltip title="Edit Threshold Set" placement="top-end" key={`edit-${row.rowKey}`}>
+            <Tooltip title="Edit Threshold Set" placement="top-end" key={ `edit-${row.rowKey}` }>
                 <IconButton
                     color="default"
                     aria-label="edit"
-                    onClick={() => openThresholdModal(UPDATE_TYPE.UPDATE, row)}
+                    onClick={ () => openThresholdModal(UPDATE_TYPE.UPDATE, row) }
                 >
                     <BsPencilSquare />
                 </IconButton>
             </Tooltip>,
-            <Tooltip className={isDefaultThresholdSet(row) ? 'hidden-icon' : ''} title="Delete Threshold Set" placement="top-end" key={`delete-${row.rowKey}`}>
+            <Tooltip className={ isDefaultThresholdSet(row) ? 'hidden-icon' : '' } title="Delete Threshold Set" placement="top-end" key={ `delete-${row.rowKey}` }>
                 <IconButton
                     color="error"
                     aria-label="delete"
-                    onClick={() => openThresholdModal(UPDATE_TYPE.DELETE, row)}
+                    onClick={ () => openThresholdModal(UPDATE_TYPE.DELETE, row) }
                 >
                     <DeleteIcon />
                 </IconButton>
@@ -164,8 +164,8 @@ export const BusPriorityThresholdDataGrid = (props) => {
                         <div className="col-9 d-flex justify-content-between">
                             <Button
                                 className="cc-btn-secondary"
-                                onClick={() => openThresholdModal(UPDATE_TYPE.NEW)}>
-                                <FaPlus size={20} className="cc-btn-secondary__icon" />
+                                onClick={ () => openThresholdModal(UPDATE_TYPE.NEW) }>
+                                <FaPlus size={ 20 } className="cc-btn-secondary__icon" />
                                 Add New Threshold Set
                             </Button>
                         </div>
@@ -174,25 +174,25 @@ export const BusPriorityThresholdDataGrid = (props) => {
             }
             <CustomDataGrid
                 gridClassNames="vh-80"
-                loading={props.isLoading}
-                columns={GRID_COLUMNS}
-                datagridConfig={props.datagridConfig}
-                dataSource={props.busPriorityThresholds}
-                updateDatagridConfig={config => props.updateBusPriorityThresholdsDatagridConfig(config)}
-                getRowId={row => row.rowKey}
+                loading={ props.isLoading }
+                columns={ GRID_COLUMNS }
+                datagridConfig={ props.datagridConfig }
+                dataSource={ props.busPriorityThresholds }
+                updateDatagridConfig={ config => props.updateBusPriorityThresholdsDatagridConfig(config) }
+                getRowId={ row => row.rowKey }
             />
             {isThresholdsModalOpen && (
                 <BusPriorityThresholdsModal
-                    isModalOpen={isThresholdsModalOpen}
-                    onClose={() => {
+                    isModalOpen={ isThresholdsModalOpen }
+                    onClose={ () => {
                         setIsThresholdsModalOpen(false);
-                    }}
-                    mode={mode}
-                    allThresholds={props.busPriorityThresholds}
-                    saveNewThresholds={thresholds => props.saveNewThresholds(thresholds)}
-                    updateThresholds={(originalThresholds, thresholds) => props.updateThresholds(originalThresholds, thresholds)}
-                    deleteThresholds={thresholds => props.deleteThresholds(thresholds)}
-                    thresholdSet={thresholdSet}
+                    } }
+                    mode={ mode }
+                    allThresholds={ props.busPriorityThresholds }
+                    saveNewThresholds={ thresholds => props.saveNewThresholds(thresholds) }
+                    updateThresholds={ (originalThresholds, thresholds) => props.updateThresholds(originalThresholds, thresholds) }
+                    deleteThresholds={ thresholds => props.deleteThresholds(thresholds) }
+                    thresholdSet={ thresholdSet }
                 />
             )}
         </div>
