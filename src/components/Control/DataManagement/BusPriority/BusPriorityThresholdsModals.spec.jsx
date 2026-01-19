@@ -11,17 +11,17 @@ import BusPriorityThresholdsModal, { UPDATE_TYPE } from './BusPriorityThresholds
 jest.mock('../../../Common/CustomDataGrid/CustomDataGrid', () => {
     const MockCustomDataGrid = props => (
         <div data-testid="custom-datagrid">
-            <div data-testid="toolbar">{props.toolbarButtons()}</div>
-            {props.dataSource.map(row => (
+            <div data-testid="toolbar">{ props.toolbarButtons() }</div>
+            { props.dataSource.map(row => (
                 <div key={ `${props.getRowId(row)}` } data-testid={ `row-${props.getRowId(row)}` }>
-                    <span data-testid={ `cell-score-${props.getRowId(row)}` }>{row.Score}</span>
-                    <span data-testid={ `cell-threshold-${props.getRowId(row)}` }>{row.Threshold}</span>
-                    {props.columns
+                    <span data-testid={ `cell-score-${props.getRowId(row)}` }>{ row.Score }</span>
+                    <span data-testid={ `cell-threshold-${props.getRowId(row)}` }>{ row.Threshold }</span>
+                    { props.columns
                         .find(col => col.field === 'action')
                         ?.getActions({ row })
                         ?.map(action => (
                             <div key={ `${props.getRowId(row)}-action` } data-testid={ `action-${props.getRowId(row)}` }>
-                                {action}
+                                { action }
                             </div>
                         ))}
                 </div>
@@ -37,10 +37,10 @@ jest.mock('../../../Common/CustomMuiDialog/CustomMuiDialog', () => {
         if (!isOpen) return null;
         return (
             <div data-testid="custom-mui-dialog" role="dialog">
-                <h2 data-testid="modal-title">{title}</h2>
+                <h2 data-testid="modal-title">{ title }</h2>
                 <button type="button" data-testid="modal-close" onClick={ onClose }>Close</button>
-                <div data-testid="modal-body">{children}</div>
-                <div data-testid="modal-footer">{footerContent}</div>
+                <div data-testid="modal-body">{ children }</div>
+                <div data-testid="modal-footer">{ footerContent }</div>
             </div>
         );
     };
@@ -55,7 +55,7 @@ jest.mock('react-redux', () => ({
 jest.mock('../../BlocksView/BlockModals/ModalAlert', () => {
     const MockModalAlert = ({ isOpen, content }) => {
         if (!isOpen) return null;
-        return <div data-testid="modal-alert">{content}</div>;
+        return <div data-testid="modal-alert">{ content }</div>;
     };
     MockModalAlert.displayName = 'MockModalAlert';
     return MockModalAlert;
