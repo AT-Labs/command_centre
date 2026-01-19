@@ -128,8 +128,8 @@ const BusPriorityThresholdsModal = (props) => {
                 const thresholdSiteId = (threshold.SiteId !== undefined && threshold.SiteId !== null && threshold.SiteId !== '') ? Number.parseInt(threshold.SiteId, 10) : null;
 
                 return (threshold.Occupancy === occupancy || (!threshold.Occupancy && !occupancy))
-                        && (thresholdSiteId === siteId || (!thresholdSiteId && !siteId))
-                        && routeMatched;
+                    && (thresholdSiteId === siteId || (!thresholdSiteId && !siteId))
+                    && routeMatched;
             });
 
         const duplicateScores = hasDuplicates(thresholds.map(row => row.Score));
@@ -223,11 +223,11 @@ const BusPriorityThresholdsModal = (props) => {
         if (updateType === UPDATE_TYPE.NEW || updateType === UPDATE_TYPE.UPDATE) {
             return (
                 [
-                    <Tooltip title="Delete Threshold" placement="top-end" key={ row.rowKey }>
+                    <Tooltip title="Delete Threshold" placement="top-end" key={row.rowKey}>
                         <IconButton
                             color="error"
                             aria-label="delete"
-                            onClick={ () => deleteThreshold(row) }
+                            onClick={() => deleteThreshold(row)}
                         >
                             <DeleteIcon />
                         </IconButton>
@@ -283,14 +283,14 @@ const BusPriorityThresholdsModal = (props) => {
 
     const modalPropsKey = () => {
         switch (updateType) {
-        case UPDATE_TYPE.NEW:
-            return 'addNewThresholdSet';
-        case UPDATE_TYPE.UPDATE:
-            return 'updateThresholdSet';
-        case UPDATE_TYPE.DELETE:
-            return 'deleteThresholdSet';
-        default:
-            return 'viewThresholdSet';
+            case UPDATE_TYPE.NEW:
+                return 'addNewThresholdSet';
+            case UPDATE_TYPE.UPDATE:
+                return 'updateThresholdSet';
+            case UPDATE_TYPE.DELETE:
+                return 'deleteThresholdSet';
+            default:
+                return 'viewThresholdSet';
         }
     };
 
@@ -320,8 +320,8 @@ const BusPriorityThresholdsModal = (props) => {
     };
 
     const generateOccupancyOptions = () => Object.entries(VEHICLE_OCCUPANCY_STATUS_TYPE).map(([, value]) => (
-        <option key={ value } value={ value }>
-            { value }
+        <option key={value} value={value}>
+            {value}
         </option>
     ));
 
@@ -331,13 +331,13 @@ const BusPriorityThresholdsModal = (props) => {
 
     const toolBarButtons = () => (
         <>
-            { (updateType === UPDATE_TYPE.NEW || updateType === UPDATE_TYPE.UPDATE) && (
-                <MuiButton color="primary" startIcon={ <GridAddIcon /> } onClick={ handleAddRow }>
+            {(updateType === UPDATE_TYPE.NEW || updateType === UPDATE_TYPE.UPDATE) && (
+                <MuiButton color="primary" startIcon={<GridAddIcon />} onClick={handleAddRow}>
                     Add threshold
                 </MuiButton>
             )}
-            { updateType === UPDATE_TYPE.UPDATE && (
-                <MuiButton color="primary" startIcon={ <GridMenuIcon /> } onClick={ handleDuplicateSet }>
+            {updateType === UPDATE_TYPE.UPDATE && (
+                <MuiButton color="primary" startIcon={<GridMenuIcon />} onClick={handleDuplicateSet}>
                     Duplicate thresholds
                 </MuiButton>
             )}
@@ -373,8 +373,8 @@ const BusPriorityThresholdsModal = (props) => {
                 <div className="col">
                     <ModalAlert
                         color="danger"
-                        isOpen={ invalidFilters }
-                        content={ <span>{ invalidFilterString }</span> } />
+                        isOpen={invalidFilters}
+                        content={<span>{invalidFilterString}</span>} />
                 </div>
             </div>
             <div className="row filter-container">
@@ -385,14 +385,14 @@ const BusPriorityThresholdsModal = (props) => {
                     <Input
                         type="number"
                         id="siteId"
-                        disabled={ disableFilters }
-                        value={ siteId ?? '' }
+                        disabled={disableFilters}
+                        value={siteId ?? ''}
                         className="cc-form-control"
                         placeholder="Site Id"
-                        onChange={ (event) => {
+                        onChange={(event) => {
                             const { value } = event.target;
                             setSiteId(value === '' ? null : Number.parseInt(value, 10));
-                        } }
+                        }}
                     />
                 </div>
                 <div className="filter">
@@ -401,15 +401,15 @@ const BusPriorityThresholdsModal = (props) => {
                     </Label>
                     <Input
                         id="routeIds"
-                        disabled={ disableFilters }
-                        value={ routeIds }
+                        disabled={disableFilters}
+                        value={routeIds}
                         className="cc-form-control"
                         placeholder="Route Id"
-                        onChange={ event => setRouteIds(event.target.value.toUpperCase()) }
-                        onBlur={ handleRouteIdsBlurOrEnter }
-                        onKeyDown={ (e) => {
+                        onChange={event => setRouteIds(event.target.value.toUpperCase())}
+                        onBlur={handleRouteIdsBlurOrEnter}
+                        onKeyDown={(e) => {
                             if (e.key === 'Enter') handleRouteIdsBlurOrEnter();
-                        } }
+                        }}
                     />
                 </div>
                 <div className="filter">
@@ -417,31 +417,31 @@ const BusPriorityThresholdsModal = (props) => {
                         <span className="filter-label">Occupancy</span>
                     </Label>
                     <Input type="select"
-                        disabled={ disableFilters }
+                        disabled={disableFilters}
                         id="occupancy"
-                        value={ occupancy ?? '' }
+                        value={occupancy ?? ''}
                         // invalid={ invalid }
-                        onBlur={ e => onOccupancyChange(e.currentTarget.value) }
-                        onChange={ e => onOccupancyChange(e.currentTarget.value) }>
-                        <option value={ null } />
-                        { generateOccupancyOptions() }
+                        onBlur={e => onOccupancyChange(e.currentTarget.value)}
+                        onChange={e => onOccupancyChange(e.currentTarget.value)}>
+                        <option value={null} />
+                        {generateOccupancyOptions()}
                     </Input>
                 </div>
             </div>
             <div className="row threshold-grid">
                 <CustomDataGrid
-                    toolbarButtons={ toolBarButtons }
-                    showStandardToolbarButtons={ false }
+                    toolbarButtons={toolBarButtons}
+                    showStandardToolbarButtons={false}
                     gridClassNames="vh-70"
-                    columns={ GRID_COLUMNS }
-                    dataSource={ thresholds }
-                    getRowId={ row => row.rowKey }
-                    datagridConfig={ datagridConfig }
-                    updateDatagridConfig={ config => setDatagridConfig({ ...datagridConfig, ...config }) }
-                    pagination={ false }
-                    onCellEditCommit={ handleCellEditCommit }
-                    stopEditing={ stopEdit }
-                    editComplete={ handleEditComplete }
+                    columns={GRID_COLUMNS}
+                    dataSource={thresholds}
+                    getRowId={row => row.rowKey}
+                    datagridConfig={datagridConfig}
+                    updateDatagridConfig={config => setDatagridConfig({ ...datagridConfig, ...config })}
+                    pagination={false}
+                    onCellEditCommit={handleCellEditCommit}
+                    stopEditing={stopEdit}
+                    editComplete={handleEditComplete}
                 />
             </div>
         </div>
@@ -514,19 +514,19 @@ const BusPriorityThresholdsModal = (props) => {
     const generateFooter = () => (
         <Button
             className="cc-btn-primary w-100"
-            onClick={ activeModalProps.onClick }
-            disabled={ !canSave }>
-            { activeModalProps.mainButtonLabel }
+            onClick={activeModalProps.onClick}
+            disabled={!canSave}>
+            {activeModalProps.mainButtonLabel}
         </Button>
     );
 
     return (
         <CustomMuiDialog
-            title={ activeModalProps.title }
-            onClose={ closeModal }
-            isOpen={ props.isModalOpen }
-            footerContent={ generateFooter() }>
-            { activeModalProps.renderBody }
+            title={activeModalProps.title}
+            onClose={closeModal}
+            isOpen={props.isModalOpen}
+            footerContent={generateFooter()}>
+            {activeModalProps.renderBody}
         </CustomMuiDialog>
     );
 };
