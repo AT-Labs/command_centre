@@ -98,7 +98,8 @@ const handleMoveService = (tripInstance, firstSelectedStop, modalProps, activeMo
     handlers.moveTripToStopHandler(options, modalProps[activeModal].successMessage(firstSelectedStop), tripInstance);
 };
 
-const handleUpdateHeadsign = (tripInstance, selectedStops, newDestination, selectedPidCustomization, isLimitedStops, modalProps, activeModal, handlers) => {
+const handleUpdateHeadsign = (tripData, modalProps, activeModal, handlers) => {
+    const { tripInstance, selectedStops, newDestination, isLimitedStops, selectedPidCustomization } = tripData;
     const options = {
         tripId: tripInstance.tripId,
         serviceDate: tripInstance.serviceDate,
@@ -190,13 +191,13 @@ const onClickHandler = (
     handlers,
 ) => {
     setHasUpdateBeenTriggered(true);
-    const { tripInstance, selectedStops, firstSelectedStop, selectedPidCustomization, newDestination, skipped, nonStopping, isLimitedStops } = tripData;
+    const { tripInstance, selectedStops, firstSelectedStop, skipped, nonStopping } = tripData;
     switch (activeModal) {
     case MOVE_SERVICE:
         handleMoveService(tripInstance, firstSelectedStop, modalProps, activeModal, handlers);
         break;
     case UPDATE_HEADSIGN:
-        handleUpdateHeadsign(tripInstance, selectedStops, newDestination, selectedPidCustomization, isLimitedStops, modalProps, activeModal, handlers);
+        handleUpdateHeadsign(tripData, modalProps, activeModal, handlers);
         break;
     case SET_FIRST_STOP:
         handleSetFirstStop(tripInstance, firstSelectedStop, handlers, activeModal);
