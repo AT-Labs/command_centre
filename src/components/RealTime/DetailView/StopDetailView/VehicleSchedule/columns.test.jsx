@@ -19,6 +19,50 @@ describe('Vehicle schedule columns', () => {
             expect(formattedDestination.props.children[0].props.children).to.equal('Britomart');
             expect(formattedDestination.props.children[1].props.children).to.equal(' via Newmarket');
         });
+
+        it('should format train with new crl destination', () => {
+            const isTrainStop = true;
+            const destinationDisplay = 'Baldwin Ave Limited Stops via Waitemata';
+            const formattedDestination = formatDestination(isTrainStop, destinationDisplay);
+            expect(formattedDestination.type).to.equal('div');
+            expect(formattedDestination.props.children[0].props.children).to.equal('Baldwin Ave');
+            expect(formattedDestination.props.children[1].props.children).to.equal(' Limited Stops via Waitemata');
+        });
+
+        it('should format train with new crl destination that not in config', () => {
+            const isTrainStop = true;
+            const destinationDisplay = 'City Centre Limited Stops via Waitemata';
+            const formattedDestination = formatDestination(isTrainStop, destinationDisplay);
+            expect(formattedDestination.type).to.equal('div');
+            expect(formattedDestination.props.children[0].props.children).to.equal('City Centre');
+            expect(formattedDestination.props.children[1].props.children).to.equal(' Limited Stops via Waitemata');
+        });
+
+        it('should format train with new crl destination only via', () => {
+            const isTrainStop = true;
+            const destinationDisplay = 'Baldwin Ave via Waitemata';
+            const formattedDestination = formatDestination(isTrainStop, destinationDisplay);
+            expect(formattedDestination.type).to.equal('div');
+            expect(formattedDestination.props.children[0].props.children).to.equal('Baldwin Ave');
+            expect(formattedDestination.props.children[1].props.children).to.equal(' via Waitemata');
+        });
+
+        it('should format train with new crl destination only ls', () => {
+            const isTrainStop = true;
+            const destinationDisplay = 'Baldwin Ave Limited Stops';
+            const formattedDestination = formatDestination(isTrainStop, destinationDisplay);
+            expect(formattedDestination.type).to.equal('div');
+            expect(formattedDestination.props.children[0].props.children).to.equal('Baldwin Ave');
+            expect(formattedDestination.props.children[1].props.children).to.equal(' Limited Stops');
+        });
+
+        it('should format train with random destinationDisplay', () => {
+            const isTrainStop = true;
+            const destinationDisplay = 'test test test';
+            const formattedDestination = formatDestination(isTrainStop, destinationDisplay);
+            expect(formattedDestination.type).to.equal('strong');
+            expect(formattedDestination.props.children).to.equal('test test test');
+        });
     });
 
     context('calculateDue()', () => {

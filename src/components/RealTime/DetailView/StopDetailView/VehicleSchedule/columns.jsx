@@ -32,21 +32,43 @@ export const getColumns = ({ isHistorical }) => [{
 }];
 
 export const formatDestination = (isTrainStop, destinationDisplay) => {
-    if (isTrainStop) {
-        const stopValue = STOP_TYPES.VALUES.find(d => destinationDisplay.includes(d.value));
-        const destination = stopValue ? {
-            name: destinationDisplay.replace(stopValue.value, ''),
-            via: stopValue.replacement,
-        } : destinationDisplay;
-        return stopValue ? (
+    if (!isTrainStop) return destinationDisplay;
+
+    const stopType = STOP_TYPES.VALUES.find(d => destinationDisplay.includes(d.value));
+    if (stopType) {
+        const name = destinationDisplay.replace(stopType.value, '');
+        return (
             <div>
-                <strong>{destination.name}</strong>
-                <small>{destination.via}</small>
+                <strong>{name}</strong>
+                <small>{stopType.replacement}</small>
             </div>
-        ) : <strong>{destination}</strong>;
+        );
     }
 
-    return destinationDisplay;
+    const viaId = destinationDisplay.indexOf('via');
+    const lsId = destinationDisplay.indexOf('Limited Stops');
+    let splitId = -1;
+
+    if (viaId !== -1 && lsId !== -1) {
+        splitId = Math.min(viaId, lsId);
+    } else if (viaId !== -1) {
+        splitId = viaId;
+    } else if (lsId !== -1) {
+        splitId = lsId;
+    }
+
+    if (splitId !== -1) {
+        const name = destinationDisplay.slice(0, splitId).trim();
+        const rest = destinationDisplay.slice(splitId).trim();
+        return (
+            <div>
+                <strong>{name}</strong>
+                <small>{` ${rest}`}</small>
+            </div>
+        );
+    }
+
+    return <strong>{destinationDisplay}</strong>;
 };
 
 export const calculateDue = (arrivalStatus, dueTime) => {
