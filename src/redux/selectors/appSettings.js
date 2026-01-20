@@ -68,4 +68,3 @@ export const useParentChildIncident = createSelector(getAppSettingsState, appSet
 export const useNotificationEffectColumn = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useNotificationEffectColumn') === 'true'));
 export const useDisruptionNotePopup = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useDisruptionNotePopup') === 'true'));
 export const useEditDisruptionNotes = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useEditDisruptionNotes') === 'true'));
-export const useNewDestinations = createSelector(getAppSettingsState, appSettingState => (result(appSettingState, 'useNewDestinations') === 'true'));
