@@ -48,6 +48,7 @@ const componentPropsMock = {
     updateSelectedStopsStatus: jest.fn(),
     updateDestination: jest.fn(),
     onStopUpdated: undefined,
+    useNewDestinations: false,
 };
 
 const setup = (customProps) => {
@@ -99,6 +100,12 @@ describe('<UpdateStopStatusModal />', () => {
 
         it('Should invoke updateDestination when onStopUpdated is undefined', () => {
             wrapper = setup({ activeModal: updateStopsModalTypes.UPDATE_HEADSIGN });
+            wrapper.find(CustomModal).prop('okButton').onClick();
+            expect(componentPropsMock.updateDestination).toHaveBeenCalledTimes(1);
+        });
+
+        it('Should handleUpdateHeadsign with useNewDestination enabled', () => {
+            wrapper = setup({ activeModal: updateStopsModalTypes.UPDATE_HEADSIGN, useNewDestination: true });
             wrapper.find(CustomModal).prop('okButton').onClick();
             expect(componentPropsMock.updateDestination).toHaveBeenCalledTimes(1);
         });
