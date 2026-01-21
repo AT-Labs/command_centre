@@ -243,11 +243,11 @@ export const UpdateStopStatusModal = (props) => {
 
     const pidCustomizationOptionsV2 = [
         'None',
-        'via Newmarket',
-        'via Parnell',
         'via Grafton',
-        'via Waitemata',
+        'via Newmarket',
         'via Panmure',
+        'via Parnell',
+        'via Waitemata',
     ];
 
     const handlePidCustomizationChange = (pidCustomization) => {
