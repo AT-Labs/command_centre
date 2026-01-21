@@ -229,7 +229,7 @@ export const UpdateStopStatusModal = (props) => {
 
     useEffect(async () => {
         const railHeadsignsStops = await getRailHeadsignsStops(props.useNewDestinations);
-        setRailHeadsigns(railHeadsignsStops.map(({ headsign }) => headsign));
+        setRailHeadsigns(railHeadsignsStops.map(({ headsign }) => headsign).sort((a, b) => a.localeCompare(b)));
     }, []);
 
     const modalProps = modalPropsMapping({ firstSelectedStop, tripInstance, isUpdatingOnGoing, skipped, notPassed, nonStopping, selectedStops, hideSkippedStops });
