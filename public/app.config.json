@@ -45,6 +45,5 @@
     "useTripCancellationCause": "false",
     "useParentChildIncident": "false",
     "useNotificationEffectColumn": "false",
-    "useDisruptionNotePopup": "false",
-    "useNewDestinations": "false"
+    "useDisruptionNotePopup": "false"
 }
