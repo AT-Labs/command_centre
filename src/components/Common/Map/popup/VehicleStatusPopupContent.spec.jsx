@@ -4,6 +4,8 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
+// It is required for the tests to work properly
+// eslint-disable-next-line no-unused-vars
 import moment from 'moment-timezone';
 import VehicleStatusPopupContent from './VehicleStatusPopupContent';
 
