@@ -80,9 +80,19 @@ function VehicleStatusPopupContent({ eventDetail }) {
     };
 
     const formatCoordinate = (coordinate) => {
-        const firstHalf = coordinate.toString().split('.')[0];
-        const secondHalf = coordinate.toString().split('.')[1];
-        const formattedSecondHalf = secondHalf.slice(0, 5);
+        if (coordinate === null || coordinate === undefined || coordinate === '' || coordinate === 0) {
+            return 'N/A';
+        }
+
+        const coordinateStr = coordinate.toString();
+        const parts = coordinateStr.split('.');
+
+        if (parts.length < 2 || !parts[1]) {
+            return coordinateStr;
+        }
+
+        const firstHalf = parts[0];
+        const formattedSecondHalf = parts[1].slice(0, 5);
         return firstHalf.concat('.', formattedSecondHalf);
     };
 
