@@ -6,7 +6,7 @@ import { FormGroup, FormText, Input, Table, Label } from 'reactstrap';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { FaExclamationTriangle } from 'react-icons/fa';
-
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import UpdateStatusModalsBtn from './UpdateStatusModalsBtn';
 import { StopStatus, updateStopsModalTypes } from '../Types';
 import CustomModal from '../../../Common/CustomModal/CustomModal';
@@ -16,7 +16,8 @@ import { getSelectedStopsByTripKey, getSelectedStopsUpdatingState } from '../../
 import { TRAIN_TYPE_ID } from '../../../../types/vehicle-types';
 import { getRailHeadsignsStops } from '../../../../utils/transmitters/cc-static';
 import RadioButtons from '../../../Common/RadioButtons/RadioButtons';
-import { useHideSkippedStop } from '../../../../redux/selectors/appSettings';
+import { useNewDestinations, useHideSkippedStop } from '../../../../redux/selectors/appSettings';
+import { buildHeadSignWithCustomization } from '../../../../utils/control/trips';
 
 const { SKIP, REINSTATE, MOVE_SERVICE, UPDATE_HEADSIGN, SET_NON_STOPPING, SET_FIRST_STOP, SET_LAST_STOP, HIDE_SKIPPED_STOP } = updateStopsModalTypes;
 
@@ -97,13 +98,14 @@ const handleMoveService = (tripInstance, firstSelectedStop, modalProps, activeMo
     handlers.moveTripToStopHandler(options, modalProps[activeModal].successMessage(firstSelectedStop), tripInstance);
 };
 
-const handleUpdateHeadsign = (tripInstance, selectedStops, newDestination, selectedPidCustomization, modalProps, activeModal, handlers) => {
+const handleUpdateHeadsign = (tripData, modalProps, activeModal, handlers) => {
+    const { tripInstance, selectedStops, newDestination, isLimitedStops, selectedPidCustomization } = tripData;
     const options = {
         tripId: tripInstance.tripId,
         serviceDate: tripInstance.serviceDate,
         startTime: tripInstance.startTime,
         stopCodes: Object.values(selectedStops).map(stop => stop.stopCode),
-        headsign: selectedPidCustomization !== 'None' ? newDestination + selectedPidCustomization : newDestination,
+        headsign: buildHeadSignWithCustomization(newDestination, selectedPidCustomization, isLimitedStops),
     };
     if (handlers.onStopUpdatedHandler) {
         handlers.onStopUpdatedHandler({ ...options, action: UPDATE_HEADSIGN });
@@ -189,14 +191,13 @@ const onClickHandler = (
     handlers,
 ) => {
     setHasUpdateBeenTriggered(true);
-    const { tripInstance, selectedStops, firstSelectedStop, selectedPidCustomization, newDestination, skipped, nonStopping } = tripData;
-
+    const { tripInstance, selectedStops, firstSelectedStop, skipped, nonStopping } = tripData;
     switch (activeModal) {
     case MOVE_SERVICE:
         handleMoveService(tripInstance, firstSelectedStop, modalProps, activeModal, handlers);
         break;
     case UPDATE_HEADSIGN:
-        handleUpdateHeadsign(tripInstance, selectedStops, newDestination, selectedPidCustomization, modalProps, activeModal, handlers);
+        handleUpdateHeadsign(tripData, modalProps, activeModal, handlers);
         break;
     case SET_FIRST_STOP:
         handleSetFirstStop(tripInstance, firstSelectedStop, handlers, activeModal);
@@ -224,10 +225,11 @@ export const UpdateStopStatusModal = (props) => {
     const [railHeadsigns, setRailHeadsigns] = useState([]);
     const [selectedPidCustomization, setSelectedPidCustomization] = useState('None');
     const [hideSkippedStops, setHideSkippedStops] = useState(false);
+    const [isLimitedStops, setIsLimitedStops] = useState(false);
 
     useEffect(async () => {
-        const railHeadsignsStops = await getRailHeadsignsStops();
-        setRailHeadsigns(railHeadsignsStops.map(({ headsign }) => headsign));
+        const railHeadsignsStops = await getRailHeadsignsStops(props.useNewDestinations);
+        setRailHeadsigns(railHeadsignsStops.map(({ headsign }) => headsign).sort((a, b) => a.localeCompare(b)));
     }, []);
 
     const modalProps = modalPropsMapping({ firstSelectedStop, tripInstance, isUpdatingOnGoing, skipped, notPassed, nonStopping, selectedStops, hideSkippedStops });
@@ -237,6 +239,16 @@ export const UpdateStopStatusModal = (props) => {
         { key: '/PAN', value: '/PAN' },
         { key: '/LS', value: '/LS' },
         { key: 'None', value: 'None' },
+    ];
+
+    const pidCustomizationOptionsV2 = [
+        'None',
+        'via City Centre',
+        'via Grafton',
+        'via Newmarket',
+        'via Panmure',
+        'via Parnell',
+        'via Waitemata',
     ];
 
     const handlePidCustomizationChange = (pidCustomization) => {
@@ -263,6 +275,7 @@ export const UpdateStopStatusModal = (props) => {
             firstSelectedStop,
             selectedPidCustomization,
             newDestination,
+            isLimitedStops,
             skipped,
             nonStopping,
         },
@@ -296,17 +309,52 @@ export const UpdateStopStatusModal = (props) => {
                                         onChange={ handleRailDestinationChange }
                                         renderInput={ params => <TextField { ...params } label="Enter the new destination" /> }
                                     />
-                                    <FormText className="mt-3">
-                                        Customise PID (optional for rail)
-                                    </FormText>
-                                    <RadioButtons
-                                        title=""
-                                        formGroupClass="update-stop-status-modal__pid-customization mt-3"
-                                        checkedKey={ selectedPidCustomization }
-                                        itemOptions={ pidCustomizationOptions }
-                                        disabled={ false }
-                                        onChange={ handlePidCustomizationChange }
-                                    />
+                                    {props.useNewDestinations ? (
+                                        <>
+                                            <FormGroup className="mt-3" style={ { display: 'flex', alignItems: 'center' } }>
+                                                <Input
+                                                    type="checkbox"
+                                                    onChange={ () => setIsLimitedStops(!isLimitedStops) }
+                                                    checked={ isLimitedStops }
+                                                    style={ { marginLeft: 0, width: 18, height: 18, marginBottom: '0.1rem' } }
+                                                />
+                                                <FormText style={ { paddingLeft: '1.5rem', fontSize: '1rem' } }>Limited stops</FormText>
+                                            </FormGroup>
+                                            <FormText className="mt-3">
+                                                Customise PID (optional for rail)
+                                            </FormText>
+                                            <FormControl fullWidth className="mt-3">
+                                                <InputLabel id="update-stop-status-modal__pid-customization-label">Select via station</InputLabel>
+                                                <Select
+                                                    labelId="update-stop-status-modal__pid-customization-label"
+                                                    id="update-stop-status-modal__pid-customization"
+                                                    label="Select via station"
+                                                    value={ selectedPidCustomization }
+                                                    onChange={ event => setSelectedPidCustomization(event.target.value) }
+                                                >
+                                                    {pidCustomizationOptionsV2.map(option => (
+                                                        <MenuItem key={ option } value={ option }>
+                                                            {option}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FormText className="mt-3">
+                                                Customise PID (optional for rail)
+                                            </FormText>
+                                            <RadioButtons
+                                                title=""
+                                                formGroupClass="update-stop-status-modal__pid-customization mt-3"
+                                                checkedKey={ selectedPidCustomization }
+                                                itemOptions={ pidCustomizationOptions }
+                                                disabled={ false }
+                                                onChange={ handlePidCustomizationChange }
+                                            />
+                                        </>
+                                    )}
                                 </>
                             )}
                             { tripInstance.routeType !== TRAIN_TYPE_ID && (
@@ -432,14 +480,17 @@ UpdateStopStatusModal.propTypes = {
     updateDestination: PropTypes.func.isRequired,
     onStopUpdated: PropTypes.func,
     useHideSkippedStop: PropTypes.bool.isRequired,
+    useNewDestinations: PropTypes.bool,
 };
 
 UpdateStopStatusModal.defaultProps = {
     onStopUpdated: undefined,
+    useNewDestinations: false,
 };
 
 export default connect(state => ({
     areSelectedStopsUpdating: getSelectedStopsUpdatingState(state),
     selectedStopsByTripKey: tripInstance => getSelectedStopsByTripKey(state.control.routes.tripInstances.selectedStops, tripInstance),
     useHideSkippedStop: useHideSkippedStop(state),
+    useNewDestinations: useNewDestinations(state),
 }), { updateSelectedStopsStatus, moveTripToStop, updateDestination })(UpdateStopStatusModal);
