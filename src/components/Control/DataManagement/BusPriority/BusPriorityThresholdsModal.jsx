@@ -115,15 +115,21 @@ const BusPriorityThresholdsModal = (props) => {
                 let routeMatched = (!threshold.RouteId && !routeIds);
 
                 if (!routeMatched && threshold.RouteId && routeIds) {
-                    const thresholdRoutes = threshold.RouteId.split(',').map(item => item.trim());
-                    const currentRoutes = routeIds.split(',').map(item => item.trim());
+                    const thresholdRoutes = String(threshold.RouteId)
+                        .split(',')
+                        .map(item => item.trim());
+                    const currentRoutes = String(routeIds)
+                        .split(',')
+                        .map(item => item.trim());
 
                     routeMatched = currentRoutes.some(item => thresholdRoutes.includes(item));
                 }
 
+                const thresholdSiteId = (threshold.SiteId !== undefined && threshold.SiteId !== null && threshold.SiteId !== '') ? Number.parseInt(threshold.SiteId, 10) : null;
+
                 return (threshold.Occupancy === occupancy || (!threshold.Occupancy && !occupancy))
-                        && (threshold.SiteId === siteId || (!threshold.SiteId && !siteId))
-                        && routeMatched;
+                    && (thresholdSiteId === siteId || (!thresholdSiteId && !siteId))
+                    && routeMatched;
             });
 
         const duplicateScores = hasDuplicates(thresholds.map(row => row.Score));
@@ -151,9 +157,17 @@ const BusPriorityThresholdsModal = (props) => {
 
     useEffect(() => {
         if (props.thresholdSet != null) {
-            const initalThresholds = (props.allThresholds.filter(threshold => threshold.Occupancy === props.thresholdSet.occupancy
-                && threshold.SiteId === props.thresholdSet.siteId
-                && threshold.RouteId === props.thresholdSet.routeId));
+            const initalThresholds = props.allThresholds.filter((threshold) => {
+                const thresholdSiteId = (threshold.SiteId !== undefined && threshold.SiteId !== null && threshold.SiteId !== '')
+                    ? Number.parseInt(threshold.SiteId, 10)
+                    : null;
+                const propSiteId = (props.thresholdSet.siteId !== undefined && props.thresholdSet.siteId !== null && props.thresholdSet.siteId !== '')
+                    ? Number.parseInt(props.thresholdSet.siteId, 10)
+                    : null;
+                return (threshold.Occupancy === props.thresholdSet.occupancy)
+                    && (thresholdSiteId === propSiteId)
+                    && (threshold.RouteId === props.thresholdSet.routeId);
+            });
 
             setThresholds(initalThresholds);
             setOriginalThresholds(initalThresholds);
@@ -307,7 +321,7 @@ const BusPriorityThresholdsModal = (props) => {
 
     const generateOccupancyOptions = () => Object.entries(VEHICLE_OCCUPANCY_STATUS_TYPE).map(([, value]) => (
         <option key={ value } value={ value }>
-            { value }
+            {value}
         </option>
     ));
 
@@ -317,12 +331,12 @@ const BusPriorityThresholdsModal = (props) => {
 
     const toolBarButtons = () => (
         <>
-            { (updateType === UPDATE_TYPE.NEW || updateType === UPDATE_TYPE.UPDATE) && (
+            {(updateType === UPDATE_TYPE.NEW || updateType === UPDATE_TYPE.UPDATE) && (
                 <MuiButton color="primary" startIcon={ <GridAddIcon /> } onClick={ handleAddRow }>
                     Add threshold
                 </MuiButton>
             )}
-            { updateType === UPDATE_TYPE.UPDATE && (
+            {updateType === UPDATE_TYPE.UPDATE && (
                 <MuiButton color="primary" startIcon={ <GridMenuIcon /> } onClick={ handleDuplicateSet }>
                     Duplicate thresholds
                 </MuiButton>
@@ -360,7 +374,7 @@ const BusPriorityThresholdsModal = (props) => {
                     <ModalAlert
                         color="danger"
                         isOpen={ invalidFilters }
-                        content={ <span>{ invalidFilterString }</span> } />
+                        content={ <span>{invalidFilterString}</span> } />
                 </div>
             </div>
             <div className="row filter-container">
@@ -369,13 +383,15 @@ const BusPriorityThresholdsModal = (props) => {
                         <span className="filter-label">Site Id</span>
                     </Label>
                     <Input
+                        type="number"
                         id="siteId"
                         disabled={ disableFilters }
                         value={ siteId ?? '' }
                         className="cc-form-control"
                         placeholder="Site Id"
                         onChange={ (event) => {
-                            setSiteId(event.target.value.toUpperCase());
+                            const { value } = event.target;
+                            setSiteId(value === '' ? null : Number.parseInt(value, 10));
                         } }
                     />
                 </div>
@@ -408,7 +424,7 @@ const BusPriorityThresholdsModal = (props) => {
                         onBlur={ e => onOccupancyChange(e.currentTarget.value) }
                         onChange={ e => onOccupancyChange(e.currentTarget.value) }>
                         <option value={ null } />
-                        { generateOccupancyOptions() }
+                        {generateOccupancyOptions()}
                     </Input>
                 </div>
             </div>
@@ -500,7 +516,7 @@ const BusPriorityThresholdsModal = (props) => {
             className="cc-btn-primary w-100"
             onClick={ activeModalProps.onClick }
             disabled={ !canSave }>
-            { activeModalProps.mainButtonLabel }
+            {activeModalProps.mainButtonLabel}
         </Button>
     );
 
@@ -510,7 +526,7 @@ const BusPriorityThresholdsModal = (props) => {
             onClose={ closeModal }
             isOpen={ props.isModalOpen }
             footerContent={ generateFooter() }>
-            { activeModalProps.renderBody }
+            {activeModalProps.renderBody}
         </CustomMuiDialog>
     );
 };
@@ -524,7 +540,7 @@ BusPriorityThresholdsModal.propTypes = {
     updateThresholds: PropTypes.func.isRequired,
     deleteThresholds: PropTypes.func.isRequired,
     thresholdSet: PropTypes.shape({
-        siteId: PropTypes.string,
+        siteId: PropTypes.number,
         occupancy: PropTypes.string,
         routeId: PropTypes.string,
     }),

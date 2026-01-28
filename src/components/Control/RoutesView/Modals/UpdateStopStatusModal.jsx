@@ -243,7 +243,6 @@ export const UpdateStopStatusModal = (props) => {
 
     const pidCustomizationOptionsV2 = [
         'None',
-        'via City Centre',
         'via Grafton',
         'via Newmarket',
         'via Panmure',
